@@ -21,6 +21,8 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.Date;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+
 import com.google.gwt.dom.client.BodyElement;
 import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -53,8 +55,9 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 			@Override
 			public void run() {
 				if (LoadingWidget.getInstance().isShowing())
-					LoadingWidget.getInstance().fail(getText() + " does not seem to load, " +
-							"please check <a href='" + iFrame.getUrl() + "' style='white-space: nowrap;'>" + iFrame.getUrl() + "</a> for yourself.");
+					LoadingWidget.getInstance().hide();
+				UniTimeNotifications.error(getText() + " does not seem to load, " +
+					"please check <a href='" + iFrame.getUrl() + "' style='white-space: nowrap;'>" + iFrame.getUrl() + "</a> for yourself.");
 			}
 		};
 		
