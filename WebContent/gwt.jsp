@@ -66,18 +66,13 @@
 	<!--[if IE]>
     <script type="text/javascript" src="scripts/CFInstall.min.js"></script>
     
-    <table width='100%' border='0' cellpadding='3' cellspacing='0' style='display:none;' id='__ie_no_chrome'>
-      <tr><td class="unitime-MessageBlue" width='5'>&nbsp;</td>
-      	  <td class="unitime-MessageBlue">
-      	  	<a class='unitime-NoFancyLink' href="http://google.com/chromeframe">The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a></td>
-      </tr>
-    </table>
-    
     <div style='display:none;'><div id='__ie_chrome_plugin'></div></div>
     
     <script>
      function ie_no_chrome() {
-       document.getElementById('__ie_no_chrome').style.display = 'table';
+       window.gwtOnLoad = function() {
+       	gwtShowMessage("<a class='unitime-NoFancyLink' href=\"http://google.com/chromeframe\" target='chromeframe'>The UniTime application may run very slow in Internet Explorer. To speed it up, please click here and install Google Chrome Frame plug-in.</a>");
+       };
      }
      window.attachEvent("onload", function() {
        CFInstall.check({
