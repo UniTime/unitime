@@ -195,6 +195,20 @@ public class Registration extends BodyTagSupport {
 								(sRegistered ? "update the current registration" : "register") + "." +
 								"</span>");
 					}
+					if (isUpdate()) {
+						if (user != null && user.isAdmin()) {
+							String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
+							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage +
+									"<br><span style='font-size: x-small;'>Click <a " +
+									"onMouseOver=\\\"this.style.cursor='hand';this.style.cursor='pointer';\\\" " +
+									"onCLick=\\\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\\\" " +
+									"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
+									(sRegistered ? "update the current registration" : "register") + "." +
+									"</span>\"); }</script>");
+						} else {
+							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage + "\"); }</script>");
+						}
+					}
 				}
 			} catch (Exception e) {}
 			return EVAL_PAGE;
