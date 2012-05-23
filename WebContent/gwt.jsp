@@ -60,6 +60,10 @@
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
+
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-MessageYellow"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-MessageBlue"/>
+
 	<tt:offering-locks/>
 
 	<tt:propertyNotEquals name="unitime.warn.chromeframe" value="false">
