@@ -121,6 +121,27 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Custom Page Messages</name>
+			<description>
+				<line>Added ability to define page-dependent custom messages (blue or yellow stripe at the top of the page):
+					<line>a warning message (yellow stripe) for page XXX can be enabled by setting a custom property tmtbl.page.warn.XXX</line>
+					<line>an info message (blue stripe) for page XXX can be enabled by setting a custom property tmtbl.page.info.XXX</line>
+					<line>where XXX is the name of the page, that is:
+						<line>for GWT pages, it is the value of the page parameter (UniTime/gwt.jsp?page=XXX)</line>
+						<line>for Struts pages, it is the name of the page in the URL without any path and .do at the end (UniTime/XXX.do)</line>
+					</line>
+				</line>
+				<line>Examples:
+					<line>Class Edit page (UniTime/classEdit.do)
+						<line>tmtbl.page.info.classEdit=This is a test info message that is only to be displayed on the Class Edit page.</line>
+					</line>
+					<line>Student Scheduling Assistant page (UniTime/gwt.jsp?page=sectioning)
+						<line>tmtbl.page.warn.sectioning=This is a test warning message that is only to be displayed on the Student Scheduling Assistant page.</line>
+					</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Constraint Solver Update</title>

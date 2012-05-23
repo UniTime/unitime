@@ -474,4 +474,22 @@
 		<tag-class>org.unitime.timetable.tags.OfferingLocks</tag-class>
 		<body-content>empty</body-content>
 	</tag>
+
+	<tag>
+		<name>page-warning</name>
+		<tag-class>org.unitime.timetable.tags.PageWarning</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>prefix</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+		<attribute>
+			<name>style</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>java.lang.String</type>
+		</attribute>
+	</tag>
 </taglib>
