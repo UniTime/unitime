@@ -101,6 +101,8 @@
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
+	<tt:page-warning prefix="tmtbl.page.warn." style="unitime-MessageYellow"/>
+	<tt:page-warning prefix="tmtbl.page.info." style="unitime-MessageBlue"/>
 	<% if (request.getAttribute(Constants.REQUEST_OPEN_URL)!=null) { %>
 		<script language="JavaScript">
 			<% String url = request.getAttribute(Constants.REQUEST_OPEN_URL).toString(); %>
