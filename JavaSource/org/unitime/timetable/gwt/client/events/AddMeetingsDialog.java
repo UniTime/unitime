@@ -101,6 +101,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	
 	public AddMeetingsDialog(AcademicSessionProvider session, AsyncCallback<List<MeetingInterface>> callback) {
 		super(true, false);
+		setAnimationEnabled(false);
 		
 		iCallback = callback;
 		iSession = session;
@@ -116,20 +117,40 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			public void onClick(ClickEvent event) {
 				if (iDates.getSelectedDaysCount() == 0) {
 					iDatesHeader.setErrorMessage(MESSAGES.errorNoDateSelected());
+					return;
 				}
+				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 				iRooms.getElements(new AsyncCallback<List<Entity>>() {
 					@Override
 					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
 						iDatesHeader.setErrorMessage(caught.getMessage());
 					}
 					@Override
 					public void onSuccess(List<Entity> result) {
 						iMatchingRooms = result;
 						if (result.isEmpty()) {
+							LoadingWidget.getInstance().hide();
 							iDatesHeader.setErrorMessage(MESSAGES.errorNoMatchingRooms());
 						} else if (iDates.getSelectedDaysCount() > 0) {
 							iDatesHeader.clearMessage();
-							loadAndShow();
+							RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(
+										getStartSlot(), getEndSlot(), getDates(), getRooms(), iSession.getAcademicSessionId()
+									), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									iDatesHeader.setErrorMessage(caught.getMessage());
+								}
+								
+								@Override
+								public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+									LoadingWidget.getInstance().hide();
+									populate(result, 0);
+									setWidget(iAvailabilityForm);
+									recenter();
+								}
+							});
 						}
 					}
 				});
@@ -157,7 +178,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				setWidget(iDatesForm);
-				center();
+				recenter();
 				iResponse = null;
 			}
 		});
@@ -165,12 +186,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex - 10);
+				recenter();
 			}
 		});
 		iAvailabilityHeader.addButton("next", MESSAGES.buttonRight(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				populate(iResponse, iIndex + 10);
+				recenter();
 			}
 		});
 		iAvailabilityHeader.addButton("select", MESSAGES.buttonSelect(), 75, new ClickHandler() {
@@ -214,11 +237,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iRoomAvailability = new P("unitime-MeetingSelection");
 		
 		iScroll = new ScrollPanel(iRoomAvailability);
+		iStep = (Window.getClientWidth() - 300) / 105;
+
 		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
 		
-		iStep = (Window.getClientWidth() - 200) / 105;
-		
-		iAvailabilityForm.addRow("", iScroll);
+		iAvailabilityForm.addRow(iScroll);
 		
 		iAvailabilityForm.addNotPrintableBottomRow(iAvailabilityHeader.clonePanel());
 		
@@ -230,6 +253,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
+		
+		getElement().getStyle().setProperty("width", "auto");
 	}
 	
 	public void showDialog() {
@@ -250,30 +275,9 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iMatchingRooms = null;
 		iDates.setValue(new ArrayList<Date>());
 		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6));
-		iRooms.setValue(roomFilterValue);
+		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue);
 	}
 
-	public void loadAndShow() {
-		LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-		RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(
-					getStartSlot(), getEndSlot(), getDates(), getRooms(), iSession.getAcademicSessionId()
-				), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LoadingWidget.hideLoading();
-				iDatesHeader.setErrorMessage(caught.getMessage());
-			}
-			
-			@Override
-			public void onSuccess(EventRoomAvailabilityRpcResponse result) {
-				populate(result, 0);
-				LoadingWidget.hideLoading();
-				setWidget(iAvailabilityForm);
-				center();
-			}
-		});
-	}
-	
 	private Integer iHoverDate = null;
 	private Entity iHoverLoc = null;
 	
@@ -300,12 +304,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			p.addMouseOverHandler(new MouseOverHandler() {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
+					((P)event.getSource()).addStyleName("hover");
 					GwtHint.showHint(p.getElement(), room.getProperty("mouseOver", ""));
 				}
 			});
 			p.addMouseOutHandler(new MouseOutHandler() {
 				@Override
 				public void onMouseOut(MouseOutEvent event) {
+					((P)event.getSource()).removeStyleName("hover");
 					GwtHint.hideHint();
 				}
 			});
@@ -332,10 +338,22 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		for (final Integer date: getDates()) {
 			row = new P("row"); box.add(row);
 			
-			P day = new P("date");
+			final P day = new P("date");
 			Date d = iDates.getDate(date);
 			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
 			row.add(day);
+			day.addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					((P)event.getSource()).addStyleName("hover");
+				}
+			});
+			day.addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					((P)event.getSource()).removeStyleName("hover");
+				}
+			});
 			day.addMouseDownHandler(new MouseDownHandler() {
 				@Override
 				public void onMouseDown(MouseDownEvent event) {
@@ -441,6 +459,12 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iAvailabilityHeader.setEnabled("select", !iSelected.isEmpty());
 	}
 	
+	public void recenter() {
+		int left = (Window.getClientWidth() - getOffsetWidth()) >> 1;
+	    int top = (Window.getClientHeight() - getOffsetHeight()) >> 1;
+	    setPopupPosition(Math.max(Window.getScrollLeft() + left, 0), Math.max( Window.getScrollTop() + top, 0));
+	  }
+	
     @Override
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
     	super.onPreviewNativeEvent(event);
@@ -513,5 +537,5 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
         	}    		
     	}
     }
-	
+ 	
 }

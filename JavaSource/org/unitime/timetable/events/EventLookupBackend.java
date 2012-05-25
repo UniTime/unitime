@@ -20,6 +20,7 @@
 package org.unitime.timetable.events;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,10 +33,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -58,6 +61,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
@@ -74,6 +78,7 @@ import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
 public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRequest, GwtRpcResponseList<EventInterface>>{
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(EventLookupBackend.class);
 
 	@Override
@@ -626,7 +631,13 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					throw new EventException("Resource type " + request.getResourceType().getLabel() + " not supported.");
 				}
 				
-				Date now = new Date();
+				Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+				cal.set(Calendar.MINUTE, 0);
+				cal.set(Calendar.SECOND, 0);
+				cal.set(Calendar.MILLISECOND, 0);
+				Date today = cal.getTime();
+				
 				GwtRpcResponseList<EventInterface> ret = new GwtRpcResponseList<EventInterface>();
 				Hashtable<Long, EventInterface> events = new Hashtable<Long, EventInterface>();
 				for (Meeting m: meetings) {
@@ -745,8 +756,15 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 								instructor.setLastName(i.getLastName());
 								event.addInstructor(instructor);
 			    			}
+			    			String name = null;
 			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
-			    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+			    				TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
+			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse || request.getResourceType() == ResourceType.ROOM) {
+			    					courses.add(owner.getCourse());
+			    				} else {
+			    					courses.addAll(owner.getCourse().getInstructionalOffering().getCourseOfferings());
+			    				}
+			    				courses: for(CourseOffering course: courses) {
 						    		switch (request.getResourceType()) {
 						    		case SUBJECT:
 						    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
@@ -767,23 +785,47 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig && !curriculumConfigs.contains(owner.getOwnerId())) continue;
 						    			break;
 						    		}
-				    				String courseName = owner.getCourse().getCourseName();
-				    				String label = owner.getLabel();
-				    				if (label.startsWith(courseName)) {
-				    					label = label.substring(courseName.length());
+						    		event.addCourseName(course.getCourseName());
+						    		name = course.getCourseName();
+				    				switch (owner.getOwnerType()) {
+				    				case ExamOwner.sOwnerTypeClass:
+				    					Class_ clazz = (Class_)owner.getOwnerObject();
+				    					if (clazz.getClassSuffix(course) == null) {
+				    						event.addExternalId(clazz.getClassLabel(course));
+				    						name = course.getCourseName() + " " + clazz.getClassLabel(course);
+				    					} else {
+				    						event.addExternalId(clazz.getClassSuffix(course));
+				    						name = course.getCourseName() + " " + clazz.getClassSuffix(course);
+				    					}
+				    					break;
+				    				case ExamOwner.sOwnerTypeConfig:
+				    					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
+				    					event.addExternalId("[" + config.getName() + "]");
+				    					break;
+				    				case ExamOwner.sOwnerTypeCourse:
+				    					event.addExternalId(MESSAGES.colCourse());
+				    					break;
+				    				case ExamOwner.sOwnerTypeOffering:
+				    					event.addExternalId(MESSAGES.colOffering());
+				    					break;
 				    				}
-				    				event.addCourseName(course.getCourseName());
-				    				event.addExternalId(label.trim());
 			    				}
 			    			}
 			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && request.getResourceType() == ResourceType.PERSON)
-		    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
+		    					event.setName(name);
 				    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 				    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+				    		event.setRequiredAttendance(ce.isReqAttendance());
 							int enrl = 0;
 							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 								enrl += owner.countStudents();
-								courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+			    				TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
+			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse || request.getResourceType() == ResourceType.ROOM) {
+			    					courses.add(owner.getCourse());
+			    				} else {
+			    					courses.addAll(owner.getCourse().getInstructionalOffering().getCourseOfferings());
+			    				}
+			    				courses: for(CourseOffering course: courses) {
 						    		switch (request.getResourceType()) {
 						    		case SUBJECT:
 						    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
@@ -804,15 +846,29 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig && !curriculumConfigs.contains(owner.getOwnerId())) continue;
 						    			break;
 						    		}
-				    				String courseName = owner.getCourse().getCourseName();
-				    				String label = owner.getLabel();
-				    				if (label.startsWith(courseName)) {
-				    					label = label.substring(courseName.length());
+						    		event.addCourseName(course.getCourseName());
+				    				switch (owner.getOwnerType()) {
+				    				case ExamOwner.sOwnerTypeClass:
+				    					Class_ clazz = (Class_)owner.getOwnerObject();
+				    					if (clazz.getClassSuffix(course) == null) {
+				    						event.addExternalId(clazz.getClassLabel(course));
+				    					} else {
+				    						event.addExternalId(clazz.getClassSuffix(course));
+				    					}
+				    					break;
+				    				case ExamOwner.sOwnerTypeConfig:
+				    					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
+				    					event.addExternalId("[" + config.getName() + "]");
+				    					break;
+				    				case ExamOwner.sOwnerTypeCourse:
+				    					event.addExternalId(MESSAGES.colCourse());
+				    					break;
+				    				case ExamOwner.sOwnerTypeOffering:
+				    					event.addExternalId(MESSAGES.colOffering());
+				    					break;
 				    				}
-				    				event.addCourseName(course.getCourseName());
-				    				event.addExternalId(label.trim());
 			    				}
-							}
+			    			}
 							event.setEnrollment(enrl);
 				    	}
 					}
@@ -827,7 +883,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 					meeting.setEndSlot(m.getStopPeriod());
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-					meeting.setPast(m.getStartTime().before(now));
+					meeting.setPast(m.getStartTime().before(today));
 					if (!request.getEventFilter().hasOption("user") || meeting.isPast() || (event.getType() != EventType.Special && event.getType() != EventType.Course)) {
 						meeting.setCanEdit(false);
 						meeting.setCanApprove(false);
@@ -1243,6 +1299,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 				    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
 						    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 						    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
+						    		event.setRequiredAttendance(ce.isReqAttendance());
 									int enrl = 0;
 									for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 										enrl += owner.countStudents();
@@ -1285,7 +1342,7 @@ public class EventLookupBackend implements GwtRpcImplementation<EventLookupRpcRe
 							meeting.setEndSlot(m.getStopPeriod());
 							meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 							meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-							meeting.setPast(m.getStartTime().before(now));
+							meeting.setPast(m.getStartTime().before(today));
 							if (m.isApproved())
 								meeting.setApprovalDate(m.getApprovedDate());
 							if (m.getLocation() != null) {

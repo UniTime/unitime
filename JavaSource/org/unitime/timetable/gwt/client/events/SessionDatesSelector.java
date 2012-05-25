@@ -58,6 +58,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	AcademicSessionProvider iAcademicSession;
 	UniTimeWidget<AbsolutePanel> iPanel;
 	private int iSessionYear = 1900;
+	private boolean iCanSelectPast = false;
 	
 	public SessionDatesSelector(AcademicSessionProvider session) {
 		iAcademicSession = session;
@@ -82,6 +83,9 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		});
 	}
 	
+	public boolean isCanSelectPast() { return iCanSelectPast; }
+	public void setCanSelectPast(boolean canSelectPast) { iCanSelectPast = canSelectPast; }
+	
 	public void init(Long sessionId) {
 		if (sessionId == null) {
 			iPanel.setHint(MESSAGES.hintNoSession());
@@ -105,21 +109,22 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1; 
+		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1; 
 		for (SessionMonth month: months) {
-			iPanel.getWidget().add(new SingleMonth(month));
+			iPanel.getWidget().add(new SingleMonth(month, isCanSelectPast()));
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
 			if (end < 0) end = month.getFirst(SessionMonth.Flag.END);
 			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.EXAM_START);
 			if (firstHoliday < 0) firstHoliday = month.getFirst(SessionMonth.Flag.HOLIDAY);
 			if (firstBreak < 0) firstBreak = month.getFirst(SessionMonth.Flag.BREAK);
 			if (firstOutside < 0) firstOutside = month.getFirst(SessionMonth.Flag.DISABLED);
+			if (firstPast < 0) firstPast = month.getFirst(SessionMonth.Flag.PAST);
 			if (month.getYear() == Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date())) &&
 				month.getMonth() + 1 == Integer.parseInt(DateTimeFormat.getFormat("MM").format(new Date())))
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, today));
+		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, firstPast, today));
 	}
 	
 	public static class SessionMonth implements IsSerializable {
@@ -131,7 +136,8 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			HOLIDAY,
 			BREAK,
 			SELECTED,
-			DISABLED;
+			DISABLED,
+			PAST;
 			
 			public int flag() { return 1 << ordinal(); }
 		}
@@ -339,7 +345,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		private P[] iWeekDays = new P[7];
 		private List<P> iWeeks = new ArrayList<P>();
 		
-		public SingleMonth(SessionMonth month) {
+		public SingleMonth(SessionMonth month, boolean canSelectPast) {
 			iSessionMonth = month;
 			addStyleName("month");
 			add(new P(SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1), "label"));
@@ -419,6 +425,11 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 					d.setValue(true);
 				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DISABLED))
 					d.setEnabled(false);
+				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.PAST)) {
+					d.addStyleName("past");
+					if (!canSelectPast) d.setEnabled(false);
+				}
+					
 			}
 		}
 		
@@ -437,7 +448,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public static class Legend extends AbsolutePanel {
-		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int today) {
+		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int firstPast, int today) {
 			addStyleName("legend");
 			P box = new P(null, "box");
 			add(box);
@@ -456,6 +467,13 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(firstOutside + 1), "cell", "disabled"));
 				line.add(new P(MESSAGES.legendNotInSession(), "title"));
+				box.add(line);
+			}
+			
+			if (firstPast >= 0) {
+				line = new P(null, "row");
+				line.add(new P(String.valueOf(firstPast + 1), "cell", "disabled", "past"));
+				line.add(new P(MESSAGES.legendPast(), "title"));
 				box.add(line);
 			}
 			

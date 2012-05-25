@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.command.server;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.User;
@@ -27,9 +28,11 @@ import org.unitime.timetable.util.Constants;
 
 public class GwtRpcHelper {
 	private HttpSession iHttpSession;
+	private String iURL;
 	
-	protected GwtRpcHelper(HttpSession httpSession) {
-		iHttpSession = httpSession;
+	protected GwtRpcHelper(HttpServletRequest httpRequest) {
+		iHttpSession = httpRequest.getSession();
+		iURL = httpRequest.getScheme() + "://" +httpRequest.getServerName() + ":" + httpRequest.getServerPort() + httpRequest.getContextPath();
 	}
 	
 	public User getUser() {
@@ -48,5 +51,12 @@ public class GwtRpcHelper {
 	public String getHttpSessionId() {
 		return iHttpSession.getId();
 	}
-
+	
+	public HttpSession getHttpSession() {
+		return iHttpSession;
+	}
+	
+	public String getRequestUrl() {
+		return iURL;
+	}
 }

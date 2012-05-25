@@ -38,6 +38,8 @@ public class DateSelectorBackend implements GwtRpcImplementation<SessionDatesSel
 		
 		GwtRpcResponseList<SessionDatesSelector.SessionMonth> response = new GwtRpcResponseList<SessionDatesSelector.SessionMonth>();
 		
+		Date now = new Date();
+		
 		Calendar calendar = Calendar.getInstance();
 		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
@@ -68,6 +70,8 @@ public class DateSelectorBackend implements GwtRpcImplementation<SessionDatesSel
 
 				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)
 					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.DISABLED);
+				else if (calendar.getTime().before(now))
+					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.PAST);
 				
 				calendar.add(Calendar.DAY_OF_YEAR, 1);
 			}

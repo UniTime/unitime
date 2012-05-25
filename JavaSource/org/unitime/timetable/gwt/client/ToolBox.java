@@ -189,4 +189,7 @@ public class ToolBox {
 		style["max-height"] = value;
 	}-*/;
 
+	public native static void setMaxWidth(Style style, String value) /*-{
+		style["max-width"] = value;
+	}-*/;
 }

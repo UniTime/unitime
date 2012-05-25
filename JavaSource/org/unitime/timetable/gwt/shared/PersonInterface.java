@@ -59,6 +59,17 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     			(iMName == null || iMName.isEmpty() ? "" : " " + iMName)).trim();
     }
     
+    public String getShortName() {
+    	String name = "";
+    	if (iFName != null && !iFName.isEmpty())
+    		name += iFName.substring(0, 1) + " ";
+    	if (iMName != null && !iMName.isEmpty())
+    		name += iMName.substring(0, 1) + " ";
+    	if (iLName != null && !iLName.isEmpty())
+    		name += iLName;
+    	return name.trim();
+    }
+    
     public String getPhone() { return iPhone; }
     public void setPhone(String phone) { iPhone = phone; }
     
