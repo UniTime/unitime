@@ -141,7 +141,7 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 		if (getWidget() instanceof UniTimeTextBox) {
 			return ((UniTimeTextBox)getWidget()).isReadOnly();
 		} else {
-			return getWidget().isVisible();
+			return iReadOnly != null && iReadOnly.isVisible();
 		}
 	}
 	

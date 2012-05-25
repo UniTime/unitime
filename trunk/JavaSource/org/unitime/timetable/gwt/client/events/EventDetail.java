@@ -75,6 +75,26 @@ public class EventDetail extends Composite {
 		iForm = new SimpleForm();
 		
 		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				edit();
+			}
+		});
+		iHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				EventInterface prev = getPrevious(getEvent().getId());
+				if (prev != null) previous(prev);
+			}
+		});
+		iHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				EventInterface next = getNext(getEvent().getId());
+				if (next != null) next(next);
+			}
+		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -91,7 +111,7 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
-		iMeetings = new MeetingTable();
+		iMeetings = new MeetingTable(false);
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -147,7 +167,16 @@ public class EventDetail extends Composite {
 	
 	protected void onShow() {
 	}
-
+	
+	protected void edit() {
+	}
+	
+	protected EventInterface getNext(Long eventId) { return null; }
+	protected void next(EventInterface event) {}
+	
+	protected EventInterface getPrevious(Long eventId) { return null; }
+	protected void previous(EventInterface previous) {}
+	
 	public void setEvent(EventInterface event) {
 		iEvent = event;
 		
@@ -155,6 +184,9 @@ public class EventDetail extends Composite {
 
 		iHeader.clearMessage();
 		iHeader.setHeaderTitle(iEvent.getName() + " (" + iEvent.getType().getName() + ")");
+		iHeader.setEnabled("edit", iEvent.isCanEdit());
+		iHeader.setEnabled("previous", getPrevious(iEvent.getId()) != null);
+		iHeader.setEnabled("next", getNext(iEvent.getId()) != null);
 		iForm.addHeaderRow(iHeader);
 		
 		iForm.addRow(MESSAGES.propEventType(), new Label(iEvent.getType().getName()));
@@ -325,6 +357,7 @@ public class EventDetail extends Composite {
 				@Override
 				public void onSuccess(GwtRpcResponseList<Enrollment> result) {
 					if (eventId.equals(iEvent.getId())) {
+						if (result == null) result = new GwtRpcResponseList<Enrollment>();
 						iEnrollmentHeader.clearMessage();
 						iEnrollments.clear();
 						iEnrollments.populate(result, false);
@@ -343,5 +376,7 @@ public class EventDetail extends Composite {
 
 		iForm.addNotPrintableBottomRow(iFooter);
 	}
+	
+	public EventInterface getEvent() { return iEvent; }
 
 }

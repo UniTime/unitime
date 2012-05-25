@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Date;
 import java.util.List;
 
 import org.unitime.commons.User;
@@ -48,6 +49,7 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 		
 		response.setCanAddEvent(canAddEvent(session, helper.getUser()));
 		response.setCanAddCourseEvent(canAddCourseEvent(session, helper.getUser()));
+		response.setCanOverbook(canOverbook(session, helper.getUser()));
 		
 		setupSponsoringOrganizations(session,  response);
 		
@@ -60,8 +62,12 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 		return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.STUDENT_ADVISOR.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
 	}
 	
+	public boolean canOverbook(Session session, User user) {
+		return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
+	}
+
 	public boolean canAddEvent(Session session, User user) {
-		return user != null;
+		return user != null && !session.getEventEndDate().before(new Date());
 	}
 
 	public boolean canAddCourseEvent(Session session, User user) {

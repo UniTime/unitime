@@ -54,11 +54,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private List<String> iCourseNames = null;
 	private String iInstruction = null;
 	private Integer iInstructionType = null, iMaxCapacity = null, iEnrollment;
+	private boolean iReqAttendance = false;
 	private List<String> iExternalIds = null;
 	private String iSectionNumber = null;
-	private boolean iCanView = false;
+	private boolean iCanView = false, iCanEdit = false;
 	private List<RelatedObjectInterface> iRelatedObjects = null;
 	private Set<EventInterface> iConflicts;
+	private String iMessage = null;
 	
 	public static enum ResourceType implements IsSerializable {
 		ROOM("room", "Room Timetable", true),
@@ -125,6 +127,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean hasMaxCapacity() { return iMaxCapacity != null; }
 	public Integer getMaxCapacity() { return iMaxCapacity; }
 	public void setMaxCapacity(Integer maxCapacity) { iMaxCapacity = maxCapacity; }
+	
+	public boolean hasRequiredAttendance() { return iReqAttendance; }
+	public void setRequiredAttendance(boolean reqAttendance) { iReqAttendance = reqAttendance; }
 
 	public boolean hasEnrollment() { return iEnrollment != null; }
 	public Integer getEnrollment() { return iEnrollment; }
@@ -207,6 +212,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean isCanView() { return iCanView; }
 	public void setCanView(boolean canView) { iCanView = canView; }
 	
+	public boolean isCanEdit() { return iCanEdit; }
+	public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+
 	public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
 	public void addConflict(EventInterface conflict) {
 		if (iConflicts == null) iConflicts = new TreeSet<EventInterface>();
@@ -216,6 +224,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public void setConflicts(Set<EventInterface> conflicts) {
 		iConflicts = conflicts;
 	}
+	
+	public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+	public String getMessage() { return iMessage; }
+	public void setMessage(String message) { iMessage = message; }
 	
 	public int hashCode() { return getId().hashCode(); }
 	public boolean equals(Object o) {
@@ -463,10 +475,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		@SuppressWarnings("deprecation")
 		@Override
 		public String toString() {
-			return (getId() == null ?
-					(getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDay() + " ") + 
-					getAllocatedTime(true) + (getLocation() == null ? "" : " " + getLocationName()) :
-					getId().toString());
+			return (getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDay() + " ") +
+					getAllocatedTime(true) + (getLocation() == null ? "" : " " + getLocationName());
 		}
 	}
 	
@@ -494,6 +504,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			cmp = getType().compareTo(((MeetingConglictInterface)conflict).getType());
 			if (cmp != 0) return cmp;
 			return getId().compareTo(conflict.getId());
+		}
+		
+		public String toString() {
+			return getName() + " " + super.toString();
 		}
 		
 	}
@@ -670,6 +684,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : ""); 
     	}
     	
+    	public String getShortName() {
+            String name = "";
+            if (hasFirstName())
+            	name += getFirstName().substring(0, 1) + " ";
+            if (hasMiddleName())
+            	name += getMiddleName().substring(0, 1) + " ";
+            if (hasLastName())
+            	name += getLastName();
+            return name.trim();
+    	}
+    	
     	public boolean equals(Object o) {
     		if (o == null || !(o instanceof ContactInterface)) return false;
     		if (getExternalId() != null)
@@ -743,7 +768,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 
 		@Override
 		public int compareTo(NoteInterface note) {
-			return getDate().compareTo(note.getDate());
+			return getDate() == null ? 1 : note.getDate() == null ? -1 : getDate().compareTo(note.getDate());
 		}
     }
     
@@ -1193,7 +1218,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanAddEvent = false, iCanAddCourseEvent = false;
+		private boolean iCanLookupPeople = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanOverbook = false;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 	
@@ -1207,6 +1232,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 
 		public boolean isCanAddCourseEvent() { return iCanAddCourseEvent; }
 		public void setCanAddCourseEvent(boolean canAddEvent) { iCanAddCourseEvent = canAddEvent; }
+		
+		public boolean isCanOverbook() { return iCanOverbook; }
+		public void setCanOverbook(boolean canOverbook) { iCanOverbook = canOverbook; }
 
 		public boolean hasSponsoringOrganizations() { return iSponsoringOrganizations != null && !iSponsoringOrganizations.isEmpty(); }
 		public List<SponsoringOrganizationInterface> getSponsoringOrganizations() { return iSponsoringOrganizations; }
@@ -1320,6 +1348,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				loc2overlaps.put(locationId, overlaps);
 			}
 			overlaps.add(conflict);
+		}
+		public boolean hasOverlaps() {
+			return iOverlaps != null && !iOverlaps.isEmpty();
 		}
 		
 		public boolean isAvailable(Integer date, Long locationId) {
@@ -1483,6 +1514,27 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public static EventEnrollmentsRpcRequest getEnrollmentsForRelatedObjects(List<RelatedObjectInterface> objects, List<MeetingInterface> meetings) {
 			return getEnrollmentsForRelatedObjects(objects, meetings, null);
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.SaveEventBackend")
+	public static class SaveEventRpcRequest implements GwtRpcRequest<EventInterface> {
+		EventInterface iEvent;
+		private Long iSessionId;
+		
+		public SaveEventRpcRequest() {}
+		
+		public void setEvent(EventInterface event) { iEvent = event; }
+		public EventInterface getEvent() { return iEvent; }
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
+		public static SaveEventRpcRequest saveEvent(EventInterface event, Long sessionId) {
+			SaveEventRpcRequest request = new SaveEventRpcRequest();
+			request.setEvent(event);
+			request.setSessionId(sessionId);
+			return request;
 		}
 	}
 }

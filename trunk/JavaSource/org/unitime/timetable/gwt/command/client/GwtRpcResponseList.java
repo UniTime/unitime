@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.command.client;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -27,5 +28,6 @@ public class GwtRpcResponseList<T extends IsSerializable> extends ArrayList<T> i
 	private static final long serialVersionUID = 1L;
 	
 	public GwtRpcResponseList() { super(); }
+	public GwtRpcResponseList(Collection<T> col) { super(col); }
 
 }

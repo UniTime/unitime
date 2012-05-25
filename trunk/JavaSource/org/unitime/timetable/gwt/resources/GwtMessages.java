@@ -56,6 +56,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Select All")
 	String opSelectAll();
 
+	@DefaultMessage("Select All Conflicting")
+	String opSelectAllConflicting();
+
 	@DefaultMessage("Clear Selection")
 	String opClearSelection();
 	
@@ -134,6 +137,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Course")
 	String colCourse();
 	
+	@DefaultMessage("Offering")
+	String colOffering();
+
+	@DefaultMessage("Configuration")
+	String colConfig();
+
 	@DefaultMessage("Section")
 	String colSection();
 	
@@ -167,15 +176,27 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Subject")
 	String colSubject();
 	
+	@DefaultMessage("Subjects")
+	String colSubjects();
+
 	@DefaultMessage("Course Number")
 	String colCourseNumber();
+	
+	@DefaultMessage("Courses")
+	String colCourses();
 	
 	@DefaultMessage("Config / Subpart")
 	String colConfigOrSubpart();
 	
+	@DefaultMessage("Configs / Subparts")
+	String colConfigsOrSubparts();
+	
 	@DefaultMessage("Class Number")
 	String colClassNumber();
 	
+	@DefaultMessage("Classess")
+	String colClasses();
+
 	@DefaultMessage("User")
 	String colUser();
 	
@@ -341,6 +362,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();
 	
+	@DefaultMessage("<u>S</u>ave")
+	String buttonSave();
+
+	@DefaultMessage("<u>E</u>dit")
+	String buttonEdit();
+
 	@DefaultMessage("<u>L</u>ookup")
 	String buttonLookupMainContact();
 	
@@ -392,6 +419,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
+	@DefaultMessage("Saving {0}...")
+	String waitSave(String name);
+
 	@DefaultMessage("Loading data for {0} ...")
 	String waitLoadingData(String session);
 	
@@ -407,15 +437,45 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
-	@DefaultMessage("No events found for {0} in {1}.")
-	String failedNoEvents(String name, String session);
+	@DefaultMessage("Failed to save {0}: {1}")
+	String failedSave(String name, String reason);
+	
+	@DefaultMessage("Failed to load academic sessions: {0}")
+	String failedLoadSessions(String reason);
+
+	@DefaultMessage("No events matching the given criteria were found.")
+	String failedNoEvents();
 	
 	@DefaultMessage("Failed to load enrollments: {0}.")
 	String failedNoEnrollments(String message);
 	
+	@DefaultMessage("Validation failed: {0}")
+	String failedValidation(String reason);
+	
+	@DefaultMessage("Room availability failed: {0}")
+	String failedRoomAvailability(String reason);
+
+	@DefaultMessage("Add meetings failed: {0}")
+	String failedAddMeetings(String reason);
+
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
+	@DefaultMessage("No academic session selected.")
+	String warnNoSession();
+	
+	@DefaultMessage("No resource type selected.")
+	String warnNoResourceType();
+
+	@DefaultMessage("Waiting for the academic session {0} to load...")
+	String warnNoEventProperties(String session);
+	
+	@DefaultMessage("Waiting for the room filter to load...")
+	String warnRoomFilterNotInitialized();
+	
+	@DefaultMessage("Waiting for the event filter to load...")
+	String warnEventFilterNotInitialized();
+
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();
 	
@@ -455,6 +515,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Add Event")
 	String pageAddEvent();
 	
+	@DefaultMessage("Edit Event")
+	String pageEditEvent();
+
 	@DefaultMessage("Event Detail")
 	String pageEventDetail();
 	
@@ -497,6 +560,27 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Today")
 	String legendToday();
 	
+	@DefaultMessage("In The Past")
+	String legendPast();
+
 	@DefaultMessage("<span title=\"Conflicting event\" style=\"font-style:normal;\">&#9785;</span>")
 	String signConflict();
+	
+	@DefaultMessage("Event name is required.")
+	String reqEventName();
+	
+	@DefaultMessage("Main contact last name is required.")
+	String reqMainContactLastName();
+
+	@DefaultMessage("Main contact email is required.")
+	String reqMainContactEmail();
+
+	@DefaultMessage("No meetings were defined.")
+	String reqMeetings();
+
+	@DefaultMessage("One or more meetings is overlapping with an existing event.")
+	String reqNoOverlaps();
+	
+	@DefaultMessage("an event")
+	String anEvent();
 }

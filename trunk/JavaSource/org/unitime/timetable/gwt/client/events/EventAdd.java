@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -40,6 +42,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
@@ -47,13 +50,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcR
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface.RelatedObjectType;
+import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface.NoteType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
@@ -85,10 +90,14 @@ public class EventAdd extends Composite {
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
-	private TextBox iName, iLimit;
-	private ListBox iSponsors, iEventType;
+	private String iMainExternalId = null;
+	private UniTimeWidget<TextBox> iName;
+	private NumberBox iLimit;
+	private ListBox iSponsors;
+	private UniTimeWidget<ListBox> iEventType;
 	private TextArea iNotes, iEmails;
-	private TextBox iMainFName, iMainMName, iMainLName, iMainPhone, iMainEmail;
+	private TextBox iMainFName, iMainMName, iMainPhone;
+	private UniTimeWidget<TextBox> iMainLName, iMainEmail;
 	private CheckBox iReqAttendance;
 	
 	private SimpleForm iCoursesForm;
@@ -110,9 +119,13 @@ public class EventAdd extends Composite {
 	private UniTimeHeaderPanel iEnrollmentHeader;
 	private int iEnrollmentRow;
 	private Button iLookupButton, iAdditionalLookupButton;
+	
+	private EventInterface iEvent, iSavedEvent;
+	private EventPropertiesProvider iProperties;
 			
-	public EventAdd(AcademicSessionProvider session) {
+	public EventAdd(AcademicSessionProvider session, EventPropertiesProvider properties) {
 		iSession = session;
+		iProperties = properties;
 		iForm = new SimpleForm();
 		
 		iLookup = new Lookup();
@@ -120,11 +133,12 @@ public class EventAdd extends Composite {
 			@Override
 			public void onValueChange(ValueChangeEvent<PersonInterface> event) {
 				if (event.getValue() != null) {
+					iMainExternalId = event.getValue().getId();
 					iMainFName.setText(event.getValue().getFirstName() == null ? "" : event.getValue().getFirstName());
 					iMainMName.setText(event.getValue().getMiddleName() == null ? "" : event.getValue().getMiddleName());
-					iMainLName.setText(event.getValue().getLastName() == null ? "" : event.getValue().getLastName());
+					iMainLName.getWidget().setText(event.getValue().getLastName() == null ? "" : event.getValue().getLastName());
 					iMainPhone.setText(event.getValue().getPhone() == null ? "" : event.getValue().getPhone());
-					iMainEmail.setText(event.getValue().getEmail() == null ? "" : event.getValue().getEmail());
+					iMainEmail.getWidget().setText(event.getValue().getEmail() == null ? "" : event.getValue().getEmail());
 				}
 			}
 		});
@@ -171,6 +185,47 @@ public class EventAdd extends Composite {
 		
 		
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectEvent());
+		iHeader.addButton("save", MESSAGES.buttonSave(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iSavedEvent = null;
+				validate(new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()));
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							final EventInterface event = getEvent();
+							LoadingWidget.getInstance().show(MESSAGES.waitSave(event.getName()));
+							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId()), new AsyncCallback<EventInterface>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+									LoadingWidget.getInstance().hide();
+									iHeader.setErrorMessage(MESSAGES.failedSave(event.getName(), caught.getMessage()));
+									UniTimeNotifications.error(MESSAGES.failedSave(event.getName(), caught.getMessage()));
+								}
+
+								@Override
+								public void onSuccess(EventInterface result) {
+									LoadingWidget.getInstance().hide();
+									iSavedEvent = result;
+									if (iSavedEvent.hasMessage()) {
+										if (iSavedEvent.getMessage().startsWith("WARN:"))
+											UniTimeNotifications.info(iSavedEvent.getMessage().substring(5));
+										else
+											UniTimeNotifications.info(iSavedEvent.getMessage());
+									}
+									hide();
+								}
+							});
+						}
+					}
+				});
+			}
+		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -180,32 +235,33 @@ public class EventAdd extends Composite {
 		
 		iForm.addHeaderRow(iHeader);
 		
-		iName = new TextBox();
-		iName.setStyleName("unitime-TextBox");
-		iName.setMaxLength(100);
-		iName.setWidth("480px");
+		iName = new UniTimeWidget<TextBox>(new TextBox());
+		iName.getWidget().setStyleName("unitime-TextBox");
+		iName.getWidget().setMaxLength(100);
+		iName.getWidget().setWidth("480px");
+		iName.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iName.clearHint();
+				iHeader.clearMessage();
+			}
+		});
 		iForm.addRow(MESSAGES.propEventName(), iName);
 		
 		iSponsors = new ListBox();
 		iForm.addRow(MESSAGES.propSponsor(), iSponsors);
 		
-		iEventType = new ListBox();
-		iEventType.addItem(EventInterface.EventType.Special.getName());
+		iEventType = new UniTimeWidget<ListBox>(new ListBox());
+		iEventType.getWidget().addItem(EventInterface.EventType.Special.getName());
 		iForm.addRow(MESSAGES.propEventType(), iEventType);
 		
-		iLimit = new TextBox();
+		iLimit = new NumberBox();
 		iLimit.setStyleName("unitime-TextBox");
 		iLimit.setMaxLength(10);
 		iLimit.setWidth("50px");
 		iForm.addRow(MESSAGES.propAttendance(), iLimit);
 
-		iCourses = new CourseRelatedObjectsTable(iSession) {
-			@Override
-			public void setErrorMessage(String message) {
-				iHeader.setErrorMessage(message);
-			}
-		};
-		
+		iCourses = new CourseRelatedObjectsTable(iSession);
 		iCourses.addValueChangeHandler(new ValueChangeHandler<List<RelatedObjectInterface>>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<RelatedObjectInterface>> event) {
@@ -227,7 +283,7 @@ public class EventAdd extends Composite {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (!iLookupButton.isVisible()) return;
-					iLookup.setQuery((iMainFName.getText() + (iMainMName.getText().isEmpty() ? "" : " " + iMainMName.getText()) + " " + iMainLName.getText()).trim()); 
+					iLookup.setQuery((iMainFName.getText() + (iMainMName.getText().isEmpty() ? "" : " " + iMainMName.getText()) + " " + iMainLName.getWidget().getText()).trim()); 
 					iLookup.center();
 				}
 		});
@@ -259,16 +315,30 @@ public class EventAdd extends Composite {
 		iMainMName.setWidth("285px");
 		mainContact.addRow(MESSAGES.propMiddleName(), iMainMName);
 		
-		iMainLName = new TextBox();
-		iMainLName.setStyleName("unitime-TextBox");
-		iMainLName.setMaxLength(100);
-		iMainLName.setWidth("285px");
+		iMainLName = new UniTimeWidget<TextBox>(new TextBox());
+		iMainLName.getWidget().setStyleName("unitime-TextBox");
+		iMainLName.getWidget().setMaxLength(100);
+		iMainLName.getWidget().setWidth("285px");
+		iMainLName.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iMainLName.clearHint();
+				iHeader.clearMessage();
+			}
+		});
 		mainContact.addRow(MESSAGES.propLastName(), iMainLName);
 		
-		iMainEmail = new TextBox();
-		iMainEmail.setStyleName("unitime-TextBox");
-		iMainEmail.setMaxLength(200);
-		iMainEmail.setWidth("285px");
+		iMainEmail = new UniTimeWidget<TextBox>(new TextBox());
+		iMainEmail.getWidget().setStyleName("unitime-TextBox");
+		iMainEmail.getWidget().setMaxLength(200);
+		iMainEmail.getWidget().setWidth("285px");
+		iMainEmail.getWidget().addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				iMainEmail.clearHint();
+				iHeader.clearMessage();
+			}
+		});
 		mainContact.addRow(MESSAGES.propEmail(), iMainEmail);
 		
 		iMainPhone = new TextBox();
@@ -314,11 +384,14 @@ public class EventAdd extends Composite {
 		iCoursesForm.addRow(iReqAttendance);
 		iForm.addRow(iCoursesForm);
 		
-		iEventType.addChangeHandler(new ChangeHandler() {
+		iEventType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
 				int row = iForm.getRow(MESSAGES.propAttendance());
-				if (iEventType.getSelectedIndex() == 1) {
+				if (iEventType.isReadOnly()) {
+					iCoursesForm.setVisible(false);
+					iForm.getRowFormatter().setVisible(row, false);
+				} else if (iEventType.getWidget().getSelectedIndex() == 1) {
 					iCoursesForm.setVisible(true);
 					iForm.getRowFormatter().setVisible(row, false);
 				} else {
@@ -332,7 +405,7 @@ public class EventAdd extends Composite {
 		iEventAddMeetings = new AddMeetingsDialog(session, new AsyncCallback<List<MeetingInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage(caught.getMessage());
+				UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()));
 			}
 
 			@Override
@@ -342,7 +415,7 @@ public class EventAdd extends Composite {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iHeader.setErrorMessage(caught.getMessage());
+						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
 					}
 
 					@Override
@@ -364,7 +437,7 @@ public class EventAdd extends Composite {
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new MeetingTable();
+		iMeetings = new MeetingTable(true);
 		iMeetings.setAddMeetingsCommand(new Command() {
 			@Override
 			public void execute() {
@@ -396,6 +469,70 @@ public class EventAdd extends Composite {
 		initWidget(iForm);
 	}
 	
+	public EventInterface getEvent() {
+		iEvent.setName(iName.getWidget().getText());
+		if (!iEventType.isReadOnly()) {
+			iEvent.setType(iEventType.getWidget().getSelectedIndex() == 0 ? EventType.Special : EventType.Course);
+			iEvent.setMaxCapacity(iLimit.toInteger());
+		}
+		if (iEvent.getContact() == null) { iEvent.setContact(new ContactInterface()); }
+		iEvent.getContact().setExternalId(iMainExternalId);
+		iEvent.getContact().setFirstName(iMainFName.getText());
+		iEvent.getContact().setMiddleName(iMainMName.getText());
+		iEvent.getContact().setLastName(iMainLName.getWidget().getText());
+		iEvent.getContact().setEmail(iMainEmail.getWidget().getText());
+		iEvent.getContact().setPhone(iMainPhone.getText());
+		
+		if (iEvent.hasAdditionalContacts()) iEvent.getAdditionalContacts().clear();
+		for (ContactInterface contact: iContacts.getData())
+			iEvent.addAdditionalContact(contact);
+		
+		iEvent.setEmail(iEmails.getText());
+		
+		if (iEvent.hasNotes() && iEvent.getNotes().last().getDate() == null)
+			iEvent.getNotes().remove(iEvent.getNotes().last());
+		if (!iNotes.getText().isEmpty()) {
+			NoteInterface note = new NoteInterface();
+			note.setNote(iNotes.getText());
+			note.setType(iEvent.getId() == null ? NoteType.Create : NoteType.AddMeetings);
+			iEvent.addNote(note);
+		}
+		
+		if (iEvent.hasMeetings())
+			iEvent.getMeetings().clear();
+		for (MeetingInterface meeting: iMeetings.getValue())
+			iEvent.addMeeting(meeting);
+		
+		if (iSponsors.getSelectedIndex() > 0) {
+			Long sponsorId = Long.valueOf(iSponsors.getValue(iSponsors.getSelectedIndex()));
+			SponsoringOrganizationInterface sponsor = null;
+			List<SponsoringOrganizationInterface> sponsors = (getProperties() == null ? null : getProperties().getSponsoringOrganizations());
+			for (SponsoringOrganizationInterface s: sponsors)
+				if (s.getUniqueId().equals(sponsorId)) { sponsor = s; break; }
+			iEvent.setSponsor(sponsor);
+		} else {
+			iEvent.setSponsor(null);
+		}
+		
+		if (iEvent.getType() == EventType.Course) {
+			if (iEvent.hasRelatedObjects())
+				iEvent.getRelatedObjects().clear();
+			for (RelatedObjectInterface related: iCourses.getValue())
+				iEvent.addRelatedObject(related);
+			iEvent.setRequiredAttendance(iReqAttendance.getValue());
+		} else if (iEvent.getType() == EventType.Special) {
+			if (iEvent.hasRelatedObjects())
+				iEvent.getRelatedObjects().clear();
+			iEvent.setRequiredAttendance(false);
+		}
+		
+		return iEvent;
+	}
+	
+	public EventInterface getSavedEvent() {
+		return iSavedEvent;
+	}
+	
 	protected void addMeetings(List<MeetingInterface> meetings) {
 		if (meetings != null && !meetings.isEmpty())
 			for (MeetingInterface meeting: meetings)
@@ -406,7 +543,7 @@ public class EventAdd extends Composite {
 	
 	private int iLastScrollTop, iLastScrollLeft;
 	public void show() {
-		UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddEvent());
+		UniTimePageLabel.getInstance().setPageName(iEvent.getId() == null ? MESSAGES.pageAddEvent() : MESSAGES.pageEditEvent());
 		setVisible(true);
 		iLastScrollLeft = Window.getScrollLeft();
 		iLastScrollTop = Window.getScrollTop();
@@ -437,41 +574,69 @@ public class EventAdd extends Composite {
 		}
 	}
 	
-	public void reset(String roomFilterValue, List<SelectionInterface> selection, ContactInterface mainContact, boolean canLookup, boolean canAddCourseEvent) {
+	public void setEvent(EventInterface event) {
+		iEvent = (event == null ? new EventInterface() : event);
+		iSavedEvent = null;
 		iHeader.clearMessage();
-		iName.setText("");
-		iSponsors.setSelectedIndex(0);
-		iEventType.setSelectedIndex(0);
-		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType);
-		iLimit.setText("");
-		iEventAddMeetings.reset(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue);
-		iNotes.setText("");
-		iEmails.setText("");
-		iCourses.setValue(null);
-		iLookupButton.setVisible(canLookup);
-		iAdditionalLookupButton.setVisible(canLookup);
-		if (canAddCourseEvent) {
-			if (iEventType.getItemCount() == 1)
-				iEventType.addItem(EventInterface.EventType.Course.getName());
+		iName.getWidget().setText(iEvent.getName() == null ? "" : iEvent.getName());
+		if (iEvent.hasSponsor()) {
+			for (int i = 1; i < iSponsors.getItemCount(); i++) {
+				if (iSponsors.getValue(i).equals(iEvent.getSponsor().getUniqueId().toString())) {
+					iSponsors.setSelectedIndex(i); break;
+				}
+			}
 		} else {
-			if (iEventType.getItemCount() == 2)
-				iEventType.removeItem(1);
+			iSponsors.setSelectedIndex(0);
 		}
 		
-		iMeetings.clearTable(1);
-		if (selection != null && !selection.isEmpty()) {
+		boolean canAddCourseEvent = (getProperties() == null ? false : getProperties().isCanAddCourseEvent());
+		if (canAddCourseEvent) {
+			if (iEventType.getWidget().getItemCount() == 1)
+				iEventType.getWidget().addItem(EventInterface.EventType.Course.getName());
+		} else {
+			if (iEventType.getWidget().getItemCount() == 2)
+				iEventType.getWidget().removeItem(1);
+		}
+		
+		if (iEvent.getType() == null) {
+			iEventType.getWidget().setSelectedIndex(0);
+			iEventType.setReadOnly(false);
+		} else {
+			iEventType.setText(iEvent.getType().getName());
+			iEventType.setReadOnly(true);
+		}
+
+		iLimit.setValue(iEvent.hasMaxCapacity() ? iEvent.getMaxCapacity() : null);
+		iNotes.setText("");
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAdditionalInformation()), iEvent.getId() == null);
+		iEmails.setText(iEvent.hasEmail() ? iEvent.getEmail() : "");
+		if (iEvent.getType() == EventType.Course) {
+			iCourses.setValue(iEvent.getRelatedObjects());
+			iReqAttendance.setValue(iEvent.hasRequiredAttendance());
+		} else {
+			iCourses.setValue(null);
+			iReqAttendance.setValue(false);
+		}
+		
+		if (iEvent.hasMeetings()) {
+			iMeetings.setValue(new ArrayList<MeetingInterface>(iEvent.getMeetings()));
+		} else {
+			iMeetings.setValue(null);
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-			for (SelectionInterface s: selection) {
-				for (Integer day: s.getDays()) {
-					for (ResourceInterface room: s.getLocations()) {
-						MeetingInterface meeting = new MeetingInterface();
-						meeting.setStartSlot(s.getStartSlot());
-						meeting.setEndSlot(s.getStartSlot() + s.getLength());
-						meeting.setStartOffset(0);
-						meeting.setEndOffset(0);
-						meeting.setDayOfYear(day);
-						meeting.setLocation(room);
-						meetings.add(meeting);
+			List<SelectionInterface> selection = (iProperties == null ? null : iProperties.getSelection());
+			if (selection != null && !selection.isEmpty()) {
+				for (SelectionInterface s: selection) {
+					for (Integer day: s.getDays()) {
+						for (ResourceInterface room: s.getLocations()) {
+							MeetingInterface meeting = new MeetingInterface();
+							meeting.setStartSlot(s.getStartSlot());
+							meeting.setEndSlot(s.getStartSlot() + s.getLength());
+							meeting.setStartOffset(0);
+							meeting.setEndOffset(0);
+							meeting.setDayOfYear(day);
+							meeting.setLocation(room);
+							meetings.add(meeting);
+						}
 					}
 				}
 			}
@@ -481,31 +646,79 @@ public class EventAdd extends Composite {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iHeader.setErrorMessage(caught.getMessage());
+						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
 					}
 
 					@Override
 					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 						LoadingWidget.getInstance().hide();
-						addMeetings(result.getMeetings());
+						iMeetings.setValue(result.getMeetings());
 					}
 				});
 			}
 		}
 		
-		if (mainContact != null) {
-			iMainFName.setText(mainContact.getFirstName() == null ? "" : mainContact.getFirstName());
-			iMainMName.setText(mainContact.getMiddleName() == null ? "" : mainContact.getMiddleName());
-			iMainLName.setText(mainContact.getLastName() == null ? "" : mainContact.getLastName());
-			iMainPhone.setText(mainContact.getPhone() == null ? "" : mainContact.getPhone());
-			iMainEmail.setText(mainContact.getEmail() == null ? "" : mainContact.getEmail());
+		if (iEvent.hasContact()) {
+			iMainExternalId = iEvent.getContact().getExternalId();
+			iMainFName.setText(iEvent.getContact().hasFirstName() ? iEvent.getContact().getFirstName() : "");
+			iMainMName.setText(iEvent.getContact().hasMiddleName() ? iEvent.getContact().getMiddleName() : "");
+			iMainLName.getWidget().setText(iEvent.getContact().hasLastName() ? iEvent.getContact().getLastName() : "");
+			iMainPhone.setText(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "");
+			iMainEmail.getWidget().setText(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "");
 		} else {
-			iMainFName.setText("");
-			iMainMName.setText("");
-			iMainLName.setText("");
-			iMainPhone.setText("");
-			iMainEmail.setText("");
+			ContactInterface mainContact = (getProperties() == null ? null : getProperties().getMainContact());
+			if (mainContact != null) {
+				iMainExternalId = mainContact.getExternalId();
+				iMainFName.setText(mainContact.getFirstName() == null ? "" : mainContact.getFirstName());
+				iMainMName.setText(mainContact.getMiddleName() == null ? "" : mainContact.getMiddleName());
+				iMainLName.getWidget().setText(mainContact.getLastName() == null ? "" : mainContact.getLastName());
+				iMainPhone.setText(mainContact.getPhone() == null ? "" : mainContact.getPhone());
+				iMainEmail.getWidget().setText(mainContact.getEmail() == null ? "" : mainContact.getEmail());
+			} else {
+				iMainExternalId = null;
+				iMainFName.setText("");
+				iMainMName.setText("");
+				iMainLName.getWidget().setText("");
+				iMainPhone.setText("");
+				iMainEmail.getWidget().setText("");
+			}
 		}
+		
+		if (iEvent.hasAdditionalContacts()) {
+			for (final ContactInterface contact: iEvent.getAdditionalContacts()) {
+				List<Widget> row = new ArrayList<Widget>();
+				row.add(new Label(contact.getName(), false));
+				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
+				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
+				Image remove = new Image(RESOURCES.delete());
+				remove.addStyleName("remove");
+				remove.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						for (int row = 1; row < iContacts.getRowCount(); row ++)
+							if (contact.equals(iContacts.getData(row))) {
+								iContacts.removeRow(row);
+								break;
+							}
+						iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
+					}
+				});
+				row.add(remove);
+				int rowNum = iContacts.addRow(contact, row);
+				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+					iContacts.getCellFormatter().addStyleName(rowNum, col, "main-contact");
+			}
+		}
+		
+		iCourses.setValue(iEvent.getType() == EventType.Course ? iEvent.getRelatedObjects() : null, true);
+
+		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupPeople());
+		iLookupButton.setVisible(canLookup);
+		iAdditionalLookupButton.setVisible(canLookup);
+		
+		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
+		
+		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType.getWidget());
 	}
 	
 	public static class CourseRelatedObjectLine {
@@ -552,7 +765,7 @@ public class EventAdd extends Composite {
 	private List<RelatedObjectInterface> iLastRelatedObjects = null;
 	private List<MeetingInterface> iLastMeetings = null;
 	public void checkEnrollments(final List<RelatedObjectInterface> relatedObjects, final List<MeetingInterface> meetings) {
-		if (relatedObjects == null || relatedObjects.isEmpty() || iEventType.getSelectedIndex() != 1) {
+		if (relatedObjects == null || relatedObjects.isEmpty() || iEventType.isReadOnly() || iEventType.getWidget().getSelectedIndex() != 1) {
 			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
 			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
 		} else {
@@ -561,12 +774,12 @@ public class EventAdd extends Composite {
 			if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) return;
 			iEnrollmentHeader.showLoading();
 			iLastMeetings = meetings; iLastRelatedObjects = relatedObjects;
-			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForRelatedObjects(relatedObjects, meetings), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForRelatedObjects(relatedObjects, meetings, iEvent.getId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
 						iEnrollments.clear();
-						iEnrollmentHeader.setErrorMessage(caught.getMessage());
+						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()));
 					}
 				}
 
@@ -582,7 +795,7 @@ public class EventAdd extends Composite {
 		}
 	}
 
-	public static abstract class CourseRelatedObjectsTable extends UniTimeTable<CourseRelatedObjectLine> implements HasValue<List<RelatedObjectInterface>> {
+	public static class CourseRelatedObjectsTable extends UniTimeTable<CourseRelatedObjectLine> implements HasValue<List<RelatedObjectInterface>> {
 		private Timer iChangeTimer = null;
 		private static int sChangeWaitTime = 500;
 		private AcademicSessionProvider iSession = null;
@@ -612,8 +825,6 @@ public class EventAdd extends Composite {
 			};
 		}
 		
-		public abstract void setErrorMessage(String message);
-		
 		private void addLine(final RelatedObjectInterface data) {
 			List<Widget> row = new ArrayList<Widget>();
 			
@@ -627,7 +838,7 @@ public class EventAdd extends Composite {
 
 				@Override
 				public void onFailure(Throwable caught) {
-					setErrorMessage(caught.getMessage());
+					UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colSubjects(), caught.getMessage()));
 				}
 
 				@Override
@@ -635,13 +846,13 @@ public class EventAdd extends Composite {
 					line.setSubjects(result);
 					Long selectedId = (data != null && data.hasSelection() ? data.getSelection()[0] : null);
 					int selectedIdx = -1;
-					for (int idx = 0; idx < result.size(); idx++) {
-						RelatedObjectLookupRpcResponse r = result.get(idx);
+					for (RelatedObjectLookupRpcResponse r: result) {
 						subject.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
-						if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
+						if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = subject.getItemCount() - 1;
 					}
 					if (selectedIdx >= 0)
 						subject.setSelectedIndex(selectedIdx);
+					DomEvent.fireNativeEvent(Document.get().createChangeEvent(), subject);
 				}
 			});
 			
@@ -666,7 +877,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage(caught.getMessage());
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colCourses(), caught.getMessage()));
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -678,20 +889,17 @@ public class EventAdd extends Composite {
 									course.addItem("-", "");
 								Long selectedId = (data != null && data.hasSelection() ? data.getSelection()[1] : null);
 								int selectedIdx = -1;
-								for (int idx = 0; idx < result.size(); idx++) {
-									RelatedObjectLookupRpcResponse r = result.get(idx);
+								for (RelatedObjectLookupRpcResponse r: result) {
 									course.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getUniqueId().toString());
-									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
+									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = course.getItemCount() - 1;
 								}
 								if (selectedIdx >= 0)
-									subject.setSelectedIndex(selectedIdx);
+									course.setSelectedIndex(selectedIdx);
 								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), course);
 							}
 						});
+						if (line.equals(getData(getRowCount() - 1))) addLine(null);
 					}
-					
-					if (line.equals(getData(getRowCount() - 1)))
-						addLine(null);
 
 					iChangeTimer.schedule(sChangeWaitTime);
 				}
@@ -718,7 +926,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage(caught.getMessage());
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colConfigsOrSubparts(), caught.getMessage()));
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -728,22 +936,33 @@ public class EventAdd extends Composite {
 								line.setSubparts(result);
 								Long selectedId = (data != null && data.hasSelection() && data.getSelection().length >= 3 ? data.getSelection()[2] : null);
 								int selectedIdx = -1;
-								RelatedObjectLookupRpcRequest.Level selectedLevel = RelatedObjectLookupRpcRequest.Level.SUBPART;
-								if (selectedId != null) {
-									if (data.getType() == RelatedObjectType.Config)
-										selectedLevel = RelatedObjectLookupRpcRequest.Level.CONFIG;
-									if (data.getType() == RelatedObjectType.Course)
-										selectedLevel = RelatedObjectLookupRpcRequest.Level.COURSE;
-									if (data.getType() == RelatedObjectType.Offering)
-										selectedLevel = RelatedObjectLookupRpcRequest.Level.OFFERING;
+								RelatedObjectLookupRpcRequest.Level selectedLevel = RelatedObjectLookupRpcRequest.Level.NONE;
+								if (data != null && data.hasSelection()) {
+									switch (data.getType()) {
+									case Config: selectedLevel = RelatedObjectLookupRpcRequest.Level.CONFIG; break;
+									case Course: selectedLevel = RelatedObjectLookupRpcRequest.Level.COURSE; break;
+									case Offering: selectedLevel = RelatedObjectLookupRpcRequest.Level.OFFERING; break;
+									case Class: selectedLevel = RelatedObjectLookupRpcRequest.Level.SUBPART; break;
+									}
 								}
-								for (int idx = 0; idx < result.size(); idx++) {
-									RelatedObjectLookupRpcResponse r = result.get(idx);
+								for (RelatedObjectLookupRpcResponse r: result) {
 									subpart.addItem(r.getLabel(), r.getUniqueId() == null ? "" : r.getLevel() + ":" + r.getUniqueId().toString());
-									if (selectedId != null && selectedId.equals(r.getUniqueId()) && selectedLevel == r.getLevel()) selectedIdx = idx;
+									if (selectedLevel == r.getLevel()) {
+										switch (r.getLevel()) {
+										case COURSE:
+										case OFFERING:
+											selectedIdx = subpart.getItemCount() - 1;
+											break;
+										case SUBPART:
+										case CONFIG:
+											if (r.getUniqueId().equals(selectedId))
+												selectedIdx = subpart.getItemCount() - 1;
+											break;
+										}
+									}
 								}
 								if (selectedIdx >= 0)
-									subject.setSelectedIndex(selectedIdx);
+									subpart.setSelectedIndex(selectedIdx);
 								DomEvent.fireNativeEvent(Document.get().createChangeEvent(), subpart);
 							}
 						});
@@ -775,7 +994,7 @@ public class EventAdd extends Composite {
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse, rSubpart), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								setErrorMessage(caught.getMessage());
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colClasses(), caught.getMessage()));
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -793,7 +1012,7 @@ public class EventAdd extends Composite {
 									if (selectedId != null && selectedId.equals(r.getUniqueId())) selectedIdx = idx;
 								}
 								if (selectedIdx >= 0)
-									subject.setSelectedIndex(selectedIdx);
+									clazz.setSelectedIndex(selectedIdx);
 							}
 						});
 					}
@@ -883,6 +1102,82 @@ public class EventAdd extends Composite {
 		}
 		
 	}
+	
+	
+	public void validate(final AsyncCallback<Boolean> callback) {
+		iHeader.clearMessage();
+		boolean valid = true;
+		if (iName.getWidget().getText().isEmpty()) {
+			iName.setErrorHint(MESSAGES.reqEventName());
+			UniTimeNotifications.error(MESSAGES.reqEventName());
+			iHeader.setErrorMessage(MESSAGES.reqEventName());
+			valid = false;
+		} else {
+			iName.clearHint();
+		}
+		if (iMainLName.getWidget().getText().isEmpty()) {
+			UniTimeNotifications.error(MESSAGES.reqMainContactLastName());
+			if (valid)
+				iHeader.setErrorMessage(MESSAGES.reqMainContactLastName());
+			valid = false;
+		} else {
+			iMainLName.clearHint();
+		}
+		if (iMainEmail.getWidget().getText().isEmpty()) {
+			UniTimeNotifications.error(MESSAGES.reqMainContactEmail());
+			if (valid)
+				iHeader.setErrorMessage(MESSAGES.reqMainContactEmail());
+			valid = false;
+		} else {
+			iMainEmail.clearHint();
+		}
+		if (iMeetings.getValue().isEmpty() && iEvent.getId() == null) {
+			UniTimeNotifications.error(MESSAGES.reqMeetings());
+			if (valid)
+				iHeader.setErrorMessage(MESSAGES.reqMeetings());
+			valid = false;
+		}
+		callback.onSuccess(valid);
+		/*
+		if (!valid) {
+			callback.onSuccess(false);
+			return;
+		}
+		LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
+		RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getValue(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				LoadingWidget.getInstance().hide();
+				callback.onFailure(caught);
+			}
 
+			@Override
+			public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+				LoadingWidget.getInstance().hide();
+				iMeetings.setValue(result.getMeetings());
+				for (MeetingInterface meeting: result.getMeetings()) {
+					if (meeting.hasConflicts()) {
+						UniTimeNotifications.error(MESSAGES.reqNoOverlaps());
+						iHeader.setErrorMessage(MESSAGES.reqNoOverlaps());
+						callback.onSuccess(false);
+						return;
+					}
+				}
+				callback.onSuccess(true);
+			}
+		});
+		*/
+	}
+	
+	protected EventPropertiesRpcResponse getProperties() {
+		return iProperties == null ? null : iProperties.getProperties();
+	}
+
+	public static interface EventPropertiesProvider {
+		public EventPropertiesRpcResponse getProperties();
+		public List<SelectionInterface> getSelection(); 
+		public String getRoomFilter();
+		public ContactInterface getMainContact();
+	}
 
 }

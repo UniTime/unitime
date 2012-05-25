@@ -35,7 +35,6 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -45,11 +44,11 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 
 	private List<AcademicSessionChangeHandler> iChangeHandlers = new ArrayList<AcademicSessionChangeHandler>();
 	
-	public AcademicSessionSelectionBox() {
+	public AcademicSessionSelectionBox(String term) {
 		super(false);
 		
 		setHint(MESSAGES.waitLoadingSessions());
-		RPC.execute(new ListAcademicSessions(Window.Location.getParameter("term")), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
+		RPC.execute(new ListAcademicSessions(term), new AsyncCallback<GwtRpcResponseList<AcademicSession>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -126,6 +125,38 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 			if (getValues() != null) {
 				for (AcademicSession session: getValues()) {
 					if (session.getUniqueId().equals(sessionId)) {
+						setValue(new Interval(session));
+						if (callback != null) callback.onSuccess(true);
+						found = true;
+						break;
+					}
+				}
+			}
+			if (!found) {
+				setValue(null);
+				if (callback != null) callback.onSuccess(false);
+			}
+		}
+		fireAcademicSessionChanged();
+	}
+	
+	public void selectSession(String sessionAbbreviation, AsyncCallback<Boolean> callback) {
+		if (sessionAbbreviation != null && sessionAbbreviation.equals(getAcademicSessionAbbreviation())) {
+			if (callback != null) callback.onSuccess(true);
+			return;
+		}
+		if (sessionAbbreviation == null && getAcademicSessionAbbreviation() == null) {
+			if (callback != null) callback.onSuccess(true);
+			return;
+		}
+		if (sessionAbbreviation == null) {
+			setValue(null);
+			if (callback != null) callback.onSuccess(true);
+		} else {
+			boolean found = false;
+			if (getValues() != null) {
+				for (AcademicSession session: getValues()) {
+					if (sessionAbbreviation.equals(session.getAbbv())) {
 						setValue(new Interval(session));
 						if (callback != null) callback.onSuccess(true);
 						found = true;

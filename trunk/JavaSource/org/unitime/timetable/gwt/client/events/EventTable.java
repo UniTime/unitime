@@ -54,6 +54,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
 	
 	private boolean iShowMainContact = false;
+	private String iSortBy = null; 
 
 	public EventTable() {
 		setStyleName("unitime-EventMeetings");
@@ -91,6 +92,36 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			@Override
 			public String getName() {
 				return MESSAGES.opSelectAll();
+			}
+		});
+		hTimes.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox) {
+						CheckBox ch = (CheckBox)w;
+						ch.setValue(getData(row)[0].hasConflicts());
+					}
+				}
+			}
+			@Override
+			public boolean isApplicable() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox) {
+						if (getData(row)[0].hasConflicts()) return true;
+					}
+				}
+				return false;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.opSelectAllConflicting();
 			}
 		});
 		hTimes.addOperation(new Operation() {
@@ -239,21 +270,21 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		addHideOperation(hLimit, EventFlag.SHOW_LIMIT);
 		addHideOperation(hContact, EventFlag.SHOW_MAIN_CONTACT);
 		
-		addSortByOperation(hName, createComparator(EventSortBy.NAME));
-		addSortByOperation(hSection, createComparator(EventSortBy.SECTION));
-		addSortByOperation(hType, createComparator(EventSortBy.TYPE));
-		addSortByOperation(hDate, createComparator(EventSortBy.TYPE));
-		addSortByOperation(hTimePub, createComparator(EventSortBy.PUBLISHED_TIME));
-		addSortByOperation(hTimeAll, createComparator(EventSortBy.ALLOCATED_TIME));
-		addSortByOperation(hTimeSetup, createComparator(EventSortBy.SETUP_TIME));
-		addSortByOperation(hTimeTeardown, createComparator(EventSortBy.TEARDOWN_TIME));
-		addSortByOperation(hLocation, createComparator(EventSortBy.LOCATION));
-		addSortByOperation(hCapacity, createComparator(EventSortBy.CAPACITY));
-		addSortByOperation(hEnrollment, createComparator(EventSortBy.ENROLLMENT));
-		addSortByOperation(hLimit, createComparator(EventSortBy.LIMIT));
-		addSortByOperation(hSponsor, createComparator(EventSortBy.SPONSOR));
-		addSortByOperation(hContact, createComparator(EventSortBy.MAIN_CONTACT));
-		addSortByOperation(hApproval, createComparator(EventSortBy.APPROVAL));
+		addSortByOperation(hName, EventSortBy.NAME);
+		addSortByOperation(hSection, EventSortBy.SECTION);
+		addSortByOperation(hType, EventSortBy.TYPE);
+		addSortByOperation(hDate, EventSortBy.TYPE);
+		addSortByOperation(hTimePub, EventSortBy.PUBLISHED_TIME);
+		addSortByOperation(hTimeAll, EventSortBy.ALLOCATED_TIME);
+		addSortByOperation(hTimeSetup, EventSortBy.SETUP_TIME);
+		addSortByOperation(hTimeTeardown, EventSortBy.TEARDOWN_TIME);
+		addSortByOperation(hLocation, EventSortBy.LOCATION);
+		addSortByOperation(hCapacity, EventSortBy.CAPACITY);
+		addSortByOperation(hEnrollment, EventSortBy.ENROLLMENT);
+		addSortByOperation(hLimit, EventSortBy.LIMIT);
+		addSortByOperation(hSponsor, EventSortBy.SPONSOR);
+		addSortByOperation(hContact, EventSortBy.MAIN_CONTACT);
+		addSortByOperation(hApproval, EventSortBy.APPROVAL);
 		
 		for (int i = 0; i < getCellCount(0); i++)
 			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeaderNoBorderLine");
@@ -510,16 +541,29 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		if (events != null)
 			for (EventInterface event: events)
 				add(event, filter);
+		if (iSortBy != null)
+			sort(createComparator(EventSortBy.valueOf(iSortBy)));
+	}
+	
+	public boolean hasSortBy() { return iSortBy != null; }
+	public String getSortBy() { return iSortBy; }
+	public void setSortBy(String sortBy) {
+		iSortBy = sortBy;
+		if (iSortBy != null)
+			sort(createComparator(EventSortBy.valueOf(iSortBy)));
 	}
 	
 	public static enum EventSortBy {
 		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
 	}
 	
-	protected void addSortByOperation(final UniTimeTableHeader header, final Comparator<EventInterface[]> comparator) {
+	protected void onSortByChanded() {}
+	
+	protected void addSortByOperation(final UniTimeTableHeader header, final EventSortBy sortBy) {
+		final Comparator<EventInterface[]> comparator = createComparator(sortBy);
 		header.addOperation(new Operation() {
 			@Override
-			public void execute() { sort(comparator); }
+			public void execute() { sort(comparator); iSortBy = sortBy.name(); onSortByChanded(); }
 			@Override
 			public boolean isApplicable() { return getRowCount() > 1; }
 			@Override
@@ -885,6 +929,34 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 
 		@Override
 		public boolean hasSeparator() { return false; }
+	}
+	
+	public EventInterface next(Long eventId) {
+		boolean next = false;
+		for (int row = 1; row < getRowCount(); row ++) {
+			EventInterface[] data = getData(row);
+			if (data.length == 1) {
+				if (next)
+					return data[0];
+				else if (eventId.equals(data[0].getId()))
+					next = true;
+			}
+		}
+		return null;
+	}
+	
+	public EventInterface previous(Long eventId) {
+		EventInterface prev = null;
+		for (int row = 1; row < getRowCount(); row ++) {
+			EventInterface[] data = getData(row);
+			if (data.length == 1) {
+				if (eventId.equals(data[0].getId()))
+					return prev;
+				else
+					prev = data[0];
+			}
+		}
+		return null;
 	}
 
 }
