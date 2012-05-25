@@ -170,7 +170,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 
 	@Override
 	public String getValue() {
-		return iFilter.getWidget().getValue();
+		return iFilter.getWidget().getValue().trim();
 	}
 
 	@Override

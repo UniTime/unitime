@@ -66,7 +66,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		// start time
 		long t0 = JProf.currentTimeMillis();
 		// create helper
-		GwtRpcHelper helper = new GwtRpcHelper(getThreadLocalRequest().getSession());
+		GwtRpcHelper helper = new GwtRpcHelper(getThreadLocalRequest());
 		try {
 			// retrieve implementation from given request
 			GwtRpcImplementedBy annotation = request.getClass().getAnnotation(GwtRpcImplementedBy.class);
@@ -218,7 +218,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			setDaemon(true);
 			iRequest = request;
 			iExecutionId = sIdGenerator.generatedId();
-			iHelper = new GwtRpcHelper(getThreadLocalRequest().getSession());
+			iHelper = new GwtRpcHelper(getThreadLocalRequest());
 		}
 
 		@Override

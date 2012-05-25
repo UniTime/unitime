@@ -60,7 +60,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	
 	private Command iAddMeetingsCommand;
 	
-	public MeetingTable() {
+	public MeetingTable(final boolean editable) {
 		setStyleName("unitime-EventMeetings");
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader hTimes = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
@@ -93,6 +93,36 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			@Override
 			public String getName() {
 				return MESSAGES.opSelectAll();
+			}
+		});
+		hTimes.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox) {
+						CheckBox ch = (CheckBox)w;
+						ch.setValue(getData(row)[0].hasConflicts());
+					}
+				}
+			}
+			@Override
+			public boolean isApplicable() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox) {
+						if (getData(row)[0].hasConflicts()) return true;
+					}
+				}
+				return false;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.opSelectAllConflicting();
 			}
 		});
 		hTimes.addOperation(new Operation() {
@@ -155,7 +185,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return meeting.getId() == null;
+				return editable && (meeting.getId() == null || meeting.isCanEdit());
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {

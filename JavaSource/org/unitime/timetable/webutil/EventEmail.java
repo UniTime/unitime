@@ -32,19 +32,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.struts.upload.FormFile;
 import org.unitime.commons.Email;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.util.Constants;
 
 public class EventEmail {
     private static Log sLog = LogFactory.getLog(EventEmail.class);
     private Event iEvent = null;
-    private TreeSet<MultiMeeting> iMeetings = null;
+    private TreeSet<MultiMeeting> iMeetings = null, iRemovedMeetings = null;
     private String iNote = null;
     private int iAction = sActionCreate;
     private FormFile iAttachement = null;
@@ -57,22 +54,34 @@ public class EventEmail {
     public static final int sActionDelete = 5;
     public static final int sActionInquire = 6;
     
-    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note, FormFile attachement) {
+    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, TreeSet<MultiMeeting> deleted, String note, FormFile attachement) {
         iEvent = event;
         iAction = action;
         iMeetings = meetings;
+        iRemovedMeetings = deleted;
         iNote = note;
         iAttachement = attachement;
     }
     
+    public EventEmail(Event event, int action, TreeSet<MultiMeeting> meetings, String note, FormFile attachement) {
+    	this(event, action, meetings, null, note, attachement);
+    }
+    
     public void send(HttpServletRequest request) {
+    	Result r = send(request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + request.getContextPath());
+    	request.getSession().setAttribute(r.isWarning() ? Constants.REQUEST_WARN : Constants.REQUEST_MSSG, r.getMessage());
+    }
+    
+    public Result send(String url) {
         String subject = null;
         File conf = null;
         try {
-            User user = Web.getUser(request.getSession());
+            /*
+            User user = Web.getUser(httpSession);
             if (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
                 if (iAction!=sActionReject && iAction!=sActionApprove && iAction!=sActionInquire) return;
             }
+            */
             
             switch (iAction) {
             case sActionCreate : 
@@ -99,8 +108,7 @@ public class EventEmail {
             }
 
             if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
-                request.getSession().setAttribute(Constants.REQUEST_MSSG, "Confirmation emails are disabled.");
-                return;
+                return new Result(false, "Confirmation emails are disabled.");
             }
             
             String message = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">";
@@ -149,7 +157,8 @@ public class EventEmail {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
                 message += "<br><font size='+1'>";
                 switch (iAction) {
-                case sActionCreate : 
+                case sActionCreate :
+                case sActionUpdate :
                     message += "Following meetings were requested by you or on your behalf, confirmation will follow";
                     break;
                 case sActionApprove :
@@ -174,6 +183,27 @@ public class EventEmail {
                 message += "<table border='0' width='100%'>";
                 message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td></tr>";
                 for (MultiMeeting m : iMeetings) {
+                    message += "<tr><td>";
+                    message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
+                    message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().last().getMeetingDate()):"");
+                    message += "</td><td>";
+                    message += m.getMeetings().first().startTime()+" - "+m.getMeetings().first().stopTime();
+                    message += "</td><td>";
+                    message += (m.getMeetings().first().getLocation()==null?"":" "+m.getMeetings().first().getLocation().getLabel());
+                    message += "</td></tr>";
+                }
+                message += "</table></td></tr>";
+            }
+            
+            if (iRemovedMeetings != null && !iRemovedMeetings.isEmpty()) {
+                message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
+                message += "<br><font size='+1'>";
+                message += "Following meetings were deleted by you or on your behalf";
+                message += "</font>";
+                message += "</td></tr><tr><td colspan='2'>";
+                message += "<table border='0' width='100%'>";
+                message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td></tr>";
+                for (MultiMeeting m : iRemovedMeetings) {
                     message += "<tr><td>";
                     message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
                     message += (m.getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().last().getMeetingDate()):"");
@@ -248,7 +278,7 @@ public class EventEmail {
             message += "<tr><td colspan='2'>&nbsp;</td></tr>";
             message += "<tr><td colspan='2' style='border-top: 1px #2020FF solid;' align='center'>";
             message += "This email was automatically generated at ";
-            message += request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
+            message += url;
             message += ",<br>by UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?");
             message += " (University Timetabling Application, http://www.unitime.org).";
             message += "</td></tr></table>";
@@ -292,16 +322,25 @@ public class EventEmail {
             
             mail.send();
             
-            request.getSession().setAttribute(Constants.REQUEST_MSSG, 
-                    (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
+            return new Result(false, (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
                     subject+" Confirmation email sent to "+to+"."+
                     (conf==null || !conf.exists()?"":"</a>"));
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
-            request.getSession().setAttribute(Constants.REQUEST_WARN,
-                    (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
+            return new Result(true, (conf==null || !conf.exists()?"":"<a class='noFancyLinks' href='temp/"+conf.getName()+"'>")+
                     (subject==null?"":subject+" ")+"Unable to send confirmation email, reason: "+e.getMessage()+
                     (conf==null || !conf.exists()?"":"</a>"));
         }
+    }
+    
+    public static class Result {
+    	private boolean iWarning; 
+    	private String iMessage;
+    	
+    	private Result(boolean warn, String message) { iWarning = warn; iMessage = message; }
+    	
+    	public boolean isWarning() { return iWarning; }
+    	public String getMessage() { return iMessage; }
+    	
     }
 }

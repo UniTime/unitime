@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -114,7 +115,12 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 
 	public EventInterface getEventDetail(Session session, Event e, User user) throws EventException {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
-		Date now = new Date();
+		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
 		
         Set<Department> userDepartments = null;
 		if (user != null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
@@ -129,6 +135,7 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 		event.setName(e.getEventName());
 		event.setType(EventInterface.EventType.values()[e.getEventType()]);
 		event.setCanView(true);
+		event.setCanEdit(!session.getEventEndDate().before(today) && (event.getType() == EventType.Special || event.getType() == EventType.Course)); 
 		event.setEmail(e.getEmail());
 		event.setMaxCapacity(e.getMaxCapacity());
 				
@@ -299,19 +306,20 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 							related.addCourseName(course.getCourseName());
 		    			}
 		    		}
-					related.setInstruction("Offering");
+					related.setInstruction(MESSAGES.colOffering());
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) {
 					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
 					related.setSectionNumber(config.getName());
-					related.setInstruction("Configuration");
+					related.setInstruction(MESSAGES.colConfig());
 				} else {
-					related.setInstruction("Course");
+					related.setInstruction(MESSAGES.colCourse());
 				}
 				event.addRelatedObject(related);
 			}
     	} else if (Event.sEventTypeCourse == e.getEventType()) {
     		CourseEvent ce = (e instanceof CourseEvent ? (CourseEvent)e : CourseEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		
+    		event.setRequiredAttendance(ce.isReqAttendance());
     		int enrl = 0;
 			for (RelatedCourseInfo owner: new TreeSet<RelatedCourseInfo>(ce.getRelatedCourses())) {
 				RelatedObjectInterface related = new RelatedObjectInterface();
@@ -359,14 +367,14 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 							related.addCourseName(course.getCourseName());
 		    			}
 		    		}
-		    		related.setInstruction("Offering");
+		    		related.setInstruction(MESSAGES.colOffering());
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig) {
 					InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
-					related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId(), -config.getUniqueId()});
+					related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId(), config.getUniqueId()});
 					related.setSectionNumber(config.getName());
-					related.setInstruction("Configuration");
+					related.setInstruction(MESSAGES.colConfig());
 				} else {
-					related.setInstruction("Course");
+					related.setInstruction(MESSAGES.colCourse());
 				}
 				event.addRelatedObject(related);
 				enrl += owner.countStudents();
@@ -406,7 +414,7 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			meeting.setEndSlot(m.getStopPeriod());
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-			meeting.setPast(m.getStartTime().before(now));
+			meeting.setPast(m.getStartTime().before(today));
 			if (m.isApproved())
 				meeting.setApprovalDate(m.getApprovedDate());
 			if (user == null || meeting.isPast() || (event.getType() != EventType.Special && event.getType() != EventType.Course)) {

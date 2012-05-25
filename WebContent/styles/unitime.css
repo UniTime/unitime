@@ -1767,6 +1767,10 @@ h1 {
 	color: #202020;
 }
 
+.unitime-DateSelector .box .past {
+	font-style: normal;
+}
+
 .unitime-DateSelector .dow {
 	border-top: 1px solid black;
 	border-right: 1px solid black;
@@ -2170,6 +2174,7 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventNotes {
 	width: 100%;
+	vertical-align: top;
 }
 
 .unitime-EventNotes .approve {
@@ -2238,8 +2243,6 @@ div.gwt-MenuBarPopup {
 
 .unitime-MeetingSelection .cell {
 	display: table-cell;
-	width: 100px;
-	max-width: 100px;
 	white-space: nowrap;
 	overflow: hidden;
 	border-right: 1px solid black;
@@ -2250,12 +2253,15 @@ div.gwt-MenuBarPopup {
 	text-overflow: ellipsis;
 	cursor: pointer;
 	padding: 2px;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
 }
 
 .unitime-MeetingSelection .hover {
-	-moz-box-shadow: inset 0 0 5px #7ba7d4;
-	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
-	box-shadow: inset 0 0 5px #7ba7d4;
+	-moz-box-shadow: inset 0 0 10px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 10px #7ba7d4;
+	box-shadow: inset 0 0 10px #7ba7d4;
 }
 
 .unitime-MeetingSelection .selected {
@@ -2277,12 +2283,6 @@ div.gwt-MenuBarPopup {
 	cursor: pointer;
 }
 
-.unitime-MeetingSelection .date:hover {
-	-moz-box-shadow: inset 0 0 5px #7ba7d4;
-	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
-	box-shadow: inset 0 0 5px #7ba7d4;
-}
-
 .unitime-MeetingSelection .room {
 	display: table-cell;
 	border-right: 1px solid black;
@@ -2292,12 +2292,7 @@ div.gwt-MenuBarPopup {
 	vertical-align: middle;
 	padding: 2px;
 	cursor: pointer;
-}
-
-.unitime-MeetingSelection .room:hover {
-	-moz-box-shadow: inset 0 0 5px #7ba7d4;
-	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
-	box-shadow: inset 0 0 5px #7ba7d4;
+	text-overflow: ellipsis;
 }
 
 .unitime-Notification {

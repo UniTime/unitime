@@ -70,7 +70,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 	public EventFilterBox(AcademicSessionProvider session) {
 		super(session);
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type", true));
+		addFilter(new FilterBox.StaticSimpleFilter("type"));
 		
 		iSponsors = new ListBox(true);
 		iSponsors.setWidth("100%"); iSponsors.setVisibleItemCount(3);

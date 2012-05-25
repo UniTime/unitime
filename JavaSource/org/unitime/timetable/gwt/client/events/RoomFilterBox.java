@@ -99,9 +99,9 @@ public class RoomFilterBox extends UniTimeFilterBox {
 			}
 		});
 		
-		addFilter(new FilterBox.StaticSimpleFilter("type", true));
-		addFilter(new FilterBox.StaticSimpleFilter("feature", true));
-		addFilter(new FilterBox.StaticSimpleFilter("group", true));
+		addFilter(new FilterBox.StaticSimpleFilter("type"));
+		addFilter(new FilterBox.StaticSimpleFilter("feature"));
+		addFilter(new FilterBox.StaticSimpleFilter("group"));
 		addFilter(new FilterBox.StaticSimpleFilter("size"));
 		addFilter(new FilterBox.StaticSimpleFilter("flag"));
 		
