@@ -45,7 +45,7 @@ public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorReq
 		}
 		int sessionYear = session.getSessionStartYear();
 		DateFormat df = new SimpleDateFormat("MM/dd");
-		while (c.getTime().before(session.getEventEndDate())) {
+		while (!c.getTime().after(session.getEventEndDate())) {
 			int dayOfYear = c.get(Calendar.DAY_OF_YEAR);
 			if (c.get(Calendar.YEAR) < sessionYear) {
 				Calendar x = Calendar.getInstance(Locale.US);

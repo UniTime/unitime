@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,18 +28,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.CourseAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
@@ -56,7 +51,6 @@ import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.TimetableManager;
@@ -66,16 +60,13 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 
-public class EventEnrollmentsBackend implements GwtRpcImplementation<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormatShort());
+public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	
 	@Override
-	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, GwtRpcHelper helper) {
-		checkAccess(helper);
-
+	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		if (request.hasRelatedObjects()) {
+			if (!rights.canAddEvent(EventType.Course, null)) throw rights.getException();
+			
 			Map<Long, List<Meeting>> conflicts = null;
 			HashSet<StudentClassEnrollment> enrollments = new HashSet<StudentClassEnrollment>();
 			for (RelatedObjectInterface related: request.getRelatedObjects()) {
@@ -92,6 +83,8 @@ public class EventEnrollmentsBackend implements GwtRpcImplementation<EventEnroll
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			Event event = EventDAO.getInstance().get(request.getEventId());
 			if (event == null) throw new GwtRpcException(MESSAGES.errorBadEventId());
+			
+			if (!rights.canSee(event)) throw rights.getException();
 
 	    	Collection<StudentClassEnrollment> enrollments = event.getStudentClassEnrollments();
 	    	if (enrollments == null || enrollments.isEmpty()) return null;
@@ -106,14 +99,6 @@ public class EventEnrollmentsBackend implements GwtRpcImplementation<EventEnroll
 		}
 		
 		return null;
-	}
-	
-	public void checkAccess(GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null) {
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-		if (!Roles.ADMIN_ROLE.equals(helper.getUser().getRole()) && !Roles.EVENT_MGR_ROLE.equals(helper.getUser().getRole()))
-			throw new PageAccessException(MESSAGES.authenticationInsufficient());
 	}
 	
 	public static Collection<StudentClassEnrollment> getStudentClassEnrollments(RelatedObjectInterface relatedObject) {
@@ -514,8 +499,8 @@ public class EventEnrollmentsBackend implements GwtRpcImplementation<EventEnroll
 						conflict.setType(confEvent.getEventTypeAbbv());
 						String lastDate = null, lastTime = null, lastRoom = null;
 						for (MultiMeeting mm: Event.getMultiMeetings(events.get(confEvent))) {
-							String date = sDateFormat.format(mm.getMeetings().first().getMeetingDate()) +
-								(mm.getMeetings().size() == 1 ? "" : " - " + sDateFormat.format(mm.getMeetings().last().getMeetingDate()));
+							String date = sMeetingDateFormat.format(mm.getMeetings().first().getMeetingDate()) +
+								(mm.getMeetings().size() == 1 ? "" : " - " + sMeetingDateFormat.format(mm.getMeetings().last().getMeetingDate()));
 							if (lastDate == null) {
 								conflict.setDate(date);
 							} else if (lastDate.equals(date)) {

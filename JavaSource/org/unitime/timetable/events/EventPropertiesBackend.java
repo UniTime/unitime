@@ -19,63 +19,48 @@
 */
 package org.unitime.timetable.events;
 
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
 
 import org.unitime.commons.User;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.server.LookupServlet;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.model.EventContact;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
+import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 
-public class EventPropertiesBackend implements GwtRpcImplementation<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
+public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
 
 	@Override
-	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, GwtRpcHelper helper) {
+	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		EventPropertiesRpcResponse response = new EventPropertiesRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
 		
-		response.setCanLookupPeople(canLookupPeople(session, helper.getUser()));
+		response.setCanLookupPeople(rights.canSeeSchedule(null));
+		response.setCanLookupContacts(rights.canLookupContacts());
 		
-		response.setCanAddEvent(canAddEvent(session, helper.getUser()));
-		response.setCanAddCourseEvent(canAddCourseEvent(session, helper.getUser()));
-		response.setCanOverbook(canOverbook(session, helper.getUser()));
+		response.setCanAddEvent(rights.canAddEvent(EventType.Special, null));
+		response.setCanAddCourseEvent(rights.canAddEvent(EventType.Course, null));
 		
 		setupSponsoringOrganizations(session,  response);
 		
 		setupMainContact(session, response, helper.getUser());
 		
+		setupStandardNotes(session, response);
+		
 		return response;
 	}
 	
-	public boolean canLookupPeople(Session session, User user) {
-		return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.STUDENT_ADVISOR.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
-	}
-	
-	public boolean canOverbook(Session session, User user) {
-		return user != null && (Roles.ADMIN_ROLE.equals(user.getRole()) || Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()));
-	}
-
-	public boolean canAddEvent(Session session, User user) {
-		return user != null && !session.getEventEndDate().before(new Date());
-	}
-
-	public boolean canAddCourseEvent(Session session, User user) {
-		return user != null && user.getRole() != null && (
-				Roles.ADMIN_ROLE.equals(user.getRole()) ||
-				Roles.EVENT_MGR_ROLE.equals(user.getRole()));
-	}
-
 	public void setupSponsoringOrganizations(Session session, EventPropertiesRpcResponse response) {
 		for (SponsoringOrganization s: SponsoringOrganization.findAll()) {
 			SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
@@ -135,6 +120,13 @@ public class EventPropertiesBackend implements GwtRpcImplementation<EventPropert
 				
 			}
 		}
+	}
+	
+	public void setupStandardNotes(Session session, EventPropertiesRpcResponse response) {
+		for (StandardEventNote note: StandardEventNoteDAO.getInstance().findAll())
+			response.addStandardNote(note.getNote());
+		if (response.hasStandardNotes())
+			Collections.sort(response.getStandardNotes());
 	}
 
 }

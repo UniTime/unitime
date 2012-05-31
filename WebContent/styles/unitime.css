@@ -1419,7 +1419,7 @@ h1 {
 }
 
 .gwt-DialogBox {
-	z-index: 500000;
+	z-index: 490000;
 }
 
 .gwt-DialogBox .dialogContainer {
@@ -2239,6 +2239,9 @@ div.gwt-MenuBarPopup {
 	display: table-cell;
 	border-bottom: 1px solid black;
 	border-right: 1px solid black;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
 }
 
 .unitime-MeetingSelection .cell {
@@ -2281,6 +2284,9 @@ div.gwt-MenuBarPopup {
 	padding: 2px;
 	white-space: nowrap;
 	cursor: pointer;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
 }
 
 .unitime-MeetingSelection .room {
@@ -2293,6 +2299,9 @@ div.gwt-MenuBarPopup {
 	padding: 2px;
 	cursor: pointer;
 	text-overflow: ellipsis;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
 }
 
 .unitime-Notification {

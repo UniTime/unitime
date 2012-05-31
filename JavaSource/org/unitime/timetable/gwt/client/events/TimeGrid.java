@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -116,7 +117,7 @@ public class TimeGrid extends Composite {
 	private Mode iMode = Mode.FILLSPACE;
 	
 	public TimeGrid() {
-		this(new HashMap<Long, String>(), new int[] {0, 1, 2, 3, 4}, (int) (0.9 * Window.getClientWidth() / 5), false, false, 0, 24);
+		this(new HashMap<Long, String>(), new int[] {0, 1, 2, 3, 4}, (int) (0.9 * ToolBox.getClientWidth() / 5), false, false, 0, 24);
 	}
 	
 	private List<P> iDayLabels = new ArrayList<P>();
@@ -331,7 +332,7 @@ public class TimeGrid extends Composite {
 	
 	public void setDays(int[] days) {
 		iDays = days;
-		iCellWidth = (int)(0.9 * Window.getClientWidth() / iDays.length);
+		iCellWidth = (int)(0.9 * ToolBox.getClientWidth() / iDays.length);
 		iContainer.setWidth(40 + iDays.length * iCellWidth);
 		iHeader.setWidth(iDays.length * iCellWidth);
 		iPanel.setWidth(iDays.length * iCellWidth);
@@ -705,7 +706,7 @@ public class TimeGrid extends Composite {
 					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
-					dateString + " " + meeting.getMeetingTime(CONSTANTS.useAmPm()) + " " + roomString, color, weekIndex(meeting), days.size(), done));
+					dateString + " " + MeetingTable.meetingTime(meeting) + " " + roomString, color, weekIndex(meeting), days.size(), done));
 		}
 		iMeetings.add(done);
 		return done;

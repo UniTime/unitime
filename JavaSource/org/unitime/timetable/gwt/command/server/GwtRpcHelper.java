@@ -22,8 +22,10 @@ package org.unitime.timetable.gwt.command.server;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.util.Constants;
 
 public class GwtRpcHelper {
@@ -37,6 +39,10 @@ public class GwtRpcHelper {
 	
 	public User getUser() {
 		return Web.getUser(iHttpSession);
+	}
+	
+	public String getUserId() {
+		return (getUser() == null ? null : getUser().getId());
 	}
 	
 	public Long getAcademicSessionId() {
@@ -58,5 +64,17 @@ public class GwtRpcHelper {
 	
 	public String getRequestUrl() {
 		return iURL;
+	}
+	
+	public FileItem getLastUploadedFile() {
+		return (FileItem)iHttpSession.getAttribute(UploadServlet.SESSION_LAST_FILE);
+	}
+	
+	public boolean hasLastUploadedFile() {
+		return iHttpSession.getAttribute(UploadServlet.SESSION_LAST_FILE) != null;
+	}
+	
+	public void clearLastUploadedFile() {
+		iHttpSession.removeAttribute(UploadServlet.SESSION_LAST_FILE);
 	}
 }

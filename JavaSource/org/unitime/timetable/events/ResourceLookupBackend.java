@@ -27,9 +27,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.EventException;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -48,11 +46,14 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-public class ResourceLookupBackend implements GwtRpcImplementation<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {
+public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {
 
 	@Override
-	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, GwtRpcHelper helper) {
-		checkAccess(request, helper);
+	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+		if (request.getResourceType() == ResourceType.PERSON) {
+			if (!request.hasName()) request.setName(helper.getUserId());
+			if (!rights.canSeeSchedule(request.getName())) throw rights.getException();
+		}
 		
 		GwtRpcResponseList<ResourceInterface> response = new GwtRpcResponseList<ResourceInterface>();
 		if (request.hasLimit() && request.getLimit() == 1) {
@@ -63,29 +64,6 @@ public class ResourceLookupBackend implements GwtRpcImplementation<ResourceLooku
 		return response;
 	}
 
-	public void checkAccess(ResourceLookupRpcRequest request, GwtRpcHelper helper) throws PageAccessException {
-		if ((request.getResourceType() == ResourceType.PERSON || "true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true")))
-				&& helper.getUser() == null)
-			throw new PageAccessException(request.getResourceType().getPageTitle().substring(0, 1).toUpperCase() +
-					request.getResourceType().getPageTitle().substring(1).toLowerCase() + " is only available to authenticated users.");
-
-		if (request.getResourceType() == ResourceType.PERSON) {
-			if (!request.hasName()) {
-				request.setName(helper.getUser().getId());
-			} else {
-				if (!request.getName().equals(helper.getUser().getId()) && !(
-						Roles.ADMIN_ROLE.equals(helper.getUser().getRole()) ||
-						Roles.STUDENT_ADVISOR.equals(helper.getUser().getRole()) ||
-						Roles.DEPT_SCHED_MGR_ROLE.equals(helper.getUser().getRole())
-						)) {
-					if (request.getName() != null && !request.getName().isEmpty() && !request.getName().equals(helper.getUser().getId()))
-						throw new EventException("It is not allowed to access a timetable of someone else.");
-				}
-			}
-		}
-	}
-	
-	
 	public ResourceInterface findResource(Long sessionId, ResourceType type, String name) throws EventException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();

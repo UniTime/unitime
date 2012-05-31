@@ -437,7 +437,7 @@ public class EventAdd extends Composite {
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new MeetingTable(true);
+		iMeetings = new MeetingTable(null, true);
 		iMeetings.setAddMeetingsCommand(new Command() {
 			@Override
 			public void execute() {
@@ -684,6 +684,7 @@ public class EventAdd extends Composite {
 			}
 		}
 		
+		iContacts.clearTable(1);
 		if (iEvent.hasAdditionalContacts()) {
 			for (final ContactInterface contact: iEvent.getAdditionalContacts()) {
 				List<Widget> row = new ArrayList<Widget>();
@@ -712,7 +713,7 @@ public class EventAdd extends Composite {
 		
 		iCourses.setValue(iEvent.getType() == EventType.Course ? iEvent.getRelatedObjects() : null, true);
 
-		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupPeople());
+		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupContacts());
 		iLookupButton.setVisible(canLookup);
 		iAdditionalLookupButton.setVisible(canLookup);
 		
@@ -774,7 +775,7 @@ public class EventAdd extends Composite {
 			if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) return;
 			iEnrollmentHeader.showLoading();
 			iLastMeetings = meetings; iLastRelatedObjects = relatedObjects;
-			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForRelatedObjects(relatedObjects, meetings, iEvent.getId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForRelatedObjects(relatedObjects, meetings, iEvent.getId(), iProperties.getSessionId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
@@ -834,7 +835,7 @@ public class EventAdd extends Composite {
 			subject.addStyleName("subject");
 			subject.addItem("-", "");
 			subject.setSelectedIndex(0);
-			RPC.execute(RelatedObjectLookupRpcRequest.getChildren(RelatedObjectLookupRpcRequest.Level.SESSION, iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
+			RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), RelatedObjectLookupRpcRequest.Level.SESSION, iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -874,7 +875,7 @@ public class EventAdd extends Composite {
 						DomEvent.fireNativeEvent(Document.get().createChangeEvent(), course);
 					} else {
 						course.clear();
-						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
+						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colCourses(), caught.getMessage()));
@@ -923,7 +924,7 @@ public class EventAdd extends Composite {
 						DomEvent.fireNativeEvent(Document.get().createChangeEvent(), subpart);
 					} else {
 						subpart.clear();
-						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
+						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject, rCourse), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colConfigsOrSubparts(), caught.getMessage()));
@@ -991,7 +992,7 @@ public class EventAdd extends Composite {
 						clazz.setSelectedIndex(0);
 					} else {
 						clazz.clear();
-						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(rSubject, rCourse, rSubpart), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
+						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject, rCourse, rSubpart), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colClasses(), caught.getMessage()));
@@ -1174,6 +1175,7 @@ public class EventAdd extends Composite {
 	}
 
 	public static interface EventPropertiesProvider {
+		public Long getSessionId();
 		public EventPropertiesRpcResponse getProperties();
 		public List<SelectionInterface> getSelection(); 
 		public String getRoomFilter();

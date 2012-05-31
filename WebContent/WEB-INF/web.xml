@@ -131,6 +131,10 @@
     	<servlet-class>org.unitime.timetable.gwt.command.server.GwtRpcServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>uploadServlet</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.UploadServlet</servlet-class>
+    </servlet>
     
     <servlet-mapping>
         <servlet-name>sectioningServiceServlet</servlet-name>
@@ -180,6 +184,11 @@
     <servlet-mapping>
       <servlet-name>patternServlet</servlet-name>
       <url-pattern>/pattern</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+      <servlet-name>uploadServlet</servlet-name>
+      <url-pattern>/upload</url-pattern>
     </servlet-mapping>
     
 	<!-- Servlet Mappings -->

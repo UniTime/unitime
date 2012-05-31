@@ -458,7 +458,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			row.add(new Label(event.getType().getAbbreviation(), false));
 		}
 
-		String[] mtgs = new String[] {"", "", "", "", "", ""};
+		String[] mtgs = new String[] {"", "", "", "", "", "", ""};
 		String approval = "", prevApproval = null;
 		String[] prev = null;
 		boolean prevPast = false;
@@ -469,7 +469,8 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 					MeetingTable.allocatedTime(m.getMeetings().first()),
 					String.valueOf(m.getMeetings().first().getStartOffset()),
 					String.valueOf(- m.getMeetings().first().getEndOffset()),
-					m.getLocationNameWithHint()
+					m.getLocationNameWithHint(),
+					(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : "")
 					};
 			for (int i = 0; i < mtgs.length; i++) {
 				mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i].equals(mtg[i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
@@ -481,7 +482,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
 		}
 		for (int i = 0; i < mtgs.length; i++) {
-			if (i == 3 || i == 4)
+			if (i == 3 || i == 4 || i == 6)
 				row.add(new NumberCell(mtgs[i]));
 			else
 				row.add(new HTML(mtgs[i], false));

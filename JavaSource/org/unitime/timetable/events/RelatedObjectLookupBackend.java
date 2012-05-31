@@ -23,12 +23,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
@@ -43,12 +40,11 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 
-public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedObjectLookupRpcRequest, GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupRpcRequest, GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
 
 	@Override
-	public GwtRpcResponseList<RelatedObjectLookupRpcResponse> execute(RelatedObjectLookupRpcRequest request, GwtRpcHelper helper) {
-		checkAccess(helper);
+	public GwtRpcResponseList<RelatedObjectLookupRpcResponse> execute(RelatedObjectLookupRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+		if (!rights.canAddEvent(EventType.Course, null)) throw rights.getException();
 
 		GwtRpcResponseList<RelatedObjectLookupRpcResponse> response = new GwtRpcResponseList<RelatedObjectLookupRpcResponse>();
 
@@ -209,11 +205,4 @@ public class RelatedObjectLookupBackend implements GwtRpcImplementation<RelatedO
 		
 		return response;
 	}
-
-	public void checkAccess(GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null) {
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-	}
-
 }
