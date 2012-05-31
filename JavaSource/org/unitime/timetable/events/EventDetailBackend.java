@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,17 +27,11 @@ import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
-import org.unitime.commons.User;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
@@ -55,7 +47,6 @@ import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamEvent;
@@ -65,9 +56,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -76,66 +65,31 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
-public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRequest, EventInterface> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+public class EventDetailBackend extends EventAction<EventDetailRpcRequest, EventInterface> {
 	
 	@Override
-	public EventInterface execute(EventDetailRpcRequest request, GwtRpcHelper helper) {
+	public EventInterface execute(EventDetailRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		Event event = EventDAO.getInstance().get(request.getEventId());
 		if (event == null)
 			throw new EventException("No event with id " + request.getEventId() + " found.");
 		
-		checkAccess(event, helper);
+		if (!rights.canSee(event)) throw rights.getException();
 		
-		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, helper.getUser());
+		helper.clearLastUploadedFile();
+		
+		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, rights);
 		
 		return detail;
 	}
 	
-	public void checkAccess(Event e, GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null) {
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-		if (helper.getUser().getRole() == null) {
-			if (e.getMainContact() == null || !helper.getUser().getId().equals(e.getMainContact().getExternalUniqueId()))
-				throw new PageAccessException(MESSAGES.authenticationInsufficient());
-		}
-	}
-	
-	public boolean canEdit(Event e, GwtRpcHelper helper) {
-		if (helper.getUser() == null) {
-			return false;
-		}
-		if (e.getMainContact() != null && helper.getUser().getId().equals(e.getMainContact().getExternalUniqueId()))
-			return true;
-		if (Roles.ADMIN_ROLE.equals(helper.getUser().getRole()) || Roles.EVENT_MGR_ROLE.equals(helper.getUser().getRole()))
-			return true;
-		return false;
-	}
-
-	public EventInterface getEventDetail(Session session, Event e, User user) throws EventException {
+	public static EventInterface getEventDetail(Session session, Event e, EventRights rights) throws EventException {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
-		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		Date today = cal.getTime();
-		
-        Set<Department> userDepartments = null;
-		if (user != null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-			TimetableManager mgr = TimetableManager.getManager(user);
-			if (mgr != null)
-				userDepartments = mgr.getDepartments();
-		}
-
-		
 		EventInterface event = new EventInterface();
 		event.setId(e.getUniqueId());
 		event.setName(e.getEventName());
 		event.setType(EventInterface.EventType.values()[e.getEventType()]);
-		event.setCanView(true);
-		event.setCanEdit(!session.getEventEndDate().before(today) && (event.getType() == EventType.Special || event.getType() == EventType.Course)); 
+		event.setCanView(rights.canSee(e));
+		event.setCanEdit(rights.canEdit(e)); 
 		event.setEmail(e.getEmail());
 		event.setMaxCapacity(e.getMaxCapacity());
 				
@@ -414,23 +368,11 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
 			meeting.setEndSlot(m.getStopPeriod());
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-			meeting.setPast(m.getStartTime().before(today));
+			meeting.setPast(rights.isPastOrOutside(m.getStartTime()));
 			if (m.isApproved())
 				meeting.setApprovalDate(m.getApprovedDate());
-			if (user == null || meeting.isPast() || (event.getType() != EventType.Special && event.getType() != EventType.Course)) {
-				meeting.setCanEdit(false);
-			} else {
-				meeting.setCanEdit(m.getEvent().getMainContact() != null && user.getId().equals(m.getEvent().getMainContact().getExternalUniqueId()));
-				if (Roles.ADMIN_ROLE.equals(user.getRole())) {
-					meeting.setCanApprove(true);
-				} else if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-					meeting.setCanApprove(m.getLocation() == null || 
-							(userDepartments != null && m.getLocation().getControllingDepartment() != null && userDepartments.contains(m.getLocation().getControllingDepartment()))
-							);
-				} else {
-					meeting.setCanApprove(false);
-				}
-			}
+			meeting.setCanEdit(rights.canEdit(m));
+			meeting.setCanApprove(rights.canApprove(m));
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);
@@ -472,7 +414,7 @@ public class EventDetailBackend implements GwtRpcImplementation<EventDetailRpcRe
     		note.setDate(n.getTimeStamp());
     		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
     		note.setMeetings(n.getMeetingsHtml());
-    		note.setNote(n.getTextNote());
+    		note.setNote(n.getTextNote() == null ? null : n.getTextNote().replace("\n", "<br>"));
     		note.setUser(n.getUser());
     		event.addNote(note);
     	}

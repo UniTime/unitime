@@ -31,9 +31,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
-import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -51,10 +49,9 @@ import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
 public class EventFilterBackend extends FilterBoxBackend {
-	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-
+	
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response) {
+	public void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		EventQuery query = getQuery(request);
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
@@ -122,7 +119,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 				
 				if (Roles.EVENT_MGR_ROLE.equals(role)) {
 					int myApprovalCnt = ((Number)query.select("count(distinct e)").from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-							.where("m.approvedDate is null rd.control=true and g.externalUniqueId = :user").set("user", request.getOption("user"))
+							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user").set("user", request.getOption("user"))
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					if (myApprovalCnt > 0) {
 						Entity awaiting = new Entity(2l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
@@ -289,7 +286,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response) {
+	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
 		EventQuery query = getQuery(request);
@@ -313,7 +310,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response) {
+	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
 		EventQuery query = getQuery(request);

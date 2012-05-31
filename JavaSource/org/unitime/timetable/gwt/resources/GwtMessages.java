@@ -100,6 +100,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<b><i>?</i></b> Inquire ...")
 	String opInquireAllMeetings();
+	
+	@DefaultMessage("<u>A</u>pprove")
+	String opApprove();
+
+	@DefaultMessage("<u>R</u>eject")
+	String opReject();
+
+	@DefaultMessage("<u>I</u>nquire")
+	String opInquire();
+
+	@DefaultMessage("<u>C</u>ancel")
+	String onCancel();
 
 	@DefaultMessage("Date")
 	String colDate();
@@ -334,6 +346,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("To:")
 	String propTo();
+	
+	@DefaultMessage("Notes:")
+	String propNotes();
+
+	@DefaultMessage("Standard Notes:")
+	String propStandardNotes();
+	
+	@DefaultMessage("Attachement:")
+	String propAttachement();
+	
+	@DefaultMessage("Meetings:")
+	String propMeetings();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -431,8 +455,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Checking room availability...")
 	String waitCheckingRoomAvailability();
 	
-	@DefaultMessage("Loading academic sessions...")
+	@DefaultMessage("Loading academic sessions ...")
 	String waitLoadingSessions();
+	
+	@DefaultMessage("Approving meetings of {0} ...")
+	String waitForApproval(String name);
+	
+	@DefaultMessage("Rejecting meetings of {0} ...")
+	String waitForRejection(String name);
+	
+	@DefaultMessage("Inquiring about {0} ...")
+	String waitForInquiry(String name);
 	
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -457,6 +490,33 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Add meetings failed: {0}")
 	String failedAddMeetings(String reason);
+	
+	@DefaultMessage("{0} cannot be created through the event interface.")
+	String failedSaveEventWrongType(String eventType);
+	
+	@DefaultMessage("Meeting {0} has no location.")
+	String failedSaveEventNoLocation(String meeting);
+	
+	@DefaultMessage("{0} is not managed in UniTime or disabled for events at the moment.")
+	String failedSaveEventWrongLocation(String location);
+	
+	@DefaultMessage("Requested meeting date {0} is in the past or outside of the academic session.")
+	String failedSaveEventPastOrOutside(String meetingDate);
+	
+	@DefaultMessage("Meeting {0} is conflicting with {1}.")
+	String failedSaveEventConflict(String meeting, String conflict);
+	
+	@DefaultMessage("The event does no longer exist.")
+	String failedApproveEventNoEvent();
+
+	@DefaultMessage("Insufficient rights to approve meeting {0}.")
+	String failedApproveEventNoRightsToApprove(String meeting);
+	
+	@DefaultMessage("Insufficient rights to reject meeting {0}.")
+	String failedApproveEventNoRightsToReject(String meeting);
+	
+	@DefaultMessage("Failed to hide academic session info: {0}")
+	String failedToHideSessionInfo(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -530,6 +590,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Add Meetings...")
 	String dialogAddMeetings();
 	
+	@DefaultMessage("Approve Meetings...")
+	String dialogApprove();
+
+	@DefaultMessage("Reject Meetings...")
+	String dialogReject();
+
+	@DefaultMessage("Inquire...")
+	String dialogInquire();
+
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
 	
@@ -583,4 +652,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("an event")
 	String anEvent();
+	
+	@DefaultMessage("Requested meeting is in the past or outside of {0}.")
+	String conflictPastOrOutside(String academicSessionName);
+	
+	@DefaultMessage("<i>File {0} attached.</i>")
+	String noteAttachement(String fileName);
 }

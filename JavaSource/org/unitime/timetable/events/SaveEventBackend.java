@@ -28,17 +28,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.Transaction;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.LookupServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
@@ -50,11 +46,8 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -64,21 +57,16 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.webutil.EventEmail;
 
-public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcRequest, EventInterface> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-
+public class SaveEventBackend extends EventAction<SaveEventRpcRequest, EventInterface> {
 	@Override
-	public EventInterface execute(SaveEventRpcRequest request, GwtRpcHelper helper) {
-		checkAccess(request.getEvent(), helper);
+	public EventInterface execute(SaveEventRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+		if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
 		
-		EventRoomAvailabilityRpcResponse availability = new EventRoomAvailabilityBackend().execute(
-				EventRoomAvailabilityRpcRequest.checkAvailability(new ArrayList<MeetingInterface>(request.getEvent().getMeetings()), request.getSessionId()), helper);
-		
-		EventEmail.Result result = save(request.getEvent(), request.getSessionId(), availability, helper);
+		EventEmail.Result result = save(request.getEvent(), request.getSessionId(), helper, rights);
 		
 		EventInterface event = null;
 		if (request.getEvent().hasMeetings()) {
-			event = new EventDetailBackend().execute(EventDetailRpcRequest.requestEventDetails(request.getSessionId(), request.getEvent().getId()), helper);
+			event = new EventDetailBackend().execute(EventDetailRpcRequest.requestEventDetails(request.getSessionId(), request.getEvent().getId()), helper, rights);
 		} else {
 			event = request.getEvent();
 		}
@@ -87,23 +75,14 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 				
 		return event;
 	}
-	
-	public void checkAccess(EventInterface e, GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null) {
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-		if (Roles.ADMIN_ROLE.equals(helper.getUser().getRole()) || Roles.EVENT_MGR_ROLE.equals(helper.getUser().getRole()))
-			return;
-		if (e.hasContact() && !helper.getUser().getId().equals(e.getContact().getExternalId()))
-			throw new PageAccessException(MESSAGES.authenticationInsufficient());
-		if (e.getType() != EventType.Special)
-			throw new PageAccessException(MESSAGES.authenticationInsufficient());
-	}
-	
-	protected EventEmail.Result save(EventInterface e, Long sessionId, EventRoomAvailabilityRpcResponse availability, GwtRpcHelper helper) {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		
+	protected EventEmail.Result save(EventInterface e, Long sessionId, GwtRpcHelper helper, EventRights rights) {
+		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
+			EventRoomAvailabilityRpcResponse availability = new EventRoomAvailabilityBackend().execute(
+					EventRoomAvailabilityRpcRequest.checkAvailability(new ArrayList<MeetingInterface>(e.getMeetings()), sessionId), helper, rights);
+			
 			TimetableManager manager = TimetableManager.getManager(helper.getUser());
 			Date now = new Date();
 			
@@ -133,43 +112,47 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 				case Course:
 					event = new CourseEvent(); break;
 				default:
-					throw new GwtRpcException(e.getType().getName() + " cannot be created through the event interface.");
+					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(e.getType().getName()));
 				}
 			}
 			
 			event.setEventName(e.getName());
 			event.setEmail(e.getEmail());
 			event.setSponsoringOrganization(e.hasSponsor() ? SponsoringOrganizationDAO.getInstance().get(e.getSponsor().getUniqueId()) : null);
-			if (event instanceof SpecialEvent)
+			if (event instanceof SpecialEvent) {
+				event.setMinCapacity(e.getMaxCapacity());
 				event.setMaxCapacity(e.getMaxCapacity());
+			}
 			if (event.getAdditionalContacts() == null) {
 				event.setAdditionalContacts(new HashSet<EventContact>());
 			}
-			Set<EventContact> existingContacts = new HashSet<EventContact>(event.getAdditionalContacts());
-			event.getAdditionalContacts().clear();
-			if (e.hasAdditionalContacts())
-				for (ContactInterface c: e.getAdditionalContacts()) {
-					if (c.getExternalId() == null) continue;
-					EventContact contact = null;
-					for (EventContact x: existingContacts)
-						if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
-					if (contact == null) {
-						contact = (EventContact)hibSession.createQuery(
-								"from EventContact where externalUniqueId = :externalId")
-								.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
-					}
-					if (contact == null) {
-						contact = new EventContact();
-						contact.setExternalUniqueId(c.getExternalId());
-						contact.setFirstName(c.getFirstName());
-						contact.setMiddleName(c.getMiddleName());
-						contact.setLastName(c.getLastName());
-						contact.setEmailAddress(c.getEmail());
-						contact.setPhone(c.getPhone());
-						hibSession.save(contact);
-					}
-					event.getAdditionalContacts().add(contact);
-				}
+			if (rights.canLookupContacts()) {
+				Set<EventContact> existingContacts = new HashSet<EventContact>(event.getAdditionalContacts());
+				event.getAdditionalContacts().clear();
+				if (e.hasAdditionalContacts())
+					for (ContactInterface c: e.getAdditionalContacts()) {
+						if (c.getExternalId() == null) continue;
+						EventContact contact = null;
+						for (EventContact x: existingContacts)
+							if (c.getExternalId().equals(x.getExternalUniqueId())) {  contact = x; break; }
+						if (contact == null) {
+							contact = (EventContact)hibSession.createQuery(
+									"from EventContact where externalUniqueId = :externalId")
+									.setString("externalId", c.getExternalId()).setMaxResults(1).uniqueResult();
+						}
+						if (contact == null) {
+							contact = new EventContact();
+							contact.setExternalUniqueId(c.getExternalId());
+							contact.setFirstName(c.getFirstName());
+							contact.setMiddleName(c.getMiddleName());
+							contact.setLastName(c.getLastName());
+							contact.setEmailAddress(c.getEmail());
+							contact.setPhone(c.getPhone());
+							hibSession.save(contact);
+						}
+						event.getAdditionalContacts().add(contact);
+					}				
+			}
 			
 			EventContact main = event.getMainContact();
 			if (main == null || !main.getExternalUniqueId().equals(e.getContact().getExternalId())) {
@@ -210,33 +193,20 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 					meeting = new Meeting();
 					meeting.setEvent(event);
 					Location location = (m.hasLocation() ? LocationDAO.getInstance().get(m.getLocation().getId(), hibSession) : null);
-					if (location == null) throw new GwtRpcException("Meeting " + m  + " has no location.");
+					if (location == null) throw new GwtRpcException(MESSAGES.failedSaveEventNoLocation(toString(m)));
 					meeting.setLocationPermanentId(location.getPermanentId());
 					meeting.setApprovedDate(null);
-					if (location.getControllingDepartment() == null)
-						throw new GwtRpcException(m.getLocationName()  + " is not managed in UniTime.");
-					boolean managed = false;
-					managers: for (TimetableManager mgr: location.getControllingDepartment().getTimetableManagers())
-						for (ManagerRole r: mgr.getManagerRoles())
-							if (Roles.EVENT_MGR_ROLE.equals(r.getRole().getReference())) {
-								managed = true; break managers;
-							}
-					if (!managed) throw new GwtRpcException(m.getLocationName() + " is not managed in UniTime.");
-					RoomTypeOption opt = location.getRoomType().getOption(SessionDAO.getInstance().get(sessionId, hibSession));
-					if (opt == null || !opt.can(RoomTypeOption.sStatusScheduleEvents)) {
-						throw new GwtRpcException(m.getLocationName() + " is disabled for events"
-								+ (opt != null && opt.getMessage() != null ? ": " + opt.getMessage() : "") + ".");
-					}
-						
-					if (Roles.EVENT_MGR_ROLE.equals(helper.getUser().getRole()) && manager != null) {
-						if (manager.getDepartments().contains(location.getControllingDepartment()))
-							meeting.setApprovedDate(now);
-					} else { //if (!Roles.ADMIN_ROLE.equals(helper.getUser().getRole())) {
+					if (!rights.canCreate(location))
+						throw new GwtRpcException(MESSAGES.failedSaveEventWrongLocation(m.getLocationName()));
+					if (rights.canApprove(location))
+						meeting.setApprovedDate(now);
+					if (rights.isPastOrOutside(m.getMeetingDate()))
+						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
+					if (!rights.canOverbook(location))
 						for (MeetingInterface x: availability.getMeetings()) {
 							if (x.equals(m) && x.hasConflicts())
-								throw new GwtRpcException("Meeting " + m  + " is conflicting with " + x.getConflicts().iterator().next().toString() + ".");
+								throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(x.getConflicts().iterator().next())));
 						}
-					}
 					meeting.setStartPeriod(m.getStartSlot());
 					meeting.setStopPeriod(m.getEndSlot());
 					meeting.setStartOffset(m.getStartOffset());
@@ -252,7 +222,7 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 				EventNote note = new EventNote();
 				note.setEvent(event);
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeAddMeetings);
-				note.setTimeStamp(new Date());
+				note.setTimeStamp(now);
 				note.setUser(uname);
 				if (e.hasNotes() && e.getNotes().last().getDate() == null)
 					note.setTextNote(e.getNotes().last().getNote());
@@ -264,7 +234,7 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 				EventNote note = new EventNote();
 				note.setEvent(event);
 				note.setNoteType(EventNote.sEventNoteTypeDeletion);
-				note.setTimeStamp(new Date());
+				note.setTimeStamp(now);
 				note.setUser(uname);
 				if (e.hasNotes() && e.getNotes().last().getDate() == null)
 					note.setTextNote(e.getNotes().last().getNote());
@@ -276,7 +246,7 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 				EventNote note = new EventNote();
 				note.setEvent(event);
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
-				note.setTimeStamp(new Date());
+				note.setTimeStamp(now);
 				note.setUser(uname);
 				if (e.hasNotes() && e.getNotes().last().getDate() == null)
 					note.setTextNote(e.getNotes().last().getNote());
@@ -332,6 +302,4 @@ public class SaveEventBackend implements GwtRpcImplementation<SaveEventRpcReques
 			throw new GwtRpcException(ex.getMessage(), ex);
 		}
 	}
-
-
 }

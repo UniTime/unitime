@@ -19,13 +19,11 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Query;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -38,11 +36,10 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.CalendarUtils;
 
-public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
 	
 	@Override
-	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, GwtRpcHelper helper) {
+	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		checkAccess(helper);
 		
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
@@ -67,8 +64,10 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 				
 				query.setInteger("startTime", request.getStartSlot());
 				query.setInteger("stopTime", request.getEndSlot());
-				for (int i = 0; i < request.getDates().size(); i++)
-					query.setDate("d" + i, CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i)));
+				for (int i = 0; i < request.getDates().size(); i++) {
+					Date date = CalendarUtils.dateOfYear2date(session.getSessionStartYear(), request.getDates().get(i));
+					query.setDate("d" + i, date);
+				}
 				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 				
@@ -101,6 +100,20 @@ public class EventRoomAvailabilityBackend implements GwtRpcImplementation<EventR
 			for (MeetingInterface meeting: response.getMeetings()) {
 				if (meeting.getMeetingDate() == null)
 					meeting.setMeetingDate(CalendarUtils.dateOfYear2date(session.getSessionStartYear(), meeting.getDayOfYear()));
+				
+				if (rights.isPastOrOutside(meeting.getMeetingDate())) {
+					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					conflict.setName(MESSAGES.conflictPastOrOutside(session.getLabel()));
+					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setMeetingDate(meeting.getMeetingDate());
+					conflict.setDayOfYear(meeting.getDayOfYear());
+					conflict.setStartOffset(0);
+					conflict.setEndOffset(0);
+					conflict.setStartSlot(0);
+					conflict.setEndSlot(288);
+					// conflict.setApprovalDate(session.getEventBeginDate());
+					meeting.addConflict(conflict);
+				}
 				
 				if (!meeting.hasLocation()) continue;
 				

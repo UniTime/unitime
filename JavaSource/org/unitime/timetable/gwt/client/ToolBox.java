@@ -192,4 +192,13 @@ public class ToolBox {
 	public native static void setMaxWidth(Style style, String value) /*-{
 		style["max-width"] = value;
 	}-*/;
+	
+	public native static int getClientWidth() /*-{
+		var sideMenu = $doc.getElementById("unitime-SideMenu").getElementsByTagName("span");
+    	if (sideMenu.length > 0) {
+    		return $doc.body.clientWidth - sideMenu[0].clientWidth;
+    	} else {
+    		return $doc.body.clientWidth;
+    	}
+	}-*/;
 }

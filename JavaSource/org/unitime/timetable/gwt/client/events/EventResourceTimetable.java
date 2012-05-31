@@ -30,11 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickEvent;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -186,6 +188,11 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
+				try {
+					((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
+				} catch (Exception e) {
+					UniTimeNotifications.error(MESSAGES.failedToHideSessionInfo(e.getMessage()));
+				}
 			}
 			
 			@Override
@@ -421,7 +428,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 		});
 		
-		iEventDetail = new EventDetail() {
+		iEventDetail = new EventDetail(this) {
 			@Override
 			protected void onHide() {
 				iRootPanel.setWidget(iPanel);
@@ -479,6 +486,15 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				} else {
 					super.hide();
 				}
+			}
+			@Override
+			protected void onApprovalOrReject(EventInterface event) {
+				GwtRpcResponseList<EventInterface> data = new GwtRpcResponseList<EventInterface>(iData);
+				for (Iterator<EventInterface> i = data.iterator(); i.hasNext(); )
+					if (i.next().getId().equals(getEvent().getId())) i.remove();
+				if (event != null)
+					data.add(event);
+				populate(data);
 			}
 		};
 		
@@ -1095,6 +1111,11 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		} else {
 			iLookup.setOptions("mustHaveExternalId");
 		}
+	}
+	
+	@Override
+	public Long getSessionId() {
+		return iSession.getAcademicSessionId();
 	}
 
 	@Override

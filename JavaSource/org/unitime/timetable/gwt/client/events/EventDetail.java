@@ -22,9 +22,11 @@ package org.unitime.timetable.gwt.client.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -37,6 +39,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -71,8 +74,12 @@ public class EventDetail extends Composite {
 	private UniTimeTable<RelatedObjectInterface> iOwners;
 	private EnrollmentTable iEnrollments;
 	
-	public EventDetail() {
+	private EventPropertiesProvider iProperties;
+	private ApproveDialog iApproveDialog;
+	
+	public EventDetail(EventPropertiesProvider properties) {
 		iForm = new SimpleForm();
+		iProperties = properties;
 		
 		iHeader = new UniTimeHeaderPanel();
 		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler() {
@@ -111,7 +118,84 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
-		iMeetings = new MeetingTable(false);
+		iApproveDialog = new ApproveDialog() {
+			@Override
+			protected void onApprove(List<MeetingInterface> meetings, String message) {
+				LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName()));
+				RPC.execute(ApproveEventRpcRequest.approve(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						if (result.hasMessage()) {
+							if (result.getMessage().startsWith("WARN:"))
+								UniTimeNotifications.info(result.getMessage().substring(5));
+							else
+								UniTimeNotifications.info(result.getMessage());
+						}
+						onApprovalOrReject(result);
+						setEvent(result);
+					}
+				});
+			}
+			@Override
+			protected void onReject(List<MeetingInterface> meetings, String message) {
+				LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName()));
+				RPC.execute(ApproveEventRpcRequest.reject(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						if (result.hasMessage()) {
+							if (result.getMessage().startsWith("WARN:"))
+								UniTimeNotifications.info(result.getMessage().substring(5));
+							else
+								UniTimeNotifications.info(result.getMessage());
+						}
+						onApprovalOrReject(result.getId() == null ? null : result);
+						if (result.getId() != null)
+							setEvent(result);
+						else
+							EventDetail.this.hide();
+					}
+				});
+			}
+			@Override
+			protected void onInquire(List<MeetingInterface> meetings, String message) {
+				LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName()));
+				RPC.execute(ApproveEventRpcRequest.inquire(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						UniTimeNotifications.error(caught.getMessage());
+					}
+
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						if (result.hasMessage()) {
+							if (result.getMessage().startsWith("WARN:"))
+								UniTimeNotifications.info(result.getMessage().substring(5));
+							else
+								UniTimeNotifications.info(result.getMessage());
+						}
+						setEvent(result);
+					}
+				});
+			}
+		};
+		
+		iMeetings = new MeetingTable(iApproveDialog, false);
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -177,8 +261,12 @@ public class EventDetail extends Composite {
 	protected EventInterface getPrevious(Long eventId) { return null; }
 	protected void previous(EventInterface previous) {}
 	
+	protected void onApprovalOrReject(EventInterface event) {}
+	
 	public void setEvent(EventInterface event) {
 		iEvent = event;
+		
+		iApproveDialog.reset(iProperties.getProperties());
 		
 		iForm.clear();
 
@@ -343,7 +431,7 @@ public class EventDetail extends Composite {
 			iForm.addRow(iEnrollments.getTable());
 			iEnrollmentHeader.showLoading();
 			final Long eventId = iEvent.getId();
-			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForEvent(eventId), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
+			RPC.execute(EventEnrollmentsRpcRequest.getEnrollmentsForEvent(eventId, iProperties.getSessionId()), new AsyncCallback<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					if (eventId.equals(iEvent.getId())) {

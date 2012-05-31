@@ -57,6 +57,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
+				popup.addStyleName("unitime-Menu");
 				if (!setMenu(popup)) return;
 				popup.showRelativeTo((Widget)event.getSource());
 			}

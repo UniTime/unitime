@@ -34,6 +34,7 @@ import org.apache.struts.upload.FormFile;
 import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.util.Constants;
@@ -152,6 +153,21 @@ public class EventEmail {
                     message += ", "+iEvent.getMainContact().getMiddleName();
                 message += "</a></td></tr>";
             }
+            if (iEvent.getAdditionalContacts() != null) {
+                message += "<tr><td>Additional Contacts</td><td>";
+                for (EventContact contact: iEvent.getAdditionalContacts()) {
+                	if (message.endsWith("</a>")) message += "<br>";
+                	message += "<a href='mailto:"+contact.getEmailAddress()+"'>";
+                    if (contact.getLastName()!=null)
+                        message += contact.getLastName();
+                    if (contact.getFirstName()!=null)
+                        message += ", "+contact.getFirstName();
+                    if (contact.getMiddleName()!=null && contact.getMiddleName().length()>0)
+                        message += ", "+contact.getMiddleName();
+                    message += "</a>";
+            	}
+            	message += "</td></tr>";
+            }
             
             if (!iMeetings.isEmpty()) {
                 message += "<tr><td colspan='2' style='border-bottom: 1px #2020FF solid; font-variant:small-caps;'>";
@@ -181,7 +197,7 @@ public class EventEmail {
                 message += "</font>";
                 message += "</td></tr><tr><td colspan='2'>";
                 message += "<table border='0' width='100%'>";
-                message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td></tr>";
+                message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td><td><i>Approved</i></td></tr>";
                 for (MultiMeeting m : iMeetings) {
                     message += "<tr><td>";
                     message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
@@ -190,6 +206,14 @@ public class EventEmail {
                     message += m.getMeetings().first().startTime()+" - "+m.getMeetings().first().stopTime();
                     message += "</td><td>";
                     message += (m.getMeetings().first().getLocation()==null?"":" "+m.getMeetings().first().getLocation().getLabel());
+                    message += "</td><td>";
+                    if (m.isPast()) {
+                        message += "";
+                    } else if (m.getMeetings().first().getApprovedDate()==null) {
+                        message += "<i>Waiting Approval</i>";
+                    } else {
+                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
+                    }
                     message += "</td></tr>";
                 }
                 message += "</table></td></tr>";
@@ -202,7 +226,7 @@ public class EventEmail {
                 message += "</font>";
                 message += "</td></tr><tr><td colspan='2'>";
                 message += "<table border='0' width='100%'>";
-                message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td></tr>";
+                message += "<tr><td><i>Date</i></td><td><i>Time</i></td><td><i>Location</i></td><td><i>Approved</i></td></tr>";
                 for (MultiMeeting m : iRemovedMeetings) {
                     message += "<tr><td>";
                     message += m.getDays()+" "+new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getMeetingDate());
@@ -211,6 +235,14 @@ public class EventEmail {
                     message += m.getMeetings().first().startTime()+" - "+m.getMeetings().first().stopTime();
                     message += "</td><td>";
                     message += (m.getMeetings().first().getLocation()==null?"":" "+m.getMeetings().first().getLocation().getLabel());
+                    message += "</td><td>";
+                    if (m.isPast()) {
+                        message += "";
+                    } else if (m.getMeetings().first().getApprovedDate()==null) {
+                        message += "<i>Waiting Approval</i>";
+                    } else {
+                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
+                    }
                     message += "</td></tr>";
                 }
                 message += "</table></td></tr>";
@@ -303,6 +335,12 @@ public class EventEmail {
                 mail.addRecipient(iEvent.getMainContact().getEmailAddress(),iEvent.getMainContact().getName());
                 to = "<a href='mailto:"+iEvent.getMainContact().getEmailAddress()+"'>"+iEvent.getMainContact().getShortName()+"</a>";
             }
+            if (iEvent.getAdditionalContacts() != null)
+            	for (EventContact contact: iEvent.getAdditionalContacts()) {
+            		mail.addRecipientCC(contact.getEmailAddress(),contact.getName());
+            		if (!to.isEmpty()) to += ", ";
+                    to += "<a href='mailto:"+contact.getEmailAddress()+"'>"+contact.getShortName()+"</a>";
+            	}
             if (iEvent.getEmail()!=null && iEvent.getEmail().length()>0) {
                 for (StringTokenizer stk = new StringTokenizer(iEvent.getEmail(),";:,\n\r\t");stk.hasMoreTokens();) {
                     String email = stk.nextToken();
