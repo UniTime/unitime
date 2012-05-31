@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
@@ -59,9 +60,12 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
 	
 	private Command iAddMeetingsCommand;
+	private ApproveDialog iApproveDialog;
+	private boolean iSelectable = true;
 	
-	public MeetingTable(final boolean editable) {
+	public MeetingTable(ApproveDialog approval, final boolean editable) {
 		setStyleName("unitime-EventMeetings");
+		iApproveDialog = approval;
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader hTimes = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 		hTimes.addOperation(new Operation() {
@@ -206,10 +210,14 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return meeting.getId() != null && meeting.isCanApprove();
+				return iApproveDialog != null && meeting.getId() != null && meeting.isCanApprove();
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {
+			}
+			@Override
+			public void execute() {
+				iApproveDialog.showApprove(meetings());
 			}
 		});
 		hTimes.addOperation(new MeetingOperation() {
@@ -227,10 +235,14 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return meeting.getId() != null && meeting.isCanApprove();
+				return iApproveDialog != null && meeting.getId() != null && meeting.isCanApprove();
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {
+			}
+			@Override
+			public void execute() {
+				iApproveDialog.showInquire(meetings());
 			}
 		});
 		hTimes.addOperation(new MeetingOperation() {
@@ -244,10 +256,14 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return meeting.getId() != null && meeting.isCanApprove();
+				return iApproveDialog != null && meeting.getId() != null && meeting.isCanApprove();
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {
+			}
+			@Override
+			public void execute() {
+				iApproveDialog.showReject(meetings());
 			}
 		});
 		
@@ -357,6 +373,9 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		resetColumnVisibility();
 	}
 	
+	public void setSelectable(boolean selectable) { iSelectable = selectable; }
+	public boolean isSelectable() { return iSelectable; }
+	
 	@Override
 	public void clearTable(int headerRows) {
 		super.clearTable(headerRows);
@@ -415,6 +434,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		case SHOW_CAPACITY:
 			getHeader(MESSAGES.colLocation()).addOperation(op);
 			header.addOperation(op);
+			break;
 		default:
 			header.addOperation(op);
 		}
@@ -474,7 +494,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	
 	public void add(MeetingInterface meeting) {
 		List<Widget> row = new ArrayList<Widget>();
-		if (meeting.getId() == null || (meeting.isCanEdit() || meeting.isCanApprove())) {
+		if (isSelectable() && (meeting.getId() == null || (meeting.isCanEdit() || meeting.isCanApprove()))) {
 			row.add(new CheckBoxCell());
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {
@@ -512,15 +532,15 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			for (MeetingConglictInterface m: meeting.getConflicts()) {
 				List<Widget> r = new ArrayList<Widget>();
 				r.add(new CenterredCell(MESSAGES.signConflict()));
-				r.add(new Label(MESSAGES.conflictWith(m.getName()), false));
+				r.add(new Label(m.getType() == EventType.Unavailabile ? m.getName() : MESSAGES.conflictWith(m.getName()), false));
 				r.add(new Label(meetingTime(m)));
 				r.add(new Label(allocatedTime(m)));
 				r.add(new NumberCell(m.getStartOffset()));
 				r.add(new NumberCell(- m.getEndOffset()));
 				r.add(new Label(""));
 				r.add(new NumberCell(""));
-				r.add(new Label(m.getApprovalDate() == null ? MESSAGES.approvalNotApproved() : sDateFormat.format(m.getApprovalDate())));
-				if (!m.isApproved())
+				r.add(new Label(m.getType() == EventType.Unavailabile ? "" : m.getApprovalDate() == null ? MESSAGES.approvalNotApproved() : sDateFormat.format(m.getApprovalDate())));
+				if (!m.isApproved() && m.getType() != EventType.Unavailabile)
 					r.get(r.size() - 1).addStyleName("not-approved");
 				r.get(1).getElement().getStyle().setPaddingLeft(5, Unit.PX);
 				int conflictRow = addRow(new MeetingInterface[] {meeting, m}, r);

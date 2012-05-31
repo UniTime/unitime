@@ -19,22 +19,14 @@
 */
 package org.unitime.timetable.events;
 
-import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 
-public abstract class FilterBoxBackend implements GwtRpcImplementation<FilterRpcRequest, FilterRpcResponse> {
-	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, FilterRpcResponse> {
 
 	@Override
-	public FilterRpcResponse execute(FilterRpcRequest request, GwtRpcHelper helper) {
-		checkAuthorization(request, helper);
-		
+	public FilterRpcResponse execute(FilterRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		if (helper.getUser() != null) {
 			request.addOption("user", helper.getUser().getId());
 			if (helper.getUser().getCurrentRole() != null)
@@ -45,31 +37,23 @@ public abstract class FilterBoxBackend implements GwtRpcImplementation<FilterRpc
 		
 		switch (request.getCommand()) {
 			case LOAD:
-				load(request, response);
+				load(request, response, rights);
 				break;
 			case SUGGESTIONS:
-				suggestions(request, response);
+				suggestions(request, response, rights);
 				break;
 			case ENUMERATE:
-				enumarate(request, response);
+				enumarate(request, response, rights);
 				break;
 		}
 		
 		return response;
 	}
 	
-	public abstract void load(FilterRpcRequest request, FilterRpcResponse response);
+	public abstract void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);
 	
-	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response);
+	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);
 	
-	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response);
-	
-	protected void checkAuthorization(FilterRpcRequest request, GwtRpcHelper helper) throws PageAccessException {
-		if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
-			if (helper.getUser() == null)
-				throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-	}
-	
+	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);	
 
 }

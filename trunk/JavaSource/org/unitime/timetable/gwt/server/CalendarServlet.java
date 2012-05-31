@@ -52,6 +52,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
+import org.unitime.timetable.events.SimpleEventRights;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
@@ -305,16 +306,20 @@ public class CalendarServlet extends HttpServlet {
             	if (hasRoomFilter)
             		r.setRoomFilter(roomFilter);
             	String user = params.getParameter("user");
+            	User u = null;
             	if (user != null) {
+            		u = new User();
+            		u.setId(user);
             		eventFilter.setOption("user", user);
             		roomFilter.setOption("user", user);
             		String role = params.getParameter("role");
             		if (role != null) {
             			eventFilter.setOption("role", role);
             			roomFilter.setOption("role", role);
+            			u.setRole(role);
             		}
             	}
-            	for (EventInterface e: new EventLookupBackend().findEvents(r))
+            	for (EventInterface e: new EventLookupBackend().findEvents(r, new SimpleEventRights(u, false, sessionId)))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");

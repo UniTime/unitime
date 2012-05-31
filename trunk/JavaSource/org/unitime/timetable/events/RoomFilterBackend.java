@@ -66,7 +66,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	};
 
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response) {
+	public void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		Set<String> eventDepts = new HashSet<String>(
 				DepartmentDAO.getInstance().getSession().createQuery(
 						"select distinct d.deptCode from Department d inner join d.timetableManagers m inner join m.managerRoles mr " +
@@ -415,7 +415,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response) {
+	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), 20, distances, null)) {
 			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
@@ -426,7 +426,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response) {
+	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
@@ -441,7 +441,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"type", location.getRoomType().getLabel(),
 					"capacity", location.getCapacity().toString(),
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
-					"mouseOver", hint));
+					"mouseOver", hint,
+					"overbook", rights.canOverbook(location) ? "1" : "0"));
 		}
 	}
 

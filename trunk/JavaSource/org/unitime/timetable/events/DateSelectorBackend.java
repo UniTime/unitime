@@ -25,20 +25,17 @@ import java.util.Date;
 import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.DateUtils;
 
-public class DateSelectorBackend implements GwtRpcImplementation<SessionDatesSelector.RequestSessionDetails, GwtRpcResponseList<SessionDatesSelector.SessionMonth>> {
+public class DateSelectorBackend extends EventAction<SessionDatesSelector.RequestSessionDetails, GwtRpcResponseList<SessionDatesSelector.SessionMonth>> {
 
 	@Override
-	public GwtRpcResponseList<SessionDatesSelector.SessionMonth> execute(SessionDatesSelector.RequestSessionDetails command, GwtRpcHelper helper) {
+	public GwtRpcResponseList<SessionDatesSelector.SessionMonth> execute(SessionDatesSelector.RequestSessionDetails command, GwtRpcHelper helper, EventRights rights) {
 		Session session = SessionDAO.getInstance().get(command.getSessionId());
 		
 		GwtRpcResponseList<SessionDatesSelector.SessionMonth> response = new GwtRpcResponseList<SessionDatesSelector.SessionMonth>();
-		
-		Date now = new Date();
 		
 		Calendar calendar = Calendar.getInstance();
 		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
@@ -70,7 +67,7 @@ public class DateSelectorBackend implements GwtRpcImplementation<SessionDatesSel
 
 				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)
 					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.DISABLED);
-				else if (calendar.getTime().before(now))
+				else if (rights.isPastOrOutside(calendar.getTime()))
 					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.PAST);
 				
 				calendar.add(Calendar.DAY_OF_YEAR, 1);

@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
-import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -34,6 +33,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -172,19 +172,15 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.DateSelectorBackend")
-	public static class RequestSessionDetails implements GwtRpcRequest<GwtRpcResponseList<SessionMonth>> {
-		private Long iSessionId;
-		
+	public static class RequestSessionDetails extends EventRpcRequest<GwtRpcResponseList<SessionMonth>> {
+
 		public RequestSessionDetails() {}
-		public RequestSessionDetails(Long sessionId) { iSessionId = sessionId; }
+		public RequestSessionDetails(Long sessionId) { setSessionId(sessionId); }
 		
-		public Long getSessionId() { return iSessionId; }
 		@Override
 		public String toString() {
 			return getSessionId().toString();
 		}
-		
-		
 	}
 	
 	public static class P extends AbsolutePanel {

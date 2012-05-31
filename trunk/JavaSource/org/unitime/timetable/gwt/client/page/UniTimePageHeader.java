@@ -99,6 +99,10 @@ public class UniTimePageHeader extends Composite {
 		panel.setVisible(true);
 	}
 	
+	public void hideSessionInfo() {
+		iSessionInfo.setVisible(false);
+	}
+	
 	public void reloadSessionInfo() {
 		iService.getSessionInfo(new AsyncCallback<HashMap<String,String>>() {
 			@Override
