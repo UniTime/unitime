@@ -31,10 +31,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
+import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.StandardEventNote;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 
@@ -54,7 +59,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		
 		setupSponsoringOrganizations(session,  response);
 		
-		setupMainContact(session, response, helper.getUser());
+		if (helper.getUser() != null)
+			response.setMainContact(lookupMainContact(request.getSessionId(), helper.getUser()));
 		
 		setupStandardNotes(session, response);
 		
@@ -71,9 +77,11 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 	}
 	
-	public void setupMainContact(Session session, EventPropertiesRpcResponse response, User user) {
-		if (user == null) return;
-		EventContact contact = EventContact.findByExternalUniqueId(user.getId());
+	public static ContactInterface lookupMainContact(Long sessionId, User user) {
+		org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
+		EventContact contact = (EventContact)hibSession.createQuery(
+				"from EventContact where externalUniqueId = :userId"
+				).setString("userId", user.getId()).setMaxResults(1).uniqueResult();
 		if (contact != null) {
 			ContactInterface c = new ContactInterface();
 			c.setFirstName(contact.getFirstName());
@@ -82,44 +90,89 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setEmail(contact.getEmailAddress());
 			c.setPhone(contact.getPhone());
 			c.setExternalId(contact.getExternalUniqueId());
-			response.setMainContact(c);
-		} else {
-			List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId" + (session == null ? "" : ",session=" + session.getUniqueId()));
-			if (people != null) {
-				for (PersonInterface person: people) {
-					if (user.getId().equals(person.getId())) {
-						ContactInterface c = new ContactInterface();
-						c.setFirstName(person.getFirstName());
-						c.setMiddleName(person.getMiddleName());
-						c.setLastName(person.getLastName());
-						c.setEmail(person.getEmail());
-						c.setPhone(person.getPhone());
-						c.setExternalId(person.getId());
-						response.setMainContact(c);
-						break;
-					}
+			return c;
+		}
+		TimetableManager manager = (TimetableManager)hibSession.createQuery(
+				"from TimetableManager where externalUniqueId = :userId"
+				).setString("userId", user.getId()).setMaxResults(1).uniqueResult();
+		if (manager != null) {
+			ContactInterface c = new ContactInterface();
+			c.setExternalId(manager.getExternalUniqueId());
+			c.setFirstName(manager.getFirstName());
+			c.setMiddleName(manager.getMiddleName());
+			c.setLastName(manager.getLastName());
+			c.setEmail(manager.getEmailAddress());
+			return c;
+		}
+		DepartmentalInstructor instructor = (DepartmentalInstructor)hibSession.createQuery(
+				"from DepartmentalInstructor where department.session.uniqueId = :sessionId and externalUniqueId = :userId"
+				).setLong("sessionId", sessionId).setString("userId", user.getId()).setMaxResults(1).uniqueResult();
+		if (instructor != null) {
+			ContactInterface c = new ContactInterface();
+			c.setExternalId(instructor.getExternalUniqueId());
+			c.setFirstName(instructor.getFirstName());
+			c.setMiddleName(instructor.getMiddleName());
+			c.setLastName(instructor.getLastName());
+			c.setEmail(instructor.getEmail());
+			return c;
+		}
+		Staff staff = (Staff)hibSession.createQuery(
+				"from Staff where externalUniqueId = :userId"
+				).setString("userId", user.getId()).setMaxResults(1).uniqueResult();
+		if (staff != null) {
+			ContactInterface c = new ContactInterface();
+			c.setExternalId(staff.getExternalUniqueId());
+			c.setFirstName(staff.getFirstName());
+			c.setMiddleName(staff.getMiddleName());
+			c.setLastName(staff.getLastName());
+			c.setEmail(staff.getEmail());
+			return c;
+		}
+		Student student = (Student)hibSession.createQuery(
+				"from Student where session.uniqueId = :sessionId and externalUniqueId = :userId"
+				).setLong("sessionId", sessionId).setString("userId", user.getId()).setMaxResults(1).uniqueResult();
+		if (student != null) {
+			ContactInterface c = new ContactInterface();
+			c.setExternalId(student.getExternalUniqueId());
+			c.setFirstName(student.getFirstName());
+			c.setMiddleName(student.getMiddleName());
+			c.setLastName(student.getLastName());
+			c.setEmail(student.getEmail());
+			return c;
+		}
+		List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId,session=" + sessionId);
+		if (people != null) {
+			for (PersonInterface person: people) {
+				if (user.getId().equals(person.getId())) {
+					ContactInterface c = new ContactInterface();
+					c.setFirstName(person.getFirstName());
+					c.setMiddleName(person.getMiddleName());
+					c.setLastName(person.getLastName());
+					c.setEmail(person.getEmail());
+					c.setPhone(person.getPhone());
+					c.setExternalId(person.getId());
+					return c;
 				}
-			}
-			if (!response.hasMainContact()) {
-				ContactInterface c = new ContactInterface();
-				String name[] = user.getName().split(" ");
-				if (name.length == 1) {
-					c.setLastName(name[0]);
-				} else if (name.length == 2) {
-					c.setFirstName(name[0]);
-					c.setLastName(name[1]);
-				} else {
-					c.setFirstName(name[0]);
-					String mName = "";
-					for (int i = 1; i < name.length - 1; i++)
-						mName += (mName.isEmpty() ? "" : " ") + name[i];
-					c.setFirstName(mName);
-					c.setLastName(name[name.length - 1]);
-				}
-				c.setExternalId(user.getId());
-				
 			}
 		}
+
+		ContactInterface c = new ContactInterface();
+		String name[] = user.getName().split(" ");
+		if (name.length == 1) {
+			c.setLastName(name[0]);
+		} else if (name.length == 2) {
+			c.setFirstName(name[0]);
+			c.setLastName(name[1]);
+		} else {
+			c.setFirstName(name[0]);
+			String mName = "";
+			for (int i = 1; i < name.length - 1; i++)
+				mName += (mName.isEmpty() ? "" : " ") + name[i];
+			c.setFirstName(mName);
+			c.setLastName(name[name.length - 1]);
+		}
+		c.setExternalId(user.getId());
+		return c;
 	}
 	
 	public void setupStandardNotes(Session session, EventPropertiesRpcResponse response) {

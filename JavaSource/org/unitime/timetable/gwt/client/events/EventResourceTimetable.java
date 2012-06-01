@@ -1180,6 +1180,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				@Override
 				public void onSuccess(EventPropertiesRpcResponse result) {
 					iProperties = result;
+					iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
 					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 					iFilterHeader.setEnabled("add", result.isCanAddEvent());
 					iEventAdd.setup(result);
