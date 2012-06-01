@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -344,6 +345,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		}
 		
 		iDockPanel = new DockPanel();
+		iDockPanel.setStyleName("unitime-EventResults");
 		iDockPanel.setSpacing(0);
 		iDockPanel.add(iGridOrTablePanel, DockPanel.SOUTH);
 		iDockPanel.add(iRoomPanel, DockPanel.WEST);
@@ -922,7 +924,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			if (!meetings.isEmpty())
 				iTimeGrid.addEvent(event, meetings);
 		}
-		iTimeGrid.shrink();
+		iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)));
 		if (iWeekPanel.getValue() != null)
 			iTimeGrid.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
 	}
