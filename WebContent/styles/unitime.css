@@ -2384,3 +2384,7 @@ div.gwt-MenuBarPopup {
   	box-shadow:         2px 2px 3px rgb(232,162,162);
   	background-color: rgb(209,138,138);
 }
+
+.unitime-EventResults{
+	width: 100%;
+}
