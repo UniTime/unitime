@@ -608,13 +608,12 @@ public class EventAdd extends Composite {
 
 		iLimit.setValue(iEvent.hasMaxCapacity() ? iEvent.getMaxCapacity() : null);
 		iNotes.setText("");
-		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAdditionalInformation()), iEvent.getId() == null);
 		iEmails.setText(iEvent.hasEmail() ? iEvent.getEmail() : "");
 		if (iEvent.getType() == EventType.Course) {
 			iCourses.setValue(iEvent.getRelatedObjects());
 			iReqAttendance.setValue(iEvent.hasRequiredAttendance());
 		} else {
-			iCourses.setValue(null);
+			if (canAddCourseEvent) iCourses.setValue(null);
 			iReqAttendance.setValue(false);
 		}
 		
@@ -711,8 +710,6 @@ public class EventAdd extends Composite {
 			}
 		}
 		
-		iCourses.setValue(iEvent.getType() == EventType.Course ? iEvent.getRelatedObjects() : null, true);
-
 		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupContacts());
 		iLookupButton.setVisible(canLookup);
 		iAdditionalLookupButton.setVisible(canLookup);

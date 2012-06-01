@@ -53,7 +53,6 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.EventContactDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -92,58 +91,53 @@ public class LookupServlet extends RemoteServiceServlet implements LookupService
 	@Override
 	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException {
 		try {
-			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-			try {
-				boolean displayWithoutId = true;
-				int maxResults = -1;
-				boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
-				Long sessionId = getAcademicSessionId();
-				if (options != null) {
-					for (String option: options.split(",")) {
-						option = option.trim();
-						if (option.equals("mustHaveExternalId"))
-							displayWithoutId = false;
-						else if (option.equals("allowNoExternalId"))
-							displayWithoutId = true;
-						else if (option.startsWith("mustHaveExternalId="))
-							displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
-						else if (option.startsWith("maxResults="))
-							maxResults = Integer.parseInt(option.substring("maxResults=".length()));
-						else if (option.startsWith("session="))
-							sessionId = Long.valueOf(option.substring("session=".length()));
-						else if (option.startsWith("source=")) {
-							ldap = students = staff = managers = events = instructors = false;
-							for (String s: option.substring("source=".length()).split(":")) {
-								if ("ldap".equals(s)) ldap = true;
-								if ("students".equals(s)) students = true;
-								if ("staff".equals(s)) staff = true;
-								if ("managers".equals(s)) managers = true;
-								if ("events".equals(s)) events = true;
-								if ("instructors".equals(s)) instructors = true;
-							}
+			boolean displayWithoutId = true;
+			int maxResults = -1;
+			boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
+			Long sessionId = getAcademicSessionId();
+			if (options != null) {
+				for (String option: options.split(",")) {
+					option = option.trim();
+					if (option.equals("mustHaveExternalId"))
+						displayWithoutId = false;
+					else if (option.equals("allowNoExternalId"))
+						displayWithoutId = true;
+					else if (option.startsWith("mustHaveExternalId="))
+						displayWithoutId = !"true".equalsIgnoreCase(option.substring("mustHaveExternalId=".length()));
+					else if (option.startsWith("maxResults="))
+						maxResults = Integer.parseInt(option.substring("maxResults=".length()));
+					else if (option.startsWith("session="))
+						sessionId = Long.valueOf(option.substring("session=".length()));
+					else if (option.startsWith("source=")) {
+						ldap = students = staff = managers = events = instructors = false;
+						for (String s: option.substring("source=".length()).split(":")) {
+							if ("ldap".equals(s)) ldap = true;
+							if ("students".equals(s)) students = true;
+							if ("staff".equals(s)) staff = true;
+							if ("managers".equals(s)) managers = true;
+							if ("events".equals(s)) events = true;
+							if ("instructors".equals(s)) instructors = true;
 						}
 					}
 				}
-				Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
-				TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
-				String q = query.trim().toLowerCase();
-		        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
-		        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
-		        if (instructors) findPeopleFromInstructors(people, peopleWithoutId, q, sessionId);
-		        if (staff) findPeopleFromStaff(people, peopleWithoutId, q);
-		        if (managers) findPeopleFromTimetableManagers(people, peopleWithoutId, q);
-		        if (events) findPeopleFromEventContact(people, peopleWithoutId, q);
-		        List<PersonInterface> ret = new ArrayList<PersonInterface>(people.values());
-		        Collections.sort(ret);
-		        if (displayWithoutId)
-		        	ret.addAll(peopleWithoutId);
-		        if (maxResults > 0 && ret.size() > maxResults) {
-		        	return new ArrayList<PersonInterface>(ret.subList(0, maxResults));
-		        }
-				return ret;
-			} finally {
-				hibSession.close();
 			}
+			Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
+			TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
+			String q = query.trim().toLowerCase();
+	        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
+	        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
+	        if (instructors) findPeopleFromInstructors(people, peopleWithoutId, q, sessionId);
+	        if (staff) findPeopleFromStaff(people, peopleWithoutId, q);
+	        if (managers) findPeopleFromTimetableManagers(people, peopleWithoutId, q);
+	        if (events) findPeopleFromEventContact(people, peopleWithoutId, q);
+	        List<PersonInterface> ret = new ArrayList<PersonInterface>(people.values());
+	        Collections.sort(ret);
+	        if (displayWithoutId)
+	        	ret.addAll(peopleWithoutId);
+	        if (maxResults > 0 && ret.size() > maxResults) {
+	        	return new ArrayList<PersonInterface>(ret.subList(0, maxResults));
+	        }
+			return ret;
 		} catch (Exception e) {
 			if (e instanceof LookupException) throw (LookupException)e;
 			sLog.error("Lookup failed: " + e.getMessage(), e);

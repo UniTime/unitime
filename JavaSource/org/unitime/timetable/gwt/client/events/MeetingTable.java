@@ -513,7 +513,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		List<Widget> row = new ArrayList<Widget>();
 		if (!isSelectable()) {
 			row.add(new HTML(MESSAGES.signSelected()));
-		} else if (meeting.getId() == null || (meeting.isCanEdit() || meeting.isCanApprove())) {
+		} else if (meeting.getId() == null || (isEditable() && meeting.isCanEdit()) || meeting.isCanApprove()) {
 			row.add(new CheckBoxCell());
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {
@@ -670,7 +670,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			cmp = compareByTeardownTime(m1, m2);
 			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
 		case PUBLISHED_TIME:
-			cmp = compareBySetupTime(m1, m2);
+			cmp = compareByPublishedTime(m1, m2);
 			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
 		case ALLOCATED_TIME:
 			cmp = compareByAllocatedTime(m1, m2);
