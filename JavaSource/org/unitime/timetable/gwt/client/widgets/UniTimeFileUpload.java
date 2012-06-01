@@ -20,14 +20,21 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.FileUpload;
 import com.google.gwt.user.client.ui.FormPanel;
 
 public class UniTimeFileUpload extends FormPanel {
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private FileUpload iUpload;
 	
 	public UniTimeFileUpload() {
@@ -71,7 +78,62 @@ public class UniTimeFileUpload extends FormPanel {
 		});
 	}
 	
+	@Override
+	public void reset() {
+		super.reset();
+		RPC.execute(new FileUploadRpcRequest(true), new AsyncCallback<FileUploadRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(FileUploadRpcResponse result) {
+			}
+		});
+	}
+	
+	public void check() {
+		RPC.execute(new FileUploadRpcRequest(), new AsyncCallback<FileUploadRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught.getMessage());
+			}
+			@Override
+			public void onSuccess(FileUploadRpcResponse result) {
+				if (result.hasFile()) {
+					if (!result.getFileName().equals(getFileName())) reset();
+				} else {
+					if (getFileName() != null && !getFileName().isEmpty()) UniTimeFileUpload.super.reset();
+				}
+			}
+		});
+	}
+	
 	public String getFileName() {
 		return iUpload.getFilename();
+	}
+
+	@GwtRpcImplementedBy("org.unitime.timetable.events.FileUploadBackend")
+	public static class FileUploadRpcRequest implements GwtRpcRequest<FileUploadRpcResponse>{
+		private boolean iReset = false;
+		
+		public FileUploadRpcRequest() {}
+		public FileUploadRpcRequest(boolean reset) { iReset = reset; }
+		
+		public boolean isReset() { return iReset; }
+		
+		public String toString() { return iReset ? "reset" : "request"; }
+	}
+	
+	public static class FileUploadRpcResponse implements GwtRpcResponse {
+		private String iName;
+		
+		public FileUploadRpcResponse() {}
+		public FileUploadRpcResponse(String name) { iName = name; }
+		
+		public boolean hasFile() { return iName != null; }
+		public String getFileName() { return iName; }
+		
 	}
 }

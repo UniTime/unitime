@@ -196,13 +196,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, EventInte
 					if (location == null) throw new GwtRpcException(MESSAGES.failedSaveEventNoLocation(toString(m)));
 					meeting.setLocationPermanentId(location.getPermanentId());
 					meeting.setApprovedDate(null);
-					if (!rights.canCreate(location))
+					if (!rights.canCreate(location.getUniqueId()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventWrongLocation(m.getLocationName()));
-					if (rights.canApprove(location))
+					if (rights.canApprove(location.getUniqueId()))
 						meeting.setApprovedDate(now);
 					if (rights.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
-					if (!rights.canOverbook(location))
+					if (!rights.canOverbook(location.getUniqueId()))
 						for (MeetingInterface x: availability.getMeetings()) {
 							if (x.equals(m) && x.hasConflicts())
 								throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(x.getConflicts().iterator().next())));

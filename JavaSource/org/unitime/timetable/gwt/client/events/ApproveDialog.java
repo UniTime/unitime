@@ -8,8 +8,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -19,32 +19,32 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.Widget;
 
-public class ApproveDialog extends UniTimeDialogBox {
+public class ApproveDialog<T> extends UniTimeDialogBox {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private SimpleForm iForm;
 	private TextArea iNotes;
-	private MeetingTable iMeetings;
+	private HasValue<List<T>> iTable;
 	private ListBox iStandardNotes;
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeHeaderPanel iFooter;
-	private List<MeetingInterface> iData;
 	
-	
-	public ApproveDialog() {
+	public ApproveDialog(HasValue<List<T>> table) {
 		super(true, false);
+		iTable = table;
 		
 		iForm = new SimpleForm();
 		
-		iMeetings = new MeetingTable(null, false);
-		iMeetings.setSelectable(false);
-		
-		ScrollPanel scroll = new ScrollPanel(iMeetings);
-		ToolBox.setMaxHeight(scroll.getElement().getStyle(), "200px");
-		iForm.addRow(MESSAGES.propMeetings(), scroll);
+		if (iTable instanceof Widget) {
+			ScrollPanel scroll = new ScrollPanel((Widget)iTable);
+			ToolBox.setMaxHeight(scroll.getElement().getStyle(), "200px");
+			iForm.addRow(MESSAGES.propMeetings(), scroll);
+		}
 		
 		iStandardNotes = new ListBox();
 		iStandardNotes.setVisibleItemCount(4);
@@ -88,21 +88,21 @@ public class ApproveDialog extends UniTimeDialogBox {
 		iFooter.addButton("approve", MESSAGES.opApprove(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onApprove(iData, iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.APPROVE, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
 		iFooter.addButton("inquire", MESSAGES.opInquire(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onInquire(iData, iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.INQUIRE, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
 		iFooter.addButton("reject", MESSAGES.opReject(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onReject(iData, iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.REJECT, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
@@ -133,28 +133,28 @@ public class ApproveDialog extends UniTimeDialogBox {
 		setWidget(iForm);
 	}
 	
-	protected void onApprove(List<MeetingInterface> meetings, String message) {}
-	protected void onInquire(List<MeetingInterface> meetings, String message) {}
-	protected void onReject(List<MeetingInterface> meetings, String message) {}
+	protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<T> items, String message) {}
 	
 	public void reset(EventPropertiesRpcResponse properties) {
 		iNotes.setText("");
 		iStandardNotes.clear();
-		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propNotes()), properties.hasStandardNotes());
-		if (properties.hasStandardNotes()) {
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propNotes()), properties != null && properties.hasStandardNotes());
+		if (properties != null && properties.hasStandardNotes()) {
 			for (String note: properties.getStandardNotes())
 				iStandardNotes.addItem(note);
 		}
 		iFileUpload.reset();
 	}
 	
-	public void showApprove(List<MeetingInterface> meetings) {
-		iData = meetings;
-		iMeetings.setValue(meetings);
+	public void show(List<T> meetings, ApproveEventRpcRequest.Operation operation) {
+		iTable.setValue(meetings);
+		if (iTable instanceof CanHideUnimportantColumns)
+			((CanHideUnimportantColumns)iTable).hideUnimportantColumns();
 		setText(MESSAGES.dialogApprove());
-		iFooter.setEnabled("approve", true);
-		iFooter.setEnabled("reject", false);
-		iFooter.setEnabled("inquire", false);
+		iFooter.setEnabled("approve", operation == ApproveEventRpcRequest.Operation.APPROVE);
+		iFooter.setEnabled("reject", operation == ApproveEventRpcRequest.Operation.REJECT);
+		iFooter.setEnabled("inquire", operation == ApproveEventRpcRequest.Operation.INQUIRE);
+		iFileUpload.check();
 		center();
 		if (iStandardNotes.getItemCount() == 0)
 			iNotes.setFocus(true);
@@ -162,35 +162,23 @@ public class ApproveDialog extends UniTimeDialogBox {
 			iStandardNotes.setFocus(true);
 	}
 	
-	public void showReject(List<MeetingInterface> meetings) {
-		iData = meetings;
-		iMeetings.setValue(meetings);
-		setText(MESSAGES.dialogReject());
-		iFooter.setEnabled("approve", false);
-		iFooter.setEnabled("reject", true);
-		iFooter.setEnabled("inquire", false);
-		center();
-		if (iStandardNotes.getItemCount() == 0)
-			iNotes.setFocus(true);
-		else
-			iStandardNotes.setFocus(true);
+	public void showApprove(List<T> meetings) {
+		show(meetings, ApproveEventRpcRequest.Operation.APPROVE);
+	}
+	
+	public void showReject(List<T> meetings) {
+		show(meetings, ApproveEventRpcRequest.Operation.REJECT);
 	}
 
-	public void showInquire(List<MeetingInterface> meetings) {
-		iData = meetings;
-		iMeetings.setValue(meetings);
-		setText(MESSAGES.dialogInquire());
-		iFooter.setEnabled("approve", false);
-		iFooter.setEnabled("reject", false);
-		iFooter.setEnabled("inquire", true);
-		center();
-		if (iStandardNotes.getItemCount() == 0)
-			iNotes.setFocus(true);
-		else
-			iStandardNotes.setFocus(true);
+	public void showInquire(List<T> meetings) {
+		show(meetings, ApproveEventRpcRequest.Operation.INQUIRE);
 	}
-
+	
 	public String getNote() {
 		return iNotes.getText();
+	}
+	
+	public static interface CanHideUnimportantColumns {
+		public void hideUnimportantColumns();
 	}
 }

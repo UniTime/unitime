@@ -22,7 +22,7 @@ package org.unitime.timetable.gwt.client.events;
 import com.google.gwt.user.client.Cookies;
 
 public class EventCookie {
-	private int iFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag();
+	private int iFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag();
 	private static EventCookie sInstance = null;
 	
 	public static enum EventFlag {
@@ -33,7 +33,8 @@ public class EventCookie {
 		SHOW_CAPACITY,
 		SHOW_LIMIT,
 		SHOW_ENROLLMENT,
-		SHOW_MAIN_CONTACT;
+		SHOW_MAIN_CONTACT,
+		SHOW_SPONSOR;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {

@@ -54,18 +54,17 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements HasValue<List<MeetingInterface>>{
+public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements HasValue<List<MeetingInterface>>, ApproveDialog.CanHideUnimportantColumns {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
 	
 	private Command iAddMeetingsCommand;
-	private ApproveDialog iApproveDialog;
-	private boolean iSelectable = true;
+	private ApproveDialog<MeetingInterface> iApproveDialog = null;
+	private boolean iSelectable = true, iEditable = true;
 	
-	public MeetingTable(ApproveDialog approval, final boolean editable) {
+	public MeetingTable() {
 		setStyleName("unitime-EventMeetings");
-		iApproveDialog = approval;
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		UniTimeTableHeader hTimes = new UniTimeTableHeader("&otimes;", HasHorizontalAlignment.ALIGN_CENTER);
 		hTimes.addOperation(new Operation() {
@@ -189,7 +188,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return editable && (meeting.getId() == null || meeting.isCanEdit());
+				return isEditable() && (meeting.getId() == null || meeting.isCanEdit());
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {
@@ -391,6 +390,16 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		setColumnVisible(0, false);
 	}
 	
+
+	@Override
+	public void hideUnimportantColumns() {
+		setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), !EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), false);
+	}
+
 	protected void addHideOperation(final UniTimeTableHeader header, final EventFlag flag) {
 		Operation op = new Operation() {
 			@Override
@@ -482,9 +491,17 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		};
 	}
 	
-	public void setAddMeetingsCommand(Command command) {
-		iAddMeetingsCommand = command;
-	}
+	public boolean hasAddMeetingsCommand() { return iAddMeetingsCommand != null; }
+	public void setAddMeetingsCommand(Command command) { iAddMeetingsCommand = command; }
+	public Command getAddMeetingsCommand() { return iAddMeetingsCommand; }
+
+	public boolean hasApproveDialog() { return iApproveDialog != null; }
+	public void setApproveDialog(ApproveDialog<MeetingInterface> dialog) { iApproveDialog = dialog; }
+	public ApproveDialog<MeetingInterface> getApproveDialog() { return iApproveDialog; }
+
+	
+	public void setEditable(boolean editable) { iEditable = editable; }
+	public boolean isEditable() { return iEditable; }
 	
 	public boolean hasMeeting(MeetingInterface meeting) {
 		for (int row = 1; row < getRowCount(); row++)
@@ -494,7 +511,9 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	
 	public void add(MeetingInterface meeting) {
 		List<Widget> row = new ArrayList<Widget>();
-		if (isSelectable() && (meeting.getId() == null || (meeting.isCanEdit() || meeting.isCanApprove()))) {
+		if (!isSelectable()) {
+			row.add(new HTML(MESSAGES.signSelected()));
+		} else if (meeting.getId() == null || (meeting.isCanEdit() || meeting.isCanApprove())) {
 			row.add(new CheckBoxCell());
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {

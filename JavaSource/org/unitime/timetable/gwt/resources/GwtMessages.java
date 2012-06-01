@@ -359,6 +359,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Meetings:")
 	String propMeetings();
 
+	@DefaultMessage("Events:")
+	String propEvents();
+
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
 
@@ -635,6 +638,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<span title=\"Conflicting event\" style=\"font-style:normal;\">&#9785;</span>")
 	String signConflict();
 	
+	@DefaultMessage("<span title=\"Selected event\" style=\"font-style:normal;\">&#9745;</span>")
+	String signSelected();
+
 	@DefaultMessage("Event name is required.")
 	String reqEventName();
 	
@@ -656,6 +662,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Requested meeting is in the past or outside of {0}.")
 	String conflictPastOrOutside(String academicSessionName);
 	
+	@DefaultMessage("{0} is not managed in UniTime or disabled for events.")
+	String conflictNotEventRoom(String locationName);
+
 	@DefaultMessage("<i>File {0} attached.</i>")
 	String noteAttachement(String fileName);
 }

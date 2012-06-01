@@ -25,7 +25,6 @@ import java.util.Date;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 
 public interface EventRights extends Serializable {
@@ -103,19 +102,19 @@ public interface EventRights extends Serializable {
 	 * @param location a location
 	 * @return true, if a meeting can be created using the given location
 	 */
-	public boolean canCreate(Location location);
+	public boolean canCreate(Long locationId);
 		
 	/**
 	 * Check if the user can approve meetings in the given location.
 	 * @param location a location
 	 * @return true if a newly created meeting by the user should get automatically approved
 	 */
-	public boolean canApprove(Location location);
+	public boolean canApprove(Long locationId);
 	
 	/**
 	 * Check if the user can overbook meetings in the given location.
 	 * @param location a location
 	 * @return true if the user can create a meeting in the room that is conflicting with some other meeting
 	 */
-	public boolean canOverbook(Location location);
+	public boolean canOverbook(Long locationId);
 }

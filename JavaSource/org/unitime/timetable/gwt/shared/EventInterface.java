@@ -250,6 +250,48 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		return getType().getAbbreviation() + ": " + getName();
 	}
 	
+	public boolean inConflict(MeetingInterface meeting) {
+		if (hasMeetings())
+			for (MeetingInterface m: getMeetings())
+				if (m.inConflict(meeting)) return true;
+		return false;
+	}
+	
+	public boolean inConflict(EventInterface event) {
+		if (event.hasMeetings())
+			for (MeetingInterface meeting: event.getMeetings())
+				if (inConflict(meeting)) return true;
+		return false;
+	}
+	
+	public EventInterface createConflictingEvent(EventInterface event) {
+		EventInterface conflict = new EventInterface();
+		conflict.setId(event.getId());
+		conflict.setCanView(event.isCanView());
+		conflict.setContact(event.getContact());
+		conflict.setName(event.getName());
+		conflict.setType(event.getType());
+		conflict.setSponsor(event.getSponsor());
+		conflict.setEnrollment(event.getEnrollment());
+		conflict.setMaxCapacity(event.getMaxCapacity());
+		conflict.setInstruction(event.getInstruction());
+		conflict.setInstructionType(event.getInstructionType());
+		conflict.setSectionNumber(event.getSectionNumber());
+		if (event.hasCourseNames())
+			for (String courseName: event.getCourseNames())
+				conflict.addCourseName(courseName);
+		if (event.hasExternalIds())
+			for (String extId: event.getExternalIds())
+				conflict.addExternalId(extId);
+		if (event.hasInstructors())
+			for (ContactInterface instructor: event.getInstructors())
+				conflict.addInstructor(instructor);
+		if (event.hasMeetings())
+			for (MeetingInterface m: event.getMeetings())
+				if (inConflict(m)) conflict.addMeeting(m);
+		return conflict;
+	}
+
 	public static class IdValueInterface implements IsSerializable {
 		private String iId, iValue;
 		private boolean iSelected = false;
@@ -481,6 +523,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String toString() {
 			return (getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDay() + " ") +
 					getAllocatedTime(true) + (getLocation() == null ? "" : " " + getLocationName());
+		}
+		
+		public boolean inConflict(MeetingInterface meeting) {
+			return getDayOfYear() == meeting.getDayOfYear() && 
+					getStartSlot() < meeting.getEndSlot() && meeting.getStartSlot() < getEndSlot() &&
+					getLocation() != null &&  getLocation().equals(meeting.getLocation());
 		}
 	}
 	
@@ -1574,27 +1622,16 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			iMeetingIds.add(meetingId);
 		}
 		
-		protected static ApproveEventRpcRequest createRequest(Operation operation, Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
+		public static ApproveEventRpcRequest createRequest(Operation operation, Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
 			ApproveEventRpcRequest request = new ApproveEventRpcRequest();
 			request.setOperation(operation);
 			request.setMessage(message);
 			request.setSessionId(sessionId);
 			request.setEventId(event.getId());
-			for (MeetingInterface meeting: meetings)
-				request.addMeetingId(meeting.getId());
+			if (meetings != null)
+				for (MeetingInterface meeting: meetings)
+					request.addMeetingId(meeting.getId());
 			return request;
-		}
-		
-		public static ApproveEventRpcRequest approve(Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
-			return createRequest(Operation.APPROVE, sessionId, event, meetings, message);
-		}
-		
-		public static ApproveEventRpcRequest reject(Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
-			return createRequest(Operation.REJECT, sessionId, event, meetings, message);
-		}
-
-		public static ApproveEventRpcRequest inquire(Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
-			return createRequest(Operation.INQUIRE, sessionId, event, meetings, message);
 		}
 
 		public String toString() {

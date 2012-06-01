@@ -39,14 +39,18 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EventTable extends UniTimeTable<EventInterface[]> {
+public class EventTable extends UniTimeTable<EventInterface[]> implements HasValue<List<EventInterface>>, ApproveDialog.CanHideUnimportantColumns {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
@@ -55,6 +59,9 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 	
 	private boolean iShowMainContact = false;
 	private String iSortBy = null; 
+	private boolean iSelectable = true;
+	private ApproveDialog iApproveDialog = null;
+	private MeetingFilter iMeetingFilter = null;
 
 	public EventTable() {
 		setStyleName("unitime-EventMeetings");
@@ -166,12 +173,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			}
 			@Override
 			public boolean isApplicable(EventInterface event) {
+				if (iApproveDialog == null) return false;
 				for (MeetingInterface meeting: event.getMeetings())
 					if (meeting.isCanApprove()) return true;
 				return false;
 			}
 			@Override
 			public void execute(int row, EventInterface event) {
+				iApproveDialog.showApprove(events());
 			}
 		});
 		hTimes.addOperation(new EventOperation() {
@@ -189,12 +198,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			}
 			@Override
 			public boolean isApplicable(EventInterface event) {
+				if (iApproveDialog == null) return false;
 				for (MeetingInterface meeting: event.getMeetings())
 					if (meeting.isCanApprove()) return true;
 				return false;
 			}
 			@Override
 			public void execute(int row, EventInterface event) {
+				iApproveDialog.showInquire(events());
 			}
 		});
 		hTimes.addOperation(new EventOperation() {
@@ -207,12 +218,17 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 				return (hasSelection() ? MESSAGES.opRejectSelectedMeetings() : MESSAGES.opRejectAllMeetings());
 			}
 			public boolean isApplicable(EventInterface event) {
+				if (iApproveDialog == null) return false;
 				for (MeetingInterface meeting: event.getMeetings())
 					if (meeting.isCanApprove()) return true;
 				return false;
 			}
 			@Override
 			public void execute(int row, EventInterface event) {
+			}
+			@Override
+			public void execute() {
+				iApproveDialog.showReject(events());
 			}
 		});
 		
@@ -268,6 +284,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		addHideOperation(hCapacity, EventFlag.SHOW_CAPACITY);
 		addHideOperation(hEnrollment, EventFlag.SHOW_ENROLLMENT);
 		addHideOperation(hLimit, EventFlag.SHOW_LIMIT);
+		addHideOperation(hSponsor, EventFlag.SHOW_SPONSOR);
 		addHideOperation(hContact, EventFlag.SHOW_MAIN_CONTACT);
 		
 		addSortByOperation(hName, EventSortBy.NAME);
@@ -292,18 +309,29 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		resetColumnVisibility();
 	}
 	
-	private void add(EventInterface event, MeetingFilter filter) {
+	public void setSelectable(boolean selectable) { iSelectable = selectable; }
+	public boolean isSelectable() { return iSelectable; }
+	public boolean hasApproveDialog() { return iApproveDialog != null; }
+	public void setApproveDialog(ApproveDialog<EventInterface> dialog) { iApproveDialog = dialog; }
+	public ApproveDialog<EventInterface> getApproveDialog() { return iApproveDialog; }
+	public void setMeetingFilter(MeetingFilter filter) { iMeetingFilter = filter; }
+	public void setShowMainContact(boolean show) { iShowMainContact = show; }
+	public boolean isShowMainContact() { return iShowMainContact; }
+	
+	private void add(EventInterface event) {
 		TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
 		boolean approvable = false;
 		for (MeetingInterface meeting: event.getMeetings())
-			if (filter == null || !filter.filter(meeting)) {
+			if (iMeetingFilter == null || !iMeetingFilter.filter(meeting)) {
 				meetings.add(meeting);
 				if (meeting.isCanApprove()) approvable = true;
 			}
 		if (meetings.isEmpty()) return;
 
 		List<Widget> row = new ArrayList<Widget>();
-		if (approvable) {
+		if (!isSelectable()) {
+			row.add(new HTML(MESSAGES.signSelected()));
+		} else if (approvable) {
 			row.add(new CheckBoxCell());
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {
@@ -409,13 +437,13 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		
 		if (event.hasConflicts())
 			for (EventInterface conflict: event.getConflicts())
-				addConflict(event, conflict, filter);
+				addConflict(event, conflict);
 	}
 	
-	private void addConflict(EventInterface parent, EventInterface event, MeetingFilter filter) {
+	private void addConflict(EventInterface parent, EventInterface event) {
 		TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
 		for (MeetingInterface meeting: event.getMeetings())
-			if (filter == null || !filter.filter(meeting)) {
+			if (iMeetingFilter == null || !iMeetingFilter.filter(meeting)) {
 				meetings.add(meeting);
 			}
 		if (meetings.isEmpty()) return;
@@ -533,17 +561,20 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 		setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
 		setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
 		setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
+		setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_SPONSOR));
 	}
 	
-	public void populateTable(List<EventInterface> events, MeetingFilter filter, boolean showMainContact) {
-		clearTable(1);
-		iShowMainContact = showMainContact;
-		resetColumnVisibility();
-		if (events != null)
-			for (EventInterface event: events)
-				add(event, filter);
-		if (iSortBy != null)
-			sort(createComparator(EventSortBy.valueOf(iSortBy)));
+	@Override
+	public void hideUnimportantColumns() {
+		setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), !EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
+		setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), false);
+		setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), false);
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
@@ -633,6 +664,10 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			header.addOperation(op);
 			break;
 		case SHOW_MAIN_CONTACT:
+			getHeader(MESSAGES.colApproval()).addOperation(op);
+			header.addOperation(op);
+			break;
+		case SHOW_SPONSOR:
 			getHeader(MESSAGES.colApproval()).addOperation(op);
 			header.addOperation(op);
 			break;
@@ -958,6 +993,39 @@ public class EventTable extends UniTimeTable<EventInterface[]> {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<EventInterface>> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public List<EventInterface> getValue() {
+		List<EventInterface> value = new ArrayList<EventInterface>();
+		for (int row = 1; row < getRowCount(); row++) {
+			EventInterface[] data = getData(row);
+			if (data != null && data.length == 1) value.add(data[0]);
+		}
+		return value;
+	}
+
+	@Override
+	public void setValue(List<EventInterface> value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(List<EventInterface> value, boolean fireEvents) {
+		clearTable(1);
+		resetColumnVisibility();
+		if (value != null)
+			for (EventInterface event: value)
+				add(event);
+		if (iSortBy != null)
+			sort(createComparator(EventSortBy.valueOf(iSortBy)));
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
 	}
 
 }
