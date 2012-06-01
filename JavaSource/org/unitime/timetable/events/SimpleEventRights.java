@@ -156,18 +156,18 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	@Override
-	public boolean canOverbook(Location location) {
-		return isLocationManager(location == null ? null : location.getUniqueId());
+	public boolean canOverbook(Long locationId) {
+		return isLocationManager(locationId);
 	}
 
 	@Override
-	public boolean canCreate(Location location) {
-		return isAuthenticated() && isEventRoom(location == null ? null : location.getUniqueId());
+	public boolean canCreate(Long locationId) {
+		return isAuthenticated() && isEventRoom(locationId);
 	}
 
 	@Override
-	public boolean canApprove(Location location) {
-		return isLocationManager(location == null ? null : location.getUniqueId());
+	public boolean canApprove(Long locationId) {
+		return isLocationManager(locationId);
 	}
 
 	@Override

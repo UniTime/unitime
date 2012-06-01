@@ -437,7 +437,7 @@ public class EventAdd extends Composite {
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new MeetingTable(null, true);
+		iMeetings = new MeetingTable(); iMeetings.setEditable(true);
 		iMeetings.setAddMeetingsCommand(new Command() {
 			@Override
 			public void execute() {

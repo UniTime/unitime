@@ -56,6 +56,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
@@ -297,7 +298,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
 				iLocDate = iWeekPanel.getSelection();
-				iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
+				iTable.setValue(iData);
 				populateGrid();
 				changeUrl();
 			}
@@ -366,7 +367,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onValueChange(ValueChangeEvent<IntervalSelector<ResourceInterface>.Interval> e) {
 				iLocRoom = iRoomPanel.getSelection();
-				iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
+				iTable.setValue(iData);
 				populateGrid();
 				changeUrl();
 			}
@@ -380,7 +381,9 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			public void onClick(ClickEvent clickEvent) {
 				
 				EventTable table  = new EventTable();
-				table.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
+				table.setMeetingFilter(EventResourceTimetable.this);
+				table.setShowMainContact(iTable.isShowMainContact());
+				table.setValue(iData);
 				
 				TimeGrid tg = iTimeGrid.getPrintWidget();
 				for (EventInterface event: iData) {
@@ -489,12 +492,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 			@Override
 			protected void onApprovalOrReject(EventInterface event) {
-				GwtRpcResponseList<EventInterface> data = new GwtRpcResponseList<EventInterface>(iData);
-				for (Iterator<EventInterface> i = data.iterator(); i.hasNext(); )
-					if (i.next().getId().equals(getEvent().getId())) i.remove();
-				if (event != null)
-					data.add(event);
-				populate(data);
+				populate(tinker(new GwtRpcResponseList<EventInterface>(iData), getEvent().getId(), event.getId() == null ? null : event));
 			}
 		};
 		
@@ -505,12 +503,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				if (saved != null) {
 					iRootPanel.setWidget(iPanel);
 					UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
-					GwtRpcResponseList<EventInterface> data = new GwtRpcResponseList<EventInterface>(iData);
-					for (Iterator<EventInterface> i = data.iterator(); i.hasNext(); )
-						if (i.next().getId().equals(saved.getId())) i.remove();
-					if (saved.hasMeetings())
-						data.add(saved);
-					populate(data);
+					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), saved.getId(), saved));
 				} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
 					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
 						@Override
@@ -560,6 +553,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				changeUrl();
 			}
 		};
+		iTable.setMeetingFilter(this);
 		iTable.addMouseClickListener(new MouseClickListener<EventInterface[]>() {
 			@Override
 			public void onMouseClick(final TableEvent<EventInterface[]> event) {
@@ -579,6 +573,68 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}, MESSAGES.waitLoading(e.getName()));
 			}
 		});
+		EventTable approveEvents  = new EventTable();
+		approveEvents.setMeetingFilter(new EventTable.MeetingFilter() {
+			@Override
+			public boolean filter(MeetingInterface meeting) {
+				return meeting == null || !meeting.isCanApprove() || EventResourceTimetable.this.filter(meeting);
+			}
+		});
+		approveEvents.setSelectable(false);
+		ApproveDialog<EventInterface> approveDialog = new ApproveDialog<EventInterface>(approveEvents) {
+			@Override
+			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventInterface> events, String message) {
+				onSubmit(operation, events.iterator(), message, new GwtRpcResponseList<EventInterface>(iData));
+			}
+			
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final String message, final GwtRpcResponseList<EventInterface> data) {
+				if (events.hasNext()) {
+					final EventInterface event = events.next();
+					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+					for (MeetingInterface meeting: event.getMeetings()) {
+						if (meeting.isCanApprove() && !filter(meeting))
+							meetings.add(meeting);
+					}
+					if (meetings.isEmpty()) {
+						onSubmit(operation, events, message, data);
+					} else {
+						switch (operation) {
+						case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(event.getName())); break;
+						case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(event.getName())); break;
+						case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
+						}
+						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<EventInterface>() {
+							@Override
+							public void onFailure(Throwable caught) {
+								LoadingWidget.getInstance().hide();
+								UniTimeNotifications.error(caught.getMessage());
+								onSubmit(operation, events, message, data);
+							}
+							@Override
+							public void onSuccess(EventInterface result) {
+								LoadingWidget.getInstance().hide();
+								if (result.hasMessage()) {
+									if (result.getMessage().startsWith("WARN:"))
+										UniTimeNotifications.info(result.getMessage().substring(5));
+									else
+										UniTimeNotifications.info(result.getMessage());
+								}
+								switch (operation) {
+								case APPROVE:
+								case REJECT:
+									tinker(data, event.getId(), result.getId() == null ? null : result);
+								}
+								onSubmit(operation, events, message, data);
+							}
+						});
+					}
+				} else {
+					LoadingWidget.getInstance().hide();
+					populate(data);
+				}
+			}
+		};
+		iTable.setApproveDialog(approveDialog);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -738,6 +794,28 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		}
 	}
 	
+	private GwtRpcResponseList<EventInterface> tinker(GwtRpcResponseList<EventInterface> data, Long oldEventId, EventInterface newEvent) {
+		for (Iterator<EventInterface> i = data.iterator(); i.hasNext(); ) {
+			EventInterface event = i.next();
+
+			if (event.getId().equals(oldEventId)) {
+				i.remove(); continue;
+			} else if (event.hasConflicts()) {
+				for (Iterator<EventInterface> j = event.getConflicts().iterator(); j.hasNext(); )
+					if (j.next().getId().equals(oldEventId)) j.remove();
+			}
+			
+			if (newEvent != null && event.inConflict(newEvent)) {
+				event.addConflict(event.createConflictingEvent(newEvent));
+			}
+		}
+		
+		if (newEvent != null)
+			data.add(newEvent);
+		
+		return data;
+	}
+	
 	private void resourceChanged(final ResourceInterface resource) {
 		iResource = resource;
 		LoadingWidget.execute(EventLookupRpcRequest.findEvents(iSession.getAcademicSessionId(), iResource, iEvents.getElementsRequest(), iRooms.getElementsRequest(), CONSTANTS.maxMeetings()), 
@@ -745,6 +823,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onSuccess(GwtRpcResponseList<EventInterface> result) {
 				populate(result);
+				iTable.getApproveDialog().reset(iProperties);
 			}
 	
 			@Override
@@ -818,7 +897,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 			populateGrid();
-			iTable.populateTable(iData, EventResourceTimetable.this, iProperties != null && iProperties.isCanLookupPeople());
+			iTable.setValue(iData);
 			iGridOrTablePanel.setWidget(iTabBar.getSelectedTab() == 0 ? iTimeGrid : iTable);
 								
 			showResults();
@@ -1087,6 +1166,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	
 	private void loadProperties(final AsyncCallback<EventPropertiesRpcResponse> callback) {
 		iProperties = null;
+		iTable.setShowMainContact(false);
 		iFilterHeader.setEnabled("lookup", false);
 		iFilterHeader.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
@@ -1103,6 +1183,8 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 					iFilterHeader.setEnabled("add", result.isCanAddEvent());
 					iEventAdd.setup(result);
+					iTable.setShowMainContact(result.isCanLookupContacts());
+					iTable.getApproveDialog().reset(result);
 					if (callback != null)
 						callback.onSuccess(result);
 				}

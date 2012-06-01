@@ -111,12 +111,24 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndOffset(0);
 					conflict.setStartSlot(0);
 					conflict.setEndSlot(288);
-					// conflict.setApprovalDate(session.getEventBeginDate());
 					meeting.addConflict(conflict);
 				}
 				
 				if (!meeting.hasLocation()) continue;
 				
+				if (!rights.canCreate(meeting.getLocation().getId())) {
+					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setMeetingDate(meeting.getMeetingDate());
+					conflict.setDayOfYear(meeting.getDayOfYear());
+					conflict.setStartOffset(0);
+					conflict.setEndOffset(0);
+					conflict.setStartSlot(0);
+					conflict.setEndSlot(288);
+					meeting.addConflict(conflict);
+				}
+
 				meeting.setEndOffset(-10);
 				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
