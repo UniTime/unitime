@@ -75,8 +75,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		
 		if (!rights.canSee(event)) throw rights.getException();
 		
-		helper.clearLastUploadedFile();
-		
 		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, rights);
 		
 		return detail;

@@ -128,7 +128,6 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Eve
 			
 			FormFile attachement = null;
 			if (uploaded != null) {
-				helper.clearLastUploadedFile();
 				attachement = new FormFile() {
 					@Override
 					public void setFileSize(int fileSize) {}
@@ -155,7 +154,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Eve
 					public String getContentType() { return uploaded.getContentType(); }
 					
 					@Override
-					public void destroy() { uploaded.delete(); }
+					public void destroy() {}
 				};
 			}
 			

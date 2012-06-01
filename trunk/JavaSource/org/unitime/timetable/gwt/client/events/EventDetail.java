@@ -75,7 +75,6 @@ public class EventDetail extends Composite {
 	private EnrollmentTable iEnrollments;
 	
 	private EventPropertiesProvider iProperties;
-	private ApproveDialog iApproveDialog;
 	
 	public EventDetail(EventPropertiesProvider properties) {
 		iForm = new SimpleForm();
@@ -118,11 +117,16 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
-		iApproveDialog = new ApproveDialog() {
+		MeetingTable approveMeetings = new MeetingTable(); approveMeetings.setEditable(false); approveMeetings.setSelectable(false);
+		ApproveDialog<MeetingInterface> approveDialog = new ApproveDialog<MeetingInterface>(approveMeetings) {
 			@Override
-			protected void onApprove(List<MeetingInterface> meetings, String message) {
-				LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName()));
-				RPC.execute(ApproveEventRpcRequest.approve(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<MeetingInterface> meetings, String message) {
+				switch (operation) {
+				case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName())); break;
+				case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName())); break;
+				case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName())); break;
+				}
+				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -138,64 +142,28 @@ public class EventDetail extends Composite {
 							else
 								UniTimeNotifications.info(result.getMessage());
 						}
-						onApprovalOrReject(result);
-						setEvent(result);
-					}
-				});
-			}
-			@Override
-			protected void onReject(List<MeetingInterface> meetings, String message) {
-				LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName()));
-				RPC.execute(ApproveEventRpcRequest.reject(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(caught.getMessage());
-					}
-
-					@Override
-					public void onSuccess(EventInterface result) {
-						LoadingWidget.getInstance().hide();
-						if (result.hasMessage()) {
-							if (result.getMessage().startsWith("WARN:"))
-								UniTimeNotifications.info(result.getMessage().substring(5));
-							else
-								UniTimeNotifications.info(result.getMessage());
-						}
-						onApprovalOrReject(result.getId() == null ? null : result);
-						if (result.getId() != null)
+						switch (operation) {
+						case APPROVE:
+							onApprovalOrReject(result);
 							setEvent(result);
-						else
-							EventDetail.this.hide();
-					}
-				});
-			}
-			@Override
-			protected void onInquire(List<MeetingInterface> meetings, String message) {
-				LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName()));
-				RPC.execute(ApproveEventRpcRequest.inquire(iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(caught.getMessage());
-					}
-
-					@Override
-					public void onSuccess(EventInterface result) {
-						LoadingWidget.getInstance().hide();
-						if (result.hasMessage()) {
-							if (result.getMessage().startsWith("WARN:"))
-								UniTimeNotifications.info(result.getMessage().substring(5));
+							break;
+						case REJECT:
+							onApprovalOrReject(result.getId() == null ? null : result);
+							if (result.getId() != null)
+								setEvent(result);
 							else
-								UniTimeNotifications.info(result.getMessage());
+								EventDetail.this.hide();
+							break;
+						case INQUIRE:
+							setEvent(result);
+							break;
 						}
-						setEvent(result);
 					}
 				});
 			}
 		};
 		
-		iMeetings = new MeetingTable(iApproveDialog, false);
+		iMeetings = new MeetingTable(); iMeetings.setApproveDialog(approveDialog); iMeetings.setEditable(false);
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -266,7 +234,7 @@ public class EventDetail extends Composite {
 	public void setEvent(EventInterface event) {
 		iEvent = event;
 		
-		iApproveDialog.reset(iProperties.getProperties());
+		iMeetings.getApproveDialog().reset(iProperties.getProperties());
 		
 		iForm.clear();
 

@@ -442,7 +442,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"capacity", location.getCapacity().toString(),
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"mouseOver", hint,
-					"overbook", rights.canOverbook(location) ? "1" : "0"));
+					"overbook", rights.canOverbook(location.getUniqueId()) ? "1" : "0",
+					"breakTime", "10"));
 		}
 	}
 
