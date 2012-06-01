@@ -269,7 +269,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 			}
 		}
 		
-		if (request.hasOption("requested")) {
+		if (request.hasOption("requested") ) {
 			String requested = "";
 			int id = 0;
 			for (StringTokenizer s=new StringTokenizer(request.getOption("requested").trim(),", ");s.hasMoreTokens();) {
@@ -294,7 +294,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		for (Event event: (List<Event>)query.select("distinct e").limit(20).query(hibSession).list())
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
-		if (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20)) {
+		if (rights.canLookupContacts() && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
 			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("query");
 			
 			int id = 0;

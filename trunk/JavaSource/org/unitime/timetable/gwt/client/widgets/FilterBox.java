@@ -859,6 +859,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		private String iCommand;
 		private AbsolutePanel iPanel = null;
 		private Widget[] iWidgets;
+		private boolean iVisible = true;
 		
 		public CustomFilter(String command, Widget... popupWidgets) {
 			iCommand = command;
@@ -875,7 +876,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			callback.onSuccess(new Chip(getCommand(), value));
 		}
 		
-		public boolean isVisible() { return true; }
+		public boolean isVisible() { return iVisible; }
+		public void setVisible(boolean visible) { iVisible = visible; }
 
 		@Override
 		public void getPopupWidget(final FilterBox box, AsyncCallback<Widget> callback) {

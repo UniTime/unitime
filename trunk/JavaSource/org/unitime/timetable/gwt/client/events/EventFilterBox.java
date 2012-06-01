@@ -66,6 +66,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private FilterBox.CustomFilter iOther = null;
 	
 	public EventFilterBox(AcademicSessionProvider session) {
 		super(session);
@@ -133,7 +134,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		addFilter(new FilterBox.CustomFilter("other", reqLab, requested, conflicts) {
+		iOther = new FilterBox.CustomFilter("other", reqLab, requested, conflicts) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -146,7 +147,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 					callback.onSuccess(suggestions);
 				}
 			}
-		});
+		};
+		addFilter(iOther);
 		
 		addFilter(new FilterBox.StaticSimpleFilter("requested"));
 		addFilter(new FilterBox.StaticSimpleFilter("flag"));
@@ -422,6 +424,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 			}
 		});
 	}
+	
+	public void setOtherVisible(boolean visible) { iOther.setVisible(visible); }
 	
 	@Override
 	protected boolean populateFilter(FilterBox.Filter filter, List<FilterRpcResponse.Entity> entities) {

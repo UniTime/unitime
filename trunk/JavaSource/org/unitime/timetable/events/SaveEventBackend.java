@@ -23,17 +23,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.Transaction;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
-import org.unitime.timetable.gwt.server.LookupServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
-import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
@@ -49,7 +46,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.SpecialEvent;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -83,25 +79,9 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, EventInte
 			EventRoomAvailabilityRpcResponse availability = new EventRoomAvailabilityBackend().execute(
 					EventRoomAvailabilityRpcRequest.checkAvailability(new ArrayList<MeetingInterface>(e.getMeetings()), sessionId), helper, rights);
 			
-			TimetableManager manager = TimetableManager.getManager(helper.getUser());
 			Date now = new Date();
-			
-	        String uname = helper.getUser().getName();
-	        if (helper.getUser().getId().equals(e.getContact().getExternalId())) {
-	        	uname = e.getContact().getShortName();
-	        } else if (manager != null) {
-	        	uname = manager.getShortName();
-	        } else {
-				List<PersonInterface> people = new LookupServlet().lookupPeople(helper.getUser().getName(), "mustHaveExternalId,session=" + sessionId);
-				if (people != null)
-					for (PersonInterface p: people) {
-						if (helper.getUser().getId().equals(p.getId())) {
-							uname = p.getShortName();
-							break;
-						}
-					}
-	        }
-			
+	        String uname = EventPropertiesBackend.lookupMainContact(sessionId, helper.getUser()).getShortName();
+
 			Event event = null;
 			if (e.getId() != null) {
 				event = EventDAO.getInstance().get(e.getId(), hibSession);

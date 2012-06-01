@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
@@ -34,16 +33,13 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.server.LookupServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
-import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest.Operation;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.webutil.EventEmail;
@@ -60,24 +56,8 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Eve
 			if (event == null)
 				throw new GwtRpcException(MESSAGES.failedApproveEventNoEvent());
 			
-			TimetableManager manager = TimetableManager.getManager(helper.getUser());
 			Date now = new Date();
-			
-	        String uname = helper.getUser().getName();
-	        if (helper.getUser().getId().equals(event.getMainContact().getExternalUniqueId())) {
-	        	uname = event.getMainContact().getShortName();
-	        } else if (manager != null) {
-	        	uname = manager.getShortName();
-	        } else {
-				List<PersonInterface> people = new LookupServlet().lookupPeople(helper.getUser().getName(), "mustHaveExternalId,session=" + request.getSessionId());
-				if (people != null)
-					for (PersonInterface p: people) {
-						if (helper.getUser().getId().equals(p.getId())) {
-							uname = p.getShortName();
-							break;
-						}
-					}
-	        }
+	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), helper.getUser()).getShortName();
 	        
 			TreeSet<Meeting> meetings = new TreeSet<Meeting>();
 			meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
