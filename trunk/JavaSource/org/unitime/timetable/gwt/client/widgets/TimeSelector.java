@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.resources.GwtConstants;
-import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.FocusEvent;
@@ -47,7 +46,6 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class TimeSelector extends Composite implements HasValue<Integer>{
-	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
 	
@@ -431,8 +429,8 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		
 		public static String slot2time(int slot) {
 			if (CONSTANTS.useAmPm()) {
-				if (slot == 0 || slot == 288) return MESSAGES.timeMidnitgh();
-				if (slot == 144) return MESSAGES.timeNoon();
+				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnitgh();
+				if (slot == 144) return CONSTANTS.timeNoon();
 			}
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
@@ -444,8 +442,8 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		
 		public static String slot2short(int slot) {
 			if (CONSTANTS.useAmPm()) {
-				if (slot == 0 || slot == 288) return MESSAGES.timeMidnitgh();
-				if (slot == 144) return MESSAGES.timeNoon();
+				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnitgh();
+				if (slot == 144) return CONSTANTS.timeNoon();
 			}
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);

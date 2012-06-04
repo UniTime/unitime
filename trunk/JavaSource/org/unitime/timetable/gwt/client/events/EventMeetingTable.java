@@ -21,12 +21,13 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.events.EventCookie.EventFlag;
+import org.unitime.timetable.gwt.client.events.EventTable.EventSortBy;
+import org.unitime.timetable.gwt.client.events.EventTable.MeetingFilter;
 import org.unitime.timetable.gwt.client.events.MeetingTable.MeetingsSortBy;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -36,7 +37,6 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -46,24 +46,24 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EventTable extends UniTimeTable<EventInterface[]> implements HasValue<List<EventInterface>>, ApproveDialog.CanHideUnimportantColumns {
+public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeetingRow> implements HasValue<List<EventMeetingTable.EventMeetingRow>>, ApproveDialog.CanHideUnimportantColumns {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
-	private static DateTimeFormat sDateFormatShort = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
-	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
 	
 	private boolean iShowMainContact = false;
 	private String iSortBy = null; 
 	private boolean iSelectable = true;
-	private ApproveDialog iApproveDialog = null;
+	private ApproveDialog<EventMeetingRow> iApproveDialog = null;
 	private MeetingFilter iMeetingFilter = null;
 
-	public EventTable() {
+	public EventMeetingTable() {
 		setStyleName("unitime-EventMeetings");
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
@@ -108,7 +108,44 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
-						ch.setValue(getData(row)[0].hasConflicts());
+						ch.setValue(inConflict(getData(row)));
+					}
+				}
+			}
+			public boolean inConflict(EventMeetingRow row) {
+				if (row.getEvent().hasConflicts()) {
+					for (EventInterface conflict: row.getEvent().getConflicts())
+						if (conflict.inConflict(row.getMeeting())) return true;
+				}
+				return false;
+			}
+			
+			@Override
+			public boolean isApplicable() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox)
+						if (inConflict(getData(row))) return true;
+				}
+				return false;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return MESSAGES.opSelectAllConflicting();
+			}
+		});
+		hTimes.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				for (int row = 1; row < getRowCount(); row++) {
+					Widget w =  getWidget(row, 0);
+					if (w != null && w instanceof CheckBox) {
+						CheckBox ch = (CheckBox)w;
+						ch.setValue(getData(row).getMeeting().hasConflicts());
 					}
 				}
 			}
@@ -117,7 +154,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						if (getData(row)[0].hasConflicts()) return true;
+						if (getData(row).getMeeting().hasConflicts()) return true;
 					}
 				}
 				return false;
@@ -162,7 +199,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				return MESSAGES.opClearSelection();
 			}
 		});
-		hTimes.addOperation(new EventOperation() {
+		hTimes.addOperation(new EventMeetingOperation() {
 			@Override
 			public boolean hasSeparator() {
 				return true;
@@ -172,21 +209,18 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				return (hasSelection() ? MESSAGES.opApproveSelectedMeetings() : MESSAGES.opApproveAllMeetings());
 			}
 			@Override
-			public boolean isApplicable(EventInterface event) {
-				if (iApproveDialog == null) return false;
-				for (MeetingInterface meeting: event.getMeetings())
-					if (meeting.isCanApprove()) return true;
-				return false;
+			public boolean isApplicable(EventMeetingRow row) {
+				return iApproveDialog != null && row.getMeeting().isCanApprove();
 			}
 			@Override
-			public void execute(int row, EventInterface event) {
+			public void execute(int row, EventMeetingRow event) {
 			}
 			@Override
 			public void execute() {
 				iApproveDialog.showApprove(events());
 			}
 		});
-		hTimes.addOperation(new EventOperation() {
+		hTimes.addOperation(new EventMeetingOperation() {
 			@Override
 			public boolean hasSeparator() {
 				return false;
@@ -200,21 +234,18 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				return (hasSelection() ? MESSAGES.opInquireSelectedMeetings() : MESSAGES.opInquireAllMeetings());
 			}
 			@Override
-			public boolean isApplicable(EventInterface event) {
-				if (iApproveDialog == null) return false;
-				for (MeetingInterface meeting: event.getMeetings())
-					if (meeting.isCanApprove()) return true;
-				return false;
+			public boolean isApplicable(EventMeetingRow row) {
+				return iApproveDialog != null && row.getMeeting().isCanApprove();
 			}
 			@Override
-			public void execute(int row, EventInterface event) {
+			public void execute(int row, EventMeetingRow event) {
 			}
 			@Override
 			public void execute() {
 				iApproveDialog.showInquire(events());
 			}
 		});
-		hTimes.addOperation(new EventOperation() {
+		hTimes.addOperation(new EventMeetingOperation() {
 			@Override
 			public boolean hasSeparator() {
 				return false;
@@ -223,14 +254,12 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 			public String getName() {
 				return (hasSelection() ? MESSAGES.opRejectSelectedMeetings() : MESSAGES.opRejectAllMeetings());
 			}
-			public boolean isApplicable(EventInterface event) {
-				if (iApproveDialog == null) return false;
-				for (MeetingInterface meeting: event.getMeetings())
-					if (meeting.isCanApprove()) return true;
-				return false;
+			@Override
+			public boolean isApplicable(EventMeetingRow row) {
+				return iApproveDialog != null && row.getMeeting().isCanApprove();
 			}
 			@Override
-			public void execute(int row, EventInterface event) {
+			public void execute(int row, EventMeetingRow event) {
 			}
 			@Override
 			public void execute() {
@@ -318,32 +347,36 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 	public void setSelectable(boolean selectable) { iSelectable = selectable; }
 	public boolean isSelectable() { return iSelectable; }
 	public boolean hasApproveDialog() { return iApproveDialog != null; }
-	public void setApproveDialog(ApproveDialog<EventInterface> dialog) { iApproveDialog = dialog; }
-	public ApproveDialog<EventInterface> getApproveDialog() { return iApproveDialog; }
+	public void setApproveDialog(ApproveDialog<EventMeetingRow> dialog) { iApproveDialog = dialog; }
+	public ApproveDialog<EventMeetingRow> getApproveDialog() { return iApproveDialog; }
 	public void setMeetingFilter(MeetingFilter filter) { iMeetingFilter = filter; }
 	public void setShowMainContact(boolean show) { iShowMainContact = show; }
 	public boolean isShowMainContact() { return iShowMainContact; }
 	
 	private void add(EventInterface event) {
 		TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
-		boolean approvable = false;
 		for (MeetingInterface meeting: event.getMeetings())
 			if (iMeetingFilter == null || !iMeetingFilter.filter(meeting)) {
 				meetings.add(meeting);
-				if (meeting.isCanApprove()) approvable = true;
 			}
 		if (meetings.isEmpty()) return;
 
+		for (MeetingInterface meeting: new TreeSet<MeetingInterface>(meetings)) {
+			add(event, meeting);
+		}
+	}
+	
+	private void add(EventInterface event, MeetingInterface meeting) {
 		List<Widget> row = new ArrayList<Widget>();
 		if (!isSelectable()) {
 			row.add(new HTML(MESSAGES.signSelected()));
-		} else if (approvable) {
+		} else if (meeting.isCanApprove()) {
 			row.add(new CheckBoxCell());
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
-
+		
 		if (event.hasCourseNames()) {
 			String name = "";
 			String section = "";
@@ -352,208 +385,189 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				if (name.isEmpty()) {
 					name += cn;
 				} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-					name += "<br><span class='no-control'>" + cn + "</span>";
+					// name += "<br><span class='no-control'>" + cn + "</span>";
 				} else {
-					name += "<br>" + cn;
+					// name += "<br>" + cn;
 				}
 			if (event.hasExternalIds())
 				for (String ex: event.getExternalIds()) {
 					if (section.isEmpty()) {
 						section += ex;
 					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-						section += "<br><span class='no-control'>" + ex + "</span>";
+						// section += "<br><span class='no-control'>" + ex + "</span>";
 					} else {
-						section += "<br>" + ex;
+						// section += "<br>" + ex;
 					}
 				}
 			else if (event.hasSectionNumber())
 				section = event.getSectionNumber();
-			row.add(new HTML(name, false));
-			row.add(new NumberCell(section));
-			row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
-			if (!isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
+			row.add(new Hideable(new HTML(name, false)));
+			row.add(new Hideable(new NumberCell(section)));
+			row.add(new Hideable(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false)));
+			if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 		} else {
-			row.add(new HTML(event.getName()));
-			row.add(new HTML("&nbsp;"));
-			row.add(new Label(event.getType().getAbbreviation(), false));
+			row.add(new Hideable(new HTML(event.getName())));
+			row.add(new Hideable(new HTML("&nbsp;")));
+			row.add(new Hideable(new Label(event.getType().getAbbreviation(), false)));
 		}
-
-		String[] mtgs = new String[] {"", "", "", "", "", "", ""};
-		String approval = "", prevApproval = null;
-		String[] prev = null;
-		boolean prevPast = false;
-		for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, true, true)) {
-			String[] mtg = new String[] {
-					m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate())),
-					m.getMeetings().first().getMeetingTime(CONSTANTS),
-					m.getMeetings().first().getAllocatedTime(CONSTANTS),
-					String.valueOf(m.getMeetings().first().getStartOffset()),
-					String.valueOf(- m.getMeetings().first().getEndOffset()),
-					m.getLocationNameWithHint(),
-					(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : "")
-					};
-			for (int i = 0; i < mtgs.length; i++) {
-				mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
-			}
-			approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "") ? "" : 
-					(m.isApproved() ?
-					m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
-					m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
-			prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
-		}
-		for (int i = 0; i < mtgs.length; i++) {
-			if (i == 3 || i == 4 || i == 6)
-				row.add(new NumberCell(mtgs[i]));
-			else
-				row.add(new HTML(mtgs[i], false));
+		
+		row.add(new Label(sDateFormat.format(meeting.getMeetingDate())));
+		row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
+		row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
+		row.add(new NumberCell(meeting.getStartOffset()));
+		row.add(new NumberCell(- meeting.getEndOffset()));
+		
+		if (meeting.getLocation() == null) {
+			row.add(new Label(""));
+			row.add(new Label(""));
+		} else {
+			row.add(new Label(meeting.getLocationName()));
+			row.add(new NumberCell(meeting.getLocation().getSize() == null ? "N/A" : meeting.getLocation().getSize().toString()));
 		}
 		
 		if (event.hasEnrollment() && iShowMainContact) {
-			row.add(new NumberCell(event.getEnrollment().toString()));
+			row.add(new Hideable(new NumberCell(event.getEnrollment().toString())));
 			if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
 		} else {
-			row.add(new HTML("&nbsp;"));
+			row.add(new Hideable(new HTML("&nbsp;")));
 		}
 
 		if (event.hasMaxCapacity() && iShowMainContact) {
-			row.add(new NumberCell(event.getMaxCapacity().toString()));
+			row.add(new Hideable(new NumberCell(event.getMaxCapacity().toString())));
 			if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
 		} else {
-			row.add(new HTML("&nbsp;"));
+			row.add(new Hideable(new HTML("&nbsp;")));
 		}
 		
 		if (event.hasInstructors()) {
-			row.add(new HTML(event.getInstructorNames("<br>"), false));
+			row.add(new Hideable(new HTML(event.getInstructorNames(", "), false)));
 		} else {
-			row.add(new Label(event.hasSponsor() ? event.getSponsor().getName() : ""));
+			row.add(new Hideable(new Label(event.hasSponsor() ? event.getSponsor().getName() : "")));
 		}
 		
 		if (iShowMainContact) {
-			row.add(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;"));
+			row.add(new Hideable(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;")));
 		} else {
-			row.add(new HTML("&nbsp;"));
+			row.add(new Hideable(new HTML("&nbsp;")));
 		}
-			
-		row.add(new HTML(approval, false));
+
+		if (meeting.isPast())
+			for (Widget w: row)
+				if (!(w instanceof Hideable)) w.addStyleName("past-meeting");
+
+		row.add(new HTML(meeting.isApproved() ?
+				meeting.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
+				meeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 		
-		int rowNumber = addRow(new EventInterface[] {event}, row);
-		getRowFormatter().addStyleName(rowNumber, "event-row");
-		for (int i = 0; i < getCellCount(rowNumber); i++)
-			getCellFormatter().addStyleName(rowNumber, i, "event-cell");
+		addRow(new EventMeetingRow(event, meeting, null), row);
 		
 		if (event.hasConflicts())
 			for (EventInterface conflict: event.getConflicts())
-				addConflict(event, conflict);
+				addConflict(event, meeting, conflict);
 	}
 	
-	private void addConflict(EventInterface parent, EventInterface event) {
+	private void addConflict(EventInterface parent, MeetingInterface parentMeeting, EventInterface event) {
 		TreeSet<MeetingInterface> meetings = new TreeSet<MeetingInterface>();
-		for (MeetingInterface meeting: event.getMeetings())
-			if (iMeetingFilter == null || !iMeetingFilter.filter(meeting)) {
+		for (MeetingInterface meeting: event.getMeetings()) {
+			if (meeting.inConflict(parentMeeting) && (iMeetingFilter == null || !iMeetingFilter.filter(meeting))) {
 				meetings.add(meeting);
 			}
+		}
 		if (meetings.isEmpty()) return;
-
-		List<Widget> row = new ArrayList<Widget>();
 		
-		row.add(new CenterredCell(MESSAGES.signConflict()));
-
-		if (event.hasCourseNames()) {
-			String name = "";
-			String section = "";
-			if (event.getType() == EventType.Course) { name = event.getName(); section = "&nbsp;"; }
-			for (String cn: event.getCourseNames())
-				if (name.isEmpty()) {
-					name += cn;
-				} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-					name += "<br><span class='no-control'>" + cn + "</span>";
-				} else {
-					name += "<br>" + cn;
-				}
-			if (event.hasExternalIds())
-				for (String ex: event.getExternalIds()) {
-					if (section.isEmpty()) {
-						section += ex;
-					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-						section += "<br><span class='no-control'>" + ex + "</span>";
-					} else {
-						section += "<br>" + ex;
-					}
-				}
-			else if (event.hasSectionNumber())
-				section = event.getSectionNumber();
-			row.add(new HTML(name, false));
-			row.add(new NumberCell(section));
-			row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
-			if (!isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
-		} else {
-			row.add(new HTML(event.getName()));
-			row.add(new HTML("&nbsp;"));
-			row.add(new Label(event.getType().getAbbreviation(), false));
-		}
-
-		String[] mtgs = new String[] {"", "", "", "", "", "", ""};
-		String approval = "", prevApproval = null;
-		String[] prev = null;
-		boolean prevPast = false;
-		for (MultiMeetingInterface m: EventInterface.getMultiMeetings(meetings, true, true)) {
-			String[] mtg = new String[] {
-					m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate())),
-					m.getMeetings().first().getMeetingTime(CONSTANTS),
-					m.getMeetings().first().getAllocatedTime(CONSTANTS),
-					String.valueOf(m.getMeetings().first().getStartOffset()),
-					String.valueOf(- m.getMeetings().first().getEndOffset()),
-					m.getLocationNameWithHint(),
-					(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : "")
-					};
-			for (int i = 0; i < mtgs.length; i++) {
-				mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i].equals(mtg[i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
-			}
-			approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "") ? "" : 
-					(m.isApproved() ?
-					m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
-					m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
-			prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
-		}
-		for (int i = 0; i < mtgs.length; i++) {
-			if (i == 3 || i == 4 || i == 6)
-				row.add(new NumberCell(mtgs[i]));
-			else
-				row.add(new HTML(mtgs[i], false));
-		}
-		
-		if (event.hasEnrollment() && iShowMainContact) {
-			row.add(new NumberCell(event.getEnrollment().toString()));
-			if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
-		} else {
-			row.add(new HTML("&nbsp;"));
-		}
-
-		if (event.hasMaxCapacity() && iShowMainContact) {
-			row.add(new NumberCell(event.getMaxCapacity().toString()));
-			if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
-		} else {
-			row.add(new HTML("&nbsp;"));
-		}
-		
-		if (event.hasInstructors()) {
-			row.add(new HTML(event.getInstructorNames("<br>"), false));
-		} else {
-			row.add(new Label(event.hasSponsor() ? event.getSponsor().getName() : ""));
-		}
-		
-		if (iShowMainContact) {
-			row.add(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;"));
-		} else {
-			row.add(new HTML("&nbsp;"));
-		}
+		for (MeetingInterface meeting: new TreeSet<MeetingInterface>(meetings)) {
+			List<Widget> row = new ArrayList<Widget>();
 			
-		row.add(new HTML(approval, false));
+			row.add(new CenterredCell(MESSAGES.signConflict()));
+
+			if (event.hasCourseNames()) {
+				String name = "";
+				String section = "";
+				if (event.getType() == EventType.Course) { name = event.getName(); section = "&nbsp;"; }
+				for (String cn: event.getCourseNames())
+					if (name.isEmpty()) {
+						name += cn;
+					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
+						// name += "<br><span class='no-control'>" + cn + "</span>";
+					} else {
+						// name += "<br>" + cn;
+					}
+				if (event.hasExternalIds())
+					for (String ex: event.getExternalIds()) {
+						if (section.isEmpty()) {
+							section += ex;
+						} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
+							// section += "<br><span class='no-control'>" + ex + "</span>";
+						} else {
+							// section += "<br>" + ex;
+						}
+					}
+				else if (event.hasSectionNumber())
+					section = event.getSectionNumber();
+				row.add(new Hideable(new HTML(name, false)));
+				row.add(new Hideable(new NumberCell(section)));
+				row.add(new Hideable(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false)));
+				if (!isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
+			} else {
+				row.add(new Hideable(new HTML(event.getName())));
+				row.add(new Hideable(new HTML("&nbsp;")));
+				row.add(new Hideable(new Label(event.getType().getAbbreviation(), false)));
+			}
+			
+			row.add(new Label(sDateFormat.format(meeting.getMeetingDate())));
+			row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
+			row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
+			row.add(new NumberCell(meeting.getStartOffset()));
+			row.add(new NumberCell(- meeting.getEndOffset()));
+			
+			if (meeting.getLocation() == null) {
+				row.add(new Label(""));
+				row.add(new Label(""));
+			} else {
+				row.add(new Label(meeting.getLocationName()));
+				row.add(new NumberCell(meeting.getLocation().getSize() == null ? "N/A" : meeting.getLocation().getSize().toString()));
+			}
 		
-		int rowNumber = addRow(new EventInterface[] {parent, event}, row);
-		getRowFormatter().addStyleName(rowNumber, "conflict");
-		for (int i = 0; i < getCellCount(rowNumber); i++)
-			getCellFormatter().addStyleName(rowNumber, i, "conflict-cell");
+			if (event.hasEnrollment() && iShowMainContact) {
+				row.add(new Hideable(new NumberCell(event.getEnrollment().toString())));
+				if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
+			} else {
+				row.add(new Hideable(new HTML("&nbsp;")));
+			}
+
+			if (event.hasMaxCapacity() && iShowMainContact) {
+				row.add(new Hideable(new NumberCell(event.getMaxCapacity().toString())));
+				if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
+			} else {
+				row.add(new Hideable(new HTML("&nbsp;")));
+			}
+			
+			if (event.hasInstructors()) {
+				row.add(new Hideable(new HTML(event.getInstructorNames(", "), false)));
+			} else {
+				row.add(new Hideable(new Label(event.hasSponsor() ? event.getSponsor().getName() : "")));
+			}
+			
+
+			if (iShowMainContact) {
+				row.add(new Hideable(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;")));
+			} else {
+				row.add(new Hideable(new HTML("&nbsp;")));
+			}
+			
+			if (meeting.isPast())
+				for (Widget w: row)
+					if (!(w instanceof Hideable)) w.addStyleName("past-meeting");
+			
+			row.add(new HTML(meeting.isApproved() ?
+					meeting.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
+					meeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+			
+			int rowNumber = addRow(new EventMeetingRow(parent, parentMeeting, new EventMeetingRow(event, meeting, null)), row);
+			getRowFormatter().addStyleName(rowNumber, "conflict");
+			for (int i = 0; i < getCellCount(rowNumber); i++)
+				getCellFormatter().addStyleName(rowNumber, i, "conflict-cell");
+		}
 	}
 	
 	public void resetColumnVisibility() {
@@ -588,16 +602,11 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 	public boolean hasSortBy() { return iSortBy != null; }
 	public String getSortBy() { return iSortBy; }
 	public void setSortBy(String sortBy) {
-		iSortBy = sortBy;
-		if (iSortBy != null)
-			sort(createComparator(EventSortBy.valueOf(iSortBy)));
-	}
-	
-	public static enum EventSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
+		sort(sortBy == null || sortBy.isEmpty() ? null : EventSortBy.valueOf(sortBy));
 	}
 	
 	protected void onSortByChanded(EventSortBy sortBy) {
+		iSortBy = (sortBy == null ? null : sortBy.name());
 	}
 	
 	protected void addSortByOperation(final UniTimeTableHeader header, final EventSortBy sortBy) {
@@ -612,9 +621,11 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 			public String getName() { return MESSAGES.opSortBy(header.getHTML()); }
 		});
 	}
-	
+
 	public void sort(EventSortBy sortBy) {
-		sort(createComparator(sortBy)); iSortBy = sortBy.name();
+		if (sortBy != null) sort(createComparator(sortBy));
+		iSortBy = (sortBy == null ? null : sortBy.name());
+		hideSomeCells();
 	}
 	
 	private boolean iFirstHideOperation = true;
@@ -709,14 +720,14 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 		};
 	}
 		
-	protected Comparator<EventInterface[]> createComparator(final EventSortBy sortBy) {
-		return new Comparator<EventInterface[]>() {
+	protected Comparator<EventMeetingRow> createComparator(final EventSortBy sortBy) {
+		return new Comparator<EventMeetingRow>() {
 			@Override
-			public int compare(EventInterface[] o1, EventInterface[] o2) {
-				int cmp = EventTable.compare(o1[0], o2[0], sortBy);
+			public int compare(EventMeetingRow o1, EventMeetingRow o2) {
+				int cmp = EventMeetingTable.compare(o1, o2, sortBy);
 				if (cmp != 0) return cmp;
-				if (o1.length == 2) {
-					if (o2.length == 2) return EventTable.compare(o1[1], o2[1], sortBy);
+				if (o1.isConflict()) {
+					if (o2.isConflict()) return EventMeetingTable.compare(o1.getConflict(), o2.getConflict(), sortBy);
 					else return 1; 
 				} else {
 					return -1;
@@ -742,105 +753,87 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 		}
 	}
 	
-	public static int compare(EventInterface o1, EventInterface o2, EventSortBy sortBy) {
+	public static int compare(EventMeetingRow o1, EventMeetingRow o2, EventSortBy sortBy) {
 		int cmp;
 		switch (sortBy) {
 		case NAME:
-			cmp = o1.getName().compareTo(o2.getName());
+			cmp = o1.getEvent().getName().compareTo(o2.getEvent().getName());
 			if (cmp != 0) return cmp;
-			cmp = o1.getType().compareTo(o2.getType());
+			cmp = o1.getEvent().getType().compareTo(o2.getEvent().getType());
 			if (cmp != 0) return cmp;
 			break;
 		case SECTION:
-			if (o1.hasExternalIds()) {
-				if (o2.hasExternalIds()) {
-					cmp = o1.getExternalIds().get(0).compareTo(o2.getExternalIds().get(0));
+			if (o1.getEvent().hasExternalIds()) {
+				if (o2.getEvent().hasExternalIds()) {
+					cmp = o1.getEvent().getExternalIds().get(0).compareTo(o2.getEvent().getExternalIds().get(0));
 					if (cmp != 0) return cmp;
 				} else return -1;
-			} else if (o2.hasExternalIds()) return 1;
+			} else if (o2.getEvent().hasExternalIds()) return 1;
 		case TYPE:
-			cmp = o1.getType().compareTo(o2.getType());
+			cmp = o1.getEvent().getType().compareTo(o2.getEvent().getType());
 			if (cmp != 0) return cmp;
-			if (o1.getInstructionType() != null) {
-				cmp = o1.getInstructionType().compareTo(o2.getInstructionType());
+			if (o1.getEvent().getInstructionType() != null) {
+				cmp = o1.getEvent().getInstructionType().compareTo(o2.getEvent().getInstructionType());
 				if (cmp != 0) return cmp;
 			}
 			break;
 		case DATE:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.DATE);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.DATE);
 			if (cmp != 0) return cmp;
 			break;
 		case PUBLISHED_TIME:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.PUBLISHED_TIME);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.PUBLISHED_TIME);
 			if (cmp != 0) return cmp;
 			break;
 		case ALLOCATED_TIME:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.ALLOCATED_TIME);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.ALLOCATED_TIME);
 			if (cmp != 0) return cmp;
 			break;
 		case SETUP_TIME:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.SETUP_TIME);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.SETUP_TIME);
 			if (cmp != 0) return cmp;
 			break;
 		case TEARDOWN_TIME:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.TEARDOWN_TIME);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.TEARDOWN_TIME);
 			if (cmp != 0) return cmp;
 			break;
 		case LOCATION:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.LOCATION);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.LOCATION);
 			if (cmp != 0) return cmp;
 			break;
 		case CAPACITY:
-			cmp = compareMeetings(o1, o2, MeetingsSortBy.CAPACITY);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.CAPACITY);
 			if (cmp != 0) return cmp;
 			break;
 		case SPONSOR:
-			cmp = compare(o1.getInstructorNames("|"), o2.getInstructorNames("|"));
+			cmp = compare(o1.getEvent().getInstructorNames("|"), o2.getEvent().getInstructorNames("|"));
 			if (cmp != 0) return cmp;
-			cmp = compare(o1.hasSponsor() ? o1.getSponsor().getName() : null, o2.hasSponsor() ? o2.getSponsor().getName() : null);
+			cmp = compare(o1.getEvent().hasSponsor() ? o1.getEvent().getSponsor().getName() : null, o2.getEvent().hasSponsor() ? o2.getEvent().getSponsor().getName() : null);
 			if (cmp != 0) return cmp;
 			break;
 		case MAIN_CONTACT:
-			cmp = compare(o1.hasContact() ? o1.getContact().getName() : null, o2.hasContact() ? o2.getContact().getName() : null);
+			cmp = compare(o1.getEvent().hasContact() ? o1.getEvent().getContact().getName() : null, o2.getEvent().hasContact() ? o2.getEvent().getContact().getName() : null);
 			if (cmp != 0) return cmp;
 			break;
 		case APPROVAL:
-			int a1 = 0, a2 = 0;
-			Date d1 = null, d2 = null;
-			for (MeetingInterface m: o1.getMeetings()) {
-				if (m.isApproved()) a1++;
-				if (m.isApproved() && d1 == null) d1 = m.getApprovalDate();
-			}
-			for (MeetingInterface m: o2.getMeetings()) {
-				if (m.isApproved()) a2++;
-				if (m.isApproved() && d2 == null) d2 = m.getApprovalDate();
-			}
-			Float f1 = ((float)a1) / o1.getMeetings().size();
-			Float f2 = ((float)a2) / o2.getMeetings().size();
-			cmp = f1.compareTo(f2);
+			cmp = MeetingTable.compare(o1.getMeeting(), o2.getMeeting(), MeetingsSortBy.APPROVAL);
 			if (cmp != 0) return cmp;
-			if (d1 != null && d2 != null) {
-				cmp = d1.compareTo(d2);
-				if (cmp != 0) return cmp;
-			}
 			break;
 		case LIMIT:
-			cmp = -(o1.hasMaxCapacity() ? o1.getMaxCapacity() : new Integer(0)).compareTo(o2.hasMaxCapacity() ? o2.getMaxCapacity() : new Integer(0));
+			cmp = -(o1.getEvent().hasMaxCapacity() ? o1.getEvent().getMaxCapacity() : new Integer(0)).compareTo(o2.getEvent().hasMaxCapacity() ? o2.getEvent().getMaxCapacity() : new Integer(0));
 			if (cmp != 0) return cmp;
 			break;
 		case ENROLLMENT:
-			cmp = -(o1.hasEnrollment() ? o1.getEnrollment() : new Integer(0)).compareTo(o2.hasEnrollment() ? o2.getEnrollment() : new Integer(0));
+			cmp = -(o1.getEvent().hasEnrollment() ? o1.getEvent().getEnrollment() : new Integer(0)).compareTo(o2.getEvent().hasEnrollment() ? o2.getEvent().getEnrollment() : new Integer(0));
 			if (cmp != 0) return cmp;
 			break;
 		}
-		return o1.compareTo(o2);
+		cmp = o1.getEvent().compareTo(o2.getEvent());
+		if (cmp != 0) return cmp;
+		return o1.getMeeting().compareTo(o2.getMeeting());
 	}
 	
-	public interface MeetingFilter {
-		public boolean filter(MeetingInterface meeting);
-	}
-
-	protected abstract class EventOperation implements Operation {
+	protected abstract class EventMeetingOperation implements Operation {
 		@Override
 		public void execute() {
 			if (hasSelection()) {
@@ -849,7 +842,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row)[0];
+							EventMeetingRow e = getData(row);
 							if (isApplicable(e)) execute(row, e);
 						}
 					}
@@ -858,7 +851,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				for (int row = getRowCount() - 1; row >= 1; row--) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row)[0];
+						EventMeetingRow e = getData(row);
 						if (isApplicable(e)) execute(row, e);
 					}
 				}
@@ -886,7 +879,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row)[0];
+							EventMeetingRow e = getData(row);
 							if (isApplicable(e)) {
 								if (!allMustMatch) return true;
 							} else {
@@ -900,7 +893,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row)[0];
+						EventMeetingRow e = getData(row);
 						if (isApplicable(e)) {
 							if (!allMustMatch) return true;
 						} else {
@@ -914,15 +907,15 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 			}
 		}
 		
-		public List<EventInterface> events() {
-			List<EventInterface> events = new ArrayList<EventInterface>();
+		public List<EventMeetingRow> events() {
+			List<EventMeetingRow> events = new ArrayList<EventMeetingRow>();
 			if (hasSelection()) {
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row)[0];
+							EventMeetingRow e = getData(row);
 							if (isApplicable(e)) events.add(e);
 						}
 					}
@@ -931,7 +924,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row)[0];
+						EventMeetingRow e = getData(row);
 						if (isApplicable(e)) events.add(e);
 					}
 				}
@@ -947,7 +940,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 					if (w != null && w instanceof CheckBox) {
 						CheckBox ch = (CheckBox)w;
 						if (ch.getValue()) {
-							EventInterface e = getData(row)[0];
+							EventMeetingRow e = getData(row);
 							if (isApplicable(e)) rows.add(row);
 						}
 					}
@@ -956,7 +949,7 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				for (int row = 1; row < getRowCount(); row++) {
 					Widget w =  getWidget(row, 0);
 					if (w != null && w instanceof CheckBox) {
-						EventInterface e = getData(row)[0];
+						EventMeetingRow e = getData(row);
 						if (isApplicable(e)) rows.add(row);
 					}
 				}
@@ -972,8 +965,8 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 			return false;
 		}
 		
-		public abstract boolean isApplicable(EventInterface event);
-		public abstract void execute(int row, EventInterface event);
+		public abstract boolean isApplicable(EventMeetingRow event);
+		public abstract void execute(int row, EventMeetingRow event);
 
 		@Override
 		public boolean hasSeparator() { return false; }
@@ -982,11 +975,11 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 	public EventInterface next(Long eventId) {
 		boolean next = false;
 		for (int row = 1; row < getRowCount(); row ++) {
-			EventInterface[] data = getData(row);
-			if (data.length == 1) {
-				if (next)
-					return data[0];
-				else if (eventId.equals(data[0].getId()))
+			EventMeetingRow data = getData(row);
+			if (!data.isConflict()) {
+				if (next && !eventId.equals(data.getEvent().getId()))
+					return data.getEvent();
+				else if (eventId.equals(data.getEvent().getId()))
 					next = true;
 			}
 		}
@@ -996,39 +989,56 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 	public EventInterface previous(Long eventId) {
 		EventInterface prev = null;
 		for (int row = 1; row < getRowCount(); row ++) {
-			EventInterface[] data = getData(row);
-			if (data.length == 1) {
-				if (eventId.equals(data[0].getId()))
+			EventMeetingRow data = getData(row);
+			if (!data.isConflict()) {
+				if (eventId.equals(data.getEvent().getId()))
 					return prev;
 				else
-					prev = data[0];
+					prev = data.getEvent();
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<EventInterface>> handler) {
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<List<EventMeetingRow>> handler) {
 		return addHandler(handler, ValueChangeEvent.getType());
 	}
 
 	@Override
-	public List<EventInterface> getValue() {
-		List<EventInterface> value = new ArrayList<EventInterface>();
+	public List<EventMeetingRow> getValue() {
+		List<EventMeetingRow> value = new ArrayList<EventMeetingRow>();
 		for (int row = 1; row < getRowCount(); row++) {
-			EventInterface[] data = getData(row);
-			if (data != null && data.length == 1) value.add(data[0]);
+			EventMeetingRow data = getData(row);
+			if (data != null && !data.isConflict()) value.add(data);
 		}
 		return value;
 	}
 
 	@Override
-	public void setValue(List<EventInterface> value) {
+	public void setValue(List<EventMeetingRow> value) {
 		setValue(value, false);
 	}
 
 	@Override
-	public void setValue(List<EventInterface> value, boolean fireEvents) {
+	public void setValue(List<EventMeetingRow> value, boolean fireEvents) {
+		clearTable(1);
+		resetColumnVisibility();
+		if (value != null)
+			for (EventMeetingRow event: value)
+				add(event.getEvent(), event.getMeeting());
+		if (iSortBy != null)
+			sort(createComparator(EventSortBy.valueOf(iSortBy)));
+		hideSomeCells();
+		if (fireEvents)
+			ValueChangeEvent.fire(this, value);
+	}
+
+	public void setEvents(List<EventInterface> value) {
+		setEvents(value, false);
+	}
+
+	public void setEvents(List<EventInterface> value, boolean fireEvents) {
 		clearTable(1);
 		resetColumnVisibility();
 		if (value != null)
@@ -1036,8 +1046,82 @@ public class EventTable extends UniTimeTable<EventInterface[]> implements HasVal
 				add(event);
 		if (iSortBy != null)
 			sort(createComparator(EventSortBy.valueOf(iSortBy)));
+		hideSomeCells();
 		if (fireEvents)
-			ValueChangeEvent.fire(this, value);
+			ValueChangeEvent.fire(this, getValue());
 	}
 
+	public static class EventMeetingRow {
+		EventInterface iEvent;
+		MeetingInterface iMeeting;
+		EventMeetingRow iConflict;
+		
+		EventMeetingRow(EventInterface event, MeetingInterface meeting, EventMeetingRow conflict) {
+			iEvent = event; iMeeting = meeting; iConflict = conflict;
+		}
+		
+		public EventInterface getEvent() { return iEvent; }
+		public MeetingInterface getMeeting() { return iMeeting; }
+		
+		public boolean isConflict() { return iConflict != null; }
+		public EventMeetingRow getConflict() { return iConflict; }
+	}
+	
+	public static class Hideable extends SimplePanel implements HasCellAlignment {
+		public Hideable(Widget child) {
+			super(child);
+		}
+		@Override
+		public void setVisible(boolean visible) {
+			getWidget().setVisible(visible);
+		}
+		@Override
+		public boolean isVisible() {
+			return getWidget().isVisible();
+		}
+		@Override
+		public HorizontalAlignmentConstant getCellAlignment() {
+			if (getWidget() instanceof HasCellAlignment)
+				return ((HasCellAlignment)getWidget()).getCellAlignment();
+			return HasHorizontalAlignment.ALIGN_LEFT;
+		}
+	}
+	
+	public void hideSomeCells() {
+		Long eventId = null, conflictId = null;
+		for (int row = 1; row < getRowCount(); row++) {
+			EventMeetingRow data = getData(row);
+			if (!data.isConflict()) {
+				if (eventId == null || !eventId.equals(data.getEvent().getId())) {
+					for (int col = 0; col < getCellCount(row); col++) {
+						Widget w = getWidget(row, col);
+						if (w instanceof Hideable) w.setVisible(true);
+						getCellFormatter().addStyleName(row, col, "event-cell");
+					}
+				} else {
+					for (int col = 0; col < getCellCount(row); col++) {
+						Widget w = getWidget(row, col);
+						if (w instanceof Hideable) w.setVisible(false);
+						getCellFormatter().removeStyleName(row, col, "event-cell");
+					}
+				}
+			} else {
+				if (conflictId == null || !conflictId.equals(data.getConflict().getEvent().getId())) {
+					for (int col = 0; col < getCellCount(row); col++) {
+						Widget w = getWidget(row, col);
+						if (w instanceof Hideable) w.setVisible(true);
+						getCellFormatter().removeStyleName(row, col, "event-cell");
+					}
+				} else {
+					for (int col = 0; col < getCellCount(row); col++) {
+						Widget w = getWidget(row, col);
+						if (w instanceof Hideable) w.setVisible(false);
+						getCellFormatter().removeStyleName(row, col, "event-cell");
+					}
+				}
+			}
+			eventId = data.getEvent().getId();
+			conflictId = (data.isConflict() ? data.getConflict().getEvent().getId() : null);
+		}
+	}
 }

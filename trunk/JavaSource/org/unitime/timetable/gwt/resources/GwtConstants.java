@@ -70,6 +70,18 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringArrayValue({"M", "T", "W", "Th", "F", "S", "Su"})
 	String[] shortDays();
+	
+	@DefaultStringValue("midnight")
+	String timeMidnitgh();
+
+	@DefaultStringValue("noon")
+	String timeNoon();
+	
+	@DefaultStringValue("all day")
+	String timeAllDay();
+	
+	@DefaultStringValue("Daily")
+	String daily();
 
 	@DefaultStringArrayValue({
 		"blue", "green", "orange", "yellow", "pink",
@@ -77,5 +89,4 @@ public interface GwtConstants extends Constants {
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown", "red"})
 	String[] meetingColors();
-
 }
