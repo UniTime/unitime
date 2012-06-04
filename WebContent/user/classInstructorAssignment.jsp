@@ -255,8 +255,7 @@
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:text name="<%=frmName%>" property='<%= "percentShares[" + ctr + "]" %>' 
-											tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5" 
-											onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/>
+											tabindex="<%=java.lang.Integer.toString(4000 + ctr.intValue())%>" maxlength="5" size="5"/>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
 									<html:hidden property='<%= "percentShares[" + ctr + "]" %>'/>
@@ -268,8 +267,7 @@
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<html:checkbox name="<%=frmName%>" property='<%= "leadFlags[" + ctr + "]" %>' 
-											tabindex="<%=java.lang.Integer.toString(6000 + ctr.intValue())%>" 
-											onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/>
+											tabindex="<%=java.lang.Integer.toString(6000 + ctr.intValue())%>"/>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
 									<html:hidden property='<%= "leadFlags[" + ctr + "]" %>'/>
@@ -282,8 +280,7 @@
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "showDisplay[" + ctr + "]" %>' value="true" >
 										<html:checkbox name="<%=frmName%>" property='<%= "displayFlags[" + ctr + "]" %>' 
-												tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>" 
-												onchange="<%= \"document.getElementsByName('classLabels[\" + ctr + \"]')[0].value=this.value\"%>"/>
+												tabindex="<%=java.lang.Integer.toString(8000 + ctr.intValue())%>"/>
 									</logic:equal>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
