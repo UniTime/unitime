@@ -426,6 +426,8 @@
 			<arg value="${env.TOMCAT_HOME}/webapps/UniTime"/>
 			<arg value="-draftCompile"/>
 			<arg value="org.unitime.timetable.gwt.UniTimeDev"/>
+			<arg value="-style"/>
+			<arg value="DETAILED"/>
 		</java>
 	</target>
 
