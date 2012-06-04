@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.events.EventCookie.EventFlag;
@@ -320,7 +319,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 								meeting.setEndOffset(-teardownTime.toInteger());
 							((NumberCell)getWidget(row, colSetup)).setText(String.valueOf(meeting.getStartOffset()));
 							((NumberCell)getWidget(row, colTear)).setText(String.valueOf(-meeting.getEndOffset()));
-							((Label)getWidget(row, colPubl)).setText(meetingTime(meeting));
+							((Label)getWidget(row, colPubl)).setText(meeting.getMeetingTime(CONSTANTS));
 						}
 						dialog.hide();
 					}
@@ -520,8 +519,8 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			row.add(new HTML("&nbsp;"));
 		}
 		row.add(new Label(sDateFormat.format(meeting.getMeetingDate())));
-		row.add(new Label(meetingTime(meeting)));
-		row.add(new Label(allocatedTime(meeting)));
+		row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
+		row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
 		row.add(new NumberCell(meeting.getStartOffset()));
 		row.add(new NumberCell(- meeting.getEndOffset()));
 		
@@ -552,8 +551,8 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 				List<Widget> r = new ArrayList<Widget>();
 				r.add(new CenterredCell(MESSAGES.signConflict()));
 				r.add(new Label(m.getType() == EventType.Unavailabile ? m.getName() : MESSAGES.conflictWith(m.getName()), false));
-				r.add(new Label(meetingTime(m)));
-				r.add(new Label(allocatedTime(m)));
+				r.add(new Label(m.getMeetingTime(CONSTANTS)));
+				r.add(new Label(m.getAllocatedTime(CONSTANTS)));
 				r.add(new NumberCell(m.getStartOffset()));
 				r.add(new NumberCell(- m.getEndOffset()));
 				r.add(new Label(""));
@@ -604,8 +603,11 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 	private static int compateByApproval(MeetingInterface m1, MeetingInterface m2) {
 		if (m1.getId() == null && m2.getId() != null) return -1;
 		if (m1.getId() != null && m2.getId() == null) return 1;
-		Date now = new Date();
-		return (m1.getApprovalDate() == null ? now : m1.getApprovalDate()).compareTo(m2.getApprovalDate() == null ? now : m2.getApprovalDate());
+		if (m1.getApprovalDate() == null) {
+			return (m2.getApprovalDate() == null ? 0 : -1);
+		} else {
+			return (m2.getApprovalDate() == null ? 1 : m1.getApprovalDate().compareTo(m2.getApprovalDate()));
+		}
 	}
 	
 	private static int compareByDate(MeetingInterface m1, MeetingInterface m2) {
@@ -686,38 +688,6 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 		return m1.compareTo(m2);
 	}
 	
-	public static String meetingTime(MeetingInterface m) {
-		if (m.getStartSlot() == 0 && m.getStartOffset() == 0 && m.getEndOffset() == 0 && m.getEndSlot() == 288)
-			return MESSAGES.timeAllDay();
-		
-		String startTime = m.getStartTime(CONSTANTS.useAmPm(), true);
-		int start = 5 * m.getStartSlot() + m.getStartOffset();
-		if (start == 0 || start == 1440) startTime = MESSAGES.timeMidnitgh();
-		if (start == 720) startTime = MESSAGES.timeNoon();
-		
-		String endTime = m.getEndTime(CONSTANTS.useAmPm(), true);
-		int end = 5 * m.getEndSlot() + m.getEndOffset();
-		if (end == 0 || end == 1440) endTime = MESSAGES.timeMidnitgh();
-		if (end == 720) endTime = MESSAGES.timeNoon();
-		
-		return startTime + " - " + endTime;
-	}
-	
-	public static String allocatedTime(MeetingInterface m) {
-		if (m.getStartSlot() == 0 && m.getEndSlot() == 288)
-			return MESSAGES.timeAllDay();
-		
-		String startTime = m.getStartTime(CONSTANTS.useAmPm(), false);
-		if (m.getStartSlot() == 0 || m.getStartSlot() == 288) startTime = MESSAGES.timeMidnitgh();
-		if (m.getStartSlot() == 144) startTime = MESSAGES.timeNoon();
-		
-		String endTime = m.getEndTime(CONSTANTS.useAmPm(), false);
-		if (m.getEndSlot() == 0 || m.getEndSlot() == 288) endTime = MESSAGES.timeMidnitgh();
-		if (m.getEndSlot() == 144) endTime = MESSAGES.timeNoon();
-		
-		return startTime + " - " + endTime;
-	}
-
 	private abstract class MeetingOperation implements Operation {
 		@Override
 		public void execute() {

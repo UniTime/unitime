@@ -116,11 +116,32 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Date")
 	String colDate();
 
+	@DefaultMessage("Day Of Week")
+	String colDayOfWeek();
+
+	@DefaultMessage("First Date")
+	String colFirstDate();
+
+	@DefaultMessage("Last Date")
+	String colLastDate();
+
 	@DefaultMessage("Published Time")
 	String colPublishedTime();
 
+	@DefaultMessage("Published Start")
+	String colPublishedStartTime();
+
+	@DefaultMessage("Published End")
+	String colPublishedEndTime();
+
 	@DefaultMessage("Allocated Time")
 	String colAllocatedTime();
+
+	@DefaultMessage("Allocated Start")
+	String colAllocatedStartTime();
+
+	@DefaultMessage("Allocated End")
+	String colAllocatedEndTime();
 
 	@DefaultMessage("Setup")
 	String colSetupTimeShort();
@@ -232,15 +253,6 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("new meeting")
 	String approvalNewMeeting();
-	
-	@DefaultMessage("midnight")
-	String timeMidnitgh();
-
-	@DefaultMessage("noon")
-	String timeNoon();
-	
-	@DefaultMessage("all day")
-	String timeAllDay();
 	
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
@@ -441,7 +453,10 @@ public interface GwtMessages extends Messages {
 	String sectTimetable(String resource, String session);
 
 	@DefaultMessage("{0} events for {1}")
-	String sectEvents(String resource, String session);
+	String sectEventList(String resource, String session);
+	
+	@DefaultMessage("{0} meetings for {1}")
+	String sectMeetingList(String resource, String session);
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -557,8 +572,11 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>T</u>imetable")
 	String tabGrid();
 	
-	@DefaultMessage("<u>L</u>ist of Events")
-	String tabTable();
+	@DefaultMessage("List of <u>E</u>vents")
+	String tabEventTable();
+	
+	@DefaultMessage("List of <u>M</u>eetings")
+	String tabMeetingTable();
 	
 	@DefaultMessage("Students are required to attend this event.")
 	String checkRequiredAttendance();

@@ -59,7 +59,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	protected static String toString(MeetingInterface meeting) {
 		return (meeting instanceof MeetingConglictInterface ? ((MeetingConglictInterface)meeting).getName() + " " : "") +
 				(meeting.getMeetingDate() == null ? "" : sMeetingDateFormat.format(meeting.getMeetingDate()) + " ") +
-				meeting.getAllocatedTime(CONSTANTS.useAmPm()) + (meeting.hasLocation() ? " " + meeting.getLocationName() : "");
+				meeting.getAllocatedTime(CONSTANTS) + (meeting.hasLocation() ? " " + meeting.getLocationName() : "");
 	}
 	
 	protected static String toString(Meeting meeting) {
@@ -70,6 +70,8 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	
 	protected static String time2string(int slot, int offset) {
 		int min = 5 * slot + offset;
+		if (min == 0 || min == 1440) return CONSTANTS.timeMidnitgh();
+		if (min == 720) return CONSTANTS.timeNoon();
 		int h = min / 60;
         int m = min % 60;
         if (CONSTANTS.useAmPm()) {
