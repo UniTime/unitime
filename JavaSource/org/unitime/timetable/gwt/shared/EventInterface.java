@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -146,6 +147,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		String ret = "";
 		for (ContactInterface instructor: getInstructors()) {
 			ret += (ret.isEmpty() ? "" : separator) + instructor.getName();
+		}
+		return ret;
+	}
+	public String getInstructorEmails(String separator) { 
+		if (!hasInstructors()) return "";
+		String ret = "";
+		for (ContactInterface instructor: getInstructors()) {
+			ret += (ret.isEmpty() ? "" : separator) + (instructor.getEmail() == null ? "" : instructor.getEmail());
 		}
 		return ret;
 	}
@@ -436,32 +445,44 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setDayOfWeek(int dayOfWeek) { iDayOfWeek = dayOfWeek; }
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
-		public String getStartTime(boolean useAmPm, boolean useOffsets) {
+		public String getStartTime(GwtConstants constants, boolean useOffsets) {
 			int min = 5 * iStartSlot + (useOffsets ? iStartOffset : 0);
 			int h = min / 60;
 	        int m = min % 60;
-	        if (useAmPm) {
+	        if (constants != null && min == 0)
+	        	return constants.timeMidnitgh();
+	        if (constants != null && min == 720)
+	        	return constants.timeNoon();
+	        if (constants == null || constants.useAmPm()) {
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 			} else {
 				return h + ":" + (m < 10 ? "0" : "") + m;
 			}
 		}
-		public String getEndTime(boolean useAmPm, boolean useOffsets) {
+		public String getEndTime(GwtConstants constants, boolean useOffsets) {
 			int min = 5 * iEndSlot + (useOffsets ? iEndOffset : 0);
 			int h = min / 60;
 	        int m = min % 60;
-	        if (useAmPm) {
+	        if (constants != null && min == 720)
+	        	return constants.timeMidnitgh();
+	        if (constants != null && min == 1440)
+	        	return constants.timeNoon();
+	        if (constants == null || constants.useAmPm()) {
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 			} else {
 				return h + ":" + (m < 10 ? "0" : "") + m;
 			}
 			
 		}
-		public String getMeetingTime(boolean useAmPm) {
-			return getStartTime(useAmPm, true) + " - " + getEndTime(useAmPm, true);
+		public String getMeetingTime(GwtConstants constants) {
+			if (constants != null && iStartSlot == 0 && iStartOffset == 0 && iEndSlot == 288 && iEndOffset == 0)
+				return constants.timeAllDay();
+			return getStartTime(constants, true) + " - " + getEndTime(constants, true);
 		}
-		public String getAllocatedTime(boolean useAmPm) {
-			return getStartTime(useAmPm, false) + " - " + getEndTime(useAmPm, false);
+		public String getAllocatedTime(GwtConstants constants) {
+			if (constants != null && iStartSlot == 0 && iEndSlot == 288)
+				return constants.timeAllDay();
+			return getStartTime(constants, false) + " - " + getEndTime(constants, false);
 		}
 		public ResourceInterface getLocation() { return iLocation; }
 		public boolean hasLocation() { return iLocation != null; }
@@ -521,8 +542,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		@SuppressWarnings("deprecation")
 		@Override
 		public String toString() {
-			return (getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDay() + " ") +
-					getAllocatedTime(true) + (getLocation() == null ? "" : " " + getLocationName());
+			return (getMeetingDate() == null ? "" : (1 + getMeetingDate().getMonth()) + "/" + getMeetingDate().getDate() + " ") +
+					getAllocatedTime(null) + (getLocation() == null ? "" : " " + getLocationName());
 		}
 		
 		public boolean inConflict(MeetingInterface meeting) {
@@ -566,7 +587,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 	}
 	
-    public static boolean equals(Object o1, Object o2) {
+	public static boolean equals(Object o1, Object o2) {
         return (o1 == null ? o2 == null : o1.equals(o2));
     }
 	
@@ -589,10 +610,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    
 	    public String getDays() {
 	        return getDays(new String[] {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"},
-	        		new String[] {"M", "T", "W", "Th", "F", "S", "Su"});
+	        		new String[] {"M", "T", "W", "Th", "F", "S", "Su"}, "Daily");
 	    }
 	    
-	    public String getDays(String[] dayNames, String[] shortDyNames) {
+	    public String getDays(GwtConstants constants) {
+	    	return getDays(constants.days(), constants.shortDays(), constants.daily());
+	    }
+	    
+	    public String getDays(String[] dayNames, String[] shortDyNames, String daily) {
 	        int nrDays = 0;
 	        int dayCode = 0;
 	        for (MeetingInterface meeting : getMeetings()) {
@@ -600,6 +625,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	            if ((dayCode & dc)==0) nrDays++;
 	            dayCode |= dc;
 	        }
+	        if (nrDays == 7) return daily;
 	        String ret = "";
 	        for (int i = 0; i < 7; i++) {
 	        	if ((dayCode & (1 << i)) != 0)
@@ -609,7 +635,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    }
 	    
 	    public String getMeetingTime(boolean useAmPm) {
-	    	return getDays() + " " + iMeetings.first().getMeetingTime(useAmPm);
+	    	return getDays() + " " + iMeetings.first().getMeetingTime(null);
 	    }
 	    
 	    /*
@@ -646,11 +672,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 
 	    
 	    public Date getApprovalDate() {
-	    	return iMeetings.first().getApprovalDate();
+	    	Date date = null;
+	    	for (MeetingInterface m: iMeetings) {
+	    		if (!m.isApproved()) return null;
+	    		if (date == null || date.after(m.getApprovalDate())) date = m.getApprovalDate();
+	    	}
+	    	return date;
 	    }
 	    
 	    public boolean isApproved() {
-	    	return iMeetings.first().isApproved();
+	    	for (MeetingInterface m: iMeetings)
+	    		if (!m.isApproved()) return false;
+	    	return true;
 	    }
 	}
 	
@@ -666,11 +699,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             HashMap<Integer,MeetingInterface> similar = new HashMap<Integer, MeetingInterface>(); 
             TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
             for (MeetingInterface m : meetingSet) {
-            	if (m.getMeetingTime(true).equals(meeting.getMeetingTime(true)) &&
+            	if (m.getMeetingTime(null).equals(meeting.getMeetingTime(null)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
-            		(!checkApproval ||( m.isApproved() == meeting.isApproved() && (!m.isApproved() || m.getApprovalDate().equals(meeting.getApprovalDate()))))) {
-                    dow.add(m.getDayOfWeek());
+            		(!checkApproval || m.isApproved() == meeting.isApproved())) {
+            		if (m.getDayOfYear() - meeting.getDayOfYear() < 7)
+            			dow.add(m.getDayOfWeek());
                     similar.put(m.getDayOfYear(),m);
                 }
             }
@@ -1269,7 +1303,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false;
+		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanExportCSV;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 		private List<String> iStandardNotes = null;
@@ -1278,6 +1312,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isCanLookupPeople() { return iCanLookupPeople; }
 		public void setCanLookupPeople(boolean canLookupPeople) { iCanLookupPeople = canLookupPeople; }
+		
+		public boolean isCanExportCSV() { return iCanExportCSV; }
+		public void setCanExportCSV(boolean canExportCSV) { iCanExportCSV = canExportCSV; }
 		
 		public boolean isCanLookupContacts() { return iCanLookupContacts; }
 		public void setCanLookupContacts(boolean canLookupContacts) { iCanLookupContacts = canLookupContacts; }
