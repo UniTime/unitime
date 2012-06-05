@@ -270,7 +270,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 										
 										@Override
 										public InputStream getInputStream() throws IOException {
-											return new ByteArrayInputStream(calendar.getBytes());
+											return new ByteArrayInputStream(calendar.getBytes("UTF-8"));
 										}
 										
 										@Override
