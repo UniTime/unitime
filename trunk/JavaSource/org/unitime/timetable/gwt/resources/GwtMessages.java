@@ -254,6 +254,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("new meeting")
 	String approvalNewMeeting();
 	
+	@DefaultMessage("waiting approval")
+	String approvalWaiting();
+	
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
 	
@@ -448,7 +451,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Relations")
 	String sectRelations();
-
+	
 	@DefaultMessage("{0} timetable for {1}")
 	String sectTimetable(String resource, String session);
 
@@ -524,8 +527,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Meeting {0} is conflicting with {1}.")
 	String failedSaveEventConflict(String meeting, String conflict);
 	
+	@DefaultMessage("Meeting {0} cannot be edited by the user.")
+	String failedSaveEventCanNotEditMeeting(String meeting);
+	
+	@DefaultMessage("Meeting {0} cannot be deleted by the user.")
+	String failedSaveEventCanNotDeleteMeeting(String meeting);
+
 	@DefaultMessage("The event does no longer exist.")
 	String failedApproveEventNoEvent();
+
+	@DefaultMessage("No meetings were selected.")
+	String failedApproveEventNoMeetings();
 
 	@DefaultMessage("Insufficient rights to approve meeting {0}.")
 	String failedApproveEventNoRightsToApprove(String meeting);
@@ -685,4 +697,76 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<i>File {0} attached.</i>")
 	String noteAttachement(String fileName);
+	
+	@DefaultMessage("Confirmation emails are disabled.")
+	String emailDisabled();
+	
+	@DefaultMessage("Event {0} created.")
+	String emailSubjectCreate(String eventName);
+
+	@DefaultMessage("Event {0} updated.")
+	String emailSubjectUpdate(String eventName);
+
+	@DefaultMessage("Event {0} deleted.")
+	String emailSubjectDelete(String eventName);
+
+	@DefaultMessage("Event {0} approved.")
+	String emailSubjectApprove(String eventName);
+
+	@DefaultMessage("Event {0} rejected.")
+	String emailSubjectReject(String eventName);
+
+	@DefaultMessage("Event {0} inquiry.")
+	String emailSubjectInquire(String eventName);
+	
+	@DefaultMessage("Confirmation email sent to {0}.")
+	String infoConfirmationEmailSent(String name);
+	
+	@DefaultMessage("Failed to send confirmation email: {0}")
+	String failedToSendConfirmationEmail(String reason);
+
+	@DefaultMessage("Following meetings were requested by you or on your behalf")
+	String emailCreatedMeetings();
+	
+	@DefaultMessage("Following meetings were deleted by you or on your behalf")
+	String emailDeletedMeetings();
+	
+	@DefaultMessage("Following meetings are in question")
+	String emailInquiredMeetings();
+
+	@DefaultMessage("Following meetings were approved")
+	String emailApprovedMeetings();
+
+	@DefaultMessage("Following meetings were rejected")
+	String emailRejectedMeetings();
+	
+	@DefaultMessage("Following meetings were updated by you or on your behalf")
+	String emailUpdatedMeetings();
+	
+	@DefaultMessage("Additional Information")
+	String emailMessageCreate();
+	
+	@DefaultMessage("Additional Information")
+	String emailMessageUpdate();
+
+	@DefaultMessage("Additional Information")
+	String emailMessageDelete();
+
+	@DefaultMessage("Notes")
+	String emailMessageApproval();
+
+	@DefaultMessage("Notes")
+	String emailMessageReject();
+
+	@DefaultMessage("Inquiry")
+	String emailMessageInquiry();
+	
+	@DefaultMessage("History of {0}")
+	String emailAllMeetings(String eventName);
+
+	@DefaultMessage("No meeting left, the event {0} was deleted as well.")
+	String emailEventDeleted(String eventName);
+
+	@DefaultMessage("All Notes of {0}")
+	String emailNotes(String eventName);
 }

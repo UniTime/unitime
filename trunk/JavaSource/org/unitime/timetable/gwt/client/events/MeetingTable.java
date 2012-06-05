@@ -342,7 +342,7 @@ public class MeetingTable extends UniTimeTable<MeetingInterface[]> implements Ha
 			}
 			@Override
 			public boolean isApplicable(MeetingInterface meeting) {
-				return meeting.getId() == null;
+				return meeting.getId() == null || meeting.isCanEdit();
 			}
 			@Override
 			public void execute(int row, MeetingInterface meeting) {

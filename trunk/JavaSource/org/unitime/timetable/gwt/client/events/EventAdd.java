@@ -43,6 +43,7 @@ import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
@@ -50,7 +51,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcR
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MessageInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
@@ -58,7 +59,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface.NoteType;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Document;
@@ -199,7 +199,7 @@ public class EventAdd extends Composite {
 						if (result) {
 							final EventInterface event = getEvent();
 							LoadingWidget.getInstance().show(MESSAGES.waitSave(event.getName()));
-							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId()), new AsyncCallback<EventInterface>() {
+							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -209,15 +209,18 @@ public class EventAdd extends Composite {
 								}
 
 								@Override
-								public void onSuccess(EventInterface result) {
+								public void onSuccess(SaveOrApproveEventRpcResponse result) {
 									LoadingWidget.getInstance().hide();
-									iSavedEvent = result;
-									if (iSavedEvent.hasMessage()) {
-										if (iSavedEvent.getMessage().startsWith("WARN:"))
-											UniTimeNotifications.info(iSavedEvent.getMessage().substring(5));
-										else
-											UniTimeNotifications.info(iSavedEvent.getMessage());
-									}
+									iSavedEvent = result.getEvent();
+									if (result.hasMessages())
+										for (MessageInterface m: result.getMessages()) {
+											if (m.isError())
+												UniTimeNotifications.warn(m.getMessage());
+											else if (m.isWarning())
+												UniTimeNotifications.error(m.getMessage());
+											else
+												UniTimeNotifications.info(m.getMessage());
+										}
 									hide();
 								}
 							});
@@ -469,6 +472,10 @@ public class EventAdd extends Composite {
 		initWidget(iForm);
 	}
 	
+	public String getMessage() {
+		return iNotes.getText();
+	}
+	
 	public EventInterface getEvent() {
 		iEvent.setName(iName.getWidget().getText());
 		if (!iEventType.isReadOnly()) {
@@ -488,7 +495,8 @@ public class EventAdd extends Composite {
 			iEvent.addAdditionalContact(contact);
 		
 		iEvent.setEmail(iEmails.getText());
-		
+
+		/*
 		if (iEvent.hasNotes() && iEvent.getNotes().last().getDate() == null)
 			iEvent.getNotes().remove(iEvent.getNotes().last());
 		if (!iNotes.getText().isEmpty()) {
@@ -497,6 +505,7 @@ public class EventAdd extends Composite {
 			note.setType(iEvent.getId() == null ? NoteType.Create : NoteType.AddMeetings);
 			iEvent.addNote(note);
 		}
+		*/
 		
 		if (iEvent.hasMeetings())
 			iEvent.getMeetings().clear();
