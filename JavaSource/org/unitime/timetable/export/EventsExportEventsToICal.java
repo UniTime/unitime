@@ -59,7 +59,7 @@ public class EventsExportEventsToICal extends EventsExportEventsToCSV {
 		out.println("END:VCALENDAR");
 	}
 	
-	private void print(PrintWriter out, EventInterface event) throws IOException {
+	public void print(PrintWriter out, EventInterface event) throws IOException {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone("UTC"));
         SimpleDateFormat tf = new SimpleDateFormat("HHmmss");

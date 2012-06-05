@@ -19,15 +19,12 @@
 */
 package org.unitime.timetable.events;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.struts.upload.FormFile;
 import org.hibernate.Transaction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -35,56 +32,69 @@ import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest.Operation;
-import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest.Operation;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.webutil.EventEmail;
 
-public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, EventInterface>{
+public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, SaveOrApproveEventRpcResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
-	public EventInterface execute(ApproveEventRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public SaveOrApproveEventRpcResponse execute(ApproveEventRpcRequest request, GwtRpcHelper helper, EventRights rights) {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
-			Event event = (request.getEventId() == null ? null : EventDAO.getInstance().get(request.getEventId(), hibSession));
+			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
+			SaveOrApproveEventRpcResponse response = new SaveOrApproveEventRpcResponse();
+			
+			Event event = (request.getEvent() == null || request.getEvent().getId() == null ? null : EventDAO.getInstance().get(request.getEvent().getId(), hibSession));
 			if (event == null)
 				throw new GwtRpcException(MESSAGES.failedApproveEventNoEvent());
 			
+			if (!request.hasMeetings())
+				throw new GwtRpcException(MESSAGES.failedApproveEventNoMeetings());
+
 			Date now = new Date();
 	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), helper.getUser()).getShortName();
 	        
-			TreeSet<Meeting> meetings = new TreeSet<Meeting>();
-			meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
-				Meeting meeting = i.next();
-				if (request.hasMeetingIds() && request.getMeetingIds().contains(meeting.getUniqueId())) {
-					meetings.add(meeting);
-					switch (request.getOperation()) {
-					case REJECT:
-						if (!rights.canApprove(meeting))
-							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
-						
-						hibSession.delete(meeting);
-						i.remove();
-
-						continue meetings;
-					case APPROVE:
-						if (!rights.canApprove(meeting))
-							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
-						
-						meeting.setApprovedDate(now);
-						hibSession.saveOrUpdate(meeting);
-						
-						continue meetings;
-					}
-				}
-			}
-			
+	        meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
+        		Meeting meeting = i.next();
+    			for (MeetingInterface m: request.getMeetings()) {
+    				if (meeting.getUniqueId().equals(m.getId())) {
+    					response.addUpdatedMeeting(m);
+    					
+    					switch (request.getOperation()) {
+    					case REJECT:
+    						if (!rights.canApprove(meeting))
+    							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
+    						
+    						hibSession.delete(meeting);
+    						i.remove();
+    						
+    						break;
+    					case APPROVE:
+    						if (!rights.canApprove(meeting))
+    							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
+    						
+    						meeting.setApprovedDate(now);
+    						m.setApprovalDate(now);
+    						hibSession.saveOrUpdate(meeting);
+    						
+    						break;
+    					}
+    					
+    					continue meetings;
+    				}
+    			}
+	        }
+	        
 			final FileItem uploaded = helper.getLastUploadedFile();
 			
 			EventNote note = new EventNote();
@@ -92,7 +102,15 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Eve
 			note.setNoteType(request.getOperation() == Operation.APPROVE ? EventNote.sEventNoteTypeApproval : request.getOperation() == Operation.REJECT ? EventNote.sEventNoteTypeRejection : EventNote.sEventNoteTypeInquire);
 			note.setTimeStamp(now);
 			note.setUser(uname);
-			note.setMeetingCollection(meetings);
+			note.setMeetings(EventInterface.toString(
+					response.getUpdatedMeetings(),
+					CONSTANTS,
+					"\n",
+					new EventInterface.DateFormatter() {
+						DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+						@Override
+						public String format(Date date) { return df.format(date); }
+					}));
 			if (request.hasMessage())
 				note.setTextNote(request.getMessage() + (uploaded == null ? "" : "\n\n" + MESSAGES.noteAttachement(uploaded.getName())));
 			else if (uploaded != null)
@@ -100,59 +118,28 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Eve
 			event.getNotes().add(note);
 			hibSession.saveOrUpdate(note);
 			
+			NoteInterface n = new NoteInterface();
+			n.setDate(now);
+			n.setMeetings(note.getMeetings());
+			n.setUser(uname);
+			n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
+			n.setNote(request.getMessage());
+			response.addNote(n);
+			
 			if (event.getMeetings().isEmpty()) {
+				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
+				response.getEvent().setId(null);
 				hibSession.delete(event);
 			} else {
 				hibSession.update(event);
+				response.setEvent(EventDetailBackend.getEventDetail(session, event, rights));
 			}
 			
-			FormFile attachement = null;
-			if (uploaded != null) {
-				attachement = new FormFile() {
-					@Override
-					public void setFileSize(int fileSize) {}
-					
-					@Override
-					public void setFileName(String fileName) {}
-					
-					@Override
-					public void setContentType(String contentType) {}
-					
-					@Override
-					public InputStream getInputStream() throws FileNotFoundException, IOException { return uploaded.getInputStream(); }
-
-					@Override
-					public int getFileSize() { return (int)uploaded.getSize(); }
-					
-					@Override
-					public String getFileName() { return uploaded.getName(); }
-					
-					@Override
-					public byte[] getFileData() throws FileNotFoundException, IOException { return uploaded.get(); }
-					
-					@Override
-					public String getContentType() { return uploaded.getContentType(); }
-					
-					@Override
-					public void destroy() {}
-				};
-			}
-			
-			EventEmail.Result emailResult = new EventEmail(event,
-					(request.getOperation() == Operation.APPROVE ? EventEmail.sActionApprove : request.getOperation() == Operation.REJECT ? EventEmail.sActionReject : EventEmail.sActionInquire),
-					Event.getMultiMeetings(meetings),
-					request.getMessage(),
-					attachement).send(helper.getRequestUrl());
+			new EventEmail(request, response).send(helper);
 			
 			tx.commit(); tx = null;
 			
-			EventInterface result = new EventInterface();
-			if (!event.getMeetings().isEmpty())
-				result = new EventDetailBackend().execute(EventDetailRpcRequest.requestEventDetails(request.getSessionId(), request.getEventId()), helper, rights);
-			
-			result.setMessage((emailResult.isWarning() ? "WARN:" : "") + emailResult.getMessage());
-			
-			return result;
+			return response;
 		} catch (Exception ex) {
 			if (tx != null) tx.rollback();
 			if (ex instanceof GwtRpcException) throw (GwtRpcException)ex;

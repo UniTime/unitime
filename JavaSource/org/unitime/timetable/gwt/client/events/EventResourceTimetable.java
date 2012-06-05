@@ -55,6 +55,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
@@ -67,6 +68,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.MessageInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -524,8 +526,8 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}
 			}
 			@Override
-			protected void onApprovalOrReject(EventInterface event) {
-				populate(tinker(new GwtRpcResponseList<EventInterface>(iData), getEvent().getId(), event.getId() == null ? null : event));
+			protected void onApprovalOrReject(Long eventId, EventInterface event) {
+				populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event));
 			}
 		};
 		
@@ -536,7 +538,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				if (saved != null) {
 					iRootPanel.setWidget(iPanel);
 					UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
-					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), saved.getId(), saved));
+					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved));
 				} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
 					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
 						@Override
@@ -639,7 +641,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 						case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(event.getName())); break;
 						case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
 						}
-						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<EventInterface>() {
+						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
@@ -647,18 +649,21 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 								onSubmit(operation, events, message, data);
 							}
 							@Override
-							public void onSuccess(EventInterface result) {
+							public void onSuccess(SaveOrApproveEventRpcResponse result) {
 								LoadingWidget.getInstance().hide();
-								if (result.hasMessage()) {
-									if (result.getMessage().startsWith("WARN:"))
-										UniTimeNotifications.info(result.getMessage().substring(5));
-									else
-										UniTimeNotifications.info(result.getMessage());
-								}
+								if (result.hasMessages())
+									for (MessageInterface m: result.getMessages()) {
+										if (m.isError())
+											UniTimeNotifications.warn(m.getMessage());
+										else if (m.isWarning())
+											UniTimeNotifications.error(m.getMessage());
+										else
+											UniTimeNotifications.info(m.getMessage());
+									}
 								switch (operation) {
 								case APPROVE:
 								case REJECT:
-									tinker(data, event.getId(), result.getId() == null ? null : result);
+									tinker(data, event.getId(), result.getEvent());
 								}
 								onSubmit(operation, events, message, data);
 							}
@@ -734,7 +739,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 					case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(event.getName())); break;
 					case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
 					}
-					RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<EventInterface>() {
+					RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
@@ -742,18 +747,21 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 							onSubmit(operation, events, event2meetings, message, data);
 						}
 						@Override
-						public void onSuccess(EventInterface result) {
+						public void onSuccess(SaveOrApproveEventRpcResponse result) {
 							LoadingWidget.getInstance().hide();
-							if (result.hasMessage()) {
-								if (result.getMessage().startsWith("WARN:"))
-									UniTimeNotifications.info(result.getMessage().substring(5));
-								else
-									UniTimeNotifications.info(result.getMessage());
-							}
+							if (result.hasMessages())
+								for (MessageInterface m: result.getMessages()) {
+									if (m.isError())
+										UniTimeNotifications.warn(m.getMessage());
+									else if (m.isWarning())
+										UniTimeNotifications.error(m.getMessage());
+									else
+										UniTimeNotifications.info(m.getMessage());
+								}
 							switch (operation) {
 							case APPROVE:
 							case REJECT:
-								tinker(data, event.getId(), result.getId() == null ? null : result);
+								tinker(data, event.getId(), result.getEvent());
 							}
 							onSubmit(operation, events, event2meetings, message, data);
 						}
@@ -936,12 +944,12 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 					if (j.next().getId().equals(oldEventId)) j.remove();
 			}
 			
-			if (newEvent != null && event.inConflict(newEvent)) {
+			if (newEvent != null && newEvent.getId() != null && event.inConflict(newEvent)) {
 				event.addConflict(event.createConflictingEvent(newEvent));
 			}
 		}
 		
-		if (newEvent != null)
+		if (newEvent != null && newEvent.getId() != null)
 			data.add(newEvent);
 		
 		return data;
