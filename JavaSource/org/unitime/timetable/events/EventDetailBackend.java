@@ -337,22 +337,23 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	
     	// overlaps
     	Map<Long, Set<Meeting>> overlaps = new HashMap<Long, Set<Meeting>>();
-    	for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
-				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o "+
-				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
-				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and " +
-				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
-				.setLong("eventId", e.getUniqueId())
-				.list()) {
-    		Long meetingId = (Long)o[0];
-    		Meeting overlap = (Meeting)o[1];
-    		Set<Meeting> overlapsThisMeeting = overlaps.get(meetingId);
-    		if (overlapsThisMeeting == null) {
-    			overlapsThisMeeting = new TreeSet<Meeting>();
-    			overlaps.put(meetingId, overlapsThisMeeting);
-    		}
-    		overlapsThisMeeting.add(overlap);
-		}
+    	if (e.getUniqueId() != null)
+    		for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
+    				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o " +
+    				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
+    				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and " +
+    				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
+    				.setLong("eventId", e.getUniqueId())
+    				.list()) {
+    			Long meetingId = (Long)o[0];
+	    		Meeting overlap = (Meeting)o[1];
+	    		Set<Meeting> overlapsThisMeeting = overlaps.get(meetingId);
+	    		if (overlapsThisMeeting == null) {
+	    			overlapsThisMeeting = new TreeSet<Meeting>();
+	    			overlaps.put(meetingId, overlapsThisMeeting);
+	    		}
+	    		overlapsThisMeeting.add(overlap);
+			}
     		
     	for (Meeting m: e.getMeetings()) {
 			MeetingInterface meeting = new MeetingInterface();

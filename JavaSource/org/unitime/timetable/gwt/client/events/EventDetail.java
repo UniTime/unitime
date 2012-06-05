@@ -43,9 +43,11 @@ import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventEnrollmentsRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MessageInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -126,7 +128,7 @@ public class EventDetail extends Composite {
 				case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName())); break;
 				case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName())); break;
 				}
-				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<EventInterface>() {
+				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -134,28 +136,31 @@ public class EventDetail extends Composite {
 					}
 
 					@Override
-					public void onSuccess(EventInterface result) {
+					public void onSuccess(SaveOrApproveEventRpcResponse result) {
 						LoadingWidget.getInstance().hide();
-						if (result.hasMessage()) {
-							if (result.getMessage().startsWith("WARN:"))
-								UniTimeNotifications.info(result.getMessage().substring(5));
-							else
-								UniTimeNotifications.info(result.getMessage());
-						}
+						if (result.hasMessages())
+							for (MessageInterface m: result.getMessages()) {
+								if (m.isError())
+									UniTimeNotifications.warn(m.getMessage());
+								else if (m.isWarning())
+									UniTimeNotifications.error(m.getMessage());
+								else
+									UniTimeNotifications.info(m.getMessage());
+							}
 						switch (operation) {
 						case APPROVE:
-							onApprovalOrReject(result);
-							setEvent(result);
+							onApprovalOrReject(iEvent.getId(), result.getEvent());
+							setEvent(result.getEvent());
 							break;
 						case REJECT:
-							onApprovalOrReject(result.getId() == null ? null : result);
-							if (result.getId() != null)
-								setEvent(result);
+							onApprovalOrReject(iEvent.getId(), result.getEvent());
+							if (result.hasEventWithId())
+								setEvent(result.getEvent());
 							else
 								EventDetail.this.hide();
 							break;
 						case INQUIRE:
-							setEvent(result);
+							setEvent(result.getEvent());
 							break;
 						}
 					}
@@ -229,7 +234,7 @@ public class EventDetail extends Composite {
 	protected EventInterface getPrevious(Long eventId) { return null; }
 	protected void previous(EventInterface previous) {}
 	
-	protected void onApprovalOrReject(EventInterface event) {}
+	protected void onApprovalOrReject(Long eventId, EventInterface event) {}
 	
 	public void setEvent(EventInterface event) {
 		iEvent = event;

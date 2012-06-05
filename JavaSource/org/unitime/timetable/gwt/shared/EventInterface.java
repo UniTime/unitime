@@ -527,7 +527,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		
 		public int hashCode() {
-			return getId().hashCode();
+			return (getId() == null ? toString().hashCode() : getId().hashCode());
 		}
 		
 		public boolean equals(Object o) {
@@ -632,10 +632,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	        		ret += (nrDays == 1 ? dayNames : shortDyNames)[i];
 	        }
 	        return ret;
-	    }
-	    
-	    public String getMeetingTime(boolean useAmPm) {
-	    	return getDays() + " " + iMeetings.first().getMeetingTime(null);
 	    }
 	    
 	    /*
@@ -1605,19 +1601,43 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
+	public static abstract class SaveOrApproveEventRpcRequest extends EventRpcRequest<SaveOrApproveEventRpcResponse> {
+		public static enum Operation implements IsSerializable {
+			APPROVE,
+			REJECT,
+			INQUIRE,
+			CREATE,
+			UPDATE,
+			DELETE
+		}
+		private EventInterface iEvent;
+		private String iMessage;
+		
+		public EventInterface getEvent() { return iEvent; }
+		public void setEvent(EventInterface event) { iEvent = event; }
+
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public void setMessage(String message) { iMessage = message; }
+		public String getMessage() { return iMessage; }
+		
+		public abstract Operation getOperation();
+	}
+	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.SaveEventBackend")
-	public static class SaveEventRpcRequest extends EventRpcRequest<EventInterface> {
-		EventInterface iEvent;
+	public static class SaveEventRpcRequest extends SaveOrApproveEventRpcRequest {
 		
 		public SaveEventRpcRequest() {}
 		
-		public void setEvent(EventInterface event) { iEvent = event; }
-		public EventInterface getEvent() { return iEvent; }
+		@Override
+		public Operation getOperation() {
+			return (getEvent().hasMeetings() ? getEvent().getId() == null ? Operation.CREATE : Operation.UPDATE : Operation.DELETE);
+		}
 		
-		public static SaveEventRpcRequest saveEvent(EventInterface event, Long sessionId) {
+		public static SaveEventRpcRequest saveEvent(EventInterface event, Long sessionId, String message) {
 			SaveEventRpcRequest request = new SaveEventRpcRequest();
 			request.setEvent(event);
 			request.setSessionId(sessionId);
+			request.setMessage(message);
 			return request;
 		}
 		
@@ -1626,53 +1646,132 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.events.ApproveEventBackend")
-	public static class ApproveEventRpcRequest extends EventRpcRequest<EventInterface> {
-		public static enum Operation implements IsSerializable {
-			APPROVE,
-			REJECT,
-			INQUIRE
+	public static class MessageInterface implements IsSerializable {
+		public static enum Level implements IsSerializable {
+			INFO,
+			WARN,
+			ERROR
+		}
+		private Level iLevel;
+		private String iMessage;
+		
+		public MessageInterface() {}
+		
+		public MessageInterface(Level level, String message) {
+			iLevel = level; iMessage = message;
 		}
 		
-		private String iMessage;
+		public Level getLevel() { return iLevel; }
+		public boolean isInfo() { return iLevel == Level.INFO; }
+		public boolean isWarning() { return iLevel == Level.WARN; }
+		public boolean isError() { return iLevel == Level.ERROR; }
+		
+		public String getMessage() { return iMessage; }
+		
+		public String toString() {
+			return getLevel() + ": " + getMessage();
+		}
+	}
+	
+	public static class SaveOrApproveEventRpcResponse implements GwtRpcResponse {
+		private EventInterface iEvent;
+		private List<MessageInterface> iMessages = null;
+		private List<NoteInterface> iNotes = null;
+		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null;
+		
+		public SaveOrApproveEventRpcResponse() {}
+		
+		public void setEvent(EventInterface event) { iEvent = event; }
+		public boolean hasEvent() { return iEvent != null; }
+		public boolean hasEventWithId() { return iEvent != null && iEvent.getId() != null; }
+		public EventInterface getEvent() { return iEvent; }
+		
+		public boolean hasMessages() { return iMessages != null && !iMessages.isEmpty(); }
+		public List<MessageInterface> getMessages() { return iMessages; }
+		public void addMessage(MessageInterface.Level level, String message) {
+			if (iMessages == null) iMessages = new ArrayList<MessageInterface>();
+			iMessages.add(new MessageInterface(level, message));
+		}
+		public void info(String message) { addMessage(MessageInterface.Level.INFO, message); }
+		public void warn(String message) { addMessage(MessageInterface.Level.WARN, message); }
+		public void error(String message) { addMessage(MessageInterface.Level.ERROR, message); }
+		
+		public List<NoteInterface> getNotes() { return iNotes; }
+		public boolean hasNotes() { return iNotes != null && !iNotes.isEmpty(); }
+		public void addNote(NoteInterface note) {
+			if (iNotes == null) iNotes = new ArrayList<NoteInterface>();
+			iNotes.add(note);
+		}
+		
+		public boolean hasCreatedMeetings() { return iCreatedMeetings != null && !iCreatedMeetings.isEmpty(); }
+		public void addCreatedMeeting(MeetingInterface meeting) {
+			if (iCreatedMeetings == null) iCreatedMeetings = new TreeSet<MeetingInterface>();
+			iCreatedMeetings.add(meeting);
+		}
+		public TreeSet<MeetingInterface> getCreatedMeetings() { return iCreatedMeetings; }
+
+		public boolean hasUpdatedMeetings() { return iUpdatedMeetings != null && !iUpdatedMeetings.isEmpty(); }
+		public void addUpdatedMeeting(MeetingInterface meeting) {
+			if (iUpdatedMeetings == null) iUpdatedMeetings = new TreeSet<MeetingInterface>();
+			iUpdatedMeetings.add(meeting);
+		}
+		public TreeSet<MeetingInterface> getUpdatedMeetings() { return iUpdatedMeetings; }
+
+		public boolean hasDeletedMeetings() { return iDeletedMeetings != null && !iDeletedMeetings.isEmpty(); }
+		public void addDeletedMeeting(MeetingInterface meeting) {
+			if (iDeletedMeetings == null) iDeletedMeetings = new TreeSet<MeetingInterface>();
+			iDeletedMeetings.add(meeting);
+		}
+		public TreeSet<MeetingInterface> getDeletedMeetings() { return iDeletedMeetings; }
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.ApproveEventBackend")
+	public static class ApproveEventRpcRequest extends SaveOrApproveEventRpcRequest {
 		private Operation iOperation;
-		private Long iEventId;
-		private Set<Long> iMeetingIds;
+		private TreeSet<MeetingInterface> iMeetings;
 		
 		public ApproveEventRpcRequest() {}
 		
-		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
-		public void setMessage(String message) { iMessage = message; }
-		public String getMessage() { return iMessage; }
-		
+		@Override
 		public Operation getOperation() { return iOperation; }
 		public void setOperation(Operation operation) { iOperation = operation; }
 		
-		public Long getEventId() { return iEventId; }
-		public void setEventId(Long eventId) { iEventId = eventId; }
-		
-		public boolean hasMeetingIds() { return iMeetingIds != null && !iMeetingIds.isEmpty(); }
-		public Set<Long> getMeetingIds() { return iMeetingIds; }
-		public void setMeetingIds(Set<Long> meetingIds) { iMeetingIds = meetingIds; }
-		public void addMeetingId(Long meetingId) {
-			if (iMeetingIds == null) iMeetingIds = new HashSet<Long>();
-			iMeetingIds.add(meetingId);
+		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
+		public void addMeeting(MeetingInterface meeting) {
+			if (iMeetings == null) iMeetings = new TreeSet<MeetingInterface>();
+			iMeetings.add(meeting);
 		}
+		public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
 		
 		public static ApproveEventRpcRequest createRequest(Operation operation, Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
 			ApproveEventRpcRequest request = new ApproveEventRpcRequest();
 			request.setOperation(operation);
 			request.setMessage(message);
 			request.setSessionId(sessionId);
-			request.setEventId(event.getId());
+			request.setEvent(event);
 			if (meetings != null)
 				for (MeetingInterface meeting: meetings)
-					request.addMeetingId(meeting.getId());
+					request.addMeeting(meeting);
 			return request;
 		}
 
 		public String toString() {
-			return getOperation() + " " + getEventId() + " " + getMeetingIds();
+			return getOperation() + " " + getEvent().getName() + " " + getMeetings();
 		}
 	}
+	
+	public static interface DateFormatter {
+		public String format(Date date);
+	}
+    
+    public static String toString(Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
+    	String ret = "";
+    	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
+    		if (!ret.isEmpty()) ret += separator;
+    		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
+    				df.format(m.getFirstMeetingDate()) + (m.getNrMeetings() == 1 ? "" : " - " + df.format(m.getLastMeetingDate())) + " " +
+    				m.getMeetings().first().getMeetingTime(constants) + " " + m.getLocationName()).trim();
+    	}
+    	return ret;
+    }
 }

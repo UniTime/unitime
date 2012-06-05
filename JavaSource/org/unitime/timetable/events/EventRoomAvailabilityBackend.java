@@ -27,7 +27,6 @@ import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
 import org.unitime.timetable.model.Meeting;
@@ -40,8 +39,6 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 	
 	@Override
 	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, GwtRpcHelper helper, EventRights rights) {
-		checkAccess(helper);
-		
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
@@ -166,11 +163,4 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		
 		return response;
 	}
-	
-	public void checkAccess(GwtRpcHelper helper) throws PageAccessException {
-		if (helper.getUser() == null) {
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-	}
-
 }
