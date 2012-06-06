@@ -108,6 +108,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndOffset(0);
 					conflict.setStartSlot(0);
 					conflict.setEndSlot(288);
+					conflict.setPast(true);
 					meeting.addConflict(conflict);
 				}
 				

@@ -34,7 +34,6 @@ import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
-import org.unitime.timetable.gwt.client.events.EventTable.EventSortBy;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickEvent;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -105,12 +104,11 @@ import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.TabBar;
-import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
-public class EventResourceTimetable extends Composite implements EventTable.MeetingFilter, EventAdd.EventPropertiesProvider {
+public class EventResourceTimetable extends Composite implements EventMeetingTable.MeetingFilter, EventAdd.EventPropertiesProvider {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -126,8 +124,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	private SimplePanel iGridOrTablePanel;
 	private UniTimeHeaderPanel iHeader, iFooter, iFilterHeader;
 	private TimeGrid iTimeGrid;
-	private EventTable iEventTable;
-	private EventMeetingTable iMeetingTable;
+	private EventMeetingTable iTable;
 	private ResourceInterface iResource;
 	private List<EventInterface> iData;
 	private WeekSelector iWeekPanel;
@@ -142,6 +139,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	private MeetingClickHandler iMeetingClickHandler;
 	private Lookup iLookup;
 	private TabBar iTabBar;
+	private ApproveDialog iApproveDialog;
 	
 	private EventPropertiesRpcResponse iProperties = null;
 	private HistoryToken iHistoryToken = null;
@@ -305,10 +303,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
 				iLocDate = iWeekPanel.getSelection();
-				iEventTable.setValue(iData);
-				iMeetingTable.setEvents(iData);
-				populateGrid();
-				changeUrl();
+				tabOrDataChanged();
 			}
 		});
 		iRoomPanel = new RoomSelector();
@@ -320,9 +315,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				iGridOrTablePanel.setWidget(tabWidget(event.getSelectedItem()));
-				iHeader.setHeaderTitle(name(event.getSelectedItem()));
-				changeUrl();
+				tabOrDataChanged();
 			}
 		});
 		
@@ -337,28 +330,21 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				@Override
 				public void onKeyUp(KeyUpEvent event) {
 					if (!iRootPanel.getWidget().equals(iPanel)) return;
+					int tab = -1;
 					if (gridAccessKey != null && event.getNativeEvent().getCtrlKey() && (
 							event.getNativeKeyCode() == gridAccessKey || event.getNativeKeyCode() == Character.toUpperCase(gridAccessKey))) {
-						iTabBar.selectTab(0);
-						if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
-						if (iEventTable != null) iEventTable.clearHover();
-						if (iMeetingTable != null) iMeetingTable.clearHover();
-						event.preventDefault();
+						tab = 0;
 					}
 					if (eventsAccessKey != null && event.getNativeEvent().getCtrlKey() && (
 							event.getNativeKeyCode() == eventsAccessKey || event.getNativeKeyCode() == Character.toUpperCase(eventsAccessKey))) {
-						iTabBar.selectTab(1);
-						if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
-						if (iEventTable != null) iEventTable.clearHover();
-						if (iMeetingTable != null) iMeetingTable.clearHover();
-						event.preventDefault();
+						tab = 1;
 					}
 					if (meetingsAccessKey != null && event.getNativeEvent().getCtrlKey() && (
 							event.getNativeKeyCode() == meetingsAccessKey || event.getNativeKeyCode() == Character.toUpperCase(meetingsAccessKey))) {
-						iTabBar.selectTab(2);
-						if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
-						if (iEventTable != null) iEventTable.clearHover();
-						if (iMeetingTable != null) iMeetingTable.clearHover();
+						tab = 2;
+					}
+					if (tab >= 0) {
+						iTabBar.selectTab(tab);
 						event.preventDefault();
 					}
 				}
@@ -390,10 +376,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onValueChange(ValueChangeEvent<IntervalSelector<ResourceInterface>.Interval> e) {
 				iLocRoom = iRoomPanel.getSelection();
-				iEventTable.setValue(iData);
-				iMeetingTable.setEvents(iData);
-				populateGrid();
-				changeUrl();
+				tabOrDataChanged();
 			}
 		});
 
@@ -403,21 +386,10 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
-				
-				Widget table = null;
-				if (iTabBar.getSelectedTab() <= 1) {
-					EventTable events = new EventTable();
-					events.setMeetingFilter(EventResourceTimetable.this);
-					events.setShowMainContact(iEventTable.isShowMainContact());
-					events.setValue(iData);
-					table = events;
-				} else {
-					EventMeetingTable events = new EventMeetingTable();
-					events.setMeetingFilter(EventResourceTimetable.this);
-					events.setShowMainContact(iEventTable.isShowMainContact());
-					events.setEvents(iData);
-					table = events;
-				}
+				EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false);
+				table.setMeetingFilter(EventResourceTimetable.this);
+				table.setShowMainContact(iProperties != null && iProperties.isCanLookupContacts());
+				table.setEvents(iData);
 				
 				TimeGrid tg = iTimeGrid.getPrintWidget();
 				for (EventInterface event: iData) {
@@ -430,6 +402,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}
 				if (iWeekPanel.getValue() != null)
 					tg.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
+				
 				ToolBox.print(iHeader.getHeaderTitle(),
 						"", "", 
 						tg,
@@ -477,8 +450,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			protected void onShow() {
 				iBack.clear();
-				if (iEventTable != null) iEventTable.clearHover();
-				if (iMeetingTable != null) iMeetingTable.clearHover();
+				if (iTable != null) iTable.clearHover();
 				iRootPanel.setWidget(iEventDetail);
 				changeUrl();
 			}
@@ -490,11 +462,11 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 			@Override
 			protected EventInterface getPrevious(Long eventId) {
-				return (iTabBar.getSelectedTab() <= 1 ? iEventTable.previous(eventId) : iMeetingTable.previous(eventId));
+				return iTable.previous(eventId);
 			}
 			@Override
 			protected EventInterface getNext(Long eventId) {
-				return (iTabBar.getSelectedTab() <= 1 ? iEventTable.next(eventId) : iMeetingTable.next(eventId));
+				return iTable.next(eventId);
 			}
 			@Override
 			protected void previous(final EventInterface event) {
@@ -559,8 +531,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 			@Override
 			protected void onShow() {
-				if (iEventTable != null) iEventTable.clearHover();
-				if (iMeetingTable != null) iMeetingTable.clearHover();
+				if (iTable != null) iTable.clearHover();
 				iRootPanel.setWidget(iEventAdd);
 			}
 		};
@@ -584,19 +555,19 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 		};
 		
-		iEventTable = new EventTable() {
-			protected void onSortByChanded(EventSortBy sortBy) {
+		iTable = new EventMeetingTable(EventMeetingTable.Mode.ListOfEvents, true) {
+			@Override
+			protected void onSortByChanded(EventMeetingSortBy sortBy) {
 				changeUrl();
-				iMeetingTable.sort(sortBy);
 			}
 		};
-		iEventTable.setMeetingFilter(this);
-		iEventTable.addMouseClickListener(new MouseClickListener<EventInterface[]>() {
+		iTable.setMeetingFilter(this);
+		iTable.addMouseClickListener(new MouseClickListener<EventMeetingRow>() {
 			@Override
-			public void onMouseClick(final TableEvent<EventInterface[]> event) {
+			public void onMouseClick(final TableEvent<EventMeetingRow> event) {
 				if (event.getData() == null) return;
-				final EventInterface e = event.getData()[event.getData().length - 1];
-				if (!e.isCanView()) return;
+				final EventInterface e = event.getData().getEvent();
+				if (e == null || !e.isCanView()) return;
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), e.getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -611,30 +582,40 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}, MESSAGES.waitLoading(e.getName()));
 			}
 		});
-		EventTable approveEvents  = new EventTable();
-		approveEvents.setMeetingFilter(new EventTable.MeetingFilter() {
+		
+		iApproveDialog = new ApproveDialog() {
 			@Override
-			public boolean filter(MeetingInterface meeting) {
-				return meeting == null || !meeting.isCanApprove() || EventResourceTimetable.this.filter(meeting);
-			}
-		});
-		approveEvents.setSelectable(false);
-		ApproveDialog<EventInterface> approveDialog = new ApproveDialog<EventInterface>(approveEvents) {
-			@Override
-			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventInterface> events, String message) {
-				onSubmit(operation, events.iterator(), message, new GwtRpcResponseList<EventInterface>(iData));
+			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> data, String message) {
+				Map<EventInterface, List<MeetingInterface>> event2meetings = new HashMap<EventInterface, List<MeetingInterface>>();
+				List<EventInterface> events = new ArrayList<EventInterface>();
+				for (EventMeetingRow row: data) {
+					if (row.getMeeting() != null) {
+						List<MeetingInterface> meetings = event2meetings.get(row.getEvent());
+						if (meetings == null) {
+							meetings = new ArrayList<EventInterface.MeetingInterface>();
+							event2meetings.put(row.getEvent(), meetings);
+							events.add(row.getEvent());
+						}
+						meetings.add(row.getMeeting());
+					} else {
+						events.add(row.getEvent());
+					}
+				}
+				onSubmit(operation, events.iterator(), event2meetings, message, new GwtRpcResponseList<EventInterface>(iData));
 			}
 			
-			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final String message, final GwtRpcResponseList<EventInterface> data) {
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final Map<EventInterface, List<MeetingInterface>> event2meetings, final String message, final GwtRpcResponseList<EventInterface> data) {
 				if (events.hasNext()) {
 					final EventInterface event = events.next();
-					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-					for (MeetingInterface meeting: event.getMeetings()) {
-						if (meeting.isCanApprove() && !filter(meeting))
-							meetings.add(meeting);
+					List<MeetingInterface> meetings = event2meetings.get(event);
+					if (meetings == null) {
+						meetings = new ArrayList<MeetingInterface>();
+						for (MeetingInterface meeting: event.getMeetings()) {
+                            if (meeting.isCanApprove() && !filter(meeting)) meetings.add(meeting);
+						}
 					}
 					if (meetings.isEmpty()) {
-						onSubmit(operation, events, message, data);
+                        onSubmit(operation, events, event2meetings, message, data);
 					} else {
 						switch (operation) {
 						case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(event.getName())); break;
@@ -646,7 +627,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
 								UniTimeNotifications.error(caught.getMessage());
-								onSubmit(operation, events, message, data);
+								onSubmit(operation, events, event2meetings, message, data);
 							}
 							@Override
 							public void onSuccess(SaveOrApproveEventRpcResponse result) {
@@ -665,7 +646,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 								case REJECT:
 									tinker(data, event.getId(), result.getEvent());
 								}
-								onSubmit(operation, events, message, data);
+								onSubmit(operation, events, event2meetings, message, data);
 							}
 						});
 					}
@@ -675,104 +656,9 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}
 			}
 		};
-		iEventTable.setApproveDialog(approveDialog);
-		
-		
-		iMeetingTable = new EventMeetingTable() {
-			protected void onSortByChanded(EventSortBy sortBy) {
-				changeUrl();
-				iEventTable.sort(sortBy);
-			}
-		};
-		iMeetingTable.setMeetingFilter(this);
-		iMeetingTable.addMouseClickListener(new MouseClickListener<EventMeetingRow>() {
-			@Override
-			public void onMouseClick(final TableEvent<EventMeetingRow> event) {
-				if (event.getData() == null) return;
-				final EventInterface e = event.getData().isConflict() ? event.getData().getConflict().getEvent() : event.getData().getEvent();
-				if (!e.isCanView()) return;
-				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), e.getId()), new AsyncCallback<EventInterface>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(e.getName(), caught.getMessage()));
-					}
-					@Override
-					public void onSuccess(EventInterface result) {
-						LoadingWidget.getInstance().hide();
-						iEventDetail.setEvent(result);
-						iEventDetail.show();
-					}
-				}, MESSAGES.waitLoading(e.getName()));
-			}
-		});
-		EventMeetingTable approveMeetings  = new EventMeetingTable();
-		approveMeetings.setMeetingFilter(new EventTable.MeetingFilter() {
-			@Override
-			public boolean filter(MeetingInterface meeting) {
-				return meeting == null || !meeting.isCanApprove() || EventResourceTimetable.this.filter(meeting);
-			}
-		});
-		approveMeetings.setSelectable(false);
-		ApproveDialog<EventMeetingRow> approveMeetingsDialog = new ApproveDialog<EventMeetingRow>(approveMeetings) {
-			@Override
-			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> rows, String message) {
-				Map<EventInterface, List<MeetingInterface>> event2meetings = new HashMap<EventInterface, List<MeetingInterface>>();
-				List<EventInterface> events = new ArrayList<EventInterface>();
-				for (EventMeetingRow row: rows) {
-					List<MeetingInterface> meetings = event2meetings.get(row.getEvent());
-					if (meetings == null) {
-						meetings = new ArrayList<EventInterface.MeetingInterface>();
-						event2meetings.put(row.getEvent(), meetings);
-						events.add(row.getEvent());
-					}
-					meetings.add(row.getMeeting());
-				}
-				onSubmit(operation, events.iterator(), event2meetings, message, new GwtRpcResponseList<EventInterface>(iData));
-			}
-			
-			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final Map<EventInterface, List<MeetingInterface>> event2meetings, final String message, final GwtRpcResponseList<EventInterface> data) {
-				if (events.hasNext()) {
-					final EventInterface event = events.next();
-					List<MeetingInterface> meetings = event2meetings.get(event);
-					switch (operation) {
-					case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(event.getName())); break;
-					case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(event.getName())); break;
-					case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
-					}
-					RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
-						@Override
-						public void onFailure(Throwable caught) {
-							LoadingWidget.getInstance().hide();
-							UniTimeNotifications.error(caught.getMessage());
-							onSubmit(operation, events, event2meetings, message, data);
-						}
-						@Override
-						public void onSuccess(SaveOrApproveEventRpcResponse result) {
-							LoadingWidget.getInstance().hide();
-							if (result.hasMessages())
-								for (MessageInterface m: result.getMessages()) {
-									if (m.isError())
-										UniTimeNotifications.warn(m.getMessage());
-									else if (m.isWarning())
-										UniTimeNotifications.error(m.getMessage());
-									else
-										UniTimeNotifications.info(m.getMessage());
-								}
-							switch (operation) {
-							case APPROVE:
-							case REJECT:
-								tinker(data, event.getId(), result.getEvent());
-							}
-							onSubmit(operation, events, event2meetings, message, data);
-						}
-					});
-				} else {
-					LoadingWidget.getInstance().hide();
-					populate(data);
-				}
-			}
-		};
-		iMeetingTable.setApproveDialog(approveMeetingsDialog);
+		iTable.setOperation(EventMeetingTable.OperationType.Approve, iApproveDialog);
+		iTable.setOperation(EventMeetingTable.OperationType.Reject, iApproveDialog);
+		iTable.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -783,6 +669,41 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 				}
 			}
 		});
+	}
+	
+	private int getSelectedTab() {
+		return iTabBar.getSelectedTab();
+	}
+	
+	private void tabOrDataChanged() {
+		if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
+		if (iTable != null) iTable.clearHover();
+		if (getSelectedTab() == 0) {
+			iTimeGrid.clear();
+			iTimeGrid.setResourceType(getResourceType());
+			iTimeGrid.setSelectedWeeks(iWeekPanel.getSelected());
+			iTimeGrid.setRoomResources(iRoomPanel.getSelected());
+			iTimeGrid.setMode(gridMode());
+			for (EventInterface event: sortedEvents()) {
+				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+				for (MeetingInterface meeting: event.getMeetings()) {
+					if (!filter(meeting))
+						meetings.add(meeting);
+				}
+				if (!meetings.isEmpty())
+					iTimeGrid.addEvent(event, meetings);
+			}
+			iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)));
+			if (iWeekPanel.getValue() != null)
+				iTimeGrid.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
+			iGridOrTablePanel.setWidget(iTimeGrid);
+		} else {
+			iTable.setMode(getSelectedTab() == 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings);
+			iTable.setEvents(iData);
+			iGridOrTablePanel.setWidget(iTable);
+		}
+		iHeader.setHeaderTitle(name(getSelectedTab()));
+		changeUrl();
 	}
 	
 	private void setup(boolean init) {
@@ -818,7 +739,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			if (!iResources.getText().equals("")) isDefault = false;
 		}
 		UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
-		if (iHistoryToken.isChanged("tab", "0", String.valueOf(iTabBar.getSelectedTab()))) {
+		if (iHistoryToken.isChanged("tab", "0", String.valueOf(getSelectedTab()))) {
 			iTabBar.selectTab(Integer.parseInt(iHistoryToken.getParameter("tab", "0")), false);
 		}
 		if (iHistoryToken.isChanged("date", iLocDate)) {
@@ -831,8 +752,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			if (iRoomPanel.hasValues())
 				iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
 		}
-		iEventTable.setSortBy(iHistoryToken.getParameter("sort"));
-		iMeetingTable.setSortBy(iHistoryToken.getParameter("sort"));
+		iTable.setSortBy(iHistoryToken.getParameter("sort"));
 		if (iHistoryToken.hasParameter("event")) {
 			if (iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation()))
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
@@ -962,8 +882,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			@Override
 			public void onSuccess(GwtRpcResponseList<EventInterface> result) {
 				populate(result);
-				iEventTable.getApproveDialog().reset(iProperties);
-				iMeetingTable.getApproveDialog().reset(iProperties);
+				iApproveDialog.reset(iProperties);
 			}
 	
 			@Override
@@ -976,7 +895,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	
 	private void populate(GwtRpcResponseList<EventInterface> result) {
 		iData = result;
-		if (iData.isEmpty()) {
+		if (iData == null || iData.isEmpty()) {
 			UniTimeNotifications.error(MESSAGES.failedNoEvents());
 			hideResults();
 		} else {
@@ -1036,36 +955,12 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			if (iTimeGrid != null) iTimeGrid.destroy();
 			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
-			populateGrid();
-			iEventTable.setValue(iData);
-			iMeetingTable.setEvents(iData);
-			iGridOrTablePanel.setWidget(tabWidget(iTabBar.getSelectedTab()));
+			
+			tabOrDataChanged();
 								
 			showResults();
 		}
 		changeUrl();
-	}
-	
-	private void populateGrid() {
-		iTimeGrid.clear();
-		iHeader.setHeaderTitle(name(iTabBar.getSelectedTab()));
-		// iTableHeader.setHeaderTitle(name(false));
-		iTimeGrid.setResourceType(getResourceType());
-		iTimeGrid.setSelectedWeeks(iWeekPanel.getSelected());
-		iTimeGrid.setRoomResources(iRoomPanel.getSelected());
-		iTimeGrid.setMode(gridMode());
-		for (EventInterface event: sortedEvents()) {
-			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
-			for (MeetingInterface meeting: event.getMeetings()) {
-				if (!filter(meeting))
-					meetings.add(meeting);
-			}
-			if (!meetings.isEmpty())
-				iTimeGrid.addEvent(event, meetings);
-		}
-		iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)));
-		if (iWeekPanel.getValue() != null)
-			iTimeGrid.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
 	}
 	
 	private String name(int tab) {
@@ -1088,19 +983,6 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 		case 0: return MESSAGES.sectTimetable(resource, session);
 		case 1: return MESSAGES.sectEventList(resource, session);
 		case 2: return MESSAGES.sectMeetingList(resource, session);
-		}
-		return null;
-	}
-	
-	private Widget tabWidget(int tab) {
-		switch (tab) {
-		case 0: return iTimeGrid;
-		case 1: 
-			iEventTable.resetColumnVisibility();
-			return iEventTable;
-		case 2:
-			iMeetingTable.resetColumnVisibility();
-			return iMeetingTable;
 		}
 		return null;
 	}
@@ -1201,7 +1083,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			}
 		}
 		if (iTimeGrid != null) {
-			switch (iTabBar.getSelectedTab()) {
+			switch (getSelectedTab()) {
 			case 0:
 				query += "&output=events.ics";
 				break;
@@ -1245,11 +1127,11 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 			iHistoryToken.setParameter("rooms", iRooms.getValue().trim());
 		if (iLocRoom != null)
 			iHistoryToken.setParameter("room", iLocRoom);
-		iHistoryToken.setParameter("tab", String.valueOf(iTabBar.getSelectedTab()));
+		iHistoryToken.setParameter("tab", String.valueOf(getSelectedTab()));
 		if (iEventDetail.equals(iRootPanel.getWidget()))
 			iHistoryToken.setParameter("event", iEventDetail.getEvent().getId());
-		if (iEventTable.hasSortBy())
-			iHistoryToken.setParameter("sort", iEventTable.getSortBy());
+		if (iTable.hasSortBy())
+			iHistoryToken.setParameter("sort", iTable.getSortBy());
 		iHistoryToken.mark();
 		/*
 		changeUrl(Window.Location.getParameter("page"),
@@ -1343,8 +1225,7 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 	
 	private void loadProperties(final AsyncCallback<EventPropertiesRpcResponse> callback) {
 		iProperties = null;
-		iEventTable.setShowMainContact(false);
-		iMeetingTable.setShowMainContact(false);
+		iTable.setShowMainContact(false);
 		iFilterHeader.setEnabled("lookup", false);
 		iFilterHeader.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
@@ -1362,10 +1243,8 @@ public class EventResourceTimetable extends Composite implements EventTable.Meet
 					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 					iFilterHeader.setEnabled("add", result.isCanAddEvent());
 					iEventAdd.setup(result);
-					iEventTable.setShowMainContact(result.isCanLookupContacts());
-					iEventTable.getApproveDialog().reset(result);
-					iMeetingTable.setShowMainContact(result.isCanLookupContacts());
-					iMeetingTable.getApproveDialog().reset(result);
+					iTable.setShowMainContact(result.isCanLookupContacts());
+					iApproveDialog.reset(result);
 					if (callback != null)
 						callback.onSuccess(result);
 				}

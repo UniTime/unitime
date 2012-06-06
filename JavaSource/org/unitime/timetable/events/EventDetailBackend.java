@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -355,6 +357,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 	    		overlapsThisMeeting.add(overlap);
 			}
     		
+    	Hashtable<Long, EventInterface> conflictingEvents = new Hashtable<Long, EventInterface>();
     	for (Meeting m: e.getMeetings()) {
 			MeetingInterface meeting = new MeetingInterface();
 			meeting.setId(m.getUniqueId());
@@ -400,6 +403,102 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					conflict.setEndOffset(overlap.getStopOffset() == null ? 0 : overlap.getStopOffset());
 					if (overlap.isApproved())
 						conflict.setApprovalDate(overlap.getApprovedDate());
+					conflict.setLocation(meeting.getLocation());
+					
+					EventInterface confEvent = conflictingEvents.get(overlap.getEvent().getUniqueId());
+					if (confEvent == null) {
+						confEvent = new EventInterface();
+						confEvent.setId(overlap.getEvent().getUniqueId());
+						confEvent.setName(overlap.getEvent().getEventName());
+						confEvent.setType(EventInterface.EventType.values()[overlap.getEvent().getEventType()]);
+						conflictingEvents.put(overlap.getEvent().getUniqueId(), confEvent);
+						confEvent.setCanView(rights.canSee(overlap.getEvent()));
+						confEvent.setMaxCapacity(overlap.getEvent().getMaxCapacity());
+						if (overlap.getEvent().getMainContact() != null) {
+							ContactInterface contact = new ContactInterface();
+							contact.setFirstName(overlap.getEvent().getMainContact().getFirstName());
+							contact.setMiddleName(overlap.getEvent().getMainContact().getMiddleName());
+							contact.setLastName(overlap.getEvent().getMainContact().getLastName());
+							confEvent.setContact(contact);
+						}
+						if (overlap.getEvent().getSponsoringOrganization() != null) {
+							SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
+							sponsor.setEmail(overlap.getEvent().getSponsoringOrganization().getEmail());
+							sponsor.setName(overlap.getEvent().getSponsoringOrganization().getName());
+							sponsor.setUniqueId(overlap.getEvent().getSponsoringOrganization().getUniqueId());
+							confEvent.setSponsor(sponsor);
+						}
+				    	if (Event.sEventTypeClass == overlap.getEvent().getEventType()) {
+				    		ClassEvent ce = ClassEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
+				    		Class_ clazz = ce.getClazz();
+							confEvent.setEnrollment(clazz.getEnrollment());
+				    		if (clazz.getDisplayInstructor()) {
+				    			for (ClassInstructor i: clazz.getClassInstructors()) {
+									ContactInterface instructor = new ContactInterface();
+									instructor.setFirstName(i.getInstructor().getFirstName());
+									instructor.setMiddleName(i.getInstructor().getMiddleName());
+									instructor.setLastName(i.getInstructor().getLastName());
+									confEvent.addInstructor(instructor);
+				    			}
+				    		}
+				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+				    		confEvent.addCourseName(correctedOffering.getCourseName());
+				    		confEvent.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+				    		confEvent.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+				    		confEvent.setSectionNumber(clazz.getSectionNumberString(hibSession));
+				    		if (clazz.getClassSuffix(correctedOffering) == null) {
+					    		confEvent.setName(clazz.getClassLabel(correctedOffering));
+				    		} else {
+					    		confEvent.addExternalId(clazz.getClassSuffix(correctedOffering));
+				    			confEvent.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
+				    		}
+			    			for (CourseOffering co: courses) {
+					    		confEvent.addCourseName(co.getCourseName());
+					    		if (clazz.getSectionNumberString(hibSession) != null)
+					    			confEvent.addExternalId(clazz.getClassSuffix(co));
+			    			}
+				    	} else if (Event.sEventTypeFinalExam == overlap.getEvent().getEventType() || Event.sEventTypeMidtermExam == overlap.getEvent().getEventType()) {
+				    		ExamEvent xe = ExamEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
+				    		confEvent.setEnrollment(xe.getExam().countStudents());
+			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
+								ContactInterface instructor = new ContactInterface();
+								instructor.setFirstName(i.getFirstName());
+								instructor.setMiddleName(i.getMiddleName());
+								instructor.setLastName(i.getLastName());
+								confEvent.addInstructor(instructor);
+			    			}
+			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
+			    				for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+						    		String courseName = owner.getCourse().getCourseName();
+				    				String label = owner.getLabel();
+				    				if (label.startsWith(courseName)) {
+				    					label = label.substring(courseName.length());
+				    				}
+				    				confEvent.addCourseName(course.getCourseName());
+				    				confEvent.addExternalId(label.trim());
+			    				}
+			    			}
+				    	} else if (Event.sEventTypeCourse == overlap.getEvent().getEventType()) {
+				    		CourseEvent ce = CourseEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
+				    		confEvent.setRequiredAttendance(ce.isReqAttendance());
+							int enrl = 0;
+							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
+								enrl += owner.countStudents();
+								for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+				    				String courseName = owner.getCourse().getCourseName();
+				    				String label = owner.getLabel();
+				    				if (label.startsWith(courseName)) {
+				    					label = label.substring(courseName.length());
+				    				}
+				    				confEvent.addCourseName(course.getCourseName());
+				    				confEvent.addExternalId(label.trim());
+			    				}
+							}
+							confEvent.setEnrollment(enrl);
+				    	}
+					}
+					confEvent.addMeeting(conflict);
 					
 					meeting.addConflict(conflict);
 				}
@@ -407,6 +506,9 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			
 			event.addMeeting(meeting);
 		}
+    	
+		for (EventInterface confEvent: conflictingEvents.values())
+			event.addConflict(confEvent);
     	
     	for (EventNote n: e.getNotes()) {
     		NoteInterface note = new NoteInterface();
