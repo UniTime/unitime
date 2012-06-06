@@ -258,6 +258,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void showDialog() {
+		iResponse = null;
 		setWidget(iDatesForm);
 		center();
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
@@ -534,7 +535,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
         		if (iHoverDate != null && iHoverLoc != null) {
         			setSelected(iHoverDate, iHoverLoc, !isSelected(iHoverDate, iHoverLoc));
         		}
-        	}    		
+        	}
     	}
     }
  	

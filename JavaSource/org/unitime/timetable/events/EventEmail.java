@@ -345,16 +345,18 @@ public class EventEmail {
 		out.println("	<td style=\"" + style + "\">" + MESSAGES.colLocation() + "</td>");
 		if (approval) out.println("	<td style=\"" + style + "\">" + MESSAGES.colApproval() + "</td>");
 		out.println("</tr>");
-		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+		DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+		DateFormat dfApproval = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		for (MultiMeetingInterface meeting: EventInterface.getMultiMeetings(meetings, approval, approval)) {
 			out.println("<tr>");
-			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + df.format(meeting.getFirstMeetingDate()) + (meeting.getNrMeetings() > 1 ? " - " + df.format(meeting.getLastMeetingDate()) : "") + "</td>");
+			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + (meeting.getNrMeetings() <= 1 ? dfLong.format(meeting.getFirstMeetingDate()) : dfShort.format(meeting.getFirstMeetingDate()) + " - " + dfLong.format(meeting.getLastMeetingDate())) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getMeetingTime(CONSTANTS) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getAllocatedTime(CONSTANTS) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getLocationName() + "</td>");
 			if (approval)
 				out.println("  <td>" + (!meeting.getMeetings().first().isApproved() ? "<i>" + (meeting.getMeetings().first().isPast() ? 
-						MESSAGES.approvalNotApprovedPast() : MESSAGES.approvalWaiting()) + "</i>" : df.format(meeting.getMeetings().first().getApprovalDate())) + "</td>");
+						MESSAGES.approvalNotApprovedPast() : MESSAGES.approvalWaiting()) + "</i>" : dfApproval.format(meeting.getMeetings().first().getApprovalDate())) + "</td>");
 			out.println("</tr>");
 		}
 		out.println("</table>");

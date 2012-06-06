@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
@@ -70,7 +72,6 @@ import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -85,7 +86,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EventAdd extends Composite {
+public class EventAdd extends Composite implements EventMeetingTable.Implementation {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -105,7 +106,7 @@ public class EventAdd extends Composite {
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter, iMeetingsHeader;
 	
-	private MeetingTable iMeetings;
+	private EventMeetingTable iMeetings;
 	
 	private CourseRelatedObjectsTable iCourses;
 	
@@ -268,7 +269,7 @@ public class EventAdd extends Composite {
 		iCourses.addValueChangeHandler(new ValueChangeHandler<List<RelatedObjectInterface>>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<RelatedObjectInterface>> event) {
-				checkEnrollments(event.getValue(), iMeetings.getValue());
+				checkEnrollments(event.getValue(), iMeetings.getMeetings());
 			}
 		});
 		
@@ -401,7 +402,7 @@ public class EventAdd extends Composite {
 					iCoursesForm.setVisible(false);
 					iForm.getRowFormatter().setVisible(row, true);
 				}
-				checkEnrollments(iCourses.getValue(), iMeetings.getValue());
+				checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
 			}
 		});
 		
@@ -440,17 +441,12 @@ public class EventAdd extends Composite {
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new MeetingTable(); iMeetings.setEditable(true);
-		iMeetings.setAddMeetingsCommand(new Command() {
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, true); iMeetings.setEditable(true);
+		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
+		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<EventMeetingRow>>() {
 			@Override
-			public void execute() {
-				iEventAddMeetings.showDialog();
-			}
-		});
-		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<MeetingInterface>>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<List<MeetingInterface>> event) {
-				checkEnrollments(iCourses.getValue(), event.getValue());
+			public void onValueChange(ValueChangeEvent<List<EventMeetingRow>> event) {
+				checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
 			}
 		});
 
@@ -509,7 +505,7 @@ public class EventAdd extends Composite {
 		
 		if (iEvent.hasMeetings())
 			iEvent.getMeetings().clear();
-		for (MeetingInterface meeting: iMeetings.getValue())
+		for (MeetingInterface meeting: iMeetings.getMeetings())
 			iEvent.addMeeting(meeting);
 		
 		if (iSponsors.getSelectedIndex() > 0) {
@@ -543,10 +539,17 @@ public class EventAdd extends Composite {
 	}
 	
 	protected void addMeetings(List<MeetingInterface> meetings) {
+		List<MeetingInterface> existingMeetings = iMeetings.getMeetings();
 		if (meetings != null && !meetings.isEmpty())
-			for (MeetingInterface meeting: meetings)
-				if (!iMeetings.hasMeeting(meeting))
-					iMeetings.add(meeting);
+			meetings: for (MeetingInterface meeting: meetings) {
+				for (MeetingInterface existing: existingMeetings) {
+					if (existing.inConflict(meeting)) {
+						UniTimeNotifications.warn(MESSAGES.warnNewMeetingOverlaps(meeting.toString(), existing.toString()));
+						continue meetings;
+					}
+				}
+				iMeetings.add(new EventMeetingRow(iEvent, meeting));
+			}
 		ValueChangeEvent.fire(iMeetings, iMeetings.getValue());
 	}
 	
@@ -627,7 +630,7 @@ public class EventAdd extends Composite {
 		}
 		
 		if (iEvent.hasMeetings()) {
-			iMeetings.setValue(new ArrayList<MeetingInterface>(iEvent.getMeetings()));
+			iMeetings.setMeetings(iEvent, iEvent.getMeetings());
 		} else {
 			iMeetings.setValue(null);
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
@@ -660,7 +663,7 @@ public class EventAdd extends Composite {
 					@Override
 					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 						LoadingWidget.getInstance().hide();
-						iMeetings.setValue(result.getMeetings());
+						iMeetings.setMeetings(iEvent, result.getMeetings());
 					}
 				});
 			}
@@ -1145,35 +1148,6 @@ public class EventAdd extends Composite {
 			valid = false;
 		}
 		callback.onSuccess(valid);
-		/*
-		if (!valid) {
-			callback.onSuccess(false);
-			return;
-		}
-		LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-		RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getValue(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				LoadingWidget.getInstance().hide();
-				callback.onFailure(caught);
-			}
-
-			@Override
-			public void onSuccess(EventRoomAvailabilityRpcResponse result) {
-				LoadingWidget.getInstance().hide();
-				iMeetings.setValue(result.getMeetings());
-				for (MeetingInterface meeting: result.getMeetings()) {
-					if (meeting.hasConflicts()) {
-						UniTimeNotifications.error(MESSAGES.reqNoOverlaps());
-						iHeader.setErrorMessage(MESSAGES.reqNoOverlaps());
-						callback.onSuccess(false);
-						return;
-					}
-				}
-				callback.onSuccess(true);
-			}
-		});
-		*/
 	}
 	
 	protected EventPropertiesRpcResponse getProperties() {
@@ -1186,6 +1160,16 @@ public class EventAdd extends Composite {
 		public List<SelectionInterface> getSelection(); 
 		public String getRoomFilter();
 		public ContactInterface getMainContact();
+	}
+
+
+	@Override
+	public void execute(EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection) {
+		switch (operation) {
+		case AddMeetings:
+			iEventAddMeetings.showDialog();
+			break;
+		}
 	}
 
 }

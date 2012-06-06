@@ -1102,7 +1102,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							if (parent == null) continue;
 							Meeting m = (Meeting)o[1];
 							EventInterface event = conflictingEvents.get(m.getEvent().getUniqueId());
-							if (event == null) {	
+							if (event == null) {
 								event = new EventInterface();
 								event.setId(m.getEvent().getUniqueId());
 								event.setName(m.getEvent().getEventName());
@@ -1110,7 +1110,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								conflictingEvents.put(m.getEvent().getUniqueId(), event);
 								event.setCanView(rights.canSee(m.getEvent()));
 								event.setMaxCapacity(m.getEvent().getMaxCapacity());
-								parent.addConflict(event);
 								if (m.getEvent().getMainContact() != null) {
 									ContactInterface contact = new ContactInterface();
 									contact.setFirstName(m.getEvent().getMainContact().getFirstName());
@@ -1299,7 +1298,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setRoomType(m.getLocation().getRoomTypeLabel());
 								meeting.setLocation(location);
 							}
-							event.addMeeting(meeting);							
+							event.addMeeting(meeting);	
+							parent.addConflict(event);
 						}
 					}
 				}

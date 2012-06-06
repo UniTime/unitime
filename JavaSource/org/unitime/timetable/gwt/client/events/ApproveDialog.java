@@ -3,6 +3,9 @@ package org.unitime.timetable.gwt.client.events;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
@@ -10,8 +13,10 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DoubleClickEvent;
@@ -19,24 +24,27 @@ import com.google.gwt.event.dom.client.DoubleClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
-import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 
-public class ApproveDialog<T> extends UniTimeDialogBox {
+public abstract class ApproveDialog extends UniTimeDialogBox implements EventMeetingTable.Implementation {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private SimpleForm iForm;
 	private TextArea iNotes;
-	private HasValue<List<T>> iTable;
+	private EventMeetingTable iTable;
 	private ListBox iStandardNotes;
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeHeaderPanel iFooter;
 	
-	public ApproveDialog(HasValue<List<T>> table) {
+	public ApproveDialog() {
 		super(true, false);
-		iTable = table;
+		iTable = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, false);
 		
 		iForm = new SimpleForm();
 		
@@ -115,25 +123,17 @@ public class ApproveDialog<T> extends UniTimeDialogBox {
 		
 		iForm.addBottomRow(iFooter);
 		
-		/*
-		setEnterToSubmit(new Command() {
+		addCloseHandler(new CloseHandler<PopupPanel>() {
 			@Override
-			public void execute() {
-				if (iFooter.isEnabled("approve"))
-					onApprove();
-				else if (iFooter.isEnabled("reject"))
-					onReject();
-				else
-					onInquire();
-				hide();
+			public void onClose(CloseEvent<PopupPanel> event) {
+				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
-		*/
 		
 		setWidget(iForm);
 	}
 	
-	protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<T> items, String message) {}
+	protected abstract void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message);
 	
 	public void reset(EventPropertiesRpcResponse properties) {
 		iNotes.setText("");
@@ -146,10 +146,8 @@ public class ApproveDialog<T> extends UniTimeDialogBox {
 		iFileUpload.reset();
 	}
 	
-	public void show(List<T> meetings, ApproveEventRpcRequest.Operation operation) {
+	public void show(List<EventMeetingRow> meetings, ApproveEventRpcRequest.Operation operation) {
 		iTable.setValue(meetings);
-		if (iTable instanceof CanHideUnimportantColumns)
-			((CanHideUnimportantColumns)iTable).hideUnimportantColumns();
 		setText(MESSAGES.dialogApprove());
 		iFooter.setEnabled("approve", operation == ApproveEventRpcRequest.Operation.APPROVE);
 		iFooter.setEnabled("reject", operation == ApproveEventRpcRequest.Operation.REJECT);
@@ -160,25 +158,42 @@ public class ApproveDialog<T> extends UniTimeDialogBox {
 			iNotes.setFocus(true);
 		else
 			iStandardNotes.setFocus(true);
-	}
-	
-	public void showApprove(List<T> meetings) {
-		show(meetings, ApproveEventRpcRequest.Operation.APPROVE);
-	}
-	
-	public void showReject(List<T> meetings) {
-		show(meetings, ApproveEventRpcRequest.Operation.REJECT);
-	}
-
-	public void showInquire(List<T> meetings) {
-		show(meetings, ApproveEventRpcRequest.Operation.INQUIRE);
+		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 	}
 	
 	public String getNote() {
 		return iNotes.getText();
 	}
 	
-	public static interface CanHideUnimportantColumns {
-		public void hideUnimportantColumns();
+	@Override
+	public void execute(final EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection) {
+		switch (source.getMode()) {
+		case ListOfEvents:
+			iTable.setMode(EventMeetingTable.Mode.ApprovalOfEvents);
+			break;
+		case ListOfMeetings:
+			iTable.setMode(EventMeetingTable.Mode.ApprovalOfMeetings);
+			break;
+		case MeetingsOfAnEvent:
+			iTable.setMode(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings);
+			break;
+		}
+		iTable.setMeetingFilter(new MeetingFilter() {
+			@Override
+			public boolean filter(MeetingInterface meeting) {
+				return !meeting.isCanApprove() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(meeting));
+			}
+		});
+		switch (operation) {
+		case Approve:
+			show(selection, ApproveEventRpcRequest.Operation.APPROVE);
+			break;
+		case Reject:
+			show(selection, ApproveEventRpcRequest.Operation.REJECT);
+			break;
+		case Inquire:
+			show(selection, ApproveEventRpcRequest.Operation.INQUIRE);
+			break;
+		}
 	}
 }
