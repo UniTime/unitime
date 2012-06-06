@@ -107,14 +107,21 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 					CONSTANTS,
 					"\n",
 					new EventInterface.DateFormatter() {
-						DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+						DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+						DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
 						@Override
-						public String format(Date date) { return df.format(date); }
+						public String formatFirstDate(Date date) {
+							return dfShort.format(date);
+						}
+						@Override
+						public String formatLastDate(Date date) {
+							return dfLong.format(date);
+						}
 					}));
 			if (request.hasMessage())
 				note.setTextNote(request.getMessage() + (uploaded == null ? "" : "\n\n" + MESSAGES.noteAttachement(uploaded.getName())));
 			else if (uploaded != null)
-				note.setTextNote(MESSAGES.noteAttachement(uploaded.getFieldName()));
+				note.setTextNote(MESSAGES.noteAttachement(uploaded.getName()));
 			event.getNotes().add(note);
 			hibSession.saveOrUpdate(note);
 			

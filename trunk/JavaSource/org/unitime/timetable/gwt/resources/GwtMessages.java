@@ -565,6 +565,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Waiting for the event filter to load...")
 	String warnEventFilterNotInitialized();
+	
+	@DefaultMessage("Meeting {0} overlaps with an existing meeting {1}.")
+	String warnNewMeetingOverlaps(String m1, String m2);
 
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();

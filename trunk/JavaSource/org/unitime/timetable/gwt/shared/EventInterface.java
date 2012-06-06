@@ -1761,7 +1761,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static interface DateFormatter {
-		public String format(Date date);
+		public String formatFirstDate(Date date);
+		public String formatLastDate(Date date);
 	}
     
     public static String toString(Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
@@ -1769,7 +1770,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
     		if (!ret.isEmpty()) ret += separator;
     		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
-    				df.format(m.getFirstMeetingDate()) + (m.getNrMeetings() == 1 ? "" : " - " + df.format(m.getLastMeetingDate())) + " " +
+    				(m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +
     				m.getMeetings().first().getMeetingTime(constants) + " " + m.getLocationName()).trim();
     	}
     	return ret;

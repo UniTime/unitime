@@ -647,6 +647,12 @@ public class UniTimeTable<T> extends FlexTable {
 		Window.alert("Header named " + name + " does not exist!");
 		return null;
 	}
+	
+	public UniTimeTableHeader getHeader(int col) {
+		if (getRowCount() <= 0 || getCellCount(0) <= col) return null;
+		Widget w = getWidget(0, col);
+		return (w != null && w instanceof UniTimeTableHeader ? (UniTimeTableHeader)w : null);
+	}
 
 	
 	public static interface HasFocus {

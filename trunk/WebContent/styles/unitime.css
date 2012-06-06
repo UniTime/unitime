@@ -2153,14 +2153,18 @@ div.gwt-MenuBarPopup {
 	color: blue;
 }
 
-.unitime-EventMeetings .conflict {
+.unitime-EventMeetings .conflict-row {
 	font-style: italic;
 	background-color: #FFD7D7;
 	vertical-align: top;
 }
 
+.unitime-EventMeetings .indent {
+	padding-left: 10px;
+}
+
 @media print {
-	.unitime-EventMeetings .conflict {
+	.unitime-EventMeetings .conflict-row {
 		font-style: italic;
 		vertical-align: top;
 		color: gray;

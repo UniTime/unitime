@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
+import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
@@ -71,10 +72,11 @@ public class EventDetail extends Composite {
 	private UniTimeHeaderPanel iHeader, iFooter, iEnrollmentHeader;
 	
 	private UniTimeTable<ContactInterface> iContacts;
-	private MeetingTable iMeetings;
+	private EventMeetingTable iMeetings;
 	private UniTimeTable<NoteInterface> iNotes;
 	private UniTimeTable<RelatedObjectInterface> iOwners;
 	private EnrollmentTable iEnrollments;
+	private ApproveDialog iApproveDialog;
 	
 	private EventPropertiesProvider iProperties;
 	
@@ -119,15 +121,17 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
-		MeetingTable approveMeetings = new MeetingTable(); approveMeetings.setEditable(false); approveMeetings.setSelectable(false);
-		ApproveDialog<MeetingInterface> approveDialog = new ApproveDialog<MeetingInterface>(approveMeetings) {
+		iApproveDialog = new ApproveDialog() {
 			@Override
-			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<MeetingInterface> meetings, String message) {
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message){
 				switch (operation) {
 				case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName())); break;
 				case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName())); break;
 				case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName())); break;
 				}
+				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+				for (EventMeetingRow item: items)
+					meetings.add(item.getMeeting());
 				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
@@ -168,7 +172,11 @@ public class EventDetail extends Composite {
 			}
 		};
 		
-		iMeetings = new MeetingTable(); iMeetings.setApproveDialog(approveDialog); iMeetings.setEditable(false);
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Approve, iApproveDialog);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Reject, iApproveDialog);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);
+		iMeetings.setEditable(false);
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -239,7 +247,7 @@ public class EventDetail extends Composite {
 	public void setEvent(EventInterface event) {
 		iEvent = event;
 		
-		iMeetings.getApproveDialog().reset(iProperties.getProperties());
+		iApproveDialog.reset(iProperties.getProperties());
 		
 		iForm.clear();
 
@@ -301,7 +309,7 @@ public class EventDetail extends Composite {
 		
 		iMeetings.clearTable(1);
 		for (MeetingInterface meeting: iEvent.getMeetings()) {
-			iMeetings.add(meeting);
+			iMeetings.add(new EventMeetingRow(iEvent, meeting));
 		}
 		if (iMeetings.getRowCount() > 1) {
 			iForm.addHeaderRow(MESSAGES.sectMeetings());

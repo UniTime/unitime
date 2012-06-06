@@ -230,6 +230,19 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				event.getMeetings().removeAll(remove);
 			}
 			
+			EventInterface.DateFormatter df = new EventInterface.DateFormatter() {
+				DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+				DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+				@Override
+				public String formatFirstDate(Date date) {
+					return dfShort.format(date);
+				}
+				@Override
+				public String formatLastDate(Date date) {
+					return dfLong.format(date);
+				}
+			};
+			
 			if (response.hasCreatedMeetings()) {
 				EventNote note = new EventNote();
 				note.setEvent(event);
@@ -239,13 +252,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getCreatedMeetings(),
-						CONSTANTS,
-						"\n",
-						new EventInterface.DateFormatter() {
-							DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-							@Override
-							public String format(Date date) { return df.format(date); }
-						}));
+						CONSTANTS, "\n", df));
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
@@ -265,13 +272,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (response.hasUpdatedMeetings())
 					note.setMeetings(EventInterface.toString(
 							response.getUpdatedMeetings(),
-							CONSTANTS,
-							"\n",
-							new EventInterface.DateFormatter() {
-								DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-								@Override
-								public String format(Date date) { return df.format(date); }
-							}));
+							CONSTANTS, "\n", df));
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
@@ -290,13 +291,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getDeletedMeetings(),
-						CONSTANTS,
-						"\n",
-						new EventInterface.DateFormatter() {
-							DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-							@Override
-							public String format(Date date) { return df.format(date); }
-						}));
+						CONSTANTS, "\n", df));
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
