@@ -33,5 +33,13 @@ public interface Exporter {
 		public String[] getParameterValues(String name);
 		public Enumeration<String> getParameterNames();
 	}
-
+	
+	public static interface Printer {
+		public String getContentType();
+		public void hideColumn(int col);
+		public void printHeader(String... fields) throws IOException;
+		public void printLine(String... fields) throws IOException;
+		public void flush() throws IOException;
+		public void close() throws IOException;
+	}
 }

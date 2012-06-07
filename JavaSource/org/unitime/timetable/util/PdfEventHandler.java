@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -33,6 +36,7 @@ import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfEventHandler extends PdfPageEventHelper {
+	private static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	private BaseFont baseFont;
 	private float fontSize;
@@ -48,7 +52,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
 
     	super();
 	    
-    	Font font = PdfFont.getFont();
+    	Font font = PdfFont.getSmallFont();
 		setBaseFont(font.getBaseFont());
 		setFontSize(font.getSize());
 		
@@ -87,6 +91,8 @@ public class PdfEventHandler extends PdfPageEventHelper {
 			    document.left(), 20, 0);
 		cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, String.valueOf(document.getPageNumber()), 
 			    document.right(), 20, 0);
+		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, MESSAGES.pdfCopyright(Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@","?")),
+				(document.left() + document.right()) / 2, 20, 0);
 		cb.endText();
 			
         return;
