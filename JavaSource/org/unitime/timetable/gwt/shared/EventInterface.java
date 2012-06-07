@@ -185,6 +185,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		iMeetings.add(meeting);
 	}
 	public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
+	public void setMeetings(TreeSet<MeetingInterface> meetings) { iMeetings = meetings; }
 	
 	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
 	public void addCourseName(String name) {
@@ -1775,4 +1776,30 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	}
     	return ret;
     }
+    
+    public static enum EventFlag implements IsSerializable {
+		SHOW_PUBLISHED_TIME,
+		SHOW_ALLOCATED_TIME,
+		SHOW_SETUP_TIME,
+		SHOW_TEARDOWN_TIME,
+		SHOW_CAPACITY,
+		SHOW_LIMIT,
+		SHOW_ENROLLMENT,
+		SHOW_MAIN_CONTACT,
+		SHOW_SPONSOR,
+		SHOW_SECTION;
+		
+		public int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags) {
+			return (in(flags) ? flags : flags + flag());
+		}
+		public int clear(int flags) {
+			return (in(flags) ? flags - flag() : flags);
+		}
+	}
+    
+	public static final int sDefaultEventFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag(); 
 }

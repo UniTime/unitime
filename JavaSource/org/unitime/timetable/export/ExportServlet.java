@@ -29,6 +29,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.export.events.EventsExportEventsToCSV;
+import org.unitime.timetable.export.events.EventsExportEventsToICal;
+import org.unitime.timetable.export.events.EventsExportEventsToPDF;
+import org.unitime.timetable.export.events.EventsExportMeetingsToCSV;
+import org.unitime.timetable.export.events.EventsExportMeetingsToPDF;
 
 public class ExportServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -48,6 +53,8 @@ public class ExportServlet extends HttpServlet {
 		register(new EventsExportEventsToCSV());
 		register(new EventsExportMeetingsToCSV());
 		register(new EventsExportEventsToICal());
+		register(new EventsExportEventsToPDF());
+		register(new EventsExportMeetingsToPDF());
 	}
 	
 	protected void registerCustomExporters() {
