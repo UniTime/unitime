@@ -32,10 +32,13 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
 	
+	@DefaultMessage("UniTime {0}, \u00A9 2008 - 2012 UniTime LLC, distributed under GNU GPL.")
+	String pdfCopyright(String version);
+	
 	@DefaultMessage("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.")
 	String warnLoadingTooLong();
 	
-	@DefaultMessage("The operation is taking a lot of time...<br>Click this message to cancel the operation.")
+	@DefaultMessage("The operation may take a lot of time...<br>Click this message to cancel the operation.")
 	String warnLoadingTooLongCanCancel();
 
 	@DefaultMessage("Login is required to access this page.")
@@ -112,6 +115,21 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("<u>C</u>ancel")
 	String onCancel();
+	
+	@DefaultMessage("Export PDF")
+	String opExportPDF();
+
+	@DefaultMessage("Export CSV")
+	String opExportCSV();
+
+	@DefaultMessage("Export iCalendar")
+	String opExportICalendar();
+	
+	@DefaultMessage("Copy iCalendar URL")
+	String opCopyToClipboardICalendar();
+	
+	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
+	String hintCtrlCToCopy();
 
 	@DefaultMessage("Date")
 	String colDate();
@@ -399,7 +417,7 @@ public interface GwtMessages extends Messages {
 	String buttonPrint();
 	
 	@DefaultMessage("E<u>x</u>port")
-	String buttonExportICal();
+	String buttonExport();
 	
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();

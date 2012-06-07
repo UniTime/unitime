@@ -19,34 +19,14 @@
 */
 package org.unitime.timetable.gwt.client.events;
 
+import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
+
 import com.google.gwt.user.client.Cookies;
 
 public class EventCookie {
-	private int iFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag();
+	private int iFlags = EventInterface.sDefaultEventFlags;
 	private static EventCookie sInstance = null;
-	
-	public static enum EventFlag {
-		SHOW_PUBLISHED_TIME,
-		SHOW_ALLOCATED_TIME,
-		SHOW_SETUP_TIME,
-		SHOW_TEARDOWN_TIME,
-		SHOW_CAPACITY,
-		SHOW_LIMIT,
-		SHOW_ENROLLMENT,
-		SHOW_MAIN_CONTACT,
-		SHOW_SPONSOR;
-		
-		public int flag() { return 1 << ordinal(); }
-		public boolean in(int flags) {
-			return (flags & flag()) != 0;
-		}
-		public int set(int flags) {
-			return (in(flags) ? flags : flags + flag());
-		}
-		public int clear(int flags) {
-			return (in(flags) ? flags - flag() : flags);
-		}
-	}
 	
 	private EventCookie() {
 		try {
@@ -75,5 +55,5 @@ public class EventCookie {
 		iFlags = (value ? f.set(iFlags) : f.clear(iFlags));
 		save();
 	}
-	
+	public int getFlags() { return iFlags; }
 }

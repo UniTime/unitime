@@ -44,7 +44,7 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("MM/dd, yyyy")
 	String eventDateFormatLong();
 
-	@DefaultStringValue("EEE, MM/dd/yyyy")
+	@DefaultStringValue("EEE MM/dd, yyyy")
 	String meetingDateFormat();
 	
 	@DefaultStringValue("MM/dd hh:mmaa")

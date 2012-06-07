@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.unitime.timetable.gwt.client.events.EventCookie.EventFlag;
+import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -65,6 +66,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private static DateTimeFormat sDateFormatShort = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
 	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
+	private static DateTimeFormat sDateFormatMeeting = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
 	
 	public static enum Mode {
 		ListOfEvents(true, false, true),
@@ -87,10 +89,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	public static enum OperationType {
 		Approve, Reject, Inquire, AddMeetings
-	}
-	
-	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
 	}
 	
 	private Mode iMode = null;
@@ -552,7 +550,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new HTML(conflict.getType() == EventType.Unavailabile ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
-				row.add(new Label(sDateFormat.format(meeting.getMeetingDate())));
+				row.add(new Label(sDateFormatMeeting.format(meeting.getMeetingDate())));
 			}
 			row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
 			row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
@@ -607,14 +605,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		if (event != null && event.hasEnrollment() && iShowMainContact) {
 			row.add(new NumberCell(event.getEnrollment().toString()));
-			if (!isColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn())) setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
 		
 		if (event != null && event.hasMaxCapacity() && iShowMainContact) {
 			row.add(new NumberCell(event.getMaxCapacity().toString()));
-			if (!isColumnVisible(getHeader(MESSAGES.colLimit()).getColumn())) setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), true);
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
@@ -710,7 +706,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
 			setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), getMode().isShowEventDetails() && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
 			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), getMode().isShowEventDetails() && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
-			setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
+			setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
 			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), getMode().isShowEventDetails() && EventCookie.getInstance().get(EventFlag.SHOW_SPONSOR));
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), getMode().isShowEventDetails() && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT));			
 		} else {
@@ -727,9 +723,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
-	public String getSortBy() { return iSortBy == null ? null : iSortBy.name(); }
-	public void setSortBy(String sortBy) {
-		iSortBy = (sortBy == null || sortBy.isEmpty() ? null : EventMeetingSortBy.valueOf(sortBy)); sort();
+	public Integer getSortBy() { return iSortBy == null ? null : iSortBy.ordinal(); }
+	public void setSortBy(Integer sortBy) {
+		iSortBy = (sortBy == null ? null : EventMeetingSortBy.values()[sortBy]); sort();
 	}
 	
 	protected void addSortByOperation(final UniTimeTableHeader header, final EventMeetingSortBy sortBy) {
@@ -746,6 +742,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	protected void onSortByChanded(EventMeetingSortBy sortBy) {};
+	
+	protected void onColumnShownOrHid(int eventCookieFlags) {}
 
 	private boolean iFirstHideOperation = true;
 	protected void addHideOperation(final UniTimeTableHeader header, final EventFlag flag) {
@@ -769,6 +767,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						EventCookie.getInstance().set(EventFlag.SHOW_ALLOCATED_TIME, true);
 					}
 				}
+				onColumnShownOrHid(EventCookie.getInstance().getFlags());
 			}
 			@Override
 			public boolean isApplicable() {
@@ -776,7 +775,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				case SHOW_LIMIT:
 				case SHOW_ENROLLMENT:
 				case SHOW_MAIN_CONTACT:
-				case SHOW_CAPACITY:
 					return iShowMainContact && getMode().isShowEventDetails();
 				case SHOW_SPONSOR:
 					return getMode().isShowEventDetails();
@@ -915,24 +913,43 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		// Compare event properties (if applicable)
 		if (r1.hasEvent() && r2.hasEvent()) {
-			int cmp = compareEvents(r1.getEvent(), r2.getEvent(), iSortBy);
+			int cmp = EventComparator.compareEvents(r1.getEvent(), r2.getEvent(), iSortBy);
 			if (cmp != 0) return cmp;
 		}
 		
 		// Compare meeting properties (if applicable)
 		if (r1.hasMeeting() && r2.hasMeeting()) {
-			int cmp = compareMeetings(r1.getMeeting(), r2.getMeeting(), iSortBy);
+			int cmp = EventComparator.compareMeetings(r1.getMeeting(), r2.getMeeting(), iSortBy);
 			if (cmp != 0) return cmp;
 		} else {
 			Iterator<MeetingInterface> i1 = r1.getMeetings(getMeetingFilter()).iterator(), i2 = r2.getMeetings(getMeetingFilter()).iterator();
 			while (i1.hasNext() && i2.hasNext()) {
-				int cmp = compareMeetings(i1.next(), i2.next(), iSortBy);
+				int cmp = EventComparator.compareMeetings(i1.next(), i2.next(), iSortBy);
 				if (cmp != 0) return cmp;
 			}
-			return (i1.hasNext() ? i2.hasNext() ? 0 : 1 : i2.hasNext() ? -1 : 0);
+			if (i1.hasNext() && !i2.hasNext()) return 1;
+			if (!i1.hasNext() && i2.hasNext()) return -1;
 		}
 		
-		// Fallback
+		// Fallback 1
+		if (r1.hasEvent() && r2.hasEvent()) {
+			int cmp = EventComparator.compareFallback(r1.getEvent(), r2.getEvent());
+			if (cmp != 0) return cmp;
+		}
+		if (r1.hasMeeting() && r2.hasMeeting()) {
+			int cmp = EventComparator.compareFallback(r1.getMeeting(), r2.getMeeting());
+			if (cmp != 0) return cmp;
+		} else {
+			Iterator<MeetingInterface> i1 = r1.getMeetings(getMeetingFilter()).iterator(), i2 = r2.getMeetings(getMeetingFilter()).iterator();
+			while (i1.hasNext() && i2.hasNext()) {
+				int cmp = EventComparator.compareFallback(i1.next(), i2.next());
+				if (cmp != 0) return cmp;
+			}
+			if (i1.hasNext() && !i2.hasNext()) return 1;
+			if (!i1.hasNext() && i2.hasNext()) return -1;
+		}
+		
+		// Fallback 2
 		if (r1.hasMeeting() && r2.hasMeeting()) {
 			return r1.getMeeting().compareTo(r2.getMeeting());
 		} else  if (r1.hasEvent() && r2.hasEvent()) {
@@ -940,198 +957,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		} else {
 			return 0;
 		}
-	}
-	
-	protected static int compareByName(EventInterface e1, EventInterface e2) {
-		return compare(e1.getName(), e2.getName());
-	}
-	
-	protected static int compareBySection(EventInterface e1, EventInterface e2) {
-		if (e1.hasExternalIds()) {
-			if (e2.hasExternalIds()) {
-				int cmp = e1.getExternalIds().get(0).compareTo(e2.getExternalIds().get(0));
-				if (cmp != 0) return cmp;
-			} else return -1;
-		} else if (e2.hasExternalIds()) return 1;
-		return compare(e1.getSectionNumber(), e2.getSectionNumber());
-	}
-	
-	protected static int compareByType(EventInterface e1, EventInterface e2) {
-		int cmp = (e1.getType() == null ? e2.getType() == null ? 0 : -1 : e2.getType() == null ? 1 : e1.getType().compareTo(e2.getType()));
-		if (cmp != 0) return cmp;
-		return compare(e1.getInstructionType(), e2.getInstructionType());
-	}
-	
-	protected static int compareBySponsor(EventInterface e1, EventInterface e2) {
-		int cmp = compare(e1.getInstructorNames("|"), e2.getInstructorNames("|"));
-		if (cmp != 0) return cmp;
-		return compare(e1.hasSponsor() ? e1.getSponsor().getName() : null, e2.hasSponsor() ? e2.getSponsor().getName() : null);
-	}
-	
-	protected static int compareByMainContact(EventInterface e1, EventInterface e2) {
-		return compare(e1.hasContact() ? e1.getContact().getName() : null, e2.hasContact() ? e2.getContact().getName() : null);
-	}
-	
-	protected static int compareByLimit(EventInterface e1, EventInterface e2) {
-		return -(e1.hasMaxCapacity() ? e1.getMaxCapacity() : new Integer(0)).compareTo(e2.hasMaxCapacity() ? e2.getMaxCapacity() : new Integer(0));
-	}
-	
-	protected static int compareByEnrollment(EventInterface e1, EventInterface e2) {
-		return -(e1.hasEnrollment() ? e1.getEnrollment() : new Integer(0)).compareTo(e2.hasEnrollment() ? e2.getEnrollment() : new Integer(0));
-	}
-	
-	protected static int compareFallback(EventInterface e1, EventInterface e2) {
-		int cmp = compareByName(e1, e2);
-		if (cmp != 0) return cmp;
-		cmp = compareBySection(e1, e2);
-		if (cmp != 0) return cmp;
-		cmp = compareByType(e1, e2);
-		if (cmp != 0) return cmp;
-		return e1.compareTo(e2);
-	}
-	
-	protected static int compareEvents(EventInterface e1, EventInterface e2, EventMeetingSortBy sortBy) {
-		int cmp;
-		switch (sortBy) {
-		case NAME:
-			cmp = compareByName(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case SECTION:
-			cmp = compareBySection(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case TYPE:
-			cmp = compareByType(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case SPONSOR:
-			cmp = compareBySponsor(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case MAIN_CONTACT:
-			cmp = compareByMainContact(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case LIMIT:
-			cmp = compareByLimit(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		case ENROLLMENT:
-			cmp = compareByEnrollment(e1, e2);
-			return (cmp == 0 ? compareFallback(e1, e2) : cmp);
-		}
-		return 0;
-	}
-	
-	protected static int compateByApproval(MeetingInterface m1, MeetingInterface m2) {
-		if (m1.getId() == null && m2.getId() != null) return -1;
-		if (m1.getId() != null && m2.getId() == null) return 1;
-		if (m1.getApprovalDate() == null) {
-			return (m2.getApprovalDate() == null ? 0 : -1);
-		} else {
-			return (m2.getApprovalDate() == null ? 1 : m1.getApprovalDate().compareTo(m2.getApprovalDate()));
-		}
-	}
-	
-	protected static int compareByName(MeetingInterface m1, MeetingInterface m2) {
-		return compare(m1 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m1).getName() : null,
-				m2 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m2).getName() : null);
-	}
-	
-	protected static int compareByType(MeetingInterface m1, MeetingInterface m2) {
-		EventType t1 = (m1 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m1).getType() : null);
-		EventType t2 = (m2 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m2).getType() : null);
-		return (t1 == null ? t2 == null ? 0 : -1 : t2 == null ? 1 : t1.compareTo(t2));
-	}
-
-	protected static int compareByDate(MeetingInterface m1, MeetingInterface m2) {
-		if (m1 instanceof MeetingConglictInterface && m2 instanceof MeetingConglictInterface) {
-			int cmp = ((MeetingConglictInterface)m1).getName().compareTo(((MeetingConglictInterface)m2).getName());
-			if (cmp != 0) return cmp;
-		}
-		return m1.getMeetingDate().compareTo(m2.getMeetingDate());
-	}
-	
-	protected static int compareByAllocatedTime(MeetingInterface m1, MeetingInterface m2) {
-		int cmp = new Integer(m1.getStartSlot()).compareTo(m2.getStartSlot());
-		if (cmp != 0) return cmp;
-		return new Integer(m1.getEndSlot()).compareTo(m2.getEndSlot());
-	}
-	
-	protected static int compareByPublishedTime(MeetingInterface m1, MeetingInterface m2) {
-		int cmp = new Integer((5 * m1.getStartSlot()) + m1.getStartOffset()).compareTo((5 * m2.getStartSlot()) + m2.getStartOffset());
-		if (cmp != 0) return cmp;
-		return new Integer((5 * m1.getEndSlot()) + m2.getEndOffset()).compareTo((5 * m2.getEndSlot()) + m2.getEndOffset());
-	}
-
-	protected static int compareBySetupTime(MeetingInterface m1, MeetingInterface m2) {
-		return new Integer(m1.getStartOffset()).compareTo(m2.getStartOffset());
-	}
-
-	protected static int compareByTeardownTime(MeetingInterface m1, MeetingInterface m2) {
-		return new Integer(m2.getEndOffset()).compareTo(m1.getEndOffset());
-	}
-	
-	protected static int compareByLocation(MeetingInterface m1, MeetingInterface m2) {
-		return m1.getLocationName().compareTo(m2.getLocationName());
-	}
-	
-	protected static int compareByCapacity(MeetingInterface m1, MeetingInterface m2) {
-		return (m1.getLocation() == null ? new Integer(-1) : m1.getLocation().getSize()).compareTo(m2.getLocation() == null ? new Integer(-1) : m2.getLocation().getSize());
-	}
-
-	protected static int compareFallback(MeetingInterface m1, MeetingInterface m2) {
-		int cmp = compareByDate(m1, m2);
-		if (cmp != 0) return cmp;
-		cmp = compareByPublishedTime(m1, m2);
-		if (cmp != 0) return cmp;
-		cmp = compareByLocation(m1, m2);
-		if (cmp != 0) return cmp;
-		return m1.compareTo(m2);
-	}
-	
-	protected static int compareMeetings(MeetingInterface m1, MeetingInterface m2, EventMeetingSortBy sortBy) {
-		int cmp;
-		switch (sortBy) {
-		case NAME:
-			cmp = compareByName(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case TYPE:
-			cmp = compareByType(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case APPROVAL:
-			cmp = compateByApproval(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case DATE:
-			cmp = compareByDate(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case SETUP_TIME:
-			cmp = compareBySetupTime(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case TEARDOWN_TIME:
-			cmp = compareByTeardownTime(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case PUBLISHED_TIME:
-			cmp = compareByPublishedTime(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case ALLOCATED_TIME:
-			cmp = compareByAllocatedTime(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case LOCATION:
-			cmp = compareByLocation(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		case CAPACITY:
-			cmp = compareByCapacity(m1, m2);
-			return (cmp == 0 ? compareFallback(m1, m2) : cmp);
-		}
-		return 0;
-	}
-	
-	protected static int compare(String s1, String s2) {
-		if (s1 == null || s1.isEmpty()) {
-			return (s2 == null || s2.isEmpty() ? 0 : 1);
-		} else {
-			return (s2 == null || s2.isEmpty() ? -1 : s1.compareToIgnoreCase(s2));
-		}
-	}
-	
-	protected static int compare(Number n1, Number n2) {
-		return (n1 == null ? n2 == null ? 0 : -1 : n2 == null ? -1 : Double.compare(n1.doubleValue(), n2.doubleValue())); 
 	}
 	
 	protected abstract class EventMeetingOperation implements Operation {

@@ -41,7 +41,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.export.EventsExportEventsToICal;
+import org.unitime.timetable.export.events.EventsExportEventsToICal;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;

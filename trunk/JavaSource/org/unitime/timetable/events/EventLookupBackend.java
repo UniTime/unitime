@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -614,8 +615,18 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							contact.setFirstName(m.getEvent().getMainContact().getFirstName());
 							contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 							contact.setLastName(m.getEvent().getMainContact().getLastName());
+							contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
 							event.setContact(contact);
 						}
+						for (EventContact additional: m.getEvent().getAdditionalContacts()) {
+							ContactInterface contact = new ContactInterface();
+							contact.setFirstName(additional.getFirstName());
+							contact.setMiddleName(additional.getMiddleName());
+							contact.setLastName(additional.getLastName());
+							contact.setEmail(additional.getEmailAddress());
+							event.addAdditionalContact(contact);
+						}
+						event.setEmail(m.getEvent().getEmail());
 						if (m.getEvent().getSponsoringOrganization() != null) {
 							SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
 							sponsor.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
@@ -634,12 +645,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
+									instructor.setEmail(i.getInstructor().getEmail());
 									event.addInstructor(instructor);
 				    			}
 				    		}
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 				    		switch (request.getResourceType()) {
+				    		/*
 				    		case SUBJECT:
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 			    					CourseOffering co = i.next();
@@ -675,6 +688,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    				}
 				    			break;
 				    		case CURRICULUM:
+				    		*/
 				    		case PERSON:
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 			    					CourseOffering co = i.next();
@@ -711,6 +725,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								instructor.setFirstName(i.getFirstName());
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
+								instructor.setEmail(i.getEmail());
 								event.addInstructor(instructor);
 			    			}
 			    			String name = null;
@@ -723,6 +738,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    				}
 			    				courses: for(CourseOffering course: courses) {
 						    		switch (request.getResourceType()) {
+						    		/*
 						    		case SUBJECT:
 						    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
 						    			break;
@@ -736,6 +752,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		case CURRICULUM:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
+						    		*/
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
@@ -784,6 +801,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    				}
 			    				courses: for(CourseOffering course: courses) {
 						    		switch (request.getResourceType()) {
+						    		/*
 						    		case SUBJECT:
 						    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
 						    			break;
@@ -797,6 +815,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		case CURRICULUM:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
+						    		*/
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
@@ -1115,8 +1134,18 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									contact.setFirstName(m.getEvent().getMainContact().getFirstName());
 									contact.setMiddleName(m.getEvent().getMainContact().getMiddleName());
 									contact.setLastName(m.getEvent().getMainContact().getLastName());
+									contact.setEmail(m.getEvent().getMainContact().getEmailAddress());
 									event.setContact(contact);
 								}
+								for (EventContact additional: m.getEvent().getAdditionalContacts()) {
+									ContactInterface contact = new ContactInterface();
+									contact.setFirstName(additional.getFirstName());
+									contact.setMiddleName(additional.getMiddleName());
+									contact.setLastName(additional.getLastName());
+									contact.setEmail(additional.getEmailAddress());
+									event.addAdditionalContact(contact);
+								}
+								event.setEmail(m.getEvent().getEmail());
 								if (m.getEvent().getSponsoringOrganization() != null) {
 									SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
 									sponsor.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
@@ -1134,11 +1163,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 											instructor.setFirstName(i.getInstructor().getFirstName());
 											instructor.setMiddleName(i.getInstructor().getMiddleName());
 											instructor.setLastName(i.getInstructor().getLastName());
+											instructor.setEmail(i.getInstructor().getEmail());
 											event.addInstructor(instructor);
 						    			}
 						    		}
 						    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 						    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+						    		/*
 						    		switch (request.getResourceType()) {
 						    		case SUBJECT:
 					    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
@@ -1186,6 +1217,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    				}
 						    			break;
 						    		}
+						    		*/
 						    		courses.remove(correctedOffering);
 						    		event.addCourseName(correctedOffering.getCourseName());
 						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
@@ -1210,10 +1242,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 										instructor.setFirstName(i.getFirstName());
 										instructor.setMiddleName(i.getMiddleName());
 										instructor.setLastName(i.getLastName());
+										instructor.setEmail(i.getEmail());
 										event.addInstructor(instructor);
 					    			}
 					    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
-					    				courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+					    				/* courses: */ 
+					    				for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+					    					/*
 								    		switch (request.getResourceType()) {
 								    		case SUBJECT:
 								    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
@@ -1229,6 +1264,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 								    			break;
 								    		}
+								    		*/
 						    				String courseName = owner.getCourse().getCourseName();
 						    				String label = owner.getLabel();
 						    				if (label.startsWith(courseName)) {
@@ -1246,7 +1282,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									int enrl = 0;
 									for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 										enrl += owner.countStudents();
-										courses: for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+										/* courses: */
+										for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
+											/*
 								    		switch (request.getResourceType()) {
 								    		case SUBJECT:
 								    			if (!course.getSubjectArea().getUniqueId().equals(request.getResourceId())) continue courses;
@@ -1262,6 +1300,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 								    			break;
 								    		}
+								    		*/
 						    				String courseName = owner.getCourse().getCourseName();
 						    				String label = owner.getLabel();
 						    				if (label.startsWith(courseName)) {
