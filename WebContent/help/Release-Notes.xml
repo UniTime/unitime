@@ -28,6 +28,22 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Online Student Scheduling: Logging</name>
+			<description>
+				<line>
+					Exclude SectioningService#logIn message from the query log as it may include a user name and a password.
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.187</version>
+	<release-date>Thu, 24 May 2012</release-date>
+	<category>
 		<title>Event Management</title>
 		<item>
 			<name>Event Timetable</name>

@@ -260,7 +260,7 @@
 		</filter-class>
 		<init-param>
 			<param-name>exclude</param-name>
-			<param-value>menu.gwt: MenuService#getSolverInfo</param-value>
+			<param-value>menu.gwt: MenuService#getSolverInfo,sectioning.gwt: SectioningService#logIn</param-value>
 		</init-param>
 	</filter>
 	
