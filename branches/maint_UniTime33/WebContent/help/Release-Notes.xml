@@ -35,6 +35,9 @@
 				<line>
 					Exclude SectioningService#logIn message from the query log as it may include a user name and a password.
 				</line>
+				<line>
+					When a student is only logged in the scheduling assistant, include the user id in the query log as well.
+				</line>
 			</description>
 		</item>
 	</category>
