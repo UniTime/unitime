@@ -40,6 +40,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Assign Instructors</name>
+			<description>
+				<line>Share, Check Conflicts, Display: do not change the class label property on change.</line>
+				<line>Check Conflicts: the column was not properly updated when a new line was inserted (checks for all the lines below got shifted).</line>
+			</description>
+		</item>
 	</category>
 </release>
 
