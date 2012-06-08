@@ -50,6 +50,7 @@ import org.hibernate.Session;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.server.UniTimePrincipal;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
 
@@ -77,8 +78,13 @@ public class QueryLogFilter implements Filter {
 				HttpServletRequest r = (HttpServletRequest)request;
 				sessionId = r.getSession().getId();
 				User user = Web.getUser(r.getSession());
-				if (user != null)
+				if (user != null) {
 					userId = user.getId();
+				} else {
+					UniTimePrincipal principal = (UniTimePrincipal)r.getSession().getAttribute("user");
+					if (principal != null)
+						userId = principal.getExternalId();
+				}
 			}
 		} catch (IllegalStateException e) {}
 		
