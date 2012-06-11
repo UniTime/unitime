@@ -41,6 +41,8 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessionSelectionBox.AcademicSession> implements AcademicSessionProvider {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private List<AcademicSession> iAllSessions = null;
+	private AcademicSessionFilter iFilter = null;
 
 	private List<AcademicSessionChangeHandler> iChangeHandlers = new ArrayList<AcademicSessionChangeHandler>();
 	
@@ -60,15 +62,8 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 			@Override
 			public void onSuccess(GwtRpcResponseList<AcademicSession> result) {
 				clearHint();
+				iAllSessions = result;
 				setValues(result);
-				for (final AcademicSession session: result) {
-					if (session.isSelected()) {
-						setDefaultValue(new Interval(session));
-						break;
-					}
-				}
-				if (getDefaultValue() != null)
-					setValue(getDefaultValue(), true);
 				onInitializationSuccess(result);
 			}
 		});
@@ -202,6 +197,26 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		private String iName, iAbbv;
 		private boolean iSelected;
 		private Long iPreviousId, iNextId;
+		private int iFlags = 0;
+		
+		public static enum Flag {
+			HasClasses,
+			HasMidtermExams,
+			HasFinalExams,
+			HasEvents,
+			CanAddEvents;
+			
+			public int flag() { return 1 << ordinal(); }
+			public boolean in(int flags) {
+				return (flags & flag()) != 0;
+			}
+			public int set(int flags) {
+				return (in(flags) ? flags : flags + flag());
+			}
+			public int clear(int flags) {
+				return (in(flags) ? flags - flag() : flags);
+			}
+		}
 		
 		public AcademicSession() {}
 		
@@ -220,6 +235,10 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		public Long getNextId() { return iNextId; }
 		public void setNextId(Long id) { iNextId = id; }
 
+		public boolean has(Flag f) { return f.in(iFlags); }
+		public void set(Flag f) { iFlags = f.set(iFlags); }
+		public void clear(Flag f) { iFlags = f.clear(iFlags); }
+		
 		@Override
 		public String toString() {
 			return getName();
@@ -254,8 +273,8 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	}
 	
 	protected AcademicSession session(Long id) {
-		if (getValues() != null && id != null)
-			for (AcademicSession session: getValues())
+		if (iAllSessions != null && id != null)
+			for (AcademicSession session: iAllSessions)
 				if (session.getUniqueId().equals(id)) return session;
 		return null;
 	}
@@ -264,6 +283,8 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	protected Interval previous(Interval interval) {
 		if (interval.isOne()) {
 			AcademicSession prev = session(interval.getFirst().getPreviousId());
+			while (prev != null && iFilter != null && !iFilter.accept(prev))
+				prev = session(prev.getPreviousId());
 			if (prev != null) return new Interval(prev);
 		}
 		return null;
@@ -273,8 +294,40 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	protected Interval next(Interval interval) {
 		if (interval.isOne()) {
 			AcademicSession next = session(interval.getFirst().getNextId());
+			while (next != null && iFilter != null && !iFilter.accept(next))
+				next = session(next.getNextId());
 			if (next != null) return new Interval(next);
 		}
 		return null;
+	}
+	
+	public void setFilter(AcademicSessionFilter filter) {
+		iFilter = filter;
+		if (iAllSessions != null) {
+			setValues(iAllSessions);
+			setValue(getValue(), false);
+		}
+	}
+	
+	public List<AcademicSession> getAllSessions() { return iAllSessions; }
+	
+	@Override
+	public void setValues(List<AcademicSession> sessions) {
+		List<AcademicSession> filtered = new ArrayList<AcademicSession>();
+		AcademicSession selected = null;
+		for (AcademicSession session: sessions)
+			if (iFilter == null || iFilter.accept(session)) { 
+				filtered.add(session);
+				if (session.isSelected()) selected = session;
+			}
+		if (selected == null) selected = (filtered.isEmpty() ? null : filtered.get(filtered.size() - 1));
+		setDefaultValue(new Interval(selected));
+		super.setValues(filtered);
+		if (getValue() == null && getDefaultValue() != null)
+			setValue(getDefaultValue(), true);
+	}
+	
+	public static interface AcademicSessionFilter {
+		public boolean accept(AcademicSession session);
 	}
 }

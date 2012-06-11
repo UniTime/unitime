@@ -33,6 +33,8 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
+import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSessionFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickEvent;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
@@ -119,7 +121,7 @@ import com.google.gwt.user.client.ui.TabBar;
 /**
  * @author Tomas Muller
  */
-public class EventResourceTimetable extends Composite implements EventMeetingTable.MeetingFilter, EventAdd.EventPropertiesProvider {
+public class EventResourceTimetable extends Composite implements EventMeetingTable.MeetingFilter, EventAdd.EventPropertiesProvider, AcademicSessionFilter {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -151,28 +153,45 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private Lookup iLookup;
 	private TabBar iTabBar;
 	private ApproveDialog iApproveDialog;
+	private int iSessionRow = -1;
 	
 	private EventPropertiesRpcResponse iProperties = null;
 	private HistoryToken iHistoryToken = null;
-	private String iDefaultType = null;
+	private PageType iType = null;
 	private boolean iInitialized = false;
 	private List<EventInterface> iBack = new ArrayList<EventInterface>();
 	
-	public EventResourceTimetable(String type) {
-		iHistoryToken = new HistoryToken();
-		iDefaultType = type;
+	public static enum PageType {
+		Timetable("tab", "0", "title", "Event Timetable"),
+		Events("filter", "events", "rooms", "department:Event", "type", "room", "title", "Events"),
+		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
+		Classes(
+				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
+				"rooms", "", "title", "Class Events", "fixedTitle", "true", "addEvent", "false"),
+		Exams(
+				"type", "subject", "fixedType", "true", "events", "type:\"Final Exam\" type:\"Midterm Exam\"",
+				"tab", "1", "filter", "exams", "rooms", "", "title", "Examination Events", "fixedTitle", "true", "addEvent", "false"),
+		Personal(
+				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", "Personal Timetable",
+				"addEvent", "false", "fixedTitle", "true"
+				);
+		
+		
+		String[] iParams = null; 
+		PageType(String... params) { iParams = params; }
+		
+		public String[] getParams() { return iParams; }
+	}
+	
+	public EventResourceTimetable(PageType type) {
+		iHistoryToken = new HistoryToken(type.getParams());
+		iType = type;
 		
 		iFilter = new SimpleForm(2);
 		iFilter.removeStyleName("unitime-NotPrintableBottomLine");
 		iFilter.getColumnFormatter().setWidth(0, "120px");
 		
 		iFilterHeader = new UniTimeHeaderPanel(MESSAGES.sectFilter());
-		iFilterHeader.addButton("search", MESSAGES.buttonSearch(), 75, new ClickHandler() {
-			@Override
-			public void onClick(ClickEvent event) {
-				resourceTypeChanged(true);
-			}
-		});
 		iLookup = new Lookup();
 		iLookup.setOptions("mustHaveExternalId");
 		iLookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
@@ -200,7 +219,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		});
 		iFilterHeader.setEnabled("add", false);
 		iFilter.addHeaderRow(iFilterHeader);
-		
+		iFilterHeader.addButton("search", MESSAGES.buttonSearch(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				resourceTypeChanged(true);
+			}
+		});
+
 		iSession = new AcademicSessionSelectionBox(iHistoryToken.getParameter("term")) {
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
@@ -217,8 +242,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				UniTimeNotifications.error(MESSAGES.failedLoadSessions(caught.getMessage()));
 			}
 		};
-		iFilter.addRow(MESSAGES.propAcademicSession(), iSession);
-
+		iSession.setFilter(this);
+		iSessionRow = iFilter.addRow(MESSAGES.propAcademicSession(), iSession);
+		
 		iEvents = new EventFilterBox(iSession);
 		
 		iFilter.addRow(MESSAGES.propEventFilter(), iEvents);
@@ -236,13 +262,15 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public void onChange(ChangeEvent event) {
 				iResources.setText("");
-				UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+				UniTimePageLabel.getInstance().setPageName(getPageName());
 				hideResults();
 				if (iProperties != null)
 					resourceTypeChanged(isShowingResults());
 			}
 		});
-		iFilter.addRow(MESSAGES.propResourceType(), iResourceTypes);
+		int row = iFilter.addRow(MESSAGES.propResourceType(), iResourceTypes);
+		if ("true".equals(iHistoryToken.getParameter("fixedType", "false")))
+			iFilter.getRowFormatter().setVisible(row, false);
 		
 		iResources = new SuggestBox(new SuggestOracle() {
 			@Override
@@ -435,7 +463,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (EventInterface event: sortedEvents()) {
 					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 					for (MeetingInterface meeting: event.getMeetings()) {
-						if (!filter(meeting))
+						if (meeting.getMeetingDate() != null && !filter(meeting))
 							meetings.add(meeting);
 					}
 					if (!meetings.isEmpty())
@@ -527,7 +555,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			protected void onHide() {
 				iRootPanel.setWidget(iPanel);
-				UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+				UniTimePageLabel.getInstance().setPageName(getPageName());
 				if (!isShowingResults())
 					resourceTypeChanged(true);
 				changeUrl();
@@ -584,18 +612,22 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			@Override
 			protected void onApprovalOrReject(Long eventId, EventInterface event) {
-				populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event));
+				if (iData != null)
+					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event));
 			}
 		};
 		
 		iEventAdd = new EventAdd(iSession, this) {
 			@Override
 			protected void onHide() {
+				iSession.setFilter(EventResourceTimetable.this);
+				iFilter.setWidget(iSessionRow, 1, iSession);
 				final EventInterface modified = iEventAdd.getEvent(), detail = iEventDetail.getEvent(), saved = iEventAdd.getSavedEvent();
 				if (saved != null) {
 					iRootPanel.setWidget(iPanel);
-					UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
-					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved));
+					UniTimePageLabel.getInstance().setPageName(getPageName());
+					if (iData != null)
+						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved));
 				} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
 					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
 						@Override
@@ -611,7 +643,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					}, MESSAGES.waitLoading(detail.getName()));
 				} else {
 					iRootPanel.setWidget(iPanel);
-					UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+					UniTimePageLabel.getInstance().setPageName(getPageName());
 				}
 			}
 			@Override
@@ -776,7 +808,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			for (EventInterface event: sortedEvents()) {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
-					if (!filter(meeting))
+					if (meeting.getMeetingDate() != null && !filter(meeting))
 						meetings.add(meeting);
 				}
 				if (!meetings.isEmpty())
@@ -805,8 +837,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			reload = true;
 			if (!iEvents.getValue().equals("")) isDefault = false;
 		}
-		if (iHistoryToken.isChanged("type", iDefaultType, iResourceTypes.getValue(iResourceTypes.getSelectedIndex()).toLowerCase())) {
-			String typeString = iHistoryToken.getParameter("type", iDefaultType);
+		if (iHistoryToken.isChanged("type", "room", iResourceTypes.getValue(iResourceTypes.getSelectedIndex()).toLowerCase())) {
+			String typeString = iHistoryToken.getParameter("type", "room");
 			if (typeString != null)
 				for (int idx = 0; idx < iResourceTypes.getItemCount(); idx ++) {
 					if (iResourceTypes.getValue(idx).equalsIgnoreCase(typeString)) {
@@ -827,7 +859,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			reload = (getResourceType() != ResourceType.ROOM);
 			if (!iResources.getText().equals("")) isDefault = false;
 		}
-		UniTimePageLabel.getInstance().setPageName(getResourceType().getPageTitle());
+		UniTimePageLabel.getInstance().setPageName(getPageName());
 		if (iHistoryToken.isChanged("tab", "0", String.valueOf(getSelectedTab()))) {
 			iTabBar.selectTab(Integer.parseInt(iHistoryToken.getParameter("tab", "0")), false);
 		}
@@ -846,19 +878,24 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iHistoryToken.hasParameter("event")) {
 			if (iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation()))
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
-			Long eventId = Long.valueOf(iHistoryToken.getParameter("event"));
-			LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
-				@Override
-				public void onFailure(Throwable caught) {
-					UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()));
-				}
-				@Override
-				public void onSuccess(EventInterface result) {
-					LoadingWidget.getInstance().hide();
-					iEventDetail.setEvent(result);
-					iEventDetail.show();
-				}
-			}, MESSAGES.waitLoading(MESSAGES.anEvent()));
+			if ("add".equals(iHistoryToken.getParameter("event"))) {
+				iEventAdd.setEvent(null);
+				iEventAdd.show();
+			} else {
+				Long eventId = Long.valueOf(iHistoryToken.getParameter("event"));
+				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()));
+					}
+					@Override
+					public void onSuccess(EventInterface result) {
+						LoadingWidget.getInstance().hide();
+						iEventDetail.setEvent(result);
+						iEventDetail.show();
+					}
+				}, MESSAGES.waitLoading(MESSAGES.anEvent()));
+			}
 		} else {
 			iRootPanel.setWidget(iPanel);
 			if (iHistoryToken.hasParameter("term") && iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation())) {
@@ -940,6 +977,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					}, "Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
 				}
 			}				
+		}
+		if (!loadData) {
+			iData = null;
+			hideResults();
 		}
 	}
 	
@@ -1359,7 +1400,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					iProperties = result;
 					iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
 					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
-					iFilterHeader.setEnabled("add", result.isCanAddEvent());
+					iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 					iEventAdd.setup(result);
 					iTable.setShowMainContact(result.isCanLookupContacts());
 					iApproveDialog.reset(result);
@@ -1399,18 +1440,18 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	}
 	
 	public static class HistoryToken {
+		private String[] iDefaults = null;
 		private Map<String, List<String>> iParams = new HashMap<String, List<String>>();
 		
-		public HistoryToken() {
+		public HistoryToken(String... defaults) {
+			iDefaults = defaults;
+			clear();
 			String token = History.getToken();
-			if (token == null || token.isEmpty())
+			if (token == null || token.isEmpty()) {
 				iParams.putAll(Window.Location.getParameterMap());
-			else
+			} else {
 				parse(token);
-		}
-		
-		public HistoryToken(String token) {
-			parse(token);
+			}
 		}
 		
 		public void parse(String token) {
@@ -1453,7 +1494,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			String ret = "";
 			for (String key: new TreeSet<String>(iParams.keySet())) {
 				List<String> values = iParams.get(key);
-				for (String value: values) {
+				values: for (String value: values) {
+					if (iDefaults != null)
+						for (int i = 0; 1 + i < iDefaults.length; i += 2)
+							if (key.equals(iDefaults[i]) && value.equals(iDefaults[i + 1])) continue values;
 					if (!ret.isEmpty()) ret += "&";
 					ret += key + "=" + URL.encodeQueryString(value);
 				}
@@ -1491,6 +1535,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		
 		public void clear() {
 			iParams.clear();
+			if (iDefaults != null)
+				for (int i = 0; 1 + i < iDefaults.length; i += 2)
+					addParameter(iDefaults[i], iDefaults[i + 1]);
 		}
 		
 		public void mark() {
@@ -1499,6 +1546,28 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				History.newItem(token, false);
 			}
 		}
+	}
+	
+	public String getPageName() {
+		String pageName = iHistoryToken.getParameter("title", "Events");
+		ResourceType resource = getResourceType();
+		if (!"true".equals(iHistoryToken.getParameter("fixedTitle")) && resource != null)
+			pageName = resource.getPageTitle();
+		return pageName;
+	}
+
+	@Override
+	public boolean accept(AcademicSession session) {
+		String filter = iHistoryToken.getParameter("filter");
+		if ("classes".equals(filter))
+			return session.has(AcademicSession.Flag.HasClasses);
+		if ("exams".equals(filter))
+			return session.has(AcademicSession.Flag.HasFinalExams) || session.has(AcademicSession.Flag.HasMidtermExams);
+		if ("events".equals(filter))
+			return session.has(AcademicSession.Flag.HasEvents);
+		if ("person".equals(filter))
+			return session.has(AcademicSession.Flag.HasClasses) || session.has(AcademicSession.Flag.HasFinalExams) || session.has(AcademicSession.Flag.HasMidtermExams);
+		return true;
 	}
 
 }

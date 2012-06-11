@@ -103,13 +103,13 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					getName(event),
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
-					df.format(meeting.getMeetingDate()),
-					meeting.getStartTime(CONSTANTS, true),
-					meeting.getEndTime(CONSTANTS, true),
-					meeting.getStartTime(CONSTANTS, false),
-					meeting.getEndTime(CONSTANTS, false),
-					String.valueOf(meeting.getStartOffset()),
-					String.valueOf(-meeting.getEndOffset()),
+					meeting.isArrangeHours() ? "" : df.format(meeting.getMeetingDate()),
+					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, true),
+					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, true),
+					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, false),
+					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, false),
+					meeting.isArrangeHours() ? "" : String.valueOf(meeting.getStartOffset()),
+					meeting.isArrangeHours() ? "" : String.valueOf(-meeting.getEndOffset()),
 					meeting.getLocationName(),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
@@ -118,7 +118,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
 					event.hasContact() ? event.getContact().getName() : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
-					meeting.isApproved() ? df.format(meeting.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					meeting.isArrangeHours() ? "" : meeting.isApproved() ? df.format(meeting.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);
 		}
 		

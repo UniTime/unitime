@@ -33,7 +33,10 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.PageAccessException;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
 
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
@@ -64,13 +67,23 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, "current");
 			} catch (EventException e) {}
 		GwtRpcResponseList<AcademicSession> ret = new GwtRpcResponseList<AcademicSession>();
-		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery(
-				"select distinct s from Session s, RoomTypeOption o where o.session = s and o.status = 1"
-		).list());
+		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery("select s from Session s").list());
 		if (selected == null) selected = sessions.last();
 		for (Session session: sessions) {
+			EventRights rights = new SimpleEventRights(helper, session.getUniqueId());
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() , session.equals(selected));
+			if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId()))
+				acadSession.set(AcademicSession.Flag.HasClasses);
+			if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeFinal))
+				acadSession.set(AcademicSession.Flag.HasFinalExams);
+			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeMidterm))
+				acadSession.set(AcademicSession.Flag.HasMidtermExams);
+			if (rights.isEventLocation(null)) {
+				acadSession.set(AcademicSession.Flag.HasEvents);
+				if (rights.canAddEvent(EventType.Special, null))
+					acadSession.set(AcademicSession.Flag.CanAddEvents);
+			}
 			Session prev = null, next = null;
 			for (Session s: sessions) {
 				if (s.getUniqueId().equals(session.getUniqueId()) || !s.getAcademicInitiative().equals(session.getAcademicInitiative())) continue;

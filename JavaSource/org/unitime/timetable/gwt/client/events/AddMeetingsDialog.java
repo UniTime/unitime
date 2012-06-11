@@ -211,7 +211,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setStartSlot(getStartSlot());
 							meeting.setEndSlot(getEndSlot());
 							meeting.setStartOffset(0);
-							meeting.setEndOffset(0); //TODO: add ability to enter offsets
+							meeting.setEndOffset(Integer.parseInt(room.getProperty("breakTime", "10")));
 
 							
 							ResourceInterface location = new ResourceInterface();
@@ -448,6 +448,10 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void setSelected(Integer date, Entity room, boolean selected) {
+		if (!"1".equals(room.getProperty("overbook", "0"))) {
+			Set<MeetingConglictInterface> conf = getConflicts(date, room);
+			if (conf != null && !conf.isEmpty()) return;
+		}
 		String selection = date + ":" + room.getUniqueId();
 		P p = iPanels.get(selection);
 		if (selected) {

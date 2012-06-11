@@ -31,9 +31,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PageAccessException;
-import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Roles;
@@ -144,7 +142,8 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	private Set<Long> iEventRooms = null;
-	protected boolean isEventRoom(Long locationId) {
+	@Override
+	public boolean isEventLocation(Long locationId) {
 		if (iEventRooms == null)
 			iEventRooms = new HashSet<Long>(SessionDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId " +
@@ -162,7 +161,7 @@ public class SimpleEventRights implements EventRights {
 
 	@Override
 	public boolean canCreate(Long locationId) {
-		return isAuthenticated() && isEventRoom(locationId);
+		return isAuthenticated() && isEventLocation(locationId);
 	}
 
 	@Override
@@ -201,8 +200,12 @@ public class SimpleEventRights implements EventRights {
 		
 	public boolean canEdit(Event event) {
 		// Examination and class events cannot be edited just yet
-		if (event instanceof ExamEvent) return false;
-		if (event instanceof ClassEvent) return false;
+		switch (event.getEventType()) {
+		case Event.sEventTypeClass:
+		case Event.sEventTypeFinalExam:
+		case Event.sEventTypeMidtermExam:
+			return false;
+		}
 
 		// Otherwise, user can edit (e.g., add new meetings) if he/see can see the details
 		return canSee(event);
@@ -214,8 +217,12 @@ public class SimpleEventRights implements EventRights {
 		if (isPastOrOutside(meeting.getStartTime())) return false;
 		
 		// Examination and class events cannot be edited just yet
-		if (meeting.getEvent() instanceof ExamEvent) return false;
-		if (meeting.getEvent() instanceof ClassEvent) return false;
+		switch (meeting.getEvent().getEventType()) {
+		case Event.sEventTypeClass:
+		case Event.sEventTypeFinalExam:
+		case Event.sEventTypeMidtermExam:
+			return false;
+		}
 		
 		// Owner of the event can edit the meeting
 		if (isAuthenticated() && meeting.getEvent().getMainContact() != null && getUserId().equals(meeting.getEvent().getMainContact().getExternalUniqueId()))
@@ -224,7 +231,7 @@ public class SimpleEventRights implements EventRights {
 		// Admin or event manager can edit if no location, or if the location is managed by the user
 		if (isAdmin() || isEventManager()) {
 			Location location = meeting.getLocation();
-			return location == null || isEventRoom(location.getUniqueId());
+			return location == null || isEventLocation(location.getUniqueId());
 		}
 		
 		return false;
@@ -236,13 +243,17 @@ public class SimpleEventRights implements EventRights {
 		if (isPastOrOutside(meeting.getStartTime())) return false;
 		
 		// No approval for examination and class events
-		if (meeting.getEvent() instanceof ExamEvent) return false;
-		if (meeting.getEvent() instanceof ClassEvent) return false;
+		switch (meeting.getEvent().getEventType()) {
+		case Event.sEventTypeClass:
+		case Event.sEventTypeFinalExam:
+		case Event.sEventTypeMidtermExam:
+			return false;
+		}
 
 		// Admin or event manager can approve if no location, or if the location is managed by the user
 		if (isAdmin() || isEventManager()) {
 			Location location = meeting.getLocation();
-			return location == null || isEventRoom(location.getUniqueId());
+			return location == null || isEventLocation(location.getUniqueId());
 		}
 		
 		return false;
@@ -257,7 +268,7 @@ public class SimpleEventRights implements EventRights {
 		if (iEnd == null || !iToday.before(iEnd)) return false;
 		
 		// No event room
-		if (!isAdmin() && !isEventRoom(null)) return false;
+		if (!isAdmin() && !isEventLocation(null)) return false;
 		
 		// Only admins and event managers can create an event on behalf of someone else
 		if (userId != null && !isAdmin() && !isEventManager() && !userId.equals(getUserId())) return false;

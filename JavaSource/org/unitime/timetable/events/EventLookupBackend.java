@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -58,6 +59,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
@@ -86,11 +88,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		
 		if (helper.getUser() != null) {
 			request.getEventFilter().setOption("user", helper.getUser().getId());
-			if (request.getRoomFilter() != null)
+			if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
 				request.getRoomFilter().setOption("user", helper.getUser().getId());
 			if (helper.getUser().getRole() != null) {
 				request.getEventFilter().setOption("role", helper.getUser().getRole());
-				if (request.getRoomFilter() != null)
+				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
 					request.getRoomFilter().setOption("role", helper.getUser().getRole());
 			}
 		}
@@ -103,7 +105,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				Map<Long, Double> distances = new HashMap<Long, Double>();
-				if (request.getRoomFilter() != null) {
+				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty()) {
 					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter().getOptions(), new Query(request.getRoomFilter().getText()), 1000, distances, null)) {
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 					}
@@ -114,8 +116,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				List<Meeting> meetings = null;
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
-				Collection<Long> curriculumConfigs = null;
-				Collection<Long> curriculumClasses = null;
 				Department department = null;
 				switch (request.getResourceType()) {
 				case ROOM:
@@ -123,6 +123,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						meetings = (List<Meeting>)query.select("distinct m").limit(1 + limit).query(hibSession).list();
 					else
 						meetings = (List<Meeting>)query.select("distinct m")
+							.joinWithLocation()
 							.where("l.uniqueId = :resourceId")
 							.set("resourceId", request.getResourceId())
 							.limit(1 + limit)
@@ -417,8 +418,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
 					boolean canViewClasses = overrideStatus || session.getStatusType().canNoRoleReportClass();
 					curriculumCourses = new HashSet<Long>();
-					curriculumConfigs = new HashSet<Long>();
-					curriculumClasses = new HashSet<Long>();
 					curriculumCourses.addAll(hibSession.createQuery("select e.courseOffering.uniqueId from StudentClassEnrollment e where e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
 							.setLong("sessionId", request.getSessionId())
 							.setString("externalId", request.getResourceExternalId()).list());
@@ -755,8 +754,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		*/
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
-						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
-						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig && !curriculumConfigs.contains(owner.getOwnerId())) continue;
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
@@ -818,8 +815,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		*/
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
-						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass && !curriculumClasses.contains(owner.getOwnerId())) continue;
-						    			if (owner.getOwnerType() == ExamOwner.sOwnerTypeConfig && !curriculumConfigs.contains(owner.getOwnerId())) continue;
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
@@ -878,7 +873,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					event.addMeeting(meeting);
 				}
 				
-				if (request.getEventFilter().hasOption("flag") && request.getEventFilter().getOptions("flag").contains("conflicts")) {
+				if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("conflicts")) {
 					request.getEventFilter().setOption("mode", "Conflicting Events");
 					query = EventFilterBackend.getQuery(request.getEventFilter());
 					
@@ -889,6 +884,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm").query(hibSession).list();
 						else
 							conflicts = (List<Object[]>)query.select("distinct m.event.uniqueId, Xm")
+								.joinWithLocation()
 								.where("l.uniqueId = :resourceId")
 								.set("resourceId", request.getResourceId())
 								.query(hibSession).list();
@@ -1341,6 +1337,120 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							parent.addConflict(event);
 						}
 					}
+				}
+				
+				// Retrieve arrange hours classes
+				if ((!request.getEventFilter().hasOptions("type") || request.getEventFilter().getOptions("type").contains("Class")) &&
+					!request.getEventFilter().hasOptions("from") && !request.getEventFilter().hasOptions("to") && !request.getEventFilter().hasOptions("requested") &&
+					!request.getEventFilter().hasOptions("day") && !request.getEventFilter().hasOptions("after") && !request.getEventFilter().hasOptions("before")) {
+					List<Class_> arrageHourClasses = null; 
+					switch (request.getResourceType()) {
+					case SUBJECT:
+					case COURSE:
+						arrageHourClasses = hibSession.createQuery(
+								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where c.committedAssignment is null and " +
+								(request.getResourceType() == ResourceType.SUBJECT ? "co.subjectArea.uniqueId = :resourceId" : "co.uniqueId = :resourceId")).setLong("resourceId", request.getResourceId())
+								.setCacheable(true).list();
+						break;
+					case DEPARTMENT:
+						arrageHourClasses = hibSession.createQuery(
+								"select c from Class_ c inner join c.managingDept d where c.committedAssignment is null and d.uniqueId = :resourceId").setLong("resourceId", request.getResourceId())
+								.setCacheable(true).list();
+						break;
+					case CURRICULUM:
+						arrageHourClasses = hibSession.createQuery(
+								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc " +
+								"where c.committedAssignment is null and co = cc.course and cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								.setLong("resourceId", request.getResourceId())
+								.setCacheable(true).list();
+						break;
+					case PERSON:
+						arrageHourClasses = hibSession.createQuery(
+								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
+								.setCacheable(true).list();
+					}
+					
+					if (arrageHourClasses != null) {
+						 for (Class_ clazz: arrageHourClasses) {
+							 
+							 EventInterface event = new EventInterface();
+								event.setId(-clazz.getUniqueId());
+								event.setName(clazz.getClassLabel(hibSession));
+								event.setType(EventInterface.EventType.Class);
+								event.setCanView(false);
+								event.setMaxCapacity(clazz.getExpectedCapacity());
+								event.setEnrollment(clazz.getEnrollment());
+								if (clazz.getDisplayInstructor()) {
+									for (ClassInstructor i: clazz.getClassInstructors()) {
+										ContactInterface instructor = new ContactInterface();
+										instructor.setFirstName(i.getInstructor().getFirstName());
+										instructor.setMiddleName(i.getInstructor().getMiddleName());
+										instructor.setLastName(i.getInstructor().getLastName());
+										instructor.setEmail(i.getInstructor().getEmail());
+										event.addInstructor(instructor);
+					    			}
+					    		}
+					    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
+					    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
+					    		switch (request.getResourceType()) {
+					    		case PERSON:
+				    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
+				    					CourseOffering co = i.next();
+				    					if (curriculumCourses.contains(co.getUniqueId())) {
+				    						if (!curriculumCourses.contains(correctedOffering.getUniqueId()))
+				    							correctedOffering = co;
+				    					} else {
+				    						i.remove();
+				    					}
+				    				}
+					    			break;
+					    		}
+					    		courses.remove(correctedOffering);
+					    		event.addCourseName(correctedOffering.getCourseName());
+					    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+					    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+					    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
+					    		if (clazz.getClassSuffix(correctedOffering) == null) {
+						    		event.setName(clazz.getClassLabel(correctedOffering));
+					    		} else {
+						    		event.addExternalId(clazz.getClassSuffix(correctedOffering));
+					    			event.setName(correctedOffering.getCourseName() + " " + clazz.getClassSuffix(correctedOffering));
+					    		}
+				    			for (CourseOffering co: courses) {
+						    		event.addCourseName(co.getCourseName());
+						    		if (clazz.getSectionNumberString(hibSession) != null)
+						    			event.addExternalId(clazz.getClassSuffix(co));
+				    			}
+				    			for (RoomPref rp: (Set<RoomPref>)clazz.effectivePreferences(RoomPref.class)) {
+				    				if (request.getEventFilter().hasOptions("room") && !request.getEventFilter().getOptions("room").contains(rp.getRoom().getUniqueId().toString())) continue;
+				    				MeetingInterface meeting = new MeetingInterface();
+									meeting.setPast(true);
+									meeting.setCanEdit(false);
+									meeting.setCanApprove(false);
+									ResourceInterface location = new ResourceInterface();
+									location.setType(ResourceType.ROOM);
+									location.setId(rp.getRoom().getUniqueId());
+									location.setName(rp.getRoom().getLabel());
+									location.setHint(rp.getRoom().getHtmlHint());
+									location.setSize(rp.getRoom().getCapacity());
+									location.setDistance(distances.get(rp.getRoom().getUniqueId()));
+									location.setRoomType(rp.getRoom().getRoomTypeLabel());
+									meeting.setLocation(location);
+									event.addMeeting(meeting);
+				    			}
+				    			if (!event.hasMeetings()) {
+				    				if (request.getEventFilter().hasOptions("room")) continue;
+				    				MeetingInterface meeting = new MeetingInterface();
+									meeting.setPast(true);
+									meeting.setCanEdit(false);
+									meeting.setCanApprove(false);
+									event.addMeeting(meeting);
+				    			}
+				    			if (request.getEventFilter().hasText() && !event.getName().startsWith(request.getEventFilter().getText())) continue;
+								ret.add(event);
+						 }
+					}					
 				}
 				
 				return ret;
