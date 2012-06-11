@@ -33,11 +33,11 @@ import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.dom.client.Style.Position;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ResizeEvent;
 import com.google.gwt.event.logical.shared.ResizeHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
@@ -148,42 +148,27 @@ public class UniTimeMenuBar extends Composite {
 	}
 	
 	private void initMenu(MenuBar menu, List<MenuInterface> items, int level) {
+		final MenuInterface.ValueEncoder encoder = new MenuInterface.ValueEncoder() {
+			@Override
+			public String encode(String value) {
+				return URL.encodeQueryString(value);
+			}
+		};
 		MenuItemSeparator lastSeparator = null;
 		for (final MenuInterface item: items) {
 			if (item.isSeparator()) {
 				lastSeparator = new MenuItemSeparator();
 				menu.addSeparator(lastSeparator);
 			} else if (item.hasSubMenus()) {
-				if (item.getPage() == null) {
-					MenuBar m = new MenuBar(true);
-					initMenu(m, item.getSubMenus(), level + 1);
-					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
-				} else {
-					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
-						@Override
-						public void execute() {
-							if (item.isGWT()) 
-								//openPageAsync(item.getPage());
-								openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
-							else {
-								openUrl(item.getName(), item.getPage(), item.getTarget());
-							}
-						}
-					}));
-					initMenu(menu, item.getSubMenus(), level);
-				}
+				MenuBar m = new MenuBar(true);
+				initMenu(m, item.getSubMenus(), level + 1);
+				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
 			} else {
 				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
 					@Override
 					public void execute() {
-						if (item.getPage() != null) {
-							if (item.isGWT()) 
-								//openPageAsync(item.getPage());
-								openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
-							else {
-								openUrl(item.getName(), item.getPage(), item.getTarget());
-							}
-						}
+						if (item.hasPage())
+							openUrl(item.getName(), item.getURL(encoder), item.getTarget());
 					}
 				}));
 			}
@@ -204,28 +189,6 @@ public class UniTimeMenuBar extends Composite {
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}
-	}
-	
-	protected void openPageAsync(final String page) {
-		LoadingWidget.getInstance().show();
-		if (RootPanel.get("UniTimeGWT:Body") == null) {
-			ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=" + page);
-			return;
-		}
-		RootPanel.get("UniTimeGWT:Body").clear();
-		RootPanel.get("UniTimeGWT:Body").getElement().setInnerHTML(null);
-		GWT.runAsync(new RunAsyncCallback() {
-			public void onSuccess() {
-				openPage(page);
-				LoadingWidget.getInstance().hide();
-			}
-			public void onFailure(Throwable reason) {
-				Label error = new Label("Failed to load the page (" + reason.getMessage() + ")");
-				error.setStyleName("unitime-ErrorMessage");
-				RootPanel.get("UniTimeGWT:Body").add(error);
-				LoadingWidget.getInstance().hide();
-			}
-		});
 	}
 	
 	protected void openPage(String page) {
