@@ -142,6 +142,13 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		}
 		for (Iterator<Element> i = custom.elementIterator(); i.hasNext(); ) {
 			Element e = i.next();
+			if ("parameter".equals(e.getName())) {
+				for (Iterator<Element> j = menu.elementIterator("parameter"); j.hasNext(); ) {
+					menu.remove(j.next());
+				}
+				menu.add(e.createCopy());
+				continue;
+			}
 			if ("condition".equals(e.getName())) {
 				menu.add(e.createCopy());
 				continue;
@@ -228,6 +235,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		menu.setTitle(menuElement.attributeValue("title"));
 		menu.setTarget(menuElement.attributeValue("target"));
 		menu.setPage(menuElement.attributeValue("page"));
+		menu.setHash(menuElement.attributeValue("hash"));
 		String type = menuElement.attributeValue("type");
 		if ("gwt".equals(type)) menu.setGWT(true);
 		if ("property".equals(type) && menu.getPage() != null) {
@@ -239,6 +247,8 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 			Element element = i.next();
 			if ("condition".equals(element.getName())) {
 				if (!check(user, element)) return null;
+			} else if ("parameter".equals(element.getName())) {
+				menu.addParameter(element.attributeValue("name"), element.attributeValue("value", element.getText()));
 			} else {
 				MenuInterface m = getMenu(user, element);
 				if (m != null) menu.addSubMenu(m);
