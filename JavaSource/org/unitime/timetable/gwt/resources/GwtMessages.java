@@ -422,8 +422,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();
 	
-	@DefaultMessage("<u>S</u>ave")
-	String buttonSave();
+	@DefaultMessage("<u>C</u>reate")
+	String buttonCreate();
+
+	@DefaultMessage("<u>U</u>pdate")
+	String buttonUpdate();
+
+	@DefaultMessage("<u>D</u>elete")
+	String buttonDelete();
 
 	@DefaultMessage("<u>E</u>dit")
 	String buttonEdit();
@@ -482,8 +488,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
 	
-	@DefaultMessage("Saving {0}...")
-	String waitSave(String name);
+	@DefaultMessage("Creating {0}...")
+	String waitCreate(String name);
+	
+	@DefaultMessage("Updating {0}...")
+	String waitUpdate(String name);
+
+	@DefaultMessage("Deleting {0}...")
+	String waitDelete(String name);
 
 	@DefaultMessage("Loading data for {0} ...")
 	String waitLoadingData(String session);
@@ -509,9 +521,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
-	@DefaultMessage("Failed to save {0}: {1}")
-	String failedSave(String name, String reason);
+	@DefaultMessage("Failed to create {0}: {1}")
+	String failedCreate(String name, String reason);
 	
+	@DefaultMessage("Failed to update {0}: {1}")
+	String failedUpdate(String name, String reason);
+
+	@DefaultMessage("Failed to delete {0}: {1}")
+	String failedDelete(String name, String reason);
+
 	@DefaultMessage("Failed to load academic sessions: {0}")
 	String failedLoadSessions(String reason);
 
@@ -790,4 +808,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("All Notes of {0}")
 	String emailNotes(String eventName);
+	
+	@DefaultMessage("N/A")
+	String notApplicable();
 }

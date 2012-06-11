@@ -476,11 +476,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			
 		}
 		public String getMeetingTime(GwtConstants constants) {
+			if (isArrangeHours()) return "";
 			if (constants != null && iStartSlot == 0 && iStartOffset == 0 && iEndSlot == 288 && iEndOffset == 0)
 				return constants.timeAllDay();
 			return getStartTime(constants, true) + " - " + getEndTime(constants, true);
 		}
 		public String getAllocatedTime(GwtConstants constants) {
+			if (isArrangeHours()) return "";
 			if (constants != null && iStartSlot == 0 && iEndSlot == 288)
 				return constants.timeAllDay();
 			return getStartTime(constants, false) + " - " + getEndTime(constants, false);
@@ -501,6 +503,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isApproved() { return iApprovalDate != null; }
 		public Date getApprovalDate() { return iApprovalDate; }
 		public void setApprovalDate(Date date) {  iApprovalDate = date; }
+		public boolean isArrangeHours() { return iMeetingDate == null; }
 		
 		public Long getStopTime() { return iStopTime; }
 		public void setStopTime(Long stopTime) { iStopTime = stopTime; }
@@ -619,9 +622,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    }
 	    
 	    public String getDays(String[] dayNames, String[] shortDyNames, String daily) {
+	    	if (isArrangeHours()) return "";
 	        int nrDays = 0;
 	        int dayCode = 0;
 	        for (MeetingInterface meeting : getMeetings()) {
+	        	if (meeting.getMeetingDate() == null) continue;
 	        	int dc = (1 << meeting.getDayOfWeek());
 	            if ((dayCode & dc)==0) nrDays++;
 	            dayCode |= dc;
@@ -634,6 +639,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	        }
 	        return ret;
 	    }
+	    
+	    public boolean isArrangeHours() { return iMeetings.first().isArrangeHours(); }
 	    
 	    /*
 	    public String getMeetingDates() {
@@ -1015,6 +1022,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public Command getCommand() { return iCommand; }
 		public void setCommand(Command command) { iCommand = command; }
+		public boolean hasText() { return iText != null && !iText.isEmpty(); }
 		public String getText() { return iText; }
 		public void setText(String text) { iText = text; }
 		public Set<String> getOptions(String command) {
@@ -1031,6 +1039,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public Map<String, Set<String>> getOptions() {
 			return iOptions;
 		}
+		public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
 		public boolean hasOptions(String command) {
 			Set<String> options = getOptions(command);
 			return (options != null && !options.isEmpty());
@@ -1055,6 +1064,16 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				options.clear();
 			}
 			options.add(value);
+		}
+		
+		public boolean isEmpty() {
+			if (hasText()) return false;
+			if (hasOptions()) {
+				int extra = 0;
+				if (hasOption("user")) extra ++;
+				if (hasOption("role")) extra ++;
+				return getOptions().size() == extra; 
+			} else return false;
 		}
 		
 		@Override
@@ -1771,7 +1790,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
     		if (!ret.isEmpty()) ret += separator;
     		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
-    				(m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +
+    				(m.isArrangeHours() ? constants.arrangeHours() : m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +
     				m.getMeetings().first().getMeetingTime(constants) + " " + m.getLocationName()).trim();
     	}
     	return ret;

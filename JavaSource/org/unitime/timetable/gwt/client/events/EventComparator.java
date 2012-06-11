@@ -123,7 +123,7 @@ public class EventComparator {
 			int cmp = ((MeetingConglictInterface)m1).getName().compareTo(((MeetingConglictInterface)m2).getName());
 			if (cmp != 0) return cmp;
 		}
-		return m1.getMeetingDate().compareTo(m2.getMeetingDate());
+		return (m1.getMeetingDate() == null ? m2.getMeetingDate() == null ? 0 : 1 :m2.getMeetingDate() == null ? -1 :  m1.getMeetingDate().compareTo(m2.getMeetingDate()));
 	}
 	
 	protected static int compareByAllocatedTime(MeetingInterface m1, MeetingInterface m2) {

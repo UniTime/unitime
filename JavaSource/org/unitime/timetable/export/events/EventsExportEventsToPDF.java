@@ -42,6 +42,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 
 	@Override
 	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort) throws IOException {
+		sort(events, sort);
 		Printer printer = new PDFPrinter(helper.getOutputStream(), true);
 		helper.setup(printer.getContentType(), reference(), false);
 		hideColumns(printer, events, eventCookieFlags);
@@ -93,8 +94,8 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					getName(event),
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
-					multi.getDays(CONSTANTS) + " " + 
-							(multi.getNrMeetings() == 1 ? dfLong.format(multi.getFirstMeetingDate()) : dfShort.format(multi.getFirstMeetingDate()) + " - " + dfLong.format(multi.getLastMeetingDate())),
+					meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : (multi.getDays(CONSTANTS) + " " + 
+							(multi.getNrMeetings() == 1 ? multi.getFirstMeetingDate() == null ? "" : dfLong.format(multi.getFirstMeetingDate()) : dfShort.format(multi.getFirstMeetingDate()) + " - " + dfLong.format(multi.getLastMeetingDate()))),
 					meeting.getMeetingTime(CONSTANTS),
 					meeting.getAllocatedTime(CONSTANTS),
 					String.valueOf(meeting.getStartOffset()),
@@ -105,7 +106,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasInstructors() ? event.getInstructorNames("\n") : event.hasSponsor() ? event.getSponsor().getName() : null,
 					event.hasContact() ? event.getContact().getName() : null,
-					multi.isApproved() ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					multi.isArrangeHours() ? "" : multi.isApproved() ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);
 			}
 			out.flush();

@@ -550,7 +550,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new HTML(conflict.getType() == EventType.Unavailabile ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
-				row.add(new Label(sDateFormatMeeting.format(meeting.getMeetingDate())));
+				row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate())));
 			}
 			row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
 			row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
@@ -559,17 +559,17 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			if (meeting.getLocation() == null) {
 				if (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().getLocation() != null) {
 					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint()));
-					row.add(new NumberCell(data.getParent().getMeeting().getLocation().getSize() == null ? "N/A" : data.getParent().getMeeting().getLocation().getSize().toString()));
+					row.add(new NumberCell(data.getParent().getMeeting().getLocation().getSize() == null ? MESSAGES.notApplicable() : data.getParent().getMeeting().getLocation().getSize().toString()));
 				} else {
 					row.add(new Label(""));
 					row.add(new Label(""));
 				}
 			} else {
 				row.add(new HTML(meeting.getLocationNameWithHint()));
-				row.add(new NumberCell(meeting.getLocation().getSize() == null ? "N/A" : meeting.getLocation().getSize().toString()));
+				row.add(new NumberCell(meeting.getLocation().getSize() == null ? MESSAGES.notApplicable() : meeting.getLocation().getSize().toString()));
 			}
 			if (meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast()))
-				for (int i = row.size() - 6; i < row.size(); i++)
+				for (int i = row.size() - 7; i < row.size(); i++)
 					row.get(i).addStyleName("past-meeting");
 		} else {
 			String[] mtgs = new String[] {"", "", "", "", "", "", ""};
@@ -578,13 +578,13 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			boolean prevPast = false;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, true)) {
 				String[] mtg = new String[] {
-						m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate())),
+						m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
 						m.getMeetings().first().getMeetingTime(CONSTANTS),
 						m.getMeetings().first().getAllocatedTime(CONSTANTS),
 						String.valueOf(m.getMeetings().first().getStartOffset()),
 						String.valueOf(- m.getMeetings().first().getEndOffset()),
 						m.getLocationNameWithHint(),
-						(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : "")
+						(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : MESSAGES.notApplicable())
 						};
 				for (int i = 0; i < mtgs.length; i++) {
 					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
@@ -592,7 +592,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "") ? "" : 
 						(m.isApproved() ?
 						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
-						m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 				prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
 			}
 			for (int i = 0; i < mtgs.length; i++) {
@@ -631,9 +631,13 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 
 		if (meeting != null) {
 			boolean past = meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast());
-			row.add(new HTML(conflict != null && conflict.getType() == EventType.Unavailabile ? "" : meeting.isApproved() ?
-					past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
-					past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+			row.add(new HTML(
+					conflict != null && conflict.getType() == EventType.Unavailabile ? "" :
+					meeting.getMeetingDate() == null ? "" :
+					meeting.getId() == null ? "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
+					meeting.isApproved() ? 
+							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
+							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 		} else {
 			row.add(new HTML(approval == null ? "" : approval, false));
 		}
@@ -927,8 +931,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				int cmp = EventComparator.compareMeetings(i1.next(), i2.next(), iSortBy);
 				if (cmp != 0) return cmp;
 			}
-			if (i1.hasNext() && !i2.hasNext()) return 1;
-			if (!i1.hasNext() && i2.hasNext()) return -1;
 		}
 		
 		// Fallback 1

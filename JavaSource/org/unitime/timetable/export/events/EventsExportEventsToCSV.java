@@ -98,14 +98,14 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
 					multi.getDays(CONSTANTS.shortDays(), CONSTANTS.shortDays(), CONSTANTS.daily()),
-					df.format(multi.getFirstMeetingDate()),
-					multi.getNrMeetings() == 1 ? null : df.format(multi.getLastMeetingDate()),
-					meeting.getStartTime(CONSTANTS, true),
-					meeting.getEndTime(CONSTANTS, true),
-					meeting.getStartTime(CONSTANTS, false),
-					meeting.getEndTime(CONSTANTS, false),
-					String.valueOf(meeting.getStartOffset()),
-					String.valueOf(-meeting.getEndOffset()),
+					multi.getFirstMeetingDate() == null ? "" : df.format(multi.getFirstMeetingDate()),
+					multi.getLastMeetingDate() == null ? "" : multi.getNrMeetings() == 1 ? null : df.format(multi.getLastMeetingDate()),
+					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, true),
+					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, true),
+					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, false),
+					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, false),
+					meeting.isArrangeHours() ? "" : String.valueOf(meeting.getStartOffset()),
+					meeting.isArrangeHours() ? "" : String.valueOf(-meeting.getEndOffset()),
 					meeting.getLocationName(),
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
@@ -114,7 +114,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
 					event.hasContact() ? event.getContact().getName() : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
-					multi.isApproved() ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					multi.isArrangeHours() ? "" : multi.isApproved() ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);
 			}
 			out.flush();

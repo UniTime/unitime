@@ -82,6 +82,9 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("Daily")
 	String daily();
+	
+	@DefaultStringValue("Arrange Hours")
+	String arrangeHours();
 
 	@DefaultStringArrayValue({
 		"blue", "green", "orange", "yellow", "pink",
