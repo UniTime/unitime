@@ -49,6 +49,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
+import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.DOM;
@@ -309,32 +310,30 @@ public class UniTimeSideBar extends Composite {
 	}
 	
 	private TreeItem generateItem(final MenuInterface item) {
+		final MenuInterface.ValueEncoder encoder = new MenuInterface.ValueEncoder() {
+			@Override
+			public String encode(String value) {
+				return URL.encodeQueryString(value);
+			}
+		};
 		Label label = new Label(item.getName(), false);
 		TreeItem treeItem = new TreeItem(label);
-		if (item.getPage() != null) {
+		if (item.hasPage()) {
 			label.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					if (item.isGWT()) 
-						openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
-					else {
-						openUrl(item.getName(), item.getPage(), item.getTarget());
-					}
+					openUrl(item.getName(), item.getURL(encoder), item.getTarget());
 				}
 			});
 		}
 		if (item.hasSubMenus())
 			for (final MenuInterface subItem: item.getSubMenus()) {
 				if (subItem.isSeparator()) continue;
-				if (subItem.getName().equals(item.getName()) && item.getPage() == null && subItem.getPage() != null) {
+				if (subItem.getName().equals(item.getName()) && !item.hasPage() && subItem.hasPage()) {
 					label.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
-							if (subItem.isGWT()) 
-								openUrl(subItem.getName(), "gwt.jsp?page=" + subItem.getPage(), subItem.getTarget());
-							else {
-								openUrl(subItem.getName(), subItem.getPage(), subItem.getTarget());
-							}
+							openUrl(subItem.getName(), subItem.getURL(encoder), subItem.getTarget());
 						}
 					});
 				} else {
@@ -345,6 +344,12 @@ public class UniTimeSideBar extends Composite {
 	}
 	
 	private void initMenu(List<MenuInterface> items) {
+		final MenuInterface.ValueEncoder encoder = new MenuInterface.ValueEncoder() {
+			@Override
+			public String encode(String value) {
+				return URL.encodeQueryString(value);
+			}
+		};
 		for (final MenuInterface item: items) {
 			if (item.isSeparator()) continue;
 			iTree.addItem(generateItem(item));
@@ -370,11 +375,8 @@ public class UniTimeSideBar extends Composite {
 				iStackPanel.add(new Command() {
 					@Override
 					public void execute() {
-						if (item.isGWT()) 
-							openUrl(item.getName(), "gwt.jsp?page=" + item.getPage(), item.getTarget());
-						else {
-							openUrl(item.getName(), item.getPage(), item.getTarget());
-						}
+						if (item.hasPage())
+							openUrl(item.getName(), item.getURL(encoder), item.getTarget());
 					}
 				}, item.getName());
 			}
