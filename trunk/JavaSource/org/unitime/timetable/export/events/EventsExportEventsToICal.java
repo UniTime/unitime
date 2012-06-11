@@ -70,6 +70,7 @@ public class EventsExportEventsToICal extends EventsExporter {
         Hashtable<String, String> date2loc = new Hashtable<String, String>();
         Hashtable<String, Boolean> approved = new Hashtable<String, Boolean>();
         for (MeetingInterface m: event.getMeetings()) {
+        	if (m.isArrangeHours()) continue;
         	Date startTime = new Date(m.getStartTime());
         	Date stopTime = new Date(m.getStopTime());
             String date = df.format(startTime) + "T" + tf.format(startTime) + "Z/" + df.format(stopTime) + "T" + tf.format(stopTime) + "Z";

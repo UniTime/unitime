@@ -97,6 +97,14 @@ public interface EventRights extends Serializable {
 	 */
 	public boolean canApprove(Meeting meeting);
 
+	
+	/**
+	 * Check if the given location is an event location
+	 * @param location a location (null to check if there is at least one such location)
+	 * @return if the given location is event location (UniTime is maintaining events for this location) 
+	 */
+	public boolean isEventLocation(Long locationId);
+	
 	/**
 	 * Check if the user can create a meeting using the given location.
 	 * @param location a location

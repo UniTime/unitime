@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -86,7 +87,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class EventAdd extends Composite implements EventMeetingTable.Implementation {
+public class EventAdd extends Composite implements EventMeetingTable.Implementation, AcademicSessionSelectionBox.AcademicSessionFilter {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -111,7 +112,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private CourseRelatedObjectsTable iCourses;
 	
 	private AddMeetingsDialog iEventAddMeetings;
-	private AcademicSessionProvider iSession;
+	private AcademicSessionSelectionBox iSession;
 	private Lookup iLookup, iAdditionalLookup;
 	private UniTimeTable<ContactInterface> iContacts;
 	private int iContactRow;
@@ -123,8 +124,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	
 	private EventInterface iEvent, iSavedEvent;
 	private EventPropertiesProvider iProperties;
+	private int iSessionRow = -1;
 			
-	public EventAdd(AcademicSessionProvider session, EventPropertiesProvider properties) {
+	public EventAdd(AcademicSessionSelectionBox session, EventPropertiesProvider properties) {
 		iSession = session;
 		iProperties = properties;
 		iForm = new SimpleForm();
@@ -186,7 +188,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		
 		iHeader = new UniTimeHeaderPanel(MESSAGES.sectEvent());
-		iHeader.addButton("save", MESSAGES.buttonSave(), 75, new ClickHandler() {
+		ClickHandler clickCreateOrUpdate = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iSavedEvent = null;
@@ -199,14 +201,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onSuccess(Boolean result) {
 						if (result) {
 							final EventInterface event = getEvent();
-							LoadingWidget.getInstance().show(MESSAGES.waitSave(event.getName()));
+							LoadingWidget.getInstance().show(event.getId() == null ? MESSAGES.waitCreate(event.getName()) : MESSAGES.waitUpdate(event.getName()));
 							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									iHeader.setErrorMessage(MESSAGES.failedSave(event.getName(), caught.getMessage()));
-									UniTimeNotifications.error(MESSAGES.failedSave(event.getName(), caught.getMessage()));
+									String message = (event.getId() == null ? MESSAGES.failedCreate(event.getName(), caught.getMessage()) : MESSAGES.failedUpdate(event.getName(), caught.getMessage()));
+									iHeader.setErrorMessage(message);
+									UniTimeNotifications.error(message);
 								}
 
 								@Override
@@ -229,6 +232,41 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					}
 				});
 			}
+		};
+		iHeader.addButton("create", MESSAGES.buttonCreate(), 75, clickCreateOrUpdate);
+		iHeader.addButton("update", MESSAGES.buttonUpdate(), 75, clickCreateOrUpdate);
+		iHeader.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent clickEvent) {
+				final EventInterface event = getEvent();
+				if (event.hasMeetings()) event.getMeetings().clear();
+				LoadingWidget.getInstance().show(MESSAGES.waitDelete(event.getName()));
+				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						iHeader.setErrorMessage(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
+					}
+
+					@Override
+					public void onSuccess(SaveOrApproveEventRpcResponse result) {
+						LoadingWidget.getInstance().hide();
+						iSavedEvent = result.getEvent();
+						if (result.hasMessages())
+							for (MessageInterface m: result.getMessages()) {
+								if (m.isError())
+									UniTimeNotifications.warn(m.getMessage());
+								else if (m.isWarning())
+									UniTimeNotifications.error(m.getMessage());
+								else
+									UniTimeNotifications.info(m.getMessage());
+							}
+						hide();
+					}
+				});
+			}
 		});
 		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
@@ -238,6 +276,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		
 		iForm.addHeaderRow(iHeader);
+		
+		iSessionRow = iForm.addRow(MESSAGES.propAcademicSession(), new Label());
 		
 		iName = new UniTimeWidget<TextBox>(new TextBox());
 		iName.getWidget().setStyleName("unitime-TextBox");
@@ -561,6 +601,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iLastScrollTop = Window.getScrollTop();
 		onShow();
 		Window.scrollTo(0, 0);
+		if (iForm.getRowFormatter().isVisible(iSessionRow)) {
+			iSession.setFilter(this);
+			iForm.setWidget(iSessionRow, 1, iSession);
+		}
 	}
 	
 	public void hide() {
@@ -584,9 +628,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), false);
 		}
+		if (isAttached()  && isVisible() && (iEvent != null && iEvent.getId() == null))
+			setEvent(null);
 	}
 	
 	public void setEvent(EventInterface event) {
+		iForm.getRowFormatter().setVisible(iSessionRow, event == null);
 		iEvent = (event == null ? new EventInterface() : event);
 		iSavedEvent = null;
 		iHeader.clearMessage();
@@ -729,6 +776,16 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
 		
 		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType.getWidget());
+		
+		boolean canDelete = (iEvent.getId() != null);
+		if (canDelete && iEvent.hasMeetings()) {
+			for (MeetingInterface meeting: iEvent.getMeetings()) {
+				if (!meeting.isCanEdit()) { canDelete = false; break; }
+			}
+		}
+		iHeader.setEnabled("delete", canDelete);
+		iHeader.setEnabled("create", iEvent.getId() == null);
+		iHeader.setEnabled("update", iEvent.getId() != null);
 	}
 	
 	public static class CourseRelatedObjectLine {
@@ -1170,6 +1227,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEventAddMeetings.showDialog();
 			break;
 		}
+	}
+
+	@Override
+	public boolean accept(AcademicSession session) {
+		return session.has(AcademicSession.Flag.CanAddEvents);
 	}
 
 }

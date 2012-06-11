@@ -111,7 +111,8 @@
 			<item name="Solver Log" page="solverLog.do"/>
 			<item name="Reports" page="solutionReport.do"/>
 		</menu>
-		<item name="Reports" page="hql&amp;appearance=courses" type="gwt">
+		<item name="Reports" page="hql" type="gwt">
+			<parameter name="appearance">courses</parameter>
 			<condition>
 				<hasRight name="hasCourseReports"/>
 			</condition>
@@ -161,7 +162,8 @@
 		</item>
 		<separator/>
 		<item name="Enrollment Audits" page="enrollmentAuditPdfReport.do"/>
-		<item name="Reports" page="hql&amp;appearance=sectioning" type="gwt">
+		<item name="Reports" page="hql" type="gwt">
+			<parameter name="appearance">sectioning</parameter>
 			<condition>
 				<hasRight name="hasStudentReports"/>
 			</condition>
@@ -214,44 +216,67 @@
 				</or>
 			</condition>
 		</item>
-		<item name="Reports" page="hql&amp;appearance=exams" type="gwt">
+		<item name="Reports" page="hql" type="gwt">
+			<parameter name="appearance">exams</parameter>
 			<condition>
 				<hasRight name="hasExamReports"/>
 			</condition>
 		</item>
 	</menu>
-	<item name="Classes" page="classes.do">
+	<!--  <item name="Classes" page="classes.do">  -->
+	<item name="Classes" page="classes" type="gwt">
 		<condition>
 			<or>
-				<not>
+				<and>
+					<not>
+						<isAuthenticated/>
+					</not>
+					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
+				</and>
+				<and>
 					<isAuthenticated/>
-				</not>
-				<not>
-					<hasRole/>
-				</not>
+					<not>
+						<hasRole/>
+					</not>
+				</and>
 			</or>
 		</condition>
 	</item>
-	<item name="Examinations" page="exams.do">
+	<item name="Examinations" page="exams" type="gwt">
 		<condition>
 			<or>
-				<not>
+				<and>
+					<not>
+						<isAuthenticated/>
+					</not>
+					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
+				</and>
+				<and>
 					<isAuthenticated/>
-				</not>
-				<not>
-					<hasRole/>
-				</not>
+					<not>
+						<hasRole/>
+					</not>
+				</and>
 			</or>
 		</condition>
 	</item>
 	<item name="Timetable" page="timetable" type="gwt">
+		<parameter name="rooms"></parameter>
 		<condition>
-			<and>
-				<not>
+			<or>
+				<and>
+					<not>
+						<isAuthenticated/>
+					</not>
+					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
+				</and>
+				<and>
 					<isAuthenticated/>
-				</not>
-				<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
-			</and>
+					<not>
+						<hasRole/>
+					</not>
+				</and>
+			</or>
 		</condition>
 	</item>
 	<menu name="Events">
@@ -274,13 +299,22 @@
 				<hasRole name="Event Mgr"/>
 			</condition>
 		</separator>
-		<item name="Events" page="eventList.do"/>
-		<item name="Meetings" page="meetingList.do"/>
-		<item name="Add Event" page="eventAdd.do"/>
-		<item name="Room Availability" page="eventGrid.do"/>
+		<item name="Events" page="events" type="gwt">
+			<parameter name="tab">1</parameter>
+		</item>
+		<item name="Meetings" page="events" type="gwt">
+			<parameter name="tab">2</parameter>
+		</item>
+		<item name="Add Event" page="events" type="gwt">
+			<parameter name="event">add</parameter>
+		</item>
+		<item name="Room Availability" page="events" type="gwt">
+			<parameter name="tab">0</parameter>
+		</item>
 		<separator/>
-		<item name="Timetable" page="timetable" type="gwt" />
-		<item name="Reports" page="hql&amp;appearance=events" type="gwt">
+		<item name="Timetable" page="timetable" type="gwt"/>
+		<item name="Reports" page="hql" type="gwt">
+			<parameter name="appearance">events</parameter>
 			<condition>
 				<hasRight name="hasEventReports"/>
 			</condition>
@@ -326,7 +360,7 @@
 			<hasRight name="isSectioningEnabled"/>
 		</condition>
 	</item>
-	<item name="Personal Schedule" page="personalSchedule.do">
+	<item name="Personal Schedule" page="personal" type="gwt">
 		<condition>
 			<or>
 				<hasRole name="Administrator"/>
@@ -354,17 +388,29 @@
 			<item name="Time Patterns" page="timePatternEdit.do"/>
 			<item name="Exact Time" page="exactTimeEdit.do"/>
 			<separator/>
-			<item name="Academic Areas" page="admin&amp;type=area" type="gwt"/>
-			<item name="Academic Classifications" page="admin&amp;type=classification" type="gwt"/>
-			<item name="Majors" page="admin&amp;type=major" type="gwt"/>
-			<item name="Minors" page="admin&amp;type=minor" type="gwt"/>
-			<item name="Student Groups" page="admin&amp;type=group" type="gwt"/>
+			<item name="Academic Areas" page="admin" type="gwt">
+				<parameter name="type">area</parameter>
+			</item>
+			<item name="Academic Classifications" page="admin" type="gwt">
+				<parameter name="type">classification</parameter>
+			</item>
+			<item name="Majors" page="admin" type="gwt">
+				<parameter name="type">major</parameter>
+			</item>
+			<item name="Minors" page="admin" type="gwt">
+				<parameter name="type">minor</parameter>
+			</item>
+			<item name="Student Groups" page="admin" type="gwt">
+				<parameter name="type">group</parameter>
+			</item>
 			<separator/>
 			<item name="Examination Periods" page="examPeriodEdit.do"/>
 			<item name="Data Exchange" page="dataImport.do"/>
 			<item name="Roll Forward Session" page="rollForwardSession.do"/>
 			<item name="Change Log" page="lastChanges.do"/>
-			<item name="Reports" page="hql&amp;appearance=administration" type="gwt"/>
+			<item name="Reports" page="hql" type="gwt">
+				<parameter name="appearance">administration</parameter>
+			</item>
 		</menu>
 		<menu name="Solver">
 			<item name="Manage Solvers" page="manageSolvers.do"/>
@@ -382,12 +428,24 @@
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do"/>
 			<item name="Standard Notes" page="eventStandardNotes.do"/>
 			<separator/>
-			<item name="Consent Types" page="admin&amp;type=consent" type="gwt"/>
-			<item name="Course Credit Formats" page="admin&amp;type=creditFormat" type="gwt"/>
-			<item name="Course Credit Types" page="admin&amp;type=creditType" type="gwt"/>
-			<item name="Course Credit Units" page="admin&amp;type=creditUnit" type="gwt"/>
-			<item name="Position Types" page="admin&amp;type=position" type="gwt"/>
-			<item name="Student Scheduling Status Types" page="admin&amp;type=sectioning" type="gwt"/>
+			<item name="Consent Types" page="admin" type="gwt">
+				<parameter name="type">consent</parameter>
+			</item>
+			<item name="Course Credit Formats" page="admin" type="gwt">
+				<parameter name="type">creditFormat</parameter>
+			</item>
+			<item name="Course Credit Types" page="admin" type="gwt">
+				<parameter name="type">creditType</parameter>
+			</item>
+			<item name="Course Credit Units" page="admin" type="gwt">
+				<parameter name="type">creditUnit</parameter>
+			</item>
+			<item name="Position Types" page="admin" type="gwt">
+				<parameter name="type">position</parameter>
+			</item>
+			<item name="Student Scheduling Status Types" page="admin" type="gwt">
+				<parameter name="type">sectioning</parameter>
+			</item>
 		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do"/>

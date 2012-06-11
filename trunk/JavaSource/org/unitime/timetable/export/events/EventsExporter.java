@@ -149,33 +149,26 @@ public abstract class EventsExporter implements Exporter {
 	
 	protected void sort(List<EventInterface> events, final EventMeetingSortBy sort) {
 		if (sort != null) {
-    		for (EventInterface event: events) {
-    			TreeSet<MeetingInterface> meetings = event.getMeetings();
-    			TreeSet<MeetingInterface> sorted = new TreeSet<MeetingInterface>(new Comparator<MeetingInterface>(){
-					@Override
-					public int compare(MeetingInterface m1, MeetingInterface m2) {
-						int cmp = EventComparator.compareMeetings(m1, m2, sort);
-						if (cmp != 0) return cmp;
-						cmp = EventComparator.compareFallback(m1, m2);
-						return (cmp == 0 ? m1.compareTo(m2) : EventComparator.compareFallback(m1, m2));
-					}
-    			});
-    			sorted.addAll(meetings);
-    			event.setMeetings(sorted);
-    		}
     		Collections.sort(events, new Comparator<EventInterface>() {
 				@Override
 				public int compare(EventInterface e1, EventInterface e2) {
 					int cmp = EventComparator.compareEvents(e1, e2, sort);
-					if (cmp != 0) return cmp;
-					cmp = EventComparator.compareFallback(e1, e2);
 					if (cmp != 0) return cmp;
 					Iterator<MeetingInterface> i1 = e1.getMeetings().iterator(), i2 = e2.getMeetings().iterator();
 					while (i1.hasNext() && i2.hasNext()) {
 						cmp = EventComparator.compareMeetings(i1.next(), i2.next(), sort);
 						if (cmp != 0) return cmp;
 					}
-					return (i1.hasNext() ? i2.hasNext() ? e1.compareTo(e2) : 1 : i2.hasNext() ? -1 : e1.compareTo(e2));
+					cmp = EventComparator.compareFallback(e1, e2);
+					if (cmp != 0) return cmp;
+					i1 = e1.getMeetings().iterator(); i2 = e2.getMeetings().iterator();
+					while (i1.hasNext() && i2.hasNext()) {
+						cmp = EventComparator.compareFallback(i1.next(), i2.next());
+						if (cmp != 0) return cmp;
+					}
+					if (i1.hasNext() && !i2.hasNext()) return 1;
+					if (!i1.hasNext() && i2.hasNext()) return -1;
+					return e1.compareTo(e2);
 				}
 			});
     	} else {

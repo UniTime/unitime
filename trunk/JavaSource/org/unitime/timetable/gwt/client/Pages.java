@@ -44,8 +44,9 @@ public enum Pages {
 	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); } }),
 	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
 	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
-	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(null); } }),
-	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable("room"); } }),
+	events("Events", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Events); } }),
+	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Timetable); } }),
+	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.RoomTimetable); } }),
 	reservation("Reservation", new PageFactory() { public Widget create() { return new ReservationEdit(true); } }),
 	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } }),
 	sectioningtest("Online Student Sectioning Test", new PageFactory() { public Widget create() { return new OnlineSectioningTest(); } }),
@@ -53,6 +54,9 @@ public enum Pages {
 	onlinesctdash("Online Student Scheduling Dashboard", new PageFactory() { public Widget create() { return new SectioningStatusPage(true); } }),
 	batchsctdash("Student Sectioning Dashboard", new PageFactory() { public Widget create() { return new SectioningStatusPage(false); } }),
 	traveltimes("Travel Times", new PageFactory() { public Widget create() { return new TravelTimes(); } }),
+	classes("Classes", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Classes); } }),
+	exams("Examinations", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Exams); } }),
+	personal("Personal Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Personal); } }),
 	;
 	
 	private String iTitle;

@@ -118,7 +118,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 				}
 				
 				if (Roles.EVENT_MGR_ROLE.equals(role)) {
-					int myApprovalCnt = ((Number)query.select("count(distinct e)").from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
+					int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
 							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user").set("user", request.getOption("user"))
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					if (myApprovalCnt > 0) {
@@ -291,7 +291,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		
 		EventQuery query = getQuery(request);
 		
-		for (Event event: (List<Event>)query.select("distinct e").limit(20).query(hibSession).list())
+		for (Event event: (List<Event>)query.select("distinct e").limit(20).order("e.eventName").query(hibSession).list())
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
 		if (rights.canLookupContacts() && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
@@ -381,17 +381,21 @@ public class EventFilterBackend extends FilterBoxBackend {
 		}
 		
 		public EventInstance select(String select) {
-			return new EventInstance(select);
+			return new EventInstance(select, iWhere.containsKey("room"));
 		}
 		
 		
 		public class EventInstance {
 			private String iSelect = null, iFrom = null, iWhere = null, iOrderBy = null, iGroupBy = null, iType = "Event";
 			private Integer iLimit = null;
+			private boolean iJoinWithLocation = false;
 			private Set<String> iExclude = new HashSet<String>();
 			private Map<String, Object> iParams = new HashMap<String, Object>();
 			
-			private EventInstance(String select) { iSelect = select; }
+			private EventInstance(String select, boolean joinWithLocation) {
+				iSelect = select;
+				iJoinWithLocation = joinWithLocation;
+			}
 			
 			public EventInstance from(String from) { iFrom = from; return this; }
 			public EventInstance where(String where) { 
@@ -407,13 +411,15 @@ public class EventFilterBackend extends FilterBoxBackend {
 			public EventInstance exclude(String excludeOption) { iExclude.add(excludeOption); return this; }
 			public EventInstance set(String param, Object value) { iParams.put(param, value); return this; }
 			public EventInstance limit(Integer limit) { iLimit = (limit == null || limit <= 0 ? null : limit); return this; }
+			public EventInstance joinWithLocation() { iJoinWithLocation = true; return this; }
 			
 			public String query() {
 				return
 					"select " + (iSelect == null ? "distinct e" : iSelect) +
-					" from " + iType + " e inner join e.meetings m, Location l inner join l.session s " + 
+					" from " + iType + " e inner join e.meetings m" + (iJoinWithLocation ? ", Location l inner join l.session s" : ", Session s") + 
 					(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
-					" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate and m.locationPermanentId = l.permanentId " +
+					" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" +
+					(iJoinWithLocation ? " and m.locationPermanentId = l.permanentId" : "") +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 					(iGroupBy == null ? "" : " group by " + iGroupBy) +
 					(iOrderBy == null ? "" : " order by " + iOrderBy);
