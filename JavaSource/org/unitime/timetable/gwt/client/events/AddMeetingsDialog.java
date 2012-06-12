@@ -276,7 +276,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iMatchingRooms = null;
 		iDates.setValue(new ArrayList<Date>());
 		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6));
-		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue);
+		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue, true);
 	}
 
 	private Integer iHoverDate = null;

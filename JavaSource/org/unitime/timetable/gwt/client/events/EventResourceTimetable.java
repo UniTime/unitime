@@ -162,7 +162,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private List<EventInterface> iBack = new ArrayList<EventInterface>();
 	
 	public static enum PageType {
-		Timetable("tab", "0", "title", "Event Timetable"),
+		Timetable("tab", "0", "title", "Event Timetable", "rooms", ""),
 		Events("filter", "events", "rooms", "department:Event", "type", "room", "title", "Events"),
 		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
 		Classes(
@@ -833,7 +833,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		boolean reload = init;
 		boolean isDefault = true;
 		if (iHistoryToken.isChanged("events", "", iEvents.getValue())) {
-			iEvents.setValue(iHistoryToken.getParameter("events", ""));
+			iEvents.setValue(iHistoryToken.getParameter("events", ""), true);
 			reload = true;
 			if (!iEvents.getValue().equals("")) isDefault = false;
 		}
@@ -848,7 +848,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			reload = true;
 		}
 		if (iHistoryToken.isChanged("rooms", (getResourceType() == ResourceType.ROOM ? "department:Event" : ""), iRooms.getValue())) {
-			iRooms.setValue(iHistoryToken.getParameter("rooms", (getResourceType() == ResourceType.ROOM ? "department:Event" : "")));
+			iRooms.setValue(iHistoryToken.getParameter("rooms", (getResourceType() == ResourceType.ROOM ? "department:Event" : "")), true);
 			reload = true;
 			if (!iRooms.getValue().equals(getResourceType() == ResourceType.ROOM ? "department:Event" : "")) {
 				isDefault = false;
