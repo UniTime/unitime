@@ -160,9 +160,20 @@ public class UniTimeMenuBar extends Composite {
 				lastSeparator = new MenuItemSeparator();
 				menu.addSeparator(lastSeparator);
 			} else if (item.hasSubMenus()) {
-				MenuBar m = new MenuBar(true);
-				initMenu(m, item.getSubMenus(), level + 1);
-				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
+				if (!item.hasPage()) {
+					MenuBar m = new MenuBar(true);
+					initMenu(m, item.getSubMenus(), level + 1);
+					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, m));
+				} else {
+					menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
+						@Override
+						public void execute() {
+							if (item.hasPage())
+								openUrl(item.getName(), item.getURL(encoder), item.getTarget());
+						}
+					}));
+					initMenu(menu, item.getSubMenus(), level);
+				}
 			} else {
 				menu.addItem(new MenuItem(item.getName().replace(" ", "&nbsp;"), true, new Command() {
 					@Override
