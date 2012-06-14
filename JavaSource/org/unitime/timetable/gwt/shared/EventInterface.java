@@ -333,6 +333,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iRoomType = null;
 
 		public ResourceInterface() {}
+		public ResourceInterface(FilterRpcResponse.Entity room) {
+			setType(ResourceType.ROOM);
+			setId(room.getUniqueId());
+			setAbbreviation(room.getAbbreviation());
+			setName(room.getName());
+			setHint(room.getProperty("mouseOver", null));
+			String capacity = room.getProperty("capacity", null);
+			setSize(capacity == null ? null : Integer.valueOf(capacity));
+			String distance = room.getProperty("distance", null);
+			setDistance(distance == null ? null : Double.valueOf(distance));
+			setRoomType(room.getProperty("type", null));
+		}
 		
 		public ResourceType getType() { return iResourceType; }
 		public void setType(ResourceType type) { iResourceType = type; }
@@ -1820,5 +1832,5 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
     
-	public static final int sDefaultEventFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag(); 
+	public static final int sDefaultEventFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag() + EventFlag.SHOW_CAPACITY.flag(); 
 }
