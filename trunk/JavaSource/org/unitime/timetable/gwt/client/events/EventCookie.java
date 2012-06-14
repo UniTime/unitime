@@ -26,21 +26,26 @@ import com.google.gwt.user.client.Cookies;
 
 public class EventCookie {
 	private int iFlags = EventInterface.sDefaultEventFlags;
+	private String iType = null;
+	private String iHash = null;
 	private static EventCookie sInstance = null;
 	
 	private EventCookie() {
 		try {
 			String cookie = Cookies.getCookie("UniTime:Event");
 			if (cookie != null) {
-				String[] params = cookie.split(":");
+				String[] params = cookie.split("\\|");
 				iFlags = Integer.parseInt(params[0]);
+				iType = params[1];
+				iHash = params[2];
 			}
-		} catch (Exception e) {}
+		} catch (Exception e) {
+		}
 	}
 	
 	private void save() {
 		Cookies.setCookie("UniTime:Event",
-				String.valueOf(iFlags)
+				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash)
 				);
 	}
 	
@@ -56,4 +61,17 @@ public class EventCookie {
 		save();
 	}
 	public int getFlags() { return iFlags; }
+	
+	public boolean hasHash(String type) {
+		return type.equals(iType) && iHash != null && !iHash.isEmpty();
+	}
+	
+	public String getHash(String type) {
+		return (type.equals(iType) ? iHash : null);
+	}
+	
+	public void setHash(String type, String hash) {
+		iType = type; iHash = hash;
+		save();
+	}
 }

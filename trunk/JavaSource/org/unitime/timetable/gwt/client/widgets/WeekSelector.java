@@ -19,14 +19,13 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
-import java.util.List;
-
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
@@ -40,9 +39,9 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class WeekSelector extends IntervalSelector<WeekInterface>{
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private RegExp iRegExp = RegExp.compile("[^0-9]*([0-9]+)[/ ]*([0-9]*)[ -]*([0-9]*)[/ ]*([0-9]*)");
-	private List<WeekInterface> iAllWeeks = null;
 
 	private AcademicSessionProvider iAcademicSession;
 	
@@ -79,7 +78,6 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 				}
 				@Override
 				public void onSuccess(GwtRpcResponseList<WeekInterface> result) {
-					iAllWeeks = result;
 					clearHint();
 					setValues(result);
 					setDefaultValue(new Interval());
@@ -140,23 +138,19 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 	@Override
 	public String getDisplayString(Interval interval) {
 		if (interval.isAll())
-			return "All Weeks";
+			return interval.isEnableFilter() ? MESSAGES.itemAllWeeksWithFilter() : MESSAGES.itemAllWeeks();
 		if (interval.isOne())
-			return "Week " + interval.getFirst().getDayNames().get(0) + " - " + interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1);
+			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1));
 		return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().getDayNames().get(0) + " - " + interval.getLast().getDayNames().get(6);
 	}
 
 	@Override
 	public String getReplaceString(Interval interval) {
 		if (interval.isAll())
-			return "All Weeks";
+			return interval.isEnableFilter() ? MESSAGES.itemAllWeeksWithFilter() : MESSAGES.itemAllWeeks();
 		if (interval.isOne())
-			return "Week " + interval.getFirst().getDayNames().get(0) + " - " + interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1);
-		return "Weeks " + interval.getFirst().getDayNames().get(0) + " - " + interval.getLast().getDayNames().get(6);
-	}
-	
-	public List<WeekInterface> getAllWeeks() { 
-		return iAllWeeks;
+			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1));
+		return MESSAGES.itemWeeks(interval.getFirst().getDayNames().get(0), interval.getLast().getDayNames().get(6));
 	}
 	
 	public String getSelection() {

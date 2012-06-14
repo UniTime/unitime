@@ -83,8 +83,11 @@ import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EventAdd extends Composite implements EventMeetingTable.Implementation, AcademicSessionSelectionBox.AcademicSessionFilter {
@@ -479,6 +482,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iEventAddMeetings.showDialog();
 			}
 		});
+		iMeetingsHeader.addButton("operations", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				iMeetings.getHeader(0).setMenu(popup);
+				popup.showRelativeTo((UIObject)event.getSource());
+				((MenuBar)popup.getWidget()).focus();
+			}
+		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
 		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, true); iMeetings.setEditable(true);
@@ -511,6 +523,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public String getMessage() {
 		return iNotes.getText();
 	}
+	
+	public boolean isEventAdd() { return iEvent == null || iEvent.getId() == null; }
+	public Long getEventId() { return iEvent == null ? null : iEvent.getId(); }
 	
 	public EventInterface getEvent() {
 		iEvent.setName(iName.getWidget().getText());
