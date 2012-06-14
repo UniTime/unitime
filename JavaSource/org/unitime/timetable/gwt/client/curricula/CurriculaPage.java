@@ -61,6 +61,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -78,7 +79,7 @@ public class CurriculaPage extends Composite {
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
-	private VerticalPanel iPanel = null;
+	private SimplePanel iPanel = null;
 	private HorizontalPanel iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
@@ -87,7 +88,7 @@ public class CurriculaPage extends Composite {
 	private ClassificationsEdit iClassificationsEdit = null;
 	
 	public CurriculaPage() {
-		iPanel = new VerticalPanel();
+		iPanel = new SimplePanel();
 		
 		iCurriculaPanel = new VerticalPanel();
 		
@@ -151,7 +152,7 @@ public class CurriculaPage extends Composite {
 		
 		iCurriculaPanel.setWidth("100%");
 		
-		iPanel.add(iCurriculaPanel);
+		iPanel.setWidget(iCurriculaPanel);
 		
 		iCurriculumPanel = new CurriculumEdit(new CurriculumEdit.NavigationProvider() {
 			@Override
@@ -168,12 +169,8 @@ public class CurriculaPage extends Composite {
 					History.newItem("detail=" + curriculum.getId(), false);
 			}
 		});
-		iCurriculumPanel.setVisible(false);
-		iPanel.add(iCurriculumPanel);
 		
 		iClassificationsEdit = new ClassificationsEdit();
-		iClassificationsEdit.setVisible(false);
-		iPanel.add(iClassificationsEdit);
 		
 		initWidget(iPanel);
 		
@@ -245,26 +242,23 @@ public class CurriculaPage extends Composite {
 						@Override
 						public void onSuccess(CurriculumInterface result) {
 							iCurriculumPanel.edit(result, true);
-							iCurriculaPanel.setVisible(false);
-							iCurriculumPanel.setVisible(true);
+							iPanel.setWidget(iCurriculumPanel);
 							hideLoading();
 							Client.fireGwtPageChanged(new GwtPageChangeEvent());
 						}
 					});
 				} else if ("new".equals(command)) {
-					iCurriculaPanel.setVisible(false);
 					UniTimePageLabel.getInstance().setPageName("Add Curriculum");
 					iCurriculumPanel.addNew();
-					iCurriculumPanel.setVisible(true);
+					iPanel.setWidget(iCurriculumPanel);
 					Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				} else {
 					if (!"requests".equals(command))
 						iFilter.setText(command.replace("%20", " "));
 					loadCurricula();
 					if (iCurriculumPanel.isVisible()) {
-						iCurriculumPanel.setVisible(false);
 						UniTimePageLabel.getInstance().setPageName("Curricula");
-						iCurriculaPanel.setVisible(true);
+						iPanel.setWidget(iCurriculaPanel);
 						iCurriculaTable.scrollIntoView();
 						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
@@ -288,8 +282,7 @@ public class CurriculaPage extends Composite {
 					public void onSuccess(CurriculumInterface result) {
 						History.newItem("detail=" + result.getId(), false);
 						iCurriculumPanel.edit(result, true);
-						iCurriculaPanel.setVisible(false);
-						iCurriculumPanel.setVisible(true);
+						iPanel.setWidget(iCurriculumPanel);
 						hideLoading();
 						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
@@ -300,10 +293,9 @@ public class CurriculaPage extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				History.newItem("new", false);
-				iCurriculaPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Add Curriculum");
 				iCurriculumPanel.addNew();
-				iCurriculumPanel.setVisible(true);
+				iPanel.setWidget(iCurriculumPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
@@ -312,10 +304,9 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void doEdit(List<CurriculumInterface> curricula) {
-				iCurriculaPanel.setVisible(false);
 				iClassificationsEdit.setData(curricula);
 				UniTimePageLabel.getInstance().setPageName("Curriculum Requested Enrollments");
-				iClassificationsEdit.setVisible(true);
+				iPanel.setWidget(iClassificationsEdit);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem("requests", false);
 
@@ -326,9 +317,8 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onSave(EditFinishedEvent evt) {
-				iCurriculumPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Curricula");
-				iCurriculaPanel.setVisible(true);
+				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem(iFilter.getText(), false);
@@ -336,9 +326,8 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onDelete(EditFinishedEvent evt) {
-				iCurriculumPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Curricula");
-				iCurriculaPanel.setVisible(true);
+				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem(iFilter.getText(), false);
@@ -346,9 +335,8 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onBack(EditFinishedEvent evt) {
-				iCurriculumPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Curricula");
-				iCurriculaPanel.setVisible(true);
+				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem(iFilter.getText(), false);
@@ -359,9 +347,8 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onSave(ClassificationsEdit.EditFinishedEvent evt) {
-				iClassificationsEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Curricula");
-				iCurriculaPanel.setVisible(true);
+				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem(iFilter.getText(), false);
@@ -369,9 +356,8 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onBack(ClassificationsEdit.EditFinishedEvent evt) {
-				iClassificationsEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Curricula");
-				iCurriculaPanel.setVisible(true);
+				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem(iFilter.getText(), false);
