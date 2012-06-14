@@ -419,6 +419,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 	
+	@DefaultMessage("M<u>o</u>re &or;")
+	String buttonMoreOperations();
+
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();
 	
@@ -617,9 +620,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Room")
 	String resourceRoom();
 	
-	@DefaultMessage("All Rooms")
-	String allRooms();
-	
 	@DefaultMessage("<u>T</u>imetable")
 	String tabGrid();
 	
@@ -811,4 +811,28 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("N/A")
 	String notApplicable();
+	
+	@DefaultMessage("All")
+	String itemAll();
+	
+	@DefaultMessage("All Matching")
+	String itemAllWithFilter();
+	
+	@DefaultMessage("All Weeks")
+	String itemAllWeeks();
+	
+	@DefaultMessage("All Matching Weeks")
+	String itemAllWeeksWithFilter();
+	
+	@DefaultMessage("Week {0} - {1}")
+	String itemWeek(String first, String last);
+	
+	@DefaultMessage("Weeks {0} - {1}")
+	String itemWeeks(String first, String last);
+	
+	@DefaultMessage("All Rooms")
+	String itemAllRooms();
+	
+	@DefaultMessage("All Matching Rooms")
+	String itemAllRoomsWithFilter();
 }

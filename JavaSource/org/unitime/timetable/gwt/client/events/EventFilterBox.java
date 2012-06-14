@@ -121,7 +121,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 			}
 		});
 		
-		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode", true);
+		FilterBox.StaticSimpleFilter mode = new FilterBox.StaticSimpleFilter("mode");
 		mode.setMultipleSelection(false);
 		addFilter(mode);
 		

@@ -59,6 +59,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EventDetail extends Composite {
@@ -312,7 +315,17 @@ public class EventDetail extends Composite {
 			iMeetings.add(new EventMeetingRow(iEvent, meeting));
 		}
 		if (iMeetings.getRowCount() > 1) {
-			iForm.addHeaderRow(MESSAGES.sectMeetings());
+			UniTimeHeaderPanel header = new UniTimeHeaderPanel(MESSAGES.sectMeetings());
+			header.addButton("operations", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					final PopupPanel popup = new PopupPanel(true);
+					iMeetings.getHeader(0).setMenu(popup);
+					popup.showRelativeTo((UIObject)event.getSource());
+					((MenuBar)popup.getWidget()).focus();
+				}
+			});
+			iForm.addHeaderRow(header);
 			iForm.addRow(iMeetings);
 		}
 		

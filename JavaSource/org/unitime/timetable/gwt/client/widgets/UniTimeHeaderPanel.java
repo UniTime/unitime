@@ -218,7 +218,7 @@ public class UniTimeHeaderPanel extends Composite {
 		iButtons.add(button);
 		button.getElement().getStyle().setMarginLeft(4, Unit.PX);
 		for (UniTimeHeaderPanel clone: iClones)
-			clone.addButton(operation, name, accessKey, width, clickHandler);
+			clone.addButton(operation, name, null, width, clickHandler);
 	}
 	
 	public void setEnabled(int button, boolean enabled) {

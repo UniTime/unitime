@@ -199,7 +199,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				// init();
+				init();
 				
 				List<MenuInterface> menu = new ArrayList<MenuInterface>();
 				if (iRoot == null) throw new MenuException("menu is not configured properly");

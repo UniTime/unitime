@@ -22,6 +22,9 @@ package org.unitime.timetable.gwt.client.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.resources.GwtMessages;
+
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
@@ -48,10 +51,14 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class IntervalSelector<T> extends Composite implements HasValue<IntervalSelector<T>.Interval> {
+	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private boolean iAllowMultiSelection;
 	private Interval iValue;
 	private Interval iDefaultValue;
 	private List<T> iValues = null;
+	
+	private boolean iFilterEnabled = false;
+	private Filter<T> iItemFilter = null;
 	
 	private TextBox iFilter;
 	private PopupPanel iPopup;
@@ -216,18 +223,29 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	protected void createSuggestions() {
 		iPopupMenu.clearItems();
 		if (isAllowMultiSelection()) {
-			Interval all = new Interval();
-			iPopupMenu.addItem(new IntervalMenuItem(all));
-			if (all.equals(iDefaultValue) || getDisplayString(all).equals(iFilter.getText()))
-				iPopupMenu.selectItem(0);
+			if (hasFilter()) {
+				Interval all = new Interval(); all.setEnableFilter(!isFilterEnabled());
+				iPopupMenu.addItem(new IntervalMenuItem(all));
+				Interval allCurrent = new Interval(); allCurrent.setEnableFilter(isFilterEnabled());
+				iPopupMenu.addItem(new IntervalMenuItem(allCurrent));
+				if (allCurrent.equals(iDefaultValue) || getDisplayString(allCurrent).equals(iFilter.getText()))
+						iPopupMenu.selectItem(1);
+			} else {
+				Interval all = new Interval();
+				iPopupMenu.addItem(new IntervalMenuItem(all));
+				if (all.equals(iDefaultValue) || getDisplayString(all).equals(iFilter.getText()))
+					iPopupMenu.selectItem(0);
+			}
 		}
 		int select = -1;
 		for (int i = 0; i < iValues.size(); i++) {
+			if (filter(iValues.get(i))) continue;
 			Interval one = new Interval(iValues.get(i));
 			iPopupMenu.addItem(new IntervalMenuItem(one));
 			if ((one.equals(iDefaultValue) && select < 0) || getReplaceString(one).equals(iFilter.getText()) || one.equals(iValue)) select = iPopupMenu.getNumItems() - 1;
 			if (isAllowMultiSelection() && getValue() != null && getValue().getFirst() != null && getValue().getFirst().equals(one.getFirst())) {
 				for (int j = i + 1; j < iValues.size(); j++) {
+					if (filter(iValues.get(j))) continue;
 					Interval multi = new Interval(iValues.get(i), iValues.get(j));
 					iPopupMenu.addItem(new IntervalMenuItem(multi));
 					if ((multi.equals(iDefaultValue) && select < 0) || getReplaceString(multi).equals(iFilter.getText()) || multi.equals(iValue)) select = iPopupMenu.getNumItems() - 1;
@@ -339,6 +357,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	
 	public class Interval {
 		private T iFirst = null, iLast = null;
+		private boolean iEnableFilter = false;
 		
 		public Interval() {
 			this(null, null);
@@ -371,12 +390,12 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			List<T> ret = new ArrayList<T>();
 			if (isAll()) {
 				for (T t: iValues)
-					ret.add(t);
+					if (!filter(t)) ret.add(t);
 			} else if (isOne()) {
 				ret.add(iFirst);
 			} else {
 				for (int i = iValues.indexOf(iFirst); i <= iValues.indexOf(iLast); i++)
-					ret.add(iValues.get(i));
+					if (!filter(iValues.get(i))) ret.add(iValues.get(i));
 			}
 			return ret;
 		}
@@ -392,32 +411,42 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			Interval i = (Interval)o;
 			return (getFirst() == null ? i.getFirst() == null : getFirst().equals(i.getFirst())) && (getLast() == null ? i.getLast() == null : getLast().equals(i.getLast()));
 		}
+		
+		public boolean isEnableFilter() { return iEnableFilter; }
+		public void setEnableFilter(boolean enable) { iEnableFilter = enable; }
 
 	}
 	
 	protected Interval previous(Interval interval) {
-		if (interval.isOne()) {
-			int idx = iValues.indexOf(interval.getFirst());
-			return (idx <= 0 ? isAllowMultiSelection() ? new Interval() : null : new Interval(iValues.get(idx - 1)));
-		} else {
-			return null;
+		if (iValues != null && interval.isOne()) {
+			if (filter(interval.getFirst())) return null;
+			for (int idx = iValues.indexOf(interval.getFirst()) - 1; idx >= 0; idx--)
+				if (!filter(iValues.get(idx))) return new Interval(iValues.get(idx));
+			if (isAllowMultiSelection()) {
+				Interval all = new Interval();
+				all.setEnableFilter(isFilterEnabled());
+				return all;
+			}
 		}
+		return null;
 	}
 	
 	protected Interval next(Interval interval) {
+		if (iValues == null) return null;
 		if (interval.isOne()) {
-			int idx = (iValues == null ? -1 : iValues.indexOf(interval.getFirst()));
-			return (iValues == null ? null : idx + 1 < iValues.size() ? new Interval(iValues.get(idx + 1)) : null);
+			if (filter(interval.getFirst())) return null;
+			for (int idx = iValues.indexOf(interval.getFirst()) + 1; idx < iValues.size(); idx++)
+				if (!filter(iValues.get(idx))) return new Interval(iValues.get(idx));
 		} else if (interval.isAll()) {
-			return (iValues == null || iValues.isEmpty() ? null : new Interval(iValues.get(0)));
-		} else {
-			return null;
+			for (T t: iValues)
+				if (!filter(t)) return new Interval(t);
 		}
+		return null;
 	}
 
 	protected String getDisplayString(Interval interval) {
 		if (interval.isAll())
-			return "All";
+			return interval.isEnableFilter() ? MESSAGES.itemAll() : MESSAGES.itemAllWithFilter();
 		if (interval.isOne())
 			return interval.getFirst().toString();
 		return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().toString() + " - " + interval.getLast().toString();
@@ -442,11 +471,22 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	}
 	
 	public boolean isOne() {
-		return (iValues != null && iValues.size() == 1) || (iValue != null && iValue.isOne());
+		return getSelected().size() == 1;
 	}
 	
 	public List<T> getSelected() {
-		return (iValue == null ? iValues : iValue.getSelected());
+		if (iValue == null) {
+			if (hasFilter() && isFilterEnabled() && iValues != null) {
+				List<T> values = new ArrayList<T>();
+				for (T t: iValues)
+					if (!filter(t)) values.add(t);
+				return values;
+			} else {
+				return iValues;
+			}
+		} else {
+			return iValue.getSelected();
+		}
 	}
 	
 	public Interval getDefaultValue() {
@@ -470,6 +510,8 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			iPrev.setEnabled(false);
 			iNext.setEnabled(false);
 		} else {
+			if (iValue.isAll())
+				iFilterEnabled = iValue.isEnableFilter();
 			iFilter.setText(getReplaceString(iValue));
 			iPrev.setEnabled(previous(iValue) != null);
 			iNext.setEnabled(next(iValue) != null);
@@ -634,5 +676,26 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	public void clearHint() {
 		iWidget.clearHint();
 	}
+	
+	public void setFilter(Filter<T> filter) { iItemFilter = filter; }
+	public boolean hasFilter() { return iItemFilter != null && !iItemFilter.isEmpty(); }
+	
+	public boolean isFilterEnabled() { return iFilterEnabled; }
+	public void setFilterEnabled(boolean enabled) {
+		iFilterEnabled = enabled;
+		if (iValue != null && iValue.isAll()) {
+			iValue.setEnableFilter(hasFilter() && isFilterEnabled());
+			iFilter.setText(getReplaceString(iValue));
+		}
+		createSuggestions();
+	}
+	
+	public boolean filter(T t) {
+		return (isFilterEnabled() && hasFilter() ? iItemFilter.filter(t) : false);
+	}
 
+	public interface Filter<T> {
+		public boolean filter(T t);
+		public boolean isEmpty();
+	}
 }
