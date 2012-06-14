@@ -53,6 +53,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -73,14 +74,14 @@ public class ReservationsPage extends Composite {
 	
 	private VerticalPanel iReservationPanel = null;
 	
-	private VerticalPanel iPanel = null;
+	private SimplePanel iPanel = null;
 	private HorizontalPanel iFilterPanel = null;
 	
 	private ReservationEdit iReservationEdit = null;
 	private Long iLastReservationId = null;
 	
 	public ReservationsPage() {
-		iPanel = new VerticalPanel();
+		iPanel = new SimplePanel();
 		iPanel.setWidth("100%");
 		
 		iReservationPanel = new VerticalPanel();
@@ -146,11 +147,9 @@ public class ReservationsPage extends Composite {
 		
 		iReservationPanel.setWidth("100%");
 		
-		iPanel.add(iReservationPanel);
+		iPanel.setWidget(iReservationPanel);
 		
 		iReservationEdit = new ReservationEdit(false);
-		iReservationEdit.setVisible(false);
-		iPanel.add(iReservationEdit);
 		
 		initWidget(iPanel);
 		
@@ -222,8 +221,7 @@ public class ReservationsPage extends Composite {
 			@Override
 			public void onClick(ReservationTable.ReservationClickedEvent evt) {
 				iReservationEdit.setReservation(evt.getReservation());
-				iReservationPanel.setVisible(false);
-				iReservationEdit.setVisible(true);
+				iPanel.setWidget(iReservationEdit);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = evt.getReservation().getId();
 			}
@@ -231,10 +229,9 @@ public class ReservationsPage extends Composite {
 		
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				iReservationPanel.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Add Reservation");
+				iPanel.setWidget(iReservationEdit);
 				iReservationEdit.setReservation(null);
-				iReservationEdit.setVisible(true);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = null;
 			}
@@ -244,9 +241,8 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onSave(EditFinishedEvent evt) {
-				iReservationEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Reservations");
-				iReservationPanel.setVisible(true);
+				iPanel.setWidget(iReservationPanel);
 				loadReservations();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = evt.getReservationId();
@@ -254,9 +250,8 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onDelete(EditFinishedEvent evt) {
-				iReservationEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Reservations");
-				iReservationPanel.setVisible(true);
+				iPanel.setWidget(iReservationPanel);
 				loadReservations();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = evt.getReservationId();
@@ -264,9 +259,8 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onBack(EditFinishedEvent evt) {
-				iReservationEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Reservations");
-				iReservationPanel.setVisible(true);
+				iPanel.setWidget(iReservationPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = evt.getReservationId();
 				iReservationTable.select(iLastReservationId);
@@ -274,9 +268,8 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iReservationEdit.setVisible(false);
 				UniTimePageLabel.getInstance().setPageName("Reservations");
-				iReservationPanel.setVisible(true);
+				iPanel.setWidget(iReservationPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});

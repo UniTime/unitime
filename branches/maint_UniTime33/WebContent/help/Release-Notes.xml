@@ -47,6 +47,13 @@
 				<line>Check Conflicts: the column was not properly updated when a new line was inserted (checks for all the lines below got shifted).</line>
 			</description>
 		</item>
+		<item>
+			<name>Curricula, Reservations: Acess Keys</name>
+			<description>
+				<line>Fixed an issue with access keys: for instance, on Reservations page, a single Ctrl+S keypress could have caused both
+					Search and Save (Add Reservation) buttons to receive a click event.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
