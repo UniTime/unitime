@@ -32,9 +32,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.unitime.cpsolver</groupId>
+			<groupId>org.unitime</groupId>
 			<artifactId>cpsolver</artifactId>
-			<version>1.2</version>
+			<version>1.2.84</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -360,11 +360,6 @@
 			<id>maven-restlet</id>
 			<name>Public online Restlet repository</name>
 			<url>http://maven.restlet.org</url>
-		</repository>
-		<repository>
-			<id>unitime</id>
-			<name>UniTime Repository</name>
-			<url>http://builds.unitime.org/release</url>
 		</repository>
 	</repositories>
 </project>
