@@ -28,6 +28,45 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Configuration Limits</name>
+			<description>
+				<line>
+					Instructional Offering Configuration, Multiple Class Setup:
+					When there is an application property 
+					unitime.instrOfferingConfig.checkConfigLimit defined and set to false,
+					configuration limit can be higher than the total limit set on classes.
+					<line>This could be useful for online student sectioning, when some students are
+						allowed to enroll over the class limit (e.g., via an individual reservation) and
+						it is desired to fill all the available space of all other classes.
+					</line>
+				</line>
+				<line>
+					Instructional Offering Detail:
+					Print a warning next to the offering limit when there is a configuration with
+					a limit higher than the total limit set on its classes.
+					<line>Configuration X has a higher limit than there is space available in its classes</line>
+				</line>
+				<line>
+					For instance, consider a case when there are two classes of limit 10, and the
+					configuration limit is 20. If 15 students are enrolled into the first class
+					(e.g., using individual reservations), and there are only 5 students are
+					enrolled in the second class, the configuration limit is reached. This means,
+					that no new student (that is not having an individual reservation) will be
+					allowed to enroll into the second class despite the fact that there are 5 spaces
+					available.
+				</line>
+				<line>
+					This allows for a use case, when special (e.g., learning community) students are
+					enrolled into a course manually (e.g., using individual reservations) as they
+					come while classes dedicated for these (special) students are kept unavailable
+					to other students by having zero limit.
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Online Student Scheduling: Logging</name>
