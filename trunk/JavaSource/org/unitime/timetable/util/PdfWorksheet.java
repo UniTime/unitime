@@ -100,9 +100,9 @@ public class PdfWorksheet {
         PdfWriter.getInstance(iDoc, iOut);
 
         iDoc.addTitle(sa.getSubjectAreaAbbreviation()+(iCourseNumber==null?"":" "+iCourseNumber)+" Worksheet");
-        iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER+", www.unitime.org"));
+        iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.getVersion()+", www.unitime.org"));
         iDoc.addSubject(sa.getSubjectAreaAbbreviation()+" -- "+sa.getSession());
-        iDoc.addCreator("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER+", www.unitime.org");
+        iDoc.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
 
         iDoc.open();
         
@@ -537,7 +537,7 @@ public class PdfWorksheet {
     
     protected void printHeader() throws DocumentException {
         out(renderMiddle(
-                ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER),
+                ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.getVersion()),
                 ApplicationProperties.getProperty("tmtbl.pdf.worksheet.title","PDF WORKSHEET")
                 ));
         out(mpad(

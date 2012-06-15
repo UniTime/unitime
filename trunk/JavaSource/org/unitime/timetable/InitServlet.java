@@ -53,8 +53,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 	*/
 	public void init() throws ServletException {
 
-		Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
-				" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " is starting up *******");
+		Debug.info("******* UniTime " + Constants.getVersion() +
+				" build on " + Constants.getReleaseDate() + " is starting up *******");
 
 		super.init();
         
@@ -78,8 +78,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Cleaning Logs ...");
 			LogCleaner.cleanupLogs();
 			
-			Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
-					" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " initialized successfully *******");
+			Debug.info("******* UniTime " + Constants.getVersion() +
+					" build on " + Constants.getReleaseDate() + " initialized successfully *******");
 
 		} catch (Exception e) {
 			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
@@ -93,8 +93,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 	public void destroy() {
 		try {
 		
-			Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
-					" build on " + Constants.REL_DATE.replace("@build.date@", "?") + " is going down *******");
+			Debug.info("******* UniTime " + Constants.getVersion() +
+					" build on " + Constants.getReleaseDate() + " is going down *******");
 		
 			super.destroy();
 		
@@ -115,7 +115,7 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         
 	         QueueProcessor.stopProcessor();
 	         
-	         Debug.info("******* UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") +
+	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");
 		} catch (Exception e) {
 			Debug.error("UniTime Shutdown Failed : " + e.getMessage(), e);
@@ -131,7 +131,7 @@ public class InitServlet extends HttpServlet implements Servlet {
 	 * @return String containing servlet info 
 	 */
 	public String getServletInfo() {
-		return "UniTime " + (Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?") + " Initialization Servlet";
+		return "UniTime " + Constants.getVersion() + " Initialization Servlet";
 	}
 	
 	public static Exception getInitializationException() { return sInitializationException; }

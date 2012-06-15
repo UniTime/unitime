@@ -25,8 +25,8 @@
 <doc-title>UniTime 3.4 Release Notes</doc-title>
 
 <release>
-	<version>3.4.@build.number@</version>
-	<release-date>@release.date@</release-date>
+	<version>3.4.${build.number}</version>
+	<release-date>${build.date}</release-date>
 	<category>
 		<title>Event Management</title>
 		<item>

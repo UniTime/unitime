@@ -155,7 +155,7 @@ public class InquiryAction extends Action {
 	            	}
 	            	mail += "\r\n";
 	            	mail += "Application info -------------- \r\n";
-	            	mail += "Version: "+Constants.VERSION+"."+Constants.BLD_NUMBER+" ("+Constants.REL_DATE+")\r\n";
+	            	mail += "Version: "+Constants.getVersion()+" ("+Constants.getReleaseDate()+")\r\n";
 	            	mail += "TimeStamp: "+(new Date());
 	            	
 	            	

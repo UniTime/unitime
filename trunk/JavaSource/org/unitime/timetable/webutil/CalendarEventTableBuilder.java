@@ -143,7 +143,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             out.println("METHOD:PUBLISH");
             out.println("X-WR-CALNAME:"+getName(form));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Events//NONSGML v1.0//EN");
+            out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Events//NONSGML v1.0//EN");
 
             for (Iterator it = events.iterator();it.hasNext();){
                 Event event = (Event) it.next();
@@ -209,7 +209,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
             out.println("METHOD:PUBLISH");
             out.println("X-WR-CALNAME:"+getName(form));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Events//NONSGML v1.0//EN");
+            out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Events//NONSGML v1.0//EN");
 
             for (Iterator it = meetings.iterator();it.hasNext();){
                 Meeting meeting = (Meeting) it.next();

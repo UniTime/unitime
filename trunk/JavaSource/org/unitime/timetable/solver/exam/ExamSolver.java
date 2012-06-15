@@ -144,7 +144,7 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             ret.put("PHASE",p.getPhase());
             ret.put("PROGRESS",new Long(p.getProgress()));
             ret.put("MAX_PROGRESS",new Long(p.getProgressMax()));
-            ret.put("VERSION", Constants.VERSION+"."+Constants.BLD_NUMBER);
+            ret.put("VERSION", Constants.getVersion());
             return ret;
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
