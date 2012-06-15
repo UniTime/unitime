@@ -154,7 +154,7 @@ public class CalendarServlet extends HttpServlet {
             out.println("METHOD:PUBLISH");
             out.println("X-WR-CALNAME:UniTime Schedule");
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime " + Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@", "?") + "/Schedule Calendar//NONSGML v1.0//EN");
+            out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
             if (classIds != null && !classIds.isEmpty()) {
             	for (String classId: classIds.split(",")) {
             		if (classId.isEmpty()) continue;
@@ -341,7 +341,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("METHOD:PUBLISH");
         out.println("X-WR-CALNAME:UniTime Schedule");
         out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-        out.println("PRODID:-//UniTime " + Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@", "?") + "/Schedule Calendar//NONSGML v1.0//EN");
+        out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Schedule Calendar//NONSGML v1.0//EN");
 		for (Request request: student.getRequests()) {
 			Enrollment enrollment = request.getAssignment();
 			if (enrollment == null) continue;

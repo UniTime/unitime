@@ -90,7 +90,7 @@ public class Registration extends BodyTagSupport {
 				registration.put("key", sKey);
 			else
 				sLog.debug("No registration key found..." );
-			registration.put("version", Constants.VERSION + "." + Constants.BLD_NUMBER.replace("@build.number@", "?"));
+			registration.put("version", Constants.getVersion());
 			registration.put("sessions", String.valueOf(QueryLog.getNrSessions(31)));
 			registration.put("users", String.valueOf(QueryLog.getNrActiveUsers(31)));
 			registration.put("url", pageContext.getRequest().getScheme()+"://"+pageContext.getRequest().getServerName()+":"+pageContext.getRequest().getServerPort()+

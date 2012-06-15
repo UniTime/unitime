@@ -581,7 +581,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	}
         	mail += "\r\n";
         	mail += "Application info -------------- \r\n";
-        	mail += "Version: "+Constants.VERSION+"."+Constants.BLD_NUMBER+" ("+Constants.REL_DATE+")\r\n";
+        	mail += "Version: "+Constants.getVersion()+" ("+Constants.getReleaseDate()+")\r\n";
         	mail += "TimeStamp: "+(new Date());
         	
         	Email email = new Email();

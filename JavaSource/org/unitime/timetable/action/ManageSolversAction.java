@@ -464,7 +464,7 @@ public class ManageSolversAction extends Action {
                                 nrWorking++;
                         }
                     }
-                    String version = server.getVersion().replaceAll("@build.number@", "?");
+                    String version = server.getVersion();
                     Date startTime = server.getStartTime();
                     String op="<input type=\"button\" value=\"Shutdown\" onClick=\"if (confirm('Do you really want to shutdown server "+server+"?')) document.location='manageSolvers.do?op=Shutdown&solver="+server.toString()+"';\">";
                     //op+="&nbsp;&nbsp;<input type=\"button\" value=\"Disconnect\" onClick=\"if (confirm('Do you really want to disconnect server "+server+"?')) document.location='manageSolvers.do?op=Disconnect&solver="+server.toString()+"';\">";
@@ -531,7 +531,7 @@ public class ManageSolversAction extends Action {
                             nrWorking++;
                     }
                 }
-				String version = (Constants.VERSION+"."+Constants.BLD_NUMBER).replaceAll("@build.number@", "?");
+				String version = Constants.getVersion();
 				webTable.addLine(null, new String[] {
 				        "local",
 						(version==null||"-1".equals(version)?"<i>N/A</i>":version),

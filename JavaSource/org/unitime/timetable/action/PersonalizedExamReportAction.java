@@ -1548,7 +1548,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("METHOD:PUBLISH");
             out.println("X-WR-CALNAME:"+student.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
+            out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Personal Schedule//NONSGML v1.0//EN");
             if (student.getSession().getStatusType().canNoRoleReportClass()) {
                 for (Iterator i=student.getClassEnrollments().iterator();i.hasNext();) {
                     StudentClassEnrollment sce = (StudentClassEnrollment)i.next();
@@ -1614,7 +1614,7 @@ public class PersonalizedExamReportAction extends Action {
             out.println("METHOD:PUBLISH");
             out.println("X-WR-CALNAME:"+instructor.getName(DepartmentalInstructor.sNameFormatLastFist));
             out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-            out.println("PRODID:-//UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+"/UniTime Personal Schedule//NONSGML v1.0//EN");
+            out.println("PRODID:-//UniTime "+Constants.getVersion()+"/UniTime Personal Schedule//NONSGML v1.0//EN");
             if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
                 for (Iterator i=DepartmentalInstructor.getAllForInstructor(instructor, instructor.getDepartment().getSession().getUniqueId()).iterator();i.hasNext();) {
                     DepartmentalInstructor di = (DepartmentalInstructor)i.next();

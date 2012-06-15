@@ -23,7 +23,7 @@
 	<table align="center" class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
 		<tr>
 			<td align="center" style="color:red;">
-				UniTime <%=(Constants.VERSION + "." + Constants.BLD_NUMBER).replace("@build.number@", "?")%> failed to start up properly, please check the application log for more details.<br/>
+				UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
 				<%
 				Throwable t = InitServlet.getInitializationException();
 				while (t != null) {

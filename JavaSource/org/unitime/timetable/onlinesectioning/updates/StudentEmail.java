@@ -460,7 +460,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<table style=\"width: 800px; margin-top: -3px;\" align=\"center\">");
 		out.println("		<tr>");
 		out.println("			<td width=\"33%\" align=\"left\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				GWT.pageVersion(Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@","?"), Constants.REL_DATE.replaceAll("@build.date@", "?")) + "</td>");
+				GWT.pageVersion(Constants.getVersion(), Constants.getReleaseDate()) + "</td>");
 		out.println("			<td width=\"34%\" align=\"center\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
 				GWT.pageCopyright() + "</td>");
 		out.println("			<td width=\"33%\" align=\"right\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +

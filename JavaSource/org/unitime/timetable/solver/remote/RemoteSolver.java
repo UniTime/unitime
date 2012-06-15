@@ -182,7 +182,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 					return new Long(getAvailableMemory());
 				}
 				if ("getVersion".equals(arr[0])) {
-					return Constants.VERSION+"."+Constants.BLD_NUMBER;
+					return Constants.getVersion();
 				}
 				if ("getStartTime".equals(arr[0])) {
 					return sStartTime;

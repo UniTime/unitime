@@ -199,7 +199,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				init();
+				// init();
 				
 				List<MenuInterface> menu = new ArrayList<MenuInterface>();
 				if (iRoot == null) throw new MenuException("menu is not configured properly");
@@ -464,7 +464,7 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 	}
 	
 	public String getVersion() throws MenuException {
- 		return "Version " + Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@","?") + " built on " + Constants.REL_DATE.replaceAll("@build.date@", "?");
+ 		return "Version " + Constants.getVersion() + " built on " + Constants.getReleaseDate();
 	}
 	
 	private String getName(String puid) {
@@ -502,8 +502,6 @@ public class MenuServlet extends RemoteServiceServlet implements MenuService {
 				long progressMax = ((Long)progress.get("MAX_PROGRESS")).longValue();
 				String version = (String)progress.get("VERSION");
 				if (version==null || "-1".equals(version)) version = "N/A";
-				if (version.indexOf("@build.number@")>=0)
-					version = version.replaceAll("@build.number@","?");
 				double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
 				String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
 				Long[] solverGroupId = properties.getPropertyLongArry("General.SolverGroupId",null);

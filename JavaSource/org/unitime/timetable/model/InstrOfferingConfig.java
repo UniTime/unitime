@@ -445,5 +445,4 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
             setCacheable(true).
             uniqueResult();
     }
-
 }

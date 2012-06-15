@@ -207,7 +207,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		ret.put("PHASE",p.getPhase());
     		ret.put("PROGRESS",new Long(p.getProgress()));
     		ret.put("MAX_PROGRESS",new Long(p.getProgressMax()));
-    		ret.put("VERSION", Constants.VERSION+"."+Constants.BLD_NUMBER);
+    		ret.put("VERSION", Constants.getVersion());
     		return ret;
     	} catch (Exception e) {
     		sLog.error(e.getMessage(),e);

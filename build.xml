@@ -72,10 +72,16 @@
             <fileset dir="${src.dir}" includes="**/*.gwt.xml"/>
             <fileset dir="${src.dir}" includes="org/unitime/timetable/gwt/resources/**/*.*"/>
         </copy>
-        <replace file="${build.dir}/org/unitime/timetable/util/Constants.java" propertyFile="build.date">
-            <replacefilter token="@build.date@" property="build.date"/>
+        <replace file="${build.dir}/org/unitime/timetable/util/Constants.java">
+            <replacetoken>${build.number}</replacetoken>
+            <replacevalue>@build.number@</replacevalue>
+        </replace>
+        <replace file="${build.dir}/org/unitime/timetable/util/Constants.java">
+            <replacetoken>${build.date}</replacetoken>
+            <replacevalue>@build.date@</replacevalue>
         </replace>
         <replace file="${build.dir}/org/unitime/timetable/util/Constants.java" propertyFile="build.date">
+            <replacefilter token="@build.date@" property="build.date"/>
             <replacefilter token="@build.number@" property="build.number"/>
         </replace>
         <path id="build.classpath">
@@ -93,8 +99,6 @@
 			<src path="${build.dir}" />
 			<classpath refid="build.classpath" />
 		</javac>
-		
-		<delete file="build.date" failonerror="false" />		
 	</target>
 	
 	<target name="compile-gwt" depends="compile-java">
@@ -191,8 +195,18 @@
 				<exclude name="test/**/*.*" />
 			</fileset>
 		</copy>
-		<replace file="${war.dir}/help/Release-Notes.xml" token="@release.date@" value="${build.date}" />
-		<replace file="${war.dir}/help/Release-Notes.xml" token="@build.number@" value="${build.number}" />
+        <replace file="${war.dir}/help/Release-Notes.xml">
+            <replacetoken>${build.number}</replacetoken>
+            <replacevalue>@build.number@</replacevalue>
+        </replace>
+        <replace file="${war.dir}/help/Release-Notes.xml">
+            <replacetoken>${build.date}</replacetoken>
+            <replacevalue>@build.date@</replacevalue>
+        </replace>
+        <replace file="${war.dir}/help/Release-Notes.xml" propertyFile="build.date">
+            <replacefilter token="@build.date@" property="build.date"/>
+            <replacefilter token="@build.number@" property="build.number"/>
+        </replace>
 		<copy todir="${war.dir}/solver" file="${dist.dir}/solver.jar"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.xml"/>
 		<copy todir="${dist.dir}" file="${war.dir}/help/Release-Notes.css"/>
@@ -218,6 +232,7 @@
 
 	<target name="done">
 		<delete dir="${temp.dir}" />
+		<delete file="build.date" failonerror="false" />
 	</target>
 
 	<target name="validate">

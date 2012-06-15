@@ -283,7 +283,7 @@ public class DataImportAction extends Action {
                             "This email was automatically generated at "+
                             iUrl+
                             ", by "+
-                            "UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+
+                            "UniTime "+Constants.getVersion()+
                             " (Univesity Timetabling Application, http://www.unitime.org).");
                 	for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
                         mail.addRecipient(s.nextToken(), null);

@@ -311,7 +311,7 @@ public class EventEmail {
             message += "<tr><td colspan='2' style='border-top: 1px #2020FF solid;' align='center'>";
             message += "This email was automatically generated at ";
             message += url;
-            message += ",<br>by UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?");
+            message += ",<br>by UniTime "+Constants.getVersion();
             message += " (University Timetabling Application, http://www.unitime.org).";
             message += "</td></tr></table>";
             message += "</body></html>";
