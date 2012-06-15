@@ -1703,7 +1703,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Configuration {0} has a higher limit than there is space available in its classes.")
 	String errorConfigWithTooHighLimit(String configuration);
 	
-	@DefaultMessage("Configurations {0} have a higher limit than there is space available in its classes.")
+	@DefaultMessage("Configurations {0} have a higher limit than there is space available in their classes.")
 	String errorConfigsWithTooHighLimit(String configurations);
 
 	@DefaultMessage("Department is required.")
