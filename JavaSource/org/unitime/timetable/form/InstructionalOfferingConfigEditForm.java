@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -132,7 +133,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
                 SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
                 
                 // Check top level subparts
-                if (!this.getUnlimited().booleanValue()) {
+                if (!this.getUnlimited().booleanValue() && "true".equals(ApplicationProperties.getProperty("unitime.instrOfferingConfig.checkConfigLimit", "true"))) {
 	                int numClasses = sic.getNumClasses();
 	                int maxLimitPerClass = sic.getMaxLimitPerClass();
 	
@@ -202,7 +203,7 @@ public class InstructionalOfferingConfigEditForm extends ActionForm {
 	        if(mxlpc<0) 
 	            errors.add("subparts"+indx, new ActionMessage("errors.integerGtEq", lblMax + " per class" + lblSubpart, "0"));
 	        else {
-	            if(mxlpc>limit) {
+	            if(mxlpc>limit && "true".equals(ApplicationProperties.getProperty("unitime.instrOfferingConfig.checkConfigLimit", "true"))) {
 	                if (nc>1)
 	                    errors.add("subparts"+indx, new ActionMessage("errors.integerLtEq", lblMax + " per class of " + mxlpc + lblSubpart, " Configuration limit of "+limit ));
 	            }
