@@ -343,12 +343,19 @@
 			<TD><loc:message name="propertyOfferingLimit"/> </TD>
 			<TD>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="false">
-					<bean:write name="instructionalOfferingDetailForm" property="limit" /> 
-					<% if (request.getAttribute("limitsDoNotMatch")!=null) { %>
+					<bean:write name="instructionalOfferingDetailForm" property="limit" />
+					<logic:present name="limitsDoNotMatch" scope="request"> 
 						&nbsp;
-						<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;
-						<font color="#FF0000"><%= MSG.errorReservedSpacesForOfferingsTotal(request.getAttribute("limitsDoNotMatch").toString()) %></font>
-					<% } %>
+						<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
+						<font color="#FF0000"><loc:message name="errorReservedSpacesForOfferingsTotal"><bean:write name="limitsDoNotMatch" scope="request"/></loc:message></font>
+					</logic:present>
+					<logic:present name="configsWithTooHighLimit" scope="request">
+						<logic:notPresent name="limitsDoNotMatch" scope="request">
+							&nbsp;
+							<img src='images/Error16.jpg' alt='<%=MSG.altLimitsDoNotMatch() %>' title='<%=MSG.titleLimitsDoNotMatch() %>' border='0' align='top'>
+						</logic:notPresent>
+						<font color="#FF0000"><bean:write name="configsWithTooHighLimit" scope="request"/></font>
+					</logic:present>
 				</logic:equal>
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
 					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
