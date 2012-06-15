@@ -74,12 +74,15 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 
     /** version */
     public static String VERSION = "3.4";
-
+    
     /** release date */
-    public static String REL_DATE = "@build.date@";
+    private static String REL_DATE = "${build.date}";
+    public static String getReleaseDate() { return REL_DATE.replaceAll("\\$\\{[^\\}]*\\}", "?"); }
 
     /** build number */
-    public static String BLD_NUMBER = "@build.number@";
+    private static String BLD_NUMBER = "${build.number}";
+    public static String getBuildNumber() { return BLD_NUMBER.replaceAll("\\$\\{[^\\}]*\\}", "?"); }
+    public static String getVersion() { return VERSION + "." + getBuildNumber(); }
 
     /** startup date format */
     public static String STARTUP_DATE_FORMAT = "EEE, d MMM yyyy HH:mm:ss z";

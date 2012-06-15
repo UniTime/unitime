@@ -53,7 +53,7 @@ public class EventsExportEventsToICal extends EventsExporter {
         out.println("METHOD:PUBLISH");
         out.println("X-WR-CALNAME:UniTime Schedule");
         out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
-        out.println("PRODID:-//UniTime " + Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@", "?") + "/Events Calendar//NONSGML v1.0//EN");
+        out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Events Calendar//NONSGML v1.0//EN");
 
         for (EventInterface event: events)
 			print(out, event);

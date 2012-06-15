@@ -91,7 +91,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
 			    document.left(), 20, 0);
 		cb.showTextAligned(PdfContentByte.ALIGN_RIGHT, String.valueOf(document.getPageNumber()), 
 			    document.right(), 20, 0);
-		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, MESSAGES.pdfCopyright(Constants.VERSION + "." + Constants.BLD_NUMBER.replaceAll("@build.number@","?")),
+		cb.showTextAligned(PdfContentByte.ALIGN_CENTER, MESSAGES.pdfCopyright(Constants.getVersion()),
 				(document.left() + document.right()) / 2, 20, 0);
 		cb.endText();
 			

@@ -81,9 +81,9 @@ public class PdfLegacyReport {
             PdfWriter.getInstance(iDoc, iOut);
 
             iDoc.addTitle(iTitle);
-            iDoc.addAuthor("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
+            iDoc.addAuthor("UniTime "+Constants.getVersion()+", www.unitime.org");
             iDoc.addSubject(iSubject);
-            iDoc.addCreator("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?")+", www.unitime.org");
+            iDoc.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
 
             iDoc.open();
         }
@@ -181,7 +181,7 @@ public class PdfLegacyReport {
     
     public void printHeader() throws DocumentException {
         out(renderEnd(
-                renderMiddle("UniTime "+Constants.VERSION+"."+Constants.BLD_NUMBER.replaceAll("@build.number@", "?"),iTitle),
+                renderMiddle("UniTime "+Constants.getVersion(),iTitle),
                 iTitle2));
         out(mpad(
                 new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),

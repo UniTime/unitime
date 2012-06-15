@@ -21,7 +21,6 @@ package org.unitime.timetable.onlinesectioning.solver;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
@@ -44,8 +43,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
-
-import com.ibm.icu.text.SimpleDateFormat;
 
 public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config, List<Section>>>{
 	private static final long serialVersionUID = 1L;
@@ -218,22 +215,5 @@ public class CheckAssignmentAction implements OnlineSectioningAction<Map<Config,
 	@Override
 	public String name() {
 		return "check-assignment";
-	}
-	
-
-	public static void main(String[] args) {
-		try {
-			long start = new SimpleDateFormat("MM/dd/yyyy").parse("11/19/2011").getTime();
-			long now = new Date().getTime();
-			int week = 0;
-			if (now >= start) {
-				week = (int)((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
-			} else {
-				week = -((int)(start - now) / (1000 * 60 * 60 * 24 * 7));
-			}
-			System.out.println("DIFF:" + week);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 }
