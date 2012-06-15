@@ -59,6 +59,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
+import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
@@ -392,6 +393,34 @@ public class InstructionalOfferingDetailAction extends Action {
             if (io.getLimit()!=null && lim < io.getLimit().intValue()) {
                 request.setAttribute("limitsDoNotMatch", ""+lim);
             }
+        }
+        
+        // Check configuration limits
+        TreeSet<InstrOfferingConfig> configsWithTooHighLimit = new TreeSet<InstrOfferingConfig>(new InstrOfferingConfigComparator(null));
+        for (InstrOfferingConfig config: io.getInstrOfferingConfigs()) {
+        	if (config.isUnlimitedEnrollment()) continue;
+        	Integer subpartLimit = null;
+        	for (SchedulingSubpart subpart: config.getSchedulingSubparts()) {
+        		int limit = 0;
+        		for (Class_ clazz: subpart.getClasses()) {
+        			limit += clazz.getExpectedCapacity();
+        		}
+        		if (subpartLimit == null || subpartLimit > limit) subpartLimit = limit;
+        	}
+        	if (subpartLimit != null && subpartLimit < config.getLimit())
+        		configsWithTooHighLimit.add(config);
+        }
+        if (!configsWithTooHighLimit.isEmpty()) {
+        	if (configsWithTooHighLimit.size() == 1)
+        		request.setAttribute("configsWithTooHighLimit", MSG.errorConfigWithTooHighLimit(configsWithTooHighLimit.first().getName()));
+        	else {
+        		String names = "";
+        		for (InstrOfferingConfig config: configsWithTooHighLimit) {
+        			if (!names.isEmpty()) names += ", ";
+        			names += config.getName();
+        		}
+        		request.setAttribute("configsWithTooHighLimit", MSG.errorConfigsWithTooHighLimit(names));
+        	}
         }
     
         // Catalog Link
