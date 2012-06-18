@@ -103,6 +103,16 @@ public abstract class EventsExporter implements Exporter {
     			roomFilter.setOption("role", role);
     			u.setRole(role);
     		}
+    	} else if (helper.getUser() != null) {
+    		u = new User();
+    		u.setId(helper.getUser().getId());
+    		eventFilter.setOption("user", helper.getUser().getId());
+    		roomFilter.setOption("user", helper.getUser().getId());
+    		if (helper.getUser().getRole() != null) {
+    			u.setRole(helper.getUser().getRole());
+        		eventFilter.setOption("role", helper.getUser().getRole());
+        		roomFilter.setOption("role", helper.getUser().getRole());
+    		}
     	}
     	
     	EventRights rights = null;

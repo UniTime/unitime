@@ -194,7 +194,7 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	
 	public static class AcademicSession implements IsSerializable {
 		private Long iUniqueId;
-		private String iName, iAbbv;
+		private String iName, iAbbv, iHint;
 		private boolean iSelected;
 		private Long iPreviousId, iNextId;
 		private int iFlags = 0;
@@ -220,13 +220,14 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		
 		public AcademicSession() {}
 		
-		public AcademicSession(Long uniqueId, String name, String abbv, boolean selected) {
-			iUniqueId = uniqueId; iName = name; iAbbv = abbv; iSelected = selected;
+		public AcademicSession(Long uniqueId, String name, String abbv, String hint, boolean selected) {
+			iUniqueId = uniqueId; iName = name; iAbbv = abbv; iHint = hint; iSelected = selected;
 		}
 		
 		public Long getUniqueId() { return iUniqueId; }
 		public String getName() { return iName; }
 		public String getAbbv() { return iAbbv; }
+		public String getHint() { return iHint; }
 		public boolean isSelected() { return iSelected; }
 		
 		public Long getPreviousId() { return iPreviousId; }
@@ -269,6 +270,8 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 					value = new Interval(session); break;
 				}
 		}
+		if (value != null && value.isOne())
+			setHint(value.getFirst().getHint());
 		super.setValue(value, fire);
 	}
 	

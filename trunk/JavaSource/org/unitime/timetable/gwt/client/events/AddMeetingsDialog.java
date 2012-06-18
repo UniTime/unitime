@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -237,10 +238,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iRoomAvailability = new P("unitime-MeetingSelection");
 		
 		iScroll = new ScrollPanel(iRoomAvailability);
-		iStep = (Window.getClientWidth() - 300) / 105;
 
-		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
-		
 		iAvailabilityForm.addRow(iScroll);
 		
 		iAvailabilityForm.addNotPrintableBottomRow(iAvailabilityHeader.clonePanel());
@@ -258,6 +256,10 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void showDialog() {
+		iStep = (Window.getClientWidth() - 300) / 105;
+		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
+		ToolBox.setMaxWidth(iDatesForm.getElement().getStyle(), (Window.getClientWidth() - 200) + "px");
+		
 		iResponse = null;
 		setWidget(iDatesForm);
 		center();
@@ -340,7 +342,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			row = new P("row"); box.add(row);
 			
 			final P day = new P("date");
-			Date d = iDates.getDate(date);
+			final Date d = iDates.getDate(date);
 			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
 			row.add(day);
 			day.addMouseOverHandler(new MouseOverHandler() {
@@ -377,9 +379,9 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 				final Entity room = getRooms().get(i);
-				Set<MeetingConglictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+				final Set<MeetingConglictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
 				
-				P p = new P("cell");
+				final P p = new P("cell");
 				
 				if (conflicts == null || conflicts.isEmpty()) {
 					p.addStyleName("free");
@@ -419,6 +421,19 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						((P)event.getSource()).addStyleName("hover");
 						iHoverDate = date;
 						iHoverLoc = room;
+						String capacity = room.getProperty("capacity", null);
+						String distance = room.getProperty("distance", null);
+						String hint = room.getProperty("type", null) +
+								(capacity != null ? ", " + MESSAGES.hintRoomCapacity(capacity) : "") +
+								(distance != null && !"0".equals(distance) ? ", " + MESSAGES.hintRoomDistance(distance) : "");
+						String message = MESSAGES.dateTimeHint(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())) + 
+								"<br>" + room.getName() + " (" + hint + ")";
+						if (conflicts != null && !conflicts.isEmpty()) {
+							message += "<br>" + MESSAGES.propConflicts();
+							for (MeetingConglictInterface conflictingEvent: conflicts)
+								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + " (" + conflictingEvent.getType().getAbbreviation() + ")";
+						}
+						GwtHint.showHint(p.getElement(), message);
 					}
 				});
 				
@@ -426,6 +441,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					@Override
 					public void onMouseOut(MouseOutEvent event) {
 						((P)event.getSource()).removeStyleName("hover");
+						GwtHint.hideHint();
 					}
 				});
 			}
@@ -465,10 +481,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void recenter() {
+		iScroll.getElement().getStyle().clearHeight();
+		if (getElement().getClientHeight() > Window.getClientHeight() - 100)
+			iScroll.getElement().getStyle().setHeight(Window.getClientHeight() - 200, Unit.PX);
+		
 		int left = (Window.getClientWidth() - getOffsetWidth()) >> 1;
 	    int top = (Window.getClientHeight() - getOffsetHeight()) >> 1;
-	    setPopupPosition(Math.max(Window.getScrollLeft() + left, 0), Math.max( Window.getScrollTop() + top, 0));
-	  }
+		setPopupPosition(Math.max(Window.getScrollLeft() + left, 0), Math.max( Window.getScrollTop() + top, 0));
+	}
 	
     @Override
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {

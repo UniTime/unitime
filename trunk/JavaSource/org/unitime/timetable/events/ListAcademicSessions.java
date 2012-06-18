@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.events;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
@@ -30,6 +32,7 @@ import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.Acade
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.PageAccessException;
@@ -41,6 +44,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	@Override
 	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, GwtRpcHelper helper) {
@@ -49,6 +53,8 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			if (helper.getUser() == null) throw new PageAccessException(
 					helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
 		}
+		
+		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		
@@ -72,7 +78,13 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		for (Session session: sessions) {
 			EventRights rights = new SimpleEventRights(helper, session.getUniqueId());
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
-			AcademicSession acadSession = new AcademicSession(session.getUniqueId(), session.getLabel(), session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative() , session.equals(selected));
+			
+			AcademicSession acadSession = new AcademicSession(
+					session.getUniqueId(),
+					session.getLabel(),
+					session.getAcademicTerm() + session.getAcademicYear() + session.getAcademicInitiative(),
+					df.format(session.getEventBeginDate()) + " - " + df.format(session.getEventEndDate()),
+					session.equals(selected));
 			if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId()))
 				acadSession.set(AcademicSession.Flag.HasClasses);
 			if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeFinal))

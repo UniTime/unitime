@@ -21,10 +21,15 @@ package org.unitime.timetable.export.events;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
@@ -36,6 +41,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.util.Constants;
 
 public class EventsExportEventsToICal extends EventsExporter {
+	private DateFormat iDateFormat, iTimeFormat;
+	private static String[] DAYS = new String[] { "MO", "TU", "WE", "TH", "FR", "SA", "SU" };
+	
+	public EventsExportEventsToICal() {
+		iDateFormat = new SimpleDateFormat("yyyyMMdd", Locale.US);
+		iDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		iTimeFormat = new SimpleDateFormat("HHmmss", Locale.US);
+		iTimeFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 	
 	@Override
 	public String reference() {
@@ -61,53 +75,94 @@ public class EventsExportEventsToICal extends EventsExporter {
 		out.println("END:VCALENDAR");
 	}
 	
-	public void print(PrintWriter out, EventInterface event) throws IOException {
-		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone("UTC"));
-        SimpleDateFormat tf = new SimpleDateFormat("HHmmss");
-        tf.setTimeZone(TimeZone.getTimeZone("UTC"));
+	public boolean print(PrintWriter out, EventInterface event) throws IOException {
+		return print(out, event, null);
+	}
+	
+	public boolean print(PrintWriter out, EventInterface event, ICalendarStatus status) throws IOException {
+        TreeSet<ICalendarMeeting> meetings = new TreeSet<ICalendarMeeting>();
+        Set<Integer> days = new TreeSet<Integer>();
+        if (event.hasMeetings())
+            meetings: for (MeetingInterface m: event.getMeetings()) {
+            	if (m.isArrangeHours()) continue;
+                ICalendarMeeting x = new ICalendarMeeting(m, status != null ? status : m.isApproved() ? ICalendarStatus.CONFIRMED : ICalendarStatus.TENTATIVE);
+                
+                for (ICalendarMeeting icm: meetings)
+                	if (icm.merge(x)) continue meetings;
+                meetings.add(x); days.add(x.getDayOfWeek());
+            }
         
-        Hashtable<String, String> date2loc = new Hashtable<String, String>();
-        Hashtable<String, Boolean> approved = new Hashtable<String, Boolean>();
-        for (MeetingInterface m: event.getMeetings()) {
-        	if (m.isArrangeHours()) continue;
-        	Date startTime = new Date(m.getStartTime());
-        	Date stopTime = new Date(m.getStopTime());
-            String date = df.format(startTime) + "T" + tf.format(startTime) + "Z/" + df.format(stopTime) + "T" + tf.format(stopTime) + "Z";
-            String loc = m.getLocationName();
-            String l = date2loc.get(date);
-            date2loc.put(date, (l == null || l.isEmpty() ? "" : l + ", ") + loc);
-            Boolean a = approved.get(date);
-            approved.put(date, (a == null || a) && m.isApproved());
+        if (meetings.isEmpty()) return false;
+        
+        ICalendarMeeting first = meetings.first();
+        
+        out.println("BEGIN:VEVENT");
+
+        out.println("SEQUENCE:" + (event.hasNotes() ? event.getNotes().size() : 0));
+        out.println("UID:"+event.getId());
+        out.println("SUMMARY:"+event.getName());
+        out.println("DESCRIPTION:"+(event.getInstruction() != null ? event.getInstruction() : event.getType()));
+
+        out.println("DTSTART:" + first.getStart());
+        out.println("DTEND:" + first.getEnd());
+        out.print("RRULE:FREQ=WEEKLY;BYDAY=");
+        for (Iterator<Integer> i = days.iterator(); i.hasNext(); ) {
+        	out.print(DAYS[i.next()]);
+        	if (i.hasNext()) out.print(",");
+        }
+        out.println(";WKST=MO;UNTIL=" + meetings.last().getEndDate() + "T" + first.getEndTime() + "Z");
+        
+        Calendar cal = Calendar.getInstance(); cal.setTime(first.iStart);
+        String date = iDateFormat.format(cal.getTime());
+        int dow = first.getDayOfWeek();
+        ArrayList<ArrayList<String>> extra = new ArrayList<ArrayList<String>>();
+        while (date.compareTo(meetings.last().getEndDate()) <= 0) {
+        	boolean found = false;
+        	for (ICalendarMeeting ics: meetings) {
+        		if (date.equals(ics.getStartDate())) {
+        			found = true;
+        			if (!first.same(ics)) {
+        				ArrayList<String> x = new ArrayList<String>(); extra.add(x);
+        		        x.add("RECURRENCE-ID:" + ics.getStartDate() + "T" + first.getStartTime() + "Z");
+        		        x.add("DTSTART:" + ics.getStart());
+        		    	x.add("DTEND:" + ics.getEnd());
+        		    	x.add("LOCATION:" + ics.getLocation());
+        	            x.add("STATUS:" + ics.getStatus().name());
+        			}
+        		}
+        	}
+        	if (!found && days.contains(dow))
+        		out.println("EXDATE:" + date + "T" + first.getStartTime() + "Z");
+        	cal.add(Calendar.DAY_OF_YEAR, 1);
+        	date = iDateFormat.format(cal.getTime());
+        	dow = (dow + 1) % 7;
+        }
+        out.println("LOCATION:" + first.getLocation());
+        out.println("STATUS:" + first.getStatus().name());
+        
+        if (event.hasInstructors()) {
+        	int idx = 0;
+        	for (ContactInterface instructor: event.getInstructors()) {
+        		out.println((idx++ == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor.getName() + "\":MAILTO:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
+        	}
+        } else if (event.hasSponsor()) {
+        	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor().getName() + "\":MAILTO:" + (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
+        } else if (event.hasContact()) {
+        	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getContact().getName() + "\":MAILTO:" + (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
         }
         
-        String firstDate = null;
-        for (String date : new TreeSet<String>(date2loc.keySet())) {
-        	String loc = date2loc.get(date);
-        	String start = date.substring(0, date.indexOf('/'));
-        	String end = date.substring(date.indexOf('/') + 1);
+        out.println("END:VEVENT");
+        
+        for (ArrayList<String> x: extra) {
             out.println("BEGIN:VEVENT");
-            out.println("SEQUENCE:0");
+            
+            out.println("SEQUENCE:" + (event.hasNotes() ? event.getNotes().size() : 0));
             out.println("UID:"+event.getId());
             out.println("SUMMARY:"+event.getName());
             out.println("DESCRIPTION:"+(event.getInstruction() != null ? event.getInstruction() : event.getType()));
-            out.println("DTSTART:" + start);
-            out.println("DTEND:" + end);
-            if (firstDate == null) {
-            	firstDate = date;
-            	String rdate = "";
-                for (String d : new TreeSet<String>(date2loc.keySet())) {
-                	if (d.equals(date)) continue;
-                	if (!rdate.isEmpty()) rdate += ",";
-                	rdate += d;
-            	}
-            	if (!rdate.isEmpty())
-            		out.println("RDATE;VALUE=PERIOD:" + rdate);
-            } else {
-    	        out.println("RECURRENCE-ID:" + start);
-            }
-            out.println("LOCATION:" + loc);
-            out.println("STATUS:" + (approved.get(date) ? "CONFIRMED" : "TENTATIVE"));
+
+            for (String s: x) out.println(s);
+            
             if (event.hasInstructors()) {
             	int idx = 0;
             	for (ContactInterface instructor: event.getInstructors()) {
@@ -115,13 +170,73 @@ public class EventsExportEventsToICal extends EventsExporter {
             	}
             } else if (event.hasSponsor()) {
             	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor().getName() + "\":MAILTO:" + (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));
+            } else if (event.hasContact()) {
+            	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getContact().getName() + "\":MAILTO:" + (event.getContact().hasEmail() ? event.getContact().getEmail() : ""));
             }
-            out.println("END:VEVENT");	
+            
+            out.println("END:VEVENT");
         }
+        
+        return true;
 	}
 	
 	@Override
 	protected boolean checkRights() {
 		return false;
+	}
+	
+	public static enum ICalendarStatus {
+		CANCELLED,
+		TENTATIVE,
+		CONFIRMED
+	};
+	
+	public class ICalendarMeeting implements Comparable<ICalendarMeeting>{
+		private Date iStart, iEnd;
+		private String iLocation;
+		private int iDayOfWeek;
+		private ICalendarStatus iStatus;
+		
+		public ICalendarMeeting(MeetingInterface meeting, ICalendarStatus status) {
+			iStart = new Date(meeting.getStartTime());
+			iEnd = new Date(meeting.getStopTime());
+			iDayOfWeek = meeting.getDayOfWeek();
+			iLocation = meeting.getLocationName();
+			iStatus = status;
+		}
+		
+		public String getStart() { return iDateFormat.format(iStart) + "T" + iTimeFormat.format(iStart) + "Z"; }
+		public String getStartTime() { return iTimeFormat.format(iStart); }
+		public String getStartDate() { return iDateFormat.format(iStart); }
+		
+		public String getEnd() { return iDateFormat.format(iEnd) + "T" + iTimeFormat.format(iEnd) + "Z"; }
+		public String getEndTime() { return iTimeFormat.format(iEnd); }
+		public String getEndDate() { return iDateFormat.format(iEnd); }
+
+		public int getDayOfWeek() { return iDayOfWeek; }
+		public String getLocation() { return iLocation; }
+		public ICalendarStatus getStatus() { return iStatus; }
+		
+		public boolean merge(ICalendarMeeting m) {
+			if (m.getStart().equals(getStart()) && m.getEnd().equals(getEnd())) {
+				if (m.getStatus() == ICalendarStatus.TENTATIVE) iStatus = ICalendarStatus.TENTATIVE;
+				iLocation += ", " + m.getLocation();
+				return true;
+			}
+			return false;
+		}
+		
+		public boolean same(ICalendarMeeting m) {
+			return getStartTime().equals(m.getStartTime()) && getEndTime().equals(m.getEndTime()) && getLocation().equals(m.getLocation()) && getStatus().equals(m.getStatus());
+		}
+		
+		public int compareTo(ICalendarMeeting m) {
+			int cmp = getStart().compareTo(m.getStart());
+			if (cmp != 0) return cmp;
+			cmp = getEnd().compareTo(m.getEnd());
+			if (cmp != 0) return cmp;
+			return getStatus().compareTo(m.getStatus());
+		}
+		
 	}
 }
