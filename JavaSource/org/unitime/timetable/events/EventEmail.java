@@ -127,8 +127,8 @@ public class EventEmail {
 				});
 			}
 			
-			if (event().hasMeetings()) {
-				final String ical = icalendar();
+			final String ical = icalendar();
+			if (ical != null) {
 				email.addAttachement(new DataSource() {
 					@Override
 					public OutputStream getOutputStream() throws IOException {
@@ -401,13 +401,16 @@ public class EventEmail {
         out.println("X-WR-CALNAME:" + event().getName());
         out.println("X-WR-TIMEZONE:"+TimeZone.getDefault().getID());
         out.println("PRODID:-//UniTime " + Constants.getVersion() + "/Events Calendar//NONSGML v1.0//EN");
-
-        new EventsExportEventsToICal().print(out, event());
+        
+        boolean exp = new EventsExportEventsToICal().print(
+        		out,
+        		response().hasEventWithId() && response().getEvent().hasMeetings() ? response().getEvent() : request().getEvent(),
+        		response().hasEventWithId() && response().getEvent().hasMeetings() ? null : EventsExportEventsToICal.ICalendarStatus.CANCELLED);
         
 		out.println("END:VCALENDAR");
 		
 		out.flush(); out.close();
-		return buffer.getBuffer().toString();		
+		return (exp ? buffer.getBuffer().toString() : null);		
 	}
 
 }

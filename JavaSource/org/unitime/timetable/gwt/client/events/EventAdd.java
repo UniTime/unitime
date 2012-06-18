@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -64,12 +65,20 @@ import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.DomEvent;
+import com.google.gwt.event.dom.client.DoubleClickEvent;
+import com.google.gwt.event.dom.client.DoubleClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -79,6 +88,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -88,6 +98,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.UIObject;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 public class EventAdd extends Composite implements EventMeetingTable.Implementation, AcademicSessionSelectionBox.AcademicSessionFilter {
@@ -104,6 +115,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private TextBox iMainFName, iMainMName, iMainPhone;
 	private UniTimeWidget<TextBox> iMainLName, iMainEmail;
 	private CheckBox iReqAttendance;
+	private ListBox iStandardNotes;
 	
 	private SimpleForm iCoursesForm;
 	
@@ -123,7 +135,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private EnrollmentTable iEnrollments;
 	private UniTimeHeaderPanel iEnrollmentHeader;
 	private int iEnrollmentRow;
-	private Button iLookupButton, iAdditionalLookupButton;
+	private Button iLookupButton, iAdditionalLookupButton, iStandardNotesButton;
+	private UniTimeDialogBox iStandardNotesBox;
 	
 	private EventInterface iEvent, iSavedEvent;
 	private EventPropertiesProvider iProperties;
@@ -418,11 +431,82 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		emailsWithHint.setHint(MESSAGES.hintAdditionalEmails());
 		iForm.addRow(MESSAGES.propAdditionalEmails(), emailsWithHint);
 		
+		iStandardNotes = new ListBox();
+		iStandardNotes.setVisibleItemCount(10);
+		iStandardNotes.setWidth("600px");
+		iStandardNotes.addDoubleClickHandler(new DoubleClickHandler() {
+			@Override
+			public void onDoubleClick(DoubleClickEvent event) {
+				String text = iNotes.getText();
+				if (!text.isEmpty() && !text.endsWith("\n"))
+					text += "\n";
+				text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+				iNotes.setText(text);
+				iStandardNotesBox.hide();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						iNotes.setFocus(true);							
+					}
+				});
+			}
+		});
+		iStandardNotes.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_ENTER) {
+					String text = iNotes.getText();
+					if (!text.isEmpty() && !text.endsWith("\n"))
+						text += "\n";
+					text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+					iNotes.setText(text);
+					event.preventDefault();
+					event.stopPropagation();
+					iStandardNotesBox.hide();
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							iNotes.setFocus(true);							
+						}
+					});
+				}
+			}
+		});
+		UniTimeWidget<ListBox> standardNotesWithHint = new UniTimeWidget<ListBox>(iStandardNotes);
+		standardNotesWithHint.setHint(MESSAGES.hintStandardNoteDoubleClickToSelect());
+		iStandardNotesBox = new UniTimeDialogBox(true, false);
+		iStandardNotesBox.setText(MESSAGES.dialogStandardNotes());
+		iStandardNotesBox.setWidget(standardNotesWithHint);
+		
 		iNotes = new TextArea();
 		iNotes.setStyleName("unitime-TextArea");
 		iNotes.setVisibleLines(5);
 		iNotes.setCharacterWidth(80);
-		iForm.addRow(MESSAGES.propAdditionalInformation(), iNotes);
+		VerticalPanel notesPanel = new VerticalPanel();
+		notesPanel.add(iNotes);
+		notesPanel.setSpacing(0);
+		iStandardNotesButton = new Button(MESSAGES.buttonStandardNotes(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				if (iStandardNotes.getItemCount() > 0) {
+					iStandardNotesBox.center();
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							iStandardNotes.setFocus(true);							
+						}
+					});
+				}
+			}
+		});
+		Character standardNotesButtonAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonStandardNotes());
+		if (standardNotesButtonAccessKey != null) iStandardNotesButton.setAccessKey(standardNotesButtonAccessKey);
+		iStandardNotesButton.setVisible(false);
+		iStandardNotesButton.getElement().getStyle().setMarginTop(2, Unit.PX);
+		notesPanel.add(iStandardNotesButton);
+		notesPanel.setCellHorizontalAlignment(iStandardNotesButton, HasHorizontalAlignment.ALIGN_RIGHT);
+		 
+		iForm.addRow(MESSAGES.propAdditionalInformation(), notesPanel);
 		
 		iCoursesForm = new SimpleForm();
 		iCoursesForm.addHeaderRow(MESSAGES.sectRelatedCourses());
@@ -787,6 +871,13 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupContacts());
 		iLookupButton.setVisible(canLookup);
 		iAdditionalLookupButton.setVisible(canLookup);
+		
+		boolean canSeeStandardNotes = (getProperties() == null ? false : getProperties().isCanLookupContacts() && getProperties().hasStandardNotes()); 
+		iStandardNotesButton.setVisible(canSeeStandardNotes);
+		iStandardNotes.clear();
+		if (canSeeStandardNotes)
+			for (String note: getProperties().getStandardNotes())
+				iStandardNotes.addItem(note);
 		
 		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
 		

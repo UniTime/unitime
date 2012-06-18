@@ -399,7 +399,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		UniTimeTableHeader hLocation = new UniTimeTableHeader(MESSAGES.colLocation());
 		header.add(hLocation);
 		
-		UniTimeTableHeader hCapacity = new UniTimeTableHeader(MESSAGES.colCapacity());
+		UniTimeTableHeader hCapacity = new UniTimeTableHeader(MESSAGES.colCapacity(), HasHorizontalAlignment.ALIGN_RIGHT);
 		header.add(hCapacity);
 
 		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment(), HasHorizontalAlignment.ALIGN_RIGHT);

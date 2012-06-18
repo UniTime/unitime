@@ -34,6 +34,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.CalendarUtils;
+import org.unitime.timetable.util.Constants;
 
 public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
 	
@@ -95,8 +96,10 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 			response.setMeetings(request.getMeetings());
 			
 			for (MeetingInterface meeting: response.getMeetings()) {
-				if (meeting.getMeetingDate() == null)
+				if (meeting.getMeetingDate() == null) {
 					meeting.setMeetingDate(CalendarUtils.dateOfYear2date(session.getSessionStartYear(), meeting.getDayOfYear()));
+					meeting.setDayOfWeek(Constants.getDayOfWeek(meeting.getMeetingDate()));
+				}
 				
 				if (rights.isPastOrOutside(meeting.getMeetingDate())) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
