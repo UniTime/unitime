@@ -45,7 +45,9 @@ public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcR
 	
 	@Override
 	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, GwtRpcHelper helper) {
-		return new EncodeQueryRpcResponse(encode(request.getQuery()));
+		return new EncodeQueryRpcResponse(encode(request.getQuery() + 
+				(helper.getUser() == null ? "" : "&user=" + helper.getUser().getId() +
+				(helper.getUser().getRole() == null ? "" : "&role=" + helper.getUser().getRole()))));
 	}
 	
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {

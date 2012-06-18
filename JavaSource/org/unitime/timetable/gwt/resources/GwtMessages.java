@@ -311,6 +311,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Student Conflicts:")
 	String propStudentConflicts();
 	
+	@DefaultMessage("Conflicts with: ")
+	String propConflicts();
+	
 	@DefaultMessage("Event Type:")
 	String propEventType();
 	
@@ -407,7 +410,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>L</u>ookup")
 	String buttonLookup();
 	
-	@DefaultMessage("<u>A</u>dd Event")
+	@DefaultMessage("<u>A</u>dd&nbsp;Event")
 	String buttonAddEvent();
 	
 	@DefaultMessage("<u>A</u>dd")
@@ -419,7 +422,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 	
-	@DefaultMessage("M<u>o</u>re &or;")
+	@DefaultMessage("M<u>o</u>re&nbsp;&or;")
 	String buttonMoreOperations();
 
 	@DefaultMessage("<u>B</u>ack")
@@ -442,6 +445,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("More <u>C</u>ontacts...")
 	String buttonLookupAdditionalContact();
+	
+	@DefaultMessage("Standard&nbsp;<u>N</u>otes...")
+	String buttonStandardNotes();
 	
 	@DefaultMessage("<u>N</u>ext")
 	String buttonNext();
@@ -670,12 +676,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Inquire...")
 	String dialogInquire();
+	
+	@DefaultMessage("Standard Notes")
+	String dialogStandardNotes();
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
 	
 	@DefaultMessage("{0}<br>{1}<br>{2} - {3}")
 	String dateTimeHeader(String dow, String date, String start, String end);
+	
+	@DefaultMessage("{0}, {1} {2} - {3}")
+	String dateTimeHint(String dow, String date, String start, String end);
 	
 	@DefaultMessage("Selected")
 	String legendSelected();
@@ -835,4 +847,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("All Matching Rooms")
 	String itemAllRoomsWithFilter();
+	
+	@DefaultMessage("{0} seats")
+	String hintRoomCapacity(String size);
+	
+	@DefaultMessage("{0} m")
+	String hintRoomDistance(String distanceInMeters);
+	
+	@DefaultMessage("Press ENTER or double click a standard note to add it to additional information.")
+	String hintStandardNoteDoubleClickToSelect();
 }

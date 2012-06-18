@@ -1420,8 +1420,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			if (interval.isOne()) {
 				String hint = interval.getFirst().getRoomType() +
-					(interval.getFirst().hasSize() ? ", " + interval.getFirst().getSize() + " seats" : "") +
-					(interval.getFirst().hasDistance() ? ", " + Math.round(interval.getFirst().getDistance()) + " m" : "");
+					(interval.getFirst().hasSize() ? ", " + MESSAGES.hintRoomCapacity("" + interval.getFirst().getSize()) : "") +
+					(interval.getFirst().hasDistance() ? ", " + MESSAGES.hintRoomDistance("" + Math.round(interval.getFirst().getDistance())) : "");
 				return interval.getFirst().getName() + " <span class='item-hint'>" + hint + "</span>";
 			} else {
 				return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().getName() + " - " + interval.getLast().getName();
