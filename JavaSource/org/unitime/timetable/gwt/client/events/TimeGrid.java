@@ -419,8 +419,10 @@ public class TimeGrid extends Composite {
 		return 0;
 	}
 
-	public void shrink(boolean skipDays) {
+	public void shrink(boolean skipDays, boolean... day) {
 		boolean hasDay[] = new boolean[] { !skipDays, !skipDays, !skipDays, !skipDays, !skipDays, false, false };
+		for (int i = 0; i < day.length; i++)
+			if (day[i]) hasDay[i] = true;
 		for (int slot = 0; slot < 24 * 60 / 5; slot++) {
 			for (int i = 0; i < 7; i++)
 				if (iMeetingTable[i][slot] != null && !iMeetingTable[i][slot].isEmpty()) hasDay[i] = true;
