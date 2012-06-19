@@ -458,7 +458,14 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				
 				int firstSlot = -1, lastSlot = -1;
 				boolean skipDays = iEvents.hasChip(new FilterBox.Chip("day", null));
-				boolean hasDay[] = new boolean[] { !skipDays, !skipDays, !skipDays, !skipDays, !skipDays, false, false };
+				boolean hasDay[] = new boolean[] {
+						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
+						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[1])),
+						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[2])),
+						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[3])),
+						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[4])),
+						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[5])),
+						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[6])) };
 				for (EventInterface event: iData) {
 					for (MeetingInterface meeting: event.getMeetings()) {
 						if (filter(meeting)) continue;
@@ -851,7 +858,14 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (!meetings.isEmpty())
 					iTimeGrid.addEvent(event, meetings);
 			}
-			iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)));
+			iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[1])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[2])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[3])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[4])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[5])),
+					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[6])));
 			List<WeekInterface> selected = iWeekPanel.getSelected();
 			if (selected != null && !selected.isEmpty())
 				iTimeGrid.labelDays(selected.get(0), selected.size() == 1 ? null : selected.get(selected.size() - 1));
