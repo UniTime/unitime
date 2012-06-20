@@ -42,6 +42,7 @@ import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.spring.UserContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -197,6 +198,20 @@ public class InstructionalOffering extends BaseInstructionalOffering {
         	Debug.debug(" - Can Edit.");
     		return true;
     	}
+     }
+	
+	public boolean isEditableBy(UserContext user){
+    	if (user == null) return false;
+
+    	if (getSession().isOfferingFullLockNeeded(getUniqueId())) return false;
+    	
+    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+
+    	if (getDepartment() == null) return false;
+    	
+    	if (!getControllingCourseOffering().isEditableBy(user)) return false;
+    	
+    	return true;
      }
 
     public boolean isViewableBy(User user){

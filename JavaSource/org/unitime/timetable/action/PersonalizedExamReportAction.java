@@ -105,14 +105,15 @@ public class PersonalizedExamReportAction extends Action {
         return sTranslation.translate(uid, Source.User, target);
     }
     
-    public static boolean hasPersonalReport(User user) {
+    public static boolean hasPersonalReport(String userId) {
+    	if (userId == null) return false;
         //if (user.getRole()!=null) return false;
         HashSet<Session> sessions = new HashSet();
         DepartmentalInstructor instructor = null;
         for (Iterator i=new DepartmentalInstructorDAO().
                 getSession().
                 createQuery("select i from DepartmentalInstructor i where i.externalUniqueId=:externalId").
-                setString("externalId",user.getId()).
+                setString("externalId",userId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             DepartmentalInstructor s = (DepartmentalInstructor)i.next();
             if (!canDisplay(s.getDepartment().getSession())) continue;
@@ -124,7 +125,7 @@ public class PersonalizedExamReportAction extends Action {
         for (Iterator i=new StudentDAO().
                 getSession().
                 createQuery("select s from Student s where s.externalUniqueId=:externalId").
-                setString("externalId",user.getId()).
+                setString("externalId",userId).
                 setCacheable(true).list().iterator();i.hasNext();) {
             Student s = (Student)i.next();
             if (!canDisplay(s.getSession())) continue;

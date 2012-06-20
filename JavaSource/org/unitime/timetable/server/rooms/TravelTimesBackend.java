@@ -25,44 +25,47 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
+import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.client.rooms.TravelTimes$TravelTimesRequest")
 public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesRequest, TravelTimeResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 
 	@Override
-	public TravelTimeResponse execute(TravelTimesRequest request, GwtRpcHelper helper) {
-		if (helper.getUser() == null)
-			throw new PageAccessException(helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		if (!helper.getUser().isAdmin())
+	public TravelTimeResponse execute(TravelTimesRequest request, SessionContext context) {
+		if (!context.isAuthenticated())
+			throw new PageAccessException(context.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
+		if (!Roles.ADMIN_ROLE.equals(context.getUser()))
 			throw new PageAccessException(MESSAGES.authenticationInsufficient());
-		if (helper.getAcademicSessionId() == null)
+		if (context.getUser().getCurrentAcademicSessionId() == null)
 			throw new PageAccessException(MESSAGES.authenticationNoSession());
 		
 		TravelTimeResponse response = new TravelTimeResponse();
 		
 		switch (request.getCommand()) {
 		case INIT:
-			return new TravelTimeResponse(helper.getAcademicSessionId(), SessionDAO.getInstance().get(helper.getAcademicSessionId()).getLabel());
+			return new TravelTimeResponse(context.getUser().getCurrentAcademicSessionId(), SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()).getLabel());
 		case LOAD:
-			load(helper.getAcademicSessionId(), request, response);
+			load(context.getUser().getCurrentAcademicSessionId(), request, response);
 			break;
 		case SAVE:
-			save(helper.getAcademicSessionId(), request);
+			save(context.getUser().getCurrentAcademicSessionId(), request);
 		}
 		
 		return response;

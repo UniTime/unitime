@@ -36,7 +36,6 @@ import java.util.TreeSet;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
-import javax.servlet.ServletException;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -47,8 +46,9 @@ import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
@@ -81,10 +81,8 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
-import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -97,10 +95,8 @@ import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningLogger;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningServerUpdater;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.basic.CheckCourses;
 import org.unitime.timetable.onlinesectioning.basic.GetAssignment;
@@ -122,73 +118,19 @@ import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.util.Constants;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.spring.UserContext;
 
 /**
  * @author Tomas Muller
  */
-public class SectioningServlet extends RemoteServiceServlet implements SectioningService {
+@Service("sectioning.gwt")
+public class SectioningServlet implements SectioningService {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static final long serialVersionUID = 1L;
 	private static Logger sLog = Logger.getLogger(SectioningServlet.class);
-	private OnlineSectioningServerUpdater iUpdater;
 	private CourseDetailsProvider iCourseDetailsProvider;
-
-	public void init() throws ServletException {
-		sLog.info("Student Sectioning Service is starting up ...");
-		OnlineSectioningService.init();
-		OnlineSectioningLogger.startLogger();
-		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
-		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
-		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
-		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
-		try {
-			iUpdater = new OnlineSectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
-			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
-				final Session session = i.next();
-				
-				if (year != null && !year.equals(session.getAcademicYear())) continue;
-				if (term != null && !term.equals(session.getAcademicTerm())) continue;
-				if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
-				if (session.getStatusType().isTestSession()) continue;
-				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
-
-				int nrSolutions = ((Number)hibSession.createQuery(
-						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
-						.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
-				if (nrSolutions == 0) continue;
-				final Long sessionId = session.getUniqueId();
-				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false"))) {
-					Thread t = new Thread(new Runnable() {
-						public void run() {
-							try {
-								OnlineSectioningService.createInstance(sessionId);
-							} catch (Exception e) {
-								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
-										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
-							}
-						}
-					});
-					t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
-					t.setDaemon(true);
-					t.start();
-				} else {
-					try {
-						OnlineSectioningService.createInstance(sessionId);
-					} catch (Exception e) {
-						sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
-								" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
-					}
-				}
-			}
-			iUpdater.start();
-		} catch (Exception e) {
-			throw new ServletException("Unable to initialize, reason: "+e.getMessage(), e);
-		} finally {
-			hibSession.close();
-		}
+	
+	public SectioningServlet() {
 		try {
 			String providerClass = ApplicationProperties.getProperty("unitime.custom.CourseDetailsProvider");
 			if (providerClass != null)
@@ -198,13 +140,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		}
 	}
 	
-	public void destroy() {
-		sLog.info("Student Sectioning Service is going down ...");
-		iUpdater.stopUpdating();
-		OnlineSectioningService.unloadAll();
-		OnlineSectioningLogger.stopLogger();
-	}
-	
+	private @Autowired SessionContext sessionContext;
+	private SessionContext getSessionContext() { return sessionContext; }
+	private OnlineSectioningServer getStudentSolver() { return WebSolver.getStudentSolver(getSessionContext().getHttpSession()); }
+
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		setLastSessionId(sessionId);
@@ -477,7 +416,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
 		ArrayList<String[]> ret = new ArrayList<String[]>();
 		if (sectioning) {
-			UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+			UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 			for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
 				if (principal != null && principal.getStudentId(s.getUniqueId()) == null) continue;
 				ret.add(new String[] {
@@ -542,7 +481,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public ClassAssignmentInterface section(boolean online, CourseRequestInterface request, ArrayList<ClassAssignmentInterface.ClassAssignment> currentAssignment) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
@@ -561,7 +500,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (ret != null) {
 				ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
 				if (ret.isCanEnroll()) {
-					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+					UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
 						ret.setCanEnroll(false);
 					}
@@ -581,7 +520,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public Collection<String> checkCourses(boolean online, CourseRequestInterface request) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				request.setStudentId(getStudentId(request.getAcademicSessionId()));
@@ -627,7 +566,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public 	Collection<ClassAssignmentInterface> computeSuggestions(boolean online, CourseRequestInterface request, Collection<ClassAssignmentInterface.ClassAssignment> currentAssignment, int selectedAssignmentIndex, String filter) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
@@ -653,7 +592,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (ret != null) {
 				boolean canEnroll = server.getAcademicSession().isSectioningEnabled();
 				if (canEnroll) {
-					UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+					UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 					if (principal == null || principal.getStudentId(request.getAcademicSessionId()) == null) {
 						canEnroll = false;
 					}
@@ -680,15 +619,15 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			try {
 				List<Student> student = hibSession.createQuery("select m from Student m where m.externalUniqueId = :uid").setString("uid", password).list();
 				if (!student.isEmpty()) {
-					User user = Web.getUser(getThreadLocalRequest().getSession());
-					UniTimePrincipal principal = new UniTimePrincipal(user.getId(), user.getName());
+					UserContext user = getSessionContext().getUser();
+					UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
 					for (Student s: student) {
 						principal.addStudentId(s.getSession().getUniqueId(), s.getUniqueId());
 						principal.setName(s.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 					}
-					getThreadLocalRequest().getSession().setAttribute("user", principal);
-					getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
-					getThreadLocalRequest().getSession().removeAttribute("request");
+					getSessionContext().setAttribute("user", principal);
+					getSessionContext().removeAttribute("login.nrAttempts");
+					getSessionContext().removeAttribute("request");
 					return principal.getName();
 				}
 			} finally {
@@ -696,7 +635,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			}			
 		}
 		if ("BATCH".equals(userName)) {
-			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 			org.hibernate.Session hibSession = StudentDAO.getInstance().createNewSession();
@@ -704,21 +643,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				Student student = StudentDAO.getInstance().get(Long.valueOf(password), hibSession);
 				if (student == null)
 					throw new SectioningException(MSG.exceptionLoginFailed());
-				User user = Web.getUser(getThreadLocalRequest().getSession());
-				UniTimePrincipal principal = new UniTimePrincipal(user.getId(), user.getName());
+				UserContext user = getSessionContext().getUser();
+				UniTimePrincipal principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
 				principal.addStudentId(student.getSession().getUniqueId(), student.getUniqueId());
 				principal.setName(student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-				getThreadLocalRequest().getSession().setAttribute("user", principal);
-				getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
-				getThreadLocalRequest().getSession().removeAttribute("request");
+				getSessionContext().setAttribute("user", principal);
+				getSessionContext().removeAttribute("login.nrAttempts");
+				getSessionContext().removeAttribute("request");
 				return principal.getName();
 			} finally {
 				hibSession.close();
 			}		
 		}
-		Integer nrAttempts = (Integer)getThreadLocalRequest().getSession().getAttribute("login.nrAttempts");
+		Integer nrAttempts = (Integer)getSessionContext().getAttribute("login.nrAttempts");
 		if (nrAttempts == null) nrAttempts = 1; else nrAttempts ++;
-		getThreadLocalRequest().getSession().setAttribute("login.nrAttempts", nrAttempts);
+		getSessionContext().setAttribute("login.nrAttempts", nrAttempts);
 		if (nrAttempts > 3) {
 			throw new SectioningException(MSG.exceptionTooManyLoginAttempts());
 		}
@@ -744,7 +683,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			for (Iterator i=creds.iterator(); i.hasNext(); ) {
 				Object o = i.next();
 				if (o instanceof User) {
-					User user = (User) o;
+					User user = (User)o;
 					
 					principal = new UniTimePrincipal(user.getId(), user.getName());
 					
@@ -768,8 +707,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			}
 			
 			if (principal == null) throw new SectioningException(MSG.exceptionLoginFailed());
-			getThreadLocalRequest().getSession().setAttribute("user", principal);
-			getThreadLocalRequest().getSession().removeAttribute("login.nrAttempts");
+			getSessionContext().setAttribute("user", principal);
+			getSessionContext().removeAttribute("login.nrAttempts");
 			
 			CourseRequestInterface req = getLastRequest();
 			if (req != null && req.getCourses().isEmpty())
@@ -787,21 +726,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public Boolean logOut() throws SectioningException, PageAccessException {
-		getThreadLocalRequest().getSession().removeAttribute("user");
-		getThreadLocalRequest().getSession().removeAttribute("sessionId");
-		getThreadLocalRequest().getSession().removeAttribute("request");
-		// getThreadLocalRequest().getSession().invalidate();
+		getSessionContext().removeAttribute("user");
+		getSessionContext().removeAttribute("sessionId");
+		getSessionContext().removeAttribute("request");
+		// getSessionContext().invalidate();
 		return true;
 	}
 	
 	private UniTimePrincipal getPrincipal() {
-		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
-		if (getThreadLocalRequest().getSession().isNew()) throw new SectioningException(MSG.exceptionUserNotLoggedIn());
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		if (getSessionContext().isHttpSessionNew()) throw new SectioningException(MSG.exceptionUserNotLoggedIn());
 		if (principal == null) {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user != null) {
-				principal = new UniTimePrincipal(user.getId(), user.getName());
-				getThreadLocalRequest().getSession().setAttribute("user", principal);
+				principal = new UniTimePrincipal(user.getExternalUserId(), user.getName());
+				getSessionContext().setAttribute("user", principal);
 			}
 		}
 		return principal;
@@ -814,41 +753,41 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	public Long getStudentId(Long sessionId) {
-		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		if (principal == null) return null;
 		return principal.getStudentId(sessionId);
 	}
 	
 	public Long getLastSessionId() {
-		Long lastSessionId = (Long)getThreadLocalRequest().getSession().getAttribute("sessionId");
+		Long lastSessionId = (Long)getSessionContext().getAttribute("sessionId");
 		if (lastSessionId == null) {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user != null) {
-				Session session = Session.getCurrentAcadSession(user);
-				if (session != null) // && OnlineSectioningService.getInstance(session.getUniqueId()) != null)
-					lastSessionId = session.getUniqueId();
+				Long sessionId = user.getCurrentAcademicSessionId();
+				if (sessionId != null)
+					lastSessionId = sessionId;
 			}
 		}
 		return lastSessionId;
 	}
 
 	public void setLastSessionId(Long sessionId) {
-		getThreadLocalRequest().getSession().setAttribute("sessionId", sessionId);
+		getSessionContext().setAttribute("sessionId", sessionId);
 	}
 	
 	public CourseRequestInterface getLastRequest() {
-		return (CourseRequestInterface)getThreadLocalRequest().getSession().getAttribute("request");
+		return (CourseRequestInterface)getSessionContext().getAttribute("request");
 	}
 	
 	public void setLastRequest(CourseRequestInterface request) {
 		if (request == null)
-			getThreadLocalRequest().getSession().removeAttribute("request");
+			getSessionContext().removeAttribute("request");
 		else
-			getThreadLocalRequest().getSession().setAttribute("request", request);
+			getSessionContext().setAttribute("request", request);
 	}
 	
 	public String[] lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException {
-		if (getThreadLocalRequest().getSession().isNew()) throw new PageAccessException(MSG.exceptionUserNotLoggedIn());
+		if (getSessionContext().isHttpSessionNew()) throw new PageAccessException(MSG.exceptionUserNotLoggedIn());
 		Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
 		if (sectioning) {
@@ -886,7 +825,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
 			
 			if (!online) {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				return server.execute(new GetRequest(studentId), currentUser());
@@ -1008,7 +947,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (studentId == null) throw new SectioningException(MSG.exceptionNoStudent());
 		
 		if (!online) {
-			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
@@ -1025,7 +964,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (ret == null) throw new SectioningException(MSG.exceptionBadStudentId());
 			ret.setCanEnroll(server.getAcademicSession().isSectioningEnabled());
 			if (ret.isCanEnroll()) {
-				UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+				UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 				if (principal == null || principal.getStudentId(sessionId) == null)
 					ret.setCanEnroll(false);
 			}
@@ -1076,7 +1015,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (server.getAcademicSession().isSectioningEnabled()) return false;
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save","false"))) return false;
 		}
-		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		if (principal == null) throw new SectioningException(MSG.exceptionEnrollNotAuthenticated());
 		Long studentId = principal.getStudentId(request.getAcademicSessionId());
 		if (studentId == null && isAdminOrAdvisor())
@@ -1131,9 +1070,9 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 
 	public Boolean isAdminOrAdvisor() throws SectioningException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+					getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			return user.hasRole(Roles.ADMIN_ROLE) || user.hasRole(Roles.STUDENT_ADVISOR);
 		} catch (PageAccessException e) {
 			throw e;
@@ -1147,9 +1086,9 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public Boolean isAdmin() throws SectioningException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+					getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			return user.hasRole(Roles.ADMIN_ROLE);
 		} catch (PageAccessException e) {
 			throw e;
@@ -1163,9 +1102,9 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public Boolean canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+					getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
@@ -1183,20 +1122,18 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			
 			if (offering.getConsentType() == null) return false;
 			
-			if (user.isAdmin()) return true;
+			if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
 			
-			TimetableManager tm = TimetableManager.getManager(user);
-			if (tm==null) {
-				if ("IN".equals(offering.getConsentType().getReference())) {
-					for (DepartmentalInstructor instructor: offering.getCoordinators()) {
-						if (user.getId().equals(instructor.getExternalUniqueId())) return true;
-					}
+			if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) && user.hasDepartment(offering.getControllingCourseOffering().getSubjectArea().getDepartment().getUniqueId()))
+				return true;
+
+			if ("IN".equals(offering.getConsentType().getReference())) {
+				for (DepartmentalInstructor instructor: offering.getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
 				}
-				return false;
-			} else {
-				return Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole()) && 
-					tm.getDepartments().contains(offering.getControllingCourseOffering().getSubjectArea().getDepartment());
 			}
+			
+			return false;
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1209,9 +1146,9 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	public List<ClassAssignmentInterface.Enrollment> listEnrollments(Long classOrOfferingId) throws SectioningException, PageAccessException {
 		try {
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+					getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
@@ -1221,10 +1158,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					throw new SectioningException(MSG.exceptionBadClassOrOffering());
 				Long offeringId = (clazz == null ? offering.getUniqueId() : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId());
 				
-				if (user.getRole() == null) { // must coordinate
+				if (user.getCurrentRole() == null) { // must coordinate
 					boolean coordinate = false;
 					for (DepartmentalInstructor i: (offering != null ? offering : clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()).getCoordinators()) {
-						if (user.getId().equals(i.getExternalUniqueId())) { coordinate = true; break; }
+						if (user.getExternalUserId().equals(i.getExternalUniqueId())) { coordinate = true; break; }
 					}
 					if (!coordinate)
 						throw new SectioningException(MSG.exceptionInsufficientPrivileges());
@@ -1405,10 +1342,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public ClassAssignmentInterface getEnrollment(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		try {
 			if (online) { 
-				User user = Web.getUser(getThreadLocalRequest().getSession());
+				UserContext user = getSessionContext().getUser();
 				if (user == null) throw new PageAccessException(
-						getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
-				if (user.getRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
+						getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+				if (user.getCurrentRole() == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 				org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 				try {
 					Student student = StudentDAO.getInstance().get(studentId, hibSession);
@@ -1539,7 +1476,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					hibSession.close();
 				}				
 			} else {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
@@ -1573,8 +1510,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
-			User user = Web.getUser(getThreadLocalRequest().getSession());
-			String approval = new Date().getTime() + ":" + user.getId() + ":" + user.getName();
+			UserContext user = getSessionContext().getUser();
+			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
 			server.execute(new ApproveEnrollmentsAction(offering.getUniqueId(), studentIds, approval), currentUser());
 			
 			return approval;
@@ -1606,8 +1543,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
-			User user = Web.getUser(getThreadLocalRequest().getSession());
-			String approval = new Date().getTime() + ":" + user.getId() + ":" + user.getName();
+			UserContext user = getSessionContext().getUser();
+			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
 			
 			return server.execute(new RejectEnrollmentsAction(offering.getUniqueId(), studentIds, approval), currentUser());
 		} catch (PageAccessException e) {
@@ -1621,43 +1558,43 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	private Long getStatusPageSessionId() throws SectioningException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null)
-			throw new PageAccessException(getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
-		if (user.getRole() == null) {
+			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+		if (user.getCurrentRole() == null) {
 			Long sessionId = getLastSessionId();
 			if (sessionId != null) return sessionId;
 		} else {
-			Session session = Session.getCurrentAcadSession(user);
-			if (session != null) return session.getUniqueId();
+			Long sessionId = user.getCurrentAcademicSessionId();
+			if (sessionId != null) return sessionId;
 		}
 		throw new SectioningException(MSG.exceptionNoAcademicSession());
 	}
 	
 	private HashSet<Long> getCoordinatingCourses(Long sessionId) throws SectioningException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null)
-			throw new PageAccessException(getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 
-		if (user.isAdmin())
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()))
 			return null;
 		
-		if (user.getRole() != null) return null;
+		if (user.getCurrentRole() != null) return null;
 		
 		HashSet<Long> courseIds = new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
 				"c.subjectArea.session.uniqueId = :sessionId and i.externalUniqueId = :extId")
-				.setLong("sessionId", sessionId).setString("extId", user.getId()).setCacheable(true).list());
+				.setLong("sessionId", sessionId).setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
 	}
 	
 	private HashSet<Long> getApprovableCourses(Long sessionId) throws SectioningException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null)
-			throw new PageAccessException(getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+			throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 
-		if (user.isAdmin())
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()))
 			return new HashSet<Long>(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select c.uniqueId from CourseOffering c where c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.consentType is not null"
 					).setLong("sessionId", sessionId).setCacheable(true).list());
@@ -1666,14 +1603,14 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				"select distinct c.uniqueId from CourseOffering c inner join c.instructionalOffering.coordinators i where " +
 				"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.consentType.reference = :reference and " +
 				"i.externalUniqueId = :extId"
-				).setLong("sessionId", sessionId).setString("reference", "IN").setString("extId", user.getId()).setCacheable(true).list());
+				).setLong("sessionId", sessionId).setString("reference", "IN").setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		if (user.hasRole(Roles.DEPT_SCHED_MGR_ROLE))
 			courseIds.addAll(CourseOfferingDAO.getInstance().getSession().createQuery(
 					"select distinct c.uniqueId from CourseOffering c, TimetableManager m inner join m.departments d where " +
 					"c.subjectArea.session.uniqueId = :sessionId and c.instructionalOffering.consentType is not null and " +
 					"m.externalUniqueId = :extId and c.subjectArea.department = d"
-					).setLong("sessionId", sessionId).setString("extId", user.getId()).setCacheable(true).list());
+					).setLong("sessionId", sessionId).setString("extId", user.getExternalUserId()).setCacheable(true).list());
 		
 		return courseIds;
 	}
@@ -1687,7 +1624,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 							
 				return server.execute(new FindEnrollmentInfoAction(
 						query,
@@ -1696,11 +1634,12 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
 				);				
 			} else {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
 				return server.execute(new FindEnrollmentInfoAction(query, courseId, null, null), currentUser());
 			}
@@ -1723,7 +1662,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 							
 				return server.execute(new FindStudentInfoAction(
 						query,
@@ -1731,11 +1671,12 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId) : null), currentUser()
 				);
 			} else {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
 				return server.execute(new FindStudentInfoAction(query, null, null), currentUser());
 			}
@@ -1757,18 +1698,18 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
-				User user = Web.getUser(getThreadLocalRequest().getSession());
+				UserContext user = getSessionContext().getUser();
 				return server.execute(new StatusPageSuggestionsAction(
-						user.getId(), user.getName(),
+						user.getExternalUserId(), user.getName(),
 						query, limit), currentUser());				
 			} else {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 
-				User user = Web.getUser(getThreadLocalRequest().getSession());
+				UserContext user = getSessionContext().getUser();
 				return server.execute(new StatusPageSuggestionsAction(
-						user.getId(), user.getName(),
+						user.getExternalUserId(), user.getName(),
 						query, limit), currentUser());				
 			}
 		} catch (PageAccessException e) {
@@ -1793,17 +1734,19 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 				if (server == null)
 					throw new SectioningException(MSG.exceptionBadSession());
 				
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
 				return server.execute(new FindEnrollmentAction(
 						query, courseId, classId, 
 						query.matches("(?i:.*consent:[ ]?todo.*)") ? getApprovableCourses(sessionId).contains(courseId): false), currentUser());
 			} else {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
-				UserData.setProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery", query);
+				if (getSessionContext().isAuthenticated())
+					getSessionContext().getUser().setProperty("SectioningStatus.LastStatusQuery", query);
 				
 				return server.execute(new FindEnrollmentAction(query, courseId, classId, false), currentUser());
 			}
@@ -1819,21 +1762,21 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 
 	@Override
 	public String lastStatusQuery() throws SectioningException, PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+				getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 		
-		String q = UserData.getProperty(getThreadLocalRequest().getSession(), "SectioningStatus.LastStatusQuery");
+		String q = user.getProperty("SectioningStatus.LastStatusQuery");
 		if (q != null) return q;
 		
-		if (user.getRole() == null) return "";
+		if (user.getCurrentRole() == null) return "";
 
-		if (user.isAdmin()) return null;
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return null;
 		
 		q = "";
-		Session session = Session.getCurrentAcadSession(user);
+		Session session = (user.getCurrentAcademicSessionId() == null ? null : SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()));
 		if (session == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
-		TimetableManager tm = TimetableManager.getManager(user);
+		TimetableManager tm = TimetableManager.findByExternalId(user.getExternalUserId());
 		if (tm == null) throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 		
 		for (Department d: tm.getDepartments()) {
@@ -1851,7 +1794,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	public Long canEnroll(boolean online, Long studentId) throws SectioningException, PageAccessException {
 		try {
 			if (!online) {
-				OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+				OnlineSectioningServer server = getStudentSolver();
 				if (server == null) 
 					throw new SectioningException(MSG.exceptionNoSolver());
 				
@@ -1870,7 +1813,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			StudentSectioningStatus status = student.getSectioningStatus();
 			if (status == null) status = student.getSession().getDefaultSectioningStatus();
 			if (status != null && !status.hasOption(StudentSectioningStatus.Option.enabled)) {
-				User user = Web.getUser(getThreadLocalRequest().getSession());
+				UserContext user = getSessionContext().getUser();
 				if (user == null || // no role -> student itself
 					!user.hasRole(Roles.ADMIN_ROLE) || // user is not admin
 					!(status.hasOption(StudentSectioningStatus.Option.advisor) && user.hasRole(Roles.STUDENT_ADVISOR))) { // user is not advisor or advisor access is disabled
@@ -1889,15 +1832,15 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			if (principal != null)
 				if (studentId.equals(principal.getStudentId(student.getSession().getUniqueId()))) return student.getSession().getUniqueId();
 			
-			User user = Web.getUser(getThreadLocalRequest().getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user == null) {
 				if (principal != null)
 					throw new PageAccessException(MSG.exceptionEnrollNotStudent(student.getSession().getLabel()));
 				else
-					throw new PageAccessException(getThreadLocalRequest().getSession().isNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
+					throw new PageAccessException(getSessionContext().isHttpSessionNew() ? MSG.exceptionHttpSessionExpired() : MSG.exceptionLoginRequired());
 			}
 			
-			if (!user.isAdmin() && !user.hasRole(Roles.STUDENT_ADVISOR))
+			if (!user.hasRole(Roles.ADMIN_ROLE) && !user.hasRole(Roles.STUDENT_ADVISOR))
 				throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			
 			return student.getSession().getUniqueId();
@@ -1916,7 +1859,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (online) {
 			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).execute(new GetRequest(studentId), currentUser());
 		} else {
-			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
@@ -1929,7 +1872,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 		if (online) {
 			return OnlineSectioningService.getInstance(canEnroll(online, studentId)).execute(new GetAssignment(studentId), currentUser());
 		} else {
-			OnlineSectioningServer server = WebSolver.getStudentSolver(getThreadLocalRequest().getSession());
+			OnlineSectioningServer server = getStudentSolver();
 			if (server == null) 
 				throw new SectioningException(MSG.exceptionNoSolver());
 
@@ -1942,10 +1885,10 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	
 	@Override
 	public Boolean selectSession(Long sessionId) {
-		getThreadLocalRequest().getSession().setAttribute("sessionId", sessionId);
-		User user = Web.getUser(getThreadLocalRequest().getSession());
-		if (user != null)
-			user.setAttribute(Constants.SESSION_ID_ATTR_NAME, sessionId);
+		getSessionContext().setAttribute("sessionId", sessionId);
+		UserContext user = getSessionContext().getUser();
+		if (user != null && user instanceof UserContext.CanSetCurrentSessionId)
+			((UserContext.CanSetCurrentSessionId)user).setCurrentAcademicSessionId(sessionId);
 		return true;
 	}
 
@@ -2016,11 +1959,11 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 	}
 	
 	private OnlineSectioningLog.Entity currentUser() {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
-		UniTimePrincipal principal = (UniTimePrincipal)getThreadLocalRequest().getSession().getAttribute("user");
-		if (user != null && user.getRole() != null) {
+		UserContext user = getSessionContext().getUser();
+		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
+		if (user != null && user.getCurrentRole() != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
-				.setExternalId(user.getId())
+				.setExternalId(user.getExternalUserId())
 				.setName(user.getName())
 				.setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build();
 		} else if (principal != null) {
@@ -2048,8 +1991,8 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(getStatusPageSessionId());
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			
-			User user = Web.getUser(getThreadLocalRequest().getSession());
-			if (user == null || !user.isAdmin()) {
+			UserContext user = getSessionContext().getUser();
+			if (user == null || !Roles.ADMIN_ROLE.equals(user.getCurrentRole())) {
 				throw new PageAccessException(MSG.exceptionInsufficientPrivileges());
 			}
 			

@@ -24,7 +24,6 @@ import java.text.SimpleDateFormat;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -32,6 +31,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.spring.SessionContext;
 
 public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpcResponse> implements GwtRpcImplementation<T, R> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -39,7 +39,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	protected static DateFormat sMeetingDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
 
 	@Override
-	public R execute(T request, GwtRpcHelper helper) {
+	public R execute(T request, SessionContext helper) {
 		// Create event rights
 		EventRights rights = createEventRights(request, helper);
 		
@@ -50,10 +50,10 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		return execute(request, helper, rights);
 	}
 	
-	public abstract R execute(T request, GwtRpcHelper helper, EventRights rights);
+	public abstract R execute(T request, SessionContext context, EventRights rights);
 	
-	protected EventRights createEventRights(T request, GwtRpcHelper helper) {
-		return new SimpleEventRights(helper, request.getSessionId());
+	protected EventRights createEventRights(T request, SessionContext context) {
+		return new SimpleEventRights(context, request.getSessionId());
 	}
 
 	protected static String toString(MeetingInterface meeting) {

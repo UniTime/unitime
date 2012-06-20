@@ -33,6 +33,7 @@ import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.spring.UserContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -463,6 +464,21 @@ public class Department extends BaseDepartment implements Comparable {
         if (tm==null) return false;
 
         if (!tm.getDepartments().contains(this)) return false;
+        
+        if (!effectiveStatusType().canOwnerLimitedEdit()) return false;
+
+        return true;
+    }
+    
+    public boolean isLimitedEditableBy(UserContext user){
+        if (user==null) return false;
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+        
+        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()) && effectiveStatusType().canExamTimetable()) return true;
+        
+        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) return false;
+        
+        if (!user.hasDepartment(getUniqueId())) return false;
         
         if (!effectiveStatusType().canOwnerLimitedEdit()) return false;
 

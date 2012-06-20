@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
@@ -33,6 +34,7 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
+@Service("org.unitime.timetable.export.Exporter:meetings.pdf")
 public class EventsExportMeetingsToPDF extends EventsExporter {
 
 	@Override

@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -59,11 +59,13 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$EventEnrollmentsRpcRequest")
 public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	
 	@Override
-	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, SessionContext context, EventRights rights) {
 		if (request.hasRelatedObjects()) {
 			if (!rights.canAddEvent(EventType.Course, null)) throw rights.getException();
 			

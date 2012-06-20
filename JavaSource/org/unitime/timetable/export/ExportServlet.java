@@ -20,59 +20,35 @@
 package org.unitime.timetable.export;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.export.events.EventsExportEventsToCSV;
-import org.unitime.timetable.export.events.EventsExportEventsToICal;
-import org.unitime.timetable.export.events.EventsExportEventsToPDF;
-import org.unitime.timetable.export.events.EventsExportMeetingsToCSV;
-import org.unitime.timetable.export.events.EventsExportMeetingsToPDF;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.timetable.spring.SessionContext;
 
 public class ExportServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	public Map<String, Exporter> iExporters = new HashMap<String, Exporter>();
 	
-	public void init() throws ServletException {
-		registerDefaultExporters();
-		registerCustomExporters();
+	protected SessionContext getSessionContext() {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		return (SessionContext)applicationContext.getBean("sessionContext");
 	}
-	
-	protected void register(Exporter exporter) {
-		if (exporter != null)
-			iExporters.put(exporter.reference(), exporter);
-	}
-	
-	protected void registerDefaultExporters() {
-		register(new EventsExportEventsToCSV());
-		register(new EventsExportMeetingsToCSV());
-		register(new EventsExportEventsToICal());
-		register(new EventsExportEventsToPDF());
-		register(new EventsExportMeetingsToPDF());
-	}
-	
-	protected void registerCustomExporters() {
-		String customExports = ApplicationProperties.getProperty("unitime.custom.exporters");
-		if (customExports != null)
-			for (String exporterName: customExports.split("\\;")) {
-				try {
-					register((Exporter)Class.forName(exporterName).newInstance());
-				} catch (Exception e) {}
-			}
+
+	protected Exporter getExporter(String reference) {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		return (Exporter) applicationContext.getBean("org.unitime.timetable.export.Exporter:" + reference);
 	}
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		ExportServletHelper helper = new ExportServletHelper(request, response);
+		ExportServletHelper helper = new ExportServletHelper(request, response, getSessionContext());
 		
 		String ref = helper.getParameter("output");
 		if (ref == null) throw new ServletException("No exporter provided.");
-		Exporter exporter = iExporters.get(ref);
+		Exporter exporter = getExporter(ref);
 		if (exporter == null) throw new ServletException("Exporter " + ref + " not known.");
 		
 		try {

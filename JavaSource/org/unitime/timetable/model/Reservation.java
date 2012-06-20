@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseReservation;
+import org.unitime.timetable.spring.UserContext;
 
 public class Reservation extends BaseReservation {
 	private static final long serialVersionUID = 1L;
@@ -58,6 +59,18 @@ public class Reservation extends BaseReservation {
     		return false;
 		
 		if (user.isAdmin()) return true;
+
+		Department d = getInstructionalOffering().getDepartment();
+		return d != null && d.isLimitedEditableBy(user);
+	}
+	
+	public boolean isEditableBy(UserContext user) {
+		if (user == null) return false;
+		
+    	if (getInstructionalOffering().getSession().isOfferingLockNeeded(getInstructionalOffering().getUniqueId()))
+    		return false;
+		
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
 
 		Department d = getInstructionalOffering().getDepartment();
 		return d != null && d.isLimitedEditableBy(user);

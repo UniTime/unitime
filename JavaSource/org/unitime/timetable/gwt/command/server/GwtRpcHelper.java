@@ -22,59 +22,44 @@ package org.unitime.timetable.gwt.command.server;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.fileupload.FileItem;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.gwt.server.UploadServlet;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.spring.UserContext;
 
-public class GwtRpcHelper {
-	private HttpSession iHttpSession;
-	private String iURL;
+public class GwtRpcHelper implements SessionContext {
+	private UserContext iUser;
+	private String iHttpSessionId;
+	private boolean iHttpSessionNew;
 	
-	protected GwtRpcHelper(HttpServletRequest httpRequest) {
-		iHttpSession = httpRequest.getSession();
-		iURL = httpRequest.getScheme() + "://" +httpRequest.getServerName() + ":" + httpRequest.getServerPort() + httpRequest.getContextPath();
+	public GwtRpcHelper(SessionContext context) {
+		iUser = context.getUser();
+		iHttpSessionId = context.getHttpSessionId();
+		iHttpSessionNew = context.isHttpSessionNew();
 	}
-	
-	public User getUser() {
-		return Web.getUser(iHttpSession);
-	}
-	
-	public String getUserId() {
-		return (getUser() == null ? null : getUser().getId());
-	}
-	
-	public Long getAcademicSessionId() {
-		User user = getUser();
-		return (user == null ? null : (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-	}
-	
-	public boolean isHttpSessionNew() {
-		return iHttpSession.isNew();
-	}
-	
-	public String getHttpSessionId() {
-		return iHttpSession.getId();
-	}
-	
-	public HttpSession getHttpSession() {
-		return iHttpSession;
-	}
-	
-	public String getRequestUrl() {
-		return iURL;
-	}
-	
-	public FileItem getLastUploadedFile() {
-		return (FileItem)iHttpSession.getAttribute(UploadServlet.SESSION_LAST_FILE);
-	}
-	
-	public boolean hasLastUploadedFile() {
-		return iHttpSession.getAttribute(UploadServlet.SESSION_LAST_FILE) != null;
-	}
-	
-	public void clearLastUploadedFile() {
-		iHttpSession.removeAttribute(UploadServlet.SESSION_LAST_FILE);
-	}
+
+	@Override
+	public boolean isAuthenticated() { return iUser != null; }
+
+	@Override
+	public UserContext getUser() { return iUser; }
+
+	@Override
+	public HttpSession getHttpSession() { throw new RuntimeException("Operation not supported."); }
+
+	@Override
+	public boolean isHttpSessionNew() { return iHttpSessionNew; }
+
+	@Override
+	public String getHttpSessionId() { return iHttpSessionId; }
+
+	@Override
+	public Object getAttribute(String name) { throw new RuntimeException("Operation not supported."); }
+
+	@Override
+	public void removeAttribute(String name) { throw new RuntimeException("Operation not supported."); }
+
+	@Override
+	public void setAttribute(String name, Object value) { throw new RuntimeException("Operation not supported."); }
+
+	@Override
+	public HttpServletRequest getHttpServletRequest() { return null; }
 }

@@ -29,8 +29,10 @@ import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseStudentSectioningQueue;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
+import org.unitime.timetable.spring.UserContext;
 
 public class StudentSectioningQueue extends BaseStudentSectioningQueue implements Comparable<StudentSectioningQueue> {
 	private static final long serialVersionUID = 8492171207847794888L;
@@ -106,6 +108,25 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		hibSession.save(q);
 	}
 	
+	protected static void addItem(org.hibernate.Session hibSession, UserContext user, Long sessionId, Type type, Collection<Long> ids) {
+		StudentSectioningQueue q = new StudentSectioningQueue();
+		q.setTimeStamp(new Date());
+		q.setType(type.ordinal());
+		q.setSessionId(sessionId);
+		Document d = DocumentHelper.createDocument();
+		Element root = d.addElement("generic");
+		if (user != null) {
+			Element e = root.addElement("user");
+			e.addAttribute("id", user.getExternalUserId()).setText(user.getName());
+		}
+		if (ids != null && !ids.isEmpty()) {
+			for (Long id: ids)
+				root.addElement("id").setText(id.toString());
+		}
+		q.setMessage(d);
+		hibSession.save(q);
+	}
+	
 	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Long... ids) {
 		StudentSectioningQueue q = new StudentSectioningQueue();
 		q.setTimeStamp(new Date());
@@ -116,6 +137,25 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		if (user != null) {
 			Element e = root.addElement("user");
 			e.addAttribute("id", user.getId()).setText(user.getName());
+		}
+		if (ids != null && ids.length > 0) {
+			for (Long id: ids)
+				root.addElement("id").setText(id.toString());
+		}
+		q.setMessage(d);
+		hibSession.save(q);
+	}
+	
+	protected static void addItem(org.hibernate.Session hibSession, UserContext user, Long sessionId, Type type, Long... ids) {
+		StudentSectioningQueue q = new StudentSectioningQueue();
+		q.setTimeStamp(new Date());
+		q.setType(type.ordinal());
+		q.setSessionId(sessionId);
+		Document d = DocumentHelper.createDocument();
+		Element root = d.addElement("generic");
+		if (user != null) {
+			Element e = root.addElement("user");
+			e.addAttribute("id", user.getExternalUserId()).setText(user.getName());
 		}
 		if (ids != null && ids.length > 0) {
 			for (Long id: ids)
@@ -167,7 +207,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 	@Deprecated
 	/** Use {@link StudentSectioningQueue#studentChanged(org.hibernate.Session, org.unitime.commons.User, Long, Collection<Long>)} */
 	public static void studentChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> studentIds) {
-		addItem(hibSession, null, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
+		addItem(hibSession, (User)null, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
 	
 	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... studentIds) {
@@ -185,8 +225,16 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> offeringId) {
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
+	
+	public static void offeringChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Collection<Long> offeringId) {
+		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
+	}
 
 	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... offeringId) {
+		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
+	}
+	
+	public static void offeringChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Long... offeringId) {
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 }

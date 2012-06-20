@@ -14,9 +14,13 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.services.SavedHQLService;
 import org.unitime.timetable.gwt.services.SavedHQLServiceAsync;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -39,6 +43,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class SavedHQLPage extends Composite {
 	private final SavedHQLServiceAsync iService = GWT.create(SavedHQLService.class);
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iForm = null;
 	private UniTimeHeaderPanel iHeader = null, iTableHeader = null;;
@@ -135,7 +140,15 @@ public class SavedHQLPage extends Composite {
 				}
 				String reportId = iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex());
 				
-				ToolBox.open(GWT.getHostPageBaseURL() + "unitime/hql.gwt?csv=1&report=" + reportId + "&params=" + params);
+				RPC.execute(EncodeQueryRpcRequest.encode("output=hql-report.csv&report=" + reportId + "&params=" + params), new AsyncCallback<EncodeQueryRpcResponse>() {
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+					@Override
+					public void onSuccess(EncodeQueryRpcResponse result) {
+						ToolBox.open(GWT.getHostPageBaseURL() + "export?q=" + result.getQuery());
+					}
+				});
 			}
 		});
 

@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -40,6 +41,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.util.Constants;
 
+@Service("org.unitime.timetable.export.Exporter:events.ics")
 public class EventsExportEventsToICal extends EventsExporter {
 	private DateFormat iDateFormat, iTimeFormat;
 	private static String[] DAYS = new String[] { "MO", "TU", "WE", "TH", "FR", "SA", "SU" };

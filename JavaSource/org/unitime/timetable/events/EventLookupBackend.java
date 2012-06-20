@@ -31,8 +31,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -67,16 +67,18 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$EventLookupRpcRequest")
 public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRpcResponseList<EventInterface>>{
 	private static Logger sLog = Logger.getLogger(EventLookupBackend.class);
 
 	@Override
-	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, SessionContext context, EventRights rights) {
 		if (request.getResourceType() == ResourceType.PERSON) {
-			if (!request.hasResourceExternalId()) request.setResourceExternalId(helper.getUserId());
+			if (!request.hasResourceExternalId()) request.setResourceExternalId(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
 			if (!rights.canSeeSchedule(request.getResourceExternalId())) throw rights.getException();
 		}
 		
@@ -86,14 +88,14 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			request.setEventFilter(eventFilter);
 		}
 		
-		if (helper.getUser() != null) {
-			request.getEventFilter().setOption("user", helper.getUser().getId());
+		if (context.isAuthenticated()) {
+			request.getEventFilter().setOption("user", context.getUser().getExternalUserId());
 			if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
-				request.getRoomFilter().setOption("user", helper.getUser().getId());
-			if (helper.getUser().getRole() != null) {
-				request.getEventFilter().setOption("role", helper.getUser().getRole());
+				request.getRoomFilter().setOption("user", context.getUser().getExternalUserId());
+			if (context.getUser().getCurrentRole() != null) {
+				request.getEventFilter().setOption("role", context.getUser().getCurrentRole());
 				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
-					request.getRoomFilter().setOption("role", helper.getUser().getRole());
+					request.getRoomFilter().setOption("role", context.getUser().getCurrentRole());
 			}
 		}
 

@@ -21,7 +21,8 @@ package org.unitime.timetable.gwt.command.server;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+import org.unitime.timetable.spring.SessionContext;
 
 public interface GwtRpcImplementation<T extends GwtRpcRequest<R>, R extends GwtRpcResponse> {
-	public R execute(T request, GwtRpcHelper helper);
+	public R execute(T request, SessionContext context);
 }
