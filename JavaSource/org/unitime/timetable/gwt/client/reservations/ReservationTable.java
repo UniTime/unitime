@@ -96,7 +96,9 @@ public class ReservationTable extends Composite {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
 				ReservationCookie.getInstance().setReservationCoursesDetails(event.getValue());
-				if (iReservations.getRowCount() > 2) {
+				if (iReservations.getRowCount() == 0)
+					refresh();
+				else if (iReservations.getRowCount() > 2) {
 					for (int row = 1; row < iReservations.getRowCount() - 1; row++) {
 						iReservations.getRowFormatter().setVisible(row, event.getValue());
 					}
@@ -148,6 +150,8 @@ public class ReservationTable extends Composite {
 				@Override
 				public void onFailure(Throwable caught) {
 					iHeader.setErrorMessage("Failed to load reservations (" + caught.getMessage() + ").");
+					iHeader.setCollapsible(null);
+					ReservationCookie.getInstance().setReservationCoursesDetails(false);
 				}
 				@Override
 				public void onSuccess(List<ReservationInterface> result) {
@@ -627,7 +631,13 @@ public class ReservationTable extends Composite {
 	public void insert(final RootPanel panel) {
 		initCallbacks();
 		iOfferingId = Long.valueOf(panel.getElement().getInnerText());
-		refresh();
+		if (ReservationCookie.getInstance().getReservationCoursesDetails()) {
+			refresh();
+		} else {
+			clear(false);
+			iHeader.clearMessage();
+			iHeader.setCollapsible(false);
+		}
 		panel.getElement().setInnerText(null);
 		panel.add(this);
 		panel.setVisible(true);
