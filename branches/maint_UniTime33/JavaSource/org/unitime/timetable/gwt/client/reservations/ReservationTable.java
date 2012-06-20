@@ -150,6 +150,8 @@ public class ReservationTable extends Composite {
 				@Override
 				public void onFailure(Throwable caught) {
 					iHeader.setErrorMessage("Failed to load reservations (" + caught.getMessage() + ").");
+					iHeader.setCollapsible(null);
+					ReservationCookie.getInstance().setReservationCoursesDetails(false);
 				}
 				@Override
 				public void onSuccess(List<ReservationInterface> result) {

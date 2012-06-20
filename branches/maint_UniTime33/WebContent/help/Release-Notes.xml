@@ -75,6 +75,9 @@
 					<line>The data are loaded when the section is opened for the first time instead.</line>  
 					<line>This is the same behavior as with the Enrollments section.</line> 
 				</line>
+				<line>Curricula, Reservations, Enrollments: when the table data failed to load, switch the section opened toggle to false.
+					<line>This means that it will not try to load the data again on the next page, unless the section is opened again.</line>
+				</line>
 			</description>
 		</item>
 	</category>

@@ -992,6 +992,8 @@ public class CourseCurriculaTable extends Composite {
 				@Override
 				public void onFailure(Throwable caught) {
 					iHeader.setErrorMessage("Failed to load curricula (" + caught.getMessage() + ").");
+					iHeader.setCollapsible(null);
+					CurriculumCookie.getInstance().setCurriculaCoursesDetails(false);
 				}
 				@Override
 				public void onSuccess(TreeSet<CurriculumInterface> result) {
