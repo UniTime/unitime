@@ -29,15 +29,16 @@ import net.sf.cpsolver.ifs.util.JProf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.unitime.commons.User;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.filter.QueryLogFilter;
 import org.unitime.timetable.gwt.command.client.GwtRpcCancelledException;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.model.QueryLog;
+import org.unitime.timetable.spring.SessionContext;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -48,6 +49,11 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	private QueryLogFilter.Saver iSaver = null;
 	private static IdGenerator sIdGenerator = new IdGenerator();
 	private static Map<Long, Execution> sExecutions = new Hashtable<Long, Execution>();
+	
+	protected SessionContext getSessionContext() {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		return (SessionContext)applicationContext.getBean("sessionContext");
+	}
 	
 	@Override
 	public void init() throws ServletException {
@@ -60,33 +66,32 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	public void destroy() {
 		if (iSaver != null) iSaver.interrupt();
 	}
-
+	
+	protected <T extends GwtRpcResponse> GwtRpcImplementation<GwtRpcRequest<T>, T> getImplementation(GwtRpcRequest<T> request) throws Exception {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		return (GwtRpcImplementation<GwtRpcRequest<T>, T>)applicationContext.getBean(request.getClass().getName());
+	}
+	
 	@Override
 	public <T extends GwtRpcResponse> T execute(GwtRpcRequest<T> request) throws GwtRpcException {
 		// start time
 		long t0 = JProf.currentTimeMillis();
 		// create helper
-		GwtRpcHelper helper = new GwtRpcHelper(getThreadLocalRequest());
 		try {
 			// retrieve implementation from given request
-			GwtRpcImplementedBy annotation = request.getClass().getAnnotation(GwtRpcImplementedBy.class);
-			if (annotation == null || annotation.value() == null || annotation.value().isEmpty()) {
-				throw new GwtRpcException("Request " + request.getClass().getName().substring(request.getClass().getName().lastIndexOf('.') + 1) +
-						" does not have the GwtRpcImplementedBy annotation.");
-			}
-			GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = (GwtRpcImplementation<GwtRpcRequest<T>, T>)Class.forName(annotation.value()).newInstance();
+			GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation(request);
 			
 			// execute request
-			T response = implementation.execute(request, helper);
+			T response = implementation.execute(request, getSessionContext());
 			
 			// log request
-			log(request, response, null, JProf.currentTimeMillis() - t0, helper);
+			log(request, response, null, JProf.currentTimeMillis() - t0, getSessionContext());
 			
 			// return response
 			return response;
 		} catch (Throwable t) {
 			// log exception
-			log(request, null, t, JProf.currentTimeMillis() - t0, helper);
+			log(request, null, t, JProf.currentTimeMillis() - t0, getSessionContext());
 			
 			// re-throw exception as GwtRpcException or IsSerializable runtime exception
 			if (t instanceof GwtRpcException) {
@@ -102,7 +107,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		}
 	}
 	
-	private <T extends GwtRpcResponse> void log(GwtRpcRequest<T> request, T response, Throwable exception, long time, GwtRpcHelper helper) {
+	private <T extends GwtRpcResponse> void log(GwtRpcRequest<T> request, T response, Throwable exception, long time, SessionContext context) {
 		try {
 			if (iSaver == null) return;
 			QueryLog q = new QueryLog();
@@ -112,11 +117,8 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			q.setType(QueryLog.Type.RPC.ordinal());
 			q.setTimeStamp(new Date());
 			q.setTimeSpent(time);
-			try {
-				q.setSessionId(helper.getHttpSessionId());
-				User user = helper.getUser(); 
-				if (user != null) q.setUid(user.getId());
-			} catch (IllegalStateException e) {}
+			q.setSessionId(context.getHttpSessionId());
+			q.setUid(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
 			q.setQuery(request.toString());
 			if (exception != null) {
 				Throwable t = exception;
@@ -207,7 +209,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	private class Execution<R extends GwtRpcRequest<T>, T extends GwtRpcResponse> extends Thread {
 		R iRequest;
 		T iResponse = null;
-		GwtRpcHelper iHelper = null;
+		SessionContext iContext = null;
 		GwtRpcException iException = null;
 		Thread iWaitingThread = null;
 		long iExecutionId;
@@ -218,7 +220,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			setDaemon(true);
 			iRequest = request;
 			iExecutionId = sIdGenerator.generatedId();
-			iHelper = new GwtRpcHelper(getThreadLocalRequest());
+			iContext = new GwtRpcHelper(getSessionContext());
 		}
 
 		@Override
@@ -228,21 +230,16 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			long t0 = JProf.currentTimeMillis();
 			try {
 				// retrieve implementation from given request
-				GwtRpcImplementedBy annotation = iRequest.getClass().getAnnotation(GwtRpcImplementedBy.class);
-				if (annotation == null || annotation.value() == null || annotation.value().isEmpty()) {
-					throw new GwtRpcException("Request " + iRequest.getClass().getName().substring(iRequest.getClass().getName().lastIndexOf('.') + 1) +
-							" does not have the GwtRpcImplementedBy annotation.");
-				}
-				GwtRpcImplementation<R, T> implementation = (GwtRpcImplementation<R, T>)Class.forName(annotation.value()).newInstance();
+				GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation(iRequest);
 				
 				// execute request
-				iResponse = implementation.execute(iRequest, iHelper);
+				iResponse = implementation.execute(iRequest, iContext);
 				
 				// log request
-				log(iRequest, iResponse, null, JProf.currentTimeMillis() - t0, iHelper);
+				log(iRequest, iResponse, null, JProf.currentTimeMillis() - t0, iContext);
 			} catch (Throwable t) {
 				// log exception
-				log(iRequest, null, t, JProf.currentTimeMillis() - t0, iHelper);
+				log(iRequest, null, t, JProf.currentTimeMillis() - t0, iContext);
 				
 				// re-throw exception as GwtRpcException or IsSerializable runtime exception
 				if (t instanceof GwtRpcException) {
@@ -259,7 +256,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			synchronized (this) {
 				iWaitingThread = null;
 				iRunning = false;
-				iHelper = null;
+				iContext = null;
 			}
 		}
 		
@@ -286,6 +283,4 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		
 		Long getExecutionId() { return iExecutionId; }
 	}
-
-
 }

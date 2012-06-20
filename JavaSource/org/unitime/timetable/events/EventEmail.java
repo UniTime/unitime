@@ -42,9 +42,9 @@ import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.export.events.EventsExportEventsToICal;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -54,6 +54,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequ
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 public class EventEmail {
@@ -72,7 +73,7 @@ public class EventEmail {
 	public SaveOrApproveEventRpcResponse response() { return iResponse; }
 	
 	
-	public void send(GwtRpcHelper helper) throws UnsupportedEncodingException, MessagingException {
+	public void send(SessionContext context) throws UnsupportedEncodingException, MessagingException {
 		try {
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
 				response().info(MESSAGES.emailDisabled());
@@ -99,13 +100,13 @@ public class EventEmail {
 			
 			email.setSubject(event().getName() + " (" + event().getType().getName() + ")");
 			
-			if (helper.getUser() != null) {
-				TimetableManager manager = (TimetableManager)TimetableManagerDAO.getInstance().getSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getId()).uniqueResult();
+			if (context.isAuthenticated()) {
+				TimetableManager manager = (TimetableManager)TimetableManagerDAO.getInstance().getSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", context.getUser().getExternalUserId()).uniqueResult();
 				if (manager != null && manager.getEmailAddress() != null)
 					email.setReplyTo(manager.getEmailAddress(), manager.getName());
 			}
 			
-			final FileItem file = helper.getLastUploadedFile();
+			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
 			if (file != null) {
 				email.addAttachement(new DataSource() {
 					@Override

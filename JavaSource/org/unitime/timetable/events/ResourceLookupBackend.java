@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -45,13 +45,15 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$ResourceLookupRpcRequest")
 public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {
 
 	@Override
-	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, SessionContext context, EventRights rights) {
 		if (request.getResourceType() == ResourceType.PERSON) {
-			if (!request.hasName()) request.setName(helper.getUserId());
+			if (!request.hasName()) request.setName(context.getUser().getExternalUserId());
 			if (!rights.canSeeSchedule(request.getName())) throw rights.getException();
 		}
 		

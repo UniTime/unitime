@@ -37,6 +37,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.spring.UserContext;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
@@ -317,6 +318,25 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
 
 		if (!tm.getDepartments().contains(getDepartment())) return false;
+		
+		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
+
+    	return true;
+    }
+    
+    public boolean isEditableBy(UserContext user){
+    	if (user==null) return false;
+
+    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
+    		return false;
+
+    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+    	
+		if (getDepartment()==null) return false;
+		
+		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) return false;
+
+		if (!user.hasDepartment(getDepartment().getUniqueId())) return false;
 		
 		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
 

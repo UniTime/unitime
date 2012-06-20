@@ -33,24 +33,22 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.spring.UserContext;
 
 public class ExportServletHelper implements ExportHelper {
-	private HttpSession iHttpSession;
+	private SessionContext iContext;
 	private Exporter.Params iParams;
 	private HttpServletResponse iResponse;
 	private PrintWriter iWriter = null;
 	private OutputStream iOutputStream = null;
 	
-	public ExportServletHelper(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
-		iHttpSession = request.getSession();
+	public ExportServletHelper(HttpServletRequest request, HttpServletResponse response, SessionContext context) throws UnsupportedEncodingException {
 		iResponse = response;
+		iContext = context;
 		String q = request.getParameter("q");
 		if (q != null) {
 			iParams = new QParams(q);
@@ -106,11 +104,10 @@ public class ExportServletHelper implements ExportHelper {
 		if (iParams.getParameter("sid") != null) {
 			sessionId = Long.valueOf(iParams.getParameter("sid"));
 		} else {
-			User user = getUser();
-			if (user != null)
-				sessionId = (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+			if (iContext.isAuthenticated())
+				sessionId = (Long)iContext.getUser().getCurrentAcademicSessionId();
 			else
-				sessionId = (Long)iHttpSession.getAttribute("sessionId");
+				sessionId = (Long)iContext.getAttribute("sessionId");
 		}
 		if (iParams.getParameter("term") != null) {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -195,8 +192,8 @@ public class ExportServletHelper implements ExportHelper {
 	}
 
 	@Override
-	public User getUser() {
-		return Web.getUser(iHttpSession);
+	public UserContext getUser() {
+		return iContext.getUser();
 	}
 	
 	@Override

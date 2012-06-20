@@ -34,20 +34,22 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$EncodeQueryRpcRequest")
 public class QueryEncoderBackend implements GwtRpcImplementation<EncodeQueryRpcRequest, EncodeQueryRpcResponse> {
 	private static Logger sLog = Logger.getLogger(QueryEncoderBackend.class);
 	
 	@Override
-	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, GwtRpcHelper helper) {
+	public EncodeQueryRpcResponse execute(EncodeQueryRpcRequest request, SessionContext context) {
 		return new EncodeQueryRpcResponse(encode(request.getQuery() + 
-				(helper.getUser() == null ? "" : "&user=" + helper.getUser().getId() +
-				(helper.getUser().getRole() == null ? "" : "&role=" + helper.getUser().getRole()))));
+				(context.getUser() == null ? "" : "&user=" + context.getUser().getExternalUserId() +
+				(context.getUser().getCurrentRole() == null ? "" : "&role=" + context.getUser().getCurrentRole()))));
 	}
 	
 	private static SecretKey secret() throws NoSuchAlgorithmException, InvalidKeySpecException {

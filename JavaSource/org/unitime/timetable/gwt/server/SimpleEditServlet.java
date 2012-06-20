@@ -28,14 +28,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.ServletException;
-
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.services.SimpleEditService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditException;
@@ -75,21 +73,19 @@ import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
-import org.unitime.timetable.util.Constants;
-
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.spring.UserContext;
 
 /**
  * @author Tomas Muller
  */
-public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEditService {
-	private static final long serialVersionUID = 8338135183971720592L;
+@Service("simpleEdit.gwt")
+public class SimpleEditServlet implements SimpleEditService {
 	private static Logger sLog = Logger.getLogger(SimpleEditServlet.class);
 
-
-	public void init() throws ServletException {
-	}
-
+	private @Autowired SessionContext sessionContext;
+	private SessionContext getSessionContext() { return sessionContext; }
+	
 	@Override
 	public SimpleEditInterface load(Type type) throws SimpleEditException, PageAccessException {
 		org.hibernate.Session hibSession = null;
@@ -329,7 +325,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(area.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									area,
 									area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
 									Source.SIMPLE_EDIT, 
@@ -350,7 +346,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(area);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										area,
 										area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
 										Source.SIMPLE_EDIT, 
@@ -368,7 +364,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						area.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
 						r.setUniqueId((Long)hibSession.save(area));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								area,
 								area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
 								Source.SIMPLE_EDIT, 
@@ -382,7 +378,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(clasf.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									clasf,
 									clasf.getCode() + " " + clasf.getName(),
 									Source.SIMPLE_EDIT, 
@@ -401,7 +397,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(clasf);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										clasf,
 										clasf.getCode() + " " + clasf.getName(),
 										Source.SIMPLE_EDIT, 
@@ -418,7 +414,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						clasf.setSession(SessionDAO.getInstance().get(sessionId, hibSession));
 						r.setUniqueId((Long)hibSession.save(clasf));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								clasf,
 								clasf.getCode() + " " + clasf.getName(),
 								Source.SIMPLE_EDIT, 
@@ -432,7 +428,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(major.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									major,
 									major.getCode() + " " + major.getName(),
 									Source.SIMPLE_EDIT, 
@@ -465,7 +461,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(major);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										major,
 										major.getCode() + " " + major.getName(),
 										Source.SIMPLE_EDIT, 
@@ -488,7 +484,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						}
 						r.setUniqueId((Long)hibSession.save(major));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								major,
 								major.getCode() + " " + major.getName(),
 								Source.SIMPLE_EDIT, 
@@ -502,7 +498,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(minor.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									minor,
 									minor.getCode() + " " + minor.getName(),
 									Source.SIMPLE_EDIT, 
@@ -535,7 +531,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(minor);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										minor,
 										minor.getCode() + " " + minor.getName(),
 										Source.SIMPLE_EDIT, 
@@ -558,7 +554,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						}
 						r.setUniqueId((Long)hibSession.save(minor));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								minor,
 								minor.getCode() + " " + minor.getName(),
 								Source.SIMPLE_EDIT, 
@@ -572,7 +568,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(group.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									group,
 									group.getGroupAbbreviation() + " " + group.getGroupName(),
 									Source.SIMPLE_EDIT, 
@@ -609,7 +605,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(group);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										group,
 										group.getGroupAbbreviation() + " " + group.getGroupName(),
 										Source.SIMPLE_EDIT, 
@@ -636,7 +632,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						}
 						r.setUniqueId((Long)hibSession.save(group));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								group,
 								group.getGroupAbbreviation() + " " + group.getGroupName(),
 								Source.SIMPLE_EDIT, 
@@ -650,7 +646,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(consent.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									consent,
 									consent.getReference() + " " + consent.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -669,7 +665,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(consent);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										consent,
 										consent.getReference() + " " + consent.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -685,7 +681,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						consent.setAbbv(r.getField(2));
 						r.setUniqueId((Long)hibSession.save(consent));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								consent,
 								consent.getReference() + " " + consent.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -699,7 +695,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(credit.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									credit,
 									credit.getReference() + " " + credit.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -718,7 +714,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(credit);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										credit,
 										credit.getReference() + " " + credit.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -734,7 +730,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						credit.setAbbreviation(r.getField(2));
 						r.setUniqueId((Long)hibSession.save(credit));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								credit,
 								credit.getReference() + " " + credit.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -748,7 +744,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(credit.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									credit,
 									credit.getReference() + " " + credit.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -767,7 +763,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(credit);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										credit,
 										credit.getReference() + " " + credit.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -783,7 +779,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						credit.setAbbreviation(r.getField(2));
 						r.setUniqueId((Long)hibSession.save(credit));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								credit,
 								credit.getReference() + " " + credit.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -797,7 +793,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(credit.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									credit,
 									credit.getReference() + " " + credit.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -816,7 +812,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(credit);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										credit,
 										credit.getReference() + " " + credit.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -832,7 +828,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						credit.setAbbreviation(r.getField(2));
 						r.setUniqueId((Long)hibSession.save(credit));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								credit,
 								credit.getReference() + " " + credit.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -846,7 +842,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(position.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									position,
 									position.getReference() + " " + position.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -865,7 +861,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(position);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										position,
 										position.getReference() + " " + position.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -881,7 +877,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						position.setSortOrder(Integer.valueOf(r.getField(2)));
 						r.setUniqueId((Long)hibSession.save(position));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								position,
 								position.getReference() + " " + position.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -895,7 +891,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						Record r = data.getRecord(status.getUniqueId());
 						if (r == null) {
 							ChangeLog.addChange(hibSession,
-									getThreadLocalRequest(),
+									getSessionContext(),
 									status,
 									status.getReference() + " " + status.getLabel(),
 									Source.SIMPLE_EDIT, 
@@ -920,7 +916,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 							hibSession.saveOrUpdate(status);
 							if (changed)
 								ChangeLog.addChange(hibSession,
-										getThreadLocalRequest(),
+										getSessionContext(),
 										status,
 										status.getReference() + " " + status.getLabel(),
 										Source.SIMPLE_EDIT, 
@@ -941,7 +937,7 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 						status.setMessage(r.getField(5));
 						r.setUniqueId((Long)hibSession.save(status));
 						ChangeLog.addChange(hibSession,
-								getThreadLocalRequest(),
+								getSessionContext(),
 								status,
 								status.getReference() + " " + status.getLabel(),
 								Source.SIMPLE_EDIT, 
@@ -977,25 +973,25 @@ public class SimpleEditServlet extends RemoteServiceServlet implements SimpleEdi
 	}
 	
 	private Long getAcademicSessionId() {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (user.getRole() == null) throw new PageAccessException("Insufficient user privileges.");
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		Long sessionId = (Long) user.getCurrentAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("Insufficient user privileges.");
 		return sessionId;
 	}
 	
 	public boolean isAdmin() {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
-		return user != null && Roles.ADMIN_ROLE.equals(user.getRole());
+		UserContext user = getSessionContext().getUser();
+		return user != null && Roles.ADMIN_ROLE.equals(user.getCurrentRole());
 	}
 	
 	public void checkAdmin() throws PageAccessException {
-		User user = Web.getUser(getThreadLocalRequest().getSession());
+		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
-				getThreadLocalRequest().getSession().isNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (!Roles.ADMIN_ROLE.equals(user.getRole())) throw new PageAccessException("Insufficient user privileges.");
+				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+		if (!Roles.ADMIN_ROLE.equals(user.getCurrentRole())) throw new PageAccessException("Insufficient user privileges.");
 	}
 
 }

@@ -30,9 +30,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
@@ -58,12 +58,14 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$SaveEventRpcRequest")
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
-	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, SessionContext context, EventRights rights) {
 		if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -71,7 +73,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		try {
 			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 			Date now = new Date();
-	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), helper.getUser()).getShortName();
+	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), context.getUser()).getShortName();
 
 			Event event = null;
 			if (request.getEvent().getId() != null) {
@@ -332,7 +334,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
 			}
 			
-			new EventEmail(request, response).send(helper);
+			new EventEmail(request, response).send(context);
 			
 			tx.commit();
 			

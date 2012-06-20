@@ -20,19 +20,25 @@
 package org.unitime.timetable.events;
 
 import org.apache.commons.fileupload.FileItem;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcResponse;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.server.UploadServlet;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload$FileUploadRpcRequest")
 public class FileUploadBackend implements GwtRpcImplementation<FileUploadRpcRequest, FileUploadRpcResponse> {
 
 	@Override
-	public FileUploadRpcResponse execute(FileUploadRpcRequest request, GwtRpcHelper helper) {
-		if (request.isReset())
-			helper.clearLastUploadedFile();
-		FileItem file = helper.getLastUploadedFile();
-		return (file == null ? new FileUploadRpcResponse() : new FileUploadRpcResponse(file.getName()));
+	public FileUploadRpcResponse execute(FileUploadRpcRequest request, SessionContext helper) {
+		if (request.isReset()) {
+			helper.setAttribute(UploadServlet.SESSION_LAST_FILE, null);
+			return new FileUploadRpcResponse();
+		} else {
+			FileItem file = (FileItem)helper.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			return (file == null ? new FileUploadRpcResponse() : new FileUploadRpcResponse(file.getName()));
+		}
 	}
 
 }

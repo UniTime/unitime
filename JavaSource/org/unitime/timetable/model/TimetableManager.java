@@ -32,7 +32,9 @@ import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseTimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.spring.UserContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -107,6 +109,27 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return saList;
 	}
 	
+	public static Set getSubjectAreas(UserContext user) throws Exception {
+	    Set saList = new TreeSet();
+	    Session session = (user.getCurrentAcademicSessionId() == null ? null : SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()));
+	    if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())){
+	    	return(session.getSubjectAreas());
+	    }
+		TimetableManager tm = TimetableManager.findByExternalId(user.getExternalUserId());
+	    if (tm != null && tm.getDepartments() != null){
+	    	Department d = null;
+	    	for (Iterator it = tm.departmentsForSession(session.getUniqueId()).iterator(); it.hasNext();){
+	    		d = (Department) it.next();
+	    		if (d.isExternalManager().booleanValue()){
+	    			return(session.getSubjectAreas());
+	    		} else {
+	    			saList.addAll(d.getSubjectAreas());
+	    		}
+	    	}
+	    }
+        return saList;
+	}
+	
 	public boolean isExternalManager(){
 		boolean isExternal = false; 
 		Department d = null;
@@ -161,10 +184,40 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	public boolean canAudit(Session session, UserContext user) {
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return false;
+		if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return false;
+		for (Iterator i=getSolverGroups().iterator();i.hasNext();) {
+			SolverGroup solverGroup = (SolverGroup)i.next();
+			if (!solverGroup.getSession().equals(session)) continue;
+			if (solverGroup.canAudit()) return true;
+		}
+		return false;
+	}
+	
 	public boolean canSeeTimetable(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return true;
 		if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return true;
+		if (canDoTimetable(session, user)) return true;
+		for (Iterator i=getDepartments().iterator();i.hasNext();) {
+			Department department = (Department)i.next();
+			if (!department.getSession().equals(session)) continue;
+			if (department.getSolverGroup()!=null && !department.getSolverGroup().getSolutions().isEmpty()) return true;
+		}
+		for (Iterator i=Department.findAllExternal(session.getUniqueId()).iterator();i.hasNext();) {
+			Department department = (Department)i.next();
+			if (!department.getSession().equals(session)) continue;
+			if (department.getSolverGroup()!=null && department.getSolverGroup().getCommittedSolution()!=null) return true;
+		}
+		return false;
+	}
+	
+	public boolean canSeeTimetable(Session session, UserContext user) {
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return true;
+		if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
 		if (canDoTimetable(session, user)) return true;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {
 			Department department = (Department)i.next();
@@ -191,6 +244,18 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	public boolean canDoTimetable(Session session, UserContext user) {
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return false;
+		if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return false;
+		for (Iterator i=getSolverGroups().iterator();i.hasNext();) {
+			SolverGroup solverGroup = (SolverGroup)i.next();
+			if (!solverGroup.getSession().equals(session)) continue;
+			if (solverGroup.canTimetable()) return true;
+		}
+		return false;
+	}
+	
 	public boolean canEditExams(Session session, User user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -207,7 +272,39 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
 	}
 	
+	public boolean canEditExams(Session session, UserContext user) {
+        //admin
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        //timetable manager 
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamEdit();
+        
+        //exam manager
+        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamTimetable();
+        
+        return false;
+	}
+	
     public boolean canSeeCourses(Session session, User user) {
+        //admin or exam manager
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
+        
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
+            for (Iterator i=getDepartments().iterator();i.hasNext();) {
+                Department d = (Department)i.next();
+                if (!d.getSession().equals(session)) continue;
+                if (d.isExternalManager() && d.effectiveStatusType().canManagerView()) return true;
+                if (!d.isExternalManager() && d.effectiveStatusType().canOwnerView()) return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    public boolean canSeeCourses(Session session, UserContext user) {
         //admin or exam manager
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
         
@@ -253,8 +350,33 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         
         return false;
     }
+	
+	public boolean canSeeExams(Session session, UserContext user) {
+        //can edit -> can view
+        if (canEditExams(session, user)) return true;
+        
+        //admin or exam manager
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        //timetable manager or view all 
+        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamView();
+        
+        return false;
+    }
 
     public boolean canTimetableExams(Session session, User user) {
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))
+            return session.getStatusType().canExamTimetable();
+        
+        return false;
+    }
+    
+    public boolean canTimetableExams(Session session, UserContext user) {
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
             return true;
         
@@ -270,9 +392,24 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         
         return false;
     }
+    
+    public boolean canSectionStudents(Session session, UserContext user) {
+        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
+            return true;
+        
+        return false;
+    }
 
     public boolean hasASolverGroup(Session session, User user) {
 		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
+			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
+		} else {
+			return !getSolverGroups(session).isEmpty();
+		}
+	}
+    
+    public boolean hasASolverGroup(Session session, UserContext user) {
+		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
 		} else {
 			return !getSolverGroups(session).isEmpty();
@@ -287,7 +424,15 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     	return false;
     }
 
-	public Collection getClasses(Session session) {
+    public static boolean canSeeEvents (UserContext user) {
+    	for (RoomType roomType : RoomType.findAll()) {
+    	    if (roomType.countManagableRooms()>0) return true;
+    	}
+    	return false;
+    }
+
+    
+    public Collection getClasses(Session session) {
     	Vector classes = new Vector(); 
     	for (Iterator i=departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
     		Department d = (Department)i.next();
