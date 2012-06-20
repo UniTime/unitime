@@ -67,6 +67,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Instructional Offering Detail</name>
+			<description>
+				<line>Curricula, Reservations: do not load the curriculum / reservations data with the page when the section is closed.
+					<line>The data are loaded when the section is opened for the first time instead.</line>  
+					<line>This is the same behavior as with the Enrollments section.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Online Student Scheduling: Logging</name>
