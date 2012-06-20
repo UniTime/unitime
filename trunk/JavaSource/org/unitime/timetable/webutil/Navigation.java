@@ -26,6 +26,7 @@ import java.util.Vector;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.spring.SessionContext;
 
 
 /**
@@ -65,6 +66,35 @@ public class Navigation {
 	}
 	
 	public static void set(HttpSession session, int level, Collection entities) {
+		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
+		if (ids==null) {
+			ids = new Vector[sNrLevels];
+			for (int i=0;i<sNrLevels;i++)
+				ids[i] = new Vector();
+			session.setAttribute(sLastDisplayedIdsSessionAttribute, ids);
+		}
+		for (int i=level;i<sNrLevels;i++)
+			ids[i].clear();
+		if (entities==null || entities.isEmpty()) return;
+		for (Iterator i=entities.iterator();i.hasNext();) {
+			Object o = i.next();
+			if (o instanceof Long) {
+				ids[level].add(o);
+			} else {
+				try {
+					if (o.getClass().isArray())
+						ids[level].add(((Object[])o)[0].getClass().getMethod("getUniqueId", new Class[]{}).invoke(((Object[])o)[0],new Object[]{}));
+					else
+						ids[level].add(o.getClass().getMethod("getUniqueId", new Class[]{}).invoke(o,new Object[]{}));
+				} catch (Exception e) {
+					Debug.error(e);
+				}
+			}
+		}
+		//System.out.println("SET["+level+"]:"+ids[level]);
+	}
+	
+	public static void set(SessionContext session, int level, Collection entities) {
 		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
 		if (ids==null) {
 			ids = new Vector[sNrLevels];

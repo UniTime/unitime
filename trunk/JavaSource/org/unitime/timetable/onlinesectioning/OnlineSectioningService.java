@@ -40,6 +40,7 @@ public class OnlineSectioningService {
 	private static Logger sLog = Logger.getLogger(OnlineSectioningService.class);
 	private static Hashtable<Long, OnlineSectioningServer> sInstances = new Hashtable<Long, OnlineSectioningServer>();
 	private static Hashtable<Long, OnlineSectioningServerUpdater> sUpdaters = new Hashtable<Long, OnlineSectioningServerUpdater>();
+	private static OnlineSectioningServerUpdater sUpdater;
 	
     public static SectionLimitProvider sSectionLimitProvider = null;
     public static SectionUrlProvider sSectionUrlProvider = null;
@@ -47,8 +48,59 @@ public class OnlineSectioningService {
     
 	private static ReentrantReadWriteLock sGlobalLock = new ReentrantReadWriteLock();
 
-	public static void init() {
-        if (ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider") != null) {
+	public static void startService() {
+		sLog.info("Student Sectioning Service is starting up ...");
+		OnlineSectioningLogger.startLogger();
+		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
+		String year = ApplicationProperties.getProperty("unitime.enrollment.year");
+		String term = ApplicationProperties.getProperty("unitime.enrollment.term");
+		String campus = ApplicationProperties.getProperty("unitime.enrollment.campus");
+		try {
+			sUpdater = new OnlineSectioningServerUpdater(StudentSectioningQueue.getLastTimeStamp(hibSession, null));
+			for (Iterator<Session> i = SessionDAO.getInstance().findAll(hibSession).iterator(); i.hasNext(); ) {
+				final Session session = i.next();
+				
+				if (year != null && !year.equals(session.getAcademicYear())) continue;
+				if (term != null && !term.equals(session.getAcademicTerm())) continue;
+				if (campus != null && !campus.equals(session.getAcademicInitiative())) continue;
+				if (session.getStatusType().isTestSession()) continue;
+				if (!session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents()) continue;
+
+				int nrSolutions = ((Number)hibSession.createQuery(
+						"select count(s) from Solution s where s.owner.session.uniqueId=:sessionId")
+						.setLong("sessionId", session.getUniqueId()).uniqueResult()).intValue();
+				if (nrSolutions == 0) continue;
+				final Long sessionId = session.getUniqueId();
+				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.autostart", "false"))) {
+					Thread t = new Thread(new Runnable() {
+						public void run() {
+							try {
+								OnlineSectioningService.createInstance(sessionId);
+							} catch (Exception e) {
+								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
+										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+							}
+						}
+					});
+					t.setName("CourseLoader[" + session.getAcademicTerm()+session.getAcademicYear()+" "+session.getAcademicInitiative()+"]");
+					t.setDaemon(true);
+					t.start();
+				} else {
+					try {
+						OnlineSectioningService.createInstance(sessionId);
+					} catch (Exception e) {
+						sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
+								" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+					}
+				}
+			}
+			sUpdater.start();
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to initialize, reason: "+e.getMessage(), e);
+		} finally {
+			hibSession.close();
+		}
+		if (ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider") != null) {
         	try {
         		sSectionLimitProvider = (SectionLimitProvider)Class.forName(ApplicationProperties.getProperty("unitime.custom.SectionLimitProvider")).newInstance();
         	} catch (Exception e) {
@@ -155,7 +207,9 @@ public class OnlineSectioningService {
 		}
 	}
 	
-	public static void unloadAll() {
+	public static void stopService() {
+		sLog.info("Student Sectioning Service is going down ...");
+		sUpdater.stopUpdating();
 		sGlobalLock.writeLock().lock();
 		try {
 			for (OnlineSectioningServerUpdater u: sUpdaters.values()) {
@@ -169,5 +223,6 @@ public class OnlineSectioningService {
 		} finally {
 			sGlobalLock.writeLock().unlock();
 		}
+		OnlineSectioningLogger.stopLogger();
 	}
 }

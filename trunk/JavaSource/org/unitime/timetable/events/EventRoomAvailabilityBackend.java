@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.hibernate.Query;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -33,13 +33,15 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$EventRoomAvailabilityRpcRequest")
 public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
 	
 	@Override
-	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, SessionContext context, EventRights rights) {
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());

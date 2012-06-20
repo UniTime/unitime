@@ -29,7 +29,7 @@ import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -64,13 +64,15 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
+@Service("org.unitime.timetable.gwt.shared.EventInterface$EventDetailRpcRequest")
 public class EventDetailBackend extends EventAction<EventDetailRpcRequest, EventInterface> {
 	
 	@Override
-	public EventInterface execute(EventDetailRpcRequest request, GwtRpcHelper helper, EventRights rights) {
+	public EventInterface execute(EventDetailRpcRequest request, SessionContext context, EventRights rights) {
 		Event event = EventDAO.getInstance().get(request.getEventId());
 		if (event == null)
 			throw new EventException("No event with id " + request.getEventId() + " found.");

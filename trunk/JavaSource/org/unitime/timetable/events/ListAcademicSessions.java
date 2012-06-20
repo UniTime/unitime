@@ -25,12 +25,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
@@ -41,17 +41,19 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
 
+@Service("org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox$ListAcademicSessions")
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	@Override
-	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, GwtRpcHelper helper) {
+	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, SessionContext context) {
 		// Check authentication if needed
 		if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
-			if (helper.getUser() == null) throw new PageAccessException(
-					helper.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
+			if (context.getUser() == null) throw new PageAccessException(
+					context.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
 		}
 		
 		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
@@ -64,7 +66,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, command.getTerm());
 			} catch (EventException e) {}
 		} else {
-			Long sessionId = helper.getAcademicSessionId();
+			Long sessionId = (context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null);
 			if (sessionId != null)
 				selected = SessionDAO.getInstance().get(sessionId, hibSession);
 		}
@@ -76,7 +78,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery("select s from Session s").list());
 		if (selected == null) selected = sessions.last();
 		for (Session session: sessions) {
-			EventRights rights = new SimpleEventRights(helper, session.getUniqueId());
+			EventRights rights = new SimpleEventRights(context, session.getUniqueId());
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			
 			AcademicSession acadSession = new AcademicSession(

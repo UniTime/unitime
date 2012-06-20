@@ -19,18 +19,18 @@
 */
 package org.unitime.timetable.events;
 
-import org.unitime.timetable.gwt.command.server.GwtRpcHelper;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.spring.SessionContext;
 
 public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, FilterRpcResponse> {
 
 	@Override
-	public FilterRpcResponse execute(FilterRpcRequest request, GwtRpcHelper helper, EventRights rights) {
-		if (helper.getUser() != null) {
-			request.addOption("user", helper.getUser().getId());
-			if (helper.getUser().getCurrentRole() != null)
-				request.addOption("role", helper.getUser().getCurrentRole());
+	public FilterRpcResponse execute(FilterRpcRequest request, SessionContext context, EventRights rights) {
+		if (context.isAuthenticated()) {
+			request.addOption("user", context.getUser().getExternalUserId());
+			if (context.getUser().getCurrentRole() != null)
+				request.addOption("role", context.getUser().getCurrentRole());
 		}
 		
 		FilterRpcResponse response = new FilterRpcResponse();

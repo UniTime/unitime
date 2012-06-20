@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.EventRights;
@@ -47,6 +46,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
+import org.unitime.timetable.spring.SimpleUserContext;
 
 public abstract class EventsExporter implements Exporter {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -91,27 +91,27 @@ public abstract class EventsExporter implements Exporter {
     	if (hasRoomFilter)
     		request.setRoomFilter(roomFilter);
     	String user = helper.getParameter("user");
-    	User u = null;
+    	SimpleUserContext u = null;
     	if (user != null) {
-    		u = new User();
-    		u.setId(user);
+    		u = new SimpleUserContext();
+    		u.setExternalUsetId(user);
     		eventFilter.setOption("user", user);
     		roomFilter.setOption("user", user);
     		String role = helper.getParameter("role");
     		if (role != null) {
     			eventFilter.setOption("role", role);
     			roomFilter.setOption("role", role);
-    			u.setRole(role);
+    			u.setCurrentRole(role);
     		}
     	} else if (helper.getUser() != null) {
-    		u = new User();
-    		u.setId(helper.getUser().getId());
-    		eventFilter.setOption("user", helper.getUser().getId());
-    		roomFilter.setOption("user", helper.getUser().getId());
-    		if (helper.getUser().getRole() != null) {
-    			u.setRole(helper.getUser().getRole());
-        		eventFilter.setOption("role", helper.getUser().getRole());
-        		roomFilter.setOption("role", helper.getUser().getRole());
+    		u = new SimpleUserContext();
+    		u.setExternalUsetId(helper.getUser().getExternalUserId());
+    		eventFilter.setOption("user", helper.getUser().getExternalUserId());
+    		roomFilter.setOption("user", helper.getUser().getExternalUserId());
+    		if (helper.getUser().getCurrentRole() != null) {
+    			u.setCurrentRole(helper.getUser().getCurrentRole());
+        		eventFilter.setOption("role", helper.getUser().getCurrentRole());
+        		roomFilter.setOption("role", helper.getUser().getCurrentRole());
     		}
     	}
     	

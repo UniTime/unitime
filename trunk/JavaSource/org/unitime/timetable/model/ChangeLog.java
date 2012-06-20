@@ -34,7 +34,9 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
-
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.spring.UserContext;
 
 
 
@@ -207,6 +209,42 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             Debug.error(e);
         }
     }
+        
+        public static void addChange(
+                org.hibernate.Session hibSession,
+                SessionContext context,
+                Object object,
+                String objectTitle,
+                Source source,
+                Operation operation,
+                SubjectArea subjArea,
+                Department dept) {
+            try {
+            	if (!context.isAuthenticated()) {
+            		Debug.warning("Unable to add change log -- no user.");
+                    return;
+            	}
+                String userId = null;
+            	if (context.getUser() instanceof UserContext.CanUseChameleon) {
+            		userId = ((UserContext.CanUseChameleon)context.getUser()).getOriginalExternalUserId();
+            	}
+            	if (userId == null)
+            		userId = context.getUser().getExternalUserId();
+            	Session session = (context.getUser().getCurrentAcademicSessionId() == null ? null : SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()));
+                if (session == null) {
+                    Debug.warning("Unable to add change log -- no academic session.");
+                    return;
+                }
+                TimetableManager manager = TimetableManager.findByExternalId(userId);
+                if (manager == null) {
+                    Debug.warning("Unable to add change log -- no timetabling manager.");
+                    return;
+                }
+                addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
+            } catch (Exception e) {
+                Debug.error(e);
+            }
+        }
         
     public static void addChange(
             org.hibernate.Session hibSession,
