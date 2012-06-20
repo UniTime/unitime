@@ -236,7 +236,7 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 		this.allowDeletes.set(pos, Boolean.TRUE);
 		this.allowDeletes.add(pos + 1, Boolean.TRUE);
 		this.externalIds.add(pos + 1, "");
-		this.leadFlags.add(pos + 1, Boolean.TRUE);
+		this.leadFlags.add(pos + 1, this.leadFlags.get(pos));
 	}
 
 	public void updateClasses() throws Exception {
