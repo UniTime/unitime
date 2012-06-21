@@ -26,6 +26,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamCbsForm;
 import org.unitime.timetable.model.UserData;
@@ -34,6 +35,7 @@ import org.unitime.timetable.model.UserData;
 /** 
  * @author Tomas Muller
  */
+@Service("/ecbs")
 public class ExamCbsAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

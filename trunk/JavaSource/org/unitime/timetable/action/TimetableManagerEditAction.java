@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -69,6 +70,7 @@ import org.unitime.timetable.util.LookupTables;
  * @struts:action-forward name="success" path="timetableManagerList.do" redirect="true"
  * @struts:action-forward name="fail" path="timetableManagerList.do" redirect="true"
  */
+@Service("/timetableManagerEdit")
 public class TimetableManagerEditAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

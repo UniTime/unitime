@@ -26,14 +26,14 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.Messages;
+import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 
 /**
  * @author Tomas Muller
  */
-public abstract class LocalizedLookupDispatchAction extends LookupDispatchAction {
+public abstract class LocalizedLookupDispatchAction extends SpringAwareLookupDispatchAction {
 	
 	@Override
 	protected Map getKeyMethodMap() {

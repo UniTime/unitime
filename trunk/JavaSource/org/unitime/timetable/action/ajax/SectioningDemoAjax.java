@@ -31,6 +31,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternModel;
@@ -42,6 +43,7 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
  * @author Tomas Muller
  *
  */
+@Service("/sectioningDemoAjax")
 public class SectioningDemoAjax extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

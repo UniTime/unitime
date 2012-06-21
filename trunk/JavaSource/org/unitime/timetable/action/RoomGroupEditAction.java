@@ -36,11 +36,11 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -57,6 +57,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
+import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 
 
@@ -70,7 +71,8 @@ import org.unitime.timetable.util.Constants;
  * @struts.action-forward name="showEdit" path="roomGroupEditTile"
  * @struts.action-forward name="showAdd" path="roomGroupEditTile"
  */
-public class RoomGroupEditAction extends LookupDispatchAction {
+@Service("/roomGroupEdit")
+public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 
 	// --------------------------------------------------------- Instance Variables
 

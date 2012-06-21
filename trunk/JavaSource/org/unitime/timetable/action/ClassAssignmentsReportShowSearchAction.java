@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -47,7 +48,7 @@ import org.unitime.timetable.webutil.BackTracker;
 /**
  * @author Stephanie Schluttenhofer
  */
-
+@Service("/classAssignmentsReportShowSearch")
 public class ClassAssignmentsReportShowSearchAction extends Action {
 
 	/** 

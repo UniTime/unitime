@@ -53,6 +53,7 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -107,6 +108,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @struts:action path="/RoomList" name="roomListForm"
  *                input="/admin/roomList.jsp" scope="request" validate="false"
  */
+@Service("/roomList")
 public class RoomListAction extends Action {
 
 	// --------------------------------------------------------- Instance

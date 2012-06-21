@@ -51,7 +51,7 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 	public TravelTimeResponse execute(TravelTimesRequest request, SessionContext context) {
 		if (!context.isAuthenticated())
 			throw new PageAccessException(context.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		if (!Roles.ADMIN_ROLE.equals(context.getUser()))
+		if (!Roles.ADMIN_ROLE.equals(context.getUser().getCurrentRole()))
 			throw new PageAccessException(MESSAGES.authenticationInsufficient());
 		if (context.getUser().getCurrentAcademicSessionId() == null)
 			throw new PageAccessException(MESSAGES.authenticationNoSession());

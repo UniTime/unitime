@@ -31,6 +31,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -50,6 +51,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
 /** 
  * @author Tomas Muller
  */
+@Service("/assignmentHistory")
 public class AssignmentHistoryAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd hh:mma");
 

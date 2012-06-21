@@ -1,4 +1,3 @@
-
 /*
  * UniTime 3.4 (University Timetabling Application)
  * Copyright (C) 2012, UniTime LLC, and individual contributors

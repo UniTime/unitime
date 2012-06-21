@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 /**
  * @author Zuzana Mullerova
  */
+@Service("/eventRoomAvailability")
 public class EventRoomAvailabilityAction extends Action {
 
 	/** 

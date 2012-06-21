@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -73,6 +74,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * XDoclet definition:
  * @struts:action path="/classEdit" name="classEditForm" input="/user/classEdit.jsp" scope="request" validate="true"
  */
+@Service("/classEdit")
 public class ClassEditAction extends PreferencesAction {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

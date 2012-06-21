@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
@@ -50,6 +51,7 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 /** 
  * @author Tomas Muller
  */
+@Service("/examPdfReport")
 public class ExamPdfReportAction extends Action {
     protected static Logger sLog = Logger.getLogger(ExamPdfReportAction.class);
 

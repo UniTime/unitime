@@ -46,6 +46,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.User;
@@ -88,6 +89,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
+@Service("/personalSchedule")
 public class PersonalizedExamReportAction extends Action {
     public static ExternalUidTranslation sTranslation;
     private static Log sLog = LogFactory.getLog(PersonalizedExamReportAction.class);

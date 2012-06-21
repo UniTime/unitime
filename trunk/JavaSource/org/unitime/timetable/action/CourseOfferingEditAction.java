@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.impl.SessionImpl;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
@@ -70,6 +71,7 @@ import org.unitime.timetable.util.LookupTables;
  * XDoclet definition:
  * @struts:action path="/courseOfferingEdit" name="courseOfferingEditForm" input="/user/courseOfferingEdit.jsp" scope="request"
  */
+@Service("/courseOfferingEdit")
 public class CourseOfferingEditAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

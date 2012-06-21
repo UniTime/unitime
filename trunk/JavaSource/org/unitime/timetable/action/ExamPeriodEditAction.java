@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -48,6 +49,7 @@ import org.unitime.timetable.util.Constants;
 /** 
  * @author Tomas Muller
  */
+@Service("/examPeriodEdit")
 public class ExamPeriodEditAction extends Action {
 	
 	// --------------------------------------------------------- Instance Variables

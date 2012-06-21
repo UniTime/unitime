@@ -43,6 +43,7 @@ import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -67,6 +68,7 @@ import net.sf.cpsolver.ifs.util.CSVFile;
 /** 
  * @author Tomas Muller
  */
+@Service("/timePatternEdit")
 public class TimePatternEditAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
