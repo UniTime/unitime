@@ -104,6 +104,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	private HashSet<CacheElement<Long>> iOfferingsToPersistExpectedSpaces = new HashSet<CacheElement<Long>>();
 	
 	OnlineSectioningServerImpl(Long sessionId, boolean waitTillStarted) throws SectioningException {
+		iConfig = new ServerConfig();
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		try {
 			Session session = SessionDAO.getInstance().get(sessionId, hibSession);
@@ -159,7 +160,6 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		} finally {
 			hibSession.close();
 		}
-		iConfig = new ServerConfig();
 		iDistanceMetric = new DistanceMetric(iConfig);
 		iLog.info("Config: " + ToolBox.dict2string(iConfig, 2));
 	}
