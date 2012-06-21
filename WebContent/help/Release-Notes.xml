@@ -65,6 +65,22 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Added abiliy to set Hibernate CacheMode</name>
+			<description>
+				<line>Using application property unitime.sectioning.config.CacheMode (defaults to null -- no change).
+					<line>A different cache mode can be set for each action, using unitime.sectioning.config.&lt;ACTION NAME&gt;.CacheMode properties.</line>
+					<line>E.g., unitime.sectioning.config.reload-student.CacheMode for reload-student action.</line>
+				</line>
+				<line>Possible values:
+					<line>GET: the action may read items from the cache, but will not add items, except to invalidate items when updates occur.</line>
+					<line>IGNORE: the action will never interact with the cache, except to invalidate cache items when updates occur.</line>
+					<line>NORMAL: the action may read items from the cache, and add items to the cache.</line>
+					<line>PUT: the action will never read items from the cache, but will add items to the cache as it reads them from the database.</line>
+					<line>REFRESH: the action will never read items from the cache, but will add items to the cache as it reads them from the database.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
