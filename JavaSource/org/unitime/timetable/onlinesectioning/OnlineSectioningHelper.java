@@ -41,6 +41,7 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
@@ -75,9 +76,15 @@ public class OnlineSectioningHelper {
     protected OnlineSectioningLog.Log.Builder iLog = OnlineSectioningLog.Log.newBuilder();
     protected OnlineSectioningLog.Entity iUser = null;
     protected static int sBatchSize = 100;
+    protected CacheMode iCacheMode = null;
+    
+    public OnlineSectioningHelper(OnlineSectioningLog.Entity user, CacheMode cacheMode) {
+    	iUser = user;
+    	iCacheMode = cacheMode;
+    }
     
     public OnlineSectioningHelper(OnlineSectioningLog.Entity user) {
-    	iUser = user;
+    	this(user, null);
     }
     
     public OnlineSectioningHelper(org.hibernate.Session hibSession, OnlineSectioningLog.Entity user) {
@@ -148,6 +155,12 @@ public class OnlineSectioningHelper {
     public boolean beginTransaction() {
         try {
             iHibSession = new _RootDAO().createNewSession();
+            
+            if (iCacheMode != null) {
+            	debug("Using hibernate cache mode " + iCacheMode + ".");
+                iHibSession.setCacheMode(iCacheMode);
+            }
+            
             iTx = iHibSession.beginTransaction();
             debug("Transaction started.");
             return true;
