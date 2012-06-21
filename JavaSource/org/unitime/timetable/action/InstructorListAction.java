@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -60,6 +61,7 @@ import org.unitime.timetable.webutil.InstructorListBuilder;
  *                scope="request" validate="true"
  * @struts:action-forward name="showInstructorList" path="instructorListTile"
  */
+@Service("/instructorList")
 public class InstructorListAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

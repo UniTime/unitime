@@ -34,9 +34,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
 import org.unitime.timetable.model.Assignment;
@@ -55,6 +55,7 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
+import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -69,7 +70,8 @@ import org.unitime.timetable.util.LookupTables;
  * @struts:action-forward name="showAdd" path="/admin/sessionAdd.jsp"
  * @struts:action-forward name="showSessionList" path="/sessionList.do" redirect="true"
  */
-public class SessionEditAction extends LookupDispatchAction {
+@Service("/sessionEdit")
+public class SessionEditAction extends SpringAwareLookupDispatchAction {
 
 	// --------------------------------------------------------- Instance Variables
 

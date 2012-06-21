@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -56,6 +57,7 @@ import org.unitime.timetable.util.Constants;
  * @struts.action path="/roomDeptList" name="roomDeptListForm" input="/admin/roomDeptList.jsp" parameter="doit" scope="request" validate="true"
  * @struts.action-forward name="showRoomDeptList" path="roomDeptListTile"
  */
+@Service("/roomDeptList")
 public class RoomDeptListAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

@@ -28,6 +28,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
@@ -46,6 +47,7 @@ import org.unitime.timetable.webutil.TimetableManagerBuilder;
  * @struts:action-forward name="success" path="schedDeputyListTile" redirect="true"
  * @struts:action-forward name="fail" path="/error.jsp" redirect="true"
  */
+@Service("/timetableManagerList")
 public class TimetableManagerListAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

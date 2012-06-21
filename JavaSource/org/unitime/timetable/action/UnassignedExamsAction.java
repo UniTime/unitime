@@ -30,6 +30,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -59,6 +60,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 /** 
  * @author Tomas Muller
  */
+@Service("/unassignedExams")
 public class UnassignedExamsAction extends Action {
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamReportForm myForm = (ExamReportForm) form;

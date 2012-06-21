@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SpecialUseRoomForm;
@@ -71,6 +72,7 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  * XDoclet definition:
  * @struts.action path="/addSpecialUseRoom" name="specialUseRoomForm" input="/admin/addSpecialUseRoom.jsp" scope="request" validate="true"
  */
+@Service("/addSpecialUseRoom")
 public class AddSpecialUseRoomAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -55,6 +56,7 @@ import org.unitime.timetable.util.LookupTables;
  * XDoclet definition:
  * @struts:action path="/chameleon" name="chameleonForm" input="/admin/chameleon.jsp" scope="request"
  */
+@Service("/chameleon")
 public class ChameleonAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

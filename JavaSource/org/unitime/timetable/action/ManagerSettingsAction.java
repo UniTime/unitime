@@ -36,6 +36,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -54,6 +55,7 @@ import org.unitime.timetable.model.dao.SettingsDAO;
  * XDoclet definition:
  * @struts:action path="/managerSettings" name="managerSettingsForm" input="/user/managerSettings.jsp" scope="request"
  */
+@Service("/managerSettings")
 public class ManagerSettingsAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

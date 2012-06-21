@@ -26,11 +26,13 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 
 /**
  * Dummy action to redirect requests using tiles
  * @author Heston Fernandes
  */
+@Service("/loginRequired")
 public class TilesRedirectAction extends Action {
 
 

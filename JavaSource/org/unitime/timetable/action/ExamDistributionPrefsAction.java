@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -66,6 +67,7 @@ import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
 
+@Service("/examDistributionPrefs")
 public class ExamDistributionPrefsAction extends Action {
 
     public ActionForward execute(

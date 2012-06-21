@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -51,6 +52,7 @@ import org.unitime.timetable.webutil.DesignatorListBuilder;
  * XDoclet definition:
  * @struts:action path="/designatorList" name="designatorListForm" input="/user/designatorList.jsp" scope="request"
  */
+@Service("/designatorList")
 public class DesignatorListAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -59,6 +60,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  * @struts.action path="/instructorPrefEdit" name="instructorEditForm" input="/user/instructorPrefsEdit.jsp" scope="request"
  * @struts.action-forward name="showEdit" path="instructorPrefsEditTile"
  */
+@Service("/instructorPrefEdit")
 public class InstructorPrefEditAction extends PreferencesAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

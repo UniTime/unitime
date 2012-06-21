@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
@@ -56,6 +57,7 @@ import org.unitime.timetable.util.Constants;
  * @struts:action path="/instructorSearch" name="instructorSearchForm" input="/user/instructorSearch.jsp" scope="request" validate="true"
  * @struts:action-forward name="showInstructorSearch" path="instructorSearchTile"
  */
+@Service("/instructorSearch")
 public class InstructorSearchAction extends Action {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

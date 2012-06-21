@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
@@ -45,7 +46,7 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.util.Constants;
 
-
+@Service("/departmentEdit")
 public class DepartmentEditAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

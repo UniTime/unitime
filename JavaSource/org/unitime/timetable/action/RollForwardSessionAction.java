@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -59,6 +60,7 @@ import org.unitime.timetable.util.queue.QueueProcessor;
  * XDoclet definition:
  * @struts.action path="/exportSessionToMsf" name="exportSessionToMsfForm" input="/form/exportSessionToMsf.jsp" scope="request" validate="true"
  */
+@Service("/rollForwardSession")
 public class RollForwardSessionAction extends Action {
 	/*
 	 * Generated Methods

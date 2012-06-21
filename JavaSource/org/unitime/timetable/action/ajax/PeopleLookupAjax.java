@@ -41,6 +41,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
@@ -60,6 +61,7 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  *
  */
+@Service("/peopleLookupAjax")
 public class PeopleLookupAjax extends Action {
     public static ExternalUidTranslation sTranslation;
     

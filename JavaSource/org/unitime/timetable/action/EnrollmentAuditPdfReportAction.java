@@ -40,6 +40,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Email;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -56,6 +57,7 @@ import org.unitime.timetable.util.Constants;
 /** 
  * @author Tomas Muller
  */
+@Service("/enrollmentAuditPdfReport")
 public class EnrollmentAuditPdfReportAction extends Action {
     protected static Logger sLog = Logger.getLogger(EnrollmentAuditPdfReportAction.class);
 

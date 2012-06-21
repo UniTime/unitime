@@ -27,12 +27,14 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventStandardNotesForm;
 
 /**
  * @author Zuzana Mullerova
  */
+@Service("/eventStandardNotes")
 public class EventStandardNotesAction extends Action {
 
 	public ActionForward execute(

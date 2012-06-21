@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.hibernate.HibernateException;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.BuildingListForm;
@@ -42,6 +43,7 @@ import org.apache.struts.action.ActionMapping;
 * XDoclet definition:
 * @struts:action path="/BuildingList" name="buildingListForm" input="/admin/buildingList.jsp" scope="request" validate="true"
 */
+@Service("/buildingList")
 public class BuildingListAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables
