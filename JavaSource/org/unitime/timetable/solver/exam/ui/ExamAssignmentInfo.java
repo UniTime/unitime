@@ -971,15 +971,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
     }
     
     public int getNrInstructorDirectConflicts(ExamSectionInfo section) {
-        int ret = 0;
-        for (Iterator i=iInstructorDirects.iterator();i.hasNext();) {
-            DirectConflict dc = (DirectConflict)i.next();
-            for (Enumeration f=dc.getStudents().elements();f.hasMoreElements();)
-                if (dc.getOtherEventId()!=null) {
-                    if (section.getStudentIds().contains(f.nextElement())) ret++;
-                } else ret++;
-        }
-        return ret;
+    	return getNrInstructorDirectConflicts();
     }
 
     public int getNrInstructorBackToBackConflicts(ExamSectionInfo section) {
