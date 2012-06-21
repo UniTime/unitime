@@ -58,6 +58,7 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.CacheMode;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -553,7 +554,8 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	@Override
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
-		OnlineSectioningHelper h = new OnlineSectioningHelper(user);
+		String cacheMode = getConfig().getProperty(action.name() + ".CacheMode", getConfig().getProperty("CacheMode"));
+		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode == null ? null : CacheMode.parse(cacheMode));
 		try {
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());
