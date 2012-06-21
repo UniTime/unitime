@@ -33,6 +33,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -52,6 +53,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
  * @author Tomas Muller
  *
  */
+@Service("/distributionPrefsAjax")
 public class DistributionPrefsAjax extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         

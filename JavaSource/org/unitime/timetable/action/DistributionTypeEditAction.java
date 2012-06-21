@@ -32,6 +32,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.DistributionTypeEditForm;
@@ -62,6 +63,7 @@ import org.apache.struts.util.LabelValueBean;
  * @struts:action-forward name="showEdit" path="/admin/distributionTypeEdit.jsp"
  * @struts:action-forward name="showDistributionTypeList" path="/distributionTypeList.do" redirect="true"
  */
+@Service("/distributionTypeEdit")
 public class DistributionTypeEditAction extends Action {
 	// --------------------------------------------------------- Instance Variables
 

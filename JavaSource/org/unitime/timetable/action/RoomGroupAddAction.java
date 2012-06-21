@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -60,6 +61,7 @@ import org.unitime.timetable.util.Constants;
  * @struts.action-forward name="showRoomGroupList" path="/roomGroupList.do"
  * @struts.action-forward name="showAdd" path="roomGroupAddTile"
  */
+@Service("/roomGroupAdd")
 public class RoomGroupAddAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

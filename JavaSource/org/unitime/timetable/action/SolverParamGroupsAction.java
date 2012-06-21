@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -46,6 +47,7 @@ import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 /** 
  * @author Tomas Muller
  */
+@Service("/solverParamGroups")
 public class SolverParamGroupsAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

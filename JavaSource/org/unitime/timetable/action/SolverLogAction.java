@@ -26,6 +26,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SolverLogForm;
 import org.unitime.timetable.model.UserData;
@@ -36,6 +37,7 @@ import org.unitime.timetable.solver.WebSolver;
 /** 
  * @author Tomas Muller
  */
+@Service("/solverLog")
 public class SolverLogAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

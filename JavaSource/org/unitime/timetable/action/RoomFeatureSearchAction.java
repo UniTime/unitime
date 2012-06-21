@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.util.LabelValueBean;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.RoomFeatureListForm;
@@ -52,6 +53,7 @@ import org.unitime.timetable.util.LookupTables;
  * @struts.action-forward name="showRoomFeatureSearch" path="roomFeatureSearchTile"
  * @struts.action-forward name="showRoomFeatureList" path="roomFeatureListTile"
  */
+@Service("/roomFeatureSearch")
 public class RoomFeatureSearchAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -68,6 +69,7 @@ import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
+@Service("/examList")
 public class ExamListAction extends Action {
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

@@ -41,6 +41,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -76,6 +77,7 @@ import org.unitime.timetable.util.LookupTables;
  * XDoclet definition:
  * @struts:action path="/courseOfferingEdit" name="instructionalOfferingListForm" input="/user/instructionalOfferingSearch.jsp" scope="request"
  */
+@Service("/crossListsModify")
 public class CrossListsModifyAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);

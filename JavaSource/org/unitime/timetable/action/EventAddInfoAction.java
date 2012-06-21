@@ -28,6 +28,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddInfoForm;
@@ -35,6 +36,7 @@ import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
 
+@Service("/eventAddInfo")
 public class EventAddInfoAction extends Action {
 
 	public ActionForward execute(

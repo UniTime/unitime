@@ -35,8 +35,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
@@ -46,6 +46,7 @@ import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -56,8 +57,8 @@ import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilde
 /**
  * @author Stephanie Schluttenhofer
  */
-
-public class ClassAssignmentsReportSearchAction extends LookupDispatchAction {
+@Service("/classAssignmentsReportSearch")
+public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatchAction {
 
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();

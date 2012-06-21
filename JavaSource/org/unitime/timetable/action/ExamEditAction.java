@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -72,6 +73,7 @@ import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
+@Service("/examEdit")
 public class ExamEditAction extends PreferencesAction {
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {

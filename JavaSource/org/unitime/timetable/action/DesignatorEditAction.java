@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -59,6 +60,7 @@ import org.unitime.timetable.webutil.BackTracker;
  * XDoclet definition:
  * @struts:action path="/designatorEdit" name="designatorEditForm" input="/user/designatorEdit.jsp" scope="request"
  */
+@Service("/designatorEdit")
 public class DesignatorEditAction extends Action {
 
     // --------------------------------------------------------- Instance Variables

@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -73,7 +74,7 @@ import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
 /**
  * @author Stephanie Schluttenhofer
  */
-
+@Service("/instructionalOfferingSearch")
 public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	

@@ -47,6 +47,7 @@ import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -71,6 +72,7 @@ import net.sf.cpsolver.ifs.util.CSVFile;
 /** 
  * @author Tomas Muller
  */
+@Service("/datePatternEdit")
 public class DatePatternEditAction extends Action {
 	
 	// --------------------------------------------------------- Instance Variables

@@ -44,6 +44,7 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
 import org.unitime.commons.User;
@@ -71,6 +72,7 @@ import org.unitime.timetable.util.queue.QueueProcessor;
  * XDoclet definition:
  * @struts.action path="/dataImport" name="dataImportForm" input="/form/dataImport.jsp" scope="request" validate="true"
  */
+@Service("/dataImport")
 public class DataImportAction extends Action {
 
 	// --------------------------------------------------------- Instance Variables

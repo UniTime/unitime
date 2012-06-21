@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -44,6 +45,7 @@ import fr.improve.struts.taglib.layout.suggest.MultipleSuggestAction;
  * 
  * @struts:action scope="request"
  */
+@Service("/getCourseNumbers")
 public class CourseNumSuggestAction extends MultipleSuggestAction {
 
     // --------------------------------------------------------- Methods

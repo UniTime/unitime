@@ -32,9 +32,9 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.actions.LookupDispatchAction;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -43,13 +43,15 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 
 
 /**
  * @author Stephanie Schluttenhofer
  */
 
-public class InstructionalOfferingChangeAction extends LookupDispatchAction {
+@Service("/instructionalOfferingChange")
+public class InstructionalOfferingChangeAction extends SpringAwareLookupDispatchAction {
 
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();
