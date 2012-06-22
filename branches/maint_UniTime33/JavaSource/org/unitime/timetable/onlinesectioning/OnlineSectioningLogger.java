@@ -172,7 +172,7 @@ public class OnlineSectioningLogger extends Thread {
 			sLog.error("Online Sectioning Logger failed: " + t.getMessage(), t);
 		} finally {
 			iActive = false;
-			if (iOut != null) iOut.flush(); iOut.close();
+			if (iOut != null) { iOut.flush(); iOut.close(); }
 		}
 		sLog.info("Online Sectioning Logger is down.");	}
 
