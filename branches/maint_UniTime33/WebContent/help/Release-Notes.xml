@@ -81,6 +81,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Offering Locks</name>
+			<description>
+				<line>Instructional Offering Detail: Multiple Class Setup should always require an offering lock.
+					<line>Under certain conditions, it was possible to use the Multiple Class Setup page without locking the offering in the Assistant mode.</line>
+					<line>E.g., if there were some externally managed classes that the user was be allowed to edit.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

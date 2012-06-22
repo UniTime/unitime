@@ -229,6 +229,9 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
      * @return
      */
     public boolean hasExternallyManagedSubparts(User user, boolean checkClasses) {
+    	if (getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
+    		return false;
+    	
 		if (this.getSchedulingSubparts() != null && this.getSchedulingSubparts().size() > 0){
 			Iterator it = this.getSchedulingSubparts().iterator();
 			while(it.hasNext()){
