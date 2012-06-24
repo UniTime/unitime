@@ -57,7 +57,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setCanAddEvent(rights.canAddEvent(EventType.Special, null));
 		response.setCanAddCourseEvent(rights.canAddEvent(EventType.Course, null));
 		
-		response.setCanExportCSV(rights.canSeeSchedule(null) || rights.canLookupContacts());
+		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		
 		setupSponsoringOrganizations(session,  response);
 		
