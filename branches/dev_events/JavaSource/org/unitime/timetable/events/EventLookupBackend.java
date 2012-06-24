@@ -1360,7 +1360,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					case CURRICULUM:
 						arrageHourClasses = hibSession.createQuery(
 								"select c from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co, CurriculumCourse cc " +
-								"where c.committedAssignment is null and co = cc.course and cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId")
+								"where c.committedAssignment is null and co = cc.course and (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId)")
 								.setLong("resourceId", request.getResourceId())
 								.setCacheable(true).list();
 						break;
