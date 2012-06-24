@@ -300,8 +300,7 @@
             path="loginRequiredTile" />
          <forward
          	name="norole"
-            path="/personalSchedule.do"
-            redirect="true" />
+            path="/main.jsp" />
       </action>
 
       <action
