@@ -245,12 +245,6 @@ public class SimpleEventRights implements EventRights {
 	
 	@Override
 	public boolean canApprove(Meeting meeting) {
-		// Admin can always approve a meeting
-		if (isAdmin()) return true;
-		
-		// Past meetings cannot be edited
-		if (isPastOrOutside(meeting.getStartTime())) return false;
-		
 		// No approval for examination and class events
 		switch (meeting.getEvent().getEventType()) {
 		case Event.sEventTypeClass:
@@ -258,6 +252,12 @@ public class SimpleEventRights implements EventRights {
 		case Event.sEventTypeMidtermExam:
 			return false;
 		}
+
+		// Admin can always approve a meeting
+		if (isAdmin()) return true;
+		
+		// Past meetings cannot be edited
+		if (isPastOrOutside(meeting.getStartTime())) return false;
 
 		// Event manager can approve if no location, or if the location is managed by the user
 		if (isEventManager()) {
