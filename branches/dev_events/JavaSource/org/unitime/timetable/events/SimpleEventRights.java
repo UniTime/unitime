@@ -161,6 +161,9 @@ public class SimpleEventRights implements EventRights {
 
 	@Override
 	public boolean canCreate(Long locationId) {
+		// Admin can always create an event.
+		if (isAdmin()) return true;
+		
 		return isAuthenticated() && isEventLocation(locationId);
 	}
 
@@ -213,6 +216,9 @@ public class SimpleEventRights implements EventRights {
 
 	@Override
 	public boolean canEdit(Meeting meeting) {
+		// Admin can always edit a meeting
+		if (isAdmin()) return true;
+		
 		// Past meetings cannot be edited
 		if (isPastOrOutside(meeting.getStartTime())) return false;
 		
@@ -228,8 +234,8 @@ public class SimpleEventRights implements EventRights {
 		if (isAuthenticated() && meeting.getEvent().getMainContact() != null && getUserId().equals(meeting.getEvent().getMainContact().getExternalUniqueId()))
 			return true;
 		
-		// Admin or event manager can edit if no location, or if the location is managed by the user
-		if (isAdmin() || isEventManager()) {
+		// Event manager can edit if no location, or if the location is managed by the user
+		if (isEventManager()) {
 			Location location = meeting.getLocation();
 			return location == null || isEventLocation(location.getUniqueId());
 		}
@@ -239,6 +245,9 @@ public class SimpleEventRights implements EventRights {
 	
 	@Override
 	public boolean canApprove(Meeting meeting) {
+		// Admin can always approve a meeting
+		if (isAdmin()) return true;
+		
 		// Past meetings cannot be edited
 		if (isPastOrOutside(meeting.getStartTime())) return false;
 		
@@ -250,8 +259,8 @@ public class SimpleEventRights implements EventRights {
 			return false;
 		}
 
-		// Admin or event manager can approve if no location, or if the location is managed by the user
-		if (isAdmin() || isEventManager()) {
+		// Event manager can approve if no location, or if the location is managed by the user
+		if (isEventManager()) {
 			Location location = meeting.getLocation();
 			return location == null || isEventLocation(location.getUniqueId());
 		}

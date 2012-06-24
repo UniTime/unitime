@@ -91,11 +91,10 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				acadSession.set(AcademicSession.Flag.HasFinalExams);
 			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeMidterm))
 				acadSession.set(AcademicSession.Flag.HasMidtermExams);
-			if (rights.isEventLocation(null)) {
+			if (rights.isEventLocation(null))
 				acadSession.set(AcademicSession.Flag.HasEvents);
-				if (rights.canAddEvent(EventType.Special, null))
-					acadSession.set(AcademicSession.Flag.CanAddEvents);
-			}
+			if (rights.canAddEvent(EventType.Special, null))
+				acadSession.set(AcademicSession.Flag.CanAddEvents);
 			Session prev = null, next = null;
 			for (Session s: sessions) {
 				if (s.getUniqueId().equals(session.getUniqueId()) || !s.getAcademicInitiative().equals(session.getAcademicInitiative())) continue;
@@ -122,7 +121,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			Session ret = SessionDAO.getInstance().get(Long.parseLong(term), hibSession);
 			if (ret != null) return ret;
 		} catch (NumberFormatException e) {}
-		List<Session> sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and o.status = 1 and (" +
+		List<Session> sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and (" +
 				"s.academicTerm || s.academicYear = :term or " +
 				"s.academicTerm || s.academicYear || s.academicInitiative = :term)").
 				setString("term", term).list();
@@ -133,7 +132,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			}
 		}
 		if ("current".equalsIgnoreCase(term)) {
-			sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and o.status = 1 and " +
+			sessions = hibSession.createQuery("select s from Session s, RoomTypeOption o where o.session = s and " +
 					"s.eventBeginDate <= :today and s.eventEndDate >= :today").
 					setDate("today",new Date()).list();
 			if (!sessions.isEmpty()) {
