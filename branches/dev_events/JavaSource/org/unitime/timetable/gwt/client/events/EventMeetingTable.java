@@ -423,8 +423,18 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 
 		addRow(null, header);
 		
-		addHideOperation(hTitle, EventFlag.SHOW_TITLE);
-		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME);
+		final Operation titleOp = addHideOperation(hTitle, EventFlag.SHOW_TITLE, new Check() {
+			@Override
+			public boolean isChecked() {
+				return true;
+			}
+		});
+		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME, new Check() {
+			@Override
+			public boolean isChecked() {
+				return !titleOp.isApplicable();
+			}
+		});
 		addHideOperation(hTimeAll, EventFlag.SHOW_ALLOCATED_TIME);
 		addHideOperation(hTimeSetup, EventFlag.SHOW_SETUP_TIME);
 		addHideOperation(hTimeTeardown, EventFlag.SHOW_TEARDOWN_TIME);
@@ -800,9 +810,11 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	protected void onColumnShownOrHid(int eventCookieFlags) {}
 
-	private boolean iFirstHideOperation = true;
-	protected void addHideOperation(final UniTimeTableHeader header, final EventFlag flag) {
-		final boolean separator = iFirstHideOperation; iFirstHideOperation = false;
+	protected Operation addHideOperation(final UniTimeTableHeader header, final EventFlag flag) {
+		return addHideOperation(header, flag, null);
+	}
+	
+	protected Operation addHideOperation(final UniTimeTableHeader header, final EventFlag flag, final Check separator) {
 		Operation op = new Operation() {
 			@Override
 			public void execute() {
@@ -842,7 +854,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				}
 			}
 			@Override
-			public boolean hasSeparator() { return separator; }
+			public boolean hasSeparator() { 
+				return separator != null && separator.isChecked();
+			}
 			@Override
 			public String getName() { return isColumnVisible(header.getColumn()) ? MESSAGES.opHide(header.getHTML()) : MESSAGES.opShow(header.getHTML()); }
 		};
@@ -880,6 +894,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		default:
 			header.addOperation(op);
 		}
+		return op;
 	}
 	
 	private Operation ifNotSelectable(final Operation op) {
@@ -1392,6 +1407,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	public interface Implementation {
 		public void execute(EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection);
+	}
+	
+	public interface Check {
+		public boolean isChecked();
 	}
 	
 	
