@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="JavaSource"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate3.jar" sourcepath="/3rd_party/hibernate-3.5.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="com.genuitec.eclipse.j2eedt.core.J2EE14_CONTAINER"/>
+	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/antlr-2.7.6.jar" sourcepath="/3rd_party/antlr-2.7.7/src"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/dom4j-1.6.1.jar" sourcepath="/3rd_party/dom4j-1.6.1"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-digester-1.8.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ant.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-all-1.2.jar" sourcepath="/cpsolver_v1"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/javassist-3.9.0.GA.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/bsf-2.3.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-beanutils-1.8.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-chain-1.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-dbcp-1.4.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.1.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-io-1.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-validator-1.3.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-1.5.0.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jstl-1.0.2.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jta-1.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mysql-connector-java-5.1.14-bin.jar"/>
+	<classpathentry kind="lib" path="3rd_party/ojdbc6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/oro-2.0.8.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/slf4j-log4j12-1.5.8.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/standard-1.0.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-core-1.3.10.jar" sourcepath="/3rd_party/struts-core-1.3.10-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-el-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-extras-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-faces-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-mailreader-dao-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-scripting-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-taglib-1.3.10.jar" sourcepath="/3rd_party/struts-taglib-1.3.10-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/struts-tiles-1.3.10.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool-1.5.4.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/iText-2.1.7.jar" sourcepath="/3rd_party/itext-2.1.7"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/Struts-Layout-1.3.jar" sourcepath="/3rd_party/struts-layout-1.3"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/backport-util-concurrent.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mail.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.jar" sourcepath="/3rd_party/org.restlet"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/org.restlet.ext.net.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/protobuf-java-2.4.1.jar"/>
+	<classpathentry kind="output" path="WebContent/WEB-INF/classes"/>
+</classpath>
