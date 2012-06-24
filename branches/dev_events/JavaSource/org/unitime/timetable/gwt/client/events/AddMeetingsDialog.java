@@ -130,7 +130,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					@Override
 					public void onSuccess(List<Entity> result) {
 						iMatchingRooms = result;
-						if (result.isEmpty()) {
+						if (result == null || result.isEmpty()) {
 							LoadingWidget.getInstance().hide();
 							iDatesHeader.setErrorMessage(MESSAGES.errorNoMatchingRooms());
 						} else if (iDates.getSelectedDaysCount() > 0) {
