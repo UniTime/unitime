@@ -62,6 +62,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 		case SHOW_LIMIT: out.hideColumn(16); break;
 		case SHOW_SPONSOR: out.hideColumn(17); out.hideColumn(18); break;
 		case SHOW_MAIN_CONTACT: out.hideColumn(19); out.hideColumn(20); break;
+		case SHOW_APPROVAL: out.hideColumn(21); break;
 		}
 	}
 	

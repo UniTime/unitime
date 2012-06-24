@@ -1841,7 +1841,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_MAIN_CONTACT,
 		SHOW_SPONSOR,
 		SHOW_SECTION,
-		SHOW_TITLE;
+		SHOW_TITLE,
+		SHOW_APPROVAL;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
@@ -1855,5 +1856,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
     
-	public static final int sDefaultEventFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag() + EventFlag.SHOW_CAPACITY.flag(); 
+	public static final int sDefaultEventFlags =
+				EventFlag.SHOW_PUBLISHED_TIME.flag() +
+				EventFlag.SHOW_MAIN_CONTACT.flag() +
+				EventFlag.SHOW_SPONSOR.flag() +
+				EventFlag.SHOW_CAPACITY.flag() +
+				EventFlag.SHOW_TITLE.flag() + 
+				EventFlag.SHOW_APPROVAL.flag();
 }

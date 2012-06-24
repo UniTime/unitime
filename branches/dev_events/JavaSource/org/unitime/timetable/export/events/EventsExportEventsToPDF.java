@@ -63,6 +63,7 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		case SHOW_LIMIT: out.hideColumn(12); break;
 		case SHOW_SPONSOR: out.hideColumn(13); break;
 		case SHOW_MAIN_CONTACT: out.hideColumn(14); break;
+		case SHOW_APPROVAL: out.hideColumn(15); break;
 		}
 	}
 
