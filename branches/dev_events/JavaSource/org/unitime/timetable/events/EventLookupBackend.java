@@ -702,6 +702,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		}
 				    		courses.remove(correctedOffering);
 				    		event.addCourseName(correctedOffering.getCourseName());
+				    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 				    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -713,7 +714,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		}
 			    			for (CourseOffering co: courses) {
 					    		event.addCourseName(co.getCourseName());
-					    		if (clazz.getSectionNumberString(hibSession) != null)
+					    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
+					    		if (clazz.getClassSuffix(co) != null)
 					    			event.addExternalId(clazz.getClassSuffix(co));
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
@@ -757,6 +759,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
+						    		event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    		name = course.getCourseName();
 				    				switch (owner.getOwnerType()) {
 				    				case ExamOwner.sOwnerTypeClass:
@@ -818,6 +821,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			break;
 						    		}
 						    		event.addCourseName(course.getCourseName());
+						    		event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				switch (owner.getOwnerType()) {
 				    				case ExamOwner.sOwnerTypeClass:
 				    					Class_ clazz = (Class_)owner.getOwnerObject();
@@ -1216,6 +1220,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		*/
 						    		courses.remove(correctedOffering);
 						    		event.addCourseName(correctedOffering.getCourseName());
+						    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 						    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 						    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 						    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -1227,7 +1232,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		}
 					    			for (CourseOffering co: courses) {
 							    		event.addCourseName(co.getCourseName());
-							    		if (clazz.getSectionNumberString(hibSession) != null)
+							    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
+							    		if (clazz.getClassSuffix(co) != null)
 							    			event.addExternalId(clazz.getClassSuffix(co));
 					    			}
 						    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
@@ -1267,6 +1273,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    					label = label.substring(courseName.length());
 						    				}
 						    				event.addCourseName(course.getCourseName());
+						    				event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    				event.addExternalId(label.trim());
 					    				}
 					    			}
@@ -1303,6 +1310,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    					label = label.substring(courseName.length());
 						    				}
 						    				event.addCourseName(course.getCourseName());
+						    				event.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 						    				event.addExternalId(label.trim());
 					    				}
 									}
@@ -1408,6 +1416,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		}
 					    		courses.remove(correctedOffering);
 					    		event.addCourseName(correctedOffering.getCourseName());
+					    		event.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 					    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 					    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 					    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -1419,6 +1428,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		}
 				    			for (CourseOffering co: courses) {
 						    		event.addCourseName(co.getCourseName());
+						    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 						    		if (clazz.getSectionNumberString(hibSession) != null)
 						    			event.addExternalId(clazz.getClassSuffix(co));
 				    			}

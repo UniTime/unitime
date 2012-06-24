@@ -135,6 +135,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setName(clazz.getClassLabel(hibSession));
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
     		related.addCourseName(courseOffering.getCourseName());
+    		related.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
     		related.setSectionNumber(clazz.getSectionNumberString(hibSession));
     		if (clazz.getClassSuffix() != null)
     			related.addExternalId(clazz.getClassSuffix());
@@ -143,6 +144,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
 				if (!co.isIsControl()) {
 					related.addCourseName(co.getCourseName());
+					related.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					if (clazz.getClassSuffix(co) != null)
 		    			related.addExternalId(clazz.getClassSuffix(co));
 				}
@@ -186,6 +188,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setUniqueId(xe.getExam().getUniqueId());
     		related.setName(xe.getExam().getName() == null ? xe.getExam().generateName() : xe.getExam().getName());
     		related.addCourseName(related.getName());
+    		related.addCourseTitle("");
     		related.setInstruction(e.getEventTypeAbbv());
     		related.setInstructionType(xe.getExam().getExamType());
     		related.setSectionNumber(xe.getExam().getLength().toString());
@@ -222,6 +225,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setUniqueId(owner.getOwnerId());
 				related.setName(owner.getLabel());
 				related.addCourseName(owner.getCourse().getCourseName());
+				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
 					related.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -232,6 +236,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
 							related.addCourseName(course.getCourseName());
+							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 							if (clazz.getClassSuffix(course) != null)
 				    			related.addExternalId(clazz.getClassSuffix(course));
 						}
@@ -258,6 +263,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
 							related.addCourseName(course.getCourseName());
+							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 		    			}
 		    		}
 					related.setInstruction(MESSAGES.colOffering());
@@ -280,6 +286,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setType(RelatedObjectInterface.RelatedObjectType.values()[owner.getOwnerType()]);
 				related.setUniqueId(owner.getOwnerId());
 				related.addCourseName(owner.getCourse().getCourseName());
+				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				related.setName(owner.getLabel());
 				related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId()});
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
@@ -293,6 +300,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 						if (!course.isIsControl()) {
 							related.addCourseName(course.getCourseName());
+							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 							if (clazz.getClassSuffix(course) != null)
 				    			related.addExternalId(clazz.getClassSuffix(course));
 						}
@@ -319,6 +327,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
 							related.addCourseName(course.getCourseName());
+							related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 		    			}
 		    		}
 		    		related.setInstruction(MESSAGES.colOffering());
@@ -444,6 +453,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 				    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 				    		confEvent.addCourseName(correctedOffering.getCourseName());
+				    		confEvent.addCourseTitle(correctedOffering.getTitle() == null ? "" : correctedOffering.getTitle());
 				    		confEvent.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
 				    		confEvent.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
 				    		confEvent.setSectionNumber(clazz.getSectionNumberString(hibSession));
@@ -455,6 +465,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    		}
 			    			for (CourseOffering co: courses) {
 					    		confEvent.addCourseName(co.getCourseName());
+					    		confEvent.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
 					    		if (clazz.getSectionNumberString(hibSession) != null)
 					    			confEvent.addExternalId(clazz.getClassSuffix(co));
 			    			}
@@ -476,6 +487,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    					label = label.substring(courseName.length());
 				    				}
 				    				confEvent.addCourseName(course.getCourseName());
+				    				confEvent.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				confEvent.addExternalId(label.trim());
 			    				}
 			    			}
@@ -492,6 +504,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    					label = label.substring(courseName.length());
 				    				}
 				    				confEvent.addCourseName(course.getCourseName());
+				    				confEvent.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				    				confEvent.addExternalId(label.trim());
 			    				}
 							}

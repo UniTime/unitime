@@ -53,6 +53,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private TreeSet<NoteInterface> iNotes;
 	
 	private List<String> iCourseNames = null;
+	private List<String> iCourseTitles = null;
 	private String iInstruction = null;
 	private Integer iInstructionType = null, iMaxCapacity = null, iEnrollment;
 	private boolean iReqAttendance = false;
@@ -195,6 +196,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public List<String> getCourseNames() {
 		return iCourseNames;
 	}
+	public boolean hasCourseTitles() { return iCourseTitles != null && !iCourseTitles.isEmpty(); }
+	public void addCourseTitle(String title) {
+		if (iCourseTitles == null) iCourseTitles = new ArrayList<String>();
+		iCourseTitles.add(title);
+	}
+	public List<String> getCourseTitles() {
+		return iCourseTitles;
+	}
 	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
 	public String getInstruction() { return iInstruction; }
 	public void setInstruction(String instruction) { iInstruction = instruction; }
@@ -290,6 +299,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (event.hasCourseNames())
 			for (String courseName: event.getCourseNames())
 				conflict.addCourseName(courseName);
+		if (event.hasCourseTitles())
+			for (String courseTitle: event.getCourseTitles())
+				conflict.addCourseTitle(courseTitle);
 		if (event.hasExternalIds())
 			for (String extId: event.getExternalIds())
 				conflict.addExternalId(extId);
@@ -880,6 +892,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private Long iUniqueId;
     	private RelatedObjectType iType;
     	private List<String> iCourseNames = null;
+    	private List<String> iCourseTitles = null;
     	private String iName;
     	private String iInstruction = null;
     	private Integer iInstructionType = null, iMaxCapacity = null;
@@ -916,6 +929,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		return iCourseNames;
     	}
     	
+    	public boolean hasCourseTitles() { return iCourseTitles != null && !iCourseTitles.isEmpty(); }
+    	public void addCourseTitle(String title) {
+    		if (iCourseTitles == null) iCourseTitles = new ArrayList<String>();
+    		iCourseTitles.add(title);
+    	}
+    	public List<String> getCourseTitles() {
+    		return iCourseTitles;
+    	}
+
     	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
     	public String getInstruction() { return iInstruction; }
     	public void setInstruction(String instruction) { iInstruction = instruction; }
@@ -1818,7 +1840,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_ENROLLMENT,
 		SHOW_MAIN_CONTACT,
 		SHOW_SPONSOR,
-		SHOW_SECTION;
+		SHOW_SECTION,
+		SHOW_TITLE;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {

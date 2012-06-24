@@ -188,6 +188,7 @@ public class EventDetail extends Composite {
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colType()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTitle()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colLocation()));
@@ -381,6 +382,25 @@ public class EventDetail extends Composite {
 				
 				String type = (obj.hasInstruction() ? obj.getInstruction() : obj.getType().name());
 				row.add(new Label(type, false));
+				
+				String title = "";
+				if (obj.hasCourseTitles()) {
+					String last = null;
+					for (String ct: obj.getCourseTitles()) {
+						if (last != null && !last.isEmpty() && last.equals(ct))
+							ct = "";
+						else
+							last = ct;
+						if (title.isEmpty()) {
+							title += ct;
+						} else {
+							title += "<span class='cross-list'>" + ct + "</span>";
+						}
+					}
+				} else {
+					title = "";
+				}
+				row.add(new HTML(title, false));
 				
 				if (obj.hasDate()) {
 					row.add(new Label(obj.getDate(), false));
