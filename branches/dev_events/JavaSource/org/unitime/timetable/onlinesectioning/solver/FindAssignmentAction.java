@@ -137,7 +137,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, false, classTable, linkedSections);
 			model.addStudent(student);
-			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			model.setDistanceConflict(new DistanceConflict(server.getDistanceMetric(), model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			for (LinkedSections link: linkedSections) {
 				List<Section> sections = new ArrayList<Section>();
