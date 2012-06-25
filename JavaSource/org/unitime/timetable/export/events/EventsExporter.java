@@ -46,7 +46,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
-import org.unitime.timetable.spring.SimpleUserContext;
+import org.unitime.timetable.security.context.SimpleUserContext;
 
 public abstract class EventsExporter implements Exporter {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -101,7 +101,7 @@ public abstract class EventsExporter implements Exporter {
     		if (role != null) {
     			eventFilter.setOption("role", role);
     			roomFilter.setOption("role", role);
-    			u.setCurrentRole(role);
+    			u.setCurrentRole(role, sessionId);
     		}
     	} else if (helper.getUser() != null) {
     		u = new SimpleUserContext();
@@ -109,7 +109,7 @@ public abstract class EventsExporter implements Exporter {
     		eventFilter.setOption("user", helper.getUser().getExternalUserId());
     		roomFilter.setOption("user", helper.getUser().getExternalUserId());
     		if (helper.getUser().getCurrentRole() != null) {
-    			u.setCurrentRole(helper.getUser().getCurrentRole());
+    			u.setCurrentRole(helper.getUser().getCurrentRole(), sessionId);
         		eventFilter.setOption("role", helper.getUser().getCurrentRole());
         		roomFilter.setOption("role", helper.getUser().getCurrentRole());
     		}

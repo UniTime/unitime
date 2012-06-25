@@ -55,8 +55,8 @@ import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -84,8 +84,8 @@ public class LookupServlet implements LookupService {
 		if (getSessionContext() == null) return null;
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new LookupException("not authenticated");
-		if (user.getCurrentRole() == null) throw new LookupException("insufficient rights");
-		Long sessionId = user.getCurrentAcademicSessionId();
+		if (user.getCurrentAuthority() == null) throw new LookupException("insufficient rights");
+		Long sessionId = user.getCurrentAuthority().getAcademicSessionId();
 		if (sessionId == null) throw new LookupException("academic session not selected");
 		return sessionId;
 	}

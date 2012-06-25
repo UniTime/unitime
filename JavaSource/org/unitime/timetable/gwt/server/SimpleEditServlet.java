@@ -73,8 +73,8 @@ import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 /**
  * @author Tomas Muller
@@ -976,22 +976,22 @@ public class SimpleEditServlet implements SimpleEditService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
-		Long sessionId = (Long) user.getCurrentAcademicSessionId();
+		if (user.getCurrentAuthority() == null) throw new PageAccessException("Insufficient user privileges.");
+		Long sessionId = (Long) user.getCurrentAuthority().getAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("Insufficient user privileges.");
 		return sessionId;
 	}
 	
 	public boolean isAdmin() {
 		UserContext user = getSessionContext().getUser();
-		return user != null && Roles.ADMIN_ROLE.equals(user.getCurrentRole());
+		return user != null && user.getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole());
 	}
 	
 	public void checkAdmin() throws PageAccessException {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (!Roles.ADMIN_ROLE.equals(user.getCurrentRole())) throw new PageAccessException("Insufficient user privileges.");
+		if (!isAdmin()) throw new PageAccessException("Insufficient user privileges.");
 	}
 
 }

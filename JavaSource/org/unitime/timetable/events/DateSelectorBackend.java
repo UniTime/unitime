@@ -27,7 +27,7 @@ import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.DateUtils;
 
 @Service("org.unitime.timetable.gwt.client.events.SessionDatesSelector$RequestSessionDetails")

@@ -23,7 +23,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import org.unitime.timetable.model.base.BaseReservation;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 public class Reservation extends BaseReservation {
 	private static final long serialVersionUID = 1L;

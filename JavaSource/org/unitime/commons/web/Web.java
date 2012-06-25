@@ -23,10 +23,21 @@ package org.unitime.commons.web;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.commons.User;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.AcademicSessionAuthority;
+import org.unitime.timetable.security.authority.ManagerAuthority;
+import org.unitime.timetable.security.authority.RoleAuthority;
+import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -50,25 +61,58 @@ public class Web {
     /** Is someone logged
      * @return true, if a user of the given session is logged in.
      */
+    @Deprecated
     public static boolean isLoggedIn(HttpSession session) {
-        return (session.getAttribute(Web.USER_ATTR_NAME) != null
-                && session.getAttribute(Web.USER_ATTR_NAME) instanceof User);
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	return auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof UserContext;
     }
 
     /** Get logged-in user for the given session. */
+    @Deprecated
     public static User getUser(HttpSession session) {
-        if (!isLoggedIn(session)) {
-            return null;
-        }
-        return (User) session.getAttribute(Web.USER_ATTR_NAME);
+    	Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    	if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof UserContext)) return null;
+    	UserContext user = (UserContext)auth.getPrincipal();
+    	User legacy = new User();
+    	legacy.setId(user.getExternalUserId());
+    	legacy.setName(user.getName());
+    	legacy.setLogin(user.getUsername());
+    	Vector<String> roles = new Vector<String>();
+    	for (GrantedAuthority role: user.getAuthorities()) {
+    		if (role instanceof RoleAuthority)
+    			roles.add(((RoleAuthority)role).getReference());
+    	}
+    	UserAuthority authority = user.getCurrentAuthority();
+    	if (authority != null) {
+    		if (authority instanceof RoleAuthority) {
+    			legacy.setRole(authority.getRole());
+    		}
+    	}
+    	if (Roles.ADMIN_ROLE.equals(legacy.getRole())) legacy.setAdmin(true);
+    	if (authority.getAcademicSessionId() != null) {
+    		legacy.setAttribute(Constants.SESSION_ID_ATTR_NAME, authority.getAcademicSessionId());
+    		UserAuthority sessionAuth = user.getAuthority(AcademicSessionAuthority.TYPE, authority.getAcademicSessionId());
+    		if (sessionAuth != null)
+    			legacy.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, sessionAuth.getLabel());
+    		else
+    			legacy.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, authority.getReference());
+    		legacy.setAttribute(Constants.ACAD_YRTERM_ATTR_NAME, authority.getReference());
+    		UserAuthority managerAuth = user.getAuthority(ManagerAuthority.TYPE, null, null);
+    		if (managerAuth != null)
+    			legacy.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, managerAuth.getUniqueId().toString());
+    	}
+    	session.setAttribute(Web.USER_ATTR_NAME, legacy);
+    	return legacy;
     }
 
     /** Set logged-in user object for the given session. */
+    @Deprecated
     public static void setUser(HttpSession session, User user) {
         session.setAttribute(Web.USER_ATTR_NAME, user);
     }
 
     /** Is the logged-in user administrator? */
+    @Deprecated
     public static boolean isAdmin( HttpSession session ) {
     	
         User user = getUser(session);
@@ -80,6 +124,7 @@ public class Web {
      * @param session
      * @param roles String[]
      */
+    @Deprecated
     public static boolean hasRole(HttpSession session, String[] roles) {
     	
     	boolean result = false;

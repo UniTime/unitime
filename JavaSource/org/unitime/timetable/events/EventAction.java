@@ -31,7 +31,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpcResponse> implements GwtRpcImplementation<T, R> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);

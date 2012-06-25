@@ -17,7 +17,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.spring;
+package org.unitime.timetable.security;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;

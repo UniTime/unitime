@@ -45,7 +45,7 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$ResourceLookupRpcRequest")
 public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {

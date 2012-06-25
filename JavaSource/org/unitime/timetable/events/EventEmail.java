@@ -54,7 +54,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequ
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 public class EventEmail {

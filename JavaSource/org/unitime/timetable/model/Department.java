@@ -33,7 +33,7 @@ import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
 

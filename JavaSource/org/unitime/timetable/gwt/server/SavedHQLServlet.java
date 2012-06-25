@@ -19,8 +19,8 @@ import org.unitime.timetable.gwt.shared.SavedHQLInterface.Query;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 
