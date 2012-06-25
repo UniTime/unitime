@@ -59,7 +59,7 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventEnrollmentsRpcRequest")
 public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {

@@ -41,7 +41,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 @Service("org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox$ListAcademicSessions")
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
@@ -66,7 +66,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, command.getTerm());
 			} catch (EventException e) {}
 		} else {
-			Long sessionId = (context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null);
+			Long sessionId = (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getAcademicSessionId() : null);
 			if (sessionId != null)
 				selected = SessionDAO.getInstance().get(sessionId, hibSession);
 		}

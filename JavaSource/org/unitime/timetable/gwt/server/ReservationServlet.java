@@ -58,7 +58,6 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
@@ -81,8 +80,9 @@ import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -714,7 +714,6 @@ public class ReservationServlet implements ReservationService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
 		TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
 		if (manager == null) throw new PageAccessException("Insufficient user privileges.");
 		return manager;
@@ -724,7 +723,9 @@ public class ReservationServlet implements ReservationService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		Long sessionId = user.getCurrentAcademicSessionId();
+		if (user.getCurrentAuthority() == null)
+			throw new PageAccessException("Insufficient user privileges.");
+		Long sessionId = user.getCurrentAuthority().getAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("No academic session is selecgted.");
 		return sessionId;
 	}
@@ -733,9 +734,8 @@ public class ReservationServlet implements ReservationService {
 	public Boolean canAddReservation() throws ReservationException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
-			if (user == null) return false;
-			if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
-			if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) return false;
+			if (user == null || user.getCurrentAuthority() == null) return false;
+			if (!user.getCurrentAuthority().hasRight(Right.CurriculumAdd)) return false;
 			if (getManager().getDepartments().isEmpty()) return false;
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {

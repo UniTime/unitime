@@ -64,12 +64,12 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.xml.sax.EntityResolver;
@@ -361,8 +361,8 @@ public class MenuServlet implements MenuService {
 
 		public UserInfo(SessionContext context) {
 			iUser = context.getUser();
-			if (iUser != null) {
-				Long sessionId = iUser.getCurrentAcademicSessionId();
+			if (iUser != null && iUser.getCurrentAuthority() != null) {
+				Long sessionId = iUser.getCurrentAuthority().getAcademicSessionId();
 				if (sessionId != null)
 					iSession = SessionDAO.getInstance().get(sessionId);
 				iManager = TimetableManager.findByExternalId(iUser.getExternalUserId());

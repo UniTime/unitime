@@ -41,7 +41,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 @Service("org.unitime.timetable.gwt.client.rooms.TravelTimes$TravelTimesRequest")
 public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesRequest, TravelTimeResponse>{

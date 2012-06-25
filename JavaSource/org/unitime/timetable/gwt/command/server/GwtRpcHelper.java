@@ -22,8 +22,8 @@ package org.unitime.timetable.gwt.command.server;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 public class GwtRpcHelper implements SessionContext {
 	private UserContext iUser;

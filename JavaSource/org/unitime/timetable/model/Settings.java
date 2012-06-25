@@ -29,7 +29,7 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSettings;
 import org.unitime.timetable.model.dao.SettingsDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 
 

@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCurriculum;
 import org.unitime.timetable.model.dao.CurriculumDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 
 

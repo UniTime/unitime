@@ -17,14 +17,16 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  */
-package org.unitime.timetable.spring;
+package org.unitime.timetable.security.context;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 public class HttpSessionContext implements SessionContext {
 	@Autowired
@@ -57,8 +59,10 @@ public class HttpSessionContext implements SessionContext {
 
 	@Override
 	public UserContext getUser() {
-		User user = (User)iSession.getAttribute(Web.USER_ATTR_NAME);
-		return (user == null ? null : new LegacyUserContext(user));
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated())
+			return (UserContext)authentication.getPrincipal();
+		return null;
 	}
 	
 	@Override

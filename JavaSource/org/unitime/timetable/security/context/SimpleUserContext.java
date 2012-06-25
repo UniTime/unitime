@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
-*/package org.unitime.timetable.spring;
+*/package org.unitime.timetable.security.context;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.authority.SimpleAuthority;
+import org.unitime.timetable.security.rights.Right;
 
-public class SimpleUserContext implements UserContext {
-	private String iId, iName, iRole;
-	private Long iSessionId;
-	private Map<String, String> iProperties = new HashMap<String, String>();
-
+public class SimpleUserContext extends AbstractUserContext {
+	private static final long serialVersionUID = 1L;
+	private String iId, iName;
+	
 	@Override
 	public String getExternalUserId() { return iId; }
 	
@@ -37,32 +37,26 @@ public class SimpleUserContext implements UserContext {
 	public void setName(String name) { iName = name; }
 
 	@Override
-	public Long getCurrentAcademicSessionId() { return iSessionId; }
+	public String getPassword() { return null; }
+
+	@Override
+	public String getUsername() { return null; }
 	
-	public void setCurrentAcademicSessionId(Long sessioId) { iSessionId = sessioId; }
+	public void setCurrentRole(String role, Long sessionId) {
+		UserAuthority auth = new SimpleAuthority(0l, sessionId, role, "", role) {
+			private static final long serialVersionUID = 1L;
 
-	@Override
-	public String getCurrentRole() { return iRole; }
-	
-	public void setCurrentRole(String role) { iRole = role; }
-
-	@Override
-	public boolean hasRole(String role) { return role == null ? iRole == null : role.equals(iRole); }
-
-	@Override
-	public String getProperty(String key) { return iProperties.get(key); }
-
-	@Override
-	public void setProperty(String key, String value) {
-		if (value == null)
-			iProperties.remove(key);
-		else
-			iProperties.put(key, value);
+			@Override
+			public boolean hasRight(Right right) {
+				switch (right) {
+				case CanSelectAsCurrentRole:
+					return true;
+				default:
+					return false;
+				}
+			}
+		};
+		addAuthority(auth);
+		setCurrentAuthority(auth);
 	}
-
-	@Override
-	public Map<String, String> getProperties() { return iProperties; }
-
-	@Override
-	public boolean hasDepartment(Long departmentId) { return false; }
 }

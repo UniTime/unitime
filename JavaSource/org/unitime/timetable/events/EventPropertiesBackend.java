@@ -41,8 +41,8 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventPropertiesRpcRequest")
 public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{

@@ -32,7 +32,7 @@ import org.dom4j.Element;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseStudentSectioningQueue;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 public class StudentSectioningQueue extends BaseStudentSectioningQueue implements Comparable<StudentSectioningQueue> {
 	private static final long serialVersionUID = 8492171207847794888L;

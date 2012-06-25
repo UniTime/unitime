@@ -42,7 +42,7 @@ import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
 

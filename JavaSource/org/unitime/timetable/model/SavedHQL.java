@@ -28,7 +28,7 @@ import java.util.Set;
 import org.unitime.timetable.model.base.BaseSavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 public class SavedHQL extends BaseSavedHQL {
 	private static final long serialVersionUID = 2532519378106863655L;
