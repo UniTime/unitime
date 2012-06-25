@@ -26,7 +26,7 @@ import java.util.Vector;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 
 /**

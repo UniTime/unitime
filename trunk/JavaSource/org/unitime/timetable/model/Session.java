@@ -282,6 +282,10 @@ public class Session extends BaseSession implements Comparable {
 	public String getLabel() {
 		return getAcademicTerm() + " " + getSessionStartYear() + " (" + getAcademicInitiative() + ")";
 	}
+	
+	public String getReference() {
+		return getAcademicTerm() + getSessionStartYear() + getAcademicInitiative();
+	}
 
 	public String toString() {
 		return this.getLabel();

@@ -44,7 +44,7 @@ import org.unitime.timetable.gwt.shared.SavedHQLInterface;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
 
 @Service("org.unitime.timetable.export.Exporter:hql-report.csv")
 public class SavedHqlExportToCSV implements Exporter {

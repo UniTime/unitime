@@ -21,7 +21,7 @@ package org.unitime.timetable.events;
 
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, FilterRpcResponse> {
 

@@ -172,12 +172,17 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final long MANAGED_BY_MULTIPLE_DEPTS = 0;
     
     /** Configuration Keys */
+    @Deprecated
     public static final String SESSION_APP_ACCESS_LEVEL = "systemAccess";
+    @Deprecated
     public static final String CFG_APP_ACCESS_LEVEL = "tmtbl.access_level";
+    @Deprecated
     public static final String CFG_SYSTEM_MESSAGE = "tmtbl.system_message";
 
     /** Configuration Values */
+    @Deprecated
     public static final String APP_ACL_ALL = "all";
+    @Deprecated
     public static final String APP_ACL_ADMIN = "admin";
 
     /** (Http)Request attributes */

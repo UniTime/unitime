@@ -22,8 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <html:form action="selectPrimaryRole.do" target="_top">
-	<html:hidden property="sessionId"/>
-	<html:hidden property="roleId"/>
+	<html:hidden property="authority"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<% if (!"Y".equals(request.getParameter("list"))) { %>
 			<tr><td colspan='4'>

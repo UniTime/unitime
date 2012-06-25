@@ -35,8 +35,8 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 public class SimpleEventRights implements EventRights {
 	private static final long serialVersionUID = 1L;
@@ -69,7 +69,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	public SimpleEventRights(SessionContext context, Long sessionId) {
-		this(context.getUser(), context.isHttpSessionNew(), (sessionId != null ? sessionId : context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null));
+		this(context.getUser(), context.isHttpSessionNew(), (sessionId != null ? sessionId : context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getAcademicSessionId() : null));
 	}
 	
 	protected UserContext getUser() {
@@ -81,7 +81,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean isAdmin() {
-		return getUser() != null && Roles.ADMIN_ROLE.equals(getUser().getCurrentRole());
+		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(getUser().getCurrentAuthority().getRole());
 	}
 	
 	protected boolean isAuthenticated() {
@@ -89,7 +89,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean hasRole() {
-		return getUser() != null && getUser().getCurrentRole() != null && hasSession();
+		return getUser() != null && getUser().getCurrentAuthority() != null && hasSession();
 	}
 	
 	private Set<Long> iManagedSessions = null;
@@ -102,15 +102,15 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean isEventManager() {
-		return getUser() != null && Roles.EVENT_MGR_ROLE.equals(getUser().getCurrentRole()) && hasSession();
+		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.EVENT_MGR_ROLE.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
 	}
 	
 	protected boolean isStudentAdvisor() {
-		return getUser() != null && Roles.STUDENT_ADVISOR.equals(getUser().getCurrentRole()) && hasSession();
+		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.STUDENT_ADVISOR.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
 	}
 
 	protected boolean isScheduleManager() {
-		return getUser() != null && Roles.DEPT_SCHED_MGR_ROLE.equals(getUser().getCurrentRole()) && hasSession();
+		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.DEPT_SCHED_MGR_ROLE.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
 	}
 
 	protected String getUserId() {

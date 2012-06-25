@@ -35,8 +35,7 @@ import org.apache.struts.action.ActionMapping;
 public class RoleListForm extends ActionForm {
 	private static final long serialVersionUID = 3546920294733526840L;
 
-    private Long iSessionId;
-    private Long iRoleId;
+    private String iAuthority;
 
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -44,22 +43,14 @@ public class RoleListForm extends ActionForm {
     }
 
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        iSessionId = null; iRoleId = null;
+    	iAuthority = null;
     }
 
-    public Long getSessionId() {
-        return iSessionId;
+    public String getAuthority() {
+        return iAuthority;
     }
     
-    public void setSessionId(Long sessionId) {
-        iSessionId = sessionId;
-    }
-    
-    public Long getRoleId() {
-        return iRoleId;
-    }
-    
-    public void setRoleId(Long roleId) {
-        iRoleId = roleId;
+    public void setAuthority(String authority) {
+        iAuthority = authority;
     }
 }

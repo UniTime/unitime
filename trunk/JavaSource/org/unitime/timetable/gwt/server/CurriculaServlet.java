@@ -40,6 +40,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.services.CurriculaService;
@@ -89,8 +90,8 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 
@@ -116,6 +117,7 @@ public class CurriculaServlet implements CurriculaService {
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
@@ -171,6 +173,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public List<CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadClassifications(curriculumIds=" + curriculumIds + ")");
@@ -262,6 +265,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDetail')")
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
@@ -435,6 +439,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit') or hasPermission(#curriculum.department.id, 'Department', 'CurriculumAdd')")
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");
@@ -674,6 +679,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curricula, 'Curriculum', 'CurriculumEdit')")
 	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveClassifications()");
@@ -753,6 +759,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
@@ -804,6 +811,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
@@ -858,6 +866,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
+	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumMerge')")
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
@@ -1054,6 +1063,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicClassifications()");
@@ -1087,6 +1097,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public HashMap<String, CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("computeEnrollmentsAndLastLikes(acadAreaId=" + acadAreaId + ", majors=" + majors + ")");
@@ -1177,6 +1188,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	private TreeSet<CurriculumInterface> loadCurriculaForACourse(org.hibernate.Session hibSession, TreeSet<AcademicClassificationInterface> academicClassifications, TreeSet<AcademicAreaInterface> academicAreas, CourseOffering courseOffering) throws CurriculaException, PageAccessException {
 		TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 		
@@ -1484,6 +1496,7 @@ public class CurriculaServlet implements CurriculaService {
 		return results;
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("getCurriculaForACourse(courseName='" + courseName + "')");
@@ -1515,6 +1528,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
@@ -1562,6 +1576,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicAreas()");
@@ -1595,6 +1610,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadMajors(academicAreaId=" + academicAreaId + ")");
@@ -1640,6 +1656,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public TreeSet<DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadDepartments()");
@@ -1689,7 +1706,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
-	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
@@ -1709,7 +1726,7 @@ public class CurriculaServlet implements CurriculaService {
 		return filter;
 	}
 	
-
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
@@ -1767,6 +1784,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("retrieveCourseDetails(course='" + course + "')");
@@ -1795,6 +1813,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasPermission('CurriculumView')")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listClasses(course='" + course + "')");
@@ -1898,6 +1917,7 @@ public class CurriculaServlet implements CurriculaService {
 		return ret;
 	}
 	
+	@PreAuthorize("hasRight('CurriculumAdd') and hasPermission('CurriculumView')")
 	public Boolean canAddCurriculum() throws CurriculaException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
@@ -1917,6 +1937,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("hasRight('CurriculumAdmin') and hasPermission('CurriculumView')")
 	public Boolean isAdmin() throws CurriculaException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
@@ -2603,11 +2624,12 @@ public class CurriculaServlet implements CurriculaService {
 
 	/* Support functions (lookups etc.) */
 	
+	@Deprecated
 	private TimetableManager getManager() throws PageAccessException {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		if (user.getCurrentAuthority() == null) throw new PageAccessException("Insufficient user privileges.");
 		TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
 		if (manager == null) throw new PageAccessException("Insufficient user privileges.");
 		return manager;
@@ -2617,8 +2639,8 @@ public class CurriculaServlet implements CurriculaService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		Long sessionId = user.getCurrentAcademicSessionId();
-		if (sessionId == null) throw new PageAccessException("No academic session is selecgted.");
+		Long sessionId = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getAcademicSessionId());
+		if (sessionId == null) throw new PageAccessException("No academic session is selected.");
 		return sessionId;
 	}
 	

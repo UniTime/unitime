@@ -37,7 +37,8 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.DepartmentAuthority;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
@@ -325,18 +326,18 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     }
     
     public boolean isEditableBy(UserContext user){
-    	if (user==null) return false;
+    	if (user == null || user.getCurrentAuthority() == null) return false;
 
     	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
     		return false;
 
-    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
+    	if (Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole())) return true;
     	
 		if (getDepartment()==null) return false;
 		
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) return false;
+		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentAuthority().getRole())) return false;
 
-		if (!user.hasDepartment(getDepartment().getUniqueId())) return false;
+		if (!user.hasAuthority(DepartmentAuthority.TYPE, getDepartment().getUniqueId())) return false;
 		
 		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
 

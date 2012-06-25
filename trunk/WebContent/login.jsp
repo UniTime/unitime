@@ -22,6 +22,7 @@
 <%@page import="net.sf.cpsolver.ifs.util.JProf"%>
 <%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib prefix='c' uri='http://java.sun.com/jstl/core_rt' %>
 
 <HTML>
 	<HEAD>
@@ -34,7 +35,7 @@
 	    <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>
 		<TITLE>UniTime <%=Constants.VERSION%>| Log In</TITLE>
 	</HEAD>
-	<BODY class="bodyMain" onload="document.forms[0].username.focus();">
+	<BODY class="bodyMain" onload="document.forms[0].j_username.focus();">
 	
 	<% if (ApplicationProperties.getProperty("tmtbl.header.external", "").trim().length()>0) { %>
 	<jsp:include flush="true" page='<%=ApplicationProperties.getProperty("tmtbl.header.external")%>' />
@@ -60,7 +61,7 @@
  %>		
 		<BR>
 		
-		<FORM method="post" action="login.do">
+		<FORM name="f" action="<c:url value='j_spring_security_check'/>" method="POST">
 			<INPUT type="hidden" name="cs" value="login">
 			<INPUT type="hidden" name="menu" value="<%=request.getParameter("menu") == null ? "" : request.getParameter("menu") %>">
 
@@ -73,6 +74,11 @@
 							<%= errorMsg %>
 							</div>
 						<% } %>
+						<c:if test="${not empty SPRING_SECURITY_LAST_EXCEPTION.message}">
+							<div style="color: red; margin-bottom: 10px;">
+								Authentication failed: <c:out value="${SPRING_SECURITY_LAST_EXCEPTION.message}"/>.
+							</div>
+						</c:if>
 					</TD>
 				</TR>
 
@@ -90,7 +96,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<INPUT type="text" id="loginId" name="username" class="" value="">
+									<input type='text' name='j_username' value='<c:if test="${not empty param.login_error}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>'/>
 								</DIV>
 								<DIV class="H20px"></DIV>
 								<DIV>
@@ -99,7 +105,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<INPUT type="password" id="pwd" class="" name="password" value="">
+									<input type='password' name='j_password'>
 								</DIV>
 							</DIV>
 						</DIV>

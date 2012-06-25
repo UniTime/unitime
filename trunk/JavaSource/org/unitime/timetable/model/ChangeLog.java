@@ -35,8 +35,8 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 
 
@@ -225,12 +225,12 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                     return;
             	}
                 String userId = null;
-            	if (context.getUser() instanceof UserContext.CanUseChameleon) {
-            		userId = ((UserContext.CanUseChameleon)context.getUser()).getOriginalExternalUserId();
+            	if (context.getUser() instanceof UserContext.Chameleon) {
+            		userId = ((UserContext.Chameleon)context.getUser()).getOriginalUserContext().getExternalUserId();
             	}
             	if (userId == null)
             		userId = context.getUser().getExternalUserId();
-            	Session session = (context.getUser().getCurrentAcademicSessionId() == null ? null : SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()));
+            	Session session = (context.getUser().getCurrentAuthority() == null ? null : SessionDAO.getInstance().get(context.getUser().getCurrentAuthority().getAcademicSessionId()));
                 if (session == null) {
                     Debug.warning("Unable to add change log -- no academic session.");
                     return;

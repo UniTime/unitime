@@ -36,8 +36,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 public class ExportServletHelper implements ExportHelper {
 	private SessionContext iContext;
@@ -105,7 +105,7 @@ public class ExportServletHelper implements ExportHelper {
 			sessionId = Long.valueOf(iParams.getParameter("sid"));
 		} else {
 			if (iContext.isAuthenticated())
-				sessionId = (Long)iContext.getUser().getCurrentAcademicSessionId();
+				sessionId = (Long)(iContext.getUser().getCurrentAuthority() == null ? null : iContext.getUser().getCurrentAuthority().getAcademicSessionId());
 			else
 				sessionId = (Long)iContext.getAttribute("sessionId");
 		}

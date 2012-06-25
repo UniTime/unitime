@@ -25,7 +25,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcR
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.server.UploadServlet;
-import org.unitime.timetable.spring.SessionContext;
+import org.unitime.timetable.security.SessionContext;
 
 @Service("org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload$FileUploadRpcRequest")
 public class FileUploadBackend implements GwtRpcImplementation<FileUploadRpcRequest, FileUploadRpcResponse> {

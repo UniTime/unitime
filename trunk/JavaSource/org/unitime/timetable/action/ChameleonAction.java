@@ -19,15 +19,10 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
+import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,15 +31,17 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ChameleonForm;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.ChameleonUserContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -62,6 +59,8 @@ public class ChameleonAction extends Action {
     // --------------------------------------------------------- Instance Variables
 
     // --------------------------------------------------------- Methods
+	
+	@Autowired SessionContext sessionContext;
 
     /** 
      * Method execute
@@ -76,16 +75,20 @@ public class ChameleonAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-        
-        HttpSession httpSession = request.getSession();
-		if(!Web.isLoggedIn( httpSession ) 
-		        || ( !Web.isAdmin(httpSession) 
-		        	 && ( httpSession.getAttribute("hdnAdminAlias")==null || !httpSession.getAttribute("hdnAdminAlias").toString().equals("1")  ))) {
-            throw new Exception ("Access Denied.");
-        }
-		
+    	
+    	UserContext user = sessionContext.getUser();
+    	if (user == null)
+    		throw new Exception ("Access Denied.");
+    	
+    	if (user instanceof UserContext.Chameleon)
+    		user = ((UserContext.Chameleon)user).getOriginalUserContext();
+    	
+    	if (user.getCurrentAuthority() == null || !Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole()))
+    		throw new Exception ("Access Denied.");
+    	
+    	
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());        
+        
         ChameleonForm frm = (ChameleonForm) form;
 		ActionMessages errors = new ActionMessages();
 
@@ -135,50 +138,72 @@ public class ChameleonAction extends Action {
     private void doSwitch(
             HttpServletRequest request, 
             ChameleonForm frm, 
-            User u ) throws Exception {
-        
-		TimetableManager tm = TimetableManager.findByExternalId(frm.getPuid());
-		if (tm == null)
-            throw new Exception ("User is not a Timetable Manager");
+            UserContext user) throws Exception {
+    	
+    	Constants.resetSessionAttributes(request.getSession());
+    	
+    	if (user instanceof UserContext.Chameleon)
+    		user = ((UserContext.Chameleon)user).getOriginalUserContext();
+    	
+    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    	if (authentication instanceof ChameleonAuthentication)
+    		authentication = ((ChameleonAuthentication)authentication).getOriginalAuthentication();
+    	
+    	if (user.getExternalUserId().equals(frm.getPuid())) {
+    		SecurityContextHolder.getContext().setAuthentication(authentication);
+    	} else {
+    		SecurityContextHolder.getContext().setAuthentication(
+        			new ChameleonAuthentication(
+        					authentication, new ChameleonUserContext(frm.getPuid(), user)
+        			));
+    	}
+    }
+    
+    public static class ChameleonAuthentication implements Authentication {
+    	private static final long serialVersionUID = 1L;
+		private Authentication iOriginalAuthentication;
+    	private UserContext iUserContext;
+    	
+    	public ChameleonAuthentication(Authentication authentication, UserContext user) {
+    		iOriginalAuthentication = authentication; iUserContext = user;
+    		if (iOriginalAuthentication instanceof ChameleonAuthentication)
+    			iOriginalAuthentication = ((ChameleonAuthentication)iOriginalAuthentication).getOriginalAuthentication();
+    	}
+    	
+    	public Authentication getOriginalAuthentication() { return iOriginalAuthentication; }
 
-        String puid = frm.getPuid();
-        //while (puid.startsWith("0")) puid = puid.substring(1);
-		u.setId(puid);
-		u.setName(tm.getName() + " (A)");
-		u.setAdmin(false);
-		u.setRole("");
-		u.setOtherAttributes(new Properties());
-		u.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, tm.getUniqueId().toString());
+		@Override
+		public String getName() { return iUserContext.getName(); }
 
-		Vector roles = new Vector();
-		if (tm.getManagerRoles() != null){
-			Iterator it2 = tm.getManagerRoles().iterator();
-			while (it2.hasNext()){
-			    ManagerRole mr = (ManagerRole) it2.next();
-			    Roles r = mr.getRole();
-			    String role1 = r.getReference();
-				roles.addElement(role1);
-			    if(role1.equals(Roles.ADMIN_ROLE))
-			        u.setAdmin(true);
-			}
+		@Override
+		public Collection<? extends GrantedAuthority> getAuthorities() {
+			return iUserContext.getAuthorities();
 		}
-		u.setRoles(roles);
 
-		HashSet depts = new HashSet();
-		Set dp = tm.getDepartments();
-		for (Iterator i = dp.iterator(); i.hasNext(); ) {
-		    Department d = (Department) i.next();
-		    depts.add(d.getDeptCode());
+		@Override
+		public Object getCredentials() {
+			return iOriginalAuthentication.getCredentials();
 		}
-		u.setDepartments(new Vector(depts));
 
-		// Set Session Variables
-		HttpSession session = request.getSession();
-		session.setAttribute("loggedOn", "true");
-		session.setAttribute("hdnCallingScreen", "main.jsp");
-		session.setAttribute("hdnAdminAlias", "1");
-		Constants.resetSessionAttributes(session);
-		
-		Web.setUser(session, u);		
+		@Override
+		public Object getDetails() {
+			return iOriginalAuthentication.getDetails();
+		}
+
+		@Override
+		public Object getPrincipal() {
+			return iUserContext;
+		}
+
+		@Override
+		public boolean isAuthenticated() {
+			return iOriginalAuthentication.isAuthenticated();
+		}
+
+		@Override
+		public void setAuthenticated(boolean isAuthenticated) throws IllegalArgumentException {
+			iOriginalAuthentication.setAuthenticated(isAuthenticated);
+		}
+    	
     }
 }

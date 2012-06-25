@@ -26,11 +26,13 @@ import java.util.Vector;
 import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
+import org.unitime.timetable.security.rights.HasRights;
+import org.unitime.timetable.security.rights.Right;
 
 
 
 
-public class Roles extends BaseRoles {
+public class Roles extends BaseRoles implements HasRights {
 
 /**
 	 *
@@ -141,4 +143,57 @@ public class Roles extends BaseRoles {
         }
         return null;
     }
+
+	@Override
+	//TODO: get this information from the database
+	public boolean hasRight(Right right) {
+		switch (right) {
+		/* all roles are enabled */
+		case CanSelectAsCurrentRole:
+			return true;
+			
+		/* session defaults */
+		case SessionDefaultFirstFuture:
+			return DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case SessionDefaultFirstExamination:
+			return EXAM_MGR_ROLE.equals(getReference());
+		case SessionDefaultCurrent:
+			return !DEPT_SCHED_MGR_ROLE.equals(getReference()) && !EXAM_MGR_ROLE.equals(getReference());
+		
+		/* session / department / status dependency */
+		case SessionIndependent:
+			return ADMIN_ROLE.equals(getReference());
+		case SessionIndependentIfNoSessionGiven:
+			return VIEW_ALL_ROLE.equals(getReference());
+		case AllowTestSessions:
+			return ADMIN_ROLE.equals(getReference());
+		case DepartmentIndependent:
+			return !DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case StatusIndependent:
+			return ADMIN_ROLE.equals(getReference());
+			
+		/* class rights*/
+		case ClassEdit:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case ClassDetail:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
+			
+		/* curriculum rights */
+		case CurriculumAdd:
+		case CurriculumEdit:
+		case CurriculumDelete:
+			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case CurriculumDetail:
+		case CurriculumView:
+			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
+		case CurriculumMerge:
+			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference());
+		case CurriculumAdmin:
+			return ADMIN_ROLE.equals(getReference());
+			
+		default:
+			
+			return false;
+		}
+	}
 }

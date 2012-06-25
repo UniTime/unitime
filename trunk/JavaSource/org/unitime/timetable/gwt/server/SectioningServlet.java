@@ -117,9 +117,10 @@ import org.unitime.timetable.onlinesectioning.updates.RejectEnrollmentsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.SaveStudentRequests;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.spring.SessionContext;
-import org.unitime.timetable.spring.UserContext;
 
 /**
  * @author Tomas Muller
@@ -1887,8 +1888,10 @@ public class SectioningServlet implements SectioningService {
 	public Boolean selectSession(Long sessionId) {
 		getSessionContext().setAttribute("sessionId", sessionId);
 		UserContext user = getSessionContext().getUser();
-		if (user != null && user instanceof UserContext.CanSetCurrentSessionId)
-			((UserContext.CanSetCurrentSessionId)user).setCurrentAcademicSessionId(sessionId);
+		if (user.getCurrentAuthority() != null) {
+			UserAuthority authority = user.getAuthority(user.getCurrentAuthority().getRole(), null, sessionId);
+			if (authority != null) user.setCurrentAuthority(authority);
+		}
 		return true;
 	}
 
