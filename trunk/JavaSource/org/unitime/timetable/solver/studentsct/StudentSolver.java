@@ -1028,7 +1028,7 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
         if (getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
         	if (a1 + t1.getNrSlotsPerMeeting() <= a2) {
         		int dist = Placement.getDistanceInMinutes(getDistanceMetric(), s1.getPlacement(), s2.getPlacement());
-        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getStartSlot()))
+        		if (dist > t1.getBreakTime() + Constants.SLOT_LENGTH_MIN * (a2 - a1 - t1.getLength()))
         			return dist;
         	}
         } else {
