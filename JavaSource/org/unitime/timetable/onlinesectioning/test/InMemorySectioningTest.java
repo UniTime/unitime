@@ -51,7 +51,7 @@ public class InMemorySectioningTest {
 	
 	public InMemorySectioningTest(DataProperties config) {
 		iModel = new TestModel(config);
-		iModel.setDistanceConflict(new DistanceConflict(null, iModel.getProperties()));
+		iModel.setDistanceConflict(new DistanceConflict(new DistanceMetric(iModel.getProperties()), iModel.getProperties()));
 		iModel.addModelListener(iModel.getDistanceConflict());
 		iModel.setTimeOverlaps(new TimeOverlapsCounter(null, iModel.getProperties()));
 		iModel.addModelListener(iModel.getTimeOverlaps());
