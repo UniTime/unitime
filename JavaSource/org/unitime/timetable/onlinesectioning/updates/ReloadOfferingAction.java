@@ -324,7 +324,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		if (!queue.isEmpty()) {
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
-			DistanceConflict dc = new DistanceConflict(null, properties);
+			DistanceConflict dc = new DistanceConflict(server.getDistanceMetric(), properties);
 			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {
