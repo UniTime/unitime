@@ -246,10 +246,32 @@ public abstract class EventsExporter implements Exporter {
 		}
 	}
 	
+	public String getTitle(EventInterface event) {
+		if (event.hasCourseTitles()) {
+			String title = "";
+			String last = null;
+			for (String ct: event.getCourseTitles()) {
+				if (last != null && !last.isEmpty() && last.equals(ct))
+					ct = "";
+				else
+					last = ct;
+				if (title.isEmpty()) {
+					title += ct;
+				} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
+					title += "\n  " + ct;
+				} else {
+					title += "\n" + ct;
+				}
+			}
+			return title;
+		} else {
+			return "";
+		}
+	}
+	
 	public String getSection(EventInterface event) {
 		if (event.hasCourseNames()) {
 			String section = "";
-			if (event.getType() == EventType.Course) { section = ""; }
 			if (event.hasExternalIds())
 				for (String ex: event.getExternalIds()) {
 					if (section.isEmpty()) {

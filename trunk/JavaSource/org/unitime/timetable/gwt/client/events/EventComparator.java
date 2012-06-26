@@ -26,7 +26,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 public class EventComparator {
 	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE
 	}
 
 	protected static int compareByName(EventInterface e1, EventInterface e2) {
@@ -77,6 +77,17 @@ public class EventComparator {
 		return e1.compareTo(e2);
 	}
 	
+	protected static int compareByTitle(EventInterface e1, EventInterface e2) {
+		if (e1.hasCourseTitles()) {
+			if (e2.hasCourseTitles()) {
+				int cmp = e1.getCourseTitles().get(0).compareTo(e2.getCourseTitles().get(0));
+				if (cmp != 0) return cmp;
+			} else return -1;
+		} else if (e2.hasCourseTitles()) return 1;
+		return compareByName(e1, e2);
+	}
+
+	
 	public static int compareEvents(EventInterface e1, EventInterface e2, EventMeetingSortBy sortBy) {
 		switch (sortBy) {
 		case NAME:
@@ -85,6 +96,8 @@ public class EventComparator {
 			return compareBySection(e1, e2);
 		case TYPE:
 			return compareByType(e1, e2);
+		case TITLE:
+			return compareByTitle(e1, e2);
 		case SPONSOR:
 			return compareBySponsor(e1, e2);
 		case MAIN_CONTACT:

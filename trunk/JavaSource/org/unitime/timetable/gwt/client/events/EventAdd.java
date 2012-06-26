@@ -577,7 +577,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, true); iMeetings.setEditable(true);
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true); iMeetings.setEditable(true);
 		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
 		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<EventMeetingRow>>() {
 			@Override
@@ -789,7 +789,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 							meeting.setStartSlot(s.getStartSlot());
 							meeting.setEndSlot(s.getStartSlot() + s.getLength());
 							meeting.setStartOffset(0);
-							meeting.setEndOffset(0);
+							meeting.setEndOffset(-room.getBreakTime());
 							meeting.setDayOfYear(day);
 							meeting.setLocation(room);
 							meetings.add(meeting);

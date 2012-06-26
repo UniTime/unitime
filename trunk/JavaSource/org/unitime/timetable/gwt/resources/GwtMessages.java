@@ -200,6 +200,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Type")
 	String colType();
 	
+	@DefaultMessage("Title")
+	String colTitle();
+	
 	@DefaultMessage("Time")
 	String colTime();
 
