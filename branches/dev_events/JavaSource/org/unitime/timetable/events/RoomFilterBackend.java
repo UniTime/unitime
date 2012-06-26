@@ -443,10 +443,11 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"mouseOver", hint,
 					"overbook", rights.canOverbook(location.getUniqueId()) ? "1" : "0",
-					"breakTime", "10"));
+					"breakTime", String.valueOf(location.getBreakTime())
+					));
 		}
 	}
-
+	
 	public DistanceMetric getDistanceMetric() {
 		if (iMetrics == null) {
 			DataProperties config = new DataProperties();

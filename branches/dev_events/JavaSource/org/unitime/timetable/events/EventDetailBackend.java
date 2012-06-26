@@ -175,6 +175,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				location.setHint(r.getHtmlHint());
     				location.setSize(r.getCapacity());
     				location.setRoomType(r.getRoomTypeLabel());
+    				location.setBreakTime(r.getBreakTime());
     				related.addLocation(location);
     			}
     		}
@@ -206,6 +207,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setHint(r.getHtmlHint());
 				location.setSize(r.getCapacity());
 				location.setRoomType(r.getRoomTypeLabel());
+				location.setBreakTime(r.getBreakTime());
 				related.addLocation(location);
     		}
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
@@ -256,6 +258,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
+		    				location.setBreakTime(r.getBreakTime());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -320,6 +323,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
+		    				location.setBreakTime(r.getBreakTime());
 		    				related.addLocation(location);
 		    			}
 		    		}
@@ -392,6 +396,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setHint(m.getLocation().getHtmlHint());
 				location.setSize(m.getLocation().getCapacity());
 				location.setRoomType(m.getLocation().getRoomTypeLabel());
+				location.setBreakTime(m.getLocation().getBreakTime());
 				meeting.setLocation(location);
 			}
 			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());

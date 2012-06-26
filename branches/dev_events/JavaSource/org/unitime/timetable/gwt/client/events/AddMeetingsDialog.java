@@ -212,7 +212,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setStartSlot(getStartSlot());
 							meeting.setEndSlot(getEndSlot());
 							meeting.setStartOffset(0);
-							meeting.setEndOffset(Integer.parseInt(room.getProperty("breakTime", "10")));
+							meeting.setEndOffset(-Integer.parseInt(room.getProperty("breakTime", "0")));
 
 							
 							ResourceInterface location = new ResourceInterface();

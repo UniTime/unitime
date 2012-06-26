@@ -937,4 +937,8 @@ public abstract class Location extends BaseLocation implements Comparable {
     			.setCacheable(true).uniqueResult();
     	return nrMeetings.intValue() > 0;
     }
+    
+    public int getBreakTime() {
+    	return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
+    }
 }

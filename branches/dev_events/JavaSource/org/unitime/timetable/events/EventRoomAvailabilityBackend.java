@@ -129,8 +129,6 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndSlot(288);
 					meeting.addConflict(conflict);
 				}
-
-				meeting.setEndOffset(-10);
 				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
 						"select m from Meeting m, Location l "+
