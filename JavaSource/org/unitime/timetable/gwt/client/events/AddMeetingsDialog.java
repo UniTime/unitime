@@ -130,7 +130,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					@Override
 					public void onSuccess(List<Entity> result) {
 						iMatchingRooms = result;
-						if (result.isEmpty()) {
+						if (result == null || result.isEmpty()) {
 							LoadingWidget.getInstance().hide();
 							iDatesHeader.setErrorMessage(MESSAGES.errorNoMatchingRooms());
 						} else if (iDates.getSelectedDaysCount() > 0) {
@@ -212,7 +212,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							meeting.setStartSlot(getStartSlot());
 							meeting.setEndSlot(getEndSlot());
 							meeting.setStartOffset(0);
-							meeting.setEndOffset(Integer.parseInt(room.getProperty("breakTime", "10")));
+							meeting.setEndOffset(-Integer.parseInt(room.getProperty("breakTime", "0")));
 
 							
 							ResourceInterface location = new ResourceInterface();

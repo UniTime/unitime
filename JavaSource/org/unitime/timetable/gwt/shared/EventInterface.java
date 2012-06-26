@@ -53,6 +53,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private TreeSet<NoteInterface> iNotes;
 	
 	private List<String> iCourseNames = null;
+	private List<String> iCourseTitles = null;
 	private String iInstruction = null;
 	private Integer iInstructionType = null, iMaxCapacity = null, iEnrollment;
 	private boolean iReqAttendance = false;
@@ -195,6 +196,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public List<String> getCourseNames() {
 		return iCourseNames;
 	}
+	public boolean hasCourseTitles() { return iCourseTitles != null && !iCourseTitles.isEmpty(); }
+	public void addCourseTitle(String title) {
+		if (iCourseTitles == null) iCourseTitles = new ArrayList<String>();
+		iCourseTitles.add(title);
+	}
+	public List<String> getCourseTitles() {
+		return iCourseTitles;
+	}
 	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
 	public String getInstruction() { return iInstruction; }
 	public void setInstruction(String instruction) { iInstruction = instruction; }
@@ -290,6 +299,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (event.hasCourseNames())
 			for (String courseName: event.getCourseNames())
 				conflict.addCourseName(courseName);
+		if (event.hasCourseTitles())
+			for (String courseTitle: event.getCourseTitles())
+				conflict.addCourseTitle(courseTitle);
 		if (event.hasExternalIds())
 			for (String extId: event.getExternalIds())
 				conflict.addExternalId(extId);
@@ -331,6 +343,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Integer iSize = null;
 		private Double iDistance = null;
 		private String iRoomType = null;
+		private int iBreakTime = 0;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -344,6 +357,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			String distance = room.getProperty("distance", null);
 			setDistance(distance == null ? null : Double.valueOf(distance));
 			setRoomType(room.getProperty("type", null));
+			setBreakTime(Integer.parseInt(room.getProperty("breakTime" ,"0")));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -370,6 +384,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setRoomType(String type) { iRoomType = type; }
 		public boolean hasRoomType() { return iRoomType != null; }
 		public String getRoomType() { return iRoomType; }
+		public int getBreakTime() { return iBreakTime; }
+		public void setBreakTime(int breakTime) { iBreakTime = breakTime; }
 		
 		public String getHint() { return iHint; }
 		public boolean hasHint() { return iHint != null && !iHint.isEmpty(); }
@@ -880,6 +896,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private Long iUniqueId;
     	private RelatedObjectType iType;
     	private List<String> iCourseNames = null;
+    	private List<String> iCourseTitles = null;
     	private String iName;
     	private String iInstruction = null;
     	private Integer iInstructionType = null, iMaxCapacity = null;
@@ -916,6 +933,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		return iCourseNames;
     	}
     	
+    	public boolean hasCourseTitles() { return iCourseTitles != null && !iCourseTitles.isEmpty(); }
+    	public void addCourseTitle(String title) {
+    		if (iCourseTitles == null) iCourseTitles = new ArrayList<String>();
+    		iCourseTitles.add(title);
+    	}
+    	public List<String> getCourseTitles() {
+    		return iCourseTitles;
+    	}
+
     	public boolean hasInstruction() { return iInstruction != null && !iInstruction.isEmpty(); }
     	public String getInstruction() { return iInstruction; }
     	public void setInstruction(String instruction) { iInstruction = instruction; }
@@ -1818,7 +1844,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_ENROLLMENT,
 		SHOW_MAIN_CONTACT,
 		SHOW_SPONSOR,
-		SHOW_SECTION;
+		SHOW_SECTION,
+		SHOW_TITLE,
+		SHOW_APPROVAL;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {
@@ -1832,5 +1860,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
     
-	public static final int sDefaultEventFlags = EventFlag.SHOW_PUBLISHED_TIME.flag() + EventFlag.SHOW_MAIN_CONTACT.flag() + EventFlag.SHOW_SPONSOR.flag() + EventFlag.SHOW_CAPACITY.flag(); 
+	public static final int sDefaultEventFlags =
+				EventFlag.SHOW_PUBLISHED_TIME.flag() +
+				EventFlag.SHOW_MAIN_CONTACT.flag() +
+				EventFlag.SHOW_SPONSOR.flag() +
+				EventFlag.SHOW_CAPACITY.flag() +
+				EventFlag.SHOW_TITLE.flag() + 
+				EventFlag.SHOW_APPROVAL.flag();
 }
