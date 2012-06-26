@@ -133,6 +133,14 @@
 					Search and Save (Add Reservation) buttons to receive a click event.</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling: Linked Classes</name>
+			<description>
+				<line>Linked classes constraint was ignored when there were only two classes in the constraint.
+					<line>The check was wrong, the constraint is to be used when there are at least two classes (not more than two classes) in the constraint.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
