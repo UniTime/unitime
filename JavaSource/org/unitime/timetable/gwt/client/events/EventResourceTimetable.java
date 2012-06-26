@@ -1277,9 +1277,21 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iRoomPanel.getValue() != null && !iRoomPanel.getValue().isAll()) {
 			for (ResourceInterface resource: iRoomPanel.getSelected())
 				events.addOption("room", resource.getId().toString());
+		} else {
+			FilterRpcRequest rooms = iRooms.getElementsRequest();
+			if (rooms.hasOptions()) {
+				for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
+					for (String value: option.getValue()) {
+						query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
+					}
+				}
+			}
+			if (rooms.getText() != null && !rooms.getText().isEmpty()) {
+				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
+			}
 		}
 
-		if (events.getOptions() != null) {
+		if (events.hasOptions()) {
 			for (Map.Entry<String, Set<String>> option: events.getOptions().entrySet()) {
 				for (String value: option.getValue()) {
 					query += "&e:" + option.getKey() + "=" + URL.encodeQueryString(value);
@@ -1288,18 +1300,6 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		}
 		if (events.getText() != null && !events.getText().isEmpty()) {
 			query += "&e:text=" + URL.encodeQueryString(events.getText());
-		}
-		
-		FilterRpcRequest rooms = iRooms.getElementsRequest();
-		if (rooms.getOptions() != null && (iRoomPanel.getValue() == null || iRoomPanel.getValue().isAll())) {
-			for (Map.Entry<String, Set<String>> option: rooms.getOptions().entrySet()) {
-				for (String value: option.getValue()) {
-					query += "&r:" + option.getKey() + "=" + URL.encodeQueryString(value);
-				}
-			}
-			if (rooms.getText() != null && !rooms.getText().isEmpty()) {
-				query += "&r:text=" + URL.encodeQueryString(rooms.getText());
-			}
 		}
 		
 		if (iTable.hasSortBy())
