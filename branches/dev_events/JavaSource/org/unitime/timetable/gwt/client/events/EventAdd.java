@@ -577,7 +577,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, true); iMeetings.setEditable(true);
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true); iMeetings.setEditable(true);
 		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
 		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<EventMeetingRow>>() {
 			@Override

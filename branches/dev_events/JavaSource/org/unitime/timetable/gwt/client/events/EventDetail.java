@@ -312,6 +312,7 @@ public class EventDetail extends Composite {
 		}
 		
 		iMeetings.clearTable(1);
+		iMeetings.resetColumnVisibility();
 		for (MeetingInterface meeting: iEvent.getMeetings()) {
 			iMeetings.add(new EventMeetingRow(iEvent, meeting));
 		}
