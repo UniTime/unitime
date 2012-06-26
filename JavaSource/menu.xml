@@ -261,7 +261,6 @@
 		</condition>
 	</item>
 	<item name="Timetable" page="timetable" type="gwt">
-		<parameter name="rooms"></parameter>
 		<condition>
 			<or>
 				<and>
@@ -273,7 +272,13 @@
 				<and>
 					<isAuthenticated/>
 					<not>
-						<hasRole/>
+						<and>
+							<or>
+								<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
+								<hasRole name="Administrator"/>
+							</or>
+							<hasRight name="canSeeEvents"/>
+						</and>
 					</not>
 				</and>
 			</or>
