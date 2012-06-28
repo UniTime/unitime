@@ -33,9 +33,9 @@
 <script language="JavaScript">
 	function go(evt) {
 		if (evt.ctrlKey || evt.altKey) return;
-		s = 'suggestions.do?op=Try&id='+suggestionsForm['id'].value;
-		for (i=0;i<suggestionsForm.nrRooms.value;i++) {
-			if (suggestionsForm['room'+i].value=='') {
+		s = 'suggestions.do?op=Try&id='+document.suggestionsForm['id'].value;
+		for (i=0;i<document.suggestionsForm.nrRooms.value;i++) {
+			if (document.suggestionsForm['room'+i].value=='') {
 				/*
 				if (i==1)
 					alert('Room not selected.');
@@ -49,17 +49,17 @@
 				return;
 			}
 			for (j=0;j<i;j++) {
-				if (suggestionsForm['room'+j].value==suggestionsForm['room'+i].value) {
+				if (document.suggestionsForm['room'+j].value==document.suggestionsForm['room'+i].value) {
 					/*
 					alert(i+'. selected room is the same as '+j+'. selected room.');
 					*/
 					return;
 				}
 			}
-			s += '&room'+i+'='+suggestionsForm['room'+i].value;
+			s += '&room'+i+'='+document.suggestionsForm['room'+i].value;
 		}
 
-		if (suggestionsForm['days'].value=='') {
+		if (document.suggestionsForm['days'].value=='') {
 			/*
 			alert("Time not selected.");
 			*/
@@ -67,14 +67,14 @@
 		}
 		
 		
-		if (suggestionsForm.roomState.value==1 && suggestionsForm.nrRooms.value>0) {
+		if (document.suggestionsForm.roomState.value==1 && document.suggestionsForm.nrRooms.value>0) {
 			return;
 		}
 		
-		s += '&days='+suggestionsForm['days'].value;
-		s += '&slot='+suggestionsForm['slot'].value;
-		s += '&pattern='+suggestionsForm['pattern'].value;
-		s += '&dates='+suggestionsForm['dates'].value;
+		s += '&days='+document.suggestionsForm['days'].value;
+		s += '&slot='+document.suggestionsForm['slot'].value;
+		s += '&pattern='+document.suggestionsForm['pattern'].value;
+		s += '&dates='+document.suggestionsForm['dates'].value;
 		s += '&noCacheTS='+(new Date().getTime());
 		
 		displayLoading();
@@ -82,66 +82,66 @@
 	}
 	
 	function selectRoom(evt, roomId) {
-		if (suggestionsForm.roomState.value==0)
-			suggestionsForm.roomState.value=1;
+		if (document.suggestionsForm.roomState.value==0)
+			document.suggestionsForm.roomState.value=1;
 	
-		for (i=0;i<suggestionsForm.nrRooms.value;i++) {
-			if (i!=suggestionsForm.curRoom.value && suggestionsForm['room'+i].value==roomId) {
+		for (i=0;i<document.suggestionsForm.nrRooms.value;i++) {
+			if (i!=document.suggestionsForm.curRoom.value && document.suggestionsForm['room'+i].value==roomId) {
 				go(evt); return;
 			}
 		}
 
-		if (suggestionsForm['room'+suggestionsForm.curRoom.value].value!='')
-			document.getElementById('room_'+suggestionsForm['room'+suggestionsForm.curRoom.value].value).style.border='none';	
+		if (document.suggestionsForm['room'+document.suggestionsForm.curRoom.value].value!='')
+			document.getElementById('room_'+document.suggestionsForm['room'+document.suggestionsForm.curRoom.value].value).style.border='none';	
 		
 		document.getElementById('room_'+roomId).style.border='black 1px dashed';
-		suggestionsForm['room'+suggestionsForm.curRoom.value].value=roomId;
+		document.suggestionsForm['room'+document.suggestionsForm.curRoom.value].value=roomId;
 		
-		suggestionsForm.curRoom.value ++;
-		if (suggestionsForm.curRoom.value>=suggestionsForm.nrRooms.value) {
-			suggestionsForm.curRoom.value = 0;
-			suggestionsForm.roomState.value = 2;
+		document.suggestionsForm.curRoom.value ++;
+		if (document.suggestionsForm.curRoom.value>=document.suggestionsForm.nrRooms.value) {
+			document.suggestionsForm.curRoom.value = 0;
+			document.suggestionsForm.roomState.value = 2;
 		}
 		
 		go(evt);
   }
   
   function selectTime(evt, days, slot, pattern) {
-		if (suggestionsForm['days'].value!='')
-			document.getElementById('time_'+suggestionsForm['days'].value+"_"+suggestionsForm['slot'].value+"_"+suggestionsForm['pattern'].value).style.border='none';	
-		suggestionsForm['days'].value = days;
-		suggestionsForm['slot'].value = slot;
-		suggestionsForm['pattern'].value = pattern;
+		if (document.suggestionsForm['days'].value!='')
+			document.getElementById('time_'+document.suggestionsForm['days'].value+"_"+document.suggestionsForm['slot'].value+"_"+document.suggestionsForm['pattern'].value).style.border='none';	
+		document.suggestionsForm['days'].value = days;
+		document.suggestionsForm['slot'].value = slot;
+		document.suggestionsForm['pattern'].value = pattern;
 		document.getElementById('time_'+days+"_"+slot+"_"+pattern).style.border='black 1px dashed';
 		
 		go(evt);
   }
   
   function selectDates(evt, dates) {
-		if (suggestionsForm['dates'].value!='')
-			document.getElementById('dates_'+suggestionsForm['dates'].value).style.border='none';	
-		suggestionsForm['dates'].value = dates;
+		if (document.suggestionsForm['dates'].value!='')
+			document.getElementById('dates_'+document.suggestionsForm['dates'].value).style.border='none';	
+		document.suggestionsForm['dates'].value = dates;
 		document.getElementById('dates_'+dates).style.border='black 1px dashed';
 		
 		go(evt);
   }
   
   function initRooms() {
-		for (i=0;i<suggestionsForm.nrRooms.value;i++) {
-			if (suggestionsForm['room'+i].value!='') {
-				document.getElementById('room_'+suggestionsForm['room'+i].value).style.border='black 1px dashed';
+		for (i=0;i<document.suggestionsForm.nrRooms.value;i++) {
+			if (document.suggestionsForm['room'+i].value!='') {
+				document.getElementById('room_'+document.suggestionsForm['room'+i].value).style.border='black 1px dashed';
 			}
 		}  	
   }
   
   function initTime() {
-		if (suggestionsForm['days'].value!='')
-			document.getElementById('time_'+suggestionsForm['days'].value+"_"+suggestionsForm['slot'].value+"_"+suggestionsForm['pattern'].value).style.border='black 1px dashed';	
+		if (document.suggestionsForm['days'].value!='')
+			document.getElementById('time_'+document.suggestionsForm['days'].value+"_"+document.suggestionsForm['slot'].value+"_"+document.suggestionsForm['pattern'].value).style.border='black 1px dashed';	
   }
 
   function initDates() {
-		if (suggestionsForm['dates'].value!='')
-			document.getElementById('dates_'+suggestionsForm['dates'].value).style.border='black 1px dashed';	
+		if (document.suggestionsForm['dates'].value!='')
+			document.getElementById('dates_'+document.suggestionsForm['dates'].value).style.border='black 1px dashed';	
   }
   
 </script>
