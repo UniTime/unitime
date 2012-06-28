@@ -543,6 +543,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	int minClassLimit = clazz.getExpectedCapacity().intValue();
     	int maxClassLimit = clazz.getMaxExpectedCapacity().intValue();
     	if (maxClassLimit<minClassLimit) maxClassLimit = minClassLimit;
+    	if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment())
+    		minClassLimit = maxClassLimit = Integer.MAX_VALUE;
     	float room2limitRatio = clazz.getRoomRatio().floatValue();
     	int roomCapacity = (int)Math.ceil(minClassLimit<=0?room2limitRatio:room2limitRatio*minClassLimit);
     	
@@ -2487,41 +2489,51 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	iProgress.setPhase("Loading students ...",iOfferings.size());
     	for (InstructionalOffering offering: iOfferings.keySet()) {
     		
-    		int totalCourseLimit = 0;
+    		boolean unlimitedOffering = false;
+    		int offeringLimit = 0;
+    		for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+    			if (config.isUnlimitedEnrollment())
+    				unlimitedOffering = true;
+    			else
+    				offeringLimit += config.getLimit();
     		
-    		for (CourseOffering course: offering.getCourseOfferings()) {
-        		int courseLimit = -1;
-        		if (course.getReservation() != null)
-        			courseLimit = course.getReservation();
-        		if (courseLimit < 0) {
-        			if (offering.getCourseOfferings().size() == 1)
-        				courseLimit = offering.getLimit();
-        			else {
-        				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_WARN), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
-        				if (course.getProjectedDemand() != null)
-        					courseLimit = course.getProjectedDemand();
-        				else if (course.getDemand() != null)
-        					courseLimit = course.getDemand();
-        				else
-        					courseLimit = 0;
-        			}
-        		}
-        		
-        		totalCourseLimit += courseLimit;
-    		}
     		
     		Double factor = null;
-    		
-    		if (totalCourseLimit < offering.getLimit())
-    			iProgress.message(msglevel("courseReservationsBelowLimit", Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offering.getLimit().intValue()+").");
+    		if (!unlimitedOffering) {
+        		int totalCourseLimit = 0;
+        		
+        		for (CourseOffering course: offering.getCourseOfferings()) {
+            		int courseLimit = -1;
+            		if (course.getReservation() != null)
+            			courseLimit = course.getReservation();
+            		if (courseLimit < 0) {
+            			if (offering.getCourseOfferings().size() == 1)
+            				courseLimit = offeringLimit;
+            			else {
+            				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_WARN), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
+            				if (course.getProjectedDemand() != null)
+            					courseLimit = course.getProjectedDemand();
+            				else if (course.getDemand() != null)
+            					courseLimit = course.getDemand();
+            				else
+            					courseLimit = 0;
+            			}
+            		}
+            		
+            		totalCourseLimit += courseLimit;
+        		}
+        		
+        		if (totalCourseLimit < offeringLimit)
+        			iProgress.message(msglevel("courseReservationsBelowLimit", Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offeringLimit+").");
 
-    		if (totalCourseLimit > offering.getLimit().intValue())
-    			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), "Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offering.getLimit().intValue()+").");
-    		
-    		if (totalCourseLimit == 0) continue;
-    		
-    		if (totalCourseLimit != offering.getLimit())
-    			factor = new Double(((double)offering.getLimit()) / totalCourseLimit);
+        		if (totalCourseLimit > offeringLimit)
+        			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), "Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offeringLimit+").");
+        		
+        		if (totalCourseLimit == 0) continue;
+        		
+        		if (totalCourseLimit != offeringLimit)
+        			factor = new Double(((double)offeringLimit) / totalCourseLimit);    			
+    		}
     		
     		for (CourseOffering course: offering.getCourseOfferings()) {
         		Set<WeightedStudentId> studentIds = iStudentCourseDemands.getDemands(course);
@@ -2535,8 +2547,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		if (course.getReservation() != null)
         			courseLimit = course.getReservation();
         		if (courseLimit < 0) {
-        			if (offering.getCourseOfferings().size() == 1)
-        				courseLimit = offering.getLimit().intValue();
+        			if (offering.getCourseOfferings().size() == 1 && !unlimitedOffering)
+        				courseLimit = offeringLimit;
         			else {
         				courseLimit = Math.round(studentWeight);
         			}
@@ -2546,12 +2558,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			courseLimit = (int)Math.round(courseLimit * factor);
         		
         		if (studentIds == null || studentIds.isEmpty()) {
-        			iProgress.message(msglevel("offeringWithoutDemand", Progress.MSGLEVEL_INFO), "No student enrollments for offering "+getOfferingLabel(course)+".");
+        			iProgress.message(msglevel("offeringWithoutDemand", Progress.MSGLEVEL_INFO), "No student enrollments for course "+getOfferingLabel(course)+".");
         			continue;
         		}
         		
-        		if (courseLimit == 0) {
-        			iProgress.message(msglevel("noCourseReservation", Progress.MSGLEVEL_WARN), "No reserved space for students of offering "+getOfferingLabel(course)+".");
+        		if (courseLimit == 0 && offering.getCourseOfferings().size() > 1) {
+        			iProgress.message(msglevel("noCourseReservation", Progress.MSGLEVEL_WARN), "No reserved space for students of course "+getOfferingLabel(course)+".");
         		}
         		
         		double weight = (iStudentCourseDemands.isWeightStudentsToFillUpOffering() && courseLimit != 0 ? (double)courseLimit / studentWeight : 1.0);
