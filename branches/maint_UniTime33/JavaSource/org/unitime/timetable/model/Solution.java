@@ -1393,6 +1393,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		Hashtable assignments = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
+			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			Assignment assignment = (classOrClassId instanceof Class_ ? getAssignment((Class_)classOrClassId) : getAssignment((Long)classOrClassId));
 			if (assignment!=null)
 				assignments.put(classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId, assignment);
@@ -1404,6 +1405,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		Hashtable infos = new Hashtable();
 		for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
 			Object classOrClassId = i.next();
+			if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
 			AssignmentPreferenceInfo info = (classOrClassId instanceof Class_ ? getAssignmentInfo((Class_)classOrClassId) : getAssignmentInfo((Long)classOrClassId));
 			if (info!=null)
 				infos.put(classOrClassId instanceof Class_ ? ((Class_)classOrClassId).getUniqueId() : (Long)classOrClassId, info);

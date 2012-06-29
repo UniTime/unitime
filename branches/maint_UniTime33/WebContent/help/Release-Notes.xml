@@ -113,6 +113,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Classes, Class Assignments</name>
+			<description>
+				<line>Class Assignment Proxy: given list of classes / class ids may also contain pairs [Class, CourseOffering].
+					<line>This fixes a problem when timetable was not displayed on Classes, Class Assignment pages in certain cases (e.g., when there was a solution loaded in memory).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>
