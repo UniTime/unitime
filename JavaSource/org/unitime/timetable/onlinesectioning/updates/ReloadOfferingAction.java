@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -324,7 +325,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		if (!queue.isEmpty()) {
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
-			DistanceConflict dc = new DistanceConflict(null, properties);
+			DistanceConflict dc = new DistanceConflict((Solver)null, properties);
 			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {

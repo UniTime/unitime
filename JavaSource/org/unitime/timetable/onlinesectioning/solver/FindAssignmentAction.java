@@ -34,6 +34,7 @@ import java.util.Vector;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
+import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -137,7 +138,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, false, classTable, linkedSections);
 			model.addStudent(student);
-			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			model.setDistanceConflict(new DistanceConflict((Solver)null, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			for (LinkedSections link: linkedSections) {
 				List<Section> sections = new ArrayList<Section>();
@@ -273,6 +274,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
+		clonedCourse.setNote(course.getNote());
 		Hashtable<Config, Config> configs = new Hashtable<Config, Config>();
 		Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
 		Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
@@ -644,6 +646,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (requiredSections != null && requiredSections.contains(section)) a.setPinned(true);
 					a.setSubpartId(section.getSubpart().getId());
 					a.setHasAlternatives(hasAlt);
+					a.addNote(course.getNote());
 					a.addNote(section.getNote());
 					int dist = 0;
 					String from = null;

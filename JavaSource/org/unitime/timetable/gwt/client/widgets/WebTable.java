@@ -32,6 +32,7 @@ import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -450,6 +451,24 @@ public class WebTable extends Composite {
 			super.setStyleName(styleName);
 			iLabel.setStyleName(styleName);
 			iLabel.getElement().getStyle().setBorderWidth(0, Unit.PX);
+		}
+	}
+	
+	public static class NoteCell extends Cell {
+		private AbsolutePanel iNote = null;
+		
+		public NoteCell(String text) {
+			super(null);
+			iNote = new AbsolutePanel();
+			iNote.setStyleName("unitime-Note");
+			iNote.getElement().setInnerHTML(text.replace("\n", "<br>"));
+			iNote.setTitle(text);
+		}
+		
+		public String getValue() { return iNote.getElement().getInnerHTML(); }
+		public Widget getWidget() { return iNote; }
+		public void setStyleName(String styleName) {
+			super.setStyleName(styleName);
 		}
 	}
 	
