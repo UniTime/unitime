@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
@@ -167,7 +168,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 			
 			DataProperties properties = new DataProperties();
 			ResectioningWeights w = new ResectioningWeights(properties);
-			DistanceConflict dc = new DistanceConflict(null, properties);
+			DistanceConflict dc = new DistanceConflict((Solver)null, properties);
 			TimeOverlapsCounter toc = new TimeOverlapsCounter(null, properties);
 			Date ts = new Date();
 			for (SectioningRequest r: queue) {

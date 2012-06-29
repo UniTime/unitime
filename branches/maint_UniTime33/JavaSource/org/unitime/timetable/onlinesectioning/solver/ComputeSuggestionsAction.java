@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.studentsct.StudentSectioningModel;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
@@ -122,7 +123,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 			for (CourseRequestInterface.Request c: getRequest().getAlternatives())
 				addRequest(server, model, student, original, c, true, true, classTable, linkedSections);
 			model.addStudent(student);
-			model.setDistanceConflict(new DistanceConflict(null, model.getProperties()));
+			model.setDistanceConflict(new DistanceConflict((Solver)null, model.getProperties()));
 			model.setTimeOverlaps(new TimeOverlapsCounter(null, model.getProperties()));
 			for (LinkedSections link: linkedSections) {
 				List<Section> sections = new ArrayList<Section>();

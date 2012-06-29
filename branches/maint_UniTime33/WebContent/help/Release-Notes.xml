@@ -90,6 +90,13 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Notes</name>
+			<description>
+				<line>Include "Schedule of Classes Note" set on the appropriate course offering (not just the student schedule note).</line>
+				<line>Note column (List of Classes table) can now have multiple lines, and has limited width.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
