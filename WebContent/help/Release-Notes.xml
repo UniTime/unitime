@@ -141,6 +141,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Suggestions</name>
+			<description>
+				<line>Refer the suggestion form as document.suggestionForm rather than just suggestionForm.
+					<line>This fixes the ability to select time and room manually in Firefox 13.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
