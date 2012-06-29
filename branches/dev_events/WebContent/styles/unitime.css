@@ -2402,3 +2402,10 @@ div.gwt-MenuBarPopup {
 .unitime-EventResults{
 	width: 100%;
 }
+
+.unitime-Note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}

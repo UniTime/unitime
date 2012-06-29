@@ -273,6 +273,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 			}
 		}
 		Course clonedCourse = new Course(course.getId(), course.getSubjectArea(), course.getCourseNumber(), clonedOffering, courseLimit, course.getProjected());
+		clonedCourse.setNote(course.getNote());
 		Hashtable<Config, Config> configs = new Hashtable<Config, Config>();
 		Hashtable<Subpart, Subpart> subparts = new Hashtable<Subpart, Subpart>();
 		Hashtable<Section, Section> sections = new Hashtable<Section, Section>();
@@ -644,6 +645,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					if (requiredSections != null && requiredSections.contains(section)) a.setPinned(true);
 					a.setSubpartId(section.getSubpart().getId());
 					a.setHasAlternatives(hasAlt);
+					a.addNote(course.getNote());
 					a.addNote(section.getNote());
 					int dist = 0;
 					String from = null;

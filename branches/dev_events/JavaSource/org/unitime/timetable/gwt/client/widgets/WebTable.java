@@ -453,6 +453,23 @@ public class WebTable extends Composite {
 		}
 	}
 	
+	public static class NoteCell extends Cell {
+		private P iNote = null;
+		
+		public NoteCell(String text) {
+			super(null);
+			iNote = new P("unitime-Note");
+			iNote.setHTML(text.replace("\n", "<br>"));
+			iNote.setTitle(text);
+		}
+		
+		public String getValue() { return iNote.getHTML(); }
+		public Widget getWidget() { return iNote; }
+		public void setStyleName(String styleName) {
+			super.setStyleName(styleName);
+		}
+	}
+	
 	public static class WidgetCell extends Cell {
 		private Widget iWidget = null;
 		
