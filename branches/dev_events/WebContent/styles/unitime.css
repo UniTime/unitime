@@ -2159,10 +2159,25 @@ div.gwt-MenuBarPopup {
 	color: blue;
 }
 
+.unitime-EventMeetings .new-approved-meeting {
+	font-style: italic;
+	color: green;
+}
+
 .unitime-EventMeetings .conflict-row {
 	font-style: italic;
 	background-color: #FFD7D7;
 	vertical-align: top;
+}
+
+.unitime-EventMeetings .deleted-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .deleted-meeting {
+	font-style: italic;
+	color: gray;
 }
 
 .unitime-EventMeetings .indent {

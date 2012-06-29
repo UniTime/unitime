@@ -153,6 +153,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			TreeSet<Meeting> created = new TreeSet<Meeting>();
 			for (MeetingInterface m: request.getEvent().getMeetings()) {
 				Meeting meeting = null; 
+				if (m.isDelete()) continue;
 				if (m.getId() != null)
 					for (Iterator<Meeting> i = remove.iterator(); i.hasNext(); ) {
 						Meeting x = i.next();
@@ -182,7 +183,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					if (rights.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
 					if (!rights.canOverbook(location.getUniqueId())) {
-						List<MeetingConglictInterface> conflicts = computeConflicts(hibSession, m);
+						List<MeetingConglictInterface> conflicts = computeConflicts(hibSession, m, event.getUniqueId());
 						if (!conflicts.isEmpty())
 							throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(conflicts.get(0))));
 					}
@@ -345,17 +346,18 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		}
 	}
 	
-	private List<MeetingConglictInterface> computeConflicts(org.hibernate.Session hibSession, MeetingInterface meeting) {
+	private List<MeetingConglictInterface> computeConflicts(org.hibernate.Session hibSession, MeetingInterface meeting, Long eventId) {
 		List<MeetingConglictInterface> conflicts = new ArrayList<EventInterface.MeetingConglictInterface>();
 		for (Meeting m: (List<Meeting>)hibSession.createQuery(
 				"select m from Meeting m, Location l "+
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
-				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId")
+				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId")
 				.setInteger("startTime", meeting.getStartSlot())
 				.setInteger("stopTime", meeting.getEndSlot())
 				.setDate("meetingDate", meeting.getMeetingDate())
 				.setLong("locationdId", meeting.getLocation().getId())
 				.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
+				.setLong("eventId", eventId == null ? -1 : eventId)
 				.list()) {
 			
 			MeetingConglictInterface conflict = new MeetingConglictInterface();

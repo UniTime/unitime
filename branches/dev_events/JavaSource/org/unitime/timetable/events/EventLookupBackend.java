@@ -878,7 +878,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					event.addMeeting(meeting);
 				}
 				
-				if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("conflicts")) {
+				if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
 					request.getEventFilter().setOption("mode", "Conflicting Events");
 					query = EventFilterBackend.getQuery(request.getEventFilter());
 					

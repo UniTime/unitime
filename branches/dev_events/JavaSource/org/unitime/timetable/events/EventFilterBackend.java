@@ -21,6 +21,7 @@ package org.unitime.timetable.events;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -53,6 +55,13 @@ public class EventFilterBackend extends FilterBoxBackend {
 	@Override
 	public void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
 		EventQuery query = getQuery(request);
+		
+		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		for (Object[] o: (List<Object[]>)query.select("e.class, count(distinct e)").group("e.class").order("e.class").exclude("query").exclude("type").query(hibSession).list()) {
@@ -102,27 +111,34 @@ public class EventFilterBackend extends FilterBoxBackend {
 					response.add("mode", approved);
 				}
 				
-				int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null")
+				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null")
+						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+				if (notApprovedCnt > 0) {
+					Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
+					response.add("mode", notApproved);
+				}
+
+				int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null and m.meetingDate >= :today").set("today", today)
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				if (awaitingCnt > 0) {
-					Entity awaiting = new Entity(2l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
+					Entity awaiting = new Entity(4l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
 					response.add("mode", awaiting);
 				}
-				
+
 				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx")
 						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				if (conflictingCnt > 0) {
-					Entity conflicting = new Entity(2l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
+					Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
 					response.add("mode", conflicting);
 				}
 				
 				if (Roles.EVENT_MGR_ROLE.equals(role)) {
 					int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user").set("user", request.getOption("user"))
-							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", request.getOption("user"))
+							.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					if (myApprovalCnt > 0) {
-						Entity awaiting = new Entity(2l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
+						Entity awaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
 						response.add("mode", awaiting);
 					}					
 				}
@@ -137,12 +153,22 @@ public class EventFilterBackend extends FilterBoxBackend {
 			Entity sponsor = new Entity(id, name, name); sponsor.setCount(count);
 			response.add("sponsor", sponsor);
 		}
-		
-		response.add("other", new Entity(0l, "Conflicts", "Display Conflicts"));
 	}
 	
 	public static EventQuery getQuery(FilterRpcRequest request) {
 		EventQuery query = new EventQuery(request.getSessionId());
+		
+		if (request.hasOptions("flag")) {
+			if (request.getOption("flag").contains("All Sessions"))
+				query.checkSession(false);
+		}
+		
+		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
 			query.addWhere("query", "lower(e.eventName) like lower(:Xquery) || '%'" + (request.getText().length() >= 2 ? " or lower(e.eventName) like '% ' || lower(:Xquery) || '%'" : ""));
@@ -257,12 +283,16 @@ public class EventFilterBackend extends FilterBoxBackend {
 				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + request.getOption("user") + "'");
 			} else if ("Approved Events".equals(mode)) {
 				query.addWhere("mode", "m.approvedDate is not null");
-			} else if ("Awaiting Events".equals(mode)) {
+			} else if ("Not Approved Events".equals(mode)) {
 				query.addWhere("mode", "m.approvedDate is null");
+			} else if ("Awaiting Events".equals(mode)) {
+				query.addWhere("mode", "m.approvedDate is null and m.meetingDate >= :Xtoday");
+				query.addParameter("mode", "Xtoday", today);
 			} else if ("Awaiting My Approval".equals(mode)) {
 				query.addFrom("mode", "Location Xl inner join Xl.roomDepts Xrd inner join Xrd.department.timetableManagers Xg");
-				query.addWhere("mode", "m.approvedDate is null and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser");
+				query.addWhere("mode", "m.approvedDate is null and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xuser", request.getOption("user"));
+				query.addParameter("mode", "Xtoday", today);
 			} else if ("Conflicting Events".equals(mode)) {
 				query.addFrom("mode", "Meeting Xm");
 				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId");
@@ -323,6 +353,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 	
 	public static class EventQuery {
 		private Long iSessionId;
+		private boolean iCheckSession = true;
 		private Map<String, String> iFrom = new HashMap<String, String>();
 		private Map<String, String> iWhere = new HashMap<String, String>();
 		private Map<String, Map<String, Object>> iParams = new HashMap<String, Map<String,Object>>();
@@ -330,6 +361,8 @@ public class EventFilterBackend extends FilterBoxBackend {
 		public EventQuery(Long sessionId) {
 			iSessionId = sessionId;
 		}
+		
+		public void checkSession(boolean check) { iCheckSession = check; }
 		
 		public void addFrom(String option, String from) { iFrom.put(option, from); }
 		public void addWhere(String option, String where) { iWhere.put(option, where); }
@@ -416,9 +449,13 @@ public class EventFilterBackend extends FilterBoxBackend {
 			public String query() {
 				return
 					"select " + (iSelect == null ? "distinct e" : iSelect) +
-					" from " + iType + " e inner join e.meetings m" + (iJoinWithLocation ? ", Location l inner join l.session s" : ", Session s") + 
+					" from " + iType + " e inner join e.meetings m" + (iJoinWithLocation ? ", Location l inner join l.session s" : ", Session s" ) + 
 					(iFrom == null ? "" : iFrom.trim().toLowerCase().startsWith("inner join") ? " " + iFrom : ", " + iFrom) + getFrom(iExclude) +
-					" where s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" +
+					(iCheckSession ? "" : ", Session z") +
+					" where " +
+					(iCheckSession ?
+						"s.uniqueId = :sessionId and m.meetingDate >= s.eventBeginDate and m.meetingDate <= s.eventEndDate" : 
+						"z.uniqueId = :sessionId and s.academicInitiative = z.academicInitiative" ) +
 					(iJoinWithLocation ? " and m.locationPermanentId = l.permanentId" : "") +
 					getWhere(iExclude) + (iWhere == null ? "" : " and (" + iWhere + ")") +
 					(iGroupBy == null ? "" : " group by " + iGroupBy) +

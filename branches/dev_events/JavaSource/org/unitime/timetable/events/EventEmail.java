@@ -349,6 +349,7 @@ public class EventEmail {
 		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
 		DateFormat dfApproval = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		for (MultiMeetingInterface meeting: EventInterface.getMultiMeetings(meetings, approval, approval)) {
+			if (meeting.isDelete()) continue;
 			out.println("<tr>");
 			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + (meeting.getNrMeetings() <= 1 ? dfLong.format(meeting.getFirstMeetingDate()) : dfShort.format(meeting.getFirstMeetingDate()) + " - " + dfLong.format(meeting.getLastMeetingDate())) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getMeetingTime(CONSTANTS) + "</td>");

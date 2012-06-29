@@ -95,6 +95,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	
 	private ScrollPanel iScroll;
 	private int iIndex = 0, iStep = 10;
+	private Long iEventId = null;
 	
 	private AsyncCallback<List<MeetingInterface>> iCallback;
 	private AcademicSessionProvider iSession;
@@ -136,7 +137,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						} else if (iDates.getSelectedDaysCount() > 0) {
 							iDatesHeader.clearMessage();
 							RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(
-										getStartSlot(), getEndSlot(), getDates(), getRooms(), iSession.getAcademicSessionId()
+										getStartSlot(), getEndSlot(), getDates(), getRooms(), iEventId, iSession.getAcademicSessionId()
 									), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 								@Override
 								public void onFailure(Throwable caught) {
@@ -255,12 +256,13 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		getElement().getStyle().setProperty("width", "auto");
 	}
 	
-	public void showDialog() {
+	public void showDialog(Long eventId) {
 		iStep = (Window.getClientWidth() - 300) / 105;
 		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
 		ToolBox.setMaxWidth(iDatesForm.getElement().getStyle(), (Window.getClientWidth() - 200) + "px");
 		
 		iResponse = null;
+		iEventId = eventId;
 		setWidget(iDatesForm);
 		center();
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
@@ -279,6 +281,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iDates.setValue(new ArrayList<Date>());
 		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6));
 		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue, true);
+		iSelected.clear();
 	}
 
 	private Integer iHoverDate = null;

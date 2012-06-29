@@ -157,4 +157,14 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		if (getValue() == null || getValue().isAll()) return "";
 		return (getValue().isOne() ? getValue().getFirst().getDayNames().get(0) : getValue().getFirst().getDayNames().get(0) + "-" + getValue().getLast().getDayNames().get(6));
 	}
+	
+	public int getFirstDayOfYear() {
+		if (getValues() == null || getValues().isEmpty()) return 0;
+		return getValues().get(0).getDayOfYear();
+	}
+	
+	public int getLastDayOfYear() {
+		if (getValues() == null || getValues().isEmpty()) return 0;
+		return getValues().get(getValues().size() - 1).getDayOfYear() + 6;
+	}
 }
