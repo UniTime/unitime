@@ -209,6 +209,7 @@ h1 {
 }
 
 .unitime-TableHeader {
+	font-family: sans-serif, verdana, arial;
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
@@ -784,6 +785,9 @@ h1 {
 	.unitime-TimeGrid .meeting {
 		color: #000000;
 		background-color: #FFFFFF;
+		filter: alpha(opacity = 100);
+		opacity: 1.00;
+		-moz-opacity: 1.00;
 	}
 	.unitime-TimeGrid .meeting .header {
 		padding-bottom: 0px;
@@ -1146,6 +1150,7 @@ h1 {
 }
 
 .unitime-ClickableTableHeader {
+	font-family: sans-serif, verdana, arial;
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
@@ -1155,6 +1160,7 @@ h1 {
 }
 
 .unitime-ClickableTableHeaderNoBorderLine {
+	font-family: sans-serif, verdana, arial;
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
