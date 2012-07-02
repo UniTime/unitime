@@ -33,14 +33,15 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.criterion.Order;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ApplicationConfigForm;
 import org.unitime.timetable.model.ApplicationConfig;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.ApplicationConfigDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -54,6 +55,8 @@ import org.unitime.timetable.model.dao.ApplicationConfigDAO;
 public class ApplicationConfigAction extends Action {
 
     // --------------------------------------------------------- Instance Variables
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Methods
 
@@ -70,12 +73,9 @@ public class ApplicationConfigAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-        
-        // Check Access
-        if(!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
+    	
+    	if (!sessionContext.hasPermission(Right.ApplicationConfig, false))
             throw new Exception ("Access Denied.");
-        }
         
         ApplicationConfigForm frm = (ApplicationConfigForm) form;
         MessageResources rsc = getResources(request);

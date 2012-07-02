@@ -34,18 +34,18 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.ObjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.AssignedClassesForm;
 import org.unitime.timetable.model.Assignment;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -60,13 +60,15 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/assignedClasses")
 public class AssignedClassesAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		AssignedClassesForm myForm = (AssignedClassesForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		if (!sessionContext.hasPermission(null, "Department", Right.AssignedClasses))
+			throw new Exception ("Access Denied.");
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
@@ -87,7 +89,7 @@ public class AssignedClassesAction extends Action {
         
         myForm.load(model);
         try {
-        	myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId())));
+        	myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(sessionContext.getUser().getCurrentAcademicSessionId())));
         } catch (Exception e) {}
         
         if ("Apply".equals(op) || "Export PDF".equals(op)) {
@@ -117,7 +119,7 @@ public class AssignedClassesAction extends Action {
             if (solver!=null) {
             	assignedClasses = solver.getAssignedClasses(prefix);
             } else {
-            	String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+            	String instructorNameFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
             	String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
             	assignedClasses = new Vector();
     			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {

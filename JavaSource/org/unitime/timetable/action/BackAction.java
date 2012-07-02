@@ -26,8 +26,9 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.BackTracker;
 
 /**
@@ -37,9 +38,12 @@ import org.unitime.timetable.webutil.BackTracker;
  */
 @Service("/back")
 public class BackAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        if(!Web.isLoggedIn(request.getSession())) throw new Exception ("Access Denied.");
+        if(!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAuthority() == null)
+        	throw new Exception ("Access Denied.");
         
         BackTracker.doBack(request, response);
         

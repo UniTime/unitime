@@ -20,6 +20,7 @@
 package org.unitime.timetable.security;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,13 +37,9 @@ public interface UserContext extends UserDetails {
 	
 	public boolean hasAuthority(UserAuthority authority);
 	
-	public boolean hasAuthority(String type, String reference, Long academicSessionId);
+	public boolean hasAuthority(String role, Long uniqueId);
 	
-	public UserAuthority getAuthority(String type, String reference, Long academicSessionId);
-	
-	public boolean hasAuthority(String type, Long uniqueId);
-	
-	public UserAuthority getAuthority(String type, Long uniqueId);
+	public UserAuthority getAuthority(String role, Long uniqueId);
 	
 	public boolean hasAuthority(String authority);
 	
@@ -51,20 +48,14 @@ public interface UserContext extends UserDetails {
 	@Override
 	public Collection<? extends UserAuthority> getAuthorities();
 
-	//TODO: Use getCurrentAuthority.getAcademicSessionId() instead
-	@Deprecated
+	public List<? extends UserAuthority> getAuthorities(String role, Qualifiable... filter);
+
 	public Long getCurrentAcademicSessionId();
 	
-	//TODO: Use getCurrentAuthority.getRole() instead
-	@Deprecated
 	public String getCurrentRole();
 
-	//TODO: Use hasAuthority(DepartmentAuthority.TYPE, departmentId) instead
-	@Deprecated
 	public boolean hasDepartment(Long departmentId);
 	
-	//TODO: Use hasAuthority(role, null, getCurrentAuthority.getAcademicSessionId()) instead
-	@Deprecated
 	public boolean hasRole(String role);
 	
 	public String getProperty(String key);

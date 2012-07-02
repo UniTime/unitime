@@ -16,28 +16,18 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- */
-package org.unitime.timetable.security.authority;
+*/
+package org.unitime.timetable.security.evaluation;
 
-import org.unitime.timetable.model.Session;
+import java.io.Serializable;
+
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
-public class AcademicSessionAuthority extends SimpleAuthority {
-	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "Session";
+public interface PermissionCheck {
 	
-	public AcademicSessionAuthority(Session session) {
-		super(
-				session.getUniqueId(),
-				session.getUniqueId(),
-				TYPE,
-				session.getReference(),
-				session.getLabel()
-		);
-	}
+    public boolean checkPermission(UserContext user, Serializable targetId, String targetType, Right right);
+    
+    public boolean checkPermission(UserContext user, Object targetObject, Right right);
 
-	@Override
-	public boolean hasRight(Right right) {
-		return false;
-	}
 }

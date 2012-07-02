@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,13 +35,14 @@ import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseTimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
 
 
 
-public class TimetableManager extends BaseTimetableManager implements Comparable {
+public class TimetableManager extends BaseTimetableManager implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -537,4 +539,24 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     	}
     	return(roomTypes);
     }
+
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
+
+	@Override
+	public String getQualifierType() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return getExternalUniqueId();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return getName();
+	}
 }

@@ -5,7 +5,6 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.DepartmentAuthority;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.rights.Right;
 
@@ -25,11 +24,11 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 		UserAuthority authority = user.getCurrentAuthority();
 		
 		// Academic session check
-		if (!authority.hasRight(Right.SessionIndependent) && !department.getSessionId().equals(authority.getAcademicSessionId()))
+		if (!authority.hasRight(Right.SessionIndependent) && !authority.hasQualifier(department.getSession()))
 			return false;
 		
 		// Department check
-		if (!authority.hasRight(Right.DepartmentIndependent) && !user.hasAuthority(DepartmentAuthority.TYPE, department.getUniqueId()))
+		if (!authority.hasRight(Right.DepartmentIndependent) && !authority.hasQualifier(department))
 			return false;
 
 		// Right check

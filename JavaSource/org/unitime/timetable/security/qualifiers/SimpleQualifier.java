@@ -16,27 +16,28 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- */
-package org.unitime.timetable.security.authority;
+*/
+package org.unitime.timetable.security.qualifiers;
 
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.security.rights.Right;
+import java.io.Serializable;
 
-public class InstructorAuthority extends AbstractAuthority {
+import org.unitime.timetable.security.Qualifiable;
+
+public class SimpleQualifier extends AbstractQualifier {
 	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "Instructor";
+
 	
-	public InstructorAuthority(DepartmentalInstructor instructor) {
-		super(instructor.getUniqueId(), TYPE, instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
+	public SimpleQualifier(Qualifiable qualifiable) {
+		super(qualifiable.getQualifierType(), qualifiable.getQualifierId(), qualifiable.getQualifierReference(), qualifiable.getQualifierLabel());
+	}
+	
+	
+	public SimpleQualifier(String type, Serializable id, String reference, String label) {
+		super(type, id, reference, label);
 	}
 
-	@Override
-	public boolean hasRight(Right right) {
-		switch (right) {
-		case SessionDefaultCurrent:
-			return true;
-		default:
-			return false;
-		}
+
+	public SimpleQualifier(String type, Serializable idOrReference) {
+		super(type, (idOrReference instanceof String ? null : idOrReference), (idOrReference instanceof String ? (String)idOrReference : null), null);
 	}
 }

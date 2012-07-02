@@ -19,22 +19,12 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
@@ -100,30 +90,8 @@ public class SpecialUseRoomForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		setDeptSize(request);
 		ignoreTooFar=false;
 		ignoreRoomCheck=false;
-	}
-	
-	/**
-	 * 
-	 * @param request
-	 */
-	private void setDeptSize(HttpServletRequest request) {
-		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		Long sessionId;
-		try {
-			sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManagerDAO tdao = new TimetableManagerDAO();
-	        TimetableManager manager = tdao.get(new Long(mgrId));
-	        Set departments = manager.departmentsForSession(sessionId);
-	        setDeptSize(departments.size());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}			
 	}
 
 	public String getBldgId() {
@@ -181,20 +149,6 @@ public class SpecialUseRoomForm extends ActionForm {
 
 	public void setDeptCode(String deptCode) {
 		this.deptCode = deptCode;
-	}
-	
-	/**
-	 * 
-	 * @param deptCode
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public String getDeptName(String deptCode, HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();	
-		return Department.findByDeptCode(deptCode, sessionId).getName();		
 	}
 
 }

@@ -133,10 +133,6 @@
 			<TR>
 				<TD>Department:</TD>
 				<TD>
-				<% if (frm.getDeptSize() == 1) {%>
-					<%=frm.getDeptName(frm.getDeptCode(), request)%>
-					<html:hidden property="deptCode" />
-				<% } else { %>
 					<html:select property="deptCode">
 						<logic:empty name="<%=frmName%>" property="deptCode">
 							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
@@ -146,7 +142,6 @@
 						</logic:equal>
 						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
 					</html:select>
-				<%}%>
 				</TD>
 			</TR>
 			

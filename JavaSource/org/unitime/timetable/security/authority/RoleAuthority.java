@@ -20,21 +20,15 @@
 package org.unitime.timetable.security.authority;
 
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
 
-public class RoleAuthority extends SimpleAuthority {
+public class RoleAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
 	private HasRights iRights = null;
 	
-	public RoleAuthority(Roles role, Session session) {
-		super(
-				role.getRoleId(),
-				session.getUniqueId(),
-				role.getReference(),
-				session.getReference(),
-				role.getAbbv());
+	public RoleAuthority(Roles role) {
+		super(role.getRoleId(), role.getReference(), role.getAbbv());
 		iRights = role;
 	}
 	

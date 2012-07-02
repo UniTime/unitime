@@ -105,7 +105,7 @@ public class ExportServletHelper implements ExportHelper {
 			sessionId = Long.valueOf(iParams.getParameter("sid"));
 		} else {
 			if (iContext.isAuthenticated())
-				sessionId = (Long)(iContext.getUser().getCurrentAuthority() == null ? null : iContext.getUser().getCurrentAuthority().getAcademicSessionId());
+				sessionId = (Long)(iContext.getUser().getCurrentAuthority() == null ? null : iContext.getUser().getCurrentAuthority().getAcademicSession().getQualifierId());
 			else
 				sessionId = (Long)iContext.getAttribute("sessionId");
 		}

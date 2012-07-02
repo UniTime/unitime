@@ -74,8 +74,8 @@ public class UniTimeSecurityExpressionHandler extends DefaultMethodSecurityExpre
         public boolean hasPermission(Object permission) {
         	if (getPrincipal() == null || !(getPrincipal() instanceof UserContext)) return false;
         	UserContext user = (UserContext)getPrincipal();
-        	if (user.getCurrentAuthority() == null || user.getCurrentAuthority().getAcademicSessionId() == null) return false;
-        	return hasPermission(user.getCurrentAuthority().getAcademicSessionId(), Session.class.getName(), permission);
+        	if (user.getCurrentAcademicSessionId() == null) return false;
+        	return hasPermission(user.getCurrentAcademicSessionId(), Session.class.getName(), permission);
         }
         
         public boolean hasRight(String right) {

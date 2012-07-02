@@ -43,7 +43,7 @@ public class SimpleSessionPermission implements PermissionSession {
 		UserAuthority authority = user.getCurrentAuthority();
 		
 		// Academic session check
-		if (!authority.hasRight(Right.SessionIndependent) && !session.getUniqueId().equals(authority.getAcademicSessionId()))
+		if (!authority.hasRight(Right.SessionIndependent) && !authority.hasQualifier(session))
 			return false;
 		
 		// Right check

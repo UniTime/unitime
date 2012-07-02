@@ -19,12 +19,7 @@
 */
 package org.unitime.timetable.security.rights;
 
-import org.unitime.timetable.security.UserContext;
-
 public enum Right {
-	/** Authority can be selected as current authority in the {@link UserContext} */
-	CanSelectAsCurrentRole,
-	
 	/** Session default: current session */
 	SessionDefaultCurrent, // -- DEFAULT SESSION SELECTION
 	/** Session default: first future session */
@@ -43,6 +38,13 @@ public enum Right {
 	
 	/** Status dependency -- session / department status must match */
 	StatusIndependent,
+	
+	AddNonUnivLocation,
+	AddSpecialUseRoom,
+	ApplicationConfig,
+	AssignedClasses,
+	AssignedExams,
+	AssignmentHistory,
 	
 	/** Class level rights */
 	ClassDetail,

@@ -2639,7 +2639,7 @@ public class CurriculaServlet implements CurriculaService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		Long sessionId = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getAcademicSessionId());
+		Long sessionId = user.getCurrentAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("No academic session is selected.");
 		return sessionId;
 	}

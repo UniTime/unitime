@@ -20,7 +20,9 @@
 package org.unitime.timetable.model;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +35,14 @@ import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
-public class Department extends BaseDepartment implements Comparable {
+public class Department extends BaseDepartment implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -484,5 +489,36 @@ public class Department extends BaseDepartment implements Comparable {
 
         return true;
     }
+
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
+
+	@Override
+	public String getQualifierType() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return getDeptCode();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return getName();
+	}
+	
+	public static TreeSet<Department> getUserDepartments(UserContext user) {
+		TreeSet<Department> departments = new TreeSet<Department>();
+		if (user == null || user.getCurrentAuthority() == null) return departments;
+		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+			departments.addAll(Department.findAllBeingUsed(user.getCurrentAcademicSessionId()));
+		else
+			for (UserQualifier q: user.getCurrentAuthority().getQualifiers("Department"))
+				departments.add(DepartmentDAO.getInstance().get((Long)q.getQualifierId()));
+		return departments;
+	}
 
 }

@@ -361,8 +361,8 @@ public class MenuServlet implements MenuService {
 
 		public UserInfo(SessionContext context) {
 			iUser = context.getUser();
-			if (iUser != null && iUser.getCurrentAuthority() != null) {
-				Long sessionId = iUser.getCurrentAuthority().getAcademicSessionId();
+			if (iUser != null) {
+				Long sessionId = iUser.getCurrentAcademicSessionId();
 				if (sessionId != null)
 					iSession = SessionDAO.getInstance().get(sessionId);
 				iManager = TimetableManager.findByExternalId(iUser.getExternalUserId());
@@ -423,8 +423,7 @@ public class MenuServlet implements MenuService {
 		 		if (role==null) role = "No Role";
 		 		ret.put("2Role", role);
 		 		
-		 		if (user.getUser() != null && Roles.ADMIN_ROLE.equals(user.getUser().getCurrentRole()) || 
-		 			(getSessionContext().getAttribute("hdnAdminAlias")!=null && getSessionContext().getAttribute("hdnAdminAlias").toString().equals("1")))
+		 		if (user.getUser() != null && (Roles.ADMIN_ROLE.equals(user.getUser().getCurrentRole()) || user.getUser() instanceof UserContext.Chameleon))
 		 			ret.put("Chameleon", "");
 		 		
 			} finally {

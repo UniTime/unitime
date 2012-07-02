@@ -16,28 +16,29 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- */
-package org.unitime.timetable.security.authority;
+*/
+package org.unitime.timetable.security.permissions;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
-public class DepartmentAuthority extends SimpleAuthority {
-	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "Department";
+public class ExaminationTimetablingPermissions {
 
-	public DepartmentAuthority(Department department) {
-		super(
-				department.getUniqueId(),
-				department.getSessionId(),
-				TYPE,
-				department.getDeptCode() + " " + department.getSession().getReference(),
-				department.getDeptCode() + " - " + department.getLabel()
-		);
-	}
-	
-	@Override
-	public boolean hasRight(Right right) {
-		return false;
+	@Service("permissionAssignedExams")
+	public static class AssignedClasses implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, Right.AssignedExams, DepartmentStatusType.Status.ExamTimetable);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
 	}
 }

@@ -19,7 +19,8 @@
 */package org.unitime.timetable.security.context;
 
 import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.authority.SimpleAuthority;
+import org.unitime.timetable.security.authority.AbstractAuthority;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 public class SimpleUserContext extends AbstractUserContext {
@@ -43,19 +44,14 @@ public class SimpleUserContext extends AbstractUserContext {
 	public String getUsername() { return null; }
 	
 	public void setCurrentRole(String role, Long sessionId) {
-		UserAuthority auth = new SimpleAuthority(0l, sessionId, role, "", role) {
+		UserAuthority auth = new AbstractAuthority(0l, role, role) {
 			private static final long serialVersionUID = 1L;
-
 			@Override
 			public boolean hasRight(Right right) {
-				switch (right) {
-				case CanSelectAsCurrentRole:
-					return true;
-				default:
-					return false;
-				}
+				return false;
 			}
 		};
+		auth.addQualifier(new SimpleQualifier("Session", sessionId));
 		addAuthority(auth);
 		setCurrentAuthority(auth);
 	}

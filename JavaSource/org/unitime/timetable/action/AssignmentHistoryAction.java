@@ -31,12 +31,14 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.AssignmentHistoryForm;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
@@ -54,14 +56,15 @@ import org.unitime.timetable.webutil.PdfWebTable;
 @Service("/assignmentHistory")
 public class AssignmentHistoryAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd hh:mma");
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		AssignmentHistoryForm myForm = (AssignmentHistoryForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
+        if (!sessionContext.hasPermission(null, "Department", Right.AssignmentHistory))
             throw new Exception ("Access Denied.");
-        }
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         

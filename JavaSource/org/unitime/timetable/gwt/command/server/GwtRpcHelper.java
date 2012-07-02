@@ -19,21 +19,27 @@
 */
 package org.unitime.timetable.gwt.command.server;
 
+import java.io.Serializable;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.evaluation.PermissionCheck;
+import org.unitime.timetable.security.rights.Right;
 
 public class GwtRpcHelper implements SessionContext {
 	private UserContext iUser;
 	private String iHttpSessionId;
 	private boolean iHttpSessionNew;
+	private PermissionCheck iCheck;
 	
-	public GwtRpcHelper(SessionContext context) {
+	public GwtRpcHelper(SessionContext context, PermissionCheck check) {
 		iUser = context.getUser();
 		iHttpSessionId = context.getHttpSessionId();
 		iHttpSessionNew = context.isHttpSessionNew();
+		iCheck = check;
 	}
 
 	@Override
@@ -62,4 +68,19 @@ public class GwtRpcHelper implements SessionContext {
 
 	@Override
 	public HttpServletRequest getHttpServletRequest() { return null; }
+	
+	@Override
+	public boolean hasPermission(Right right, boolean checkSession) {
+		return iCheck.checkPermission(getUser(), null, (checkSession ? "Session" : null), right);
+	}
+
+	@Override
+	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
+		return iCheck.checkPermission(getUser(), targetId, targetType, right);
+	}
+
+	@Override
+	public boolean hasPermission(Object targetObject, Right right) {
+		return iCheck.checkPermission(getUser(), targetObject, right);
+	}
 }

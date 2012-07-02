@@ -23,12 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -39,9 +38,10 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SpecialUseRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
@@ -49,18 +49,17 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
-import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.model.ExternalRoomFeature;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
@@ -74,11 +73,14 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  */
 @Service("/addSpecialUseRoom")
 public class AddSpecialUseRoomAction extends Action {
+	private static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
 
+	@Autowired SessionContext sessionContext;
+	
 	/** 
 	 * Method execute
 	 * @param mapping
@@ -97,6 +99,12 @@ public class AddSpecialUseRoomAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
+		if (!sessionContext.hasPermission(Right.AddSpecialUseRoom, true))
+			throw new AccessDeniedException(MSG.errorAccessDenied());
+		
+		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+		List<Building> buildings = Building.findAll(sessionContext.getUser().getCurrentAcademicSessionId());
+
 		if (specialUseRoomForm.getDoit() != null) {
 			String doit = specialUseRoomForm.getDoit();
 			if (doit.equals(rsc.getMessage("button.returnToRoomList"))) {
@@ -107,112 +115,52 @@ public class AddSpecialUseRoomAction extends Action {
 	            errors = specialUseRoomForm.validate(mapping, request);
 	            
 	            // No errors
-	            if(errors.size()==0) {
-	            	String forward = update(request, specialUseRoomForm, mapping);
-	            	if (forward != null) {
+	            if (errors.isEmpty()) {
+	            	String forward = update(request, specialUseRoomForm);
+	            	if (forward != null)
 	            		return mapping.findForward(forward);
-	            	}
-	            }
-	            else {
-	            	setBldgs(request);
+	            } else {
 	                saveErrors(request, errors);
 	            }
 				
 			}
 		}			
 
-		setBldgs(request);
-		setDepts(request, specialUseRoomForm);
-		
-		//set default department based on user selection or department that user owns
-		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();	
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));
-        Set departments = manager.departmentsForSession(sessionId);
-        if (!isAdmin && (departments.size() == 1)) {
-            Department d = (Department) departments.iterator().next();
-            specialUseRoomForm.setDeptCode(d.getDeptCode());
-        } else if (httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-            specialUseRoomForm.setDeptCode(httpSession.getAttribute(
-                    Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-        } 
+		setup(request, departments, buildings);
+
+        //set default department
+        specialUseRoomForm.setDeptSize(departments.size());
+        if (departments.size() == 1) {
+        	Department d = departments.iterator().next();
+        	specialUseRoomForm.setDeptCode(d.getDeptCode());
+        } else if (sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
+        	specialUseRoomForm.setDeptCode(sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+		}
+
 		return mapping.findForward("showAdd");
 	}
 
 	/**
 	 * 
 	 * @param request
-	 * @param specialUseRoomForm 
 	 * @throws Exception
 	 */
-	private void setDepts(HttpServletRequest request, SpecialUseRoomForm specialUseRoomForm) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));  
-        Set departments = new TreeSet();
-        if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-        	departments = Department.findAllBeingUsed(sessionId);
-		} else {
-			departments = manager.departmentsForSession(sessionId);
+	private void setup(HttpServletRequest request, Set<Department> departments, List<Building> buildings) throws Exception {
+		List<LabelValueBean> deptList = new ArrayList<LabelValueBean>();
+		for (Department d: departments) {
+			String code = d.getDeptCode().trim();
+			String abbv = d.getName().trim();
+			deptList.add(new LabelValueBean(code + " - " + abbv, code)); 
 		}
-		//Set departments = new TreeSet(manager.departmentsForSession(sessionId));
-		specialUseRoomForm.setDeptSize(departments.size());
+		request.setAttribute(Department.DEPT_ATTR_NAME, deptList);
 		
-        ArrayList list = new ArrayList();
-        int i = 0;
-        for (Iterator iter = departments.iterator(); iter.hasNext();) {
-        	Department dept = (Department) iter.next();
-        	if (!dept.isEditableBy(user)) continue;
-        	list.add(new LabelValueBean( dept.getDeptCode() + " - " +
-        			dept.getName(), dept.getDeptCode())); 
-        	if (i == 0) {
-        		specialUseRoomForm.setDeptCode(dept.getDeptCode());
-        		i++;
-        	}
-        }
-        
-        request.setAttribute(Department.DEPT_ATTR_NAME, list);
-        
-        //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	specialUseRoomForm.setDeptCode(d.getDeptCode());
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	specialUseRoomForm.setDeptCode(webSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-		}
-		
-	}
-
-	/**
-	 * 
-	 * @param request
-	 * @throws Exception
-	 */
-	private void setBldgs(HttpServletRequest request) throws Exception {
-		//get depts owned by user
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		String depts[] = getDepts(user);
-		Collection bldgs = Session.getCurrentAcadSession(user).getBldgsFast(depts);	
-		ArrayList list = new ArrayList();
-
-		for (Iterator iter = bldgs.iterator(); iter.hasNext();) {
-			Building b = (Building) iter.next();
-			list.add(new LabelValueBean(
+		List<LabelValueBean> bldgList = new ArrayList<LabelValueBean>();
+		for (Building b: buildings) {
+			bldgList.add(new LabelValueBean(
 					b.getAbbreviation() + "-" + b.getName(), 
 					b.getUniqueId() + "-" + b.getAbbreviation()));
 		}
-			
-		request.setAttribute(Building.BLDG_LIST_ATTR_NAME, list);
+		request.setAttribute(Building.BLDG_LIST_ATTR_NAME, bldgList);
 	}
 
 	/**
@@ -223,78 +171,47 @@ public class AddSpecialUseRoomAction extends Action {
 	 * @return
 	 * @throws Exception
 	 */
-	private String update(
-			HttpServletRequest request, 
-			SpecialUseRoomForm specialUseRoomForm, 
-			ActionMapping mapping) throws Exception {
+	private String update(HttpServletRequest request, SpecialUseRoomForm specialUseRoomForm) throws Exception {
 
 		ActionMessages errors = new ActionMessages();
 		
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-	    String bldgUniqueId = specialUseRoomForm.getBldgId().split("-")[0];
+		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+	    Long bldgUniqueId = Long.valueOf(specialUseRoomForm.getBldgId().split("-")[0]);
 	    String bldgAbbv = specialUseRoomForm.getBldgId().split("-")[1];
 	    String roomNum = specialUseRoomForm.getRoomNum().trim();	
 	    
 	    //check if room already exists
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast((String[])null);	
-		for (Iterator iter = rooms.iterator(); iter.hasNext();) {
-			Location location = (Location) iter.next();
-			if (location instanceof Room) {
-				if (location.getSession().getUniqueId().equals(sessionId) && location.getLabel().trim().equalsIgnoreCase(bldgAbbv + " " + roomNum)) {	
-					errors.add("specialUseRoom", 
-		                      new ActionMessage("errors.exists", "Room "));
-					saveErrors(request, errors);
-					return null;
-				}
-			}
-		}
-	        
+	    Room existingRoom = Room.findByBldgIdRoomNbr(bldgUniqueId, roomNum, sessionId);
+	    if (existingRoom != null) {
+	    	errors.add("specialUseRoom", new ActionMessage("errors.exists", "Room "));
+	    	saveErrors(request, errors);
+	    	return null;
+	    }
+	    
 	    //get room
 		ExternalBuilding extBldg = ExternalBuilding.findByAbbv(sessionId, bldgAbbv);
 		ExternalRoom extRoom = null;
-		if(extBldg != null) {
+		if(extBldg != null)
 			extRoom = extBldg.findRoom(roomNum);
-		}
 		if(extRoom == null) {
-			errors.add("specialUseRoom", 
-                    new ActionMessage("errors.invalid", "Room number "));
+			errors.add("specialUseRoom", new ActionMessage("errors.invalid", "Room number "));
 			saveErrors(request, errors);
 			return null;
 		}
 		
-		//check ownership of the room
-		String depts[] = getDepts(user);
-		boolean owned = false;
-		if (depts != null) {
-			Iterator d = extRoom.getRoomDepartments().iterator();
-			while(d.hasNext()) {
-				ExternalRoomDepartment roomDept = (ExternalRoomDepartment)d.next();
-				if(roomDept.isAssigned()) {
-					if(Constants.arrayToStr(depts, "", ",").indexOf(roomDept.getDepartmentCode()) >= 0) {
-						owned = true;
-						break;
-					}
-				}
-			}
-		} else {
-			owned = true;
-		}
-		if(!owned) {
-			errors.add("specialUseRoom", 
-                      new ActionMessage( "errors.room.ownership"));
+		if (!sessionContext.hasPermission(extRoom, Right.AddSpecialUseRoom)) {
+			errors.add("specialUseRoom", new ActionMessage( "errors.room.ownership"));
 			saveErrors(request, errors);
 			return null;
 		}
-		
+
 		org.hibernate.Session hibSession = (new RoomDAO()).getSession();
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
 			Room room = new Room();
 
-			room.setSession(Session.getCurrentAcadSession(user));
+			room.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession));
 			room.setIgnoreTooFar(Boolean.FALSE);
 			room.setIgnoreRoomCheck(Boolean.FALSE);
 			room.setCoordinateX(extRoom.getCoordinateX());
@@ -309,9 +226,6 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setClassification(extRoom.getClassification());
 			room.setDisplayName(extRoom.getDisplayName());
 			
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			room.setManagerIds(mgrId);
-				        
 			BuildingDAO bldgDAO = new BuildingDAO();
 			Building bldg = bldgDAO.get(Long.valueOf(bldgUniqueId));
 			room.setBuildingAbbv(bldgAbbv);
@@ -344,7 +258,7 @@ public class AddSpecialUseRoomAction extends Action {
 				hibSession.saveOrUpdate(roomdept);
 			}			
 
-            ChangeLog.addChange(hibSession, request, (Location)room, 
+            ChangeLog.addChange(hibSession, sessionContext, (Location)room, 
                 ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.CREATE, null, dept);
 
             tx.commit();
@@ -390,37 +304,6 @@ public class AddSpecialUseRoomAction extends Action {
 		room.setFeatures(roomFeatures);
 		
 		return;
-	}
-
-	/**
-	 * 
-	 * @param user
-	 * @return
-	 */
-	private String[] getDepts(User user) throws Exception {
-
-		String[] depts = new String[] {};
-
-		if(user.getRole().equals(Roles.ADMIN_ROLE)) {
-			depts = null;
-		} else {
-			Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManagerDAO tdao = new TimetableManagerDAO();
-			TimetableManager manager = tdao.get(new Long(mgrId));
-		
-			Set departments = manager.departmentsForSession(sessionId);
-			if (departments!=null) {
-				depts = new String[departments.size()];
-				int idx = 0;
-				for (Iterator i=departments.iterator();i.hasNext();) {
-					depts[idx++] = ((Department)i.next()).getDeptCode();
-				}
-			}
-		}
-		
-		return depts;
 	}
 
 }
