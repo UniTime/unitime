@@ -19,13 +19,22 @@
  */
 package org.unitime.timetable.security;
 
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.unitime.timetable.security.rights.HasRights;
 
 public interface UserAuthority extends GrantedAuthority, HasRights {
 	public Long getUniqueId();
-	public Long getAcademicSessionId();
-	public String getReference();
 	public String getRole();
 	public String getLabel();
+	
+	public UserQualifier getAcademicSession();
+	
+	public List<? extends UserQualifier> getQualifiers();
+	public List<? extends UserQualifier> getQualifiers(String type);
+	public boolean hasQualifier(Qualifiable qualifiable);
+	public UserQualifier getQualifier(Qualifiable qualifiable);
+	public void addQualifier(UserQualifier qualifier);
+	public void addQualifier(Qualifiable qualifiable);
 }

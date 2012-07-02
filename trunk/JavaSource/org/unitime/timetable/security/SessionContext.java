@@ -19,8 +19,12 @@
 */
 package org.unitime.timetable.security;
 
+import java.io.Serializable;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+
+import org.unitime.timetable.security.rights.Right;
 
 public interface SessionContext {
 	
@@ -39,4 +43,7 @@ public interface SessionContext {
     @Deprecated
     public HttpServletRequest getHttpServletRequest();
     
+    public boolean hasPermission(Right right, boolean checkAcademicSession);
+    public boolean hasPermission(Serializable targetId, String targetType, Right right);
+    public boolean hasPermission(Object targetObject, Right right);
 }

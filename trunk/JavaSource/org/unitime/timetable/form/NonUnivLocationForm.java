@@ -24,20 +24,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.webutil.WebTextValidation;
 
 
@@ -128,27 +121,6 @@ public class NonUnivLocationForm extends ActionForm {
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
 		coordX=null; coordY=null;
-		try {
-		    setDeptSize(request);
-		} catch (Exception e) {}
-	}
-
-	/**
-	 * 
-	 * @param request
-	 */
-	private void setDeptSize(HttpServletRequest request) throws Exception {
-    	deptSize = 0;
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-    	if (!user.getRole().equals(Roles.ADMIN_ROLE)) {
-	    	TimetableManager mgr = TimetableManager.getManager(user);
-	    	Set mgrDepts = Department.findAllOwned(sessionId, mgr, true);
-    		deptSize = mgrDepts.size();
-    	} else {
-	    	Set mgrDepts = Department.findAllBeingUsed(sessionId);
-    		deptSize = mgrDepts.size();
-    	}
 	}
 
 	public String getCapacity() {
@@ -205,24 +177,6 @@ public class NonUnivLocationForm extends ActionForm {
 
 	public void setDeptSize(int deptSize) {
 		this.deptSize = deptSize;
-	}
-	
-	/**
-	 * 
-	 * @param deptCode
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public String getDeptName(String deptCode, HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		Department dept = Department.findByDeptCode(deptCode, sessionId);
-		if (dept==null) {
-			return deptCode+" - Unknown";
-		}
-		return dept.getName();		
 	}
 	
     public Long getType() {

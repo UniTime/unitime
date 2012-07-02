@@ -19,16 +19,20 @@
  */
 package org.unitime.timetable.security.context;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.DepartmentAuthority;
-import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 
 public abstract class AbstractUserContext implements UserContext {
 	private static final long serialVersionUID = 1L;
@@ -53,10 +57,10 @@ public abstract class AbstractUserContext implements UserContext {
 
 	@Override
 	public UserAuthority getCurrentAuthority() { return iCurrentAuthority; }
-
+	
 	@Override
 	public void setCurrentAuthority(UserAuthority authority) {
-		if (hasAuthority(authority) && authority.hasRight(Right.CanSelectAsCurrentRole))
+		if (hasAuthority(authority))
 			iCurrentAuthority = authority;
 		else
 			throw new RuntimeException("Invalid authority.");
@@ -68,30 +72,20 @@ public abstract class AbstractUserContext implements UserContext {
 	}
 
 	@Override
-	public boolean hasAuthority(String type, String reference, Long academicSessionId) {
-		return getAuthority(type, reference, academicSessionId) != null;
+	public boolean hasAuthority(String role, Long uniqueId) {
+		return getAuthority(role, uniqueId) != null;
 	}
 
 	@Override
-	public UserAuthority getAuthority(String type, String reference, Long academicSessionId) {
-		for (UserAuthority authority: getAuthorities())
-			if (type.equals(authority.getRole()) && 
-				(reference == null || reference.equals(authority.getReference())) &&
-				(academicSessionId == null || academicSessionId.equals(authority.getAcademicSessionId())))
+	public UserAuthority getAuthority(String role, Long uniqueId) {
+		UserQualifier session = (getCurrentAuthority() == null ? null : getCurrentAuthority().getAcademicSession());
+		for (UserAuthority authority: getAuthorities()) {
+			if (role != null && !role.equals(authority.getRole())) continue;
+			if (uniqueId != null && uniqueId.equals(authority.getUniqueId()))
 				return authority;
-		return null;
-	}
-	
-	@Override
-	public boolean hasAuthority(String type, Long uniqueId) {
-		return getAuthority(type, uniqueId) != null;
-	}
-
-	@Override
-	public UserAuthority getAuthority(String type, Long uniqueId) {
-		for (UserAuthority authority: getAuthorities())
-			if (type.equals(authority.getRole()) && uniqueId.equals(authority.getUniqueId()))
+			if (uniqueId == null && session != null && session.equals(authority.getAcademicSession()))
 				return authority;
+		}
 		return null;
 	}
 	
@@ -108,7 +102,7 @@ public abstract class AbstractUserContext implements UserContext {
 
 	@Override
 	public Long getCurrentAcademicSessionId() {
-		return (getCurrentAuthority() == null ? null : getCurrentAuthority().getAcademicSessionId());
+		return (Long)(getCurrentAuthority() == null || getCurrentAuthority().getAcademicSession() == null ? null : getCurrentAuthority().getAcademicSession().getQualifierId());
 	}
 
 	@Override
@@ -118,12 +112,12 @@ public abstract class AbstractUserContext implements UserContext {
 
 	@Override
 	public boolean hasDepartment(Long departmentId) {
-		return hasAuthority(DepartmentAuthority.TYPE, departmentId);
+		return getCurrentAuthority() == null ? false : getCurrentAuthority().hasQualifier(new SimpleQualifier(Department.class.getSimpleName(), departmentId));
 	}
 
 	@Override
 	public boolean hasRole(String role) {
-		return hasAuthority(role, null, getCurrentAcademicSessionId());
+		return hasAuthority(role, null);
 	}
 
 	@Override
@@ -131,6 +125,18 @@ public abstract class AbstractUserContext implements UserContext {
 		return iAuthorities;
 	}
 	
+	@Override
+	public List<? extends UserAuthority> getAuthorities(String role, Qualifiable... filter) {
+		List<UserAuthority> ret = new ArrayList<UserAuthority>();
+		authorities: for (UserAuthority authority: getAuthorities()) {
+			if (role != null && !role.equals(authority.getRole())) continue authorities;
+			for (Qualifiable q: filter)
+				if (!authority.hasQualifier(q)) continue authorities;
+			ret.add(authority);
+		}
+		return ret;
+	}
+
 	protected void addAuthority(UserAuthority authority) {
 		iAuthorities.add(authority);
 	}

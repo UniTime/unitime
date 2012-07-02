@@ -23,6 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form
@@ -72,7 +73,7 @@
 							</html:form>
 						</TD>
 					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAddNonUniv" value="true">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddNonUnivLocation')">
 						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
 								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="N" titleKey="title.addNonUnivLocation">
@@ -80,8 +81,8 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAddSpecial" value="true">
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddSpecialUseRoom')">
 						<TD nowrap>
 							<html:form action="addSpecialUseRoom" styleClass="FormWithNoPadding">
 								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="U" titleKey="title.addSpecialUseRoom">
@@ -89,7 +90,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
+					</sec:authorize>
 					<logic:equal name="<%=frmName%>" property="editRoomSharing" value="true">
 						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="All">
 							<TD nowrap>
@@ -213,7 +214,7 @@
 							</html:form>
 						</TD>
 					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAddNonUniv" value="true">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddNonUnivLocation')">
 						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
 								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="N" titleKey="title.addNonUnivLocation">
@@ -221,8 +222,8 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAddSpecial" value="true">
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddSpecialUseRoom')">
 						<TD nowrap>
 							<html:form action="addSpecialUseRoom" styleClass="FormWithNoPadding">
 								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="S" titleKey="title.addSpecialUseRoom">
@@ -230,7 +231,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
+					</sec:authorize>
 					<%--
 					<TD nowrap>
 						<html:form action="roomFeatureList" styleClass="FormWithNoPadding">

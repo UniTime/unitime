@@ -19,6 +19,8 @@
  */
 package org.unitime.timetable.security.context;
 
+import java.io.Serializable;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -27,12 +29,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.evaluation.PermissionCheck;
+import org.unitime.timetable.security.rights.Right;
 
 public class HttpSessionContext implements SessionContext {
 	@Autowired
 	private HttpSession iSession;
 	@Autowired
 	private HttpServletRequest iRequest;
+	@Autowired
+	PermissionCheck unitimePermissionCheck;
 
 	public HttpSessionContext() {
 	}
@@ -87,5 +93,20 @@ public class HttpSessionContext implements SessionContext {
 		} catch (IllegalStateException e) {
 			return null;
 		}
+	}
+	
+	@Override
+	public boolean hasPermission(Right right, boolean checkSession) {
+		return unitimePermissionCheck.checkPermission(getUser(), null, (checkSession ? "Session" : null), right);
+	}
+
+	@Override
+	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
+		return unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right);
+	}
+
+	@Override
+	public boolean hasPermission(Object targetObject, Right right) {
+		return unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
 	}
 }

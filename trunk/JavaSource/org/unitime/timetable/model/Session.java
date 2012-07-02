@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -46,6 +47,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
@@ -54,7 +56,7 @@ import org.unitime.timetable.util.ReferenceList;
 /**
  * @hibernate.class table="SESSIONS" schema = "TIMETABLE"
  */
-public class Session extends BaseSession implements Comparable {
+public class Session extends BaseSession implements Comparable, Qualifiable {
 
 	public static final int sHolidayTypeNone = 0;
 
@@ -261,6 +263,7 @@ public class Session extends BaseSession implements Comparable {
 	 * @return Session object of found, throws Exception otherwise
 	 * @throws HibernateException
 	 */
+    @Deprecated
 	public static Session getCurrentAcadSession(User user) {
 		Object sessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		if (sessionId == null || sessionId.toString().trim().length() == 0)
@@ -804,4 +807,24 @@ public class Session extends BaseSession implements Comparable {
 	
 	@Override
 	public Session getSession() { return this; }
+
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
+
+	@Override
+	public String getQualifierType() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return getReference();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return getLabel();
+	}
 }

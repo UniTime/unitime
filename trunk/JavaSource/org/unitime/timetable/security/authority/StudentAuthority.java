@@ -23,24 +23,17 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.security.rights.Right;
 
-public class StudentAuthority extends SimpleAuthority {
+public class StudentAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
 	public static final String TYPE = "Student";
 
 	public StudentAuthority(Student student) {
-		super(
-				student.getUniqueId(),
-				student.getSession().getUniqueId(),
-				TYPE,
-				student.getSession().getReference(),
-				student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle)
-		);
+		super(student.getUniqueId(), TYPE, student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 	}
 	
 	@Override
 	public boolean hasRight(Right right) {
 		switch (right) {
-		case CanSelectAsCurrentRole:
 		case SessionDefaultCurrent:
 			return true;
 		default:

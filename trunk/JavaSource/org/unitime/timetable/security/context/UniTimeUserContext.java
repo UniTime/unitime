@@ -38,12 +38,10 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.UserDataDAO;
 import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.authority.AcademicSessionAuthority;
-import org.unitime.timetable.security.authority.DepartmentAuthority;
 import org.unitime.timetable.security.authority.InstructorAuthority;
-import org.unitime.timetable.security.authority.ManagerAuthority;
 import org.unitime.timetable.security.authority.RoleAuthority;
 import org.unitime.timetable.security.authority.StudentAuthority;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
 
@@ -68,58 +66,68 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (lastSessionId != null) sessionId = Long.valueOf(lastSessionId);
 			}
 			
-			TreeSet<Session> sessions = new TreeSet<Session>();
-			TreeSet<Session> allSessions = new TreeSet<Session>();
-			allSessions.addAll(SessionDAO.getInstance().findAll(hibSession));
-			
 			TimetableManager manager = (TimetableManager)hibSession.createQuery(
 					"from TimetableManager where externalUniqueId = :id")
 					.setString("id", userId).setMaxResults(1).uniqueResult();
 			if (manager != null) {
 				iName = manager.getName();
-				for (Department department: manager.getDepartments()) {
-					addAuthority(new DepartmentAuthority(department));
-					sessions.add(department.getSession());
-				}
-				for (Session session: sessions) {
-					addAuthority(new AcademicSessionAuthority(session));
-					addAuthority(new ManagerAuthority(manager, session));
-				}
 				Roles primary = null;
+				
+				TreeSet<Session> primarySessions = null;
+				
 				for (ManagerRole role: manager.getManagerRoles()) {
-					if (role.isPrimary() && primary == null) primary = role.getRole();
-					if (role.getRole().hasRight(Right.SessionIndependent)) {
-						for (Session session: allSessions) {
-							if (session.getStatusType() == null || session.getStatusType().isTestSession() && !role.getRole().hasRight(Right.AllowTestSessions)) continue;
-							addAuthority(new RoleAuthority(role.getRole(), session));
-							addAuthority(new AcademicSessionAuthority(session));
+					TreeSet<Session> sessions = new TreeSet<Session>();
+					if (role.getRole().hasRight(Right.SessionIndependent) || (sessions.isEmpty() && role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)))
+						sessions.addAll(SessionDAO.getInstance().findAll(hibSession));
+					else
+						for (Department department: manager.getDepartments())
+							sessions.add(department.getSession());
+					
+					if (role.isPrimary() && primary == null) {
+						primary = role.getRole();
+						primarySessions = sessions;
+					}
+					
+					for (Session session: sessions) {
+						if (session.getStatusType() == null || session.getStatusType().isTestSession()) {
+							if (!role.getRole().hasRight(Right.AllowTestSessions)) continue;
 						}
-					} else if (sessions.isEmpty() && role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)) {
-						for (Session session: allSessions) {
-							if (session.getStatusType() == null || session.getStatusType().isTestSession() && !role.getRole().hasRight(Right.AllowTestSessions)) continue;
-							addAuthority(new RoleAuthority(role.getRole(), session));
-							addAuthority(new AcademicSessionAuthority(session));
-						}
-					} else {
-						for (Session session: sessions)
-							addAuthority(new RoleAuthority(role.getRole(), session));
+						
+						RoleAuthority authority = new RoleAuthority(role.getRole());
+						authority.addQualifier(session);
+						authority.addQualifier(manager);
+						for (Department department: manager.getDepartments())
+							if (department.getSession().equals(session))
+								authority.addQualifier(department);
+						addAuthority(authority);
 					}
 				}
+				
 				if (sessionId == null && primary != null) {
-					Session session = defaultSession(sessions, primary);
+					Session session = defaultSession(primarySessions, primary);
 					if (session != null) sessionId = session.getUniqueId();
 				}
-				if (sessionId != null && primary != null)
-					setCurrentAuthority(getAuthority(primary.getReference(), null, sessionId));
+				if (sessionId != null && primary != null) {
+					List<? extends UserAuthority> authorities = getAuthorities(primary.getReference(), new SimpleQualifier("Session", sessionId));
+					if (!authorities.isEmpty())
+						setCurrentAuthority(authorities.get(0));
+				}
 			}
 			
-			sessions.clear();
+			TreeSet<Session> sessions = new TreeSet<Session>();
 			for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
 					"from DepartmentalInstructor where externalUniqueId = :id")
 					.setString("id", userId).list()) {
 				if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
-				addAuthority(new InstructorAuthority(instructor));
-				sessions.add(instructor.getDepartment().getSession());
+				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, instructor.getDepartment().getSession());
+				InstructorAuthority authority = (authorities.isEmpty() ? null : (InstructorAuthority)authorities.get(0));
+				if (authority == null) {
+					authority = new InstructorAuthority(instructor);
+					authority.addQualifier(instructor.getDepartment().getSession());
+					addAuthority(authority);
+					sessions.add(instructor.getDepartment().getSession());
+				}
+				authority.addQualifier(instructor.getDepartment());
 			}
 
 			for (Student student: (List<Student>)hibSession.createQuery(
@@ -135,10 +143,14 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (session != null) sessionId = session.getUniqueId();
 			}
 			if (getCurrentAuthority() == null && sessionId != null) {
-				UserAuthority auth = getAuthority(InstructorAuthority.TYPE, null, sessionId);
-				if (auth != null) setCurrentAuthority(auth);
-				else auth = getAuthority(StudentAuthority.TYPE, null, sessionId);
-				if (auth != null) setCurrentAuthority(auth);
+				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, new SimpleQualifier("Session", sessionId));
+				if (!authorities.isEmpty())
+					setCurrentAuthority(authorities.get(0));
+			}
+			if (getCurrentAuthority() == null && sessionId != null) {
+				List<? extends UserAuthority> authorities = getAuthorities(StudentAuthority.TYPE, new SimpleQualifier("Session", sessionId));
+				if (!authorities.isEmpty())
+					setCurrentAuthority(authorities.get(0));
 			}
 		} finally {
 			hibSession.close();
@@ -216,8 +228,8 @@ public class UniTimeUserContext extends AbstractUserContext {
 	@Override
 	public void setCurrentAuthority(UserAuthority authority) {
 		super.setCurrentAuthority(authority);
-		if (authority.getAcademicSessionId() != null)
-			setProperty("LastUsed.acadSessionId", authority.getAcademicSessionId().toString());
+		if (authority.getAcademicSession() != null)
+			setProperty("LastUsed.acadSessionId", authority.getAcademicSession().getQualifierId().toString());
 	}
 
 	@Override

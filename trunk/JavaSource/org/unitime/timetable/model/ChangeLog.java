@@ -150,6 +150,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         setSourceString(source.name());
     }
 
+    @Deprecated
     public static void addChange(
             org.hibernate.Session hibSession,
             HttpServletRequest request,
@@ -169,6 +170,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                 dept);
     }
 
+    @Deprecated
         public static void addChange(
             org.hibernate.Session hibSession,
             HttpServletRequest request,
@@ -209,42 +211,42 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             Debug.error(e);
         }
     }
-        
-        public static void addChange(
-                org.hibernate.Session hibSession,
-                SessionContext context,
-                Object object,
-                String objectTitle,
-                Source source,
-                Operation operation,
-                SubjectArea subjArea,
-                Department dept) {
-            try {
-            	if (!context.isAuthenticated()) {
-            		Debug.warning("Unable to add change log -- no user.");
-                    return;
-            	}
-                String userId = null;
-            	if (context.getUser() instanceof UserContext.Chameleon) {
-            		userId = ((UserContext.Chameleon)context.getUser()).getOriginalUserContext().getExternalUserId();
-            	}
-            	if (userId == null)
-            		userId = context.getUser().getExternalUserId();
-            	Session session = (context.getUser().getCurrentAuthority() == null ? null : SessionDAO.getInstance().get(context.getUser().getCurrentAuthority().getAcademicSessionId()));
-                if (session == null) {
-                    Debug.warning("Unable to add change log -- no academic session.");
-                    return;
-                }
-                TimetableManager manager = TimetableManager.findByExternalId(userId);
-                if (manager == null) {
-                    Debug.warning("Unable to add change log -- no timetabling manager.");
-                    return;
-                }
-                addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
-            } catch (Exception e) {
-                Debug.error(e);
+    
+    public static void addChange(
+    		org.hibernate.Session hibSession,
+            SessionContext context,
+            Object object,
+            String objectTitle,
+            Source source,
+            Operation operation,
+            SubjectArea subjArea,
+            Department dept) {
+        try {
+        	if (!context.isAuthenticated()) {
+        		Debug.warning("Unable to add change log -- no user.");
+                return;
+        	}
+            String userId = null;
+        	if (context.getUser() instanceof UserContext.Chameleon) {
+        		userId = ((UserContext.Chameleon)context.getUser()).getOriginalUserContext().getExternalUserId();
+        	}
+        	if (userId == null)
+        		userId = context.getUser().getExternalUserId();
+        	Session session = (context.getUser().getCurrentAuthority() == null ? null : SessionDAO.getInstance().get((Long)context.getUser().getCurrentAuthority().getAcademicSession().getQualifierId()));
+            if (session == null) {
+                Debug.warning("Unable to add change log -- no academic session.");
+                return;
             }
+            TimetableManager manager = TimetableManager.findByExternalId(userId);
+            if (manager == null) {
+                Debug.warning("Unable to add change log -- no timetabling manager.");
+                return;
+            }
+            addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
+        } catch (Exception e) {
+            Debug.error(e);
         }
+    }
         
     public static void addChange(
             org.hibernate.Session hibSession,
@@ -257,6 +259,18 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
             Department dept) {
     	addChange(hibSession, manager, session, object, null, source, operation, subjArea, dept);
     }
+    
+    public static void addChange(
+            org.hibernate.Session hibSession,
+            SessionContext contect,
+            Object object,
+            Source source,
+            Operation operation,
+            SubjectArea subjArea,
+            Department dept) {
+        addChange(hibSession, contect, object, null, source, operation, subjArea, dept);
+    }
+
     
     public static void addChange(
             org.hibernate.Session hibSession,

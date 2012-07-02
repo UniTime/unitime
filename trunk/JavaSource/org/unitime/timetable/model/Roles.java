@@ -148,10 +148,6 @@ public class Roles extends BaseRoles implements HasRights {
 	//TODO: get this information from the database
 	public boolean hasRight(Right right) {
 		switch (right) {
-		/* all roles are enabled */
-		case CanSelectAsCurrentRole:
-			return true;
-			
 		/* session defaults */
 		case SessionDefaultFirstFuture:
 			return DEPT_SCHED_MGR_ROLE.equals(getReference());
@@ -168,9 +164,23 @@ public class Roles extends BaseRoles implements HasRights {
 		case AllowTestSessions:
 			return ADMIN_ROLE.equals(getReference());
 		case DepartmentIndependent:
-			return !DEPT_SCHED_MGR_ROLE.equals(getReference());
+			return !DEPT_SCHED_MGR_ROLE.equals(getReference()) && !EVENT_MGR_ROLE.equals(getReference());
 		case StatusIndependent:
 			return ADMIN_ROLE.equals(getReference());
+			
+		case AddNonUnivLocation:
+		case AddSpecialUseRoom:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || EVENT_MGR_ROLE.endsWith(getReference());
+			
+		case ApplicationConfig:
+			return ADMIN_ROLE.equals(getReference());
+			
+		case AssignedClasses:
+		case AssignmentHistory:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+			
+		case AssignedExams:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
 			
 		/* class rights*/
 		case ClassEdit:

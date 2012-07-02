@@ -20,22 +20,15 @@
 package org.unitime.timetable.spring.security;
 
 import java.io.Serializable;
-import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.permissions.Permission;
-import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
-import org.unitime.timetable.security.permissions.Permission.PermissionSession;
+import org.unitime.timetable.security.evaluation.PermissionCheck;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("unitimePermissionEvaluator")
@@ -43,76 +36,14 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 	private static Log sLog = LogFactory.getLog(UniTimePermissionEvaluator.class);
 	
 	@Autowired
-	PermissionDepartment permissionDepartment;
-	
-	@Autowired
-	PermissionSession permissionSession;
-	
-	@Autowired
-	ApplicationContext applicationContext;
+	PermissionCheck unitimePermissionCheck;
 
 	@Override
 	public boolean hasPermission(Authentication authentication, Object domainObject, Object permission) {
-		if (domainObject != null && domainObject instanceof Collection) {
-			for (Object o: (Collection<?>)domainObject) {
-				if (!hasPermission(authentication, o, permission)) return false;
-			}
-			return true;
-		}
 		try {
-			sLog.info("Checking " + permission + " for " + domainObject);
-			if (!authentication.isAuthenticated()) {
-				sLog.info("   ... not authenticated");
-				return false;
-			}
-			if (authentication.getPrincipal() == null || !(authentication.getPrincipal() instanceof UserContext)) {
-				sLog.info("   ... bad principal");
-				return false;
-			}
-			Right right = (permission instanceof Right ? (Right)permission : Right.valueOf(permission.toString()));
-			if (right == null) {
-				sLog.info("   ... unknown permission " + permission);
-				return false;
-			}
 			UserContext user = (UserContext)authentication.getPrincipal();
-			sLog.info("   ... user: " + user.getName() + " " + user.getCurrentAuthority());
-			if (user.getCurrentAuthority() == null) {
-				sLog.info("   ... user has no role");
-				return false;
-			}
-			Exception ex = null;
-			try {
-				Permission<?> perm = (Permission<?>)applicationContext.getBean("permission" + permission);
-				if (perm != null) {
-					if ((Boolean)perm.getClass().getMethod("check", UserContext.class, domainObject.getClass()).invoke(perm, user, domainObject)) {
-						return true;
-					} else {
-						sLog.info("   ... permission check failed");
-						return false;
-					}
-				}
-			} catch (Exception e) {
-				ex = e;
-			}
-			if (domainObject instanceof Session) {
-				if (permissionSession.check(user, (Session)domainObject, right)) {
-					return true;
-				} else {
-					sLog.info("   ... session check failed");
-					return false;
-				}
-			} else if (domainObject instanceof Department) {
-				if (permissionDepartment.check(user, (Department)domainObject, right)) {
-					return true;
-				} else {
-					sLog.info("   ... session check failed");
-					return false;
-				}
-			} else {
-				sLog.info("   ... permission check failed (" + (ex == null ? "no check found" : ex.getMessage() + ")"));
-				ex.printStackTrace();
-				return false;
-			}
+			Right right = (permission instanceof Right ? (Right)permission : Right.valueOf(permission.toString()));
+			return unitimePermissionCheck.checkPermission(user, domainObject, right);
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + domainObject + ": " + e.getMessage());
 			return false;
@@ -121,34 +52,10 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 
 	@Override
 	public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
-		if (targetId != null && targetId instanceof Collection) {
-			for (Serializable id: (Collection<Serializable>)targetId) {
-				if (!hasPermission(authentication, id, targetType, permission)) return false;
-			}
-			return true;
-		}
 		try {
-			sLog.info("Checking " + permission + " for " + targetType + "@" + targetId);
-			if (targetId == null) {
-				sLog.info("  ... no id");
-				return false;
-			}
-			if (targetId instanceof String) {
-				try {
-					targetId = Long.valueOf((String)targetId);
-				} catch (NumberFormatException e) {}
-			}
-			if (!(targetId instanceof Long)) {
-				try {
-					targetId = (Serializable)targetId.getClass().getMethod("getUniqueId").invoke(targetId);
-				} catch (Exception e) {}
-				try {
-					targetId = (Serializable)targetId.getClass().getMethod("getId").invoke(targetId);
-				} catch (Exception e) {}
-			}
-			String className = targetType;
-			if (className.indexOf('.') < 0) className = "org.unitime.timetable.model." + className;
-			return hasPermission(authentication, new _RootDAO().getSession().get(Class.forName(className), targetId), permission);
+			UserContext user = (UserContext)authentication.getPrincipal();
+			Right right = (permission instanceof Right ? (Right)permission : Right.valueOf(permission.toString()));
+			return unitimePermissionCheck.checkPermission(user, targetId, targetType, right);
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + targetType + "@ "+ targetId + ": " + e.getMessage());
 			return false;

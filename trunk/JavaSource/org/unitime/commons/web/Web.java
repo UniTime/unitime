@@ -22,20 +22,19 @@ package org.unitime.commons.web;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.List;
 import java.util.Locale;
 import java.util.Vector;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.AcademicSessionAuthority;
-import org.unitime.timetable.security.authority.ManagerAuthority;
+import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.authority.RoleAuthority;
 import org.unitime.timetable.util.Constants;
 
@@ -78,29 +77,25 @@ public class Web {
     	legacy.setName(user.getName());
     	legacy.setLogin(user.getUsername());
     	Vector<String> roles = new Vector<String>();
-    	for (GrantedAuthority role: user.getAuthorities()) {
+    	for (UserAuthority role: user.getAuthorities()) {
     		if (role instanceof RoleAuthority)
-    			roles.add(((RoleAuthority)role).getReference());
+    			roles.add(role.getRole());
     	}
     	UserAuthority authority = user.getCurrentAuthority();
     	if (authority != null) {
     		if (authority instanceof RoleAuthority) {
     			legacy.setRole(authority.getRole());
     		}
+        	if (authority.getAcademicSession() != null) {
+        		legacy.setAttribute(Constants.SESSION_ID_ATTR_NAME, authority.getAcademicSession().getQualifierId());
+        		legacy.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, authority.getAcademicSession().getQualifierLabel());
+        		legacy.setAttribute(Constants.ACAD_YRTERM_ATTR_NAME, authority.getAcademicSession().getQualifierReference());
+        		List<? extends UserQualifier> managers = authority.getQualifiers("TimetableManager");
+        		if (!managers.isEmpty())
+        			legacy.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, managers.get(0).getQualifierId().toString());
+        	}
     	}
     	if (Roles.ADMIN_ROLE.equals(legacy.getRole())) legacy.setAdmin(true);
-    	if (authority.getAcademicSessionId() != null) {
-    		legacy.setAttribute(Constants.SESSION_ID_ATTR_NAME, authority.getAcademicSessionId());
-    		UserAuthority sessionAuth = user.getAuthority(AcademicSessionAuthority.TYPE, authority.getAcademicSessionId());
-    		if (sessionAuth != null)
-    			legacy.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, sessionAuth.getLabel());
-    		else
-    			legacy.setAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME, authority.getReference());
-    		legacy.setAttribute(Constants.ACAD_YRTERM_ATTR_NAME, authority.getReference());
-    		UserAuthority managerAuth = user.getAuthority(ManagerAuthority.TYPE, null, null);
-    		if (managerAuth != null)
-    			legacy.setAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME, managerAuth.getUniqueId().toString());
-    	}
     	session.setAttribute(Web.USER_ATTR_NAME, legacy);
     	return legacy;
     }
