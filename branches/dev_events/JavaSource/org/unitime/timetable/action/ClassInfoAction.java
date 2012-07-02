@@ -94,8 +94,9 @@ public class ClassInfoAction extends Action {
         
         if (request.getParameter("classId")!=null) {
             model.setClazz(new Class_DAO().get(Long.valueOf(request.getParameter("classId"))));
-            if (model.getClassAssignment()!=null && (model.getChange()==null || model.getChange().getCurrent(model.getClazz().getClassId())==null))
+            if (model.getClassAssignment()!=null && (model.getChange()==null || model.getChange().getCurrent(model.getClazz().getClassId())==null)) {
             	model.setTime(model.getClassAssignment().getTimeId());
+            }
             myForm.save(request.getSession());
         }
         
@@ -112,6 +113,8 @@ public class ClassInfoAction extends Action {
             synchronized (model) {
                 if (request.getParameter("time")!=null)
                     model.setTime(request.getParameter("time"));
+                if (request.getParameter("date")!=null)
+                    model.setDate(request.getParameter("date"));
                 if (request.getParameter("room")!=null)
                     model.setRooms(request.getParameter("room"));
                 if (request.getParameter("delete")!=null)

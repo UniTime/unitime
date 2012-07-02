@@ -31,7 +31,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             }
         }
         //if (initial!=null && initial.assignmentEquals(change)) return;
-        if (change.getTimeId()!=null) {
+        if (change.getDateId()!=null) {
             iAssignments.add(change); 
             if (initial!=null && initial.getTimeId()!=null) 
                 iInitials.put(initial.getClassId(),initial);
@@ -52,7 +52,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         Hashtable<Long,ClassAssignment> table = new Hashtable();
         try {
             for (ClassAssignment conflict : iConflicts)
-                table.put(conflict.getClassId(), new ClassAssignment(conflict.getClazz(),null,null));
+                table.put(conflict.getClassId(), new ClassAssignment(conflict.getClazz(),null,null,null));
         } catch (Exception e) {}
         for (ClassAssignment assignment : iAssignments)
             table.put(assignment.getClassId(), assignment);
@@ -112,6 +112,7 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         ret += "<tr>";
         ret += "<td><i>Class</i></td>";
         ret += "<td><i>Instructor</i></td>";
+        ret += "<td><i>Date Change</i></td>";
         ret += "<td><i>Time Change</i></td>";
         ret += "<td><i>Room Change</i></td>";
         ret += "</tr>";
@@ -127,6 +128,12 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += current.getClassNameHtml();
             ret += "</td><td nowrap>";
             ret += current.getLeadingInstructorNames(", ");
+            ret += "</td><td nowrap>";
+            if (initial!=null && !initial.getDateId().equals(current.getDateId()))
+                ret += initial.getDateNameHtml() + " &rarr; ";
+            if (initial==null)
+                ret += "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font> &rarr; ";
+            ret += current.getDateNameHtml();
             ret += "</td><td nowrap>";
             if (initial!=null && !initial.getTimeId().equals(current.getTimeId()))
                 ret += initial.getTimeNameHtml() + " &rarr; ";
@@ -158,6 +165,8 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
             ret += "</td><td nowrap>";
             ret += conflict.getLeadingInstructorNames(", ");
             ret += "</td><td nowrap>";
+            ret += conflict.getDateNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
+            ret += "</td><td nowrap>";
             ret += conflict.getTimeNameHtml() + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>"+"</td>";
             ret += "</td><td nowrap>";
             ret += conflict.getRoomNamesHtml(", ") + " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>";
@@ -171,12 +180,12 @@ public class ClassProposedChange implements Serializable, Comparable<ClassPropos
         String ret = "";
         for (ClassAssignment conflict : iConflicts) {
             if (ret.length()>0) ret+=delim;
-            ret += conflict.getClassName() + " " + conflict.getTime().getName()+" "+conflict.getRoomNames(", ") + " -> Not Assigned";
+            ret += conflict.getClassName() + " " + conflict.getDate() + " " + conflict.getTime().getName()+" "+conflict.getRoomNames(", ") + " -> Not Assigned";
         }
         for (ClassAssignment current : iAssignments) {
             if (ret.length()>0) ret+=delim;
             ClassAssignment initial = iInitials.get(current.getClassId());
-            ret += current.getClassName() + " " + (initial==null?"Not Assigned":initial.getTime().getName()+" "+initial.getRoomNames(", ")) + " -> " + current.getTime().getName()+" "+current.getRoomNames(", ");
+            ret += current.getClassName() + " " + (initial==null?"Not Assigned":initial.getDate()+" "+initial.getTime().getName()+" "+initial.getRoomNames(", ")) + " -> " + current.getDate()+" "+current.getTime().getName()+" "+current.getRoomNames(", ");
         }
         return ret;
     }

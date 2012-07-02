@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.course.ui;
 
 import java.io.Serializable;
-import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -34,7 +33,6 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -59,13 +57,11 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     private int iNrMeetings;
     private int iBreakTime;
     
-    private BitSet iWeekCode;
-    private Long iDatePatternId = null;
-    private transient DatePattern iDatePattern = null;
+    private ClassDateInfo iDate = null;
     
     private transient Vector<Date> iDates = null;
 
-    public ClassTimeInfo(int dayCode, int startTime, int length, int pref, TimePattern timePattern, DatePattern datePattern, int breakTime) {
+    public ClassTimeInfo(int dayCode, int startTime, int length, int pref, TimePattern timePattern, ClassDateInfo date, int breakTime) {
         iPreference = pref;
         iStartSlot = startTime;
         iDayCode = dayCode;
@@ -76,22 +72,38 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
             if ((iDayCode & Constants.DAY_CODES[i])==0) continue;
             iNrMeetings++;
         }
-        iHashCode = combine(combine(iDayCode, iStartSlot),iLength);
-        iDatePatternId = datePattern.getUniqueId();
-        iDatePattern = datePattern;
-        iWeekCode = datePattern.getPatternBitSet();
+        iHashCode = combine(combine(iDayCode, iStartSlot),combine(iLength, date.getId().hashCode()));
+        iDate = date;
         iTimePatternId = timePattern.getUniqueId();
         iTimePattern = timePattern;
     }
     
-    public ClassTimeInfo(Assignment assignment, int preference) {
+    public ClassTimeInfo(Assignment assignment, int preference, int datePreference) {
 		this(assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),
 				preference,
 				assignment.getTimePattern(),
-				assignment.getDatePattern(),
+				new ClassDateInfo(assignment, datePreference),
 				assignment.getBreakTime());
+    }
+    
+    public ClassTimeInfo(ClassTimeInfo time, ClassDateInfo date) {
+    	iPreference = time.getPreference();
+    	iStartSlot = time.getStartSlot();
+    	iDayCode = time.getDayCode();
+    	iLength = time.getLength();
+    	iBreakTime = time.getBreakTime();
+    	iNrMeetings = time.getNrMeetings();
+    	iDate = date;
+    	iTimePatternId = time.getTimePatternId();
+    	if (time.iTimePattern != null)
+    		iTimePattern = time.iTimePattern;
+    	iHashCode = combine(combine(iDayCode, iStartSlot),combine(iLength, date.getId().hashCode()));
+    }
+    
+    public ClassTimeInfo(Assignment assignment) {
+    	this(assignment, 0, 0);
     }
     
     public int getNrMeetings() {
@@ -145,7 +157,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
 
     public boolean shareWeeks(ClassTimeInfo anotherLocation) {
-        return iWeekCode.intersects(anotherLocation.iWeekCode);
+        return getDate().getPattern().intersects(anotherLocation.getDate().getPattern());
     }
 
     public boolean overlaps(ClassTimeInfo anotherLocation) {
@@ -185,14 +197,10 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     public TimePattern getTimePattern(org.hibernate.Session hibSession) {
     	return TimePatternDAO.getInstance().get(iTimePatternId, hibSession);
     }
-    public Long getDatePatternId() { return iDatePatternId; }
-    public DatePattern getDatePattern() {
-    	if (iDatePattern==null)
-    		iDatePattern = DatePatternDAO.getInstance().get(iDatePatternId);
-    	return iDatePattern;
-    }
-    public BitSet getWeekCode() { return iWeekCode; }
-    public String getDatePatternName() { return getDatePattern().getName(); }
+    public ClassDateInfo getDate() { return iDate; }
+    public Long getDatePatternId() { return getDate().getId(); }
+    public DatePattern getDatePattern() { return getDate().getDatePattern(); }
+    public String getDatePatternName() { return getDate().getName(); }
 
     public String toString() { return getName(); }
     public int hashCode() {
@@ -209,7 +217,7 @@ public class ClassTimeInfo implements Serializable, Comparable<ClassTimeInfo> {
     }
     
     public int compareTo(ClassTimeInfo time) {
-    	int cmp = getDatePattern().compareTo(time.getDatePattern());
+    	int cmp = getDate().compareTo(time.getDate());
     	if (cmp!=0) return cmp;
     	cmp = getTimePattern().compareTo(time.getTimePattern());
     	if (cmp!=0) return cmp;
