@@ -85,7 +85,7 @@ public class LookupServlet implements LookupService {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new LookupException("not authenticated");
 		if (user.getCurrentAuthority() == null) throw new LookupException("insufficient rights");
-		Long sessionId = user.getCurrentAuthority().getAcademicSessionId();
+		Long sessionId = user.getCurrentAcademicSessionId();
 		if (sessionId == null) throw new LookupException("academic session not selected");
 		return sessionId;
 	}

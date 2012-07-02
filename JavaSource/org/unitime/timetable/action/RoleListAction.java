@@ -39,7 +39,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -81,7 +80,7 @@ public class RoleListAction extends Action {
         // Form submitted
         if (roleListForm.getAuthority() != null) {
         	UserAuthority authority = user.getAuthority(roleListForm.getAuthority());
-        	if (authority != null && authority.hasRight(Right.CanSelectAsCurrentRole))
+        	if (authority != null)
         		user.setCurrentAuthority(authority);
         	return mapping.findForward("success");
         }
@@ -96,7 +95,7 @@ public class RoleListAction extends Action {
         
     	Set<String> roles = new HashSet<String>();
     	for (UserAuthority a: user.getAuthorities())
-    		if (a.hasRight(Right.CanSelectAsCurrentRole)) roles.add(a.getRole());
+    		roles.add(a.getRole());
         
         switch (roles.size()) {
 		case 0:
@@ -113,7 +112,7 @@ public class RoleListAction extends Action {
     	
     	Set<String> roles = new HashSet<String>();
     	for (UserAuthority authority: user.getAuthorities())
-    		if (authority.hasRight(Right.CanSelectAsCurrentRole)) roles.add(authority.getRole());
+    		roles.add(authority.getRole());
     	
     	WebTable table = new WebTable(4,"Select " + (roles.size() > 1 ? "User Role &amp; " : "") + "Academic Session",
         		"selectPrimaryRole.do?list=Y&ord=%%",
@@ -124,9 +123,7 @@ public class RoleListAction extends Action {
     	int nrLines = 0;
     	UserAuthority firstAuthority = null;
     	for (UserAuthority authority: user.getAuthorities()) {
-    		if (!authority.hasRight(Right.CanSelectAsCurrentRole)) continue;
-
-    		Session session = (authority.getAcademicSessionId() == null ? null : SessionDAO.getInstance().get(authority.getAcademicSessionId()));
+    		Session session = (authority.getAcademicSession() == null ? null : SessionDAO.getInstance().get((Long)authority.getAcademicSession().getQualifierId()));
     		if (session == null) continue;
     		
 

@@ -19,9 +19,12 @@
 */
 package org.unitime.timetable.security.context;
 
+import java.util.List;
+
 import org.unitime.commons.User;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.authority.RoleAuthority;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.util.Constants;
 
 public class LegacyUserContext extends UniTimeUserContext {
@@ -33,16 +36,16 @@ public class LegacyUserContext extends UniTimeUserContext {
 		iUser = user;
 		Long sessionId = (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		if (sessionId != null && user.getRole() != null) {
-			UserAuthority authority = getAuthority(user.getCurrentRole(), null, sessionId);
-			if (authority != null)
-				setCurrentAuthority(authority);
+			List<? extends UserAuthority> authorities = getAuthorities(user.getCurrentRole(), new SimpleQualifier("Session", sessionId));
+			if (!authorities.isEmpty())
+				setCurrentAuthority(authorities.get(0));
 		}
 	}
 	
 	@Override
 	public void setCurrentAuthority(UserAuthority authority) {
 		super.setCurrentAuthority(authority);
-		iUser.setAttribute(Constants.SESSION_ID_ATTR_NAME, authority.getAcademicSessionId());
+		iUser.setAttribute(Constants.SESSION_ID_ATTR_NAME, authority.getAcademicSession().getQualifierId());
 		if (authority instanceof RoleAuthority)
 			iUser.setRole(authority.getRole());
 	}

@@ -725,7 +725,7 @@ public class ReservationServlet implements ReservationService {
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getCurrentAuthority() == null)
 			throw new PageAccessException("Insufficient user privileges.");
-		Long sessionId = user.getCurrentAuthority().getAcademicSessionId();
+		Long sessionId = user.getCurrentAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("No academic session is selecgted.");
 		return sessionId;
 	}

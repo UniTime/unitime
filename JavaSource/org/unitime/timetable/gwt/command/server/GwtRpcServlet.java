@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.evaluation.PermissionCheck;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -54,6 +55,12 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
 		return (SessionContext)applicationContext.getBean("sessionContext");
 	}
+	
+	protected PermissionCheck getPermissionCheck() {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+		return (PermissionCheck)applicationContext.getBean("unitimePermissionCheck");
+	}
+
 	
 	@Override
 	public void init() throws ServletException {
@@ -220,7 +227,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			setDaemon(true);
 			iRequest = request;
 			iExecutionId = sIdGenerator.generatedId();
-			iContext = new GwtRpcHelper(getSessionContext());
+			iContext = new GwtRpcHelper(getSessionContext(), getPermissionCheck());
 		}
 
 		@Override

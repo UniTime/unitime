@@ -69,7 +69,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	public SimpleEventRights(SessionContext context, Long sessionId) {
-		this(context.getUser(), context.isHttpSessionNew(), (sessionId != null ? sessionId : context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getAcademicSessionId() : null));
+		this(context.getUser(), context.isHttpSessionNew(), (sessionId != null ? sessionId : context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null));
 	}
 	
 	protected UserContext getUser() {
@@ -81,7 +81,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean isAdmin() {
-		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(getUser().getCurrentAuthority().getRole());
+		return getUser() != null && Roles.ADMIN_ROLE.equals(getUser().getCurrentRole());
 	}
 	
 	protected boolean isAuthenticated() {
@@ -89,7 +89,7 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean hasRole() {
-		return getUser() != null && getUser().getCurrentAuthority() != null && hasSession();
+		return getUser() != null && hasSession();
 	}
 	
 	private Set<Long> iManagedSessions = null;
@@ -102,15 +102,15 @@ public class SimpleEventRights implements EventRights {
 	}
 	
 	protected boolean isEventManager() {
-		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.EVENT_MGR_ROLE.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
+		return getUser() != null && Roles.EVENT_MGR_ROLE.equals(getUser().getCurrentRole()) && hasSession();
 	}
 	
 	protected boolean isStudentAdvisor() {
-		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.STUDENT_ADVISOR.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
+		return getUser() != null && Roles.STUDENT_ADVISOR.equals(getUser().getCurrentRole()) && hasSession();
 	}
 
 	protected boolean isScheduleManager() {
-		return getUser() != null && getUser().getCurrentAuthority() != null && Roles.DEPT_SCHED_MGR_ROLE.equals(getUser().getCurrentAuthority().getRole()) && hasSession();
+		return getUser() != null && Roles.DEPT_SCHED_MGR_ROLE.equals(getUser().getCurrentRole()) && hasSession();
 	}
 
 	protected String getUserId() {

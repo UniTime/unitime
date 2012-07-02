@@ -38,7 +38,6 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.DepartmentAuthority;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
@@ -337,7 +336,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		
 		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentAuthority().getRole())) return false;
 
-		if (!user.hasAuthority(DepartmentAuthority.TYPE, getDepartment().getUniqueId())) return false;
+		if (!user.getCurrentAuthority().hasQualifier(getDepartment())) return false;
 		
 		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
 

@@ -977,14 +977,14 @@ public class SimpleEditServlet implements SimpleEditService {
 		if (user == null) throw new PageAccessException(
 				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
 		if (user.getCurrentAuthority() == null) throw new PageAccessException("Insufficient user privileges.");
-		Long sessionId = (Long) user.getCurrentAuthority().getAcademicSessionId();
+		Long sessionId = (Long) user.getCurrentAcademicSessionId();
 		if (sessionId == null) throw new PageAccessException("Insufficient user privileges.");
 		return sessionId;
 	}
 	
 	public boolean isAdmin() {
 		UserContext user = getSessionContext().getUser();
-		return user != null && user.getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole());
+		return user != null && user.getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(user.getCurrentRole());
 	}
 	
 	public void checkAdmin() throws PageAccessException {

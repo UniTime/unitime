@@ -120,6 +120,7 @@ import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.solver.WebSolver;
 
 /**
@@ -1889,8 +1890,9 @@ public class SectioningServlet implements SectioningService {
 		getSessionContext().setAttribute("sessionId", sessionId);
 		UserContext user = getSessionContext().getUser();
 		if (user.getCurrentAuthority() != null) {
-			UserAuthority authority = user.getAuthority(user.getCurrentAuthority().getRole(), null, sessionId);
-			if (authority != null) user.setCurrentAuthority(authority);
+			List<? extends UserAuthority> authorities = user.getAuthorities(user.getCurrentAuthority().getRole(), new SimpleQualifier("Session", sessionId));
+			if (!authorities.isEmpty()) user.setCurrentAuthority(authorities.get(0));
+			else user.setCurrentAuthority(null);
 		}
 		return true;
 	}

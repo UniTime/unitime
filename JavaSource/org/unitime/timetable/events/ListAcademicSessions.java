@@ -66,7 +66,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				selected = findSession(hibSession, command.getTerm());
 			} catch (EventException e) {}
 		} else {
-			Long sessionId = (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getAcademicSessionId() : null);
+			Long sessionId = (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAcademicSessionId() : null);
 			if (sessionId != null)
 				selected = SessionDAO.getInstance().get(sessionId, hibSession);
 		}

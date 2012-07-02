@@ -21,38 +21,38 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomDept;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
@@ -66,10 +66,13 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  */
 @Service("/addNonUnivLocation")
 public class AddNonUnivLocationAction extends Action {
+	private static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
+	
+	@Autowired SessionContext sessionContext;
 
 	/** 
 	 * Method execute
@@ -89,6 +92,11 @@ public class AddNonUnivLocationAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
+		if (!sessionContext.hasPermission(Right.AddNonUnivLocation, true))
+			throw new AccessDeniedException(MSG.errorAccessDenied());
+		
+		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+		
 		if (nonUnivLocationForm.getDoit() != null) {
 			String doit = nonUnivLocationForm.getDoit();
 			if (doit.equals(rsc.getMessage("button.returnToRoomList"))) {
@@ -98,40 +106,32 @@ public class AddNonUnivLocationAction extends Action {
 			     // Validate input prefs
 	            errors = nonUnivLocationForm.validate(mapping, request);
 	            
+	            if (errors.isEmpty() && !sessionContext.hasPermission(nonUnivLocationForm.getDeptCode(), "Department", Right.AddNonUnivLocation)) {
+	            	errors.add("nonUniversityLocation", new ActionMessage("errors.generic", "Acess denied."));
+	            }
+	            
 	            // No errors
 	            if(errors.size()==0) {
 	            	update(request, nonUnivLocationForm);
 					return mapping.findForward("showRoomList");
 	            }
 	            else {
-	            	setDepts(request);
+	            	setDepts(request, departments);
 	                saveErrors(request, errors);
 					return mapping.findForward("showAdd");
 	            }
 			}
 		}
-			
-		setDepts(request);
 		
-		//set default department based on user selection or department that user owns
-		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();	
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));
-        Set departments = manager.departmentsForSession(sessionId);
-        if (isAdmin)
-        	departments = Department.findAllBeingUsed(sessionId);
+		setDepts(request, departments);
+		
         nonUnivLocationForm.setDeptSize(departments.size());
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
+        if (departments.size() == 1) {
+        	Department d = departments.iterator().next();
         	nonUnivLocationForm.setDeptCode(d.getDeptCode());
-        } else if (httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-			nonUnivLocationForm.setDeptCode(httpSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-		} 
+        } else if (sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
+			nonUnivLocationForm.setDeptCode(sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+		}
 		
 		return mapping.findForward("showAdd");
 	}
@@ -145,22 +145,15 @@ public class AddNonUnivLocationAction extends Action {
 	private void update(
 			HttpServletRequest request, 
 			NonUnivLocationForm nonUnivLocationForm) throws Exception {
-
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-			
+		
 		org.hibernate.Session hibSession = (new NonUniversityLocationDAO()).getSession();
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
 			NonUniversityLocation nonUniv = new NonUniversityLocation();
 			
-			nonUniv.setSession(Session.getCurrentAcadSession(user));
+			nonUniv.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
 				
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		    nonUniv.setManagerIds(mgrId);
-		        
 			if (nonUnivLocationForm.getName() != null && !nonUnivLocationForm.getName().trim().equalsIgnoreCase("")) {
 				nonUniv.setName(nonUnivLocationForm.getName());
 			}
@@ -193,16 +186,7 @@ public class AddNonUnivLocationAction extends Action {
 			rd.setRoom(nonUniv);
 			rd.setControl(Boolean.TRUE);
 			
-			Department d = null;
-			if (nonUnivLocationForm.getDeptCode() == null) {
-				TimetableManagerDAO tdao = new TimetableManagerDAO();
-		        TimetableManager owner = tdao.get(new Long(mgrId));
-		        d = (Department)owner.departmentsForSession(sessionId).iterator().next();
-			} else {
-				String deptCode = nonUnivLocationForm.getDeptCode();
-				d = Department.findByDeptCode(deptCode, sessionId);
-			}
-			
+			Department d = Department.findByDeptCode(nonUnivLocationForm.getDeptCode(), sessionContext.getUser().getCurrentAcademicSessionId(), hibSession);
 			rd.setDepartment(d);
 			
 			hibSession.saveOrUpdate(rd);
@@ -212,7 +196,7 @@ public class AddNonUnivLocationAction extends Action {
             
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     (Location)nonUniv, 
                     ChangeLog.Source.ROOM_EDIT, 
                     ChangeLog.Operation.CREATE, 
@@ -234,33 +218,15 @@ public class AddNonUnivLocationAction extends Action {
 	 * @param nonUnivLocationForm 
 	 * @throws Exception
 	 */
-	private void setDepts(HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-		ArrayList departments = new ArrayList();
-		TreeSet depts = new TreeSet();
-		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-			depts = Department.findAllBeingUsed(sessionId);
-		} else {
-			depts = new TreeSet(owner.departmentsForSession(sessionId));
-		}
-			
-		for (Iterator i=depts.iterator();i.hasNext();) {
-			Department d = (Department)i.next();
-			if (!d.isEditableBy(user)) continue;
+	private void setDepts(HttpServletRequest request, Set<Department> departments) throws Exception {
+		List<LabelValueBean> list = new ArrayList<LabelValueBean>();
+		for (Department d: departments) {
 			String code = d.getDeptCode().trim();
 			String abbv = d.getName().trim();
-			departments.add(new LabelValueBean(code + " - " + abbv, code)); 
+			list.add(new LabelValueBean(code + " - " + abbv, code)); 
 		}
 		
-		request.setAttribute(Department.DEPT_ATTR_NAME, departments);
-		
+		request.setAttribute(Department.DEPT_ATTR_NAME, list);
 	}
 
 }

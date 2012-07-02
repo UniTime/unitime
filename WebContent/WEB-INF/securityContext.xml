@@ -35,6 +35,7 @@
 		<intercept-url pattern="/**" access="permitAll" />
 		<form-login login-page="/login.jsp" default-target-url="/selectPrimaryRole.do" always-use-default-target="true"/>
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
+		<expression-handler ref="webExpressionHandler"/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
@@ -42,6 +43,10 @@
 	</global-method-security>
 	
 	<beans:bean id="expressionHandler" class="org.unitime.timetable.spring.security.UniTimeSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
+	</beans:bean>
+	
+	<beans:bean id="webExpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler">
 		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
 	</beans:bean>
 	

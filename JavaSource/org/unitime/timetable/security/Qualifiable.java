@@ -16,27 +16,14 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- */
-package org.unitime.timetable.security.authority;
+*/
+package org.unitime.timetable.security;
 
-import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.security.rights.Right;
+import java.io.Serializable;
 
-public class InstructorAuthority extends AbstractAuthority {
-	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "Instructor";
-	
-	public InstructorAuthority(DepartmentalInstructor instructor) {
-		super(instructor.getUniqueId(), TYPE, instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-	}
-
-	@Override
-	public boolean hasRight(Right right) {
-		switch (right) {
-		case SessionDefaultCurrent:
-			return true;
-		default:
-			return false;
-		}
-	}
+public interface Qualifiable {
+	public Serializable getQualifierId();
+	public String getQualifierType();
+	public String getQualifierReference();
+	public String getQualifierLabel();
 }
