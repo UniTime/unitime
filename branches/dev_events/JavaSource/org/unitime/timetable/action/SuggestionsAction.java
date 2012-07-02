@@ -653,7 +653,7 @@ public class SuggestionsAction extends Action {
 			sb.append("<TR><TD colspan='2'><I>"+MSG.messageNotAssigned()+"</I></TD></TR>");
 		} else {
 			if (dispDate)
-				sb.append("<TR><TD>"+MSG.propertyDate()+"</TD><TD>"+ca.getAssignedTime().getDatePatternName()+"</TD></TR>");
+				sb.append("<TR><TD>"+MSG.propertyDate()+"</TD><TD>"+ca.getAssignedTime().getDatePatternHtml()+"</TD></TR>");
 			sb.append("<TR><TD>"+MSG.propertyTime()+"</TD><TD>"+ca.getAssignedTime().toHtml(false,false,true,true)+"</TD></TR>");
 			if (ca.getAssignedRoom()!=null) {
 				sb.append("<TR><TD>"+MSG.propertyRoom()+"</TD><TD>");

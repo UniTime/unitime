@@ -846,7 +846,11 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                 			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) continue;
                 			if (PreferenceLevel.sProhibited.equals(pr)) continue;
                 		}
-                        TimeLocation  loc = new TimeLocation(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,0,datePattern.getUniqueId(),datePattern.getName(),datePattern.getPatternBitSet(),breakTime);
+                        TimeLocation  loc = new TimeLocation(
+                        		pattern.getExactDays(), pattern.getExactStartSlot(), length,
+                        		PreferenceLevel.sIntLevelNeutral, 0, PreferenceLevel.prolog2int(pr), 
+                        		datePattern.getUniqueId(), datePattern.getName(), datePattern.getPatternBitSet(),
+                        		breakTime);
                         loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
                         if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
                         	loc.setNormalizedPreference(iAlterDatePatternWeight * prVal);
@@ -917,6 +921,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                                     pattern.getSlotsPerMtg(),
                                     PreferenceLevel.prolog2int(pattern.getPreference(day, time)),
                                     pattern.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                    PreferenceLevel.prolog2int(pr),
                                     child.getUniqueId(),
                                     child.getName(),
                                     child.getPatternBitSet(),

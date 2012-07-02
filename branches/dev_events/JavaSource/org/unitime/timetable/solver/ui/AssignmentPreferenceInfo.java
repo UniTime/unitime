@@ -75,6 +75,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	private int iMaxDeptBalancPenalty = 0;
 	private double iMaxSpreadPenalty = 0;
 	private int iGroupConstraintPref = 0;
+	private int iDatePatternPref = 0;
 	
 	public AssignmentPreferenceInfo() {
 		super();
@@ -174,6 +175,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		iMaxSpreadPenalty = ((double)placement.getMaxSpreadPenalty())/12.0;
 		if (solver!=null && solver.getPerturbationsCounter()!=null)
 			setPerturbationPenalty(solver.getPerturbationsCounter().getPerturbationPenalty(lecture.getModel(), placement, new Vector(0)));
+		setDatePatternPref(placement.getTimeLocation().getDatePatternPreference());
 	}
 	
 	public double getNormalizedTimePreference() { return iNormalizedTimePreference; }
@@ -247,6 +249,8 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	public void setSpreadPenalty(double spreadPenalty) { iSpreadPenalty = spreadPenalty; }
 	public double getMaxSpreadPenalty() { return iMaxSpreadPenalty; }
 	public void setMaxSpreadPenalty(double spreadPenalty) { iMaxSpreadPenalty = spreadPenalty; }
+	public int getDatePatternPref() { return iDatePatternPref; }
+	public void setDatePatternPref(int datePatternPref) { iDatePatternPref = datePatternPref; }
 	
 	public void load(Element root) throws Exception {
 		int version = Integer.parseInt(root.attributeValue("version"));
@@ -289,6 +293,8 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 				iMaxDeptBalancPenalty = Integer.parseInt(root.elementText("maxDeptBalanc"));
 			else
 				iMaxDeptBalancPenalty = (int)iDeptBalancPenalty;
+			if (root.elementText("datePref") != null)
+				iDatePatternPref = Integer.parseInt(root.elementText("datePref"));
 		}
 	}
 	
@@ -326,6 +332,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		root.addElement("groupConstr").setText(String.valueOf(iGroupConstraintPref));
 		root.addElement("spread").setText(String.valueOf(iSpreadPenalty));
 		root.addElement("maxSpread").setText(String.valueOf(iMaxSpreadPenalty));
+		root.addElement("datePref").setText(String.valueOf(iDatePatternPref));
 	}
 	
 	public boolean saveToFile() {
@@ -362,6 +369,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
             "  groupConstr = "+iGroupConstraintPref+"\n"+
             "  spread = "+iSpreadPenalty+"\n"+
             "  maxSpread = "+iMaxSpreadPenalty+"\n"+
+            "  datePatterPref = "+iDatePatternPref+"\n"+
             "}";
     }
 }

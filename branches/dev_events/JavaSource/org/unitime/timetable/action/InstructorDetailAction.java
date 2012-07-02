@@ -282,7 +282,7 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	if (ca != null) {
 			    		if (ca.getAssignedTime() != null) {
 				    		assignedTime = ca.getAssignedTime().toHtml(false, false, true, true);
-				    		assignedDate = ca.getAssignedTime().getDatePatternName();
+				    		assignedDate = ca.getAssignedTime().getDatePatternHtml();
 			    		}
 						if (ca.getAssignedRoom() != null) {
 							for (int i=0;i<ca.getAssignedRoom().length;i++) {
