@@ -193,6 +193,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 								a.setParentSection(section.getParent().getName(course.getId()));
 							a.setSubpartId(section.getSubpart().getId());
 							a.setHasAlternatives(hasAlt);
+							a.addNote(course.getNote());
 							a.addNote(section.getNote());
 							int dist = 0;
 							String from = null;

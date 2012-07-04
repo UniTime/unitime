@@ -173,6 +173,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					if (section.getParent() != null)
 						a.setParentSection(section.getParent().getName(course.getId()));
 					a.setSubpartId(section.getSubpart().getId());
+					a.addNote(course.getNote());
 					a.addNote(section.getNote());
 					int dist = 0;
 					String from = null;
