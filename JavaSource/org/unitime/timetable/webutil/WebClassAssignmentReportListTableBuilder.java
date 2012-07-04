@@ -27,15 +27,19 @@ import java.util.TreeSet;
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
@@ -44,6 +48,7 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
+import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 
 
@@ -63,6 +68,31 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 	
 	protected String additionalNote(){
 		return(" Room Assignments");
+	}
+	
+	@Override
+	protected TableCell buildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
+    	Assignment a = null;
+    	AssignmentPreferenceInfo p = null;
+		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
+			try {
+				a = classAssignment.getAssignment((Class_)prefGroup);
+				p = classAssignment.getAssignmentInfo((Class_)prefGroup);
+			} catch (Exception e) {
+				Debug.error(e);
+			}
+    	}
+    	DatePattern dp = (a != null ? a.getDatePattern() : prefGroup.effectiveDatePattern());
+    	TableCell cell = null;
+    	if (dp==null) {
+    		cell = initNormalCell("", isEditable);
+    	} else {
+    		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"' " +
+    				(p == null ? "" : "style='color:" + PreferenceLevel.int2color(p.getDatePatternPref()) + ";'") +
+    				">"+dp.getName()+"</div>", isEditable);
+    	}
+        cell.setAlign("center");
+        return(cell);
 	}
 
     public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user, JspWriter outputStream, String backType, String backId){

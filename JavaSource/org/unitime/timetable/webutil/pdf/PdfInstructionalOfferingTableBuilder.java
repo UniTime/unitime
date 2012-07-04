@@ -505,7 +505,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
     
-    private PdfPCell pdfBuildDatePatternCell(PreferenceGroup prefGroup, boolean isEditable){
+    protected PdfPCell pdfBuildDatePatternCell(PreferenceGroup prefGroup, boolean isEditable){
     	DatePattern dp = prefGroup.effectiveDatePattern();
     	PdfPCell cell = createCell();
     	if (dp!=null) {

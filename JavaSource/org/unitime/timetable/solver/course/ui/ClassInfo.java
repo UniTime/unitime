@@ -44,7 +44,6 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     protected int iEnrollment;
     protected TreeSet<ClassInstructorInfo> iInstructors = new TreeSet();
     protected Set<Long> iParents = new HashSet();
-    protected String iDatePatternHtml = null;
     protected Set<Long> iStudents = new HashSet();
     protected Long iConfigId = null;
     protected boolean iSingleClass = false;
@@ -60,13 +59,6 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
     	for (Iterator i=clazz.getClassInstructors().iterator(); i.hasNext();) {
     		iInstructors.add(new ClassInstructorInfo((ClassInstructor)i.next()));
     	}
-    	iDatePatternHtml = clazz.effectiveDatePattern().getName();
-    	if ((clazz.getDatePattern()==null && clazz.getSchedulingSubpart().getDatePattern()==null))
-    		iDatePatternHtml = "Default ("+iDatePatternHtml+")";
-    	iDatePatternHtml +=
-    		" <img style=\"cursor: pointer;\" src=\"scripts/jscalendar/calendar_1.gif\" border=\"0\" "+
-    		"onclick=\"showGwtDialog('Preview of "+clazz.effectiveDatePattern().getName()+"', 'user/dispDatePattern.jsp?id="+clazz.effectiveDatePattern().getUniqueId()+"&class="+clazz.getUniqueId()+"','840','520');" +
-    		"\">";
     	Class_ parent = clazz.getParentClass();
     	while (parent!=null) {
     		iParents.add(parent.getUniqueId());
@@ -167,10 +159,6 @@ public class ClassInfo implements Serializable, Comparable<ClassInfo> {
 	
 	public int getMinRoomCapacity() {
 		return getClazz().getMinRoomLimit();
-	}
-	
-	public String getDatePatternHtml() {
-		return iDatePatternHtml;
 	}
 	
 	public String getManager() {
