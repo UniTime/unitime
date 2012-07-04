@@ -582,11 +582,13 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
     
-    private TableCell buildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
+    protected TableCell buildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
     	Assignment a = null;
+    	AssignmentPreferenceInfo p = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);
+				p = classAssignment.getAssignmentInfo((Class_)prefGroup);
 			} catch (Exception e) {
 				Debug.error(e);
 			}
@@ -609,7 +611,9 @@ public class WebInstructionalOfferingTableBuilder {
 			}
     		cell = initNormalCell("<div>"+dp.getName()+"</div>" + text, isEditable);
     	} else {
-    		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"'>"+dp.getName()+"</div>", isEditable);
+    		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"' " +
+    				(p == null ? "" : "style='color:" + PreferenceLevel.int2color(p.getDatePatternPref()) + ";'") +
+    				">"+dp.getName()+"</div>", isEditable);
     	}
         cell.setAlign("center");
         return(cell);

@@ -46,13 +46,13 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
 		findStudentConflicts(null);
 	}
 
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, Collection<ClassRoomInfo> rooms) {
-		super(clazz, time, rooms);
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms) {
+		super(clazz, time, date, rooms);
 		findStudentConflicts(null);
 	}
 	
-	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable) {
-		super(clazz, time, rooms);
+	public ClassAssignmentInfo(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms, Hashtable<Long,ClassAssignment> assignmentTable) {
+		super(clazz, time, date, rooms);
 		findStudentConflicts(assignmentTable);
 	}
 	
@@ -97,6 +97,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
             ret += "<tr>";
             ret += "<td><i>Students</i></td>";
             ret += "<td><i>Class</i></td>";
+            ret += "<td><i>Date</i></td>";
             ret += "<td><i>Time</i></td>";
             ret += "<td><i>Room</i></td>";
             ret += "</tr>";
@@ -153,6 +154,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
             ret += "<td style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += String.valueOf(getConflictingStudents().size());
             ret += "<td>"+getOtherClass().getClassNameHtml()+"</td>";
+            ret += "<td>"+getOtherClass().getDate().toHtml()+"</td>";
             ret += "<td>"+getOtherClass().getTime().getLongNameHtml()+"</td>";
             ret += "<td>"+getOtherClass().getRoomNamesHtml(", ")+"</td>";
             ret += "</tr>";
@@ -164,6 +166,7 @@ public class ClassAssignmentInfo extends ClassAssignment implements Serializable
             ret += "<td nowrap style='font-weight:bold;color:"+PreferenceLevel.prolog2color("P")+";'>";
             ret += String.valueOf(getConflictingStudents().size())+"<br>";
             ret += "<td nowrap>"+getClassNameHtml()+"<br>"+getOtherClass().getClassNameHtml()+"</td>";
+            ret += "<td nowrap>"+getDate().toHtml()+"<br>"+getOtherClass().getDate().toHtml()+"</td>";
             ret += "<td nowrap>"+getTime().getLongNameHtml()+"<br>"+getOtherClass().getTime().getLongNameHtml()+"</td>";
             ret += "<td nowrap>"+getRoomNamesHtml(", ")+"<br>"+getOtherClass().getRoomNamesHtml(", ")+"</td>";
             ret += "</tr>";

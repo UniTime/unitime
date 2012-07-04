@@ -46,6 +46,7 @@ import org.unitime.timetable.model.base.BaseClass_;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -1454,6 +1455,8 @@ public class Class_ extends BaseClass_ {
             Solution solution = group.getCommittedSolution();
             if (solution==null) throw new RuntimeException("Solver group "+group.getName()+" has no commited solution.");
             
+            DatePattern dp = DatePatternDAO.getInstance().get(assignment.getDate().getId(), hibSession);
+            
             Assignment a = new Assignment();
             a.setSolution(solution);
             a.setSlotsPerMtg(assignment.getTime().getNrSlotsPerMeeting());
@@ -1466,7 +1469,7 @@ public class Class_ extends BaseClass_ {
             a.setInstructors(new HashSet());
             a.setStartSlot(assignment.getTime().getStartSlot());
             a.setTimePattern(assignment.getTime().getTimePattern(hibSession));
-            a.setDatePattern(effectiveDatePattern());
+            a.setDatePattern(dp != null ? dp : effectiveDatePattern());
             a.setAssignmentInfo(new HashSet());
             
             for (ClassRoomInfo room: assignment.getRooms())

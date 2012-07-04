@@ -39,6 +39,7 @@ import javax.servlet.http.HttpSession;
 
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
@@ -88,6 +89,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	private static final long serialVersionUID = 1L;
 	public static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	public static DecimalFormat sJenrDF = new DecimalFormat("0",new java.text.DecimalFormatSymbols(Locale.US));
+	public static NaturalOrderComparator sCmp = new NaturalOrderComparator();
 	private ClassInfo iClass = null;
 	private TimeInfo iTime = null;
 	private RoomInfo[] iRoom = null;
@@ -177,7 +179,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 			TimeLocation time = placement.getTimeLocation();
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
-			iTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId());
+			iTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId(),time.getDatePatternPreference());
 			if (!lecture.getInstructorConstraints().isEmpty()) {
 				iInstructor = new InstructorInfo[lecture.getInstructorConstraints().size()];
 				for (int i=0;i<lecture.getInstructorConstraints().size();i++) {
@@ -202,11 +204,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 			TimeLocation time = initialPlacement.getTimeLocation();
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
-			iInitialTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId());
+			iInitialTime = new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()), min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId(),time.getDatePatternPreference());
 		}
 		for (TimeLocation time: lecture.timeLocations()) {
 			int min = Constants.SLOT_LENGTH_MIN*time.getNrSlotsPerMeeting()-time.getBreakTime();
-			iTimes.add(new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()),min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId()));
+			iTimes.add(new TimeInfo(time.getDayCode(),time.getStartSlot(),(time.getPreference()==0 && lecture.nrTimeLocations()==1?PreferenceLevel.sIntLevelRequired:time.getPreference()),min,time.getDatePatternName(),time.getTimePatternId(),time.getDatePatternId(),time.getDatePatternPreference()));
 		}
 		for (RoomLocation room: lecture.roomLocations()) {
 			iRooms.add(new RoomInfo(room.getName(),room.getId(),room.getRoomSize(),(room.getPreference()==0 && lecture.nrRoomLocations()==lecture.getNrRooms()?PreferenceLevel.sIntLevelRequired:room.getPreference())));
@@ -272,7 +274,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 			int min = Constants.SLOT_LENGTH_MIN*length-breakTime;
 			DatePattern datePattern = assignment.getDatePattern();
-			iTime = new TimeInfo(assignment.getDays().intValue(),assignment.getStartSlot().intValue(),iAssignmentInfo.getTimePreference(),min,(datePattern==null?"not set":datePattern.getName()),assignment.getTimePattern().getUniqueId(),(datePattern==null?null:datePattern.getUniqueId()));
+			iTime = new TimeInfo(assignment.getDays().intValue(),assignment.getStartSlot().intValue(),iAssignmentInfo.getTimePreference(),min,(datePattern==null?"not set":datePattern.getName()),assignment.getTimePattern().getUniqueId(),(datePattern==null?null:datePattern.getUniqueId()),iAssignmentInfo.getDatePatternPref());
 			if (!assignment.getInstructors().isEmpty()) {
 				iInstructor = new InstructorInfo[assignment.getInstructors().size()];
 				int idx = 0;
@@ -456,12 +458,13 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		private int iStartSlot;
 		private int iMin;
 		private String iDatePatternName;
+		private int iDatePatternPref;
 		private int iPref;
 		private boolean iStrike = false;
 		private Long iPatternId = null, iDatePatternId;
 		private transient String iHint = null;
 		
-		public TimeInfo(int days, int startSlot, int pref, int min, String datePatternName, Long patternId, Long datePatternId) {
+		public TimeInfo(int days, int startSlot, int pref, int min, String datePatternName, Long patternId, Long datePatternId, int datePatternPref) {
 			iDays = days;
 			iStartSlot = startSlot;
 			iPref = pref;
@@ -470,6 +473,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			iDatePatternName = datePatternName;
 			iPatternId = patternId;
 			iDatePatternId = datePatternId;
+			iDatePatternPref = datePatternPref;
 		}
 		
 		public int getDays() { return iDays; }
@@ -477,9 +481,11 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public int getPref() { return iPref; }
 		public int getMin() { return iMin; }
 		public String getDatePatternName() { return iDatePatternName; }
+		public String getDatePatternHtml() { return "<span style='color:"+PreferenceLevel.int2color(iDatePatternPref)+";'>" +  iDatePatternName + "</span>"; }
 		public boolean isStriked() { return iStrike; }
 		public Long getPatternId() { return iPatternId; }
 		public Long getDatePatternId() { return iDatePatternId; }
+		public int getDatePatternPreference() { return iDatePatternPref; }
 		public String getDaysName() {
 			StringBuffer ret = new StringBuffer();
 			for (int i=0;i<Constants.DAY_NAMES_SHORT.length;i++)
@@ -544,7 +550,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				(link?"<a id='dates_"+getDatePatternId()+"' onclick=\"selectDates(event, '"+getDatePatternId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+getDatePatternName()+"'>":"<a class='noFancyLinks' title='"+getDatePatternName()+"'>")+
 				(uline?"<u>":"")+
 				(iStrike?"<s>":"")+
-				getDatePatternName()+
+				getDatePatternHtml()+
 				(iStrike?"</s>":"")+
 				(uline?"</u>":"")+
 				"</a>";
@@ -556,7 +562,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				return 1;
 			if (!isStriked() && t.isStriked())
 				return -1;
-			int cmp = getDatePatternName().compareTo(t.getDatePatternName());
+			int cmp = sCmp.compare(getDatePatternName(), t.getDatePatternName());
 			if (cmp!=0) return cmp;
 			cmp = -Double.compare(getDays(),t.getDays());
 			if (cmp!=0) return cmp;
@@ -1092,9 +1098,9 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	public String getTimeNoHtml() { return dispTimeNoHtml(iTime,iAssignedTime); }
 	public String getDaysName() { return (getTime()==null?getAssignedTime()==null?"":getAssignedTime().getDatePatternName():getTime().getDatePatternName()); }
 	public String getDaysHtml() { 
-		return (getTime()==null?getAssignedTime()==null?"":getAssignedTime().getDatePatternName():
-			getAssignedTime().getDatePatternName().equals(getTime().getDatePatternName()) ? getTime().getDatePatternName() :
-			getTime().getDatePatternName() + " &rarr; " + getAssignedTime().getDatePatternName());
+		return (getTime()==null?getAssignedTime()==null?"":getAssignedTime().getDatePatternHtml():
+			getAssignedTime().getDatePatternName().equals(getTime().getDatePatternName()) ? getTime().getDatePatternHtml() :
+			getTime().getDatePatternHtml() + " &rarr; " + getAssignedTime().getDatePatternHtml());
 	}
 	public String getRoomName() {
 		RoomInfo[] r = (getRoom()==null?getAssignedRoom():getRoom());
