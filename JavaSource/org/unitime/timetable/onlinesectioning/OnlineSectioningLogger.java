@@ -113,11 +113,6 @@ public class OnlineSectioningLogger extends Thread {
 		sLog.info("Online Sectioning Logger is up.");
 		try {
 			iActive = true;
-			try {
-				iOut = new PrintWriter(new FileWriter(new File(ApplicationProperties.getDataFolder(), "sectioning.log"), true));
-			} catch (IOException e) {
-				sLog.warn("Unable to create sectioning log: " + e.getMessage(), e);
-			}
 			while (true) {
 				try {
 					sleep(60000);
@@ -177,7 +172,7 @@ public class OnlineSectioningLogger extends Thread {
 			sLog.error("Online Sectioning Logger failed: " + t.getMessage(), t);
 		} finally {
 			iActive = false;
-			if (iOut != null) iOut.flush(); iOut.close();
+			if (iOut != null) { iOut.flush(); iOut.close(); }
 		}
 		sLog.info("Online Sectioning Logger is down.");	}
 
