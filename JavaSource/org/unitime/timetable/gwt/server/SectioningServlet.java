@@ -369,6 +369,7 @@ public class SectioningServlet implements SectioningService {
 							if (enrollment.getStudent().getId() == studentId) { a.setSaved(true); break; }
 						}
 					}
+					a.addNote(c.getNote());
 					a.addNote(section.getNote());
 					if (section.getTime() != null) {
 						for (DayCode d: DayCode.toDayCodes(section.getTime().getDayCode()))

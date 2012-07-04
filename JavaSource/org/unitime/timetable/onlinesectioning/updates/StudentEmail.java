@@ -395,7 +395,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		}
 		out.println("</head>");
 		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
-		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; width: 800px;\" align=\"center\">");
+		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; min-width: 800px;\" align=\"center\">");
 		out.println("		<tr><td><table width=\"100%\">");
 		out.println("			<tr>");
 		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
@@ -572,7 +572,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			out.println("	<td style= \"" + style + "\">" + html + "</td>");
 		}
 		out.println("	<td style= \"" + style + "\">" + (section.getParent() == null ? consent == null ? "&nbsp;" : consent : section.getParent().getName()) + "</td>");
-		out.println("	<td style= \"" + style + "\">" + (section.getNote() == null ? "&nbsp;" : section.getNote()) + "</td>");
+		String note = (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getNote();
+		if (section.getNote() != null) note = (note == null || note.isEmpty() ? "" : note + "<br>") + section.getNote();
+		out.println("	<td style= \"" + style + "\">" + (note == null ? "&nbsp;" : note.replace("\n", "<br>")) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -655,7 +657,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<td style= \"white-space: nowrap; " + style + "\">" + diff(oldInstructors, instructors) + "</td>");
 
 		out.println("	<td style= \"" + style + "\">" + (old.getParent() == null && section.getParent() == null ? consent == null ? "&nbsp;" : consent : diff(old.getParent() == null ? null : old.getParent().getName(), section.getParent() == null ? null : section.getParent().getName())) + "</td>");
-		out.println("	<td style= \"" + style + "\">" + diff(old.getNote(), section.getNote()) + "</td>");
+		out.println("	<td style= \"" + style + "\">" +
+				(request.getAssignment().getCourse().getNote() == null ? "" : request.getAssignment().getCourse().getNote().replace("\n", "<br>") + "<br>") +
+				diff(old.getNote(), section.getNote()).replace("\n", "<br>") + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -1050,8 +1054,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty()) {
 							out.println("<span style='white-space: nowrap'>" + section.getTime().getDatePatternName() + "</span>");
 						}
+						if (request.getAssignment().getCourse().getNote() != null && !request.getAssignment().getCourse().getNote().isEmpty())
+							out.println("<br>" + request.getAssignment().getCourse().getNote().replace("\n", "<br>"));
 						if (section.getNote() != null && !section.getNote().isEmpty())
-							out.println("<br>" + section.getNote());
+							out.println("<br>" + section.getNote().replace("\n", "<br>"));
 						out.println("</div></div>");
 					}
 				}
@@ -1209,8 +1215,11 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 						if (section.getTime().getDatePatternName() != null && !section.getTime().getDatePatternName().isEmpty())
 							texts.add(section.getTime().getDatePatternName());
 						
+						if (request.getAssignment().getCourse().getNote() != null && !request.getAssignment().getCourse().getNote().isEmpty())
+							texts.add(request.getAssignment().getCourse().getNote().replace("\n", "; "));
+						
 						if (section.getNote() != null && !section.getNote().isEmpty())
-							texts.add(section.getNote());
+							texts.add(section.getNote().replace("\n", "; "));
 						
 						int tt = t + fh; 
 						String next = "";
