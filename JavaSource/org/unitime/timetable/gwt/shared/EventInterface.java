@@ -451,7 +451,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iStartOffset, iEndOffset;
 		private int iDayOfWeek;
 		private int iDayOfYear;
-		private boolean iPast, iCanEdit, iCanApprove;
+		private boolean iPast, iCanEdit, iCanApprove, iDelete;
 		private Date iApprovalDate = null;
 		private Long iStartTime, iStopTime;
 		private Set<MeetingConglictInterface> iConflicts;
@@ -524,6 +524,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
+		public boolean isDelete() { return iDelete; }
+		public void setDelete(boolean delete) { iDelete = delete; }
 		public boolean isCanEdit() { return iCanEdit; }
 		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
 		public boolean isCanApprove() { return iCanApprove; }
@@ -717,6 +719,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    		if (!m.isApproved()) return false;
 	    	return true;
 	    }
+	    
+	    public boolean isDelete() {
+	    	for (MeetingInterface m: iMeetings)
+	    		if (!m.isDelete()) return false;
+	    	return true;
+	    }
 	}
 	
     public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkApproval, boolean checkPast) {
@@ -734,6 +742,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             	if (m.getMeetingTime(null).equals(meeting.getMeetingTime(null)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
+            		(m.isDelete() == meeting.isDelete()) &&
             		(!checkApproval || m.isApproved() == meeting.isApproved())) {
             		if (m.getDayOfYear() - meeting.getDayOfYear() < 7)
             			dow.add(m.getDayOfWeek());
@@ -888,7 +897,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 
 		@Override
 		public int compareTo(NoteInterface note) {
-			return getDate() == null ? 1 : note.getDate() == null ? -1 : getDate().compareTo(note.getDate());
+			int cmp = getDate() == null ? 1 : note.getDate() == null ? -1 : getDate().compareTo(note.getDate());
+			if (cmp != 0) return cmp;
+			return getType().compareTo(note.getType());
 		}
     }
     
@@ -1419,6 +1430,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventRoomAvailabilityBackend")
 	public static class EventRoomAvailabilityRpcRequest extends EventRpcRequest<EventRoomAvailabilityRpcResponse> {
+		private Long iEventId;
 		private Integer iStartSlot, iEndSlot;
 		private List<Integer> iDates;
 		private List<Long> iLocations;
@@ -1444,7 +1456,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
 		public List<MeetingInterface> getMeetings() { return iMeetings; }
 		
-		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Integer> dates, List<FilterRpcResponse.Entity> locations, Long sessionId) {
+		public boolean hasEventId() { return iEventId != null; }
+		public Long getEventId() { return iEventId; }
+		public void setEventId(Long eventId) { iEventId = eventId; }
+		
+		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Integer> dates, List<FilterRpcResponse.Entity> locations, Long eventId, Long sessionId) {
 			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
 			request.setStartSlot(startSlot);
 			request.setEndSlot(endSlot);
@@ -1453,13 +1469,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			for (FilterRpcResponse.Entity location: locations)
 				locationIds.add(Long.valueOf(location.getProperty("permId", null)));
 			request.setLocations(locationIds);
+			request.setEventId(eventId);
 			request.setSessionId(sessionId);
 			return request;
 		}
 		
-		public static EventRoomAvailabilityRpcRequest checkAvailability(List<MeetingInterface> meetings, Long sessionId) {
+		public static EventRoomAvailabilityRpcRequest checkAvailability(List<MeetingInterface> meetings, Long eventId, Long sessionId) {
 			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
 			request.setMeetings(meetings);
+			request.setEventId(eventId);
 			request.setSessionId(sessionId);
 			return request;
 		}

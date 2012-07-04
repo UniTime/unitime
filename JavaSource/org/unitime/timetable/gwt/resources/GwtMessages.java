@@ -275,9 +275,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("new meeting")
 	String approvalNewMeeting();
 	
+	@DefaultMessage("new approval")
+	String approvelNewApprovedMeeting();
+	
 	@DefaultMessage("waiting approval")
 	String approvalWaiting();
 	
+	@DefaultMessage("deleted meeting")
+	String approvalDeleted();
+
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
 	
@@ -644,6 +650,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Display Conflicts")
 	String checkDisplayConflicts();
 	
+	@DefaultMessage("All Sessions")
+	String checkSpanMultipleSessions();
+
 	@DefaultMessage("Include close by locations")
 	String checkIncludeNearby();
 	
