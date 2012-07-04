@@ -52,6 +52,9 @@ import net.sf.cpsolver.ifs.util.DataProperties;
  */
 public interface SolverProxy extends ClassAssignmentProxy {
 	
+    public String getHost();
+    public String getHostLabel();
+
 	public void load(DataProperties properties) throws Exception;
 	public void reload(DataProperties properties) throws Exception;
 	public Date getLoadedDate() throws Exception;
@@ -99,9 +102,6 @@ public interface SolverProxy extends ClassAssignmentProxy {
 	public Vector getAssignedClasses() throws Exception;
 	public Vector getAssignedClasses(String prefix) throws Exception;
 	
-	
-	public String getHost();
-	public String getHostLabel();
 	public void dispose() throws Exception;
 	
 	public RoomReport getRoomReport(BitSet sessionDays, int startDayDayOfWeek, Long roomType) throws Exception;
@@ -128,4 +128,7 @@ public interface SolverProxy extends ClassAssignmentProxy {
     public void interrupt();
     
     public byte[] exportXml() throws Exception;
+    
+    public boolean backup(File folder, String puid);
+    public boolean restore(File folder, String puid);
 }

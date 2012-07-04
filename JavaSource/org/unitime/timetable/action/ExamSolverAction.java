@@ -19,27 +19,27 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Hashtable;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.sf.cpsolver.ifs.util.DataProperties;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamSolverForm;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.RoomAvailability;
 
 
@@ -48,6 +48,8 @@ import org.unitime.timetable.util.RoomAvailability;
  */
 @Service("/examSolver")
 public class ExamSolverAction extends Action {
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamSolverForm myForm = (ExamSolverForm) form;
@@ -66,7 +68,7 @@ public class ExamSolverAction extends Action {
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
-        ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
+        ExamSolverProxy solver = examinationSolverService.getSolver();
         User user = Web.getUser(request.getSession());
         TimetableManager manager = (user==null?null:TimetableManager.getManager(user));
         Session acadSession = (manager==null?null:Session.getCurrentAcadSession(user));
@@ -99,7 +101,7 @@ public class ExamSolverAction extends Action {
         if ("Unload".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	WebSolver.removeExamSolver(request.getSession());
+        	examinationSolverService.removeSolver();
         	myForm.reset(mapping, request);
         	myForm.init();
         }
@@ -120,10 +122,10 @@ public class ExamSolverAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("showSolver");
             }
-            Hashtable extra = new Hashtable(myForm.getParameterValues());
-            extra.put("Exam.Type", myForm.getExamType());
+            DataProperties config = examinationSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues());
+            config.setProperty("Exam.Type", String.valueOf(myForm.getExamType()));
             request.getSession().setAttribute("Exam.Type", myForm.getExamType());
-        	WebSolver.reloadExamSolver(request.getSession(), myForm.getSetting(), extra);
+            examinationSolverService.reload(config);
         	myForm.setChangeTab(true);
         }
         
@@ -135,15 +137,15 @@ public class ExamSolverAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("showSolver");
             }
-            Long settingsId = myForm.getSetting();
-        	Hashtable extra = new Hashtable(myForm.getParameterValues());
-        	extra.put("Exam.Type", myForm.getExamType());
-        	request.getSession().setAttribute("Exam.Type", myForm.getExamType());
+            DataProperties config = examinationSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues());
+            config.put("Exam.Type", String.valueOf(myForm.getExamType()));
+            config.put("General.StartSolver", new Boolean(start).toString());
+            request.getSession().setAttribute("Exam.Type", myForm.getExamType());
     	    if (solver == null) {
-        		solver = WebSolver.createExamSolver(acadSession.getUniqueId(),request.getSession(),settingsId,extra,start,myForm.getHost());
-        	} else if (start) {
-        		solver.setProperties(WebSolver.createProperties(settingsId, extra, SolverParameterGroup.sTypeExam));
-        		solver.start();
+    	    	solver = examinationSolverService.createSolver(config);
+    	    } else if (start) {
+    	    	solver.setProperties(config);
+    	    	solver.start();
         	}
     	    myForm.setChangeTab(true);
         }

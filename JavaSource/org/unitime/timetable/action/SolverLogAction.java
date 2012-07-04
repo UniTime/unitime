@@ -26,12 +26,14 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SolverLogForm;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.SolverService;
 
 
 /** 
@@ -39,6 +41,8 @@ import org.unitime.timetable.solver.WebSolver;
  */
 @Service("/solverLog")
 public class SolverLogAction extends Action {
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -57,7 +61,7 @@ public class SolverLogAction extends Action {
         if (op==null || "Change".equals(op)) {
         	if (myForm.getLevelNoDefault()!=null)
         		UserData.setProperty(request.getSession(), "SolverLog.level", myForm.getLevelNoDefault());
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver!=null)
         		solver.setDebugLevel(myForm.getLevelInt());
         }

@@ -34,6 +34,7 @@ import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.solver.SolverPassivationThread;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver;
+import org.unitime.timetable.solver.TimetableSolver.SolverDisposeListener;
 import org.unitime.timetable.solver.exam.ExamSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolver.ExamSolverDisposeListener;
@@ -52,53 +53,19 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 /**
  * @author Tomas Muller
  */
-public class RemoteSolver extends TimetableSolver implements TimetableInfoFileProxy {
+public class RemoteSolver {
 	private static Log sLog = LogFactory.getLog(RemoteSolver.class);
 	public static File sBackupDir = new File("."+File.separator+"restore");
 	public static File sPassivationDir = new File("."+File.separator+"passivate");
 	private static boolean sInitialized = false;
-	private static boolean sBackupWhenDone = false;
     private static int sUsageBase = 0;
 	
 	private static Date sStartTime = new Date();
-	private static Hashtable<String,RemoteSolver> sSolvers = new Hashtable();
+	private static Hashtable<String,TimetableSolver> sSolvers = new Hashtable();
 	private static SolverPassivationThread sSolverPassivationThread = null;
 	private static Hashtable<String,ExamSolver> sExamSolvers = new Hashtable();
 	private static Hashtable<String,StudentSolver> sStudentSolvers = new Hashtable();
-	
-	public RemoteSolver(DataProperties properties) {
-		super(properties);
-	}
-	
-    public String getHost() {
-    	return "remote";
-    }
-    public String getHostLabel() {
-    	return getHost();
-    }
-    
-	public void dispose() {
-		dispose(getProperties().getProperty("General.OwnerPuid"));
-	}
-	
-	public void dispose(String puid) {
-		super.dispose();
-		if (puid!=null)
-			sSolvers.remove(puid);
-	}
-    
-	
-	public Object exec(Object[] cmd) throws Exception {
-		Class[] types = new Class[(cmd.length-2)/2];
-		Object[] args = new Object[(cmd.length-2)/2];
-		for (int i=0;i<types.length;i++) {
-			types[i]=(Class)cmd[2*i+2];
-			args[i]=cmd[2*i+3];
-		}
-		
-		return getClass().getMethod((String)cmd[0],types).invoke(this, args);
-	}
-	
+
 	public static Object answer(Object cmd) throws Exception {
 		try {
 			if (cmd==null) return null;
@@ -154,26 +121,20 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
                     else
                         return null;
                 }
-				RemoteSolver solver = null;
+                TimetableSolver solver = null;
 				String puid = null;
 				if (arr.length>1) {
 					puid = (String)arr[1];
-					solver = (RemoteSolver)sSolvers.get(puid);
+					solver = sSolvers.get(puid);
 				}
 				if ("getSolvers".equals(arr[0]))
 					return new HashSet(sSolvers.keySet());
-				if ("create".equals(arr[0])) {
+				if ("createSolver".equals(arr[0])) {
 					if (solver!=null) solver.dispose();
-					solver = new RemoteSolver((DataProperties)arr[3]);
-					sSolvers.put(puid,solver);
-					return Boolean.TRUE;
-				}
-				if ("dispose".equals(arr[0])) {
-					if (solver!=null) {
-						solver.dispose(puid);
-						return Boolean.TRUE;
-					} else
-						return Boolean.FALSE;
+                    solver = new TimetableSolver((DataProperties)arr[2], new SolverOnDispose(puid));
+                    solver.setFileProxy(new FileProxy());
+                    sSolvers.put(puid, solver);
+                    return Boolean.TRUE;
 				}
 				if ("exists".equals(arr[0])) {
 					return new Boolean(solver!=null);
@@ -223,7 +184,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 			for (Iterator i=sSolvers.entrySet().iterator();i.hasNext();) {
 				Map.Entry entry = (Map.Entry)i.next();
 				String puid = (String)entry.getKey();
-				RemoteSolver solver =(RemoteSolver)entry.getValue();
+				TimetableSolver solver = (TimetableSolver)entry.getValue();
 				solver.backup(folder, puid);
 			}
 			
@@ -247,7 +208,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 		if (!folder.exists() || !folder.isDirectory()) return;
 		synchronized (sSolvers) {
 			for (Iterator i=sSolvers.values().iterator();i.hasNext();) {
-				RemoteSolver solver =(RemoteSolver)i.next();
+				TimetableSolver solver = (TimetableSolver)i.next();
 				solver.dispose();
 			}
 			sSolvers.clear();
@@ -278,7 +239,7 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
                     continue;
                 }
 				
-				RemoteSolver solver = new RemoteSolver(new DataProperties());
+                TimetableSolver solver = new TimetableSolver(new DataProperties(), new SolverOnDispose(puid));
 				if (solver.restore(folder,puid)) {
 					if (passivateFolder!=null)
 						solver.passivate(passivateFolder,puid);
@@ -288,54 +249,9 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
 		}		
 	}
 	
-    private void backup() {
-    	if (!sBackupWhenDone) return;
-    	String puid = getProperties().getProperty("General.OwnerPuid");
-    	if (puid!=null)
-    		backup(sBackupDir,puid);
-    }
-	
-    protected void onFinish() {
-    	super.onFinish();
-    	backup();
-    }
-    
-    protected void onStop() {
-    	super.onStop();
-    	backup();
-    }
-
-    protected void afterLoad() {
-    	super.afterLoad();
-    	backup();
-    }
-    
-    protected void afterFinalSectioning() {
-    	super.afterFinalSectioning();
-    	backup();
-    }
-    
-    public void restoreBest() {
-    	super.restoreBest();
-    	backup();
-    }
-
-    public void saveBest() {
-    	super.saveBest();
-    	backup();
-    }
-    
-	public void saveToFile(String name, TimetableInfo info) throws Exception {
-		RemoteSolverServer.query(new Object[]{"saveToFile",name,info});
-	}
-	public TimetableInfo loadFromFile(String name) throws Exception {
-		return (TimetableInfo)RemoteSolverServer.query(new Object[]{"loadFromFile",name});
-	}
-    public void deleteFile(String name) throws Exception {
-        RemoteSolverServer.query(new Object[]{"deleteFile",name});
-    }
-    public void refreshSolution(Long solutionId) throws Exception {
-        RemoteSolverServer.query(new Object[]{"refreshSolution",solutionId});
+    public static void refreshSolution(Long solutionId) throws Exception {
+    	if (sInitialized)
+    		RemoteSolverServer.query(new Object[]{"refreshSolution",solutionId});
     }
     
 	public static void init(Properties properties, String url) throws Exception {
@@ -457,6 +373,30 @@ public class RemoteSolver extends TimetableSolver implements TimetableInfoFilePr
         }
         public void onDispose() {
             sStudentSolvers.remove(iOwnerId);
+        }
+    }
+    private static class SolverOnDispose implements SolverDisposeListener {
+        String iOwnerId = null;
+        public SolverOnDispose(String ownerId) {
+            iOwnerId = ownerId;
+        }
+        @Override
+        public void onDispose() {
+            sSolvers.remove(iOwnerId);
+        }
+    }
+    private static class FileProxy implements TimetableInfoFileProxy {
+    	@Override
+    	public void saveToFile(String name, TimetableInfo info) throws Exception {
+    		RemoteSolverServer.query(new Object[]{"saveToFile",name,info});
+    	}
+    	@Override
+    	public TimetableInfo loadFromFile(String name) throws Exception {
+    		return (TimetableInfo)RemoteSolverServer.query(new Object[]{"loadFromFile",name});
+    	}
+    	@Override
+        public void deleteFile(String name) throws Exception {
+            RemoteSolverServer.query(new Object[]{"deleteFile",name});
         }
     }
 }

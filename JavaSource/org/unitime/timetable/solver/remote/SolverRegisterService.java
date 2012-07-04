@@ -46,7 +46,6 @@ import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.core.ConnectionFactory;
 import org.unitime.timetable.solver.remote.core.RemoteIo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
@@ -85,8 +84,6 @@ public class SolverRegisterService extends Thread {
 		
 		sInstance = new SolverRegisterService();
 		sInstance.start();
-		WebSolver.restore(sBackupDir, sPassivationDir);
-		WebSolver.startSolverPasivationThread(sPassivationDir);
 		sLog.info("service started");
 	}
 	
@@ -106,8 +103,6 @@ public class SolverRegisterService extends Thread {
 		} catch (Exception e) {
 			sLog.warn("Unable to stop service, reason: "+e.getMessage(),e);
 		}
-		WebSolver.backup(sBackupDir);
-        WebSolver.stopSolverPasivationThread();
 		sInstance=null;
 		sLog.info("service stopped");
 	}

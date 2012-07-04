@@ -20,14 +20,10 @@
 package org.unitime.timetable.solver.remote;
 
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
-
-import net.sf.cpsolver.ifs.util.DataProperties;
 
 /**
  * @author Tomas Muller
  */
-public interface RemoteSolverProxy extends SolverProxy, TimetableInfoFileProxy {
+public interface RemoteSolverProxy extends SolverProxy {
 	public boolean exists();
-	public void create(DataProperties properties);
 }

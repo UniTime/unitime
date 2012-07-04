@@ -83,8 +83,8 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
     	return prefs;
     }
     
-    public static Set findBySessionId(Long sessionId) {
-    	return new TreeSet(
+    public static Set<SolverGroup> findBySessionId(Long sessionId) {
+    	return new TreeSet<SolverGroup>(
     			(new SolverGroupDAO()).
     			getSession().
     			createQuery("select sg from SolverGroup sg where sg.session.uniqueId=:sessionId").

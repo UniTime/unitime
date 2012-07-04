@@ -50,6 +50,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -62,6 +63,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
 public class AssignedClassesAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		AssignedClassesForm myForm = (AssignedClassesForm) form;
@@ -115,7 +118,7 @@ public class AssignedClassesAction extends Action {
         Vector assignedClasses = null;
         if (myForm.getSubjectArea() != null && myForm.getSubjectArea() != 0) {
         	String prefix = myForm.getSubjectArea() > 0 ? myForm.getSubjectAreaAbbv() + " " : null;
-            SolverProxy solver = WebSolver.getSolver(request.getSession());
+            SolverProxy solver = courseTimetablingSolverService.getSolver();
             if (solver!=null) {
             	assignedClasses = solver.getAssignedClasses(prefix);
             } else {

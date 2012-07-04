@@ -36,6 +36,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -57,8 +58,10 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -77,6 +80,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 public class ClassDetailAction extends PreferencesAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
     // --------------------------------------------------------- Class Constants
 
@@ -187,7 +192,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        		c.getManagingDept().getSolverGroup()!=null &&
 	        		c.getManagingDept().getSolverGroup().getCommittedSolution()!=null &&  // HAS A COMMITED SOLUTION
 	        		c.isEditableBy(user) && // CLASS IS EDITABLE
-	        		WebSolver.getSolver(httpSession)==null && // NOT LOADED INTO THE SOLVER
+	        		courseTimetablingSolverService.getSolver() == null && // NOT LOADED INTO THE SOLVER
 	        		c.effectiveDatePattern()!=null && //HAS DATE PATTERN
 	        		!c.effectivePreferences(TimePref.class).isEmpty() && //HAS TIME PATTERN
 	        		(request.getSession().getAttribute("Solver.selectedSolutionId") == null || ((String)request.getSession().getAttribute("Solver.selectedSolutionId")).isEmpty()) && // NO SOLUTION IS SELECTED 

@@ -40,6 +40,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -58,11 +59,12 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
+import net.sf.cpsolver.ifs.util.DataProperties;
 
 /** 
  * @author Tomas Muller
@@ -70,6 +72,8 @@ import net.sf.cpsolver.ifs.util.CSVFile;
 @Service("/listSolutions")
 public class ListSolutionsAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ListSolutionsForm myForm = (ListSolutionsForm) form;
@@ -245,7 +249,7 @@ public class ListSolutionsAction extends Action {
         
         // Load
         if ("Load".equals(op) || "Load Empty Solution".equals(op)) {
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver!=null && solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	Long sessionId = null;
         	Long settingsId = null;
@@ -287,10 +291,15 @@ public class ListSolutionsAction extends Action {
     	    String host = myForm.getHost();
     	    if ("Load Empty Solution".equals(op))
     	    	host = myForm.getHostEmpty();
+    	    
+    	    DataProperties config = courseTimetablingSolverService.createConfig(settingsId, null);
     	    if ("Load".equals(op))
-    	    	WebSolver.createSolver(sessionId,request.getSession(),ownerId,myForm.getSolutionId(),settingsId,null,false,host);
-    	    else
-    	    	WebSolver.createSolver(sessionId,request.getSession(),ownerId,null,settingsId,null,false,host);
+    	    	config.setProperty("General.SolutionId", myForm.getSolutionId());
+    	    if (host != null)
+    	    	config.setProperty("General.Host", host);
+    	    config.setProperty("General.SolverGroupId", ownerId);
+    	    courseTimetablingSolverService.createSolver(config);
+    	    
     	    myForm.setChangeTab(true);
         }
         
@@ -336,28 +345,30 @@ public class ListSolutionsAction extends Action {
         
         // Unload
         if ("Unload".equals(op)) {
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	WebSolver.removeSolver(request.getSession());
+        	courseTimetablingSolverService.removeSolver();
         }
         
         // Reload
         if ("Reload Input Data".equals(op)) {
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	WebSolver.reload(request.getSession(), null, null);
+        	courseTimetablingSolverService.reload(
+        			courseTimetablingSolverService.createConfig(solver.getProperties().getPropertyLong("General.SettingsId", null), null));
+        	// WebSolver.reload(request.getSession(), null, null);
         	myForm.setChangeTab(true);
         }
 
         // Save, Save As New, Save & Commit, Save As New & Commit
         if ("Save".equals(op) || "Save As New".equals(op) || "Save & Commit".equals(op) || "Save As New & Commit".equals(op)) {
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.setNote(myForm.getSolverNote());
-        	WebSolver.saveSolution(request.getSession(), op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
+        	courseTimetablingSolverService.getSolver().save(op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
         	myForm.setChangeTab(true);
         }
         
@@ -383,7 +394,7 @@ public class ListSolutionsAction extends Action {
         }
 
         getSolutions(request, Web.hasRole(request.getSession(), Roles.getAdminRoles()) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), myForm);
-        myForm.setSolver(WebSolver.getSolver(request.getSession()));
+        myForm.setSolver(courseTimetablingSolverService.getSolver());
         return mapping.findForward("showSolutions");
 	}
 	
