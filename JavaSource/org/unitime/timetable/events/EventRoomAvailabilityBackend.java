@@ -74,6 +74,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				for (Meeting m: (List<Meeting>)query.list()) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
 
+					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
+
 					conflict.setEventId(m.getEvent().getUniqueId());
 					conflict.setName(m.getEvent().getEventName());
 					conflict.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
@@ -103,6 +105,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					meeting.setDayOfWeek(Constants.getDayOfWeek(meeting.getMeetingDate()));
 				}
 				
+				if (meeting.isDelete()) continue;
+				
 				if (rights.isPastOrOutside(meeting.getMeetingDate())) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
 					conflict.setName(MESSAGES.conflictPastOrOutside(session.getLabel()));
@@ -118,6 +122,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				}
 				
 				if (!meeting.hasLocation()) continue;
+				
+				meeting.setCanApprove(rights.canApprove(meeting.getLocation().getId()));
 				
 				if (!rights.canCreate(meeting.getLocation().getId())) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
@@ -144,6 +150,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						.list()) {
 					
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					
+					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
 
 					conflict.setEventId(m.getEvent().getUniqueId());
 					conflict.setName(m.getEvent().getEventName());

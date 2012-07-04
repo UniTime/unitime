@@ -849,10 +849,11 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iTimeGrid.setSelectedWeeks(iWeekPanel.getSelected());
 			iTimeGrid.setRoomResources(iRoomPanel.getSelected());
 			iTimeGrid.setMode(gridMode());
+			int first = iWeekPanel.getFirstDayOfYear(), last = iWeekPanel.getLastDayOfYear();
 			for (EventInterface event: sortedEvents()) {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
-					if (meeting.getMeetingDate() != null && !filter(meeting))
+					if (meeting.getMeetingDate() != null && !filter(meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
 						meetings.add(meeting);
 				}
 				if (!meetings.isEmpty())
@@ -1383,12 +1384,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHistoryToken.setParameter("type", iResourceTypes.getValue(iResourceTypes.getSelectedIndex()).toLowerCase());
 		if (iResource != null && iResource.getAbbreviation() != null && iResource.getType() != ResourceType.PERSON)
 			 iHistoryToken.setParameter("name", iResource.getAbbreviation());
-		if (iLocDate != null && !iLocDate.isEmpty())
+		if (iLocDate != null)
 			iHistoryToken.setParameter("date", iLocDate);
-		if (!iEvents.getValue().isEmpty())
-			iHistoryToken.setParameter("events", iEvents.getValue().trim());
-		if (!iRooms.getValue().isEmpty())
-			iHistoryToken.setParameter("rooms", iRooms.getValue().trim());
+		iHistoryToken.setParameter("events", iEvents.getValue().trim());
+		iHistoryToken.setParameter("rooms", iRooms.getValue().trim());
 		if (iLocRoom != null)
 			iHistoryToken.setParameter("room", iLocRoom);
 		iHistoryToken.setParameter("tab", String.valueOf(getSelectedTab()));

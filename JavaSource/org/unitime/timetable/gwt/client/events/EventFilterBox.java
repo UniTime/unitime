@@ -134,7 +134,10 @@ public class EventFilterBox extends UniTimeFilterBox {
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		iOther = new FilterBox.CustomFilter("other", reqLab, requested, conflicts) {
+		final CheckBox sessions = new CheckBox(MESSAGES.checkSpanMultipleSessions());
+		sessions.getElement().getStyle().setMarginLeft(10, Unit.PX);
+		
+		iOther = new FilterBox.CustomFilter("other", reqLab, requested, conflicts, sessions) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -142,7 +145,10 @@ public class EventFilterBox extends UniTimeFilterBox {
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
 					if ("conflicts".startsWith(text.toLowerCase()) || MESSAGES.checkDisplayConflicts().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkDisplayConflicts(), new Chip("flag", "conflicts")));
+						suggestions.add(new Suggestion(MESSAGES.checkDisplayConflicts(), new Chip("flag", "Conflicts")));
+					}
+					if ("sessinons".startsWith(text.toLowerCase()) || MESSAGES.checkSpanMultipleSessions().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkSpanMultipleSessions(), new Chip("flag", "All Sessions")));
 					}
 					callback.onSuccess(suggestions);
 				}
@@ -169,7 +175,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 		conflicts.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip chip = new Chip("flag", "conflicts");
+				Chip chip = new Chip("flag", "Conflicts");
 				if (event.getValue()) {
 					if (!hasChip(chip)) addChip(chip, true);
 				} else {
@@ -178,6 +184,25 @@ public class EventFilterBox extends UniTimeFilterBox {
 			}
 		});
 		conflicts.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				event.getNativeEvent().stopPropagation();
+				event.getNativeEvent().preventDefault();
+			}
+		});
+		
+		sessions.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				Chip chip = new Chip("flag", "All Sessions");
+				if (event.getValue()) {
+					if (!hasChip(chip)) addChip(chip, true);
+				} else {
+					if (hasChip(chip)) removeChip(chip, true);
+				}
+			}
+		});
+		sessions.addMouseDownHandler(new MouseDownHandler() {
 			@Override
 			public void onMouseDown(MouseDownEvent event) {
 				event.getNativeEvent().stopPropagation();
@@ -382,7 +407,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (!isFilterPopupShowing()) {
-					conflicts.setValue(hasChip(new Chip("flag", "conflicts")));
+					conflicts.setValue(hasChip(new Chip("flag", "Conflicts")));
+					sessions.setValue(hasChip(new Chip("flag", "All Sessions")));
 					Chip req = getChip("requested");
 					if (req == null)
 						requested.setText("");

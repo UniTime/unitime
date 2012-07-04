@@ -542,7 +542,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onSuccess(List<MeetingInterface> result) {
 				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -553,6 +553,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 						LoadingWidget.getInstance().hide();
 						addMeetings(result.getMeetings());
+						iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
 					}
 				});
 				// addMeetings(result);
@@ -563,7 +564,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				iEventAddMeetings.showDialog();
+				iEventAddMeetings.showDialog(getEventId());
 			}
 		});
 		iMeetingsHeader.addButton("operations", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
@@ -682,7 +683,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		if (meetings != null && !meetings.isEmpty())
 			meetings: for (MeetingInterface meeting: meetings) {
 				for (MeetingInterface existing: existingMeetings) {
-					if (existing.inConflict(meeting)) {
+					if (existing.inConflict(meeting) && !existing.isDelete()) {
 						UniTimeNotifications.warn(MESSAGES.warnNewMeetingOverlaps(meeting.toString(), existing.toString()));
 						continue meetings;
 					}
@@ -799,7 +800,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 			if (!meetings.isEmpty()) {
 				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(meetings, iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(meetings, getEventId(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -1330,7 +1331,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public void execute(EventMeetingTable source, OperationType operation, List<EventMeetingRow> selection) {
 		switch (operation) {
 		case AddMeetings:
-			iEventAddMeetings.showDialog();
+			iEventAddMeetings.showDialog(getEventId());
 			break;
 		}
 	}

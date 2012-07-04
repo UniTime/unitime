@@ -191,14 +191,17 @@ public class SimpleEventRights implements EventRights {
 		return false;
 	}
 	
+	public boolean isOutside(Date date) {
+		return date == null || (iBegin != null && date.before(iBegin)) || (iEnd != null && !date.before(iEnd));
+	}
+	
+	public boolean isPast(Date date) {
+		return date == null || date.before(iToday);
+	}
+
 	@Override
 	public boolean isPastOrOutside(Date date) {
-		if (date == null) return true;
-		
-		if (iBegin != null && date.before(iBegin)) return true;
-		if (iEnd != null && !date.before(iEnd)) return true;
-		
-		return date == null || date.before(iToday);
+		return isPast(date) || isOutside(date);
 	}
 		
 	public boolean canEdit(Event event) {
@@ -209,6 +212,19 @@ public class SimpleEventRights implements EventRights {
 		case Event.sEventTypeMidtermExam:
 			return false;
 		}
+		
+		// Wrong academic session
+		Session session = event.getSession();
+		if (session == null) {
+			boolean match = false;
+			for (Meeting meeting: event.getMeetings()) {
+				Location location = meeting.getLocation();
+				if (location != null && location.getSession().getUniqueId().equals(iSessionId)) { match = true; break; }
+			}
+			if (!match) return false;
+		} else {
+			if (!session.getUniqueId().equals(iSessionId)) return false;
+		}
 
 		// Otherwise, user can edit (e.g., add new meetings) if he/see can see the details
 		return canSee(event);
@@ -216,11 +232,14 @@ public class SimpleEventRights implements EventRights {
 
 	@Override
 	public boolean canEdit(Meeting meeting) {
+		// Outside meetings cannot be edited at all
+		if (isOutside(meeting.getStartTime())) return false;
+		
 		// Admin can always edit a meeting
 		if (isAdmin()) return true;
 		
 		// Past meetings cannot be edited
-		if (isPastOrOutside(meeting.getStartTime())) return false;
+		if (isPast(meeting.getStartTime())) return false;
 		
 		// Examination and class events cannot be edited just yet
 		switch (meeting.getEvent().getEventType()) {
@@ -253,16 +272,19 @@ public class SimpleEventRights implements EventRights {
 			return false;
 		}
 
+		// Outside meetings cannot be edited at all
+		if (isOutside(meeting.getStartTime())) return false;
+
 		// Admin can always approve a meeting
 		if (isAdmin()) return true;
 		
 		// Past meetings cannot be edited
-		if (isPastOrOutside(meeting.getStartTime())) return false;
+		if (isPast(meeting.getStartTime())) return false;
 
 		// Event manager can approve if no location, or if the location is managed by the user
 		if (isEventManager()) {
 			Location location = meeting.getLocation();
-			return location == null || isEventLocation(location.getUniqueId());
+			return location == null || isLocationManager(location.getUniqueId());
 		}
 		
 		return false;
