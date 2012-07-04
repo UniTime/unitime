@@ -132,7 +132,7 @@ public class ComputeSuggestionsAction extends FindAssignmentAction {
 							Section x = classTable.get(section.getId());
 							if (x != null) sections.add(x);
 						}
-				if (sections.size() > 2)
+				if (sections.size() >= 2)
 					model.addLinkedSections(sections);
 			}
 		} finally {

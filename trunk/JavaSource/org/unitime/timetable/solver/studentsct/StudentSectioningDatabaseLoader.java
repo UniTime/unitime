@@ -1071,7 +1071,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         		}
         	}
 			if (groupingType == DistributionPref.sGroupingPairWise) {
-	        	if (sections.size() > 2) {
+	        	if (sections.size() >= 2) {
 	        		for (int idx1 = 0; idx1 < sections.size() - 1; idx1++) {
 	        			Section s1 = sections.get(idx1);
 	        			for (int idx2 = idx1 + 1; idx2 < sections.size(); idx2++) {
@@ -1092,7 +1092,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 						ret.add(s); s = new ArrayList<Section>();
 					}
 				}
-				if (s.size() > 2)
+				if (s.size() >= 2)
 					ret.add(new HashSet<Section>(s));
 			}
 	    }		
