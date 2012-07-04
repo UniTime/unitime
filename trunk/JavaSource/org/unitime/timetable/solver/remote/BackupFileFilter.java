@@ -22,6 +22,8 @@ package org.unitime.timetable.solver.remote;
 import java.io.File;
 import java.io.FileFilter;
 
+import org.unitime.timetable.model.SolverParameterGroup;
+
 /**
  * @author Tomas Muller
  */
@@ -30,11 +32,27 @@ public class BackupFileFilter implements FileFilter {
 	public static String sPropertiesExtension = ".backup.properties";
 	private boolean iAcceptXml = false;
 	private boolean iAcceptProperties = false;
-	public BackupFileFilter(boolean acceptXml, boolean acceptProperties) {
+	private int iType = 0;
+	public BackupFileFilter(boolean acceptXml, boolean acceptProperties, int type) {
 		iAcceptXml = acceptXml;
 		iAcceptProperties = acceptProperties;
+		iType = type;
+	}
+	public BackupFileFilter(boolean acceptXml, boolean acceptProperties) {
+		this(acceptXml, acceptProperties, -1);
 	}
 	public boolean accept(File file) {
+		switch (iType) {
+		case SolverParameterGroup.sTypeCourse:
+			if (file.getName().startsWith("exam_") || file.getName().startsWith("sct_")) return false;
+			break;
+		case SolverParameterGroup.sTypeExam:
+			if (!file.getName().startsWith("exam_")) return false;
+			break;
+		case SolverParameterGroup.sTypeStudent:
+			if (!file.getName().startsWith("sct_")) return false;
+			break;
+		}
 		return ((iAcceptXml && file.getName().endsWith(sXmlExtension)) || (iAcceptProperties && file.getName().endsWith(sPropertiesExtension)));
 	}
 }

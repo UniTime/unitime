@@ -173,10 +173,8 @@ public class RemoteSolverServerProxy {
 	}
 	
 	public RemoteSolverProxy createSolver(String puid, DataProperties properties) throws Exception {
-		RemoteSolverProxy solver = RemoteSolverProxyFactory.create(this,puid);
-		if (solver.exists()) solver.dispose();
-		solver.create(properties);
-		return solver;
+		query(new Object[] {"createSolver", puid, properties});
+        return RemoteSolverProxyFactory.create(this,puid);
 	}
 	
 	public SolverProxy getSolver(String puid) throws Exception {

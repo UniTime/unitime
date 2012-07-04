@@ -67,8 +67,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
@@ -479,16 +479,19 @@ public class MenuServlet implements MenuService {
 		return gr.getAbbv();
 	}
 	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	
 	public HashMap<String, String> getSolverInfo(boolean includeSolutionInfo) throws MenuException {
 		try {
 			HashMap<String, String> ret = new HashMap<String, String>();
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
 				
-				SolverProxy solver = WebSolver.getSolver(getSessionContext().getHttpSession());
-				ExamSolverProxy examSolver = (solver==null?WebSolver.getExamSolverNoSessionCheck(getSessionContext().getHttpSession()):null);
-				StudentSolverProxy studentSolver = (solver==null && examSolver==null?WebSolver.getStudentSolverNoSessionCheck(getSessionContext().getHttpSession()):null); 
-				
+				SolverProxy solver = courseTimetablingSolverService.getSolver();
+				ExamSolverProxy examSolver = examinationSolverService.getSolver();
+				StudentSolverProxy studentSolver = studentSectioningSolverService.getSolver();
 				
 				Map progress = (studentSolver!=null?studentSolver.getProgress():examSolver!=null?examSolver.getProgress():solver!=null?solver.getProgress():null);
 				if (progress == null) return null;

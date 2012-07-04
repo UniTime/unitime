@@ -115,9 +115,10 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     }
 	
 	public TimetableInfoFileProxy getFileProxy() {
-		if (getSolver() instanceof TimetableInfoFileProxy)
-			return (TimetableInfoFileProxy)getSolver();
-		return TimetableInfoUtil.getInstance();
+		TimetableInfoFileProxy proxy = null;
+		if (getSolver() instanceof TimetableSolver)
+			proxy = ((TimetableSolver)getSolver()).getFileProxy();
+		return (proxy != null ? proxy : TimetableInfoUtil.getInstance());
 	}
 	
 	private Solution getSolution(Lecture lecture, org.hibernate.Session hibSession) {
@@ -182,27 +183,25 @@ public class TimetableDatabaseSaver extends TimetableSaver {
 		    	}
     		}
     		
-            if (getSolver() instanceof RemoteSolver) {
-                iProgress.setPhase("Refreshing solution ...", solutionIds.length+refreshIds.size());
-                for (Iterator i=refreshIds.iterator();i.hasNext();) {
-                    Long solutionId = (Long)i.next();
-                    try {
-                        ((RemoteSolver)getSolver()).refreshSolution(solutionId);
-                    } catch (Exception e) {
-                        iProgress.warn("Unable to refresh solution "+solutionId+", reason:"+e.getMessage(),e);
-                    }
-                    iProgress.incProgress();
+            iProgress.setPhase("Refreshing solution ...", solutionIds.length+refreshIds.size());
+            for (Iterator i=refreshIds.iterator();i.hasNext();) {
+                Long solutionId = (Long)i.next();
+                try {
+                	RemoteSolver.refreshSolution(solutionId);
+                } catch (Exception e) {
+                    iProgress.warn("Unable to refresh solution "+solutionId+", reason:"+e.getMessage(),e);
                 }
-                for (int i=0;i<solutionIds.length;i++) {
-                    try {
-                        ((RemoteSolver)getSolver()).refreshSolution(solutionIds[i]);
-                    } catch (Exception e) {
-                        iProgress.warn("Unable to refresh solution "+solutionIds[i]+", reason:"+e.getMessage(),e);
-                    }
-                    iProgress.incProgress();
-                }
+                iProgress.incProgress();
             }
-    		
+            for (int i=0;i<solutionIds.length;i++) {
+                try {
+                	RemoteSolver.refreshSolution(solutionIds[i]);
+                } catch (Exception e) {
+                    iProgress.warn("Unable to refresh solution "+solutionIds[i]+", reason:"+e.getMessage(),e);
+                }
+                iProgress.incProgress();
+            }
+            
     		if (solutionIds!=null) {
     			getModel().getProperties().setProperty("General.SolutionId",solutionIds);
     			iProgress.info("Solution successfully saved.");

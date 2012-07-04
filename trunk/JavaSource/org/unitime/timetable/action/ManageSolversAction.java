@@ -38,6 +38,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -53,10 +54,10 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
@@ -68,11 +69,15 @@ import org.unitime.timetable.util.Constants;
 @Service("/manageSolvers")
 public class ManageSolversAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ManageSolversForm myForm = (ManageSolversForm) form;
 
-        // Check Access
+        // Check Access.
         if (!Web.isLoggedIn( request.getSession() )
                 || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
              throw new Exception ("Access Denied.");
@@ -92,7 +97,7 @@ public class ManageSolversAction extends Action {
         	String puid = request.getParameter("puid");
         	request.getSession().setAttribute("ManageSolver.puid", puid);
         	request.getSession().removeAttribute("SolverProxy");
-        	WebSolver.removeSolver(request.getSession());
+        	courseTimetablingSolverService.removeSolver();
         }
 
         if ("Select".equals(op) && request.getParameter("examPuid")!=null) {
@@ -106,7 +111,7 @@ public class ManageSolversAction extends Action {
             String puid = request.getParameter("examPuid");
             request.getSession().setAttribute("ManageSolver.examPuid", puid);
             request.getSession().removeAttribute("ExamSolverProxy");
-            WebSolver.removeExamSolver(request.getSession());
+            examinationSolverService.removeSolver();
         }
 
         if ("Select".equals(op) && request.getParameter("sectionPuid")!=null) {
@@ -120,7 +125,7 @@ public class ManageSolversAction extends Action {
             String puid = request.getParameter("sectionPuid");
             request.getSession().setAttribute("ManageSolver.sectionPuid", puid);
             request.getSession().removeAttribute("StudentSolverProxy");
-            WebSolver.removeStudentSolver(request.getSession());
+            studentSectioningSolverService.removeSolver();
         }
         
         if ("Deselect".equals(op)) {
@@ -248,10 +253,10 @@ public class ManageSolversAction extends Action {
 			int nrLines = 0;
 			Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 			
-            SolverProxy x = WebSolver.getSolverNoSessionCheck(request.getSession());
+            SolverProxy x = courseTimetablingSolverService.getSolverNoSessionCheck();
             String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
 
-			HashSet solvers = new HashSet(WebSolver.getSolvers().values());
+			HashSet solvers = new HashSet(courseTimetablingSolverService.getSolvers().values());
 			for (Iterator i=solvers.iterator();i.hasNext();) {
 				SolverProxy solver = (SolverProxy)i.next();
 				if (solver==null) continue;
@@ -510,27 +515,33 @@ public class ManageSolversAction extends Action {
 				int nrActive = 0;
 				int nrPassivated = 0;
 				int nrWorking = 0;
-				long mem = WebSolver.getAvailableMemory();
-				long usage = WebSolver.getUsage();
+				long mem = getAvailableMemory();
+				long usage = 0;
 				Date startTime = (SolverRegisterService.getInstance()==null?null:SolverRegisterService.getInstance().getStartTime());
-				for (Enumeration e=WebSolver.getLocalSolvers().elements();e.hasMoreElements();) {
-					SolverProxy solver = (SolverProxy)e.nextElement();
+				for (SolverProxy solver: courseTimetablingSolverService.getLocalSolvers().values()) {
+					usage ++;
 					if (solver.isPassivated()) {
 						nrPassivated++;
 					} else {
 						nrActive++;
-						if (solver.isWorking())
+						usage ++;
+						if (solver.isWorking()) {
 							nrWorking++;
+							usage ++;
+						}
 					}
 				}
-                for (Enumeration e=WebSolver.getLocalExaminationSolvers().elements();e.hasMoreElements();) {
-                    ExamSolverProxy solver = (ExamSolverProxy)e.nextElement();
+                for (ExamSolverProxy solver: examinationSolverService.getLocalSolvers().values()) {
+                	usage ++;
                     if (solver.isPassivated()) {
                         nrPassivated++;
                     } else {
                         nrActive++;
-                        if (solver.isWorking())
+                        usage ++;
+                        if (solver.isWorking()) {
                             nrWorking++;
+                            usage ++;
+                        }
                     }
                 }
 				String version = Constants.getVersion();
@@ -586,10 +597,10 @@ public class ManageSolversAction extends Action {
 	            int nrLines = 0;
 	            Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
 	            
-	            ExamSolverProxy x = WebSolver.getExamSolverNoSessionCheck(request.getSession());
+	            ExamSolverProxy x = examinationSolverService.getSolver();
 	            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
 	            
-	            for (ExamSolverProxy solver : WebSolver.getExamSolvers().values()) {
+	            for (ExamSolverProxy solver : examinationSolverService.getSolvers().values()) {
 	            	if (solver==null) continue;
 					DataProperties properties = solver.getProperties();
 					if (properties==null) continue;
@@ -712,10 +723,10 @@ public class ManageSolversAction extends Action {
                int nrLines = 0;
                Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
                
-               StudentSolverProxy x = WebSolver.getStudentSolverNoSessionCheck(request.getSession());
+               StudentSolverProxy x = studentSectioningSolverService.getSolver();
                String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
                
-               for (StudentSolverProxy solver : WebSolver.getStudentSolvers().values()) {
+               for (StudentSolverProxy solver : studentSectioningSolverService.getSolvers().values()) {
       				if (solver==null) continue;
     				DataProperties properties = solver.getProperties();
     				if (properties==null) continue;
@@ -795,5 +806,11 @@ public class ManageSolversAction extends Action {
                throw new Exception(e);
            }
        }
+       
+   	private long getAvailableMemory() {
+		System.gc();
+		return Runtime.getRuntime().maxMemory() - Runtime.getRuntime().totalMemory() + Runtime.getRuntime().freeMemory(); 
+	}
+
 }
 

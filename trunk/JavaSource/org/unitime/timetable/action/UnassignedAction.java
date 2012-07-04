@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
@@ -46,6 +47,7 @@ import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.SolutionUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.UnassignedClassRow;
 import org.unitime.timetable.solver.ui.UnassignedClassesModel;
@@ -58,6 +60,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/unassigned")
 public class UnassignedAction extends Action {
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		UnassignedForm myForm = (UnassignedForm) form;
@@ -117,7 +121,7 @@ public class UnassignedAction extends Action {
 	        if (subjectArea != null && subjectArea != 0) {
 	        	prefix = (subjectArea < 0 ? null : new SubjectAreaDAO().get(subjectArea).getSubjectAreaAbbreviation() + " ");
 			
-				SolverProxy solver = WebSolver.getSolver(request.getSession());
+				SolverProxy solver = courseTimetablingSolverService.getSolver();
 				if (solver!=null) {
 					model = solver.getUnassignedClassesModel(prefix);
 				} else {
@@ -187,7 +191,7 @@ public class UnassignedAction extends Action {
         if (subjectArea != null && subjectArea != 0) {
         	prefix = (subjectArea < 0 ? null : new SubjectAreaDAO().get(subjectArea).getSubjectAreaAbbreviation() + " ");
 
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
     		if (solver!=null) {
     			model = solver.getUnassignedClassesModel(prefix);
     		} else {

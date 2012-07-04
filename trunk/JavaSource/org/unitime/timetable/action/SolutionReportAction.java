@@ -39,6 +39,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -52,6 +53,7 @@ import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;
 import org.unitime.timetable.solver.ui.DiscouragedInstructorBtbReport;
 import org.unitime.timetable.solver.ui.JenrlInfo;
@@ -79,6 +81,8 @@ import com.lowagie.text.pdf.PdfWriter;
 @Service("/solutionReport")
 public class SolutionReportAction extends Action {
 	private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.00",new java.text.DecimalFormatSymbols(Locale.US));
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolutionReportForm myForm = (SolutionReportForm) form;
@@ -94,7 +98,7 @@ public class SolutionReportAction extends Action {
 		BitSet sessionDays = session.getDefaultDatePattern().getPatternBitSet();
 		int startDayDayOfWeek = Constants.getDayOfWeek(session.getDefaultDatePattern().getStartDate());
 		
-		SolverProxy solver = WebSolver.getSolver(request.getSession());
+		SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver==null) {
         	request.setAttribute("SolutionReport.message","Neither a solver is started nor solution is loaded.");
         } else {

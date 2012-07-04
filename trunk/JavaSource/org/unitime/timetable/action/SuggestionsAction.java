@@ -35,6 +35,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -50,6 +51,7 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Hint;
 import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
+import org.unitime.timetable.solver.service.SolverService;
 
 
 /** 
@@ -59,6 +61,8 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
 public class SuggestionsAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SuggestionsForm myForm = (SuggestionsForm) form;
@@ -137,7 +141,7 @@ public class SuggestionsAction extends Action {
         		throw new Exception("No time selected.");
         	if (dates==null)
         		throw new Exception("No dates selected.");
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver==null || solver.getInfo(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates)))!=null) {
         		model.addHint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates));
         	} else {
@@ -176,7 +180,7 @@ public class SuggestionsAction extends Action {
         if ("ShowHistory".equals(op)) {
         	model.reset(request.getSession());
         	int idx = Integer.parseInt(request.getParameter("hist"));
-        	SolverProxy solver = WebSolver.getSolver(request.getSession());
+        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	AssignmentRecord record = (AssignmentRecord)solver.getAssignmentRecords().elementAt(idx);
         	for (Enumeration e=record.getAssignments().elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
@@ -202,7 +206,7 @@ public class SuggestionsAction extends Action {
         	
             String selectedAssignments = getHintTable(model.getSimpleMode(),request, "Selected Assignments", model.getHints(),null);
             if (model.getHints()!=null) {
-            	SolverProxy solver = WebSolver.getSolver(request.getSession());
+            	SolverProxy solver = courseTimetablingSolverService.getSolver();
             	confInfo.putAll(solver.conflictInfo(model.getHints()));
             	for (Enumeration e=model.getHints().elements();e.hasMoreElements();) {
             		Hint h = (Hint)e.nextElement();

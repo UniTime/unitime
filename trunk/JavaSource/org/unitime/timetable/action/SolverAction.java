@@ -26,11 +26,14 @@ import java.util.Hashtable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.cpsolver.ifs.util.DataProperties;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -42,6 +45,7 @@ import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 
 
@@ -50,6 +54,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/solver")
 public class SolverAction extends Action {
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverForm myForm = (SolverForm) form;
@@ -76,7 +82,7 @@ public class SolverAction extends Action {
         	return mapping.findForward("showSolver");
         }
         
-        SolverProxy solver = WebSolver.getSolver(request.getSession());
+        SolverProxy solver = courseTimetablingSolverService.getSolver();
         
         if ("Export XML".equals(op)) {
             if (solver==null) throw new Exception("Solver is not started.");
@@ -106,14 +112,14 @@ public class SolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.restoreBest();
-        	WebSolver.saveSolution(request.getSession(), op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
+        	solver.save(op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
         	myForm.setChangeTab(true);
         }
         
         if ("Unload".equals(op)) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	WebSolver.removeSolver(request.getSession());
+        	courseTimetablingSolverService.removeSolver();
         	myForm.reset(mapping, request);
         	myForm.init();
         }
@@ -127,7 +133,8 @@ public class SolverAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("showSolver");
             }
-        	WebSolver.reload(request.getSession(), myForm.getSetting(), new Hashtable(myForm.getParameterValues()));
+            courseTimetablingSolverService.reload(
+            		courseTimetablingSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues()));
         	myForm.setChangeTab(true);
         }
         
@@ -143,7 +150,6 @@ public class SolverAction extends Action {
             Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
             Long settingsId = myForm.getSetting();
         	Long[] ownerId = null;
-        	Hashtable extra = new Hashtable(myForm.getParameterValues());
         	String solutionId = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
         	if (myForm.getSelectOwner())
         		ownerId = myForm.getOwner();
@@ -152,10 +158,17 @@ public class SolverAction extends Action {
         		for (int i=0;i<myForm.getOwners().size();i++)
         			ownerId[i] = ((SolverForm.LongIdValue)myForm.getOwners().elementAt(i)).getId();
         	}
+    	    DataProperties config = courseTimetablingSolverService.createConfig(settingsId, myForm.getParameterValues());
+    	    if (solutionId != null)
+    	    	config.setProperty("General.SolutionId", solutionId);
+    	    if (myForm.getHost() != null)
+    	    	config.setProperty("General.Host", myForm.getHost());
+    	    config.setProperty("General.SolverGroupId", ownerId);
+    	    config.setProperty("General.StartSolver", new Boolean(start).toString());
     	    if (solver == null) {
-        		solver = WebSolver.createSolver(sessionId,request.getSession(),ownerId,(solutionId==null?null:solutionId),settingsId,extra,start,myForm.getHost());
+        	    solver = courseTimetablingSolverService.createSolver(config);
         	} else if (start) {
-        		solver.setProperties(WebSolver.createProperties(settingsId, extra, SolverParameterGroup.sTypeCourse));
+        		solver.setProperties(config);
         		solver.start();
         	}
     	    myForm.setChangeTab(true);
