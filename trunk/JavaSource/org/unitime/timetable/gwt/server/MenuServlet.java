@@ -66,6 +66,7 @@ import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
@@ -296,6 +297,9 @@ public class MenuServlet implements MenuService {
 					conditionElement.attributeValue("defaultValue", "false")));
 		} else if ("hasProperty".equals(cond)) {
 			return ApplicationProperties.getProperty(conditionElement.attributeValue("name", "dummy")) != null;
+		} else if ("hasPermission".equals(cond)) {
+			Right right = Right.valueOf(conditionElement.attributeValue("name"));
+			return (right == null ? false : sessionContext.hasPermission(null, conditionElement.attributeValue("target"), right));
 		} else if ("hasRight".equals(cond)) {
 			String right = conditionElement.attributeValue("name", "unknown");
 			if ("canSeeEvents".equals(right)) {
