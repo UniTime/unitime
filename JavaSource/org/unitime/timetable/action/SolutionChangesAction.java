@@ -31,6 +31,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -44,6 +45,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -54,6 +56,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/solutionChanges")
 public class SolutionChangesAction extends Action {
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolutionChangesForm myForm = (SolutionChangesForm) form;
@@ -84,7 +88,7 @@ public class SolutionChangesAction extends Action {
         
         myForm.load(model);
 
-        SolverProxy solver = WebSolver.getSolver(request.getSession());
+        SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver==null) {
         	request.setAttribute("SolutionChanges.message","No timetable is loaded. However, you can load one <a href='listSolutions.do'>here</a>.");
         	return mapping.findForward("showSolutionChanges");

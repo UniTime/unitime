@@ -46,6 +46,7 @@ import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -58,6 +59,8 @@ public class AssignmentHistoryAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd hh:mma");
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		AssignmentHistoryForm myForm = (AssignmentHistoryForm) form;
@@ -85,7 +88,7 @@ public class AssignmentHistoryAction extends Action {
         
         myForm.load(model);
         
-        SolverProxy solver = WebSolver.getSolver(request.getSession());
+        SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver!=null) {
         	String historyTable = getHistoryTable(model.getSimpleMode(),request,"History",solver.getAssignmentRecords());
             if (historyTable!=null) {

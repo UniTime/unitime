@@ -42,6 +42,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -56,7 +57,10 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverParameterDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
 
 
@@ -65,6 +69,10 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/solverSettings")
 public class SolverSettingsAction extends Action {
+
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
+	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverSettingsForm myForm = (SolverSettingsForm) form;
@@ -246,8 +254,17 @@ public class SolverSettingsAction extends Action {
                     } else {
                         File file = ApplicationProperties.getTempFile(setting.getName(), "txt");
                         PrintWriter pw = new PrintWriter(new FileWriter(file));
-                        DataProperties properties = WebSolver.createProperties(setting.getUniqueId(), null,
-                                myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER?SolverParameterGroup.sTypeStudent:myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER?SolverParameterGroup.sTypeExam:SolverParameterGroup.sTypeCourse);
+                        DataProperties properties = null;
+                        switch (myForm.getAppearanceIdx()) {
+                        case SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER:
+                        	properties = studentSectioningSolverService.createConfig(setting.getUniqueId(), null);
+                        	break;
+                        case SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER:
+                        	properties = examinationSolverService.createConfig(setting.getUniqueId(), null);
+                        	break;
+                        default:
+                        	properties = courseTimetablingSolverService.createConfig(setting.getUniqueId(), null);
+                        }
                         pw.println("## Solver Configuration File");
                         pw.println("## Name: "+setting.getDescription());
                         pw.println("## Date: "+new Date());

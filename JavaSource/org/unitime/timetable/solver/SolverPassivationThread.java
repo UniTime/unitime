@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver;
 
 import java.io.File;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -35,12 +34,12 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 public class SolverPassivationThread extends Thread {
 	private static Log sLog = LogFactory.getLog(SolverPassivationThread.class);
 	private File iFolder = null;
-	private Hashtable iSolvers = null;
-	private Hashtable iExamSolvers = null;
-	private Hashtable iStudentSolvers = null;
+	private Map<String, ? extends SolverProxy> iSolvers = null;
+	private Map<String, ? extends ExamSolverProxy> iExamSolvers = null;
+	private Map<String, ? extends StudentSolverProxy> iStudentSolvers = null;
 	public static long sDelay = 30000;
 	
-	public SolverPassivationThread(File folder, Hashtable solvers, Hashtable examSolvers, Hashtable studentSolvers) {
+	public SolverPassivationThread(File folder, Map<String, ? extends SolverProxy> solvers, Map<String, ? extends ExamSolverProxy> examSolvers, Map<String, ? extends StudentSolverProxy> studentSolvers) {
 		iFolder = folder;
 		iSolvers = solvers;
 		iExamSolvers = examSolvers;

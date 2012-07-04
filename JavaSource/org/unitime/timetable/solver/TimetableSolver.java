@@ -119,7 +119,7 @@ import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 /**
  * @author Tomas Muller
  */
-public abstract class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver implements SolverProxy, TimetableInfoFileProxy {
+public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver implements SolverProxy {
 	private static Log sLog = LogFactory.getLog(TimetableSolver.class);
 	private boolean iWorking = false;
 	private Date iLoadedDate = null;
@@ -138,10 +138,14 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 	private File iPassivationFolder = null;
 	private String iPassivationPuid = null;
 	private Thread iWorkThread = null;
+	private TimetableInfoFileProxy iFileProxy = null;
+	
+	private SolverDisposeListener iSolverDisposeListener;
 
-	public TimetableSolver(DataProperties properties) {
+	public TimetableSolver(DataProperties properties, SolverDisposeListener solverDisposeListener) {
 		super(properties);
 		iCommitedClassAssignmentProxy = new CommitedClassAssignmentProxy();
+		iSolverDisposeListener = solverDisposeListener;
 	}
 	
 	public Date getLoadedDate() {
@@ -236,15 +240,16 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     }
     
     public void dispose() {
-    	disposeNoInherit();
+    	disposeNoInherit(true);
     }
     
-    private void disposeNoInherit() {
+    private void disposeNoInherit(boolean unregister) {
     	super.dispose();
    		iAssignmentRecords.clear(); iBestAssignmentRecords.clear(); iCbsInfo = null;
     	if (currentSolution()!=null && currentSolution().getModel()!=null)
     		Progress.removeInstance(currentSolution().getModel());
     	setInitalSolution((net.sf.cpsolver.ifs.solution.Solution)null);
+    	if (unregister && iSolverDisposeListener != null) iSolverDisposeListener.onDispose(); 
     }
     
     protected void onFinish() {
@@ -872,7 +877,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		TimetableModel model = null;
 		try {
 			if (isRunning()) stopSolver();
-			this.disposeNoInherit();
+			this.disposeNoInherit(false);
 			FileInputStream fis = null;
 			try {
 				fis = new FileInputStream(inPropertiesFile);
@@ -1031,16 +1036,6 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
         return getAssignmentInfoTable(classesOrClassIds);
     }
 
-	public void saveToFile(String name, TimetableInfo info) throws Exception {
-		TimetableInfoUtil.getInstance().saveToFile(name, info);
-	}
-	public TimetableInfo loadFromFile(String name) throws Exception {
-		return TimetableInfoUtil.getInstance().loadFromFile(name);
-	}
-	public void deleteFile(String name) throws Exception {
-		TimetableInfoUtil.getInstance().deleteFile(name);
-	}
-	
 	public Vector getAssignmentRecords() {
 		return iAssignmentRecords;
 	}
@@ -1441,7 +1436,7 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
 		iPassivationPuid = puid;
 		backup(iPassivationFolder, iPassivationPuid);
 
-   		disposeNoInherit();
+   		disposeNoInherit(false);
         System.gc();
         sLog.debug(" -- memory usage after passivation:"+org.unitime.commons.Debug.getMem());
 		
@@ -1551,4 +1546,36 @@ public abstract class TimetableSolver extends net.sf.cpsolver.coursett.Timetable
     		return info;
     	}
     }
+    
+    public static interface SolverDisposeListener {
+    	public void onDispose();
+    }
+    
+    public TimetableInfoFileProxy getFileProxy() {
+    	return iFileProxy;
+    }
+    
+    public void setFileProxy(TimetableInfoFileProxy fileProxy) {
+    	iFileProxy = fileProxy;
+    }
+
+	public Object exec(Object[] cmd) throws Exception {
+		Class[] types = new Class[(cmd.length-2)/2];
+		Object[] args = new Object[(cmd.length-2)/2];
+		for (int i=0;i<types.length;i++) {
+			types[i]=(Class)cmd[2*i+2];
+			args[i]=cmd[2*i+3];
+		}
+		
+		return getClass().getMethod((String)cmd[0],types).invoke(this, args);
+	}
+    
+    public String getHost() {
+        return "local";
+    }
+    
+    public String getHostLabel() {
+        return getHost();
+    }
+
 }
