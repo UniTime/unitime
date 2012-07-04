@@ -34,6 +34,7 @@ import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Session;
@@ -70,6 +71,17 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 	protected String additionalNote(){
 		return(" Room Assignments");
 	}
+	
+	@Override
+	protected PdfPCell pdfBuildDatePatternCell(PreferenceGroup prefGroup, boolean isEditable){
+    	DatePattern dp = prefGroup.effectiveDatePattern();
+    	PdfPCell cell = createCell();
+    	if (dp!=null) {
+    		Color color = (isEditable?sEnableColor:sDisableColor);
+			addText(cell,dp.getName(), false, false, Element.ALIGN_CENTER, color, true);
+    	}
+        return cell;
+    }
 
     public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user){
     	FileOutputStream out = null;

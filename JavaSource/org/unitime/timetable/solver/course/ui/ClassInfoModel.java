@@ -63,6 +63,7 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
+import org.unitime.timetable.model.DatePatternPref;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
@@ -97,6 +98,7 @@ public class ClassInfoModel implements Serializable {
     private ClassInfo iClass = null;
     private ClassInfoForm iForm = null;
     private ClassProposedChange iChange = null;
+    private Collection<ClassAssignment> iDates = null;
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
     private String iManagerExternalId = null;
@@ -104,7 +106,7 @@ public class ClassInfoModel implements Serializable {
     private boolean iUnassignConflictingAssignments = false;
     
     public void clear(TimetableManager manager) {
-        iClass = null; iChange = null; iRooms = null; iTimes = null; iUnassignConflictingAssignments = false;
+        iClass = null; iChange = null; iRooms = null; iDates = null; iTimes = null; iUnassignConflictingAssignments = false;
         iManagerExternalId = manager.getExternalUniqueId();
     }
     
@@ -125,6 +127,23 @@ public class ClassInfoModel implements Serializable {
     public boolean isClassAssigned() {
         return getClassAssignment()!=null && getClassAssignment().getTime()!=null; 
     }
+    public ClassDateInfo getAssignedDate() {
+    	try {
+    		ClassAssignmentInfo info = getSelectedAssignment();
+    		if (info != null && info.hasDate()) return info.getDate();
+    	} catch (Exception e){}
+    	DatePattern dp = getClazz().getClazz().effectiveDatePattern();
+    	if (dp == null) return null;
+    	if (dp.getType() != DatePattern.sTypeAlternate) {
+    		return new ClassDateInfo(
+    				dp.getUniqueId(),
+    				getClazz().getClassId(),
+    				dp.getName(),
+    				dp.getPatternBitSet(),
+    				PreferenceLevel.sIntLevelNeutral);
+    	} 
+    	return null;
+    }
     
     public void update() throws Exception {
         if (iChange==null) return;
@@ -133,7 +152,7 @@ public class ClassInfoModel implements Serializable {
         iUnassignConflictingAssignments = !iForm.getKeepConflictingAssignments();
         iChange.getAssignments().clear();
         for (ClassAssignment assignment : assignments) {
-            iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getRooms(),table));
+            iChange.getAssignments().add(new ClassAssignmentInfo(assignment.getClazz(),assignment.getTime(),assignment.getDate(),assignment.getRooms(),table));
         }
         iChange.getConflicts().clear();
         for (ClassAssignment assignment : iChange.getAssignments()) {
@@ -142,7 +161,7 @@ public class ClassInfoModel implements Serializable {
 	            if (assignment.getRooms()!=null) for (ClassRoomInfo room : assignment.getRooms()) {
 	            	if (!room.isIgnoreRoomChecks()){
 		            	for (Assignment a : room.getLocation().getCommitedAssignments()) {
-		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
 		            		}
@@ -159,7 +178,7 @@ public class ClassInfoModel implements Serializable {
 		            		if (ci.equals(instructor.getInstructor())) continue;
 		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
 		            		if (a == null) continue;
-		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
 		            		}
@@ -171,7 +190,7 @@ public class ClassInfoModel implements Serializable {
 	            		if (ci.equals(instructor.getInstructor())) continue;
 	            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
 	            		if (a == null) continue;
-	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 	            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 	            				iChange.getConflicts().add(new ClassAssignment(a));
 	            		}
@@ -180,7 +199,7 @@ public class ClassInfoModel implements Serializable {
 	            	/*
 	            	// Potential speed-up #2) use instructor assignments from the solution
 	            	for (Assignment a : instructor.getInstructor().getInstructor().getCommitedAssignments()) {
-	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+	            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 	            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 	            				iChange.getConflicts().add(new ClassAssignment(a));
 	            		}
@@ -195,7 +214,7 @@ public class ClassInfoModel implements Serializable {
             while (parent!=null) {
             	if (iChange.getCurrent(parent.getUniqueId())==null && iChange.getConflict(parent.getUniqueId())==null) {
             		Assignment a = parent.getCommittedAssignment();
-            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
             			iChange.getConflicts().add(new ClassAssignment(a));
             		}
             	}
@@ -214,7 +233,7 @@ public class ClassInfoModel implements Serializable {
             while ((child=children.poll())!=null) {
             	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
             		Assignment a = child.getCommittedAssignment();
-            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+            		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
             			iChange.getConflicts().add(new ClassAssignment(a));
             		}
             	}
@@ -228,7 +247,7 @@ public class ClassInfoModel implements Serializable {
             		child = (Class_)ss.getClasses().iterator().next();
                 	if (iChange.getCurrent(child.getUniqueId())==null && iChange.getConflict(child.getUniqueId())==null) {
                 		Assignment a = child.getCommittedAssignment();
-                		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a,0))) {
+                		if (a!=null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
                 			iChange.getConflicts().add(new ClassAssignment(a));
                 		}
                 	}
@@ -322,7 +341,7 @@ public class ClassInfoModel implements Serializable {
     }
     
     public void setClazz(Class_ clazz) {
-        iTimes = null; iRooms = null;
+        iDates = null; iTimes = null; iRooms = null;
         if (clazz.getCommittedAssignment()!=null)
             iClass = new ClassAssignmentInfo(clazz.getCommittedAssignment());
         else  
@@ -346,9 +365,9 @@ public class ClassInfoModel implements Serializable {
     public ClassAssignmentInfo getAssignmentInfo(ClassAssignment assignment) throws Exception {
         if (assignment instanceof ClassAssignmentInfo) return (ClassAssignmentInfo)assignment;
         if (iChange!=null)
-            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getRooms(), iChange.getAssignmentTable());
+            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms(), iChange.getAssignmentTable());
         else
-            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getRooms());
+            return new ClassAssignmentInfo(assignment.getClazz(), assignment.getTime(), assignment.getDate(), assignment.getRooms());
     }
     
     public ClassAssignmentInfo getSelectedAssignment() throws Exception {
@@ -358,16 +377,31 @@ public class ClassInfoModel implements Serializable {
         return null; 
     }
     
-    public void setTime(String timeId) throws Exception {
-        iRooms = null;
+    public void setDate(String dateId) throws Exception {
+        iRooms = null; iTimes = null;
         if (iChange==null) iChange = new ClassProposedChange();
-        for (ClassAssignment time : getTimes()) {
-            if (timeId.equals(time.getTimeId())) {
+        ClassTimeInfo time = (getSelectedAssignment() == null ? null : getSelectedAssignment().getTime());
+        for (ClassAssignment date : getDates()) {
+            if (dateId.equals(date.getDateId())) {
                 iChange.addChange(
-                		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), null, iChange.getAssignmentTable()), 
+                		new ClassAssignmentInfo(getClazz().getClazz(), (time == null ? null : new ClassTimeInfo(time, date.getDate())), date.getDate(), null, iChange.getAssignmentTable()), 
                 		getClassOldAssignment());
             }
         }
+        if (iChange.isEmpty()) iChange = null; 
+        update();
+    }
+    
+    public void setTime(String timeId) throws Exception {
+        iRooms = null;
+        if (iChange==null) iChange = new ClassProposedChange();
+		for (ClassAssignment time : getAllTimes()) {
+            if (timeId.equals(time.getTimeId())) {
+                iChange.addChange(
+                		new ClassAssignmentInfo(getClazz().getClazz(), time.getTime(), time.getDate(), null, iChange.getAssignmentTable()), 
+                		getClassOldAssignment());
+            }
+		}        		
         if (iChange.isEmpty()) iChange = null; 
         update();
     }
@@ -385,7 +419,7 @@ public class ClassInfoModel implements Serializable {
         if (iChange==null) iChange = new ClassProposedChange();
         ClassAssignment assignment = iChange.getCurrent(iClass);
         if (assignment==null && isClassAssigned()) {
-            for (ClassAssignment time : getTimes()) {
+            for (ClassAssignment time : getAllTimes()) {
                 if (getClassOldAssignment().getTimeId().equals(time.getTimeId())) {
                     assignment = time;
                     break;
@@ -405,7 +439,7 @@ public class ClassInfoModel implements Serializable {
             if (room!=null) assignedRooms.add(room);
         }
         iChange.addChange(
-        		new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignedRooms, iChange.getAssignmentTable()),
+        		new ClassAssignmentInfo(getClazz().getClazz(), assignment.getTime(), assignment.getDate(), assignedRooms, iChange.getAssignmentTable()),
         		getClassOldAssignment());
         if (iChange.isEmpty()) iChange = null; 
         update();
@@ -417,6 +451,83 @@ public class ClassInfoModel implements Serializable {
     
     public void refreshRooms() {
         iRooms = null;
+    }
+    
+    public String getDatesTable() {
+    	try {
+    		String ret = "";
+            ret += "<script language='javascript'>";
+            ret += "function dateOver(source, id) { ";
+            ret += "    document.getElementById('d'+id).style.backgroundColor='rgb(223,231,242)';";
+            if (iShowStudentConflicts)
+            	ret += "    document.getElementById('dc'+id).style.backgroundColor='rgb(223,231,242)';";
+            ret += "    source.style.cursor='hand';source.style.cursor='pointer';";
+            ret += "}";
+            ret += "function dateOut(id) { ";
+            ret += "    var bg = 'transparent';";
+            ClassAssignment classAssignment = (iChange==null?null:iChange.getCurrent(iClass));
+            if (classAssignment!=null && classAssignment.hasDate())
+            	ret += "    if (id=='"+classAssignment.getDateId()+"') bg='rgb(168,187,225)';";
+            ret += "    document.getElementById('d'+id).style.backgroundColor=bg;";
+            if (iShowStudentConflicts)
+            	ret += "    document.getElementById('dc'+id).style.backgroundColor=bg;";
+            ret += "}";
+            ret += "function dateClick(source, id) { ";
+            ret += "    displayLoading();";
+            ret += "    document.location='classInfo.do?op=Select&date='+id+'&noCacheTS=" + new Date().getTime()+"';";
+            ret += "}";
+            ret += "</script>";
+            ret += "<table border='0' cellspacing='0' cellpadding='3'>";
+            int idx = 0;
+            int step = 5;
+            for (ClassAssignment date : getDates()) {
+                boolean initial = (getClassOldAssignment()!=null && getClassOldAssignment().getDateId()!=null && getClassOldAssignment().getDateId().equals(date.getDateId()));
+                if ((idx%step)==0) {
+                    if (idx>0) ret +="</tr>";
+                    ret += "<tr>";
+                }
+                String style = "";
+                if (classAssignment!=null && date.getDateId().equals(classAssignment.getDateId()))
+                    style += "background-color:rgb(168,187,225);";
+                if (initial)
+                    style += "text-decoration:underline;";
+                String mouse = 
+                    "onMouseOver=\"dateOver(this,'"+date.getDateId()+"');\" "+
+                    "onMouseOut=\"dateOut('"+date.getDateId()+"');\" "+
+                    "onClick=\"dateClick(this,'"+date.getDateId()+"');\"";
+                if (iShowStudentConflicts) {
+                	ret += "<td nowrap id='d"+date.getDateId()+"' " +
+                           (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
+                           date.getDateNameHtml()+"</td>";
+                    if ((idx%step)<step-1)
+                        style += "border-right: #646464 1px dashed;";
+                    ret += "<td id='dc"+date.getDateId()+"' "+
+                            (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
+                            (date instanceof ClassAssignmentInfo ? String.valueOf(((ClassAssignmentInfo)date).getNrStudentCounflicts()) : "") +"</td>";
+                } else {
+                    if ((idx%step)<step-1)
+                        style += "border-right: #646464 1px dashed;";
+                    ret += "<td nowrap id='d"+date.getDateId()+"' " +
+                            (style.length()>0?"style='"+style+"' ":"")+mouse+">"+
+                            date.getDateNameHtml()+"</td>";
+                }
+                idx ++;
+            }
+            while ((idx%step)!=0) {
+            	if (iShowStudentConflicts)
+            		ret += "<td colspan='2'>&nbsp;</td>";
+            	else
+            		ret += "<td>&nbsp;</td>";
+                idx++;
+            }
+            ret += "</tr>";
+            ret += "</table>";
+            return ret;
+        } catch (Exception e) {
+        	iForm.setMessage(e.getMessage());
+            sLog.error(e.getMessage(),e);
+            return "";
+        }
     }
         
     public String getTimesTable() {
@@ -432,8 +543,8 @@ public class ClassInfoModel implements Serializable {
             ret += "function timeOut(id) { ";
             ret += "    var bg = 'transparent';";
             ClassAssignment classAssignment = (iChange==null?null:iChange.getCurrent(iClass));
-            if (isClassAssigned() || classAssignment!=null)
-            	ret += "    if (id=='"+(classAssignment==null?getClassAssignment():classAssignment).getTimeId()+"') bg='rgb(168,187,225)';";
+            if (classAssignment != null && classAssignment.hasTime())
+            	ret += "    if (id=='"+classAssignment.getTimeId()+"') bg='rgb(168,187,225)';";
             ret += "    document.getElementById('t'+id).style.backgroundColor=bg;";
             if (iShowStudentConflicts)
             	ret += "    document.getElementById('c'+id).style.backgroundColor=bg;";
@@ -453,7 +564,7 @@ public class ClassInfoModel implements Serializable {
                     ret += "<tr>";
                 }
                 String style = "";
-                if ((isClassAssigned() || classAssignment!=null) && time.getTimeId().equals((classAssignment==null?getClassAssignment():classAssignment).getTimeId()))
+                if (classAssignment != null && time.getTimeId().equals(classAssignment.getTimeId()))
                     style += "background-color:rgb(168,187,225);";
                 if (initial)
                     style += "text-decoration:underline;";
@@ -546,6 +657,7 @@ public class ClassInfoModel implements Serializable {
         ret += "<tr>";
         ret += "<td><i>Students</i></td>";
         ret += "<td><i>Class</i></td>";
+        ret += "<td><i>Date</i></td>";
         ret += "<td><i>Time</i></td>";
         ret += "<td><i>Room</i></td>";
         ret += "</tr>";
@@ -554,96 +666,231 @@ public class ClassInfoModel implements Serializable {
         	ret += conf.toHtml2();
         	empty = false;
         }
-        if (empty) ret += "<tr><td colspan='4'><i>There are no student conflicts.</i></td></tr>";
+        if (empty) ret += "<tr><td colspan='5'><i>There are no student conflicts.</i></td></tr>";
         ret += "</table>";
         return ret;
     }
-
     
+    public boolean getShowDates() {
+    	return getDates().size() > 1;
+    }
+    
+    public Collection<ClassAssignment> getDates() {
+    	if (iDates == null) {
+    		iDates = new Vector<ClassAssignment>();
+            Class_ clazz = getClazz().getClazz();
+            DatePattern datePattern = clazz.effectiveDatePattern();
+            if (datePattern==null) {
+            	iForm.setMessage("Class "+getClazz().getClassName()+" has no date pattern selected.");
+            	return iTimes;
+            }
+            ClassTimeInfo time = (getClassAssignment() == null ? null : getClassAssignment().getTime());
+            if (datePattern.getType() == DatePattern.sTypePatternSet) {
+            	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+            	boolean hasReq = false;
+            	for (DatePatternPref p: datePatternPrefs) {
+            		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
+            	}
+            	for (DatePattern child: datePattern.findChildren()) {
+            		String pr = PreferenceLevel.sNeutral;
+            		for (DatePatternPref p: datePatternPrefs) {
+            			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+            		}
+            		int prVal = 0;
+            		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+            			prVal = PreferenceLevel.prolog2int(pr);
+            		}
+        			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
+        			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
+        			if (iShowStudentConflicts && time != null) {
+            			iDates.add(new ClassAssignmentInfo(
+                    			clazz,
+                    			time,
+                    			new ClassDateInfo(
+                            			child.getUniqueId(),
+                            			clazz.getUniqueId(),
+                            			child.getName(),
+                            			child.getPatternBitSet(),
+                            			prVal),
+                            	null));
+        			} else {
+            			iDates.add(new ClassAssignment(
+                    			clazz,
+                    			null,
+                    			new ClassDateInfo(
+                            			child.getUniqueId(),
+                            			clazz.getUniqueId(),
+                            			child.getName(),
+                            			child.getPatternBitSet(),
+                            			prVal),
+                            	null));
+        			}
+            	}
+            } else {
+            	if (iShowStudentConflicts && time != null) {
+                	iDates.add(new ClassAssignmentInfo(
+                			clazz,
+                			time,
+                			new ClassDateInfo(
+                        			datePattern.getUniqueId(),
+                        			clazz.getUniqueId(),
+                        			datePattern.getName(),
+                        			datePattern.getPatternBitSet(),
+                        			PreferenceLevel.sIntLevelNeutral),
+                        	null));
+            	} else {
+                	iDates.add(new ClassAssignment(
+                			clazz,
+                			null,
+                			new ClassDateInfo(
+                        			datePattern.getUniqueId(),
+                        			clazz.getUniqueId(),
+                        			datePattern.getName(),
+                        			datePattern.getPatternBitSet(),
+                        			PreferenceLevel.sIntLevelNeutral),
+                        	null));            		
+            	}
+            }
+    	}
+    	return iDates;
+    }
+
     public Collection<ClassAssignment> getTimes() {
         if (iTimes==null) {
-            iTimes = new Vector<ClassAssignment>();
             Class_ clazz = getClazz().getClazz();
             Set timePrefs = clazz.effectivePreferences(TimePref.class);
             if (timePrefs.isEmpty()) {
             	iForm.setMessage("Class "+getClazz().getClassName()+" has no time pattern selected.");
             	return iTimes;
             }
-            DatePattern datePattern = clazz.effectiveDatePattern();
-            if (datePattern==null) {
+            ClassDateInfo date = getAssignedDate();
+            if (date == null) {
+            	Collection<ClassAssignment> dates = getDates();
+                if (dates != null && !dates.isEmpty())
+                	date = dates.iterator().next().getDate();
+            }
+            if (date == null) {
             	iForm.setMessage("Class "+getClazz().getClassName()+" has no date pattern selected.");
             	return iTimes;
             }
-            boolean onlyReq = false;
-            for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
-            	TimePref timePref = (TimePref)i1.next();
-            	TimePatternModel pattern = timePref.getTimePatternModel();
-            	if (pattern.isExactTime() || pattern.countPreferences(PreferenceLevel.sRequired)>0)
-            		onlyReq = true;
-            }
-            if (onlyReq) {
-            	sLog.debug("Class "+getClazz().getClassName()+" has required times");
-            }
-            for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
-            	TimePref timePref = (TimePref)i1.next();
-            	TimePatternModel pattern = timePref.getTimePatternModel();
-            	if (pattern.isExactTime()) {
-            		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
-            		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
-            		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),datePattern,breakTime);
-            		if (iShowStudentConflicts)
-            			iTimes.add(new ClassAssignmentInfo(clazz, time, null, (iChange==null?null:iChange.getAssignmentTable())));
-            		else
-            			iTimes.add(new ClassAssignment(clazz, time, null));
-                    continue;
-            	}
-
-            	if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=pattern.getMinPerMtg()*pattern.getNrMeetings()) {
-            		sLog.warn("Class "+getClazz().getClassName()+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" minutes per week, but "+pattern.getName()+" time pattern selected.");
-            	}
-                
-                for (int time=0;time<pattern.getNrTimes(); time++) {
-                	times: for (int day=0;day<pattern.getNrDays(); day++) {
-                        String pref = pattern.getPreference(day,time);
-                        if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
-                            pref = PreferenceLevel.sProhibited;
-                        }
-                        ClassTimeInfo loc = new ClassTimeInfo(
-                                pattern.getDayCode(day),
-                                pattern.getStartSlot(time),
-                                pattern.getSlotsPerMtg(),
-                                PreferenceLevel.prolog2int(pref),
-                                timePref.getTimePattern(),
-                                datePattern,
-                                pattern.getBreakTime());
-                        
-                        if (iChange!=null) {
-                            for (ClassAssignment current : iChange.getAssignments()) {
-                            	if (!current.getClassId().equals(getClazz().getClassId())) {
-                            		boolean canConflict = false;
-                            		if (current.getParents().contains(getClazz().getClassId())) canConflict = true;
-                            		if (getClazz().getParents().contains(current.getClassId())) canConflict = true;
-                            		if (current.getConfligId().equals(getClazz().getConfligId()) && current.isSingleClass()) canConflict = true;
-                            		if (current.shareInstructor(getClazz())) canConflict = true;
-                            		if (canConflict && loc.overlaps(current.getTime())) continue times;
-                            	}
-                            }
-                        }
-                        
-                        if (iShowStudentConflicts)
-                        	 iTimes.add(new ClassAssignmentInfo(clazz, loc, null, (iChange==null?null:iChange.getAssignmentTable())));
-                        else
-                        	iTimes.add(new ClassAssignment(clazz, loc, null));
-                    }
-                }
-            }
-            
-            if (iTimes.isEmpty()) {
+            iTimes = getTimes(date);
+            if (iTimes.isEmpty())
             	iForm.setMessage("Class "+getClazz().getClassName()+" has no available time.");
-            	return iTimes;
-            }
         }
         return iTimes;
+    }
+    
+    public Collection<ClassAssignment> getAllTimes() {
+    	Vector<ClassAssignment> times = new Vector<ClassAssignment>();
+        Class_ clazz = getClazz().getClazz();
+        DatePattern datePattern = clazz.effectiveDatePattern();
+        if (datePattern == null) return times;
+        if (datePattern.getType() == DatePattern.sTypePatternSet) {
+        	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+        	boolean hasReq = false;
+        	for (DatePatternPref p: datePatternPrefs) {
+        		if (PreferenceLevel.sRequired.equals(p.getPrefLevel().getPrefProlog())) { hasReq = true; break; }
+        	}
+        	for (DatePattern child: datePattern.findChildren()) {
+        		String pr = PreferenceLevel.sNeutral;
+        		for (DatePatternPref p: datePatternPrefs) {
+        			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+        		}
+        		int prVal = 0;
+        		if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
+        			prVal = PreferenceLevel.prolog2int(pr);
+        		}
+    			if (hasReq && !PreferenceLevel.sRequired.equals(pr)) prVal += 100;
+    			if (PreferenceLevel.sProhibited.equals(pr)) prVal += 100;
+    			times.addAll(getTimes(
+    					new ClassDateInfo(
+    							child.getUniqueId(),
+    	            			clazz.getUniqueId(),
+    	            			child.getName(),
+    	            			child.getPatternBitSet(),
+    	            			prVal)));
+        	}
+        } else {
+        	times.addAll(getTimes(
+					new ClassDateInfo(
+                			datePattern.getUniqueId(),
+                			clazz.getUniqueId(),
+                			datePattern.getName(),
+                			datePattern.getPatternBitSet(),
+                			PreferenceLevel.sIntLevelNeutral
+                			)));
+        }
+    	return times;
+    }
+    
+    public Collection<ClassAssignment> getTimes(ClassDateInfo date) {
+        Class_ clazz = getClazz().getClazz();
+    	Vector<ClassAssignment> times = new Vector<ClassAssignment>();
+        boolean onlyReq = false;
+        Set timePrefs = clazz.effectivePreferences(TimePref.class);
+        for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
+        	TimePref timePref = (TimePref)i1.next();
+        	TimePatternModel pattern = timePref.getTimePatternModel();
+        	if (pattern.isExactTime() || pattern.countPreferences(PreferenceLevel.sRequired)>0)
+        		onlyReq = true;
+        }
+        if (onlyReq) {
+        	sLog.debug("Class "+getClazz().getClassName()+" has required times");
+        }
+        for (Iterator i1=timePrefs.iterator();i1.hasNext();) {
+        	TimePref timePref = (TimePref)i1.next();
+        	TimePatternModel pattern = timePref.getTimePatternModel();
+        	if (pattern.isExactTime()) {
+        		int length = ExactTimeMins.getNrSlotsPerMtg(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue());
+        		int breakTime = ExactTimeMins.getBreakTime(pattern.getExactDays(),clazz.getSchedulingSubpart().getMinutesPerWk().intValue()); 
+        		ClassTimeInfo time = new ClassTimeInfo(pattern.getExactDays(),pattern.getExactStartSlot(),length,PreferenceLevel.sIntLevelNeutral,timePref.getTimePattern(),date,breakTime);
+        		if (iShowStudentConflicts)
+        			times.add(new ClassAssignmentInfo(clazz, time, date, null, (iChange==null?null:iChange.getAssignmentTable())));
+        		else
+        			times.add(new ClassAssignment(clazz, time, date, null));
+                continue;
+        	}
+
+        	if (clazz.getSchedulingSubpart().getMinutesPerWk().intValue()!=pattern.getMinPerMtg()*pattern.getNrMeetings()) {
+        		sLog.warn("Class "+getClazz().getClassName()+" has "+clazz.getSchedulingSubpart().getMinutesPerWk()+" minutes per week, but "+pattern.getName()+" time pattern selected.");
+        	}
+            
+            for (int time=0;time<pattern.getNrTimes(); time++) {
+            	times: for (int day=0;day<pattern.getNrDays(); day++) {
+                    String pref = pattern.getPreference(day,time);
+                    if (onlyReq && !pref.equals(PreferenceLevel.sRequired)) {
+                        pref = PreferenceLevel.sProhibited;
+                    }
+                    ClassTimeInfo loc = new ClassTimeInfo(
+                            pattern.getDayCode(day),
+                            pattern.getStartSlot(time),
+                            pattern.getSlotsPerMtg(),
+                            PreferenceLevel.prolog2int(pref),
+                            timePref.getTimePattern(),
+                            date,
+                            pattern.getBreakTime());
+                    
+                    if (iChange!=null) {
+                        for (ClassAssignment current : iChange.getAssignments()) {
+                        	if (!current.getClassId().equals(getClazz().getClassId())) {
+                        		boolean canConflict = false;
+                        		if (current.getParents().contains(getClazz().getClassId())) canConflict = true;
+                        		if (getClazz().getParents().contains(current.getClassId())) canConflict = true;
+                        		if (current.getConfligId().equals(getClazz().getConfligId()) && current.isSingleClass()) canConflict = true;
+                        		if (current.shareInstructor(getClazz())) canConflict = true;
+                        		if (canConflict && loc.overlaps(current.getTime())) continue times;
+                        	}
+                        }
+                    }
+                    
+                    if (iShowStudentConflicts)
+                    	 times.add(new ClassAssignmentInfo(clazz, loc, date, null, (iChange==null?null:iChange.getAssignmentTable())));
+                    else
+                    	times.add(new ClassAssignment(clazz, loc, date, null));
+                }
+            }
+        }
+        return times;
     }
     
     Hashtable<Long,Hashtable> iRoomPreferences = new Hashtable();
@@ -1165,6 +1412,11 @@ public class ClassInfoModel implements Serializable {
     }
     
     public Vector<ClassRoomInfo> getRooms() {
+    	ClassTimeInfo time = null;
+    	try {
+    		time = (getSelectedAssignment()!=null?getSelectedAssignment().getTime():getClassAssignment().getTime());
+    	} catch (Exception e) {}
+    	if (time == null) return null;
         // if (getClazz().getClassLimit()==0) return null;
         int minRoomSize = -1;
         try {
@@ -1177,8 +1429,7 @@ public class ClassInfoModel implements Serializable {
         try {
             if (getSelectedAssignment()==null && !isClassAssigned()) return null;
             if (iRooms==null) {
-                iRooms = findRooms(getSelectedAssignment()!=null?getSelectedAssignment().getTime():getClassAssignment().getTime(),
-                        minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict(), iForm.getAllRooms());
+                iRooms = findRooms(time, minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict(), iForm.getAllRooms());
             }
             return iRooms;
         } catch (Exception e) {

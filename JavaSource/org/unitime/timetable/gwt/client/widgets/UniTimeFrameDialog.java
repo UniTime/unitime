@@ -54,10 +54,11 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 		iCheckLoadingWidgetIsShowing = new Timer() {
 			@Override
 			public void run() {
-				if (LoadingWidget.getInstance().isShowing())
+				if (LoadingWidget.getInstance().isShowing()) {
 					LoadingWidget.getInstance().hide();
-				UniTimeNotifications.error(getText() + " does not seem to load, " +
-					"please check <a href='" + iFrame.getUrl() + "' style='white-space: nowrap;'>" + iFrame.getUrl() + "</a> for yourself.");
+					UniTimeNotifications.error(getText() + " does not seem to load, " +
+							"please check <a href='" + iFrame.getUrl() + "' style='white-space: nowrap;'>" + iFrame.getUrl() + "</a> for yourself.");
+				}
 			}
 		};
 		

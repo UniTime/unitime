@@ -37,6 +37,7 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	private static final long serialVersionUID = -5426079388298794551L;
 	protected Vector<ClassRoomInfo> iRooms = new Vector<ClassRoomInfo>();
 	protected ClassTimeInfo iTime = null;
+	protected ClassDateInfo iDate = null;
 	
 	public ClassAssignment(Assignment assignment) {
 		super(assignment.getClazz());
@@ -51,19 +52,26 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 			Location room = (Location)i.next();
 			iRooms.add(new ClassRoomInfo(room, info.getRoomPreference(room.getUniqueId())));
 		}
+		iDate = new ClassDateInfo(
+				assignment.getDatePattern().getUniqueId(),
+				assignment.getClassId(),
+				assignment.getDatePattern().getName(),
+				assignment.getDatePattern().getPatternBitSet(),
+				(info == null ? 0 : info.getDatePatternPref()));
 		iTime = new ClassTimeInfo(
 				assignment.getDays().intValue(),
 				assignment.getStartSlot().intValue(),
 				assignment.getSlotPerMtg(),
 				info.getTimePreference(),
 				assignment.getTimePattern(),
-				assignment.getDatePattern(),
+				iDate,
 				assignment.getBreakTime());
 	}
 	
-	public ClassAssignment(Class_ clazz, ClassTimeInfo time, Collection<ClassRoomInfo> rooms) {
+	public ClassAssignment(Class_ clazz, ClassTimeInfo time, ClassDateInfo date, Collection<ClassRoomInfo> rooms) {
 		super(clazz);
 		iTime = time;
+		iDate = date;
 		if (rooms!=null) iRooms.addAll(rooms);
 	}
 	
@@ -77,6 +85,18 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	
 	public String getTimeId() {
 		return (hasTime()?getTime().getId():null);
+	}
+	
+	public boolean hasDate() {
+		return iDate != null;
+	}
+	
+	public ClassDateInfo getDate() {
+		return iDate;
+	}
+	
+	public String getDateId() {
+		return (iDate == null ? null : iDate.getId().toString());
 	}
 	
 	public Collection<ClassRoomInfo> getRooms() {
@@ -106,6 +126,7 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 	
 	public String toString() {
 		StringBuffer s = new StringBuffer(super.getClassName()+" ");
+		if (hasDate()) s.append(getDate().getName() + " ");
 		if (hasTime()) s.append(getTime().getName());
 		if (getNrRooms()>0) s.append((hasTime()?" ":"")+getRoomNames(", "));
 		return s.toString();
@@ -120,6 +141,12 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 		if (cmp!=0) return cmp;
 		if (a instanceof ClassAssignment) {
 			ClassAssignment ci = (ClassAssignment)a;
+			if (hasDate() && !ci.hasDate()) return 1;
+			if (!hasDate() && ci.hasDate()) return -1;
+			if (hasDate()) {
+				cmp = getDate().compareTo(ci.getDate());
+				if (cmp != 0) return cmp;
+			}
 			if (hasTime() && !ci.hasTime()) return 1;
 			if (!hasTime() && ci.hasTime()) return -1;
 			if (hasTime()) {
@@ -179,5 +206,13 @@ public class ClassAssignment extends ClassInfo implements Serializable {
 		int count = 0;
 		for (ClassRoomInfo room: getRooms()) count += room.getCapacity();
 		return count;
+	}
+	
+	public String getDateNameHtml() {
+		return (hasDate()?getDate().toHtml():"<i>N/A</i>");
+	}
+	
+	public String getDateLongNameHtml() {
+		return (hasDate()?getDate().toLongHtml():"<i>N/A</i>");
 	}
 }

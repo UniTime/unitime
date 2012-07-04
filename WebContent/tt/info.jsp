@@ -60,9 +60,6 @@
 		<tr><td>Class Limit:</td><td><bean:write name="clazz" property="classLimit"/></td></tr>
 		<tr><td>Number of Rooms:</td><td><bean:write name="clazz" property="numberOfRooms"/></td></tr>
 		<tr><td>Room Ratio:</td><td><bean:write name="clazz" property="roomRatio"/> ( Minimum Room Capacity: <bean:write name="clazz" property="minRoomCapacity"/> )</td></tr>
-		<logic:notEmpty name="clazz" property="datePatternHtml">
-			<tr><td>Date Pattern:</td><td><bean:write name="clazz" property="datePatternHtml" filter="false"/></td></tr>
-		</logic:notEmpty>
 		<logic:notEmpty name="clazz" property="instructors">
 			<tr><td valign="top">Conflict Checked Instructor(s):</td><td>
 			<%= frm.getModel().getClazz().getLeadingInstructorNames("<br>") %> 
@@ -71,6 +68,7 @@
 		<logic:notEmpty name="model" property="change">
 			<logic:notEmpty name="model" property="classOldAssignment">
 				<bean:define id="assignment" name="model" property="classOldAssignment"/>
+				<tr><td>Assigned Dates:</td><td><bean:write name="assignment" property="dateLongNameHtml" filter="false"/></td></tr>
 				<tr><td>Assigned Time:</td><td><bean:write name="assignment" property="timeLongNameHtml" filter="false"/></td></tr>
 				<logic:notEmpty name="assignment" property="rooms">
 					<tr><td>Assigned Room:</td><td><bean:write name="assignment" property="roomNamesHtml(, )" filter="false"/></td></tr>
@@ -78,6 +76,7 @@
 			</logic:notEmpty>
 			<logic:notEmpty name="model" property="selectedAssignment">
 				<bean:define id="assignment" name="model" property="selectedAssignment"/>
+				<tr><td>Selected Dates:</td><td><bean:write name="assignment" property="dateLongNameHtml" filter="false"/></td></tr>
 				<tr><td>Selected Time:</td><td><bean:write name="assignment" property="timeLongNameHtml" filter="false"/></td></tr>
 				<logic:notEmpty name="assignment" property="rooms">
 					<tr><td>Selected Room:</td><td><bean:write name="assignment" property="roomNamesHtml(, )" filter="false"/></td></tr>
@@ -96,6 +95,7 @@
 		<logic:empty name="model" property="change">
 			<logic:notEmpty name="model" property="classAssignment">
 				<bean:define id="assignment" name="model" property="classAssignment"/>
+				<tr><td>Date:</td><td><bean:write name="assignment" property="dateLongNameHtml" filter="false"/></td></tr>
 				<tr><td>Time:</td><td><bean:write name="assignment" property="timeLongNameHtml" filter="false"/></td></tr>
 				<logic:notEmpty name="assignment" property="rooms">
 					<tr><td>Room:</td><td><bean:write name="assignment" property="roomNamesHtml(, )" filter="false"/></td></tr>
@@ -104,6 +104,14 @@
 		</logic:empty>
 		<tr><td colspan='2'><tt:section-title><br>Student Conflicts</tt:section-title></td></tr>
 		<tr><td colspan='2'><bean:write name="model" property="studentConflictTable" filter="false"/></td></tr>
+		<logic:equal name="model" property="showDates" value="true">
+			<tr><td colspan='2'><tt:section-title>
+				<br>Available Dates for <bean:write name="clazz" property="className"/> &nbsp;&nbsp;
+			</tt:section-title></td></tr>
+			<tr><td colspan='2'>
+			<bean:write name="model" property="datesTable" filter="false"/>
+			</td></tr>
+		</logic:equal>
 		<tr><td colspan='2'><tt:section-title>
 			<br>Available Times for <bean:write name="clazz" property="className"/> &nbsp;&nbsp;
 		</tt:section-title></td></tr>
