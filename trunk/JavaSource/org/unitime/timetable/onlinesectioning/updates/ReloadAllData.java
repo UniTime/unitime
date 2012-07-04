@@ -225,7 +225,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
             	limit = co.getReservation();
             if (limit >= 9999) unlimited = true;
             if (unlimited) limit=-1;
-            new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
+            Course course = new Course(co.getUniqueId(), co.getSubjectArea().getSubjectAreaAbbreviation(), co.getCourseNbr(), offering, limit, projected);
+            course.setNote(co.getScheduleBookNote());
         }
         Hashtable<Long,Section> class2section = new Hashtable<Long,Section>();
         Hashtable<Long,Subpart> ss2subpart = new Hashtable<Long, Subpart>();
