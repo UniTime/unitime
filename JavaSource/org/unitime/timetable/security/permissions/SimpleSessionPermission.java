@@ -32,11 +32,11 @@ public class SimpleSessionPermission implements PermissionSession {
 
 	@Override
 	public boolean check(UserContext user, Session session) {
-		return check(user, session, right()) && checkStatus(session.getStatusType());
+		return check(user, session, new DepartmentStatusType.Status[] {}) && checkStatus(session.getStatusType());
 	}
 	
 	@Override
-	public boolean check(UserContext user, Session session, Right right, DepartmentStatusType.Status... status) {
+	public boolean check(UserContext user, Session session, DepartmentStatusType.Status... status) {
 		// Not authenticated or no authority -> no permission
 		if (user == null || user.getCurrentAuthority() == null || session == null) return false;
 		
@@ -46,9 +46,6 @@ public class SimpleSessionPermission implements PermissionSession {
 		if (!authority.hasRight(Right.SessionIndependent) && !authority.hasQualifier(session))
 			return false;
 		
-		// Right check
-		if (right != null && !authority.hasRight(right)) return false;
-
 		// Test session check
 		if (!authority.hasRight(Right.AllowTestSessions) && (session.getStatusType() == null || session.getStatusType().isTestSession()))
 			return false;
@@ -70,8 +67,6 @@ public class SimpleSessionPermission implements PermissionSession {
 	public Class<Session> type() {
 		return Session.class;
 	}
-	
-	public Right right() { return null; }
 	
 	public boolean checkStatus(DepartmentStatusType status) { return true; }
 }

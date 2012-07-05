@@ -27,6 +27,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
@@ -57,6 +58,22 @@ public class HttpSessionContext implements SessionContext {
 	public void setAttribute(String name, Object value) {
 		iSession.setAttribute(name, value);
 	}
+	
+	@Override
+	public void removeAttribute(SessionAttribute attribute) {
+		removeAttribute(attribute.name());
+	}
+	
+	@Override
+    public void setAttribute(SessionAttribute attribute, Object value) {
+		setAttribute(attribute.name(), value);
+	}
+	
+	@Override
+    public Object getAttribute(SessionAttribute attribute) {
+    	Object value = getAttribute(attribute.name());
+    	return (value != null ? value : attribute.defaultValue());
+    }
 
 	@Override
 	public boolean isHttpSessionNew() {
@@ -66,7 +83,7 @@ public class HttpSessionContext implements SessionContext {
 	@Override
 	public UserContext getUser() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication != null && authentication.isAuthenticated())
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
 			return (UserContext)authentication.getPrincipal();
 		return null;
 	}
@@ -96,8 +113,8 @@ public class HttpSessionContext implements SessionContext {
 	}
 	
 	@Override
-	public boolean hasPermission(Right right, boolean checkSession) {
-		return unitimePermissionCheck.checkPermission(getUser(), null, (checkSession ? "Session" : null), right);
+	public boolean hasPermission(Right right) {
+		return unitimePermissionCheck.checkPermission(getUser(), null, null, right);
 	}
 
 	@Override

@@ -328,9 +328,9 @@ public class MenuServlet implements MenuService {
 				if ("canSeeCourses".equals(right)) {
 					return manager.canSeeCourses(session, user);
 				} else if ("canSeeTimetable".equals(right)) {
-					return manager.canSeeTimetable(session, user);
+					return sessionContext.hasPermission(Right.ClassAssignments);
 				} else if ("canDoTimetable".equals(right)) {
-					return manager.canDoTimetable(session, user);
+					return sessionContext.hasPermission(Right.CourseTimetabling);
 				} else if ("hasASolverGroup".equals(right)) {
 					return manager.hasASolverGroup(session, user);
 				} else if ("canSectionStudents".equals(right)) {

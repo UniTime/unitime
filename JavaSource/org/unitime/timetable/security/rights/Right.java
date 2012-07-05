@@ -19,6 +19,16 @@
 */
 package org.unitime.timetable.security.rights;
 
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.Curriculum;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ExternalRoom;
+import org.unitime.timetable.model.InstrOfferingConfig;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
+
 public enum Right {
 	/** Session default: current session */
 	SessionDefaultCurrent, // -- DEFAULT SESSION SELECTION
@@ -39,25 +49,58 @@ public enum Right {
 	/** Status dependency -- session / department status must match */
 	StatusIndependent,
 	
-	AddNonUnivLocation,
-	AddSpecialUseRoom,
+	OfferingCanLock(InstructionalOffering.class),
+	OfferingCanUnlock(InstructionalOffering.class),
+	
+	InstructionalOfferings(Department.class),
+	InstructionalOfferingsExportPDF(Department.class),
+	InstructionalOfferingsWorksheetPDF(Department.class),
+	
+	Classes(Department.class),
+	ClassesExportPDF(Department.class),
+	
+	InstructionalOfferingDetail(InstructionalOffering.class),
+	EditInstructionalOfferingConfig(InstrOfferingConfig.class),
+	MultipleClassSetup(InstrOfferingConfig.class),
+	AssignInstructors(InstrOfferingConfig.class),
+	
+	CourseTimetabling(Department.class),
+	ClassAssignments(Session.class),
+	ClassAssignmentsExportPDF(Session.class),
+	ClassAssignmentsExportCSV(Session.class),
+	
+	Examinations(Session.class),
+	ExaminationSchedule(Session.class),
+	AddCourseOffering(SubjectArea.class),
+	
+	AddNonUnivLocation(Session.class),
+	AddSpecialUseRoom(ExternalRoom.class),
 	ApplicationConfig,
-	AssignedClasses,
-	AssignedExams,
-	AssignmentHistory,
+	AssignedClasses(Department.class),
+	AssignedExams(Session.class),
+	AssignmentHistory(Department.class),
 	
 	/** Class level rights */
-	ClassDetail,
-	ClassEdit,
+	ClassDetail(Class_.class),
+	ClassEdit(Class_.class),
+	
+	SchedulingSubpartDetail(SchedulingSubpart.class),
 
 	/** Curriculum rights */
-    CurriculumView,
-    CurriculumDetail,
-    CurriculumAdd,
-    CurriculumEdit,
-    CurriculumDelete,
-    CurriculumMerge,
-    CurriculumAdmin
+    CurriculumView(Session.class),
+    CurriculumDetail(Curriculum.class),
+    CurriculumAdd(Department.class),
+    CurriculumEdit(Curriculum.class),
+    CurriculumDelete(Curriculum.class),
+    CurriculumMerge(Curriculum.class),
+    CurriculumAdmin(Session.class)
 
     ;
+	
+	private Class<?> iType;
+	Right(Class<?> type) { iType = type; }
+	Right() { this(null); }
+	
+	public Class<?> type() { return iType; }
+	public boolean hasType() { return iType != null; }
 }

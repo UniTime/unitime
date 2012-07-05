@@ -31,7 +31,6 @@ import java.util.Set;
 
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +39,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
@@ -53,7 +55,6 @@ import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.remote.RemoteSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
-import org.unitime.timetable.util.Constants;
 
 @Service("examinationSolverService")
 public class ExaminationSolverService implements SolverService<ExamSolverProxy>, InitializingBean, DisposableBean {
@@ -124,7 +125,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
         
         // Distances Matrics
         if (properties.getProperty("Distances.Ellipsoid") == null || properties.getProperty("Distances.Ellipsoid").equals("DEFAULT"))
-            properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+            properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty(ApplicationProperty.DistanceEllipsoid));
         
         properties.expand();
         
@@ -144,7 +145,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
 			
 			String host = properties.getProperty("General.Host");
 		    
-		    String instructorFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+		    String instructorFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
 		    if (instructorFormat != null)
 		    	properties.setProperty("General.InstructorFormat",instructorFormat);
 		    
@@ -163,7 +164,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
 	            }
 		    }
 		    
-		    int memoryLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.solver.mem_limit","200"));
+		    int memoryLimit = Integer.parseInt(ApplicationProperties.getProperty(ApplicationProperty.SolverMemoryLimit));
 		    
 		    if (!"local".equals(host) && !SolverRegisterService.getInstance().getServers().isEmpty()) {
 		    	RemoteSolverServerProxy bestServer = null;
@@ -234,38 +235,38 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
 
 	@Override
 	public ExamSolverProxy getSolver() {
-		ExamSolverProxy solver = (ExamSolverProxy)sessionContext.getAttribute("ExamSolverProxy");
+		ExamSolverProxy solver = (ExamSolverProxy)sessionContext.getAttribute(SessionAttribute.ExaminationSolver);
 		if (solver!=null) {
 			try {
 				if (solver instanceof RemoteSolverProxy && ((RemoteSolverProxy)solver).exists())
 					return (ExamSolverProxy)solver;
 				else
-					sessionContext.removeAttribute("ExamSolverProxy");
+					sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
 			} catch (Exception e) {
-				sessionContext.removeAttribute("ExamSolverProxy");
+				sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
 			};
 		}
 		if (!sessionContext.isAuthenticated()) return null;
 		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 		if (sessionId == null) return null;
-		String puid = (String)sessionContext.getAttribute("ManageSolver.examPuid");
+		String puid = (String)sessionContext.getAttribute(SessionAttribute.ExaminationUser);
 		if (puid != null) {
 			solver = getSolver(puid, sessionId);
 			if (solver!=null) {
-				sessionContext.setAttribute("ExamSolverProxy", solver);
+				sessionContext.setAttribute(SessionAttribute.ExaminationSolver, solver);
 				return solver;
 			}
 		}
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
-			sessionContext.setAttribute("ExamSolverProxy", solver);
+			sessionContext.setAttribute(SessionAttribute.ExaminationSolver, solver);
 		return solver;
 	}
 	
 	@Override
 	public ExamSolverProxy getSolverNoSessionCheck() {
 		if (!sessionContext.isAuthenticated()) return null;
-		String puid = (String)sessionContext.getAttribute("ManageSolver.examPuid");
+		String puid = (String)sessionContext.getAttribute(SessionAttribute.ExaminationUser);
 		if (puid!=null) {
 			ExamSolverProxy solver = getSolver(puid, null);
 			if (solver!=null) return solver;
@@ -276,13 +277,13 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
 	@Override
 	public void removeSolver() {
 		try {
-			sessionContext.removeAttribute("ExamSolverProxy");
+			sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
 			ExamSolverProxy solver = getSolverNoSessionCheck();
 			if (solver != null) {
 				solver.interrupt();
 				solver.dispose();
 			}
-			sessionContext.removeAttribute("ManageSolver.examPuid");
+			sessionContext.removeAttribute(SessionAttribute.ExaminationUser);
 		} catch (Exception e) {
 			sLog.warn("Failed to remove a solver: " + e.getMessage(), e);
 		}
@@ -301,7 +302,7 @@ public class ExaminationSolverService implements SolverService<ExamSolverProxy>,
 			properties.setProperty("General.OwnerPuid", oldProperties.getProperty("General.OwnerPuid"));
 			properties.setProperty("General.StartTime", String.valueOf((new Date()).getTime()));
 
-			String instructorFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+			String instructorFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
 		    if (instructorFormat != null)
 		    	properties.setProperty("General.InstructorFormat",instructorFormat);
 

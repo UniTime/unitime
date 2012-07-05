@@ -60,7 +60,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;

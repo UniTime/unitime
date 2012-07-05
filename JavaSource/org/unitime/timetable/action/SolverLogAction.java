@@ -32,7 +32,6 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SolverLogForm;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.service.SolverService;
 
 

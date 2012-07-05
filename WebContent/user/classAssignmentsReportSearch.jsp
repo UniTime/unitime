@@ -25,13 +25,13 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
 
 <%// Get Form 
 			String frmName = "classAssignmentsReportForm";
-			ClassAssignmentsReportForm frm = (ClassAssignmentsReportForm) request
-					.getAttribute(frmName);
+			ClassAssignmentsReportForm frm = (ClassAssignmentsReportForm) request.getAttribute(frmName);
 %>
 
 <html:form action="/classAssignmentsReportSearch">
@@ -178,22 +178,18 @@
 				<html:submit property="doit" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchClassAssignments">
 					<bean:message key="button.searchClasses" />
 				</html:submit>
-				&nbsp;&nbsp;&nbsp;
-				<html:submit property="doit" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
-					<bean:message key="button.exportPDF" />
-				</html:submit>
-				&nbsp;&nbsp;&nbsp;
-				<html:submit property="doit" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
-					<bean:message key="button.exportCSV" />
-				</html:submit>
-				<tt:propertyEquals name="tmtbl.exportMSF" value="true">
-					<logic:equal name="<%=frmName%>" property="isAdmin" value="true">
-						&nbsp;&nbsp;&nbsp;
-						<html:submit property="doit" accesskey="M" styleClass="btn">
-							<bean:message key="button.msfExport" />
-						</html:submit>
-					</logic:equal>
-				</tt:propertyEquals>
+				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportPDF')">
+					&nbsp;&nbsp;&nbsp;
+					<html:submit property="doit" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
+						<bean:message key="button.exportPDF" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportCSV')">
+					&nbsp;&nbsp;&nbsp;
+					<html:submit property="doit" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
+						<bean:message key="button.exportCSV" />
+					</html:submit>
+				</sec:authorize>
 			</TD>
 		</TR>
 		</TABLE></TD></TR>

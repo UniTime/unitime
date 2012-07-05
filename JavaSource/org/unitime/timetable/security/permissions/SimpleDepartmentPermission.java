@@ -13,11 +13,11 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 
 	@Override
 	public boolean check(UserContext user, Department department) {
-		return check(user, department, right()) && checkStatus(department.effectiveStatusType());
+		return check(user, department, new DepartmentStatusType.Status[] {}) && checkStatus(department.effectiveStatusType());
 	}
 	
 	@Override
-	public boolean check(UserContext user, Department department, Right right, DepartmentStatusType.Status... status) {
+	public boolean check(UserContext user, Department department, DepartmentStatusType.Status... status) {
 		// Not authenticated or no authority -> no permission
 		if (user == null || user.getCurrentAuthority() == null || department == null) return false;
 		
@@ -30,9 +30,6 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 		// Department check
 		if (!authority.hasRight(Right.DepartmentIndependent) && !authority.hasQualifier(department))
 			return false;
-
-		// Right check
-		if (right != null && !authority.hasRight(right)) return false;
 
 		// Check department status
 		if (status.length > 0 && !authority.hasRight(Right.StatusIndependent)) {
@@ -51,8 +48,6 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 	public Class<Department> type() {
 		return Department.class;
 	}
-	
-	public Right right() { return null; }
 	
 	public boolean checkStatus(DepartmentStatusType status) { return true; }
 }

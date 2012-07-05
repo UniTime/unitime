@@ -25,14 +25,14 @@ import java.util.List;
 
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -44,9 +44,9 @@ import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
  */
 public class CsvClassAssignmentExport {
 
-	public static CSVFile exportCsv(User user, Collection classes, ClassAssignmentProxy proxy) {
+	public static CSVFile exportCsv(UserContext user, Collection classes, ClassAssignmentProxy proxy) {
 		CSVFile file = new CSVFile();
-		String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+		String instructorFormat = user.getProperty(UserProperty.NameFormat);
 		file.setSeparator(",");
 		file.setQuotationMark("\"");
 		file.setHeader(new CSVField[] {

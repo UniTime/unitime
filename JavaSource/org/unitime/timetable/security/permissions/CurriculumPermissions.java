@@ -20,7 +20,6 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -30,7 +29,7 @@ import org.unitime.timetable.security.rights.Right;
 
 public class CurriculumPermissions {
 
-	@Service("permissionCurriculumView")
+	@PermissionForRight(Right.CurriculumView)
 	public static class CanView implements Permission<Session> {
 		@Autowired
 		PermissionSession permissionSession;
@@ -39,15 +38,14 @@ public class CurriculumPermissions {
 		public boolean check(UserContext user, Session source) {
 			return permissionSession.check(
 					user,
-					source,
-					Right.CurriculumView);
+					source);
 		}
 
 		@Override
 		public Class<Session> type() { return Session.class; }
 	}
 	
-	@Service("permissionCurriculumAdd")
+	@PermissionForRight(Right.CurriculumAdd)
 	public static class CanAdd implements Permission<Department> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
@@ -57,7 +55,6 @@ public class CurriculumPermissions {
 			return source != null && permissionDepartment.check(
 					user,
 					source,
-					Right.CurriculumAdd,
 					(source.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
 		}
 
@@ -65,7 +62,7 @@ public class CurriculumPermissions {
 		public Class<Department> type() { return Department.class; }
 	}
 	
-	@Service("permissionCurriculumEdit")
+	@PermissionForRight(Right.CurriculumEdit)
 	public static class CanEdit implements Permission<Curriculum> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
@@ -76,7 +73,6 @@ public class CurriculumPermissions {
 			return department != null && permissionDepartment.check(
 					user,
 					department,
-					Right.CurriculumEdit,
 					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
 		}
 
@@ -84,7 +80,7 @@ public class CurriculumPermissions {
 		public Class<Curriculum> type() { return Curriculum.class; }
 	}
 	
-	@Service("permissionCurriculumDetail")
+	@PermissionForRight(Right.CurriculumDetail)
 	public static class CanDetail implements Permission<Curriculum> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
@@ -93,15 +89,14 @@ public class CurriculumPermissions {
 		public boolean check(UserContext user, Curriculum source) {
 			return source != null && permissionDepartment.check(
 					user,
-					source.getDepartment(),
-					Right.CurriculumDetail); 
+					source.getDepartment()); 
 		}
 
 		@Override
 		public Class<Curriculum> type() { return Curriculum.class; }
 	}
 	
-	@Service("permissionCurriculumDelete")
+	@PermissionForRight(Right.CurriculumDelete)
 	public static class CanDelete implements Permission<Curriculum> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
@@ -112,7 +107,6 @@ public class CurriculumPermissions {
 			return department != null && permissionDepartment.check(
 					user,
 					department,
-					Right.CurriculumDelete,
 					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
 		}
 
@@ -120,7 +114,7 @@ public class CurriculumPermissions {
 		public Class<Curriculum> type() { return Curriculum.class; }
 	}
 	
-	@Service("permissionCurriculumMerge")
+	@PermissionForRight(Right.CurriculumMerge)
 	public static class CanMerge implements Permission<Curriculum> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
@@ -131,7 +125,6 @@ public class CurriculumPermissions {
 			return department != null && permissionDepartment.check(
 					user,
 					department,
-					Right.CurriculumMerge,
 					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
 		}
 

@@ -23,14 +23,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
-import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -40,21 +40,17 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
-import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -92,20 +88,19 @@ public class WebClassListTableBuilder extends
 	}
 	
 	
-	public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassListForm form, User user, JspWriter outputStream, String backType, String backId){
+	public void htmlTableForClasses(SessionContext context, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassListForm form, JspWriter outputStream, String backType, String backId){
         
         this.setVisibleColumns(form);
         setBackType(backType);
         setBackId(backId);
         
         TreeSet classes = (TreeSet) form.getClasses();
-    	Navigation.set(session, Navigation.sClassLevel, classes);
+    	Navigation.set(context, Navigation.sClassLevel, classes);
         
     	if (isShowTimetable()) {
     		boolean hasTimetable = false;
-    		try {
-    			TimetableManager manager = TimetableManager.getManager(user);
-    			if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
+    		if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+    			try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
                 	}
@@ -115,14 +110,14 @@ public class WebClassListTableBuilder extends
         					hasTimetable = true; break;
         				}
     				}
-    			}
-    		} catch (Exception e) {}
+    			}  catch (Exception e) {}
+    		}
     		setDisplayTimetable(hasTimetable);
     	}
-        setUserSettings(user);
+        setUserSettings(context.getUser());
         
         if (isShowExam())
-            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId()));
 
         TableStream table = null;
         int ct = 0;
@@ -147,9 +142,9 @@ public class WebClassListTableBuilder extends
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-		        table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
+		        table = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
 		    }		        
-            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", user, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", context, prevLabel);
             prevLabel = c.getClassLabel(co);
         }  
         table.tableComplete();
@@ -188,10 +183,9 @@ public class WebClassListTableBuilder extends
         }     
     }
 	
-    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, User user, JspWriter outputStream){
-    	Session session = Session.getCurrentAcadSession(user);
+    public void htmlTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, TreeSet classes, Long subjectAreaId, SessionContext context, JspWriter outputStream){
     	String[] columns;
-         if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())) {
+         if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
         	String[] tcolumns = {LABEL,
         		MSG.columnDemand(),
         		MSG.columnLimit(),
@@ -219,10 +213,8 @@ public class WebClassListTableBuilder extends
 
         if (isShowTimetable()) {
         	boolean hasTimetable = false;
-        	try {
-        		String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        		TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-        		if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
+        	if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+        		try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
                 	}
@@ -232,14 +224,14 @@ public class WebClassListTableBuilder extends
         					hasTimetable = true; break;
         				}
         			}
-        		}
-        	} catch (Exception e) {}
+        		} catch (Exception e) {}
+        	}
         	setDisplayTimetable(hasTimetable);
         	setShowDivSec(hasTimetable);
         }
-        setUserSettings(user);
+        setUserSettings(context.getUser());
         
-		TableStream table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
+		TableStream table = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
         Iterator it = classes.iterator();
         Class_ cls = null;
         String prevLabel = null;
@@ -247,7 +239,7 @@ public class WebClassListTableBuilder extends
         int ct = 0;
         while (it.hasNext()){
             cls = (Class_) it.next();
-            this.buildClassRow(classAssignment, examAssignment, ++ct, table, co, cls, "", user, prevLabel);
+            this.buildClassRow(classAssignment, examAssignment, ++ct, table, co, cls, "", context, prevLabel);
             prevLabel = cls.getClassLabel(co);
         }     
         table.tableComplete();
@@ -255,11 +247,10 @@ public class WebClassListTableBuilder extends
     }
     
     public void htmlTableForSubpartClasses(
-    		HttpSession session,
+    		SessionContext context,
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
     		Long schedulingSubpartId,
-    		User user, 
     		JspWriter outputStream,
     		String backType,
     		String backId){
@@ -267,23 +258,23 @@ public class WebClassListTableBuilder extends
         setBackType(backType);
         setBackId(backId);
 
-        if (schedulingSubpartId != null && user != null) {
+        if (schedulingSubpartId != null) {
 	    	SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
 	    	SchedulingSubpart ss = ssDao.get(schedulingSubpartId);
 	        TreeSet ts = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
-	    	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
+	        if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ClassesKeepSort))) {
 	    		ts = new TreeSet(
 	    			new ClassCourseComparator(
-	    					UserData.getProperty(user.getId(),"ClassList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
+	    					context.getUser().getProperty("ClassList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
 	    					classAssignment,
-	    					UserData.getPropertyBoolean(user.getId(),"ClassList.sortByKeepSubparts", false)
+	    					"1".equals(context.getUser().getProperty("ClassList.sortByKeepSubparts", "0"))
 	    			)
 	    		);
 	    	}
 	        
 	 		ts.addAll(ss.getClasses());
-	 		Navigation.set(session, Navigation.sClassLevel, ts);
-	        this.htmlTableForClasses(classAssignment, examAssignment, ss.getControllingCourseOffering(), ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), user, outputStream);
+	 		Navigation.set(context, Navigation.sClassLevel, ts);
+	        this.htmlTableForClasses(classAssignment, examAssignment, ss.getControllingCourseOffering(), ts, ss.getControllingCourseOffering().getSubjectArea().getUniqueId(), context, outputStream);
     	}
     }
     

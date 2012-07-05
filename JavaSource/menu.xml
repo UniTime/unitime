@@ -30,8 +30,16 @@
 			<hasRight name="canSeeCourses"/>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
-			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do"/>
-			<item name="Classes" page="classShowSearch.do"/>
+			<item name="Instructional Offerings" page="instructionalOfferingShowSearch.do">
+				<condition>
+					<hasPermission name="InstructionalOfferings"/>
+				</condition>
+			</item>
+			<item name="Classes" page="classShowSearch.do">
+				<condition>
+					<hasPermission name="Classes"/>
+				</condition>
+			</item>
 			<separator/>
 			<menu name="Curricula" page="curricula" type="gwt">
 				<item name="Projection Rules" page="curprojrules" type="gwt"/>
@@ -55,7 +63,7 @@
 			<menu name="Reservations" page="reservations" type="gwt"/>
 			<item name="Class Assignments" page="classAssignmentsReportShowSearch.do">
 				<condition>
-					<hasRight name="canSeeTimetable"/>
+					<hasPermission name="ClassAssignments"/>
 				</condition>
 			</item>
 		</menu>

@@ -112,7 +112,7 @@ public class InstructionalOfferingChangeAction extends SpringAwareLookupDispatch
             query.append(" and io.notOffered != true ");
         }
 		Query q = hibSession.createQuery(query.toString());
-		q.setInteger("subjectAreaId", Integer.parseInt(form.getSubjectAreaId()));
+		q.setLong("subjectAreaId", form.getSubjectAreaId());
         TreeSet ts = new TreeSet(new InstructionalOfferingComparator(Long.valueOf(form.getSubjectAreaId())));
 		long sTime = new java.util.Date().getTime();
 		ts.addAll(q.list());

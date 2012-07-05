@@ -24,6 +24,7 @@ import java.io.Serializable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
@@ -67,11 +68,27 @@ public class GwtRpcHelper implements SessionContext {
 	public void setAttribute(String name, Object value) { throw new RuntimeException("Operation not supported."); }
 
 	@Override
+	public void removeAttribute(SessionAttribute attribute) {
+		removeAttribute(attribute.name());
+	}
+
+	@Override
+    public void setAttribute(SessionAttribute attribute, Object value) {
+		setAttribute(attribute.name(), value);
+	}
+	
+	@Override
+    public Object getAttribute(SessionAttribute attribute) {
+    	Object value = getAttribute(attribute.name());
+    	return (value != null ? value : attribute.defaultValue());
+    }
+
+	@Override
 	public HttpServletRequest getHttpServletRequest() { return null; }
 	
 	@Override
-	public boolean hasPermission(Right right, boolean checkSession) {
-		return iCheck.checkPermission(getUser(), null, (checkSession ? "Session" : null), right);
+	public boolean hasPermission(Right right) {
+		return iCheck.checkPermission(getUser(), null, null, right);
 	}
 
 	@Override

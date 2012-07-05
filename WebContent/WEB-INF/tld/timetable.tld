@@ -492,4 +492,11 @@
 			<type>java.lang.String</type>
 		</attribute>
 	</tag>
+
+  	<tag>
+		<name>session-context</name>
+		<tag-class>org.unitime.timetable.spring.tags.SessionContextTag</tag-class>
+		<tei-class>org.unitime.timetable.spring.tags.SessionContextTei</tei-class>
+		<body-content>empty</body-content>
+	</tag>
 </taglib>

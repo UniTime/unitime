@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserAuthority;
@@ -145,6 +146,12 @@ public abstract class AbstractUserContext implements UserContext {
 	public String getProperty(String key) {
 		return iProperties.get(key);
 	}
+	
+	@Override
+	public String getProperty(String key, String defaultValue) {
+		String value = getProperty(key);
+		return (value != null ? value : defaultValue);
+	}
 
 	@Override
 	public void setProperty(String key, String value) {
@@ -159,4 +166,15 @@ public abstract class AbstractUserContext implements UserContext {
 	public Map<String, String> getProperties() {
 		return iProperties;
 	}
+	
+	@Override
+	public String getProperty(UserProperty property) {
+		return getProperty(property.key(), property.defaultValue());
+	}
+	
+	@Override
+	public void setProperty(UserProperty property, String value) {
+		setProperty(property.key(), value);
+	}
+
 }

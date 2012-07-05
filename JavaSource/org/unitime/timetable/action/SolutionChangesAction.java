@@ -41,7 +41,6 @@ import org.unitime.timetable.form.SolutionChangesForm;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;

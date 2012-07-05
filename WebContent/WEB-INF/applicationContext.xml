@@ -35,7 +35,7 @@
 		http://www.springframework.org/schema/aop
 		http://www.springframework.org/schema/aop/spring-aop-3.1.xsd">
 		
-        <context:component-scan base-package="org.unitime.timetable"/>
+        <context:component-scan base-package="org.unitime.timetable" name-generator="org.unitime.timetable.spring.CustomBeanNameGenerator"/>
         
 		<context:property-placeholder properties-ref="unitimeSpringConfigProperties"/>
         

@@ -92,7 +92,7 @@ public class AddNonUnivLocationAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
-		if (!sessionContext.hasPermission(Right.AddNonUnivLocation, true))
+		if (!sessionContext.hasPermission(Right.AddNonUnivLocation))
 			throw new AccessDeniedException(MSG.errorAccessDenied());
 		
 		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());

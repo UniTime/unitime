@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.ClassInstructor;
@@ -37,15 +36,13 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceGroup;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstructorComparator;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
@@ -83,7 +80,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
         return cell;
     }
 
-    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user){
+    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, SessionContext context){
     	FileOutputStream out = null;
     	try {
             setVisibleColumns(form);
@@ -92,26 +89,22 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             
             if (isShowTimetable()) {
             	boolean hasTimetable = false;
-            	try {
-            		String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-            		TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-            		if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
-		            	if (classAssignment instanceof CachedClassAssignmentProxy) {
-		            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
-		            	}
-            			for (Iterator i=classes.iterator();i.hasNext();) {
-            				Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
-            				if (classAssignment.getAssignment(clazz)!=null) {
-            					hasTimetable = true; break;
-            				}
-            			}
-            		}
-            	} catch (Exception e) {}
+            	if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+	            	if (classAssignment instanceof CachedClassAssignmentProxy) {
+	            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
+	            	}
+        			for (Iterator i=classes.iterator();i.hasNext();) {
+        				Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
+        				if (classAssignment.getAssignment(clazz)!=null) {
+        					hasTimetable = true; break;
+        				}
+        			}
+            	}
             	setDisplayTimetable(hasTimetable);
             }
-            setUserSettings(user);
+            setUserSettings(context.getUser());
             
-            if (examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+            if (examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId())) {
                 setShowExam(true);
                 setShowExamTimetable(true);
                 setShowExamName(false);
@@ -154,10 +147,10 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 
 					iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
 					iDocument.add(new Paragraph(" "));
-					pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
+					pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
 				}
                 
-                pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", user, prevLabel);
+                pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", context, prevLabel);
                 prevLabel = c.getClassLabel(co);
             }  
             

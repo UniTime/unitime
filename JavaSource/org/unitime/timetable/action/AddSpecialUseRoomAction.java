@@ -99,7 +99,7 @@ public class AddSpecialUseRoomAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
-		if (!sessionContext.hasPermission(Right.AddSpecialUseRoom, true))
+		if (!sessionContext.hasPermission(Right.AddSpecialUseRoom))
 			throw new AccessDeniedException(MSG.errorAccessDenied());
 		
 		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());

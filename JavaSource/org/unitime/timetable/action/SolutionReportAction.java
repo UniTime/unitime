@@ -51,7 +51,6 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.DeptBalancingReport;

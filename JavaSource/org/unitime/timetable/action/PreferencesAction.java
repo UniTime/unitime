@@ -376,7 +376,7 @@ public class PreferencesAction extends Action {
         CourseOffering co = io.getControllingCourseOffering();
         
         InstructionalOfferingListForm frm2 = new InstructionalOfferingListForm();
-		frm2.setSubjectAreaId(co.getSubjectArea().getUniqueId().toString());
+		frm2.setSubjectAreaId(co.getSubjectArea().getUniqueId());
         frm2.setSubjectAreaAbbv(co.getSubjectAreaAbbv());
         frm2.setCourseNbr(co.getCourseNbr());
         frm2.setCtrlInstrOfferingId(io.getCtrlCourseId().toString());

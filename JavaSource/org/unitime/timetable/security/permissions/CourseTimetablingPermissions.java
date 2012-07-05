@@ -20,21 +20,22 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class CourseTimetablingPermissions {
 	
-	@Service("permissionAssignedClasses")
-	public static class AssignedClasses implements Permission<Department> {
+	@PermissionForRight(Right.CourseTimetabling)
+	public static class CourseTimetabling implements Permission<Department> {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, Right.AssignedClasses, DepartmentStatusType.Status.Timetable);
+			return source != null && source.getSolverGroup() != null &&
+				permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
 		}
 
 		@Override
@@ -42,17 +43,58 @@ public class CourseTimetablingPermissions {
 		
 	}
 	
-	@Service("permissionAssignmentHistory")
+	@PermissionForRight(Right.AssignedClasses)
+	public static class AssignedClasses implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.AssignmentHistory)
 	public static class AssignmentHistory implements Permission<Department> {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, Right.AssignmentHistory, DepartmentStatusType.Status.Timetable);
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
 		}
 
 		@Override
 		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ClassAssignments)
+	public static class ClassAssignments implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source)) return false;
+			
+			// Check for a department with a committed solution or for my department with a solution
+			for (Department department: source.getDepartments()) {
+				if (department.getSolverGroup() == null) continue;
+				
+				if (department.getSolverGroup().getCommittedSolution() != null) return true;
+				
+				if (permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable) && !department.getSolverGroup().getSolutions().isEmpty())
+					return true;
+			}
+			
+			return false;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
 		
 	}
 
