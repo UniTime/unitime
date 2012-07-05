@@ -24,19 +24,24 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.ClassAssignmentService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -46,6 +51,11 @@ import org.unitime.timetable.webutil.BackTracker;
  */
 @Service("/instructionalOfferingShowSearch")
 public class InstructionalOfferingShowSearchAction extends Action {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired ClassAssignmentService classAssignmentService;
 
 	/** 
 	 * Method execute
@@ -62,73 +72,54 @@ public class InstructionalOfferingShowSearchAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 
-	    HttpSession httpSession = request.getSession();
-        if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
+    	if (!sessionContext.hasPermission(Right.InstructionalOfferings))
+    		throw new Exception(MSG.errorAccessDenied());
         
         BackTracker.markForBack(request, null, null, false, true); //clear back list
         
-        httpSession.setAttribute("callingPage", "instructionalOfferingShowSearch");
+        sessionContext.setAttribute("callingPage", "instructionalOfferingShowSearch");
         InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
         
         // Check if subject area / course number saved to session
-	    Object sa = httpSession.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
-	    Object cn = httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME);
+	    Object sa = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+	    Object cn = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 	    String subjectAreaId = "";
 	    String courseNbr = "";
 	    
 	    if (Constants.ALL_OPTION_VALUE.equals(sa))
 	    	sa = null;
 	    
-	    if ( (sa==null || sa.toString().trim().length()==0) 
-	            && (cn==null || cn.toString().trim().length()==0) ) {
+	    if ((sa == null || sa.toString().trim().isEmpty()) && (cn == null || cn.toString().trim().isEmpty())) {
 		    // use session variables from class search  
-		    sa = httpSession.getAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME);
-		    cn = httpSession.getAttribute(Constants.CRS_LST_CRS_NBR_ATTR_NAME);
+		    sa = sessionContext.getAttribute(SessionAttribute.ClassesSubjectAreas);
+		    cn = sessionContext.getAttribute(SessionAttribute.ClassesCourseNumber);
 		    
 		    // Use first subject area
-		    if (sa!=null) {
+		    if (sa != null) {
 		       String saStr = sa.toString();
-		       if (saStr.indexOf(",")>0) {
+		       if (saStr.indexOf(",") > 0)
 		           sa = saStr.substring(0, saStr.indexOf(","));
-		       }
 		    }
 	    }
 	    
+	    InstructionalOfferingSearchAction.setupInstrOffrListSpecificFormFilters(sessionContext, frm);
 	    
-	    InstructionalOfferingSearchAction.setupInstrOffrListSpecificFormFilters(httpSession, frm);
-	    /*
-	    if (request.getParameter("subjectAreaId") != null){
-	    	frm.setDivSec(request.getParameter("divSec")==null?Boolean.FALSE:new Boolean(request.getParameter("divSec")));
-	    	frm.setDemand(request.getParameter("demand")==null?Boolean.FALSE:new Boolean(request.getParameter("demand")));
-	    	frm.setProjectedDemand(request.getParameter("projectedDemand")==null?Boolean.FALSE:new Boolean(request.getParameter("projectedDemand")));
-	    	frm.setMinPerWk(request.getParameter("minPerWk")==null?Boolean.FALSE:new Boolean(request.getParameter("minPerWk")));
-	    	frm.setLimit(request.getParameter("limit")==null?Boolean.FALSE:new Boolean(request.getParameter("limit")));
-	    	frm.setRoomLimit(request.getParameter("roomLimit")==null?Boolean.FALSE:new Boolean(request.getParameter("roomLimit")));
-	    	frm.setManager(request.getParameter("manager")==null?Boolean.FALSE:new Boolean(request.getParameter("manager")));
-	    	frm.setDatePattern(request.getParameter("datePattern")==null?Boolean.FALSE:new Boolean(request.getParameter("datePattern")));
-	    	frm.setTimePattern(request.getParameter("timePattern")==null?Boolean.FALSE:new Boolean(request.getParameter("timePattern")));
-	    	frm.setPreferences(request.getParameter("preferences")==null?Boolean.FALSE:new Boolean(request.getParameter("preferences")));
-	    	frm.setInstructor(request.getParameter("instructor")==null?Boolean.FALSE:new Boolean(request.getParameter("instructor")));
-	    	frm.setTimetable(request.getParameter("timetable")==null?Boolean.FALSE:new Boolean(request.getParameter("timetable")));
-	    	frm.setCredit(request.getParameter("credit")==null?Boolean.FALSE:new Boolean(request.getParameter("credit")));
-	    	frm.setSchedulePrintNote(request.getParameter("schedulePrintNote")==null?Boolean.FALSE:new Boolean(request.getParameter("schedulePrintNote")));
-	    }
-	    */
+	    if (!sessionContext.hasPermission(Right.Examinations))
+	    	frm.setExams(null);
+
 	    // Subject Area is saved to the session - Perform automatic search
-	    if(sa!=null) {
+	    if (sa != null) {
 	        subjectAreaId = sa.toString();
 	        
 	        try {
 	            
-		        if(cn!=null && cn.toString().trim().length()>0)
+		        if (cn != null && !cn.toString().isEmpty())
 		            courseNbr = cn.toString();
 		        
 		        Debug.debug("Subject Area: " + subjectAreaId);
 		        Debug.debug("Course Number: " + courseNbr);
 		        
-		        frm.setSubjectAreaId(subjectAreaId);
+		        frm.setSubjectAreaId(Long.valueOf(subjectAreaId));
 		        frm.setCourseNbr(courseNbr);
 		        
 		        if(doSearch(request, frm)) {
@@ -146,20 +137,21 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	        }
 	        catch (NumberFormatException nfe) {
 	            Debug.error("Subject Area Id session attribute is corrupted. Resetting ... ");
-	            httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, null);
-	            httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, null);
+	            sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
+	            sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
 	        }
 	    }
 	    
 	    // No session attribute found - Load subject areas
-	    else {	        
-	        frm.setCollections(request, null);
+	    else {
+	    	frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+	    	frm.setInstructionalOfferings(null);
 	        
 	        // Check if only 1 subject area exists
 	        Set s = (Set) frm.getSubjectAreas();
-	        if(s.size()==1) {
+	        if (s.size() == 1) {
 	            Debug.debug("Exactly 1 subject area found ... ");
-	            frm.setSubjectAreaId(((SubjectArea) s.iterator().next()).getUniqueId().toString());
+	            frm.setSubjectAreaId(((SubjectArea) s.iterator().next()).getUniqueId());
 		        if(doSearch(request, frm)) {
 					BackTracker.markForBack(
 							request, 
@@ -190,15 +182,13 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	        InstructionalOfferingListForm frm) throws Exception {
 	    
 	    
-	    frm.setCollections(request, InstructionalOfferingSearchAction.getInstructionalOfferings(request, frm));
-		Collection instrOfferings = frm.getInstructionalOfferings();
+		Collection instrOfferings = InstructionalOfferingSearchAction.getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm);
+		
+	    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+	    frm.setInstructionalOfferings(instrOfferings);
         
 		// Search return results - Generate html
-		if (!instrOfferings.isEmpty()) {
-		    return true;
-		}
-		
-		return false;
+		return !instrOfferings.isEmpty();
 	}
 	
 }

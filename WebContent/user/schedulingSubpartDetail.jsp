@@ -44,6 +44,7 @@
 %>		
 
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
@@ -267,11 +268,11 @@
 		WebClassListTableBuilder subpartClsTableBuilder = new WebClassListTableBuilder();
 		subpartClsTableBuilder.setDisplayDistributionPrefs(false);
 		subpartClsTableBuilder.htmlTableForSubpartClasses(
-									session,
+									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),
 				    		        WebSolver.getExamSolver(session),
 				    		        new Long(frm.getSchedulingSubpartId()), 
-				    		        Web.getUser(session), out,
+				    		        out,
 				    		        request.getParameter("backType"),
 				    		        request.getParameter("backId"));
 	}

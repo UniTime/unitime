@@ -22,8 +22,6 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -32,17 +30,11 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
-import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -60,7 +52,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	private Collection subjectAreas;
 
-	private String subjectAreaId;
+	private Long subjectAreaId;
 
 	private String courseNbr;
 
@@ -73,8 +65,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	private Boolean isControl;
 
 	private String ctrlInstrOfferingId;
-
-	private Collection controlCourseOfferings;
 
 	private Boolean divSec;
 
@@ -116,26 +106,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	
 	private Boolean exams;
 	
-	private Boolean canSeeExams;
-	
 	private String sortBy;
 	
-	private boolean iCanAddCourse;
-		
-	/**
-	 * @return Returns the controlCourseOfferings.
-	 */
-	public Collection getControlCourseOfferings() {
-		return controlCourseOfferings;
-	}
-
-	/**
-	 * @param controlCourseOfferings
-	 *            The controlCourseOfferings to set.
-	 */
-	public void setControlCourseOfferings(Collection controlCourseOfferings) {
-		this.controlCourseOfferings = controlCourseOfferings;
-	}
 
 	/**
 	 * @return Returns the ctrlInstrOfferingId.
@@ -217,7 +189,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	/**
 	 * @return Returns the subjectAreaId.
 	 */
-	public String getSubjectAreaId() {
+	public Long getSubjectAreaId() {
 		return subjectAreaId;
 	}
 
@@ -225,7 +197,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	 * @param subjectAreaId
 	 *            The subjectAreaId to set.
 	 */
-	public void setSubjectAreaId(String subjectAreaId) {
+	public void setSubjectAreaId(Long subjectAreaId) {
 		this.subjectAreaId = subjectAreaId;
 	}
 
@@ -261,9 +233,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		consent = new Boolean(false);
 		designatorRequired = new Boolean(false);
 		exams = new Boolean(false);
-		canSeeExams = new Boolean(false);
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
-		iCanAddCourse = false;
 	}
 
 	/**
@@ -320,9 +290,8 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 
-		if (subjectAreaId == null || subjectAreaId.trim().length() == 0 || subjectAreaId.equals(Constants.BLANK_OPTION_VALUE)) {
+		if (subjectAreaId == null)
 			errors.add("subjectAreaId", new ActionMessage("errors.required", MSG.labelSubjectArea()));
-		}
 
 		return errors;
 	}
@@ -343,19 +312,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 			io = (InstructionalOffering) it.next();
 		}
 		return (io);
-	}
-
-	public void setCollections(HttpServletRequest request, Set instrOfferings) throws Exception {
-		User user = Web.getUser(request.getSession());
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		setSubjectAreas(TimetableManager.getSubjectAreas(user));
-		setInstructionalOfferings(instrOfferings);
-
-		if (Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE }))
-			setControlCourseOfferings(CourseOffering.getControllingCourses(sessionId));
-		else
-			setControlCourseOfferings(new Vector());
-
 	}
 
 	public Boolean getDatePattern() {
@@ -516,12 +472,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
     public void setExams(Boolean exams) {
         this.exams = exams;
     }
-    public Boolean getCanSeeExams() {
-        return canSeeExams;
-    }
-    public void setCanSeeExams(Boolean canSeeExams) {
-        this.canSeeExams = canSeeExams;
-    }
 
     protected void finalize() throws Throwable {
         Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
@@ -534,7 +484,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         subjectAreaAbbv=null;
         isControl=null;
         ctrlInstrOfferingId=null;
-        controlCourseOfferings=null;
         divSec=null;
         demand=null;
         projectedDemand=null;
@@ -590,7 +539,4 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public void setCatalogInformation(){
 		; //do nothing
 	}
-	
-	public boolean getCanAddCourse() { return iCanAddCourse; }
-	public void setCanAddCourse(boolean canAddCourse) { iCanAddCourse = canAddCourse; }
 }

@@ -34,10 +34,6 @@ public interface ClassListFormInterface extends InstructionalOfferingListFormInt
 	public boolean getSortByKeepSubparts();
 	public boolean getShowCrossListedClasses();
 
-	public boolean isUserIsAdmin();
-	public void setUserIsAdmin(boolean userIsAdmin);
-	public String[] getUserDeptIds();
-	public void setUserDeptIds(String[] userDeptIds);
 	public boolean isReturnAllControlClassesForSubjects();
 	public void setSortBy(String sortBy);
 	public void setFilterAssignedRoom(String filterAssignedRoom);

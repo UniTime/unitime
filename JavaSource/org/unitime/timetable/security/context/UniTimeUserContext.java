@@ -26,11 +26,15 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ManagerRole;
+import org.unitime.timetable.model.ManagerSettings;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
@@ -59,10 +63,19 @@ public class UniTimeUserContext extends AbstractUserContext {
 					.setString("id", userId).list()) {
 				getProperties().put(data.getName(), data.getValue());
 			}
+			for (Settings setting: (List<Settings>)hibSession.createQuery("from Settings").list()) {
+				if (setting.getDefaultValue() != null)
+					getProperties().put(setting.getKey(), setting.getDefaultValue());
+			}
+			for (ManagerSettings setting: (List<ManagerSettings>)hibSession.createQuery(
+					"from ManagerSettings where manager.externalUniqueId = :id").setString("id", userId).list()) {
+				if (setting.getValue() != null)
+					getProperties().put(setting.getKey().getKey(), setting.getValue());
+			}
 
 			Long sessionId = null;
-			if ("true".equals(ApplicationProperties.getProperty("tmtbl.keeplastused.session"))) {
-				String lastSessionId = getProperty("LastUsed.acadSessionId");
+			if ("true".equals(ApplicationProperties.getProperty(ApplicationProperty.KeepLastUsedAcademicSession))) {
+				String lastSessionId = getProperty(UserProperty.LastAcademicSession);
 				if (lastSessionId != null) sessionId = Long.valueOf(lastSessionId);
 			}
 			
@@ -229,7 +242,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 	public void setCurrentAuthority(UserAuthority authority) {
 		super.setCurrentAuthority(authority);
 		if (authority.getAcademicSession() != null)
-			setProperty("LastUsed.acadSessionId", authority.getAcademicSession().getQualifierId().toString());
+			setProperty(UserProperty.LastAcademicSession, authority.getAcademicSession().getQualifierId().toString());
 	}
 
 	@Override
@@ -244,18 +257,42 @@ public class UniTimeUserContext extends AbstractUserContext {
 		super.setProperty(key, value);
 		org.hibernate.Session hibSession = UserDataDAO.getInstance().createNewSession();
 		try {
-			UserData userData = UserDataDAO.getInstance().get(new UserData(getExternalUserId(), key));
-			if (userData == null && value == null) return;
-			if (userData != null && value != null && value.equals(userData.getValue())) return;
+			Settings settings = (Settings)hibSession.createQuery("from Settings where key = :key")
+					.setString("key", key).setCacheable(true).setMaxResults(1).uniqueResult();
 			
-			if (userData == null)
-				userData = new UserData(getExternalUserId(), key);
-			userData.setValue(value);
+			if (settings != null && getCurrentAuthority() != null && !getCurrentAuthority().getQualifiers("TimetableManager").isEmpty()) {
+				ManagerSettings managerData = (ManagerSettings)hibSession.createQuery(
+						"from ManagerSettings where key.key = :key and manager.externalUniqueId = :id")
+						.setString("key", key).setString("id", getExternalUserId()).setMaxResults(1).uniqueResult();
+				
+				if (value == null && managerData == null) return;
+				if (value != null && managerData != null && value.equals(managerData.getValue())) return;
+				
+				if (managerData == null) {
+					managerData = new ManagerSettings();
+					managerData.setKey(settings);
+					managerData.setManager(TimetableManagerDAO.getInstance().get((Long)getCurrentAuthority().getQualifiers("TimetableManager").get(0).getQualifierId(), hibSession));
+				}
+				managerData.setValue(value);
+				
+				if (value == null)
+					hibSession.delete(managerData);
+				else
+					hibSession.saveOrUpdate(managerData);
+			} else {
+				UserData userData = UserDataDAO.getInstance().get(new UserData(getExternalUserId(), key));
+				if (userData == null && value == null) return;
+				if (userData != null && value != null && value.equals(userData.getValue())) return;
+				
+				if (userData == null)
+					userData = new UserData(getExternalUserId(), key);
+				userData.setValue(value);
 
-			if (value == null)
-				hibSession.delete(userData);
-			else
-				hibSession.saveOrUpdate(userData);
+				if (value == null)
+					hibSession.delete(userData);
+				else
+					hibSession.saveOrUpdate(userData);
+			}
 		} finally {
 			hibSession.close();
 		}

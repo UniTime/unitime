@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
@@ -171,6 +172,10 @@ public class ApplicationProperties {
 	 */
 	public static String getProperty(String key) {
 	    return getProperty(key, null);
+	}
+	
+	public static String getProperty(ApplicationProperty property) {
+		return getProperty(property.key(), property.defaultValue());
 	}
 
 	/**

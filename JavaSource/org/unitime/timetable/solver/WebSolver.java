@@ -20,15 +20,13 @@
 package org.unitime.timetable.solver;
 
 import java.text.SimpleDateFormat;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpSession;
 
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
@@ -65,24 +63,12 @@ public class WebSolver {
     	return getStudentSectioningSolverService(session).getSolver();
     }
     
+    private static AssignmentService<ClassAssignmentProxy> getClassAssignmentService(HttpSession session) {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(session.getServletContext());
+		return (AssignmentService<ClassAssignmentProxy>)applicationContext.getBean("classAssignmentService");
+	}
+    
     public static ClassAssignmentProxy getClassAssignmentProxy(HttpSession session) {
-		SolverProxy solver = getSolver(session);
-		if (solver!=null) return new CachedClassAssignmentProxy(solver);
-		
-		String solutionIdsStr = (String)session.getAttribute("Solver.selectedSolutionId");
-		Set<Long> solutionIds = new HashSet<Long>();
-		if (solutionIdsStr != null) {
-			for (StringTokenizer s = new StringTokenizer(solutionIdsStr, ","); s.hasMoreTokens(); )
-				solutionIds.add(Long.valueOf(s.nextToken()));
-		}
-		
-		SolutionClassAssignmentProxy cachedProxy = (SolutionClassAssignmentProxy)session.getAttribute("LastSolutionClassAssignmentProxy");
-		if (cachedProxy != null && cachedProxy.equals(solutionIds)) {
-			return cachedProxy;
-		}
-		
-		SolutionClassAssignmentProxy newProxy = new SolutionClassAssignmentProxy(solutionIds);
-		session.setAttribute("LastSolutionClassAssignmentProxy",newProxy);
-		return newProxy;
+    	return getClassAssignmentService(session).getAssignment();
 	}
 }

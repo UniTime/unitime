@@ -214,6 +214,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return true;
      }
 
+	@Deprecated
     public boolean isViewableBy(User user){
     	if(user == null){
     		return(false);
@@ -274,7 +275,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	 */
 	public static TreeSet search(
 	        Long acadSessionId,
-	        String subjectAreaId,
+	        Long subjectAreaId,
 	        String courseNbr,
 	        boolean fetchStructure,
 	        boolean fetchCredits,
@@ -346,7 +347,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(1000);
-		q.setLong("subjectAreaId", Long.parseLong(subjectAreaId));
+		q.setLong("subjectAreaId", subjectAreaId);
 		q.setLong("sessionId", acadSessionId.longValue());
 		q.setCacheable(true);
 

@@ -29,7 +29,6 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -43,15 +42,15 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
 import org.unitime.timetable.form.ClassListFormInterface;
 import org.unitime.timetable.model.Assignment;
@@ -59,19 +58,17 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 
@@ -83,15 +80,7 @@ import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	/*
-	protected Map getKeyMethodMap() {
-	      Map map = new HashMap();
-	      map.put("button.searchClasses", "searchClasses");
-	      map.put("button.exportPDF", "exportPdf");
-//	      map.put("button.cancel", "searchClasses");
-	      return map;
-	}
-	*/
+	@Autowired SessionContext sessionContext;
 	
 	/** 
 	 * Method execute
@@ -127,169 +116,131 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response, String action) throws Exception {
 		
-			if(!Web.isLoggedIn( request.getSession() )) {
-	            throw new Exception (MSG.errorAccessDenied());
-	        }
-			HttpSession httpSession = request.getSession();
+    	if (!sessionContext.hasPermission(Right.Classes))
+    		throw new Exception(MSG.errorAccessDenied());
+		
+    	ClassListForm classListForm = (ClassListForm) form;
+    	
+    	request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+    	
+    	if ("1".equals(request.getParameter("loadFilter"))) {
+    		setupGeneralFormFilters(sessionContext, classListForm);
+    		setupClassListSpecificFormFilters(sessionContext, classListForm);
+    	} else {
+    		sessionContext.getUser().setProperty("ClassList.divSec",classListForm.getDivSec() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.demand",classListForm.getDemand() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.demandIsVisible",classListForm.getDemandIsVisible() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.limit",classListForm.getLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.roomLimit",classListForm.getRoomLimit() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.manager",classListForm.getManager() ? "1" : "0");
+		   	sessionContext.getUser().setProperty("ClassList.datePattern",classListForm.getDatePattern() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.timePattern",classListForm.getTimePattern() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.instructor",classListForm.getInstructor() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.preferences",classListForm.getPreferences() ? "1" : "0");
+	    	if (classListForm.getTimetable() != null)
+	    		sessionContext.getUser().setProperty("ClassList.timetable",classListForm.getTimetable() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.schedulePrintNote",classListForm.getSchedulePrintNote() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.note",classListForm.getNote() ? "1" : "0");
+	    	if (classListForm.getExams() != null)
+	    		sessionContext.getUser().setProperty("ClassList.exams",classListForm.getExams() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassList.sortBy", classListForm.getSortBy());
+	    	sessionContext.getUser().setProperty("ClassList.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
+	    	sessionContext.getUser().setProperty("ClassList.filterInstructor", classListForm.getFilterInstructor());		    	
+	    	sessionContext.getUser().setProperty("ClassList.filterManager", classListForm.getFilterManager());		
+	    	sessionContext.getUser().setProperty("ClassList.filterIType", classListForm.getFilterIType());
+	    	sessionContext.getUser().setProperty("ClassList.filterDayCode", String.valueOf(classListForm.getFilterDayCode()));
+	    	sessionContext.getUser().setProperty("ClassList.filterStartSlot", String.valueOf(classListForm.getFilterStartSlot()));
+	    	sessionContext.getUser().setProperty("ClassList.filterLength", String.valueOf(classListForm.getFilterLength()));
+	    	sessionContext.getUser().setProperty("ClassList.sortByKeepSubparts", String.valueOf(classListForm.getSortByKeepSubparts()));
+	    	sessionContext.getUser().setProperty("ClassList.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
+	    }
+    	
+    	if (!sessionContext.hasPermission(Right.CourseTimetabling))
+    		classListForm.setTimetable(null);
+    	
+    	if (!sessionContext.hasPermission(Right.Examinations))
+    		classListForm.setExams(null);
+    	
+    	classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+    	classListForm.setClasses(getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
+    	
+    	Collection classes = classListForm.getClasses();
+		if (classes.isEmpty()) {
+		    ActionMessages errors = new ActionMessages();
+		    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
+		    saveErrors(request, errors);
+		    return mapping.findForward("showClassSearch");
+		} else {
+			StringBuffer ids = new StringBuffer();
+			StringBuffer names = new StringBuffer();
+			StringBuffer subjIds = new StringBuffer();
+			for (int i=0;i<classListForm.getSubjectAreaIds().length;i++) {
+				if (i>0) {
+					names.append(","); 
+					subjIds.append(",");
+					}
+				ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
+				subjIds.append(classListForm.getSubjectAreaIds()[i]);
+				names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
+			}
+			sessionContext.setAttribute(SessionAttribute.ClassesSubjectAreas, subjIds);
+			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, classListForm.getCourseNbr());
 			
-		    ClassListForm classListForm = (ClassListForm) form;
-		    
-		    User user = Web.getUser(request.getSession());
-		    LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-			setupBasicFormData(classListForm, user);
-
-		    if ("1".equals(request.getParameter("loadFilter"))) {
-				setupGeneralFormFilters(httpSession, classListForm);
-				setupClassListSpecificFormFilters(httpSession, classListForm);
-		    } else {
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.divSec",classListForm.getDivSec().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.demand",classListForm.getDemand().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.demandIsVisible",classListForm.getDemandIsVisible().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.limit",classListForm.getLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.roomLimit",classListForm.getRoomLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.manager",classListForm.getManager().booleanValue());
-			   	UserData.setPropertyBoolean(httpSession,"ClassList.datePattern",classListForm.getDatePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.timePattern",classListForm.getTimePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.instructor",classListForm.getInstructor().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.preferences",classListForm.getPreferences().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.timetable",(classListForm.getTimetable()==null?false:classListForm.getTimetable().booleanValue()));
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.schedulePrintNote",classListForm.getSchedulePrintNote().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.note",classListForm.getNote().booleanValue());
-		    	if (classListForm.getCanSeeExams())
-		    	    UserData.setPropertyBoolean(httpSession,"ClassList.exams",classListForm.getExams().booleanValue());
-		    	UserData.setProperty(httpSession,"ClassList.sortBy", classListForm.getSortBy());
-		    	UserData.setProperty(httpSession,"ClassList.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
-		    	UserData.setProperty(httpSession,"ClassList.filterInstructor", classListForm.getFilterInstructor());		    	
-		    	UserData.setProperty(httpSession,"ClassList.filterManager", classListForm.getFilterManager());		
-		    	UserData.setProperty(httpSession,"ClassList.filterIType", classListForm.getFilterIType());
-		    	UserData.setPropertyInt(httpSession,"ClassList.filterDayCode", classListForm.getFilterDayCode());
-		    	UserData.setPropertyInt(httpSession,"ClassList.filterStartSlot", classListForm.getFilterStartSlot());
-		    	UserData.setPropertyInt(httpSession,"ClassList.filterLength", classListForm.getFilterLength());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.sortByKeepSubparts", classListForm.getSortByKeepSubparts());
-		    	UserData.setPropertyBoolean(httpSession,"ClassList.showCrossListedClasses", classListForm.getShowCrossListedClasses());
-		    }
-		    
-	        String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-	        TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-			if (manager==null || !manager.canSeeTimetable(Session.getCurrentAcadSession(user), user))
-				classListForm.setTimetable(null);
-		    					
+			if ("exportPdf".equals(action)) {
+				File pdfFile = new PdfClassListTableBuilder().pdfTableForClasses(
+						WebSolver.getClassAssignmentProxy(request.getSession()),
+			    		WebSolver.getExamSolver(request.getSession()),
+			    		classListForm, 
+			    		sessionContext);
+				if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+			}
 			
-		    classListForm.setCollections(request, getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
-			Collection classes = classListForm.getClasses();
-			if (classes.isEmpty()) {
-			    ActionMessages errors = new ActionMessages();
-			    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoRecords()));
-			    saveErrors(request, errors);
-			    return mapping.findForward("showClassSearch");
-			} else {
-				StringBuffer ids = new StringBuffer();
-				StringBuffer names = new StringBuffer();
-				StringBuffer subjIds = new StringBuffer();
-				for (int i=0;i<classListForm.getSubjectAreaIds().length;i++) {
-					if (i>0) {
-						names.append(","); 
-						subjIds.append(",");
-						}
-					ids.append("&subjectAreaIds="+classListForm.getSubjectAreaIds()[i]);
-					subjIds.append(classListForm.getSubjectAreaIds()[i]);
-					names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
-				}
-				httpSession.setAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME, subjIds);
-				httpSession.setAttribute(Constants.CRS_LST_CRS_NBR_ATTR_NAME, classListForm.getCourseNbr());
-				//request.setAttribute("hash", "Search");
-				
-				if ("exportPdf".equals(action)) {
-					File pdfFile = 
-						(new PdfClassListTableBuilder())
-						.pdfTableForClasses(
-			    		        WebSolver.getClassAssignmentProxy(request.getSession()),
-			    		        WebSolver.getExamSolver(request.getSession()),
-			    		        classListForm, 
-			    		        Web.getUser(request.getSession()));
-					if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
-					//response.sendRedirect("temp/"+pdfFile.getName());
-				}
-				
-				BackTracker.markForBack(
-						request, 
-						"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
-						MSG.backClasses(names+
-							(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())
-							), 
-						true, true);
+			BackTracker.markForBack(
+					request, 
+					"classSearch.do?doit=Search&loadFilter=1"+ids+"&courseNbr="+classListForm.getCourseNbr(), 
+					MSG.backClasses(names+(classListForm.getCourseNbr()==null || classListForm.getCourseNbr().length()==0?"":" "+classListForm.getCourseNbr())), 
+					true, true);
 				
 			    return mapping.findForward("showClassList");
 			}
 		}
 	
 	
-	public static void setupBasicFormData(ClassListFormInterface form, User user) throws Exception{
-
-		form.setUserIsAdmin(user.isAdmin());
-
-		Session session = Session.getCurrentAcadSession(user);
-		if (!user.isAdmin()) {
-			TimetableManager tm = TimetableManager.getManager(user);
-			Department dept = null;
-			Set depts = tm.departmentsForSession(session.getUniqueId());
-			if (tm != null && depts != null && depts.size() > 0){
-				String[] l = new String[depts.size()];
-				int i = 0;
-				for(Iterator it = depts.iterator(); it.hasNext();){
-					dept = (Department) it.next();
-					l[i] = dept.getUniqueId().toString();
-					i++;
-				}					
-				form.setUserDeptIds(l);
-			}
-		}	
-	}
-	
-	public static void setupGeneralFormFilters(HttpSession httpSession, ClassListFormInterface form){
-		form.setSortBy(UserData.getProperty(httpSession, "ClassList.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
-		form.setFilterAssignedRoom(UserData.getProperty(httpSession, "ClassList.filterAssignedRoom", ""));
-		form.setFilterManager(UserData.getProperty(httpSession, "ClassList.filterManager", ""));
-		form.setFilterIType(UserData.getProperty(httpSession, "ClassList.filterIType", ""));
-		form.setFilterDayCode(UserData.getPropertyInt(httpSession, "ClassList.filterDayCode", -1));
-		form.setFilterStartSlot(UserData.getPropertyInt(httpSession, "ClassList.filterStartSlot", -1));
-		form.setFilterLength(UserData.getPropertyInt(httpSession, "ClassList.filterLength", -1));
-		form.setSortByKeepSubparts(UserData.getPropertyBoolean(httpSession, "ClassList.sortByKeepSubparts", true));
-		form.setShowCrossListedClasses(UserData.getPropertyBoolean(httpSession, "ClassList.showCrossListedClasses", false));
+	public static void setupGeneralFormFilters(SessionContext sessionContext, ClassListFormInterface form){
+		form.setSortBy(sessionContext.getUser().getProperty("ClassList.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
+		form.setFilterAssignedRoom(sessionContext.getUser().getProperty("ClassList.filterAssignedRoom", ""));
+		form.setFilterManager(sessionContext.getUser().getProperty("ClassList.filterManager", ""));
+		form.setFilterIType(sessionContext.getUser().getProperty("ClassList.filterIType", ""));
+		form.setFilterDayCode(Integer.parseInt(sessionContext.getUser().getProperty("ClassList.filterDayCode", "-1")));
+		form.setFilterStartSlot(Integer.parseInt(sessionContext.getUser().getProperty("ClassList.filterStartSlot", "-1")));
+		form.setFilterLength(Integer.parseInt(sessionContext.getUser().getProperty("ClassList.filterLength", "-1")));
+		form.setSortByKeepSubparts("1".equals(sessionContext.getUser().getProperty("ClassList.sortByKeepSubparts", "1")));
+		form.setShowCrossListedClasses("1".equals(sessionContext.getUser().getProperty("ClassList.showCrossListedClasses", "0")));
 	
 	}
 	
-	public static void setupClassListSpecificFormFilters(HttpSession httpSession, ClassListForm form){
-		form.setDivSec(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.divSec", false)));	
-		form.setLimit(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.limit", true)));
-		form.setRoomLimit(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.roomLimit", true)));
-		form.setManager(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.manager", true)));	
-		form.setDatePattern(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.datePattern", true)));
-		form.setTimePattern(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.timePattern", true)));
-		form.setInstructor(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.instructor", true)));
-		form.setPreferences(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.preferences", true)));
-		form.setTimetable(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.timetable", true)));	
-		form.setFilterInstructor(UserData.getProperty(httpSession, "ClassList.filterInstructor", ""));
-		form.setSchedulePrintNote(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.schedulePrintNote", true)));
-		form.setNote(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.note", false)));
-		try {
-		    User user = Web.getUser(httpSession);
-		    TimetableManager manager = TimetableManager.getManager(user);
-		    Session session = Session.getCurrentAcadSession(user);
-		    if (StudentClassEnrollment.sessionHasEnrollments(session == null?null:session.getUniqueId())){
-		    	form.setDemandIsVisible(true);
-				form.setDemand(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.demand", true)));
-		    } else {
-			    form.setDemandIsVisible(false);
-				form.setDemand(false);		    	
-		    }
-		    if (manager.canSeeExams(session, user)) {
-		        form.setCanSeeExams(Boolean.TRUE);
-		        form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"ClassList.exams", false)));
-		    } else {
-		        form.setCanSeeExams(Boolean.FALSE);
-		    }
-		} catch (Exception e) {}
+	public static void setupClassListSpecificFormFilters(SessionContext sessionContext, ClassListForm form){
+		form.setDivSec("1".equals(sessionContext.getUser().getProperty("ClassList.divSec", "0")));	
+		form.setLimit("1".equals(sessionContext.getUser().getProperty("ClassList.limit", "1")));
+		form.setRoomLimit("1".equals(sessionContext.getUser().getProperty("ClassList.roomLimit", "1")));
+		form.setManager("1".equals(sessionContext.getUser().getProperty("ClassList.manager", "1")));	
+		form.setDatePattern("1".equals(sessionContext.getUser().getProperty("ClassList.datePattern", "1")));
+		form.setTimePattern("1".equals(sessionContext.getUser().getProperty("ClassList.timePattern", "1")));
+		form.setInstructor("1".equals(sessionContext.getUser().getProperty("ClassList.instructor", "1")));
+		form.setPreferences("1".equals(sessionContext.getUser().getProperty("ClassList.preferences", "1")));
+		form.setTimetable("1".equals(sessionContext.getUser().getProperty("ClassList.timetable", "1")));	
+		form.setFilterInstructor(sessionContext.getUser().getProperty("ClassList.filterInstructor", ""));
+		form.setSchedulePrintNote("1".equals(sessionContext.getUser().getProperty("ClassList.schedulePrintNote", "1")));
+		form.setNote("1".equals(sessionContext.getUser().getProperty("ClassList.note", "0")));
+	    form.setExams("1".equals(sessionContext.getUser().getProperty("ClassList.exams", "0")));
+	    if (StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())) {
+	    	form.setDemandIsVisible(true);
+			form.setDemand("1".equals(sessionContext.getUser().getProperty("ClassList.demand", "1")));
+	    } else {
+		    form.setDemandIsVisible(false);
+			form.setDemand(false);
+	    }
+	    
 	}
 	
     public static Set getClasses(ClassListFormInterface form, ClassAssignmentProxy classAssignmentProxy) {

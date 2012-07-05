@@ -23,17 +23,16 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.rights.Right;
 
 public interface Permission<T> {
 	public boolean check(UserContext user, T source);
 	public Class<T> type();
 	
 	public static interface PermissionDepartment extends Permission<Department> {
-		public boolean check(UserContext user, Department department, Right right, DepartmentStatusType.Status... status);
+		public boolean check(UserContext user, Department department, DepartmentStatusType.Status... status);
 	}
 	
 	public static interface PermissionSession extends Permission<Session> {
-		public boolean check(UserContext user, Session session, Right right, DepartmentStatusType.Status... status);
+		public boolean check(UserContext user, Session session, DepartmentStatusType.Status... status);
 	}
 }

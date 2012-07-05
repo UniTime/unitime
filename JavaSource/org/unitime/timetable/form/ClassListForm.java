@@ -21,18 +21,14 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -69,7 +65,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private Boolean schedulePrintNote;
 	private Boolean note;
 	private Boolean exams;
-	private Boolean canSeeExams;
 	
 	private String sortBy;
 	private String filterAssignedRoom;
@@ -90,10 +85,8 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 	private boolean sortByKeepSubparts;
 	private boolean showCrossListedClasses;
 	
-	private boolean userIsAdmin;
 	private boolean returnAllControlClassesForSubjects;
 	private boolean sessionInLLREditStatus;
-	private String[] userDeptIds;
 	
 	/**
      * @return Returns the ctrlInstrOfferingId.
@@ -182,7 +175,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		schedulePrintNote = new Boolean(false);
 		note = new Boolean(false);
 		exams = new Boolean(false);
-		canSeeExams = new Boolean(false);
 		
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 		filterInstructor = "";
@@ -204,9 +196,7 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 		sortByKeepSubparts = false;
 		showCrossListedClasses = false;
 		
-		userIsAdmin = false;
 		returnAllControlClassesForSubjects = false;
-		userDeptIds = new String[0];
 		sessionInLLREditStatus = false;
 		
 		LookupTables.setupItypes(request,true);
@@ -244,12 +234,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
         return errors;
     }
     
-    public void setCollections(HttpServletRequest request, Set classes) throws Exception {
-        User user = Web.getUser(request.getSession());
-
-        setSubjectAreas(TimetableManager.getSubjectAreas(user));
-		setClasses(classes);	        
-    }
 	/**
 	 * @return Returns the instructor.
 	 */
@@ -484,18 +468,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
 			boolean returnAllControlClassesForSubjects) {
 		this.returnAllControlClassesForSubjects = returnAllControlClassesForSubjects;
 	}
-	public boolean isUserIsAdmin() {
-		return userIsAdmin;
-	}
-	public void setUserIsAdmin(boolean userIsAdmin) {
-		this.userIsAdmin = userIsAdmin;
-	}
-	public String[] getUserDeptIds() {
-		return userDeptIds;
-	}
-	public void setUserDeptIds(String[] userDeptIds) {
-		this.userDeptIds = userDeptIds;
-	}
 	public boolean isSessionInLLREditStatus() {
 		return sessionInLLREditStatus;
 	}
@@ -546,12 +518,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     }
     public void setExams(Boolean exams) {
         this.exams = exams;
-    }
-    public Boolean getCanSeeExams() {
-        return canSeeExams;
-    }
-    public void setCanSeeExams(Boolean canSeeExams) {
-        this.canSeeExams = canSeeExams;
     }
     public Boolean getConsent() {
 		return (new Boolean(false));

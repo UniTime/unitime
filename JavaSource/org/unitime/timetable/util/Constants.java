@@ -32,6 +32,8 @@ import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -39,6 +41,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimePref;
+import org.unitime.timetable.security.UserContext;
 
 
 
@@ -107,13 +110,16 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static String JUMP_TO_ATTR_NAME = "jumpTo";
     
     /** Session Attribute Names */
+    @Deprecated
     public static String SUBJ_AREA_ID_ATTR_NAME = "subjectAreaId";
+    @Deprecated
     public static String CRS_NBR_ATTR_NAME = "courseNbr";
     public static String DEPT_ID_ATTR_NAME = "deptUniqueId";
     public static String DEPT_CODE_ATTR_NAME = "deptCode";
     public static String DEPT_CODE_ATTR_ROOM_NAME = "deptCodeRoom";
+    @Deprecated
     public static String CRS_LST_SUBJ_AREA_IDS_ATTR_NAME = "crsLstSubjectAreaIds";
-
+    @Deprecated
     public static String CRS_LST_CRS_NBR_ATTR_NAME = "crsLstCrsNbr";
     public static String CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME = "crsAsgnLstSubjectAreaIds";
     
@@ -450,14 +456,15 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
      * Reset Session variables for a particular user
      * @param webSession
      */
+	@Deprecated
     public static void resetSessionAttributes(HttpSession webSession) {
-		webSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, null);
-		webSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, null);
+		// webSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, null);
+		// webSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, null);
 		webSession.setAttribute(Constants.DEPT_ID_ATTR_NAME, null);
 		webSession.setAttribute(Constants.DEPT_CODE_ATTR_NAME, null);
 		webSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, null);
 		webSession.setAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME, null);
-		webSession.removeAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME);
+		// webSession.removeAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME);
 		webSession.removeAttribute("SolverProxy");
 		webSession.removeAttribute("ExamSolverProxy");
 		webSession.removeAttribute("StudentSolverProxy");
@@ -520,15 +527,27 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	    return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
 	}
 	
+	@Deprecated
     public static boolean showPrintNoteAsFullText(User user) {
     	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
     }
+	
+	public static boolean showPrintNoteAsFullText(UserContext user) {
+		return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.SchedulePrintNoteDisplay));
+    }
+	
     public static boolean showPrintNoteAsShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
     }
+    @Deprecated
     public static boolean showCrsOffrAsFullText(User user) {
     	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
     }
+    
+    public static boolean showCrsOffrAsFullText(UserContext user) {
+    	return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.CourseOfferingNoteDisplay));
+    }
+    
     public static boolean showCrsOffrAsShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
     }

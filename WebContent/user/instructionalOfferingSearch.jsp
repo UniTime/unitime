@@ -26,6 +26,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <tiles:importAttribute />
 <html:form action="/instructionalOfferingSearch">
@@ -207,7 +208,7 @@
 							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
-					<logic:equal name="instructionalOfferingListForm" property="canSeeExams" value="true">
+					<sec:authorize access="hasPermission(null, 'Session', 'Examinations')">
 						<TR>
 							<TD></TD>
 							<TD colspan="2">
@@ -215,8 +216,7 @@
 								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
-					</logic:equal>
-					<html:hidden property="canSeeExams"/>
+					</sec:authorize>
 					<TR>
 						<TD>
 							<B><loc:message name="filterSortBy"/></B>
@@ -248,7 +248,7 @@
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);" >
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:option value=""><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
@@ -270,28 +270,31 @@
 					<loc:message name="actionSearchInstructionalOfferings"/>
 				</html:submit> 
 				
+				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsExportPDF')">
 				<html:submit
 					accesskey="<%=MSG.accessExportPdf()%>" styleClass="btn" title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
 					onclick="doit.value=this.value;displayLoading();">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
+				</sec:authorize>
 
+				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsWorksheetPDF')">
 				<tt:propertyEquals name="tmtbl.pdf.worksheet" value="true">
 					<html:submit
 						accesskey="<%=MSG.accessWorksheetPdf()%>" styleClass="btn" title='<%=MSG.titleWorksheetPdf(MSG.accessWorksheetPdf())%>'
 						onclick="doit.value=this.value;displayLoading();">
 						<loc:message name="actionWorksheetPdf"/>
 					</html:submit>
-				</tt:propertyEquals> 
+				</tt:propertyEquals>
+				</sec:authorize>
 
-				<html:hidden property="canAddCourse"/>
-				<logic:equal name="instructionalOfferingListForm" property="canAddCourse" value="true">
+				<sec:authorize access="hasPermission(null, 'SubjectArea', 'AddCourseOffering')">
 				<html:submit
 					accesskey="<%=MSG.accessAddNewInstructionalOffering()%>" styleClass="btn" title='<%=MSG.titleAddNewInstructionalOffering(MSG.accessAddNewInstructionalOffering())%>'
 					onclick="doit.value=this.value;">
 					<loc:message name="actionAddNewInstructionalOffering"/>
 				</html:submit>
-				</logic:equal>
+				</sec:authorize>
 				
 			</TD>
 			<TD width="100%"></TD>

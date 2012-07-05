@@ -22,7 +22,6 @@ package org.unitime.timetable.model;
 import java.awt.Color;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;

@@ -46,7 +46,6 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.SolutionUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.UnassignedClassRow;

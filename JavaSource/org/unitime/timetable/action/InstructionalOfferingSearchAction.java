@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -30,7 +29,6 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -39,15 +37,15 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.impl.LocalizedLookupDispatchAction;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.localization.messages.Messages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -56,15 +54,15 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfWorksheet;
 import org.unitime.timetable.webutil.BackTracker;
@@ -78,26 +76,15 @@ import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
 public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAction {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	
 	@Override
 	protected Messages getMessages() {
 		return MSG;
 	}
 
-	/*
-	protected Map getKeyMethodMap() {
-	      Map map = new HashMap();
-	      map.put("button.searchInstructionalOfferings", "searchInstructionalOfferings");
-	      map.put("button.exportPDF", "exportPdf");
-	      map.put("button.worksheetPDF", "worksheetPdf");
-	      map.put("button.saveNotOfferedChanges", "saveNotOfferedChanges");
-	      map.put("button.addNew", "addInstructionalOfferings");
-//	      map.put("button.update", "updateInstructionalOfferings");
-//	      map.put("button.delete", "deleteCourseOffering");
-	      map.put("button.cancel", "searchInstructionalOfferings");
-	      return map;
-	}
-	*/
-		
 	/** 
 	 * Method execute
 	 * @param mapping
@@ -107,17 +94,14 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	 * @return ActionForward
 	 * @throws HibernateException
 	 */
-
 	public ActionForward searchInstructionalOfferings(
 			ActionMapping mapping,
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-	    	HttpSession httpSession = request.getSession();
-	        if(!Web.isLoggedIn( httpSession )) {
-	            throw new Exception ("Access Denied.");
-	        }
+	    	if (!sessionContext.hasPermission(null, "Department", Right.InstructionalOfferings))
+	    		throw new Exception(MSG.errorAccessDenied());
 	        
 	        // Check that a valid subject area is selected
 		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
@@ -127,46 +111,49 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    // Validation fails
 		    if(errors.size()>0) {
 			    saveErrors(request, errors);
-			    frm.setCollections(request, null);
+			    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+			    frm.setInstructionalOfferings(null);
 			    return mapping.findForward("showInstructionalOfferingSearch");
 		    }
 
 		    // Set Session Variables
-	        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, frm.getSubjectAreaId());
-	        httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, frm.getCourseNbr());
+		    sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, frm.getSubjectAreaId());
+		    sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, frm.getCourseNbr());
 	        
 
 		    if ("1".equals(request.getParameter("loadInstrFilter"))) {
-				setupInstrOffrListSpecificFormFilters(httpSession, frm);
+		    	setupInstrOffrListSpecificFormFilters(sessionContext, frm);
 		    } else {
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.divSec",frm.getDivSec().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.demand",frm.getDemand().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.projectedDemand",frm.getProjectedDemand().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.minPerWk",frm.getMinPerWk().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.limit",frm.getLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.roomLimit",frm.getRoomLimit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.manager",frm.getManager().booleanValue());
-			   	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.datePattern",frm.getDatePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.timePattern",frm.getTimePattern().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.instructor",frm.getInstructor().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.preferences",frm.getPreferences().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.timetable",(frm.getTimetable()==null?false:frm.getTimetable().booleanValue()));
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.credit",frm.getCredit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.subpartCredit",frm.getSubpartCredit().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.schedulePrintNote",frm.getSchedulePrintNote().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.note",frm.getNote().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.title",frm.getTitle().booleanValue());
-                if (frm.getCanSeeExams())
-                    UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.exams",frm.getExams().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.consent",frm.getConsent().booleanValue());
-		    	UserData.setPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired",frm.getDesignatorRequired().booleanValue());
-		    	UserData.setProperty(httpSession,"InstructionalOfferingList.sortBy",frm.getSortBy());
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.divSec", frm.getDivSec() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.demand", frm.getDemand() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.projectedDemand", frm.getProjectedDemand() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.minPerWk", frm.getMinPerWk() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.limit", frm.getLimit() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.roomLimit", frm.getRoomLimit() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.manager", frm.getManager() ? "1" : "0");
+			   	sessionContext.getUser().setProperty("InstructionalOfferingList.datePattern", frm.getDatePattern() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.timePattern", frm.getTimePattern() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.instructor", frm.getInstructor() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.preferences", frm.getPreferences() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.timetable", (frm.getTimetable() == null ? "0" : frm.getTimetable() ? "1" : "0"));
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.credit", frm.getCredit() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.subpartCredit", frm.getSubpartCredit() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.schedulePrintNote", frm.getSchedulePrintNote() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.note", frm.getNote() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.title", frm.getTitle() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.exams", (frm.getExams() == null ? "0" : frm.getExams() ? "1" : "0"));
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.consent", frm.getConsent() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.designatorRequired", frm.getDesignatorRequired() ? "1" : "0");
+		    	sessionContext.getUser().setProperty("InstructionalOfferingList.sortBy", frm.getSortBy());
 		    }
-
+		    
+		    if (!sessionContext.hasPermission(Right.Examinations))
+		    	frm.setExams(null);
 	        
 	        // Perform Search
-		    frm.setCollections(request, getInstructionalOfferings(request, frm));
-			Collection instrOfferings = frm.getInstructionalOfferings();
+		    Collection instrOfferings = getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm);
+		    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		    frm.setInstructionalOfferings(instrOfferings);
 			
 			// No results returned
 			if (instrOfferings.isEmpty()) {
@@ -221,7 +208,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
                         WebSolver.getExamSolver(request.getSession()),
                         frm, 
                         new Long(frm.getSubjectAreaId()), 
-                        Web.getUser(request.getSession()),  
+                        sessionContext,  
                         true, 
                         frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
             
@@ -234,6 +221,30 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         }
         
         return fwd;
+	}
+	
+	public static void setupInstrOffrListSpecificFormFilters(SessionContext sessionContext, InstructionalOfferingListForm frm) {
+		frm.setDivSec("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.divSec", "0")));	
+		frm.setDemand("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.demand", "1")));	
+		frm.setProjectedDemand("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.projectedDemand", "1")));	
+		frm.setMinPerWk("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.minPerWk", "1")));	
+		frm.setLimit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.limit", "1")));
+		frm.setRoomLimit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.roomLimit", "1")));
+		frm.setManager("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.manager", "1")));	
+		frm.setDatePattern("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.datePattern", "1")));
+		frm.setTimePattern("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.timePattern", "1")));
+		frm.setInstructor("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.instructor", "1")));
+		frm.setPreferences("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.preferences", "1")));
+		frm.setTimetable("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.timetable", "1")));	
+		frm.setCredit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.credit", "0")));
+		frm.setSubpartCredit("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.subpartCredit", "0")));
+		frm.setSchedulePrintNote("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.schedulePrintNote", "1")));
+		frm.setNote("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.note", "0")));
+		frm.setTitle("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.title", "0")));
+		frm.setConsent("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.consent", "0")));
+		frm.setDesignatorRequired("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.designatorRequired", "0")));
+		frm.setSortBy(sessionContext.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
+		frm.setExams("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.exams", "0")));		
 	}
 	
 	
@@ -272,18 +283,22 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         return fwd;
 	}
 	
+	/*
 	public ActionForward saveNotOfferedChanges(
 			ActionMapping mapping,
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-		    InstructionalOfferingListForm instructionalOfferingListForm = (InstructionalOfferingListForm) form;
-		    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));
-			if (instructionalOfferingListForm.getInstructionalOfferings().isEmpty()) {
+		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
+		    
+		    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		    frm.setInstructionalOfferings(getInstructionalOfferings(request, frm));
+
+		    if (frm.getInstructionalOfferings().isEmpty()) {
 			    return mapping.findForward("showInstructionalOfferingSearch");
 			} else {
-			    Iterator it = instructionalOfferingListForm.getInstructionalOfferings().iterator();
+			    Iterator it = frm.getInstructionalOfferings().iterator();
 			    InstructionalOffering io = null;
 			    InstructionalOfferingDAO dao = new InstructionalOfferingDAO(); 
 			    while (it.hasNext()){
@@ -293,13 +308,9 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			    return mapping.findForward("showInstructionalOfferingList");
 			}
 		}
+		*/
 
-    public static Set getInstructionalOfferings(
-            HttpServletRequest request, InstructionalOfferingListForm form) {
-        
-        HttpSession httpSession = request.getSession();
-        User user = Web.getUser(httpSession);
-        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+    public static Set getInstructionalOfferings(Long sessionId, ClassAssignmentProxy classAssignmentProxy, InstructionalOfferingListForm form) {
         
         boolean fetchStructure = true;
         boolean fetchCredits = false;//singleCourseSelection || form.getCredit().booleanValue();
@@ -372,7 +383,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		
 		if (form.getTimetable()!=null && form.getTimetable().booleanValue()) {
 			Debug.debug("--- Load Assignments --- ");
-			ClassAssignmentProxy classAssignmentProxy = WebSolver.getClassAssignmentProxy(request.getSession());
 			if (classAssignmentProxy!=null && classAssignmentProxy instanceof Solution) {
 				for (Iterator i=ts.iterator();i.hasNext();) {
 					InstructionalOffering io = (InstructionalOffering)i.next();
@@ -411,26 +421,22 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		
+        InstructionalOfferingListForm frm = (InstructionalOfferingListForm)form;
+    	if (!sessionContext.hasPermission(frm.getSubjectAreaId(), "SubjectArea", Right.AddCourseOffering))
+    		throw new Exception(MSG.errorAccessDenied());
 
-        HttpSession httpSession = request.getSession();
-        if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-        User user = Web.getUser(httpSession);
-        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 
-        InstructionalOfferingListForm instructionalOfferingListForm = (InstructionalOfferingListForm) form;
-		String courseNbr = instructionalOfferingListForm.getCourseNbr();
-	    String subjAreaId = instructionalOfferingListForm.getSubjectAreaId();
+	    Long subjAreaId = frm.getSubjectAreaId();
+		String courseNbr = frm.getCourseNbr().trim();
 	    ActionMessages errors = new ActionMessages();
 	    
 	    // Check blank subject area
-	    if(subjAreaId==null || subjAreaId.trim().length()==0) 
+	    if (subjAreaId == null) 
 	        errors.add("subjAreaId", new ActionMessage("errors.required", "Subject Area"));
 	        
 	    // Check blank course number
-	    if(courseNbr==null || courseNbr.trim().length()==0) 
+	    if (courseNbr == null || courseNbr.isEmpty()) 
 	        errors.add("courseNbr", new ActionMessage("errors.required", "Course Number"));
 	    
 	    // Check that course number matches a pattern
@@ -443,19 +449,17 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    	if (!matcher.find()) {
 			        errors.add("courseNbr", new ActionMessage("errors.generic", courseNbrInfo));
 		    	}
-	    	}
-	    	catch (Exception e) {
+	    	} catch (Exception e) {
 		        errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseDoesNotMatchRegEx(courseNbrRegex, e.getMessage())));
 	    	}
 	    }
 	    
 	    // Check if errors were found
-	    if(!errors.isEmpty()) {
-	        instructionalOfferingListForm.setCollections(request, null);
-	        saveErrors(request, errors);
-	        if (instructionalOfferingListForm.getInstructionalOfferings()==null
-	                || instructionalOfferingListForm.getInstructionalOfferings().isEmpty()) {
-			    return mapping.findForward("showInstructionalOfferingSearch");
+	    if (!errors.isEmpty()) {
+		    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		    saveErrors(request, errors);
+	        if (frm.getInstructionalOfferings() == null || frm.getInstructionalOfferings().isEmpty()) {
+	        	return mapping.findForward("showInstructionalOfferingSearch");
 			} else {
 			    return mapping.findForward("showInstructionalOfferingList");
 			}
@@ -464,316 +468,38 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	    // Convert to uppercase - e.g. 001d -> 001D
 	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true")))
 	    	courseNbr = courseNbr.toUpperCase();
-	    instructionalOfferingListForm.setCourseNbr(courseNbr);
+	    frm.setCourseNbr(courseNbr);
 	    
-	    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));
-
 	    // Set Session Variables
-        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, instructionalOfferingListForm.getSubjectAreaId());
-        httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, instructionalOfferingListForm.getCourseNbr());        
+        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjAreaId.toString());
+        sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);        
 	    
 	    // Offering exists - redirect to offering detail
     	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
 
-    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
-		    List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-		    if(l.size()>0) {
-		        // errors.add("courseNbr", new ActionMessage("errors.exists", courseNbr));	        
-		        InstructionalOffering io = ((CourseOffering) l.get(0)).getInstructionalOffering();
+    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")) {
+    		CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(sessionContext.getUser().getCurrentAcademicSessionId(), subjAreaId, courseNbr);
+    		if (course != null) {
 		        request.setAttribute("op", "view");
-		        request.setAttribute("io", io.getUniqueId().toString());
+		        request.setAttribute("io", course.getInstructionalOffering().getUniqueId().toString());
 		        return mapping.findForward("showInstructionalOfferingDetail");
 		    }
     	}
 
 	    // No Errors - create Course Offering	    
 	    CourseOffering newCourseOffering = CourseOffering.addNew(subjAreaId, courseNbr);
-	    
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-        Debug.debug("before get collection");
-	    instructionalOfferingListForm.setCollections(request, getInstructionalOfferings(request, instructionalOfferingListForm));
-		Debug.debug("after get collection size = " + instructionalOfferingListForm.getInstructionalOfferings().size());
-		
+
 	    // Offering exists - redirect to offering detail
-//	    List l2 = CourseOffering.search(sessionId, subjAreaId, courseNbr);
 	    if(newCourseOffering != null) {
-	        // errors.add("courseNbr", new ActionMessage("errors.exists", courseNbr));
-	    	/*
-	        InstructionalOffering io = ((CourseOffering) l2.get(0)).getInstructionalOffering();
-	        request.setAttribute("op", "view");
-	        request.setAttribute("io", io.getUniqueId().toString());
-	        return mapping.findForward("showInstructionalOfferingDetail");
-	    	*/
 	        request.setAttribute("op", MSG.actionEditCourseOffering());
 	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
 	        return mapping.findForward("showCourseOfferingEdit");
 	    }
 		
-		return mapping.findForward("showInstructionalOfferingList");
+	    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+	    frm.setInstructionalOfferings(getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm));
+
+	    return mapping.findForward("showInstructionalOfferingList");
 		
 	}
-
-	
-	/**
-	 * Updates changes made to instructional offerings
-	 * @param mapping
-	 * @param form
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws Exception
-	 */
-//	public ActionForward updateInstructionalOfferings(
-//			ActionMapping mapping,
-//			ActionForm form,
-//			HttpServletRequest request,
-//			HttpServletResponse response) throws Exception {
-//
-//        HttpSession httpSession = request.getSession();
-//        if(!Web.isLoggedIn( httpSession )) {
-//            throw new Exception ("Access Denied.");
-//        }
-//        
-//        User user = Web.getUser(httpSession);
-//        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-//        
-//        // Read values
-//	    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
-//	    ActionMessages errors = new ActionMessages();
-//        
-//        String subjAreaId = frm.getSubjectAreaId();
-//        String courseNbr = frm.getCourseNbr();
-//        String ctrCrsOffrId = frm.getCtrlInstrOfferingId();	        
-//        Boolean isControl = frm.getIsControl();
-//        
-//        if(ctrCrsOffrId==null) ctrCrsOffrId = "";
-//        if(isControl==null) isControl = new Boolean(false);
-//        
-//        frm.setCollections(request, getInstructionalOfferings(request, frm));
-//	    frm.setSubjectAreaAbbv(new SubjectAreaDAO().get(new Long(subjAreaId)).getSubjectAreaAbbreviation());
-//
-//        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-//	    if(l.size()>0) {
-//	        
-//            CourseOfferingDAO cdao = new CourseOfferingDAO();
-//    	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-//    	    org.hibernate.Session hibSession = idao.getSession();
-//    	    Transaction tx = hibSession.beginTransaction();
-//    	    
-//    	    try {
-//		        // Update
-//		        CourseOffering co = (CourseOffering) l.get(0);
-//		        InstructionalOffering io = co.getInstructionalOffering();
-//
-//		        String ctrCrsOffrId2 = io.getCtrlCourseId().toString();
-//		        Boolean isControl2 = co.isIsControl();
-//		        
-//		        if(ctrCrsOffrId2==null) ctrCrsOffrId2 = "";
-//		        if(isControl2==null) isControl2 = new Boolean(false);
-//
-//		        // Check if value is changed
-//		        if(isControl2.booleanValue()!=isControl.booleanValue() 
-//		               || !ctrCrsOffrId2.equals(ctrCrsOffrId) ) {
-//
-//		            // Control flag is changed
-//		            if(isControl2.booleanValue()!=isControl.booleanValue()) {
-//		                
-//		                
-//		                // It is now a controlling course
-//		                if(isControl.booleanValue()) {
-//		                    co.setIsControl(isControl);
-//		                    
-//		                    // Loop through IO and update other controlling course to false
-//		                    Set offerings = io.getCourseOfferings();
-//		                    Iterator iter = offerings.iterator();
-//		                    while(iter.hasNext()) {
-//		                        CourseOffering co2 = (CourseOffering) iter.next();
-//		                        if(co2.getUniqueId().intValue()!=co.getUniqueId().intValue() && co2.isIsControl().booleanValue()) {
-//		                            co2.setIsControl(new Boolean(false));
-//		                        }
-//		                    }
-//		                    idao.saveOrUpdate(io);
-//		                }
-//		                // It is now NOT a controlling course
-//		                else {
-//
-//			                // Check that controlling course is not the same
-//		                    if(ctrCrsOffrId2.equals(ctrCrsOffrId) || ctrCrsOffrId.trim().length()==0) {
-//		        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.invalid"));
-//		                    } 
-//		                    else {
-//		                        
-//		                        // Has other course offerings attached to it
-//		                        if(io.getCourseOfferings().size()>1) {
-//			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
-//		                        }
-//		                        else {
-//								    io.removeCourseOffering(co);
-//								    io.setCourseOfferings(null);
-//								    co.setIsControl(new Boolean(false));
-//								    co.setInstructionalOffering(null);
-//								    Event.deleteFromEvents(hibSession, io);
-//								    Exam.deleteFromExams(hibSession, io);
-//								    idao.delete(io);
-//								    
-//			                        CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
-//			                        InstructionalOffering io2 = co2.getInstructionalOffering();
-//			                        io2.addTocourseOfferings(co);
-//			                        co.setInstructionalOffering(io2);
-//			                        idao.save(io2);
-//		                        }
-//		                    }
-//		                }
-//		            }
-//		            else {
-//			            // Controlling course has changed
-//			            if(!ctrCrsOffrId2.equals(ctrCrsOffrId)) {
-//			                // Check that is not a controlling course
-//			                if(!isControl2.booleanValue()) {
-//		                        // Has other course offerings attached to it
-//		                        if(io.getCourseOfferings().size()>1 && isControl.booleanValue()) {
-//			        		        errors.add("ctrlInstrOfferingId", new ActionMessage("errors.ctrlCourse.multipleChildren"));
-//		                        }
-//		                        else {
-//								    io.removeCourseOffering(co);
-//								    co.setInstructionalOffering(null);
-//								    idao.save(io);
-//
-//								    CourseOffering co2 = cdao.get(new Long(ctrCrsOffrId));
-//			                        InstructionalOffering io2 = co2.getInstructionalOffering();
-//			                        io2.addTocourseOfferings(co);
-//			                        co.setInstructionalOffering(io2);
-//			                        idao.save(io2);
-//		                        }				                    
-//			                }
-//			                // Ambiguous - cannot have a controlling course if it is controlling 
-//			                else {
-//			                    errors.add("ctrlInstrOfferingId", 
-//	                            	new ActionMessage("errors.exception", 
-//	                            	    "Ambiguous operation requested - cannot assign a controlling offering it is flagged as a controlling course"));
-//			                }
-//			            }
-//		            }
-//
-//				    tx.commit();
-//			    }
-//	        }
-//		    catch (Exception e) {
-//		        tx.rollback();	   
-//		        Debug.error(e);
-//		        errors.add("", new ActionMessage("errors.exception", "ERRORS: " + e.getMessage()));
-//			    addErrors(request, errors);
-//			    return mapping.findForward("editInstructionalOffering");
-//		    }		            
-//	    }
-//	    else {
-//	        String crsName = frm.getSubjectAreaAbbv() + " " + frm.getCourseNbr();
-//	        errors.add("courseNbr", new ActionMessage("errors.lookup.notFound", "Course Offering: " + crsName ));
-//	    }
-//
-//	    addErrors(request, errors);
-//	    if(errors.size()>0) 
-//		    return mapping.findForward("editInstructionalOffering");
-//
-//	    frm.setCollections(request, getInstructionalOfferings(request, frm));
-//	    return mapping.findForward("showInstructionalOfferingList");
-//	}
-
-
-//	public ActionForward deleteCourseOffering(
-//			ActionMapping mapping,
-//			ActionForm form,
-//			HttpServletRequest request,
-//			HttpServletResponse response) throws Exception {
-//
-//        HttpSession httpSession = request.getSession();
-//        if(!Web.isLoggedIn( httpSession )) {
-//            throw new Exception ("Access Denied.");
-//        }
-//        
-//        User user = Web.getUser(httpSession);
-//        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-//
-//        InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
-//        ActionMessages errors = new ActionMessages();
-//        
-//        String subjAreaId = frm.getSubjectAreaId();
-//        String courseNbr = frm.getCourseNbr();
-//        List l = CourseOffering.search(sessionId, subjAreaId, courseNbr);
-//	    if(l.size()>0) {
-//	        // Delete
-//	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
-//	        CourseOffering co = (CourseOffering) l.get(0);
-//	        InstructionalOffering io = co.getInstructionalOffering();
-//	        
-//    	    org.hibernate.Session hibSession = idao.getSession();
-//    	    Transaction tx = hibSession.beginTransaction();
-//    	    
-//    	    try {
-//    	        Event.deleteFromEvents(hibSession, co);
-//                Exam.deleteFromExams(hibSession, co);
-//                
-//    	        if(co.isIsControl().booleanValue()) {
-//    	            Event.deleteFromEvents(hibSession, io);
-//    	            Exam.deleteFromExams(hibSession, io);
-//    	            idao.delete(io);
-//    	        } else {
-//    	            io.removeCourseOffering(co);
-//    	            idao.save(io);
-//    	        }
-//    	        
-//		        tx.commit();
-//    	    }	            
-//		    catch (Exception e) {
-//		        tx.rollback();	   
-//		        Debug.error(e);
-//		        errors.add("subjectAreaId", new ActionMessage("errors.exception", e.getMessage()));
-//		        addErrors(request, errors);
-//			    return mapping.findForward("addInstructionalOffering");
-//		    }		            
-//	    }     
-//
-//	    // Redirect back to search
-//	    frm.setSubjectAreaId(subjAreaId);
-//	    frm.setCourseNbr("");
-//	    frm.setCollections(request, getInstructionalOfferings(request, frm));
-//	    return mapping.findForward("showInstructionalOfferingList");
-//	}
-	public static void setupInstrOffrListSpecificFormFilters(HttpSession httpSession, InstructionalOfferingListForm form){
-		form.setDivSec(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.divSec", false)));	
-		form.setDemand(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.demand", true)));	
-		form.setProjectedDemand(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.projectedDemand", true)));	
-		form.setMinPerWk(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.minPerWk", true)));	
-		form.setLimit(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.limit", true)));
-		form.setRoomLimit(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.roomLimit", true)));
-		form.setManager(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.manager", true)));	
-		form.setDatePattern(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.datePattern", true)));
-		form.setTimePattern(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.timePattern", true)));
-		form.setInstructor(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.instructor", true)));
-		form.setPreferences(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.preferences", true)));
-		form.setTimetable(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.timetable", true)));	
-		form.setCredit(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.credit", false)));
-		form.setSubpartCredit(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.subpartCredit", false)));
-		form.setSchedulePrintNote(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.schedulePrintNote", true)));
-		form.setNote(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.note", false)));
-		form.setTitle(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.title", false)));
-		form.setConsent(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.consent", false)));
-		form.setDesignatorRequired(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.designatorRequired", false)));
-		form.setSortBy(UserData.getProperty(httpSession,"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
-        try {
-            User user = Web.getUser(httpSession);
-            TimetableManager manager = TimetableManager.getManager(user);
-            Session session = Session.getCurrentAcadSession(user);
-            if (manager.canSeeExams(session, user)) {
-                form.setCanSeeExams(Boolean.TRUE);
-                form.setExams(new Boolean(UserData.getPropertyBoolean(httpSession,"InstructionalOfferingList.exams", false)));
-            } else {
-                form.setCanSeeExams(Boolean.FALSE);
-            }
-            form.setCanAddCourse(manager.canAddCourses(session, user));
-        } catch (Exception e) {}
-	}
-
 }

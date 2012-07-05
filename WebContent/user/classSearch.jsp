@@ -28,6 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 <%
 	String frmName = "classListForm";	
@@ -133,7 +134,7 @@
 							<loc:message name="columnNote"/>
 						</TD>
 					</TR>
-					<logic:equal name="classListForm" property="canSeeExams" value="true">
+					<sec:authorize access="hasPermission(null, 'Session', 'Examinations')">
 						<TR>
 							<TD></TD>
 							<TD>
@@ -141,8 +142,7 @@
 								<loc:message name="columnExams"/>
 							</TD>
 						</TR>
-					</logic:equal>
-					<html:hidden property="canSeeExams"/>
+					</sec:authorize>
 					<TR>
 						<TD>
 							<B><loc:message name="filterManager" /></B>
@@ -301,6 +301,7 @@
 					title="<%=MSG.titleSearchClasses(MSG.accessSearchClasses())%>">
 					<loc:message name="actionSearchClasses"/>
 				</html:submit>
+				<sec:authorize access="hasPermission(null, 'Department', 'ClassesExportPDF')">
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
 					accesskey="<%=MSG.accessExportPdf()%>" 
@@ -309,6 +310,7 @@
 					onclick="doit.value=this.value;displayLoading();">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
+				</sec:authorize>
 			</TD>
 			<TD width='100%'></TD>
 		</TR>

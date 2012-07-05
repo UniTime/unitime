@@ -27,6 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%
 	// Get Form 
 	String frmName = "classAssignmentsReportForm";
@@ -35,11 +36,8 @@
 %>		
 
 <html:form action="/classAssignmentsReportSearch">
-<% User user = Web.getUser(session); %>
-
-<%
-	session.setAttribute("callingPage", "");
-%>
-<% new WebClassAssignmentReportListTableBuilder().htmlTableForClasses(session, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, user, out, request.getParameter("backType"), request.getParameter("backId"));%>
+<tt:session-context/>
+<% session.setAttribute("callingPage", ""); %>
+<% new WebClassAssignmentReportListTableBuilder().htmlTableForClasses(sessionContext, WebSolver.getClassAssignmentProxy(session),WebSolver.getExamSolver(session),frm, out, request.getParameter("backType"), request.getParameter("backId"));%>
 </html:form>
  

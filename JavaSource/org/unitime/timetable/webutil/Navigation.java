@@ -65,6 +65,7 @@ public class Navigation {
 		return null;
 	}
 	
+	@Deprecated
 	public static void set(HttpSession session, int level, Collection entities) {
 		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
 		if (ids==null) {

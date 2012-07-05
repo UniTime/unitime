@@ -24,11 +24,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
@@ -40,16 +38,14 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstructorComparator;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
-import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -95,21 +91,19 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
         return(cell);
 	}
 
-    public void htmlTableForClasses(HttpSession session, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, User user, JspWriter outputStream, String backType, String backId){
+    public void htmlTableForClasses(SessionContext context, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, JspWriter outputStream, String backType, String backId){
         
         this.setVisibleColumns(form);
         setBackType(backType);
         setBackId(backId);
  		
         Collection classes = (Collection) form.getClasses();
-        Navigation.set(session, Navigation.sClassLevel, classes);
+        Navigation.set(context, Navigation.sClassLevel, classes);
         
         if (getDisplayTimetable()) {
         	boolean hasTimetable = false;
-        	try {
-        		String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        		TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-        		if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
+        	if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+        		try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
                 	}
@@ -119,13 +113,13 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
         					hasTimetable = true; break;
         				}
         			}
-        		}
-        	} catch (Exception e) {}
+        		} catch (Exception e) {}
+        	}
         	setDisplayTimetable(hasTimetable);
         }
-        setUserSettings(user);
+        setUserSettings(context.getUser());
         
-        if (examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME))) {
+        if (examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId())) {
             setShowExam(true);
             setShowExamTimetable(true);
             setShowExamName(false);
@@ -155,11 +149,11 @@ public class WebClassAssignmentReportListTableBuilder extends WebClassListTableB
 					e.printStackTrace();
 				}
             	ct = 0;
-		        table = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
+		        table = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
 		    }
 		        
             
-            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", user, prevLabel);
+            this.buildClassRow(classAssignment,examAssignment, ++ct, table, co, c, "", context, prevLabel);
             prevLabel = c.getClassLabel(co);
         }  
         if(table != null)

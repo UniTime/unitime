@@ -23,7 +23,6 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -32,19 +31,20 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassListForm;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 
 
@@ -53,7 +53,10 @@ import org.unitime.timetable.webutil.BackTracker;
  */
 @Service("/classShowSearch")
 public class ClassShowSearchAction extends Action {
-
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
+	
 	/** 
 	 * Method execute
 	 * @param mapping
@@ -69,74 +72,40 @@ public class ClassShowSearchAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 
-        BackTracker.markForBack(request, null, null, false, true); //clear back list
-
-        HttpSession httpSession = request.getSession();
-        if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
+        BackTracker.markForBack(request, null, null, false, true);
+        
+    	if (!sessionContext.hasPermission(Right.Classes))
+    		throw new Exception(MSG.errorAccessDenied());
         
         
-        httpSession.setAttribute("callingPage", "classShowSearch");
-        // Check if subject area / course number saved to session
-	    Object sas = httpSession.getAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME);
-	    Object cn = httpSession.getAttribute(Constants.CRS_LST_CRS_NBR_ATTR_NAME);
+    	sessionContext.setAttribute("callingPage", "classShowSearch");
+    	
+	    Object sas = sessionContext.getAttribute(SessionAttribute.ClassesSubjectAreas);
+	    Object cn = sessionContext.getAttribute(SessionAttribute.ClassesCourseNumber);
 	    String subjectAreaIds = "";
 	    String courseNbr = "";
 	    
-	    if ( (sas==null || sas.toString().trim().length()==0) 
-	            && (cn==null || cn.toString().trim().length()==0) ) {
+	    if ( (sas==null || sas.toString().trim().isEmpty()) && (cn==null || cn.toString().trim().isEmpty()) ) {
 		    // use session variables from io search  
-	        sas = httpSession.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
-	        cn = httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME);	        
+	        sas = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+	        cn = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);	        
 	    }
 	    
-	    User user = Web.getUser(request.getSession());
-	    LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+	    request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
         
 		ClassListForm classListForm = (ClassListForm) form;
-		ClassSearchAction.setupBasicFormData(classListForm, user);
-		ClassSearchAction.setupGeneralFormFilters(httpSession, classListForm);
-		ClassSearchAction.setupClassListSpecificFormFilters(httpSession, classListForm);
-		/*
-		if (request.getParameter("sortBy") != null) {
-			classListForm.setDivSec(request.getParameter("divSec")==null?Boolean.FALSE:new Boolean(request.getParameter("divSec")));
-			classListForm.setLimit(request.getParameter("limit")==null?Boolean.FALSE:new Boolean(request.getParameter("limit")));
-			classListForm.setRoomLimit(request.getParameter("roomLimit")==null?Boolean.FALSE:new Boolean(request.getParameter("roomLimit")));	
-			classListForm.setManager(request.getParameter("manager")==null?Boolean.FALSE:new Boolean(request.getParameter("manager")));
-			classListForm.setDatePattern(request.getParameter("datePattern")==null?Boolean.FALSE:new Boolean(request.getParameter("datePattern")));
-			classListForm.setTimePattern(request.getParameter("timePattern")==null?Boolean.FALSE:new Boolean(request.getParameter("timePattern")));	
-			classListForm.setInstructor(request.getParameter("instructor")==null?Boolean.FALSE:new Boolean(request.getParameter("instructor")));
-			classListForm.setPreferences(request.getParameter("preferences")==null?Boolean.FALSE:new Boolean(request.getParameter("preferences")));	
-			classListForm.setTimetable(request.getParameter("timetable")==null?Boolean.FALSE:new Boolean(request.getParameter("timetable")));
-			classListForm.setSchedulePrintNote(request.getParameter("schedulePrintNote")==null?Boolean.FALSE:new Boolean(request.getParameter("schedulePrintNote")));
-			classListForm.setSortBy((String)request.getParameter("sortBy"));
-			classListForm.setFilterAssignedRoom((String)request.getParameter("filterAssignedRoom"));
-			classListForm.setFilterInstructor((String)request.getParameter("filterInstructor"));
-			classListForm.setFilterManager((String)request.getParameter("filterManager"));
-			classListForm.setFilterIType((String)request.getParameter("filterIType"));
-			classListForm.setFilterAssignedTimeMon(request.getParameter("filterAssignedTimeMon")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeMon")));
-			classListForm.setFilterAssignedTimeTue(request.getParameter("filterAssignedTimeTue")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeTue")));
-			classListForm.setFilterAssignedTimeWed(request.getParameter("filterAssignedTimeWed")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeWed")));
-			classListForm.setFilterAssignedTimeThu(request.getParameter("filterAssignedTimeThu")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeThu")));
-			classListForm.setFilterAssignedTimeFri(request.getParameter("filterAssignedTimeFri")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeFri")));
-			classListForm.setFilterAssignedTimeSat(request.getParameter("filterAssignedTimeSat")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeSat")));
-			classListForm.setFilterAssignedTimeSun(request.getParameter("filterAssignedTimeSun")==null?false:Boolean.getBoolean((String)request.getParameter("filterAssignedTimeSun")));
-			classListForm.setFilterAssignedTimeHour((String)request.getParameter("filterAssignedTimeHour"));
-			classListForm.setFilterAssignedTimeMin((String)request.getParameter("filterAssignedTimeMin"));
-			classListForm.setFilterAssignedTimeAmPm((String)request.getParameter("filterAssignedTimeAmPm"));
-			classListForm.setFilterAssignedTimeLength((String)request.getParameter("filterAssignedTimeLength"));
-			classListForm.setSortByKeepSubparts(Boolean.getBoolean((String)request.getParameter("sortByKeepSubparts")));
-		}
-		*/
-		
-        String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-		if (manager==null || !manager.canSeeTimetable(Session.getCurrentAcadSession(user), user))
-			classListForm.setTimetable(null);
-		
-		classListForm.setCollections(request, null);
-		if (sas==null && classListForm.getSubjectAreas().size()==1)
+		ClassSearchAction.setupGeneralFormFilters(sessionContext, classListForm);
+		ClassSearchAction.setupClassListSpecificFormFilters(sessionContext, classListForm);
+
+    	if (!sessionContext.hasPermission(Right.CourseTimetabling))
+    		classListForm.setTimetable(null);
+    	
+    	if (!sessionContext.hasPermission(Right.Examinations))
+    		classListForm.setExams(null);
+
+    	classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+    	
+		if (sas == null && classListForm.getSubjectAreas().size() == 1)
 			sas = ((SubjectArea)classListForm.getSubjectAreas().iterator().next()).getUniqueId().toString();
 			
         if (Constants.ALL_OPTION_VALUE.equals(sas)) sas=null;
@@ -158,7 +127,7 @@ public class ClassShowSearchAction extends Action {
 				StringBuffer ids = new StringBuffer();
 				StringBuffer names = new StringBuffer();
 				StringBuffer subjIds = new StringBuffer();
-				classListForm.setCollections(request, ClassSearchAction.getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
+				classListForm.setClasses(ClassSearchAction.getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
 				Collection classes = classListForm.getClasses();
 				if (classes.isEmpty()) {
 					    ActionMessages errors = new ActionMessages();
@@ -187,8 +156,8 @@ public class ClassShowSearchAction extends Action {
 	        }
 	        catch (NumberFormatException nfe) {
 	            Debug.error("Subject Area Ids session attribute is corrupted. Resetting ... ");
-	            httpSession.setAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME, null);
-	            httpSession.setAttribute(Constants.CRS_LST_CRS_NBR_ATTR_NAME, null);
+	            sessionContext.removeAttribute(SessionAttribute.ClassesSubjectAreas);
+	            sessionContext.removeAttribute(SessionAttribute.ClassesCourseNumber);
 	        }
 	    }
 
