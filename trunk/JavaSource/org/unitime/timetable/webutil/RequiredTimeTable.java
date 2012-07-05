@@ -30,8 +30,11 @@ import javax.servlet.ServletRequest;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -41,16 +44,31 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class RequiredTimeTable {
+	@Deprecated
     public static String getTimeGridSize(User user) {
     	return Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_SIZE);
     }
 
+    @Deprecated
     public static boolean getTimeGridVertical(User user) {
     	return Constants.SETTINGS_TIME_GRID_ORIENTATION_VERTICAL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_ORIENTATION));
     }
 
+    @Deprecated
     public static boolean getTimeGridAsText(User user) {
     	return Constants.SETTINGS_TIME_GRID_TEXT.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_ORIENTATION));
+    }
+    
+    public static String getTimeGridSize(UserContext user) {
+    	return UserProperty.GridSize.get(user);
+    }
+
+    public static boolean getTimeGridVertical(UserContext user) {
+    	return CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(user));
+    }
+
+    public static boolean getTimeGridAsText(UserContext user) {
+    	return CommonValues.TextGrid.eq(UserProperty.GridOrientation.get(user));
     }
 
     /** model */

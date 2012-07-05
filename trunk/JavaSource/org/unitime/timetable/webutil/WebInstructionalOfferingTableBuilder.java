@@ -32,17 +32,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableHeaderCell;
 import org.unitime.commons.web.htmlgen.TableRow;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.InstructionalOfferingListFormInterface;
 import org.unitime.timetable.model.Assignment;
@@ -66,16 +66,16 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
@@ -228,11 +228,11 @@ public class WebInstructionalOfferingTableBuilder {
     public String getDefaultTimeGridSize() {
     	return iDefaultTimeGridSize;
     }
-    
-    public void setUserSettings(User user) {
+     
+    public void setUserSettings(UserContext user) {
 		setTimeVertival(RequiredTimeTable.getTimeGridVertical(user));
 		setGridAsText(RequiredTimeTable.getTimeGridAsText(user));
-		setInstructorNameFormat(Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+		setInstructorNameFormat(UserProperty.NameFormat.get(user));
 		setDefaultTimeGridSize(RequiredTimeTable.getTimeGridSize(user));
     }
     
@@ -832,22 +832,22 @@ public class WebInstructionalOfferingTableBuilder {
         return(cell);
     }
 
-    private TableCell buildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, User user){
+    private TableCell buildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
-    		if (c.getSchedulePrintNote()!=null && c.getSchedulePrintNote().trim().length() != 0) {
-    			String note = (c.getSchedulePrintNote().length() <= 20?c.getSchedulePrintNote():c.getSchedulePrintNote().substring(0, 20) + "...");
-    			if(!Constants.showPrintNoteAsShortenedText(user) && !Constants.showPrintNoteAsFullText(user) ){
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    		if (c.getSchedulePrintNote()!=null && !c.getSchedulePrintNote().trim().isEmpty()) {
+    			if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))) {
+	    			cell = initNormalCell(c.getSchedulePrintNote().replace("\n", "<br>"), isEditable);
+	    			cell.setAlign("left");
+    			} else if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))) {
+        			String note = (c.getSchedulePrintNote().length() <= 20 ? c.getSchedulePrintNote() : c.getSchedulePrintNote().substring(0, 20) + "...");
+    				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
+	    			cell.setAlign("left");
+    			} else {
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasSchedulePrintNote() + "' title='" + c.getSchedulePrintNote() + "' align='absmiddle' src='images/Notes.png'>", isEditable);
     	    		cell.setAlign("center");
-    			} else if (Constants.showPrintNoteAsShortenedText(user)) {
-	    			cell = initNormalCell(note, isEditable);
-	    			cell.setAlign("left");
-    			} else if (Constants.showPrintNoteAsFullText(user)){
-	    			cell = initNormalCell(c.getSchedulePrintNote(), isEditable);
-	    			cell.setAlign("left");
-    			} 
+    			}
     		} else {
         		cell = this.initNormalCell("&nbsp;" ,isEditable);
         	}
@@ -927,60 +927,47 @@ public class WebInstructionalOfferingTableBuilder {
         return new TreeSet(Exam.findAll(ExamOwner.sOwnerTypeClass,clazz.getUniqueId()));
     }
 
-    private TableCell buildSchedulePrintNote(InstructionalOffering io, boolean isEditable, User user){
+    private TableCell buildSchedulePrintNote(InstructionalOffering io, boolean isEditable, UserContext user){
     	TableCell cell = null;
-	    StringBuffer note = new StringBuffer("");
-		Set s = io.getCourseOfferings();
-		boolean hasNote = false;
-		for (Iterator i=s.iterator(); i.hasNext(); ) {
-			CourseOffering coI = (CourseOffering) i.next();
-			if (coI.getScheduleBookNote()!=null && coI.getScheduleBookNote().trim().length()>0) {
-				hasNote = true;
-				if (note.length()>0)
-					note.append("<br>");
-				if (Constants.showCrsOffrAsFullText(user)){
-					note.append(coI.getScheduleBookNote());
+	    String note = "";
+	    for (CourseOffering co: io.getCourseOfferings()) {
+	    	if (co.getScheduleBookNote() != null && !co.getScheduleBookNote().trim().isEmpty()) {
+	    		if (!note.isEmpty()) note += "<br>";
+	    		if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
+	    			note += (co.getScheduleBookNote().length() <= 20 ? co.getScheduleBookNote() : co.getScheduleBookNote().substring(0, 20) + "...");
 				} else {
-					if (coI.getScheduleBookNote().length() <= 20){
-						note.append(coI.getScheduleBookNote());
-					} else {
-						note.append(coI.getScheduleBookNote().substring(0, 20) + "...");
-					}		
+					note += co.getScheduleBookNote();
 				}
-			}
-		}
-		if (hasNote){
-			if (!Constants.showCrsOffrAsShortenedText(user) && !Constants.showCrsOffrAsFullText(user)){
-	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+	    	}
+	    }
+		if (note.isEmpty()) {
+			cell = this.initNormalCell("&nbsp;" ,isEditable);
+		} else {
+			if (CommonValues.NoteAsIcon.eq(user.getProperty(UserProperty.CourseOfferingNoteDisplay))) {
+	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasCourseOfferingNote() + "' title='" + note.replace("<br>", "\n") + "' align='absmiddle' src='images/Notes.png'>", isEditable);
 	    		cell.setAlign("center");	
 			} else {
-				if (note.length() == 0){
-					note.append("&nbsp;");
-				}
-				cell = initNormalCell(note.toString(), isEditable);
+				cell = initNormalCell(note.replace("\n", "<br>"), isEditable);
 				cell.setAlign("left");
 			}
-	
-		} else {
-			cell = this.initNormalCell("&nbsp;" ,isEditable);
 		}
         return(cell);
     }
     
-    private TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, User user){
+    private TableCell buildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	TableCell cell = null;
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
-    		if (c.getNotes()!=null) {
-    			String note = (c.getNotes().length() <= 20?c.getNotes():c.getNotes().substring(0, 20) + "...");
-    			if (Constants.showMgrNoteShortenedText(user)){
-        			cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
+    		if (c.getNotes() != null && !c.getNotes().trim().isEmpty()) {
+    			if (CommonValues.NoteAsShortText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
+    				String note = (c.getNotes().length() <= 20 ? c.getNotes() : c.getNotes().substring(0, 20) + "...");
+    				cell = initNormalCell(note.replaceAll("\n","<br>"), isEditable);
         			cell.setAlign("left");
-    			} else if (Constants.showMgrNoteFullText(user)) {
+    			} else if (CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))) {
     				cell = initNormalCell(c.getNotes().replaceAll("\n","<br>"), isEditable);
         			cell.setAlign("left");
     			} else {
-    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + note + "' align='absmiddle' src='images/Notes.png'>", isEditable);
+    	    		cell = initNormalCell("<IMG border='0' alt='" + MSG.altHasNoteToMgr() + "' title='" + c.getNotes() + "' align='absmiddle' src='images/Notes.png'>", isEditable);
     	    		cell.setAlign("center");
     			}
     		} else { 
@@ -1169,7 +1156,7 @@ public class WebInstructionalOfferingTableBuilder {
     
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, User user){
+    protected void buildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableRow row, CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, SessionContext context){
     	boolean classLimitDisplayed = false;
     	if (isShowLabel()){
 	        row.addContent(this.buildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel));
@@ -1251,10 +1238,10 @@ public class WebInstructionalOfferingTableBuilder {
     		row.addContent(this.initNormalCell("&nbsp;", isEditable));
     	}
     	if (isShowSchedulePrintNote()){
-            row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable, user));     		
+            row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable, context.getUser()));     		
     	} 
     	if (isShowNote()){
-            row.addContent(this.buildNote(prefGroup, isEditable, user));     		
+            row.addContent(this.buildNote(prefGroup, isEditable, context.getUser()));     		
     	}
     	if (isShowExam()) {
     	    if (prefGroup instanceof Class_) {
@@ -1278,10 +1265,10 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     }
     
-    private void buildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, SchedulingSubpart ss, String indentSpaces, User user){
+    private void buildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, SchedulingSubpart ss, String indentSpaces, SessionContext context){
     	boolean isHeaderRow = true;
     	TableRow row = this.initRow(isHeaderRow);
-        boolean isEditable = ss.isViewableBy(user);
+    	boolean isEditable = context.hasPermission(ss, Right.SchedulingSubpartDetail);
         boolean isOffered = !ss.getInstrOfferingConfig().getInstructionalOffering().isNotOffered().booleanValue();        
 
         if(isOffered)
@@ -1294,14 +1281,14 @@ public class WebInstructionalOfferingTableBuilder {
         if(isOffered)
             row.setOnMouseOut(this.getRowMouseOut(isHeaderRow));
         
-        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, ss, indentSpaces, isEditable, null, user);
+        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, ss, indentSpaces, isEditable, null, context);
       table.addContent(row);
     	
     }
     
-    private void buildSchedulingSubpartRows(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, SchedulingSubpart ss, String indentSpaces, User user){
+    private void buildSchedulingSubpartRows(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, SchedulingSubpart ss, String indentSpaces, SessionContext context){
     	if (subpartIds!=null) subpartIds.add(ss.getUniqueId());
-        this.buildSchedulingSubpartRow(classAssignment, examAssignment, table, co, ss, indentSpaces, user);
+        this.buildSchedulingSubpartRow(classAssignment, examAssignment, table, co, ss, indentSpaces, context);
         Set childSubparts = ss.getChildSubparts();
         
 		if (childSubparts != null && !childSubparts.isEmpty()){
@@ -1313,14 +1300,14 @@ public class WebInstructionalOfferingTableBuilder {
             
             while (it.hasNext()){              
                 child = (SchedulingSubpart) it.next();
-                buildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, table, co, child, indentSpaces + indent, user);
+                buildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, table, co, child, indentSpaces + indent, context);
             }
         }
     }
  
-    protected void buildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, TableStream table, CourseOffering co, Class_ aClass, String indentSpaces, User user, String prevLabel){
+    protected void buildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, TableStream table, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){
     	boolean isHeaderRow = false;
-        boolean isEditable = aClass.isViewableBy(user);
+    	boolean isEditable = context.hasPermission(aClass, Right.ClassDetail);
     	TableRow row = this.initRow(isHeaderRow);
         row.setOnMouseOver(this.getRowMouseOver(isHeaderRow, isEditable));
         row.setOnMouseOut(this.getRowMouseOut(isHeaderRow));
@@ -1329,13 +1316,13 @@ public class WebInstructionalOfferingTableBuilder {
             	row.setOnClick("document.location='classDetail.do?cid=" + aClass.getUniqueId().toString() + "&sec=" + aClass.getSectionNumberString() + "'");
         }
         
-        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable, prevLabel, user);
+        this.buildClassOrSubpartRow(classAssignment, examAssignment, row, co, aClass, indentSpaces, isEditable, prevLabel, context);
         table.addContent(row);
     }
     
-    private void buildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, TableStream table, CourseOffering co, Class_ aClass, String indentSpaces, User user, String prevLabel){
+    private void buildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, TableStream table, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){
 
-        buildClassRow(classAssignment, examAssignment, ct, table, co, aClass, indentSpaces, user, prevLabel);
+        buildClassRow(classAssignment, examAssignment, ct, table, co, aClass, indentSpaces, context, prevLabel);
     	Set childClasses = aClass.getChildClasses();
 
     	if (childClasses != null && !childClasses.isEmpty()){
@@ -1348,7 +1335,7 @@ public class WebInstructionalOfferingTableBuilder {
             String previousLabel = aClass.htmlLabel();
             while (it.hasNext()){              
                 child = (Class_) it.next();
-                buildClassRows(classAssignment, examAssignment, ct, table, co, child, indentSpaces + indent, user, previousLabel);
+                buildClassRows(classAssignment, examAssignment, ct, table, co, child, indentSpaces + indent, context, previousLabel);
             }
         }
     }
@@ -1356,9 +1343,9 @@ public class WebInstructionalOfferingTableBuilder {
 
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-	protected void buildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, InstrOfferingConfig ioc, User user, boolean printConfigLine, boolean printConfigReservation) {
+	protected void buildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, InstrOfferingConfig ioc, SessionContext context, boolean printConfigLine, boolean printConfigReservation) {
 	    boolean isHeaderRow = true;
-	    boolean isEditable = ioc.isViewableBy(user);
+	    boolean isEditable = context.hasPermission(ioc.getInstructionalOffering(), Right.InstructionalOfferingDetail);
 	    String configName = ioc.getName();
 	    boolean unlimited = ioc.isUnlimitedEnrollment().booleanValue();
 	    boolean hasConfig = false;
@@ -1471,7 +1458,7 @@ public class WebInstructionalOfferingTableBuilder {
         while(it.hasNext()){
             ss = (SchedulingSubpart) it.next();
             if (ss.getParentSubpart() == null){
-                buildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, table, co, ss, (hasConfig?indent+indent:indent) , user);
+                buildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, table, co, ss, (hasConfig?indent+indent:indent) , context);
             }
         }
         it = subpartList.iterator();
@@ -1487,7 +1474,7 @@ public class WebInstructionalOfferingTableBuilder {
 					Class_ c = null;
 					while (cIt.hasNext()) {
 						c = (Class_) cIt.next();
-						buildClassRows(classAssignment, examAssignment, ++ct, table, co, c, indent, user, prevLabel);
+						buildClassRows(classAssignment, examAssignment, ++ct, table, co, c, indent, context, prevLabel);
 						prevLabel = c.htmlLabel();
 					}
 				}
@@ -1497,34 +1484,20 @@ public class WebInstructionalOfferingTableBuilder {
 
    }
 
-    private void buildConfigRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, Set instrOfferingConfigs, User user, boolean printConfigLine, boolean printConfigReservation) {
+    private void buildConfigRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, CourseOffering co, Set instrOfferingConfigs, SessionContext context, boolean printConfigLine, boolean printConfigReservation) {
         Iterator it = instrOfferingConfigs.iterator();
         InstrOfferingConfig ioc = null;
         while (it.hasNext()){
             ioc = (InstrOfferingConfig) it.next();
-            buildConfigRow(null, classAssignment, examAssignment, table, co, ioc, user, printConfigLine && instrOfferingConfigs.size()>1, printConfigReservation);
+            buildConfigRow(null, classAssignment, examAssignment, table, co, ioc, context, printConfigLine && instrOfferingConfigs.size()>1, printConfigReservation);
         }
     }
 
     //MSG.columnNote(): if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    private void addInstrOffrRowsToTable(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, InstructionalOffering io, Long subjectAreaId, User user){
+    private void addInstrOffrRowsToTable(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, TableStream table, InstructionalOffering io, Long subjectAreaId, SessionContext context){
         CourseOffering co = io.findSortCourseOfferingForSubjectArea(subjectAreaId);
-        boolean isEditable = io.isViewableBy(user);
-        if (!isEditable){
-        	if (io.getInstrOfferingConfigs() != null && io.getInstrOfferingConfigs().size() > 0){
-        		boolean canEdit = true;
-        		Iterator it = io.getInstrOfferingConfigs().iterator();
-        		InstrOfferingConfig ioc = null;
-        		while(canEdit && it.hasNext()){
-        			ioc = (InstrOfferingConfig) it.next();
-        			if(!ioc.isViewableBy(user)){
-        				canEdit = false;
-        			}
-        		}
-        		isEditable = canEdit;
-        	}
-        }
+        boolean isEditable = context.hasPermission(io, Right.InstructionalOfferingDetail);
         TableRow row = (this.initRow(true));
         row.setOnMouseOver(this.getRowMouseOver(true, isEditable));
         row.setOnMouseOut(this.getRowMouseOut(true));
@@ -1654,7 +1627,7 @@ public class WebInstructionalOfferingTableBuilder {
             row.addContent(cell);
     	}
     	if (isShowSchedulePrintNote()){
-            row.addContent(buildSchedulePrintNote(io, isEditable, user));     		
+            row.addContent(buildSchedulePrintNote(io, isEditable, context.getUser()));     		
     	}
     	if (isShowNote()){
             row.addContent(initNormalCell("", isEditable));     		
@@ -1683,7 +1656,7 @@ public class WebInstructionalOfferingTableBuilder {
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){
         	TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(io.getControllingCourseOffering().getSubjectArea().getUniqueId()));
         	configs.addAll(io.getInstrOfferingConfigs());
-            buildConfigRows(classAssignment, examAssignment, table, io.getControllingCourseOffering(), configs, user, true, false);
+            buildConfigRows(classAssignment, examAssignment, table, io.getControllingCourseOffering(), configs, context, true, false);
         }
     }
     
@@ -1699,15 +1672,14 @@ public class WebInstructionalOfferingTableBuilder {
     }
     
     public void htmlTableForInstructionalOffering(
-    		HttpSession session,
+    		SessionContext context,
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instructionalOfferingId, 
-            User user,
             JspWriter outputStream,
             Comparator classComparator){
     	
-    	if (instructionalOfferingId != null && user != null){
+    	if (instructionalOfferingId != null) {
 	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(instructionalOfferingId);
 	        Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
@@ -1719,20 +1691,19 @@ public class WebInstructionalOfferingTableBuilder {
 	        iotbl.setDisplayDistributionPrefs(false);
 	        setVisibleColumns(COLUMNS);
 		    htmlTableForInstructionalOfferings(
-		    			session,
+		    			context,
 				        classAssignment,
 				        examAssignment,
-				        ts, subjectAreaId, user, false, false, outputStream, classComparator);
+				        ts, subjectAreaId, false, false, outputStream, classComparator);
     	}
     }
     
     public void htmlTableForInstructionalOfferings(
-    		HttpSession session,
+    		SessionContext context,
             ClassAssignmentProxy classAssignment, 
             ExamAssignmentProxy examAssignment,
             InstructionalOfferingListForm form, 
             Long subjectAreaId, 
-            User user,
             boolean displayHeader,
             boolean allCoursesAreGiven,
             JspWriter outputStream,
@@ -1742,10 +1713,9 @@ public class WebInstructionalOfferingTableBuilder {
     	setBackType(backType); setBackId(backId);
     	
     	this.setVisibleColumns(form);
-    	htmlTableForInstructionalOfferings(session, classAssignment, examAssignment,
+    	htmlTableForInstructionalOfferings(context, classAssignment, examAssignment,
     			(TreeSet) form.getInstructionalOfferings(), 
      			subjectAreaId,
-    			user,
     			displayHeader, allCoursesAreGiven,
     			outputStream,
     			new ClassCourseComparator(form.getSortBy(), classAssignment, false)
@@ -1754,12 +1724,11 @@ public class WebInstructionalOfferingTableBuilder {
     }
     
     protected void htmlTableForInstructionalOfferings(
-    		HttpSession session,
+    		SessionContext context,
             ClassAssignmentProxy classAssignment, 
             ExamAssignmentProxy examAssignment,
             TreeSet insructionalOfferings, 
             Long subjectAreaId, 
-            User user,
             boolean displayHeader, boolean allCoursesAreGiven,
             JspWriter outputStream,
             Comparator classComparator){
@@ -1769,9 +1738,8 @@ public class WebInstructionalOfferingTableBuilder {
         
     	if (isShowTimetable()) {
             boolean hasTimetable = false;
-    		try {
-    	        TimetableManager manager = TimetableManager.getManager(user);
-    			if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
+            if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+            	try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		Vector allClasses = new Vector();
         				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
@@ -1806,13 +1774,13 @@ public class WebInstructionalOfferingTableBuilder {
                 			}
                 		}
                 	}
-            	}
-            } catch (Exception e) {}
+            	} catch (Exception e) {}
+            }
             setDisplayTimetable(hasTimetable);
     	}
     	
     	if (isShowExam())
-    	    setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+    	    setShowExamTimetable(examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId()));
     	
         ArrayList notOfferedOfferings = new ArrayList();
         ArrayList offeredOfferings = new ArrayList();
@@ -1822,7 +1790,7 @@ public class WebInstructionalOfferingTableBuilder {
         InstructionalOffering io = null;
         boolean hasOfferedCourses = false;
         boolean hasNotOfferedCourses = false;
-		setUserSettings(user);
+		setUserSettings(context.getUser());
         
          while (it.hasNext()){
             io = (InstructionalOffering) it.next();
@@ -1848,12 +1816,12 @@ public class WebInstructionalOfferingTableBuilder {
                   
             if (hasOfferedCourses){
                 it = offeredOfferings.iterator();
-                TableStream offeredTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
+                TableStream offeredTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
                 
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
                     offeringIds.add(io.getUniqueId());
-                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, offeredTable, io, subjectAreaId, user);            	
+                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, offeredTable, io, subjectAreaId, context);            	
                 }
                 offeredTable.tableComplete();
             } else {
@@ -1880,11 +1848,11 @@ public class WebInstructionalOfferingTableBuilder {
             
             if (hasNotOfferedCourses){
                 it = notOfferedOfferings.iterator();
-                TableStream notOfferedTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
+                TableStream notOfferedTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
                     offeringIds.add(io.getUniqueId());
-                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, notOfferedTable, io, subjectAreaId, user);            	
+                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, notOfferedTable, io, subjectAreaId, context);            	
                 }
                 notOfferedTable.tableComplete();
             } else {
@@ -1897,7 +1865,7 @@ public class WebInstructionalOfferingTableBuilder {
             }
         }
         
-        Navigation.set(session, Navigation.sInstructionalOfferingLevel, offeringIds);
+        Navigation.set(context, Navigation.sInstructionalOfferingLevel, offeringIds);
     }
 
 
@@ -1925,7 +1893,7 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowConsent(form.getConsent().booleanValue());
 		setShowDesignatorRequired(form.getDesignatorRequired().booleanValue());
 		setShowTitle(form.getTitle().booleanValue());
-		if (form.getCanSeeExams()) {
+		if (form.getExams() != null) {
 		    setShowExam(form.getExams());
 		} else {
 		    setShowExam(false);

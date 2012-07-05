@@ -23,12 +23,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseSubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -251,4 +253,19 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 		}
 		return false;
 	}
+	
+	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user) {
+		TreeSet<SubjectArea> subjectAreas = new TreeSet<SubjectArea>();
+		if (user == null || user.getCurrentAuthority() == null) return subjectAreas;
+		for (Department department: Department.getUserDepartments(user)) {
+			if (department.isExternalManager()) {
+				subjectAreas.addAll(department.getSession().getSubjectAreas());
+				break;
+			} else {
+				subjectAreas.addAll(department.getSubjectAreas());
+			}
+		}
+		return subjectAreas;
+	}
+
 }

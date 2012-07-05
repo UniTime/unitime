@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.core.userdetails.UserDetails;
+import org.unitime.timetable.defaults.UserProperty;
 
 public interface UserContext extends UserDetails {
 	
@@ -60,7 +61,13 @@ public interface UserContext extends UserDetails {
 	
 	public String getProperty(String key);
 	
+	public String getProperty(String key, String defaultValue);
+	
 	public void setProperty(String key, String value);
+	
+	public String getProperty(UserProperty property);
+	
+	public void setProperty(UserProperty property, String value);
 	
 	public Map<String, String> getProperties();
 	

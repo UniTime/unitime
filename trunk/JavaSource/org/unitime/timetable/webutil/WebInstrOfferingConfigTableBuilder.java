@@ -24,33 +24,30 @@ import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
-import org.unitime.commons.User;
 import org.unitime.commons.web.htmlgen.TableCell;
 import org.unitime.commons.web.htmlgen.TableStream;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
-import org.unitime.timetable.util.Constants;
 
 
 public class WebInstrOfferingConfigTableBuilder extends
@@ -75,7 +72,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		super();
 	}
 	
-	public String buttonsTable(InstrOfferingConfig ioc, boolean isEditable, boolean isFullyEditable, boolean isLimitedEditable, boolean isExtManaged){
+	public String buttonsTable(InstrOfferingConfig ioc, SessionContext context) {
 		StringBuffer btnTable = new StringBuffer("");
 		btnTable.append("<table class='BottomBorder' width='100%'><tr><td width='100%' nowrap>");
 		btnTable.append("<DIV class='WelcomeRowHeadNoLine'>");
@@ -85,10 +82,10 @@ public class WebInstrOfferingConfigTableBuilder extends
 		btnTable.append("</DIV>");
 		btnTable.append("</td><td style='padding-bottom: 3px' nowrap>");
 		boolean notOffered = ioc.getInstructionalOffering().isNotOffered().booleanValue();
-		if (!notOffered && (isEditable || isLimitedEditable || isExtManaged)) {
+		if (!notOffered) {
 	        btnTable.append("<table border='0' align='right' cellspacing='1' cellpadding='0'>");
 	        
-	        if (isEditable) {
+	        if (context.hasPermission(ioc, Right.EditInstructionalOfferingConfig)) {
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");
@@ -97,7 +94,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("</td>");
 	        }
 	        
-	        if ((isEditable || isExtManaged) && ioc.hasClasses() && !ioc.isUnlimitedEnrollment().booleanValue()) {
+	        if (context.hasPermission(ioc, Right.MultipleClassSetup)) {
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingModify.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
@@ -106,7 +103,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("</td>");
 	        }
 
-	        if (ioc.hasClasses() && isLimitedEditable) {
+	        if (context.hasPermission(ioc, Right.AssignInstructors)) {
 	        	btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='classInstructorAssignment.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='uid' value='" + ioc.getUniqueId().toString() + "'>");
@@ -114,30 +111,6 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        btnTable.append("	</form>");
 		        btnTable.append("</td>");
 	        }
-	        
-            /*
-	        if (isFullyEditable) { //config is editable PLUS all subparts are editable as well
-		        btnTable.append("<td>");
-		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
-		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");
-		        btnTable.append("		<input type='submit' name='op' value='Duplicate' title='Copy as a new Configuration' class='btn'>");
-		        btnTable.append("	</form>");
-		        btnTable.append("</td>");
-	        }
-            */
-	        
-	        //TODO Reservations - functionality to be made visible later
-	        /*
-	        if (isEditable) {
-	        	btnTable.append("<td>");
-	        	btnTable.append("	<form method='post' action='reservationAdd.do' class='FormWithNoPadding'>");
-	        	btnTable.append("		<input type='hidden' name='ownerId' value='" + ioc.getUniqueId().toString() + "'>");
-	        	btnTable.append("		<input type='hidden' name='ownerClassId' value='" + Constants.RESV_OWNER_CONFIG + "'>");
-	        	btnTable.append("		<input type='submit' name='op' value='Reservations' title='Manage Reservations' class='btn'> ");
-	        	btnTable.append("	</form>");
-	        	btnTable.append("</td>");
-	        }
-	        */
 
 	        btnTable.append("</tr>");
 	        btnTable.append("</table>");
@@ -151,14 +124,14 @@ public class WebInstrOfferingConfigTableBuilder extends
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instrOfferingConfigId, 
-            User user,
+            SessionContext context,
             JspWriter outputStream){
     	
-    	if (instrOfferingConfigId != null && user != null){
+    	if (instrOfferingConfigId != null){
 	        InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
 	        InstrOfferingConfig ioc = iocDao.get(instrOfferingConfigId);
 	        
-	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, user, outputStream);
+	        this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream);
     	}
     }
     
@@ -167,28 +140,27 @@ public class WebInstrOfferingConfigTableBuilder extends
     		ClassAssignmentProxy classAssignment,
     		ExamAssignmentProxy examAssignment,
             InstrOfferingConfig ioc, 
-            User user,
+            SessionContext context,
             JspWriter outputStream){
     	
-    	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
+    	if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ClassesKeepSort))) {
     		setClassComparator(
     			new ClassCourseComparator(
-    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
+    					context.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
     					classAssignment,
     					false
     			)
     		);
     	}
 
-    	if (ioc != null && user != null){
+    	if (ioc != null){
 	        
 	        this.setDisplayDistributionPrefs(false);
 	        
 	        if (isShowTimetable()) {
 	        	boolean hasTimetable = false;
-	        	try {
-	        		TimetableManager manager = TimetableManager.getManager(user);
-	        		if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
+	        	if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+	        		try {
 	                	if (classAssignment instanceof CachedClassAssignmentProxy) {
 	                		Vector allClasses = new Vector();
 		        			for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
@@ -211,35 +183,17 @@ public class WebInstrOfferingConfigTableBuilder extends
 		        				}
 		        			}
 	                	}
-	        		}
-	        	} catch (Exception e) {}
+	        		} catch (Exception e) {}
+	        	}
 	        	setDisplayTimetable(hasTimetable);
 	        }
 	        
-	        boolean isEditable = ioc.isEditableBy(user);
-	        boolean isFullyEditable = ioc.isEditableBy(user); //config is editable PLUS all subparts are editable as well
-	        boolean isExtManaged = false;
-	        if (!isEditable) {
-	            isExtManaged = ioc.hasExternallyManagedSubparts(user, true);
-	        }
-	        boolean isLimitedEditable = false;
-	        if (ioc.hasClasses()) {
-	        	for (Iterator i=ioc.getSchedulingSubparts().iterator();i.hasNext();) {
-	        		SchedulingSubpart ss = (SchedulingSubpart)i.next();
-	        		if (ss.isLimitedEditable(user)) {
-	        			isLimitedEditable = true;
-	        		}
-	        		if (!ss.isEditableBy(user))
-	        			isFullyEditable = false;
-	        	}
-	        }	        
-
 	        if (getDisplayConfigOpButtons()) {
         		try {
-        			outputStream.write(this.buttonsTable(ioc, isEditable, isFullyEditable, isLimitedEditable, isExtManaged));
+        			outputStream.write(this.buttonsTable(ioc, context));
         		} catch (IOException e) {}
 	        }
-	        if (StudentClassEnrollment.sessionHasEnrollments(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId())){
+	        if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
 	            String[] cols = {LABEL,
 	            		MSG.columnExternalId(),
 	            		MSG.columnMinPerWk(),
@@ -257,8 +211,8 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        } else {
 		        setVisibleColumns(COLUMNS);	        	
 	        }
-        	TableStream configTable = this.initTable(outputStream, (Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId()));
-        	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, user, !getDisplayConfigOpButtons(), true);
+        	TableStream configTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
+        	this.buildConfigRow(subpartIds, classAssignment, examAssignment,  configTable, ioc.getInstructionalOffering().getControllingCourseOffering(), ioc, context, !getDisplayConfigOpButtons(), true);
         	configTable.tableComplete();
 	    }
     }
@@ -266,11 +220,10 @@ public class WebInstrOfferingConfigTableBuilder extends
     
     
     public void htmlConfigTablesForInstructionalOffering(
-    		HttpSession session,
+    		SessionContext context,
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instructionalOffering, 
-            User user,
             JspWriter outputStream,
             String backType,
             String backId){
@@ -278,21 +231,21 @@ public class WebInstrOfferingConfigTableBuilder extends
     	setBackType(backType);
         setBackId(backId);    	
     	
-    	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
+        if (CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ClassesKeepSort))) {
     		setClassComparator(
     			new ClassCourseComparator(
-    					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
+    					context.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
     					classAssignment,
     					false
     			)
     		);
     	}
     	
-       	if (instructionalOffering != null && user != null){
+       	if (instructionalOffering != null) {
 	        InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = iDao.get(instructionalOffering);
 	        
-			setUserSettings(user);
+			setUserSettings(context.getUser());
 			
 			Vector subpartIds = new Vector();
 
@@ -308,11 +261,11 @@ public class WebInstrOfferingConfigTableBuilder extends
 	        				outputStream.println("<br>");
 	        			} catch (IOException e) {}
 	        		}
-	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, user, outputStream);
+	        		this.htmlTableForInstructionalOfferingConfig(subpartIds, classAssignment, examAssignment, ioc, context, outputStream);
 	        	}
 	        }
 			
-			Navigation.set(session, Navigation.sSchedulingSubpartLevel, subpartIds);
+			Navigation.set(context, Navigation.sSchedulingSubpartLevel, subpartIds);
        	}
     }
     

@@ -40,7 +40,6 @@ import org.unitime.timetable.form.AssignmentHistoryForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;

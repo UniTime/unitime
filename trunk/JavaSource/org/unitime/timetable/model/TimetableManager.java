@@ -90,6 +90,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		}
 	}
 	
+	@Deprecated
 	public static Set getSubjectAreas(User user) throws Exception {
 	    Set saList = new TreeSet();
 	    Session session = Session.getCurrentAcadSession(user);
@@ -111,6 +112,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return saList;
 	}
 	
+	@Deprecated
 	public static Set getSubjectAreas(UserContext user) throws Exception {
 	    Set saList = new TreeSet();
 	    Session session = (user.getCurrentAcademicSessionId() == null ? null : SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()));
@@ -198,6 +200,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canSeeTimetable(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return true;
@@ -234,6 +237,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canDoTimetable(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
@@ -246,6 +250,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canDoTimetable(Session session, UserContext user) {
 		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
 		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return false;
@@ -322,6 +327,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
     
+    @Deprecated
     public boolean canAddCourses(Session session, User user) {
     	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
     	
@@ -338,6 +344,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     }
 
 	
+    @Deprecated
 	public boolean canSeeExams(Session session, User user) {
         //can edit -> can view
         if (canEditExams(session, user)) return true;

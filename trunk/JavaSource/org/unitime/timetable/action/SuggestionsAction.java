@@ -44,7 +44,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SuggestionsForm;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;

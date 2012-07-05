@@ -74,7 +74,7 @@ public class ApplicationConfigAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
     	
-    	if (!sessionContext.hasPermission(Right.ApplicationConfig, false))
+    	if (!sessionContext.hasPermission(Right.ApplicationConfig))
             throw new Exception ("Access Denied.");
         
         ApplicationConfigForm frm = (ApplicationConfigForm) form;

@@ -20,25 +20,24 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class ExaminationTimetablingPermissions {
 
-	@Service("permissionAssignedExams")
-	public static class AssignedClasses implements Permission<Department> {
-		@Autowired PermissionDepartment permissionDepartment;
+	@PermissionForRight(Right.AssignedExams)
+	public static class AssignedClasses implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
 
 		@Override
-		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, Right.AssignedExams, DepartmentStatusType.Status.ExamTimetable);
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
 		}
 
 		@Override
-		public Class<Department> type() { return Department.class; }
+		public Class<Session> type() { return Session.class; }
 		
 	}
 }

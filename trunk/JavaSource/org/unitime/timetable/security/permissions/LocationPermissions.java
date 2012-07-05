@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.security.permissions;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
 import org.unitime.timetable.security.UserAuthority;
@@ -29,7 +28,7 @@ import org.unitime.timetable.security.rights.Right;
 
 public class LocationPermissions {
 	
-	@Service("permissionAddSpecialUseRoom")
+	@PermissionForRight(Right.AddSpecialUseRoom)
 	public static class AddSpecialUseRoom implements Permission<ExternalRoom> {
 
 		@Override

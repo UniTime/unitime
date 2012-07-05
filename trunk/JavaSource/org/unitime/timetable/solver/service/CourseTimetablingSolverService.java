@@ -33,7 +33,6 @@ import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.SearchIntensification;
 import net.sf.cpsolver.ifs.extension.ViolatedInitials;
 import net.sf.cpsolver.ifs.util.DataProperties;
-import net.sf.cpsolver.ifs.util.DistanceMetric;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +41,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.ApplicationProperty;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
@@ -59,7 +61,6 @@ import org.unitime.timetable.solver.remote.BackupFileFilter;
 import org.unitime.timetable.solver.remote.RemoteSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
-import org.unitime.timetable.util.Constants;
 
 @Service("courseTimetablingSolverService")
 public class CourseTimetablingSolverService implements SolverService<SolverProxy>, InitializingBean, DisposableBean {
@@ -98,38 +99,38 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 
 	@Override
 	public SolverProxy getSolver() {
-		SolverProxy solver = (SolverProxy)sessionContext.getAttribute("SolverProxy");
+		SolverProxy solver = (SolverProxy)sessionContext.getAttribute(SessionAttribute.CourseTimetablingSolver);
 		if (solver!=null) {
 			try {
 				if (solver instanceof RemoteSolverProxy && ((RemoteSolverProxy)solver).exists())
 					return (SolverProxy)solver;
 				else
-					sessionContext.removeAttribute("SolverProxy");
+					sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
 			} catch (Exception e) {
-				sessionContext.removeAttribute("SolverProxy");
+				sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
 			};
 		}
 		if (!sessionContext.isAuthenticated()) return null;
 		Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 		if (sessionId == null) return null;
-		String puid = (String)sessionContext.getAttribute("ManageSolver.puid");
+		String puid = (String)sessionContext.getAttribute(SessionAttribute.CourseTimetablingUser);
 		if (puid != null) {
 			solver = getSolver(puid, sessionId);
 			if (solver!=null) {
-				sessionContext.setAttribute("SolverProxy", solver);
+				sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, solver);
 				return solver;
 			}
 		}
 		solver = getSolver(sessionContext.getUser().getExternalUserId(), sessionId);
 		if (solver!=null)
-			sessionContext.setAttribute("SolverProxy", solver);
+			sessionContext.setAttribute(SessionAttribute.CourseTimetablingSolver, solver);
 		return solver;
 	}
 	
 	@Override
 	public SolverProxy getSolverNoSessionCheck() {
 		if (!sessionContext.isAuthenticated()) return null;
-		String puid = (String)sessionContext.getAttribute("ManageSolver.puid");
+		String puid = (String)sessionContext.getAttribute(SessionAttribute.CourseTimetablingUser);
 		if (puid!=null) {
 			SolverProxy solver = getSolver(puid, null);
 			if (solver!=null) return solver;
@@ -140,7 +141,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 	@Override
 	public void removeSolver() {
 		try {
-			sessionContext.removeAttribute("SolverProxy");
+			sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
 			sessionContext.removeAttribute("Suggestions.model");
 			sessionContext.removeAttribute("Timetable.table");
 			SolverProxy solver = getSolverNoSessionCheck();
@@ -148,7 +149,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 				solver.interrupt();
 				solver.dispose();
 			}
-			sessionContext.removeAttribute("ManageSolver.puid");
+			sessionContext.removeAttribute(SessionAttribute.CourseTimetablingUser);
 		} catch (Exception e) {
 			sLog.warn("Failed to remove a solver: " + e.getMessage(), e);
 		}
@@ -226,7 +227,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         
         // Distances Matrics
         if (properties.getProperty("Distances.Ellipsoid") == null || properties.getProperty("Distances.Ellipsoid").equals("DEFAULT"))
-            properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+            properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty(ApplicationProperty.DistanceEllipsoid));
         
         properties.expand();
         
@@ -297,7 +298,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 	        else
 	        	properties.remove("General.SolverWarnings");
 		    
-		    String instructorFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+		    String instructorFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
 		    if (instructorFormat != null)
 		    	properties.setProperty("General.InstructorFormat",instructorFormat);
 		    
@@ -316,7 +317,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 	            }
 		    }
 		    
-		    int memoryLimit = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.solver.mem_limit","200"));
+		    int memoryLimit = Integer.parseInt(ApplicationProperties.getProperty(ApplicationProperty.SolverMemoryLimit));
 		    
 		    if (!"local".equals(host) && !SolverRegisterService.getInstance().getServers().isEmpty()) {
 		    	RemoteSolverServerProxy bestServer = null;
@@ -378,7 +379,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 	        else
 	        	properties.remove("General.SolverWarnings");
 
-			String instructorFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+			String instructorFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
 		    if (instructorFormat != null)
 		    	properties.setProperty("General.InstructorFormat",instructorFormat);
 

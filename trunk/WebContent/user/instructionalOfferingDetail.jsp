@@ -478,17 +478,18 @@
 <!-- Configuration -->
 		<TR>
 			<TD colspan="2" valign="middle">
+	<tt:session-context/>
 	<% //output configuration
 	if (frm.getInstrOfferingId() != null){
 		WebInstrOfferingConfigTableBuilder ioTableBuilder = new WebInstrOfferingConfigTableBuilder();
 		ioTableBuilder.setDisplayDistributionPrefs(false);
 		ioTableBuilder.setDisplayConfigOpButtons(true);
 		ioTableBuilder.htmlConfigTablesForInstructionalOffering(
-									session,
+									sessionContext,
 				    		        WebSolver.getClassAssignmentProxy(session),
 				    		        WebSolver.getExamSolver(session),
 				    		        frm.getInstrOfferingId(), 
-				    		        Web.getUser(session), out,
+				    		        out,
 				    		        request.getParameter("backType"),
 				    		        request.getParameter("backId"));
 	}

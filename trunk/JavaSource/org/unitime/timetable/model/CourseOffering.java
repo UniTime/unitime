@@ -102,41 +102,28 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 * @param courseNbr Course Number
 	 * @return List object with matching course offering
 	 */
-	public static List search(Long acadSessionId, String subjAreaId, String courseNbr) {
-
-	    InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
-	    org.hibernate.Session hibSession = iDao.getSession();
-	    
-	    String sql = " from CourseOffering co " +
-	    			 " where co.uniqueCourseNbr.subjectArea.uniqueId=:subjArea" +
-	    			 " and co.uniqueCourseNbr.courseNbr = :crsNbr" +
-	    			 " and co.instructionalOffering.session.uniqueId = :acadSessionId";
-	    Query query = hibSession.createQuery(sql);
-	    query.setString("crsNbr", courseNbr);
-	    query.setString("subjArea", subjAreaId);
-	    query.setLong("acadSessionId", acadSessionId.longValue());
-	    
-	    List l = query.list();
-
-	    return l;
+	public static CourseOffering findBySessionSubjAreaIdCourseNbr(Long acadSessionId, Long subjAreaId, String courseNbr) {
+		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
+				"from CourseOffering co " +
+				"where co.uniqueCourseNbr.subjectArea.uniqueId = :subjArea " +
+				"and co.uniqueCourseNbr.courseNbr = :crsNbr " +
+				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
+				.setString("crsNbr", courseNbr)
+				.setLong("subjArea", subjAreaId)
+				.setLong("acadSessionId", acadSessionId)
+				.setMaxResults(1).uniqueResult();
 	}
 	
     public static CourseOffering findBySessionSubjAreaAbbvCourseNbr(Long acadSessionId, String subjAreaAbbv, String courseNbr) {
-
-        InstructionalOfferingDAO iDao = new InstructionalOfferingDAO();
-        org.hibernate.Session hibSession = iDao.getSession();
-        
-        String sql = " from CourseOffering co " +
-                     " where co.uniqueCourseNbr.subjectArea.subjectAreaAbbreviation=:subjArea" +
-                     " and co.uniqueCourseNbr.courseNbr = :crsNbr" +
-                     " and co.instructionalOffering.session.uniqueId = :acadSessionId";
-        Query query = hibSession.createQuery(sql);
-        query.setString("crsNbr", courseNbr);
-        query.setString("subjArea", subjAreaAbbv);
-        query.setLong("acadSessionId", acadSessionId.longValue());
-        
-        return (CourseOffering)query.uniqueResult();
-        
+		return (CourseOffering)CourseOfferingDAO.getInstance().getSession().createQuery(
+				"from CourseOffering co " +
+				"where co.uniqueCourseNbr.subjectArea.subjectAreaAbbreviation = :subjArea " +
+				"and co.uniqueCourseNbr.courseNbr = :crsNbr " +
+				"and co.instructionalOffering.session.uniqueId = :acadSessionId")
+				.setString("crsNbr", courseNbr)
+				.setString("subjArea", subjAreaAbbv)
+				.setLong("acadSessionId", acadSessionId)
+				.setMaxResults(1).uniqueResult();
     }
 	
     public static CourseOffering findBySessionSubjAreaAbbvCourseNbrTitle(Long acadSessionId, String subjAreaAbbv, String courseNbr, String title) {
@@ -166,7 +153,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	 * @return CourseOffering object representing thenew course offering 
 	 * @throws Exception
 	 */
-	public static synchronized CourseOffering addNew(String subjAreaId, String courseNbr) throws Exception {
+	public static synchronized CourseOffering addNew(Long subjAreaId, String courseNbr) throws Exception {
 	    
 	    CourseOffering co = null; 
 	    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
@@ -188,7 +175,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             */
 		    
 		    // Add new Course Offering
-		    SubjectArea subjArea = new SubjectAreaDAO().get(new Long(subjAreaId));
+		    SubjectArea subjArea = new SubjectAreaDAO().get(subjAreaId);
 		    org.unitime.timetable.model.Session acadSession = subjArea.getSession();
 		    
 		    CourseOfferingDAO cdao = new CourseOfferingDAO();

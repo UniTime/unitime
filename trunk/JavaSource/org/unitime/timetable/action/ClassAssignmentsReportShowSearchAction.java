@@ -23,7 +23,6 @@ import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -32,16 +31,22 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.webutil.BackTracker;
 
 
@@ -50,6 +55,13 @@ import org.unitime.timetable.webutil.BackTracker;
  */
 @Service("/classAssignmentsReportShowSearch")
 public class ClassAssignmentsReportShowSearchAction extends Action {
+	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
+
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	/** 
 	 * Method execute
@@ -65,19 +77,16 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 		ActionForm form,
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
-
-	    HttpSession webSession = request.getSession();
-        if(!Web.isLoggedIn( webSession )) {
-            throw new Exception ("Access Denied.");
-        }
+		
+    	if (!sessionContext.hasPermission(Right.ClassAssignments))
+    		throw new Exception(MSG.errorAccessDenied());
         
-	    User user = Web.getUser(webSession);	
-	    HttpSession httpSession = request.getSession();
-	    ClassAssignmentsReportForm classListForm = (ClassAssignmentsReportForm) form;
-        classListForm.setIsAdmin(user.isAdmin());
-	    LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+	    ClassAssignmentsReportForm classListForm = (ClassAssignmentsReportForm)form;
 
-	    ClassAssignmentsReportSearchAction.setupGeneralFormFilters(httpSession, classListForm);
+	    request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
+	    
+	    ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), classListForm);
+	    
 		if (request.getParameter("sortBy") != null) {
 			classListForm.setSortBy((String)request.getParameter("sortBy"));
 			classListForm.setFilterAssignedRoom((String)request.getParameter("filterAssignedRoom"));
@@ -98,9 +107,9 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 			classListForm.setSortByKeepSubparts(Boolean.getBoolean((String)request.getParameter("sortByKeepSubparts")));
 		}
 		
-		classListForm.setSubjectAreas(Session.getCurrentAcadSession(user).getSubjectAreas());
+		classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
 
-		Object sas = httpSession.getAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME);
+		Object sas = sessionContext.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
 	    if(sas!=null && sas.toString().trim().length() > 0) {
 	    	String subjectAreaIds = sas.toString();
 	        try {
@@ -110,7 +119,7 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 		        
 		        classListForm.setSubjectAreaIds(subjectAreaIds.split(","));
 		        
-				classListForm.setCollections(request, ClassSearchAction.getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
+				classListForm.setClasses(ClassSearchAction.getClasses(classListForm, classAssignmentService.getAssignment()));
 				Collection classes = classListForm.getClasses();
 				if (classes.isEmpty()) {
 					    ActionMessages errors = new ActionMessages();
@@ -134,7 +143,7 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 				}
 	        } catch (NumberFormatException nfe) {
 	        	Debug.error("Subject Area Ids session attribute is corrupted. Resetting ... ");
-		        httpSession.setAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME, null);
+		        sessionContext.removeAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
 		    }
 	    }
 

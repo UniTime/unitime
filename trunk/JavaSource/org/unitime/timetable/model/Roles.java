@@ -175,18 +175,36 @@ public class Roles extends BaseRoles implements HasRights {
 		case ApplicationConfig:
 			return ADMIN_ROLE.equals(getReference());
 			
+		case CourseTimetabling:
 		case AssignedClasses:
 		case AssignmentHistory:
+		case AddCourseOffering:
+		case ClassEdit:
+		case OfferingCanLock:
+		case OfferingCanUnlock:
+		case AssignInstructors:
+		case MultipleClassSetup:
+		case EditInstructionalOfferingConfig:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case AssignedExams:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
 			
-		/* class rights*/
-		case ClassEdit:
-			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case InstructionalOfferings:
+		case InstructionalOfferingsExportPDF:
+		case InstructionalOfferingsWorksheetPDF:
+		case InstructionalOfferingDetail:
+		case Classes:
+		case ClassesExportPDF:
+		case SchedulingSubpartDetail:
 		case ClassDetail:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
+		
+		case ClassAssignments:
+		case ClassAssignmentsExportCSV:
+		case ClassAssignmentsExportPDF:
+		case Examinations:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 			
 		/* curriculum rights */
 		case CurriculumAdd:
@@ -200,6 +218,9 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference());
 		case CurriculumAdmin:
 			return ADMIN_ROLE.equals(getReference());
+			
+		case ExaminationSchedule:
+			return true;
 			
 		default:
 			

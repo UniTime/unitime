@@ -21,16 +21,12 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -69,11 +65,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 	private boolean sortByKeepSubparts;
 	private boolean showCrossListedClasses;
     
-    private boolean isAdmin;
-	
-	private boolean userIsAdmin;
 	private boolean returnAllControlClassesForSubjects;
-	private boolean sessionInLLREditStatus;
 	private String[] userDeptIds;
 	
 	/**
@@ -145,7 +137,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		filterAssignedRoom = "";
 		filterIType = "";
 		sortByKeepSubparts = false;
-        isAdmin = false;
 		
 		filterAssignedTimeMon = false;
 		filterAssignedTimeTue = false;
@@ -159,10 +150,8 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		filterAssignedTimeAmPm = "";
 		filterAssignedTimeLength = "";
 		
-		userIsAdmin = false;
 		returnAllControlClassesForSubjects = true;
 		userDeptIds = new String[0];
-		sessionInLLREditStatus = false;
 		showCrossListedClasses = false;
 	}
 
@@ -196,14 +185,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
         return errors;
-    }
-    
-    public void setCollections(HttpServletRequest request, Set classes) {
-        User user = Web.getUser(request.getSession());
-        Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-        Session acadSession = Session.getSessionById(sessionId);
-		setSubjectAreas(acadSession.getSubjectAreas());
-		setClasses(classes);
     }
     
 	public String getSortBy() { return sortBy; }
@@ -359,23 +340,11 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 			boolean returnAllControlClassesForSubjects) {
 		this.returnAllControlClassesForSubjects = returnAllControlClassesForSubjects;
 	}
-	public boolean isSessionInLLREditStatus() {
-		return sessionInLLREditStatus;
-	}
-	public void setSessionInLLREditStatus(boolean sessionInLLREditStatus) {
-		this.sessionInLLREditStatus = sessionInLLREditStatus;
-	}
 	public String[] getUserDeptIds() {
 		return userDeptIds;
 	}
 	public void setUserDeptIds(String[] userDeptIds) {
 		this.userDeptIds = userDeptIds;
-	}
-	public boolean isUserIsAdmin() {
-		return userIsAdmin;
-	}
-	public void setUserIsAdmin(boolean userIsAdmin) {
-		this.userIsAdmin = userIsAdmin;
 	}
 	public Boolean getDivSec() {
 		return (new Boolean(true));
@@ -433,12 +402,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     }
     public Boolean getTitle() {
 		return (new Boolean(false));
-    }
-    public boolean getIsAdmin() {
-        return isAdmin;
-    }
-    public void setIsAdmin(boolean isAdmin) {
-        this.isAdmin = isAdmin;
     }
     
     public Boolean getExams() {

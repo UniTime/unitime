@@ -46,7 +46,7 @@ public abstract class AbstractQualifier implements UserQualifier {
 	public String getQualifierLabel() { return iLabel == null ? iReference : iLabel; }
 	
 	@Override
-	public String toString() { return getQualifierType() + ":" + getQualifierReference() == null ? getQualifierId().toString() : getQualifierReference(); }
+	public String toString() { return getQualifierType() + ":" + (getQualifierReference() == null ? getQualifierId().toString() : getQualifierReference()); }
 	
 	@Override
 	public int hashCode() { return getQualifierId() == null ? getQualifierReference().hashCode() : getQualifierId().hashCode(); }

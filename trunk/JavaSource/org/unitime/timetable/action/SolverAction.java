@@ -21,7 +21,6 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.util.Hashtable;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,9 +40,7 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;

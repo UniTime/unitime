@@ -26,7 +26,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 
@@ -36,19 +35,25 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.form.ClassListFormInterface;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CsvClassAssignmentExport;
 import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilder;
@@ -59,6 +64,12 @@ import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilde
  */
 @Service("/classAssignmentsReportSearch")
 public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatchAction {
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();
@@ -66,40 +77,38 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 	      map.put("button.cancel", "searchClasses");
 	      map.put("button.exportPDF", "exportPdf");
 	      map.put("button.exportCSV", "exportCsv");
-	      map.put("button.msfExport", "msfExport");
 	      return map;
 	}
 	
 	private void initializeFilters(HttpServletRequest request, ClassAssignmentsReportForm classListForm){
-		HttpSession httpSession = request.getSession();
 	    if ("1".equals(request.getParameter("loadFilter"))) {
-            ClassAssignmentsReportSearchAction.setupGeneralFormFilters(httpSession, classListForm);
+            ClassAssignmentsReportSearchAction.setupGeneralFormFilters(sessionContext.getUser(), classListForm);
 	    } else {
-	    	UserData.setPropertyBoolean(httpSession,"ClassAssignments.sortByKeepSubparts", classListForm.getSortByKeepSubparts());
-	    	UserData.setProperty(httpSession,"ClassAssignments.sortBy", classListForm.getSortBy());
-	    	UserData.setProperty(httpSession,"ClassAssignments.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
-	    	//UserData.setProperty(httpSession,"ClassAssignments.filterInstructor", classListForm.getFilterInstructor());		    	
-	    	UserData.setProperty(httpSession,"ClassAssignments.filterManager", classListForm.getFilterManager());		
-	    	UserData.setProperty(httpSession,"ClassAssignments.filterIType", classListForm.getFilterIType());
-	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterDayCode", classListForm.getFilterDayCode());
-	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterStartSlot", classListForm.getFilterStartSlot());
-	    	UserData.setPropertyInt(httpSession,"ClassAssignments.filterLength", classListForm.getFilterLength());
-	    	UserData.setPropertyBoolean(httpSession,"ClassAssignments.showCrossListedClasses", classListForm.getShowCrossListedClasses());
+	    	sessionContext.getUser().setProperty("ClassAssignments.sortByKeepSubparts", classListForm.getSortByKeepSubparts() ? "1" : "0");
+	    	sessionContext.getUser().setProperty("ClassAssignments.sortBy", classListForm.getSortBy());
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterAssignedRoom", classListForm.getFilterAssignedRoom());		    	
+	    	//sessionContext.getUser().setProperty("ClassAssignments.filterInstructor", classListForm.getFilterInstructor());		    	
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterManager", classListForm.getFilterManager());		
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterIType", classListForm.getFilterIType());
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterDayCode", String.valueOf(classListForm.getFilterDayCode()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterStartSlot", String.valueOf(classListForm.getFilterStartSlot()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.filterLength", String.valueOf(classListForm.getFilterLength()));
+	    	sessionContext.getUser().setProperty("ClassAssignments.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
 	    }
 
 	}
 	
     
-    public static void setupGeneralFormFilters(HttpSession httpSession, ClassListFormInterface form){
-        form.setSortBy(UserData.getProperty(httpSession, "ClassAssignments.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
-        form.setFilterAssignedRoom(UserData.getProperty(httpSession, "ClassAssignments.filterAssignedRoom", ""));
-        form.setFilterManager(UserData.getProperty(httpSession, "ClassAssignments.filterManager", ""));
-        form.setFilterIType(UserData.getProperty(httpSession, "ClassAssignments.filterIType", ""));
-        form.setFilterDayCode(UserData.getPropertyInt(httpSession, "ClassAssignments.filterDayCode", -1));
-        form.setFilterStartSlot(UserData.getPropertyInt(httpSession, "ClassAssignments.filterStartSlot", -1));
-        form.setFilterLength(UserData.getPropertyInt(httpSession, "ClassAssignments.filterLength", -1));
-        form.setSortByKeepSubparts(UserData.getPropertyBoolean(httpSession, "ClassAssignments.sortByKeepSubparts", true));
-        form.setShowCrossListedClasses(UserData.getPropertyBoolean(httpSession, "ClassAssignments.showCrossListedClasses", false));
+    public static void setupGeneralFormFilters(UserContext user, ClassListFormInterface form){
+        form.setSortBy(user.getProperty("ClassAssignments.sortBy", ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
+        form.setFilterAssignedRoom(user.getProperty("ClassAssignments.filterAssignedRoom", ""));
+        form.setFilterManager(user.getProperty("ClassAssignments.filterManager", ""));
+        form.setFilterIType(user.getProperty("ClassAssignments.filterIType", ""));
+        form.setFilterDayCode(Integer.valueOf(user.getProperty("ClassAssignments.filterDayCode", "-1")));
+        form.setFilterStartSlot(Integer.valueOf(user.getProperty("ClassAssignments.filterStartSlot", "-1")));
+        form.setFilterLength(Integer.valueOf(user.getProperty("ClassAssignments.filterLength", "-1")));
+        form.setSortByKeepSubparts("1".equals(user.getProperty("ClassAssignments.sortByKeepSubparts", "1")));
+        form.setShowCrossListedClasses("1".equals(user.getProperty("ClassAssignments.showCrossListedClasses", "0")));
     
     }
     
@@ -123,16 +132,6 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 		
 	}
 
-	public ActionForward msfExport(
-			ActionMapping mapping,
-			ActionForm form,
-			HttpServletRequest request,
-			HttpServletResponse response) throws Exception {
-		
-		return(performAction(mapping, form, request, response, "msfExport"));
-		
-	}
-	
 	public ActionForward exportPdf(
 			ActionMapping mapping,
 			ActionForm form,
@@ -159,24 +158,22 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 			HttpServletRequest request,
 			HttpServletResponse response,
 			String action) throws Exception{
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		
+		if (!sessionContext.hasPermission(Right.ClassAssignments))
+			throw new Exception ("Access Denied.");
         
-        if (!action.equals("search") && !action.equals("msfExport") && !action.equals("exportPdf") && !action.equals("exportCsv")){
+        if (!action.equals("search") && !action.equals("exportPdf") && !action.equals("exportCsv"))
         	throw new Exception ("Unrecognized Action");
-        }
-        
-        HttpSession httpSession = request.getSession();
         
         ClassAssignmentsReportForm classListForm = (ClassAssignmentsReportForm) form;
-	    User user = Web.getUser(request.getSession());
-	    LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-        classListForm.setIsAdmin(user.isAdmin());
+        
+        request.setAttribute(Department.EXTERNAL_DEPT_ATTR_NAME, Department.findAllExternal(sessionContext.getUser().getCurrentAcademicSessionId()));
         
 	    this.initializeFilters(request, classListForm);
-        	        
-	    classListForm.setCollections(request, ClassSearchAction.getClasses(classListForm, WebSolver.getClassAssignmentProxy(request.getSession())));
+	    
+	    classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+	    classListForm.setClasses(ClassSearchAction.getClasses(classListForm, classAssignmentService.getAssignment()));
+	    
 		Collection classes = classListForm.getClasses();
 		if (classes.isEmpty()) {
 		    ActionMessages errors = new ActionMessages();
@@ -196,7 +193,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 				subjIds.append(classListForm.getSubjectAreaIds()[i]);
 				names.append(((new SubjectAreaDAO()).get(new Long(classListForm.getSubjectAreaIds()[i]))).getSubjectAreaAbbreviation());
 			}
-			httpSession.setAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME, subjIds);
+			sessionContext.setAttribute(SessionAttribute.ClassAssignmentsSubjectAreas, subjIds);
 			if("search".equals(action)){
 				BackTracker.markForBack(
 						request, 
@@ -205,7 +202,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 						true, true);
 			} else if ("exportPdf".equals(action)) {
 				PdfClassAssignmentReportListTableBuilder tb = new PdfClassAssignmentReportListTableBuilder();
-				File outFile = tb.pdfTableForClasses(WebSolver.getClassAssignmentProxy(httpSession), WebSolver.getExamSolver(httpSession), classListForm, user);
+				File outFile = tb.pdfTableForClasses(classAssignmentService.getAssignment(), examinationSolverService.getSolver(), classListForm, sessionContext);
 				//if (outFile!=null) response.sendRedirect("temp/"+outFile.getName());
 				if (outFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+outFile.getName());
 				BackTracker.markForBack(
@@ -214,7 +211,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 						"Class Assignments ("+names+")", 
 						true, true);
 			} else if ("exportCsv".equals(action)) {
-				CSVFile csvFile = CsvClassAssignmentExport.exportCsv(user, classListForm.getClasses(), WebSolver.getClassAssignmentProxy(httpSession));
+				CSVFile csvFile = CsvClassAssignmentExport.exportCsv(sessionContext.getUser(), classListForm.getClasses(), classAssignmentService.getAssignment());
 				File file = ApplicationProperties.getTempFile("classassign", "csv");
 	        	csvFile.save(file);
 				request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());

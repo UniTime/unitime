@@ -33,8 +33,9 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.BuildingPref;
@@ -58,16 +59,17 @@ import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
@@ -771,14 +773,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
-    private PdfPCell pdfBuildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, User user) {
+    private PdfPCell pdfBuildSchedulePrintNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user) {
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null) {
-    			if (c.getSchedulePrintNote().length() <= 20 || Constants.showPrintNoteAsFullText(user)){
+    			if (c.getSchedulePrintNote().length() <= 20 || user == null || !CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))){
     				addText(cell, c.getSchedulePrintNote(), false, false, Element.ALIGN_LEFT, color, true);
     			} else {
     				addText(cell, c.getSchedulePrintNote().substring(0,20) + "...", false, false, Element.ALIGN_LEFT, color, true);   				
@@ -789,7 +791,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return cell;
     }
 
-    private PdfPCell pdfBuildSchedulePrintNote(InstructionalOffering io, boolean isEditable, User user){
+    private PdfPCell pdfBuildSchedulePrintNote(InstructionalOffering io, boolean isEditable, UserContext user){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
@@ -812,14 +814,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         return(cell);
     }    
     
-    private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, User user){
+    private PdfPCell pdfBuildNote(PreferenceGroup prefGroup, boolean isEditable, UserContext user){
     	Color color = (isEditable?sEnableColor:sDisableColor);
     	PdfPCell cell = createCell();
 
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			if (c.getNotes().length() <= 30  || Constants.showMgrNoteFullText(user)){
+    			if (c.getNotes().length() <= 30  || user == null || !CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
     				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
     			} else {
     				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
@@ -1045,7 +1047,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     
     //NOTE: if changing column order column order must be changed in
     //		buildTableHeader, addInstrOffrRowsToTable, buildClassOrSubpartRow, and buildConfigRow
-    protected void pdfBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, User user){
+    protected void pdfBuildClassOrSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, PreferenceGroup prefGroup, String indentSpaces, boolean isEditable, String prevLabel, SessionContext context){
     	boolean classLimitDisplayed = false;
     	if (isShowLabel()){
 	        iPdfTable.addCell(pdfBuildPrefGroupLabel(co, prefGroup, indentSpaces, isEditable, prevLabel));
@@ -1127,10 +1129,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	        iPdfTable.addCell(createCell());
     	} 
     	if (isShowSchedulePrintNote()){
-    		iPdfTable.addCell(pdfBuildSchedulePrintNote(prefGroup, isEditable, user));     		
+    		iPdfTable.addCell(pdfBuildSchedulePrintNote(prefGroup, isEditable, context.getUser()));     		
     	} 
     	if (isShowNote()){
-    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable, user));     		
+    		iPdfTable.addCell(pdfBuildNote(prefGroup, isEditable, context.getUser()));     		
     	}
         if (isShowExam()) {
             TreeSet exams = new TreeSet();
@@ -1148,15 +1150,15 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
     }
     
-    private void pdfBuildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, SchedulingSubpart ss, String indentSpaces, User user){
-        boolean isEditable = ss.isViewableBy(user);
+    private void pdfBuildSchedulingSubpartRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, SchedulingSubpart ss, String indentSpaces, SessionContext context){
+        boolean isEditable = context.hasPermission(ss, Right.SchedulingSubpartDetail);
         iBgColor = sBgColorSubpart;
-        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, ss, indentSpaces, isEditable, null, user);
+        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, ss, indentSpaces, isEditable, null, context);
     }
     
-    private void pdfBuildSchedulingSubpartRows(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, SchedulingSubpart ss, String indentSpaces, User user){
+    private void pdfBuildSchedulingSubpartRows(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, SchedulingSubpart ss, String indentSpaces, SessionContext context){
     	if (subpartIds!=null) subpartIds.add(ss.getUniqueId());
-        pdfBuildSchedulingSubpartRow(classAssignment, examAssignment, co, ss, indentSpaces, user);
+        pdfBuildSchedulingSubpartRow(classAssignment, examAssignment, co, ss, indentSpaces, context);
         Set childSubparts = ss.getChildSubparts();
         
 		if (childSubparts != null && !childSubparts.isEmpty()){
@@ -1168,20 +1170,20 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             
             while (it.hasNext()){              
                 child = (SchedulingSubpart) it.next();
-                pdfBuildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, co, child, indentSpaces + indent, user);
+                pdfBuildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, co, child, indentSpaces + indent, context);
             }
         }
     }
  
-    protected void pdfBuildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, User user, String prevLabel){
-        boolean isEditable = aClass.isViewableBy(user);
+    protected void pdfBuildClassRow(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){
+        boolean isEditable = context.hasPermission(aClass, Right.ClassDetail);
         iBgColor = sBgColorClass;
-        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, aClass, indentSpaces, isEditable, prevLabel, user);
+        pdfBuildClassOrSubpartRow(classAssignment, examAssignment, co, aClass, indentSpaces, isEditable, prevLabel, context);
     }
     
-    private void pdfBuildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, User user, String prevLabel){
+    private void pdfBuildClassRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, int ct, CourseOffering co, Class_ aClass, String indentSpaces, SessionContext context, String prevLabel){
 
-        pdfBuildClassRow(classAssignment, examAssignment, ct, co, aClass, indentSpaces, user, prevLabel);
+        pdfBuildClassRow(classAssignment, examAssignment, ct, co, aClass, indentSpaces, context, prevLabel);
     	Set childClasses = aClass.getChildClasses();
 
     	if (childClasses != null && !childClasses.isEmpty()){
@@ -1194,15 +1196,15 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             String previousLabel = aClass.htmlLabel();
             while (it.hasNext()){              
                 child = (Class_) it.next();
-                pdfBuildClassRows(classAssignment, examAssignment, ct, co, child, indentSpaces + indent, user, previousLabel);
+                pdfBuildClassRows(classAssignment, examAssignment, ct, co, child, indentSpaces + indent, context, previousLabel);
             }
         }
     }
 
 
-	protected void pdfBuildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, InstrOfferingConfig ioc, User user, boolean printConfigLine) {
+	protected void pdfBuildConfigRow(Vector subpartIds, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, InstrOfferingConfig ioc, SessionContext context, boolean printConfigLine) {
 		iBgColor = sBgColorConfig;
-	    boolean isEditable = ioc.isViewableBy(user);
+	    boolean isEditable = context.hasPermission(ioc.getInstructionalOffering(), Right.InstructionalOfferingDetail);
 	    Color color = (isEditable?sEnableColor:sDisableColor);
 	    String configName = ioc.getName();
 	    boolean unlimited = ioc.isUnlimitedEnrollment().booleanValue();
@@ -1300,7 +1302,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         while(it.hasNext()){
             ss = (SchedulingSubpart) it.next();
             if (ss.getParentSubpart() == null){
-                pdfBuildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, co, ss, (hasConfig?indent+indent:indent) , user);
+                pdfBuildSchedulingSubpartRows(subpartIds, classAssignment, examAssignment, co, ss, (hasConfig?indent+indent:indent) , context);
             }
         }
         it = subpartList.iterator();
@@ -1316,57 +1318,29 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 					Class_ c = null;
 					while (cIt.hasNext()) {
 						c = (Class_) cIt.next();
-						pdfBuildClassRows(classAssignment, examAssignment, ++ct, co, c, indent, user, prevLabel);
+						pdfBuildClassRows(classAssignment, examAssignment, ++ct, co, c, indent, context, prevLabel);
 						prevLabel = c.htmlLabel();
 					}
 				}
 			}
 		}
-        
-        //TODO: print config reservations
-        /*
-		if (!printConfigLine) {
-	        ReservationsTableBuilder r = new ReservationsTableBuilder();
-	        String resvTable = r.htmlTableForReservations(ioc.effectiveReservations(), true, ioc.isViewableBy(user));
-	        if (resvTable!=null && resvTable.trim().length()>0) {
-			    TableRow row = this.initRow(false);
-		        TableCell cell = initColSpanCell(r.createTable(resvTable, "margin:0;", null, null), false, 12);
-		        row.addContent(cell);
-		        table.addContent(row);
-	        }
-		}
-		*/
    }
 
-    private void pdfBuildConfigRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, Set instrOfferingConfigs, User user, boolean printConfigLine) {
+    private void pdfBuildConfigRows(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, CourseOffering co, Set instrOfferingConfigs, SessionContext context, boolean printConfigLine) {
         Iterator it = instrOfferingConfigs.iterator();
         InstrOfferingConfig ioc = null;
         while (it.hasNext()){
             ioc = (InstrOfferingConfig) it.next();
-            pdfBuildConfigRow(null, classAssignment, examAssignment, co, ioc, user, printConfigLine && instrOfferingConfigs.size()>1);
+            pdfBuildConfigRow(null, classAssignment, examAssignment, co, ioc, context, printConfigLine && instrOfferingConfigs.size()>1);
         }
     }
 
-    private void pdfAddInstrOffrRowsToTable(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, InstructionalOffering io, Long subjectAreaId, User user){
+    private void pdfAddInstrOffrRowsToTable(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, InstructionalOffering io, Long subjectAreaId, SessionContext context){
     	iBgColor = sBgColorOffering;
         CourseOffering co = io.findSortCourseOfferingForSubjectArea(subjectAreaId);
-        boolean isEditable = io.isViewableBy(user);
-        if (!isEditable){
-        	if (io.getInstrOfferingConfigs() != null && io.getInstrOfferingConfigs().size() > 0){
-        		boolean canEdit = true;
-        		Iterator it = io.getInstrOfferingConfigs().iterator();
-        		InstrOfferingConfig ioc = null;
-        		while(canEdit && it.hasNext()){
-        			ioc = (InstrOfferingConfig) it.next();
-        			if(!ioc.isViewableBy(user)){
-        				canEdit = false;
-        			}
-        		}
-        		isEditable = canEdit;
-        	}
-        }
+        boolean isEditable = context.hasPermission(co.getInstructionalOffering(), Right.InstructionalOfferingDetail); 
         boolean isManagedAs = !co.isIsControl().booleanValue();
-        Color color = (isEditable?sEnableColor:sDisableColor);
+        Color color = (isEditable ? sEnableColor : sDisableColor);
         
     	if (isShowLabel()){
     		iPdfTable.addCell(pdfSubjectAndCourseInfo(io, co));
@@ -1478,7 +1452,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	    iPdfTable.addCell(cell);
     	} 
     	if (isShowSchedulePrintNote()){
-    		iPdfTable.addCell(pdfBuildSchedulePrintNote(io, isEditable, user));     		
+    		iPdfTable.addCell(pdfBuildSchedulePrintNote(io, isEditable, context.getUser()));     		
     	}
     	if (isShowNote()){
     		iPdfTable.addCell(createCell());     		
@@ -1507,7 +1481,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         if (io.getInstrOfferingConfigs() != null & !io.getInstrOfferingConfigs().isEmpty()){
         	TreeSet configs = new TreeSet(new InstrOfferingConfigComparator(io.getControllingCourseOffering().getSubjectArea().getUniqueId()));
         	configs.addAll(io.getInstrOfferingConfigs());
-            pdfBuildConfigRows(classAssignment, examAssignment, io.getControllingCourseOffering(), configs, user, true);
+            pdfBuildConfigRows(classAssignment, examAssignment, io.getControllingCourseOffering(), configs, context, true);
         }
     }
 
@@ -1515,10 +1489,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instructionalOfferingId, 
-            User user,
+            SessionContext context,
             Comparator classComparator){
     	
-    	if (instructionalOfferingId != null && user != null){
+    	if (instructionalOfferingId != null && context != null){
 	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(instructionalOfferingId);
 	        Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
@@ -1531,7 +1505,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	        setVisibleColumns(COLUMNS);
 		    return pdfTableForInstructionalOfferings(
 				        classAssignment, examAssignment,
-				        ts, subjectAreaId, user, false, false, classComparator);
+				        ts, subjectAreaId, context, false, false, classComparator);
     	}
     	return null;
     }
@@ -1541,7 +1515,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             ExamAssignmentProxy examAssignment,
             InstructionalOfferingListForm form, 
             Long subjectAreaId, 
-            User user,
+            SessionContext context,
             boolean displayHeader,
             boolean allCoursesAreGiven){
     	
@@ -1549,7 +1523,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	return pdfTableForInstructionalOfferings(classAssignment, examAssignment,
     			(TreeSet) form.getInstructionalOfferings(), 
      			subjectAreaId,
-    			user,
+    			context,
     			displayHeader, allCoursesAreGiven,
     			new ClassCourseComparator(form.getSortBy(), classAssignment, false));
    	
@@ -1560,7 +1534,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             ExamAssignmentProxy examAssignment,
             TreeSet insructionalOfferings, 
             Long subjectAreaId, 
-            User user,
+            SessionContext context,
             boolean displayHeader, boolean allCoursesAreGiven,
             Comparator classComparator) {
     	
@@ -1571,51 +1545,48 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	try {
     	
     	if (isShowTimetable()) {
-    			boolean hasTimetable = false;
-    			try {
-    				TimetableManager manager = TimetableManager.getManager(user);
-    				if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && classAssignment!=null) {
-                    	if (classAssignment instanceof CachedClassAssignmentProxy) {
-                    		Vector allClasses = new Vector();
-            				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
-            					InstructionalOffering io = (InstructionalOffering)i.next();
-            					for (Iterator j=io.getInstrOfferingConfigs().iterator();!hasTimetable && j.hasNext();) {
-            						InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-            						for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
-            							SchedulingSubpart ss = (SchedulingSubpart)k.next();
-            							for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
-            								Class_ clazz = (Class_)l.next();
-            								allClasses.add(clazz);
-            							}
-            						}
-            					}
-            				}
-                    		((CachedClassAssignmentProxy)classAssignment).setCache(allClasses);
-                    		hasTimetable = !classAssignment.getAssignmentTable(allClasses).isEmpty();
-                    	} else {
-            				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
-            					InstructionalOffering io = (InstructionalOffering)i.next();
-            					for (Iterator j=io.getInstrOfferingConfigs().iterator();!hasTimetable && j.hasNext();) {
-            						InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
-            						for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
-            							SchedulingSubpart ss = (SchedulingSubpart)k.next();
-            							for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
-            								Class_ clazz = (Class_)l.next();
-            								if (classAssignment.getAssignment(clazz)!=null) {
-            									hasTimetable = true; break;
-            								}
-            							}
-                    				}
-                    			}
-                    		}
-                    	}
+    		boolean hasTimetable = false;
+    		if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+            	if (classAssignment instanceof CachedClassAssignmentProxy) {
+            		Vector allClasses = new Vector();
+    				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
+    					InstructionalOffering io = (InstructionalOffering)i.next();
+    					for (Iterator j=io.getInstrOfferingConfigs().iterator();!hasTimetable && j.hasNext();) {
+    						InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
+    						for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
+    							SchedulingSubpart ss = (SchedulingSubpart)k.next();
+    							for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
+    								Class_ clazz = (Class_)l.next();
+    								allClasses.add(clazz);
+    							}
+    						}
+    					}
     				}
-    			} catch (Exception e) {}
-    			setDisplayTimetable(hasTimetable);
+            		((CachedClassAssignmentProxy)classAssignment).setCache(allClasses);
+            		hasTimetable = !classAssignment.getAssignmentTable(allClasses).isEmpty();
+            	} else {
+    				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
+    					InstructionalOffering io = (InstructionalOffering)i.next();
+    					for (Iterator j=io.getInstrOfferingConfigs().iterator();!hasTimetable && j.hasNext();) {
+    						InstrOfferingConfig ioc = (InstrOfferingConfig)j.next();
+    						for (Iterator k=ioc.getSchedulingSubparts().iterator();!hasTimetable && k.hasNext();) {
+    							SchedulingSubpart ss = (SchedulingSubpart)k.next();
+    							for (Iterator l=ss.getClasses().iterator();l.hasNext();) {
+    								Class_ clazz = (Class_)l.next();
+    								if (classAssignment.getAssignment(clazz)!=null) {
+    									hasTimetable = true; break;
+    								}
+    							}
+            				}
+            			}
+            		}
+            	}
+    		}
+    		setDisplayTimetable(hasTimetable);
     	}
     	
         if (isShowExam())
-            setShowExamTimetable(examAssignment!=null || Exam.hasTimetable((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+            setShowExamTimetable(examAssignment != null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId()));
 
         ArrayList notOfferedOfferings = new ArrayList();
         ArrayList offeredOfferings = new ArrayList();
@@ -1625,7 +1596,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         InstructionalOffering io = null;
         boolean hasOfferedCourses = false;
         boolean hasNotOfferedCourses = false;
-		setUserSettings(user);
+		setUserSettings(context.getUser());
         
          while (it.hasNext()){
             io = (InstructionalOffering) it.next();
@@ -1663,14 +1634,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	if(displayHeader) {
    		    	iDocument.add(new Paragraph("Offered Courses", PdfFont.getBigFont(true)));
     		}
-    		pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
+    		pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
                   
             if (hasOfferedCourses){
                 it = offeredOfferings.iterator();
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
                     offeringIds.add(io.getUniqueId());
-                    	pdfAddInstrOffrRowsToTable(classAssignment, examAssignment, io, subjectAreaId, user);            	
+                    	pdfAddInstrOffrRowsToTable(classAssignment, examAssignment, io, subjectAreaId, context);            	
                 }
             } else {
                 if(displayHeader)
@@ -1691,14 +1662,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
    	        	iDocument.newPage();
    				iDocument.add(new Paragraph("Not Offered Courses", PdfFont.getBigFont(true)));
             }
-            pdfBuildTableHeader(Session.getCurrentAcadSession(user) == null?null:Session.getCurrentAcadSession(user).getUniqueId());
+            pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
             
             if (hasNotOfferedCourses){
                 it = notOfferedOfferings.iterator();
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
                     offeringIds.add(io.getUniqueId());
-                    pdfAddInstrOffrRowsToTable(classAssignment, examAssignment, io, subjectAreaId, user);            	
+                    pdfAddInstrOffrRowsToTable(classAssignment, examAssignment, io, subjectAreaId, context);            	
                 }
             } else {
                 if(displayHeader)
