@@ -30,7 +30,8 @@ public enum UserProperty {
 	GridOrientation("timeGrid", CommonValues.VerticalGrid, "Time grid display format"),
 	GridSize("timeGridSize", "Workdays x Daytime", "Time grid default selection"),
 	NameFormat("name", CommonValues.NameLastInitial, "Instructor name display format"),
-	ClassesKeepSort("keepSort", CommonValues.No, "Sort classes on detail pages based on Classes page sorting options.")
+	ClassesKeepSort("keepSort", CommonValues.No, "Sort classes on detail pages based on Classes page sorting options."),
+	ConfirmationDialogs("jsConfirm", CommonValues.Yes, "Display confirmation dialogs"),
 	
 	;
 

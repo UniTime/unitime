@@ -58,6 +58,8 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.service.SolverService;
@@ -79,6 +81,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 public class ClassDetailAction extends PreferencesAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
@@ -317,9 +321,9 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 	        frm.setMinRoomLimit(c.getMinRoomLimit());
 
-	        Class_ next = c.getNextClass(request.getSession(), Web.getUser(request.getSession()), false, true);
+	        Class_ next = c.getNextClass(sessionContext, Right.ClassDetail);
 	        frm.setNextId(next==null?null:next.getUniqueId().toString());
-	        Class_ previous = c.getPreviousClass(request.getSession(), Web.getUser(request.getSession()), false, true);
+	        Class_ previous = c.getPreviousClass(sessionContext, Right.ClassDetail);
 	        frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 
 		    List instructors = new ArrayList(c.getClassInstructors());

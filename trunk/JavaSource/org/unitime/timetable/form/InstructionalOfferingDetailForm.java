@@ -63,9 +63,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private Integer limit;
     private Boolean unlimited;
     private Boolean notOffered;
-    private Boolean isEditable;
-    private Boolean isFullyEditable;
-    private Boolean isManager;
     private String instrOfferingName;
     private String instrOfferingNameNoTitle;
     private List courseOfferings;
@@ -78,7 +75,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String previousId;
     private String catalogLinkLabel;
     private String catalogLinkLocation;
-    private Boolean canLock, canUnlock;
     private boolean byReservationOnly;
     private String coordinators;
     private String wkEnroll, wkChange, wkDrop;
@@ -132,15 +128,11 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         notOffered = null;
         instrOfferingName = "";
         instrOfferingNameNoTitle = "";
-        isEditable = null;
-        isFullyEditable = null; 
-        isManager = null;
         courseOfferings = DynamicList.getInstance(new ArrayList(), factoryCourseOfferings);
         nextId = previousId = null;
         creditText = "";
         catalogLinkLabel = null;
         catalogLinkLocation = null;
-        canLock = null; canUnlock = null;
         byReservationOnly = false; coordinators = null;
         wkEnroll = null; wkChange = null; wkDrop = null;
         weekStartDayOfWeek = null;
@@ -222,20 +214,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         this.notOffered = notOffered;
     }
     
-    public Boolean getIsEditable() {
-        return isEditable;
-    }
-    public void setIsEditable(Boolean isEditable) {
-        this.isEditable = isEditable;
-    }
-    
-    public Boolean getIsFullyEditable() {
-        return isFullyEditable;
-    }
-    public void setIsFullyEditable(Boolean isFullyEditable) {
-        this.isFullyEditable = isFullyEditable;
-    }
-
     public String getOp() {
         return op;
     }
@@ -269,13 +247,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     public void setInstrOfferingNameNoTitle(String instrOfferingNameNoTitle) {
         this.instrOfferingNameNoTitle = instrOfferingNameNoTitle;
     }    
-    
-    public Boolean getIsManager() {
-        return isManager;
-    }
-    public void setIsManager(Boolean isManager) {
-        this.isManager = isManager;
-    }
         
     public String getConsentType() {
         return consentType;
@@ -347,19 +318,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
 
 	public void setEnrollment(Integer enrollment) {
 		this.enrollment = enrollment;
-	}
-	
-	public Boolean getCanLock() {
-		return canLock;
-	}
-	public void setCanLock(Boolean canLock) {
-		this.canLock = canLock;
-	}
-	public Boolean getCanUnlock() {
-		return canUnlock;
-	}
-	public void setCanUnlock(Boolean canUnlock) {
-		this.canUnlock = canUnlock;
 	}
 	
 	public boolean isByReservationOnly() { return byReservationOnly; }

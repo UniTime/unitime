@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
-
 import org.hibernate.HibernateException;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
@@ -42,6 +40,7 @@ import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
@@ -420,17 +419,17 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	}
     }
 
-    public InstructionalOffering getNextInstructionalOffering(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getNextInstructionalOffering(session, new NavigationComparator(), user, canEdit, canView);
+    public InstructionalOffering getNextInstructionalOffering(SessionContext context) {
+    	return getNextInstructionalOffering(context, new NavigationComparator());
     }
 
-    public InstructionalOffering getPreviousInstructionalOffering(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getPreviousInstructionalOffering(session, new NavigationComparator(), user, canEdit, canView);
+    public InstructionalOffering getPreviousInstructionalOffering(SessionContext context) {
+    	return getPreviousInstructionalOffering(context, new NavigationComparator());
     }
 
 
-    public InstructionalOffering getNextInstructionalOffering(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long nextId = Navigation.getNext(session, Navigation.sInstructionalOfferingLevel, getUniqueId());
+    public InstructionalOffering getNextInstructionalOffering(SessionContext context, Comparator cmp) {
+    	Long nextId = Navigation.getNext(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
     	if (nextId!=null) {
     		if (nextId.longValue()<0) return null;
     		return (new InstructionalOfferingDAO()).get(nextId);
@@ -449,8 +448,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			CourseOffering c = (CourseOffering)i.next();
 			if (!c.isIsControl().booleanValue()) continue;
 			InstructionalOffering o = (InstructionalOffering)c.getInstructionalOffering();
-    		//if (canEdit && !o.isEditableBy(user)) continue;
-    		//if (canView && !o.isViewableBy(user)) continue;
     		if (!o.isNotOffered().equals(isNotOffered())) continue;
 			if (cmp.compare(this, o)>=0) continue;
 			if (next==null || cmp.compare(next,o)>0)
@@ -459,8 +456,8 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	return next;
     }
 
-    public InstructionalOffering getPreviousInstructionalOffering(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long previousId = Navigation.getPrevious(session, Navigation.sInstructionalOfferingLevel, getUniqueId());
+    public InstructionalOffering getPreviousInstructionalOffering(SessionContext context, Comparator cmp) {
+    	Long previousId = Navigation.getPrevious(context, Navigation.sInstructionalOfferingLevel, getUniqueId());
     	if (previousId!=null) {
     		if (previousId.longValue()<0) return null;
     		return (new InstructionalOfferingDAO()).get(previousId);
@@ -479,8 +476,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 			CourseOffering c = (CourseOffering)i.next();
 			if (!c.isIsControl().booleanValue()) continue;
 			InstructionalOffering o = (InstructionalOffering)c.getInstructionalOffering();
-    		//if (canEdit && !o.isEditableBy(user)) continue;
-    		//if (canView && !o.isViewableBy(user)) continue;
     		if (!o.isNotOffered().equals(isNotOffered())) continue;
 			if (cmp.compare(this, o)<=0) continue;
 			if (previous==null || cmp.compare(previous,o)<0)

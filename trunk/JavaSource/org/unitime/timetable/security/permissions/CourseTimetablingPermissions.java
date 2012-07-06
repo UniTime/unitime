@@ -97,5 +97,4 @@ public class CourseTimetablingPermissions {
 		public Class<Session> type() { return Session.class; }
 		
 	}
-
 }

@@ -178,10 +178,12 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 				    // Search produces 1 result - redirect to offering detail
 				    if(instrOfferings.size()==1) {
 				    	InstructionalOffering io = (InstructionalOffering)instrOfferings.toArray()[0];
-				        request.setAttribute("op", "view");
-				        request.setAttribute("io", io.getUniqueId().toString());
-				        
-				        return mapping.findForward("showInstructionalOfferingDetail");
+				    	if (sessionContext.hasPermission(io, Right.InstructionalOfferingDetail)) {
+					        request.setAttribute("op", "view");
+					        request.setAttribute("io", io.getUniqueId().toString());
+					        
+					        return mapping.findForward("showInstructionalOfferingDetail");
+				    	}
 				    }
 			    }
 			    

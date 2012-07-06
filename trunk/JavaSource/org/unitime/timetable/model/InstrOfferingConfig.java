@@ -26,13 +26,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseInstrOfferingConfig;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -327,15 +326,15 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
         return ""+idx;
     }
     
-    public InstrOfferingConfig getNextInstrOfferingConfig(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getNextInstrOfferingConfig(session, new NavigationComparator(), user, canEdit, canView);
+    public InstrOfferingConfig getNextInstrOfferingConfig(SessionContext context) {
+    	return getNextInstrOfferingConfig(context, new NavigationComparator());
     }
     
-    public InstrOfferingConfig getPreviousInstrOfferingConfig(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getPreviousInstrOfferingConfig(session, new NavigationComparator(), user, canEdit, canView);
+    public InstrOfferingConfig getPreviousInstrOfferingConfig(SessionContext context) {
+    	return getPreviousInstrOfferingConfig(context, new NavigationComparator());
     }
 
-    public InstrOfferingConfig getNextInstrOfferingConfig(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
+    public InstrOfferingConfig getNextInstrOfferingConfig(SessionContext context, Comparator cmp) {
     	InstrOfferingConfig next = null;
     	for (Iterator i=getInstructionalOffering().getInstrOfferingConfigs().iterator();i.hasNext();) {
     		InstrOfferingConfig c = (InstrOfferingConfig)i.next();
@@ -344,7 +343,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 				next = c;
     	}
     	if (next!=null) return next;
-    	InstructionalOffering nextIO = getInstructionalOffering().getNextInstructionalOffering(session, cmp, user, canEdit, canView);
+    	InstructionalOffering nextIO = getInstructionalOffering().getNextInstructionalOffering(context, cmp);
     	if (nextIO==null) return null;
     	for (Iterator i=nextIO.getInstrOfferingConfigs().iterator();i.hasNext();) {
     		InstrOfferingConfig c = (InstrOfferingConfig)i.next();
@@ -353,7 +352,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
     	return next;
     }
     
-    public InstrOfferingConfig getPreviousInstrOfferingConfig(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
+    public InstrOfferingConfig getPreviousInstrOfferingConfig(SessionContext context, Comparator cmp) {
     	InstrOfferingConfig previous = null;
     	for (Iterator i=getInstructionalOffering().getInstrOfferingConfigs().iterator();i.hasNext();) {
     		InstrOfferingConfig c = (InstrOfferingConfig)i.next();
@@ -362,7 +361,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 				previous = c;
     	}
     	if (previous!=null) return previous;
-    	InstructionalOffering previousIO = getInstructionalOffering().getPreviousInstructionalOffering(session, cmp, user, canEdit, canView);
+    	InstructionalOffering previousIO = getInstructionalOffering().getPreviousInstructionalOffering(context, cmp);
     	if (previousIO==null) return null;
     	for (Iterator i=previousIO.getInstrOfferingConfigs().iterator();i.hasNext();) {
     		InstrOfferingConfig c = (InstrOfferingConfig)i.next();

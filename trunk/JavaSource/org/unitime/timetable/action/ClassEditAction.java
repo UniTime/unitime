@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -62,6 +63,8 @@ import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -79,6 +82,8 @@ public class ClassEditAction extends PreferencesAction {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
+	@Autowired SessionContext sessionContext;
+	
     // --------------------------------------------------------- Class Constants
 
     /** Anchor names **/
@@ -435,9 +440,9 @@ public class ClassEditAction extends PreferencesAction {
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
 
-        Class_ next = c.getNextClass(request.getSession(), Web.getUser(request.getSession()), true, false);
+        Class_ next = c.getNextClass(sessionContext, Right.ClassEdit);
         frm.setNextId(next==null?null:next.getUniqueId().toString());
-        Class_ previous = c.getPreviousClass(request.getSession(), Web.getUser(request.getSession()), true, false);
+        Class_ previous = c.getPreviousClass(sessionContext, Right.ClassEdit);
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
         frm.setMinRoomLimit(c.getMinRoomLimit());
         frm.setEnrollment(c.getEnrollment());
