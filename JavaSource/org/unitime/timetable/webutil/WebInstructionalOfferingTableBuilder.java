@@ -509,8 +509,8 @@ public class WebInstructionalOfferingTableBuilder {
         return("document.location='instructionalOfferingDetail.do?op=view&io=" + instrOfferingId + "';");
     }
     
-    private TableCell subjectAndCourseInfo(InstructionalOffering io, CourseOffering co) {
-        TableCell cell = this.initCell(co.isIsControl().booleanValue(), null, 1, true);
+    private TableCell subjectAndCourseInfo(InstructionalOffering io, CourseOffering co, boolean isEditable) {
+        TableCell cell = this.initCell(isEditable && co.isIsControl().booleanValue(), null, 1, true);
     	if ("InstructionalOffering".equals(getBackType()) && io.getUniqueId().toString().equals(getBackId()))
     		cell.addContent("<A name=\"back\"></A>");
     	if ("PreferenceGroup".equals(getBackType())) {
@@ -1501,12 +1501,12 @@ public class WebInstructionalOfferingTableBuilder {
         TableRow row = (this.initRow(true));
         row.setOnMouseOver(this.getRowMouseOver(true, isEditable));
         row.setOnMouseOut(this.getRowMouseOut(true));
-        row.setOnClick(subjectOnClickAction(io.getUniqueId()));
+        if (isEditable) row.setOnClick(subjectOnClickAction(io.getUniqueId()));
         boolean isManagedAs = !co.isIsControl().booleanValue(); 
         
         TableCell cell = null;
     	if (isShowLabel()){
-    		row.addContent(subjectAndCourseInfo(io, co));
+    		row.addContent(subjectAndCourseInfo(io, co, isEditable));
     	}
     	if (isShowDivSec()){
     		row.addContent(initNormalCell("", isEditable));
@@ -1521,12 +1521,12 @@ public class WebInstructionalOfferingTableBuilder {
 	    			demand = "<span style='font-weight:bold;color:red;'>0</span>";
 	    		}
     		}
-	        cell = initNormalCell(demand, co.isIsControl().booleanValue());
+	        cell = initNormalCell(demand, isEditable && co.isIsControl().booleanValue());
 	        cell.setAlign("right");
 	        row.addContent(cell);
 		}
     	if (isShowProjectedDemand()){
-	        cell = initNormalCell((io.getProjectedDemand() != null?io.getProjectedDemand().toString():"0"), co.isIsControl().booleanValue());
+	        cell = initNormalCell((io.getProjectedDemand() != null?io.getProjectedDemand().toString():"0"), isEditable && co.isIsControl().booleanValue());
 	        cell.setAlign("right");
 	        row.addContent(cell);
 		} 
@@ -1538,7 +1538,7 @@ public class WebInstructionalOfferingTableBuilder {
 			if (unlimited)
 				cell = initNormalCell("<font size=\"+1\">&infin;</font>", co.isIsControl().booleanValue());
 			else
-				cell = initNormalCell(io.getLimit() != null?io.getLimit().toString():"", co.isIsControl().booleanValue());
+				cell = initNormalCell(io.getLimit() != null?io.getLimit().toString():"", isEditable && co.isIsControl().booleanValue());
             cell.setAlign("right");
             row.addContent(cell);
     	} 

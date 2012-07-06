@@ -17,6 +17,7 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
 <%@ page import="org.unitime.commons.web.Web" %>
@@ -35,20 +36,22 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %> 
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <tiles:importAttribute />
+<tt:session-context/>
 <% 
 	User user = Web.getUser(session);
 	String frmName = "instructionalOfferingDetailForm";
 	InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) request.getAttribute(frmName);
 
 	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber) != null )
+		crsNbr = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString();
 %>
 <loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmMakeOffered() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -113,38 +116,25 @@
 						<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />				
 					</bean:define>
 				 
-					<!-- Display buttons only if editable by current user -->
-					<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
-					
-						<!-- Do not display buttons if offered -->
-						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
-					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddInstructionalOfferingConfig')">
 							<html:submit property="op" 
 									styleClass="btn" 
 									accesskey="<%=MSG.accessAddConfiguration() %>" 
 									title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
 								<loc:message name="actionAddConfiguration" />
 							</html:submit>
-						</logic:equal>
-						
-					</logic:equal>
-	
-					<!-- Display buttons only if managed by current user -->
-					<logic:equal name="instructionalOfferingDetailForm" property="isManager" value="true">
-
-						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
 							<html:submit property="op" 
 									styleClass="btn" 
 									accesskey="<%=MSG.accessCrossLists() %>" 
 									title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
 								<loc:message name="actionCrossLists" />
 							</html:submit>
-						</logic:equal>
-					</logic:equal>
+					</sec:authorize>
 
-					<logic:equal name="instructionalOfferingDetailForm" property="isFullyEditable" value="true">
-						<!-- Display 'Make Offered' if offering is currently 'Not Offered' -->
-						<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="true">
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
 							<html:submit property="op" 
 									onclick="return confirmMakeOffered();"
 									styleClass="btn" 
@@ -152,9 +142,9 @@
 									title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
 								<loc:message name="actionMakeOffered" />
 							</html:submit>
-							
-						<% if (user!=null
-								&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
 							<html:submit property="op" 
 									onclick="return confirmDelete();"
 									styleClass="btn" 
@@ -162,12 +152,9 @@
 									title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
 								<loc:message name="actionDeleteIO" />
 							</html:submit>
-						<% } %>
-						
-						</logic:equal>
-	
-						<!-- Display 'Make NOT Offered' if offering is currently 'Offered' -->
-						<logic:notEqual name="instructionalOfferingDetailForm" property="notOffered" value="true">
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
 							<html:submit property="op" 
 									onclick="return confirmMakeNotOffered();"
 									styleClass="btn" 
@@ -175,26 +162,24 @@
 									title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
 								<loc:message name="actionMakeNotOffered" />
 							</html:submit>
-						</logic:notEqual>
-			
-					</logic:equal>
+					</sec:authorize>
 					
-					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
 						<html:submit property="op" styleClass="btn" 
 								accesskey="<%=MSG.accessLockIO() %>" 
 								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
 								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
 							<loc:message name="actionLockIO"/>
-						</html:submit> 
-					</logic:equal>
-					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
+						</html:submit>
+					</sec:authorize>
+					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
 						<html:submit property="op" styleClass="btn" 
 								accesskey="<%=MSG.accessUnlockIO() %>" 
 								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
 								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
 							<loc:message name="actionUnlockIO"/>
-						</html:submit> 
-					</logic:equal>
+						</html:submit>
+					</sec:authorize>
 				
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
@@ -282,28 +267,16 @@
 							</TD>
 						</logic:equal>
 						<TD align="right" class="BottomBorderGray">
-							<!-- Display buttons if course offering is owned by current user -->
-							<% 
-								String courseOfferingId = ((CourseOffering)co).getUniqueId().toString();
-								boolean isEditableBy = ((CourseOffering)co).isEditableBy(Web.getUser(session));
-								boolean isLimitEditableBy = ((CourseOffering)co).isLimitedEditableBy(Web.getUser(session));
-								if (isEditableBy || isLimitEditableBy) {
-							%>
-							
-							<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
-								<html:hidden property="courseOfferingId" value="<%= courseOfferingId %>" />
-
-								<% if (isEditableBy) { %>
-								<html:submit property="op" 
-										styleClass="btn" 
-										title="<%=MSG.titleEditCourseOffering() %>">
-									<loc:message name="actionEditCourseOffering" />
-								</html:submit>
-								<% } %>
-							</html:form>
-							<%
-								}
-							%>
+							<sec:authorize access="hasPermission(#co, 'EditCourseOffering')">
+								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
+									<html:hidden property="courseOfferingId" value="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
+									<html:submit property="op" 
+											styleClass="btn" 
+											title="<%=MSG.titleEditCourseOffering() %>">
+										<loc:message name="actionEditCourseOffering" />
+									</html:submit>
+								</html:form>
+							</sec:authorize>
 						</TD>
 					</TR>
 				</logic:iterate>
@@ -453,23 +426,27 @@
 		</TR>
 		</logic:notEmpty>
 		
+		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>
 			<TD colspan="2">
 				<div id='UniTimeGWT:CourseCurricula' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
 			</TD>
 		</TR>
+		</sec:authorize>
 		
+		<sec:authorize access="hasPermission(null, 'Department', 'Reservations')">
 		<TR>
 			<TD colspan="2">
 				<a name="reservations"></a>
-				<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
+				<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddReservation')">
 					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
-				</logic:equal>
-				<logic:notEqual name="instructionalOfferingDetailForm" property="isEditable" value="true">
+				</sec:authorize>
+				<sec:authorize access="not hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddReservation')">
 					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
-				</logic:notEqual>
+				</sec:authorize>
 			</TD>
 		</TR>
+		</sec:authorize>
 
 		<TR>
 			<TD colspan="2" >&nbsp;</TD>
@@ -478,7 +455,6 @@
 <!-- Configuration -->
 		<TR>
 			<TD colspan="2" valign="middle">
-	<tt:session-context/>
 	<% //output configuration
 	if (frm.getInstrOfferingId() != null){
 		WebInstrOfferingConfigTableBuilder ioTableBuilder = new WebInstrOfferingConfigTableBuilder();
@@ -551,118 +527,96 @@
 					<html:hidden property="instrOfferingId"/>	
 					<html:hidden property="nextId"/>
 					<html:hidden property="previousId"/>
-					<html:hidden property="canLock"/>
-					<html:hidden property="canUnlock"/>
 					
-				<!-- Display buttons only if editable by current user -->
-				<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
-				
-					<!-- Do not display buttons if offered -->
-					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
-				
-						<html:submit property="op" 
-								styleClass="btn" 
-								accesskey="<%=MSG.accessAddConfiguration() %>" 
-								title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
-							<loc:message name="actionAddConfiguration" />
-						</html:submit>
-					</logic:equal>
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddInstructionalOfferingConfig')">
+							<html:submit property="op" 
+									styleClass="btn" 
+									accesskey="<%=MSG.accessAddConfiguration() %>" 
+									title="<%=MSG.titleAddConfiguration(MSG.accessAddConfiguration()) %>">
+								<loc:message name="actionAddConfiguration" />
+							</html:submit>
+					</sec:authorize>
 					
-				</logic:equal>
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstructionalOfferingCrossLists')">
+							<html:submit property="op" 
+									styleClass="btn" 
+									accesskey="<%=MSG.accessCrossLists() %>" 
+									title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
+								<loc:message name="actionCrossLists" />
+							</html:submit>
+					</sec:authorize>
 
-				<!-- Display buttons only if managed by current user -->
-				<logic:equal name="instructionalOfferingDetailForm" property="isManager" value="true">
-
-					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeOffered')">
+							<html:submit property="op" 
+									onclick="return confirmMakeOffered();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessMakeOffered() %>" 
+									title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
+								<loc:message name="actionMakeOffered" />
+							</html:submit>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingDelete')">
+							<html:submit property="op" 
+									onclick="return confirmDelete();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessDeleteIO() %>" 
+									title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
+								<loc:message name="actionDeleteIO" />
+							</html:submit>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingMakeNotOffered')">
+							<html:submit property="op" 
+									onclick="return confirmMakeNotOffered();"
+									styleClass="btn" 
+									accesskey="<%=MSG.accessMakeNotOffered() %>"
+									title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
+								<loc:message name="actionMakeNotOffered" />
+							</html:submit>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessLockIO() %>" 
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
+							<loc:message name="actionLockIO"/>
+						</html:submit>
+					</sec:authorize>
+					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessUnlockIO() %>" 
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
+							<loc:message name="actionUnlockIO"/>
+						</html:submit>
+					</sec:authorize>
+				
+					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
 								styleClass="btn" 
-								accesskey="<%=MSG.accessCrossLists() %>" 
-								title="<%=MSG.titleCrossLists(MSG.accessCrossLists()) %>">
-							<loc:message name="actionCrossLists" />
-						</html:submit>
-					</logic:equal>
-
-				</logic:equal>
-
-				<logic:equal name="instructionalOfferingDetailForm" property="isFullyEditable" value="true">
-					<!-- Display 'Make Offered' if offering is currently 'Not Offered' -->
-					<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="true">
+								accesskey="<%=MSG.accessPreviousIO() %>" 
+								title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
+							<loc:message name="actionPreviousIO" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
 						<html:submit property="op" 
-								onclick="return confirmMakeOffered();"
 								styleClass="btn" 
-								accesskey="<%=MSG.accessMakeOffered() %>" 
-								title="<%=MSG.titleMakeOffered(MSG.accessMakeOffered()) %>">
-							<loc:message name="actionMakeOffered" />
-						</html:submit>
+								accesskey="<%=MSG.accessNextIO() %>" 
+								title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
+							<loc:message name="actionNextIO" />
+						</html:submit> 
+					</logic:notEmpty>
 
-						<% if (user!=null
-								&& user.getRole().equals(Roles.ADMIN_ROLE)) { %>
-						<html:submit property="op" 
-								onclick="return confirmDelete();"
-								styleClass="btn" 
-								accesskey="<%=MSG.accessDeleteIO() %>" 
-								title="<%=MSG.titleDeleteIO(MSG.accessDeleteIO()) %>">
-							<loc:message name="actionDeleteIO" />
-						</html:submit>
-						<% } %>
-						
-					</logic:equal>
-	
-					<!-- Display 'Make NOT Offered' if offering is currently 'Offered' -->
-					<logic:notEqual name="instructionalOfferingDetailForm" property="notOffered" value="true">
-						<html:submit property="op" 
-								onclick="return confirmMakeNotOffered();"
-								styleClass="btn" 
-								accesskey="<%=MSG.accessMakeNotOffered() %>"
-								title="<%=MSG.titleMakeNotOffered(MSG.accessMakeNotOffered()) %>">
-							<loc:message name="actionMakeNotOffered" />
-						</html:submit>
-					</logic:notEqual>
-		
-				</logic:equal>
-
-
-				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
-					<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessLockIO() %>" 
-							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-							onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-						<loc:message name="actionLockIO"/>
-					</html:submit> 
-				</logic:equal>
-				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
-					<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessUnlockIO() %>" 
-							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-							onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-						<loc:message name="actionUnlockIO"/>
-					</html:submit> 
-				</logic:equal>
-
-				<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
-					<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessPreviousIO() %>" 
-							title="<%=MSG.titlePreviousIO(MSG.accessPreviousIO()) %>">
-						<loc:message name="actionPreviousIO" />
-					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="instructionalOfferingDetailForm" property="nextId">
-					<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessNextIO() %>" 
-							title="<%=MSG.titleNextIO(MSG.accessNextIO()) %>">
-						<loc:message name="actionNextIO" />
-					</html:submit> 
-				</logic:notEmpty>
-
-				<tt:back styleClass="btn" 
-						name="<%=MSG.actionBackIODetail() %>" 
-						title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
-						accesskey="<%=MSG.accessBackIODetail() %>" 
-						type="InstructionalOffering">
-					<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
-				</tt:back>				
+					<tt:back styleClass="btn" 
+							name="<%=MSG.actionBackIODetail() %>" 
+							title="<%=MSG.titleBackIODetail(MSG.accessBackIODetail()) %>" 
+							accesskey="<%=MSG.accessBackIODetail() %>" 
+							type="InstructionalOffering">
+						<bean:write name="instructionalOfferingDetailForm" property="instrOfferingId"/>
+					</tt:back>				
 
 				</html:form>					
 			</TD>

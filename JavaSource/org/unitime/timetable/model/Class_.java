@@ -50,6 +50,8 @@ import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo;
@@ -761,22 +763,21 @@ public class Class_ extends BaseClass_ {
     	return groups;
     }
 
-    public Class_ getNextClass(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getNextClass(session, new NavigationComparator(), user, canEdit, canView);
+    public Class_ getNextClass(SessionContext context, Right right) {
+    	return getNextClass(context, new NavigationComparator(), right);
     }
 
-    public Class_ getPreviousClass(HttpSession session,User user, boolean canEdit, boolean canView) {
-    	return getPreviousClass(session, new NavigationComparator(), user, canEdit, canView);
+    public Class_ getPreviousClass(SessionContext context, Right right) {
+    	return getPreviousClass(context, new NavigationComparator(), right);
     }
 
-    public Class_ getNextClass(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long nextId = Navigation.getNext(session, Navigation.sClassLevel, getUniqueId());
+    public Class_ getNextClass(SessionContext context, Comparator cmp, Right right) {
+    	Long nextId = Navigation.getNext(context, Navigation.sClassLevel, getUniqueId());
     	if (nextId!=null) {
     		if (nextId.longValue()<0) return null;
     		Class_ next = (new Class_DAO()).get(nextId);
     		if (next==null) return null;
-    		if (canEdit && !next.isEditableBy(user)) return next.getNextClass(session, cmp, user, canEdit, canView);
-    		if (canView && !next.isViewableBy(user)) return next.getNextClass(session, cmp, user, canEdit, canView);
+    		if (right != null && !context.hasPermission(next, right)) return next.getNextClass(context, cmp, right);
     		return next;
     	}
     	Class_ next = null;
@@ -785,25 +786,23 @@ public class Class_ extends BaseClass_ {
     		if (subpart==null) break;
         	for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
         		Class_ c = (Class_)i.next();
-        		if (canEdit && !c.isEditableBy(user)) continue;
-        		if (canView && !c.isViewableBy(user)) continue;
+        		if (right != null && !context.hasPermission(c, right)) continue;
         		if (subpart.equals(getSchedulingSubpart()) && cmp.compare(this, c)>=0) continue;
         		if (next==null || cmp.compare(next,c)>0)
         			next = c;
         	}
-    		subpart = subpart.getNextSchedulingSubpart(session, cmp, user, canEdit, canView);
+    		subpart = subpart.getNextSchedulingSubpart(context, cmp, null);
     	}
     	return next;
     }
 
-    public Class_ getPreviousClass(HttpSession session, Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long previosId = Navigation.getPrevious(session, Navigation.sClassLevel, getUniqueId());
+    public Class_ getPreviousClass(SessionContext context, Comparator cmp, Right right) {
+    	Long previosId = Navigation.getPrevious(context, Navigation.sClassLevel, getUniqueId());
     	if (previosId!=null) {
     		if (previosId.longValue()<0) return null;
     		Class_ previos = (new Class_DAO()).get(previosId);
     		if (previos==null) return null;
-    		if (canEdit && !previos.isEditableBy(user)) return previos.getPreviousClass(session, cmp, user, canEdit, canView);
-    		if (canView && !previos.isViewableBy(user)) return previos.getPreviousClass(session, cmp, user, canEdit, canView);
+    		if (right != null && !context.hasPermission(previos, right)) return previos.getPreviousClass(context, cmp, right);
     		return previos;
     	}
     	Class_ previous = null;
@@ -812,13 +811,12 @@ public class Class_ extends BaseClass_ {
     		if (subpart==null) break;
         	for (Iterator i=subpart.getClasses().iterator();i.hasNext();) {
         		Class_ c = (Class_)i.next();
-        		if (canEdit && !c.isEditableBy(user)) continue;
-        		if (canView && !c.isViewableBy(user)) continue;
+        		if (right != null && !context.hasPermission(c, right)) continue;
         		if (subpart.equals(getSchedulingSubpart()) && cmp.compare(this, c)<=0) continue;
         		if (previous==null || cmp.compare(previous,c)<0)
         			previous = c;
         	}
-    		subpart = subpart.getPreviousSchedulingSubpart(session, cmp, user, canEdit, canView);
+    		subpart = subpart.getPreviousSchedulingSubpart(context, cmp, null);
     	}
     	return previous;
     }

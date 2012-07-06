@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
-
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.Navigation;
 
 
@@ -435,23 +435,22 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return groups;
     }
     
-    public SchedulingSubpart getNextSchedulingSubpart(HttpSession session, User user, boolean canEdit, boolean canView) {
-    	return getNextSchedulingSubpart(session, new NavigationComparator(), user, canEdit, canView);
+    public SchedulingSubpart getNextSchedulingSubpart(SessionContext context, Right right) {
+    	return getNextSchedulingSubpart(context, new NavigationComparator(), right);
     }
     
-    public SchedulingSubpart getPreviousSchedulingSubpart(HttpSession session,User user, boolean canEdit, boolean canView) {
-    	return getPreviousSchedulingSubpart(session, new NavigationComparator(), user, canEdit, canView);
+    public SchedulingSubpart getPreviousSchedulingSubpart(SessionContext context, Right right) {
+    	return getPreviousSchedulingSubpart(context, new NavigationComparator(), right);
     }
     
     
-    public SchedulingSubpart getNextSchedulingSubpart(HttpSession session,Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long nextId = Navigation.getNext(session, Navigation.sSchedulingSubpartLevel, getUniqueId());
+    public SchedulingSubpart getNextSchedulingSubpart(SessionContext context, Comparator cmp, Right right) {
+    	Long nextId = Navigation.getNext(context, Navigation.sSchedulingSubpartLevel, getUniqueId());
     	if (nextId!=null) {
     		if (nextId.longValue()<0) return null;
     		SchedulingSubpart next = (new SchedulingSubpartDAO()).get(nextId);
     		if (next==null) return null;
-    		if (canEdit && !next.isEditableBy(user)) return next.getNextSchedulingSubpart(session, cmp, user, canEdit, canView); 
-    		if (canView && !next.isViewableBy(user)) return next.getNextSchedulingSubpart(session, cmp, user, canEdit, canView);
+    		if (right != null && !context.hasPermission(next, right)) return next.getNextSchedulingSubpart(context, cmp, right); 
     		return next;
     	}
     	SchedulingSubpart next = null;
@@ -462,26 +461,24 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			InstrOfferingConfig c = (InstrOfferingConfig)i.next();
     			for (Iterator j=c.getSchedulingSubparts().iterator();j.hasNext();) {
     				SchedulingSubpart s = (SchedulingSubpart)j.next();
-            		if (canEdit && !s.isEditableBy(user)) continue;
-            		if (canView && !s.isViewableBy(user)) continue;
+    				if (right != null && !context.hasPermission(s, right)) continue;
     				if (offering.equals(getInstrOfferingConfig().getInstructionalOffering()) && cmp.compare(this, s)>=0) continue;
     				if (next==null || cmp.compare(next,s)>0)
     					next = s;
     			}
         	}
-    		offering = offering.getNextInstructionalOffering(session, cmp, user, canEdit, canView);
+    		offering = offering.getNextInstructionalOffering(context, cmp);
     	}
     	return next;
     }
 
-    public SchedulingSubpart getPreviousSchedulingSubpart(HttpSession session,Comparator cmp, User user, boolean canEdit, boolean canView) {
-    	Long previousId = Navigation.getPrevious(session, Navigation.sSchedulingSubpartLevel, getUniqueId());
+    public SchedulingSubpart getPreviousSchedulingSubpart(SessionContext context, Comparator cmp, Right right) {
+    	Long previousId = Navigation.getPrevious(context, Navigation.sSchedulingSubpartLevel, getUniqueId());
     	if (previousId!=null) {
     		if (previousId.longValue()<0) return null;
     		SchedulingSubpart previous = (new SchedulingSubpartDAO()).get(previousId);
     		if (previous==null) return null;
-    		if (canEdit && !previous.isEditableBy(user)) return previous.getPreviousSchedulingSubpart(session, cmp, user, canEdit, canView); 
-    		if (canView && !previous.isViewableBy(user)) return previous.getPreviousSchedulingSubpart(session, cmp, user, canEdit, canView);
+    		if (right != null && !context.hasPermission(previous, right)) return previous.getPreviousSchedulingSubpart(context, cmp, right); 
     		return previous;
     	}
     	SchedulingSubpart previous = null;
@@ -492,14 +489,13 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     			InstrOfferingConfig c = (InstrOfferingConfig)i.next();
     			for (Iterator j=c.getSchedulingSubparts().iterator();j.hasNext();) {
     				SchedulingSubpart s = (SchedulingSubpart)j.next();
-            		if (canEdit && !s.isEditableBy(user)) continue;
-            		if (canView && !s.isViewableBy(user)) continue;
+    				if (right != null && !context.hasPermission(s, right)) continue;
     				if (offering.equals(getInstrOfferingConfig().getInstructionalOffering()) && cmp.compare(this, s)<=0) continue;
     				if (previous==null || cmp.compare(previous,s)<0)
     					previous = s;
     			}
         	}
-    		offering = offering.getPreviousInstructionalOffering(session, cmp, user, canEdit, canView);
+    		offering = offering.getPreviousInstructionalOffering(context, cmp);
     	}
     	return previous;
     }
