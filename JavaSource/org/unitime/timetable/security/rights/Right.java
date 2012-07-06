@@ -20,6 +20,7 @@
 package org.unitime.timetable.security.rights;
 
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExternalRoom;
@@ -51,10 +52,20 @@ public enum Right {
 	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),
+	OfferingMakeNotOffered(InstructionalOffering.class),
+	OfferingMakeOffered(InstructionalOffering.class),
+	OfferingDelete(InstructionalOffering.class),
+	AddInstructionalOfferingConfig(InstructionalOffering.class),
+	InstructionalOfferingCrossLists(InstructionalOffering.class),
+	AddReservation(InstructionalOffering.class),
 	
+	Reservations(Department.class),
+
 	InstructionalOfferings(Department.class),
 	InstructionalOfferingsExportPDF(Department.class),
 	InstructionalOfferingsWorksheetPDF(Department.class),
+	
+	EditCourseOffering(CourseOffering.class),
 	
 	Classes(Department.class),
 	ClassesExportPDF(Department.class),
@@ -85,6 +96,7 @@ public enum Right {
 	ClassEdit(Class_.class),
 	
 	SchedulingSubpartDetail(SchedulingSubpart.class),
+	SchedulingSubpartEdit(SchedulingSubpart.class),
 
 	/** Curriculum rights */
     CurriculumView(Session.class),

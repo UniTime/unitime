@@ -22,7 +22,10 @@ package org.unitime.timetable.webutil;
 import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -35,9 +38,14 @@ public class JavascriptFunctions {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 
+	@Deprecated
     public static boolean isJsConfirm(User user) {
         String jsConfirm = Settings.getSettingValue(user, Constants.SETTINGS_JS_DIALOGS);
         return (jsConfirm==null || !jsConfirm.equals("no")); 
+    }
+
+    public static boolean isJsConfirm(SessionContext context) {
+        return (context.isAuthenticated() ? CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)) : true);
     }
 
     /**
@@ -47,8 +55,13 @@ public class JavascriptFunctions {
      * @param user User Object
      * @return String "var jsConfirm = true;" OR "var jsConfirm = false;"
      */
+    @Deprecated
     public static String getJsConfirm(User user) {
         return "var jsConfirm = "+(isJsConfirm(user)?"true":"false")+";";
+    }
+    
+    public static String getJsConfirm(SessionContext context) {
+    	return "var jsConfirm = "+(isJsConfirm(context) ? "true" : "false")+";";
     }
     
     public static String getInheritInstructorPreferencesCondition(User user) {

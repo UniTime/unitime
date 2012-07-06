@@ -185,6 +185,14 @@ public class Roles extends BaseRoles implements HasRights {
 		case AssignInstructors:
 		case MultipleClassSetup:
 		case EditInstructionalOfferingConfig:
+		case AddInstructionalOfferingConfig:
+		case AddReservation:
+		case EditCourseOffering:
+		case InstructionalOfferingCrossLists:
+		case OfferingMakeNotOffered:
+		case OfferingMakeOffered:
+		case Reservations:
+		case SchedulingSubpartEdit:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case AssignedExams:
@@ -206,6 +214,9 @@ public class Roles extends BaseRoles implements HasRights {
 		case Examinations:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 			
+		case OfferingDelete:
+			return ADMIN_ROLE.equals(getReference());
+
 		/* curriculum rights */
 		case CurriculumAdd:
 		case CurriculumEdit:

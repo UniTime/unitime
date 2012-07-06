@@ -35,6 +35,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -56,6 +57,7 @@ import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 
@@ -63,6 +65,8 @@ import org.unitime.timetable.util.Constants;
 public class ClassInstructorAssignmentAction extends Action {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 	
 	/**
      * Method execute
@@ -239,14 +243,14 @@ public class ClassInstructorAssignmentAction extends Action {
         if (ioc.getSchedulingSubparts() == null || ioc.getSchedulingSubparts().size() == 0)
         	throw new Exception(MSG.exceptionIOConfigUndefined());
 
-        InstrOfferingConfig config = ioc.getNextInstrOfferingConfig(session, user, false, true);
+        InstrOfferingConfig config = ioc.getNextInstrOfferingConfig(sessionContext);
         if(config != null) {
         	frm.setNextId(config.getUniqueId().toString());
         } else {
         	frm.setNextId(null);
         }
 
-        config = ioc.getPreviousInstrOfferingConfig(session, user, false, true);
+        config = ioc.getPreviousInstrOfferingConfig(sessionContext);
         if(config != null) {
             frm.setPreviousId(config.getUniqueId().toString());
         } else {

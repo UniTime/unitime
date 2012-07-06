@@ -41,14 +41,13 @@ public class CoursePermissions {
 	
 	@Service("permissionOfferingLockNeeded")
 	public static class OfferingLockNeeded implements Permission<InstructionalOffering> {
-		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired PermissionSession permissionSession;
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			if (!permissionDepartment.check(
+			if (!permissionSession.check(
 					user,
-					source.getControllingCourseOffering().getDepartment(),
-					null,
+					source.getSession(),
 					DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
 				return false;
 			
@@ -70,7 +69,7 @@ public class CoursePermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			// Owner can edit one of the course offerings
 			for (CourseOffering course: source.getCourseOfferings()) {
-				if (permissionDepartment.check(user, course.getDepartment(), null, DepartmentStatusType.Status.OwnerEdit))
+				if (permissionDepartment.check(user, course.getDepartment(), DepartmentStatusType.Status.OwnerEdit))
 					return true;
 			}
 			
@@ -81,7 +80,7 @@ public class CoursePermissions {
 					for (Class_ clazz: subpart.getClasses()) {
 						if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
 							if (externals.add(clazz.getManagingDept()) &&
-								permissionDepartment.check(user, clazz.getManagingDept(), null, DepartmentStatusType.Status.ManagerEdit))
+								permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit))
 								return true;
 						}
 					}
@@ -162,6 +161,13 @@ public class CoursePermissions {
 					return true;
 			}
 			
+			/*
+			for (Department dept: source.getSession().getDepartments()) {
+				if (dept.isExternalManager() && permissionDepartment.check(user, dept, DepartmentStatusType.Status.ManagerView))
+					return true;
+			}
+			*/
+
 			// Manager can view one of the classes
 			Set<Department> externals = new HashSet<Department>();
 			for (InstrOfferingConfig config: source.getInstrOfferingConfigs()) {
@@ -225,6 +231,22 @@ public class CoursePermissions {
 		@Override
 		public Class<Class_> type() { return Class_.class; }
 	}
+	
+	@PermissionForRight(Right.SchedulingSubpartEdit)
+	public static class SchedulingSubpartEdit implements Permission<SchedulingSubpart> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, SchedulingSubpart source) {
+			return  !permissionOfferingLockNeeded.check(user, source.getInstrOfferingConfig().getInstructionalOffering()) &&
+					(permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit) ||
+					 permissionDepartment.check(user, source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit));
+		}
+
+		@Override
+		public Class<SchedulingSubpart> type() { return SchedulingSubpart.class; }
+	}
 
 	@PermissionForRight(Right.MultipleClassSetup)
 	public static class MultipleClassSetup implements Permission<InstrOfferingConfig> {
@@ -244,7 +266,7 @@ public class CoursePermissions {
 				for (Class_ clazz: subpart.getClasses()) {
 					if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
 						if (externals.add(clazz.getManagingDept()) &&
-							permissionDepartment.check(user, clazz.getManagingDept(), null, DepartmentStatusType.Status.ManagerEdit))
+							permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit))
 							return true;
 					}
 				}
@@ -279,7 +301,7 @@ public class CoursePermissions {
 				for (Class_ clazz: subpart.getClasses()) {
 					if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
 						if (externals.add(clazz.getManagingDept()) &&
-							permissionDepartment.check(user, clazz.getManagingDept(), null, DepartmentStatusType.Status.ManagerLimitedEdit))
+							permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit))
 							return true;
 					}
 				}
@@ -291,4 +313,119 @@ public class CoursePermissions {
 		@Override
 		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
 	}
+	
+	@PermissionForRight(Right.AddInstructionalOfferingConfig)
+	public static class AddInstructionalOfferingConfig implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (permissionOfferingLockNeeded.check(user, source)) return false;
+			
+			if (source.isNotOffered()) return false;
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.InstructionalOfferingCrossLists)
+	public static class InstructionalOfferingCrossLists implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (permissionOfferingLockNeeded.check(user, source)) return false;
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.OfferingMakeOffered)
+	public static class OfferingMakeOffered implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (!source.isNotOffered()) return false;
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.OfferingMakeNotOffered)
+	public static class OfferingMakeNotOffered implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (permissionOfferingLockNeeded.check(user, source)) return false;
+			
+			if (source.isNotOffered()) return false;
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.OfferingDelete)
+	public static class OfferingDelete implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (!source.isNotOffered()) return false;
+			
+			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.EditCourseOffering) 
+	public static class EditCourseOffering implements Permission<CourseOffering> {
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, CourseOffering source) {
+			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
+
+			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+		}
+
+		@Override
+		public Class<CourseOffering> type() { return CourseOffering.class; }
+		
+	}
+
 }

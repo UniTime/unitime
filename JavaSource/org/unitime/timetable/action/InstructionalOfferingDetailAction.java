@@ -27,22 +27,21 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.util.MessageResources;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingDetailForm;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingDeleteAction;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingNotOfferedAction;
@@ -58,11 +57,11 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 
@@ -76,8 +75,9 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
  */
 @Service("/instructionalOfferingDetail")
 public class InstructionalOfferingDetailAction extends Action {
-	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -96,12 +96,7 @@ public class InstructionalOfferingDetailAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.exceptionAccessDenied());
-        }
-        
-        HttpSession httpSession = request.getSession();
+    	
         MessageResources rsc = getResources(request);
         InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) form;
         
@@ -110,18 +105,7 @@ public class InstructionalOfferingDetailAction extends Action {
         	request.getParameter("op") != null ? request.getParameter("op") :
         	frm.getOp() != null && !frm.getOp().isEmpty() ? frm.getOp() :
         	request.getParameter("hdnOp"));
-        /*
-        		request.getParameter("op")==null) 
-						? (frm.getOp()==null || frm.getOp().length()==0)
-						        ? (request.getAttribute("op")==null)
-						                ? null
-						                : request.getAttribute("op").toString()
-						        : frm.getOp()
-						: request.getParameter("op");
-		if (op==null)
-		    op = request.getParameter("hdnOp");
-		*/		        
-		
+        
 		// Check operation
 		if(op==null || op.trim().length()==0)
 		    throw new Exception (MSG.exceptionOperationNotInterpreted() + op);
@@ -132,12 +116,14 @@ public class InstructionalOfferingDetailAction extends Action {
 		Debug.debug ("Op: " + op);
 
 		// Delete insructional offering
-		if(op.equals(MSG.actionDeleteIO())
-				&& request.getAttribute("cfgDelete")==null) {
+		if(op.equals(MSG.actionDeleteIO()) && request.getAttribute("cfgDelete") == null) {
+			
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete))
+	    		throw new Exception(MSG.errorAccessDenied());
+
 			doDelete(request, frm);
 			
-			if (httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-				httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, null);
+			sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
 			
 	        return mapping.findForward("showInstructionalOfferings");
 		}
@@ -149,6 +135,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		        || op.equals(MSG.actionSaveConfiguration()) 
 		        || op.equals(MSG.actionDeleteConfiguration())
 		        || op.equals(MSG.actionUnassignAllInstructorsFromConfig()) ) {
+			
 		    String instrOfferingId = (request.getParameter("io")==null)
 		    							? (request.getAttribute("io")==null)
 		    							        ? null
@@ -159,7 +146,11 @@ public class InstructionalOfferingDetailAction extends Action {
 			if(instrOfferingId==null || instrOfferingId.trim().length()==0)
 			    throw new Exception (MSG.exceptionIODataNotCorrect() + instrOfferingId);
 			else  {
-			    doLoad(request, frm, instrOfferingId);
+
+		    	if (!sessionContext.hasPermission(instrOfferingId, "InstructionalOffering", Right.InstructionalOfferingDetail))
+		    		throw new Exception(MSG.errorAccessDenied());
+
+		    	doLoad(request, frm, instrOfferingId);
 			}
 			
 			BackTracker.markForBack(
@@ -174,6 +165,10 @@ public class InstructionalOfferingDetailAction extends Action {
 
 		// Add Configuration
 		if(op.equals(MSG.actionAddConfiguration())) {
+			
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.AddInstructionalOfferingConfig))
+	    		throw new Exception(MSG.errorAccessDenied());
+
 		    // Redirect to config edit
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
@@ -183,6 +178,10 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Make Offering 'Offered'
 		if(op.equals(MSG.actionMakeOffered())) {
+			
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
+	    		throw new Exception(MSG.errorAccessDenied());
+
 		    doMakeOffered(request, frm);
 		    
 		    // Redirect to config edit
@@ -194,12 +193,18 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Make Offering 'Not Offered'
 		if(op.equals(MSG.actionMakeNotOffered())) {
-		    doMakeNotOffered(request, frm);
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered))
+	    		throw new Exception(MSG.errorAccessDenied());
+
+	    	doMakeNotOffered(request, frm);
 	        return mapping.findForward("showInstructionalOfferings");
 		}
 		
 		// Change controlling course, add other offerings
 		if(op.equals(MSG.actionCrossLists())) {
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingCrossLists))
+	    		throw new Exception(MSG.errorAccessDenied());
+
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 		    request.setAttribute("uid",io.getControllingCourseOffering().getUniqueId().toString());
@@ -219,30 +224,29 @@ public class InstructionalOfferingDetailAction extends Action {
         if (op.equals(MSG.actionLockIO())) {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-	        io.getSession().lockOffering(io.getUniqueId());
+
+	    	if (!sessionContext.hasPermission(io, Right.OfferingCanLock))
+	    		throw new Exception(MSG.errorAccessDenied());
+
+	    	io.getSession().lockOffering(io.getUniqueId());
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
         	return null;
         }
 		
         if (op.equals(MSG.actionUnlockIO())) {
-		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
+	    	InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
-	        io.getSession().unlockOffering(io.getUniqueId(), Web.getUser(request.getSession()));
-	        try {
-		        SessionFactory hibSessionFactory = idao.getSession().getSessionFactory();
-		        hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, io.getUniqueId());
-		        for (CourseOffering course: io.getCourseOfferings())
-		        	hibSessionFactory.getCache().evictEntity(CourseOffering.class, course.getUniqueId());
-		        for (InstrOfferingConfig config: io.getInstrOfferingConfigs())
-		        	for (SchedulingSubpart subpart: config.getSchedulingSubparts())
-		        		for (Class_ clazz: subpart.getClasses())
-		        			hibSessionFactory.getCache().evictEntity(Class_.class, clazz.getUniqueId());
-	        } catch (Exception e) {
-	        	Debug.error("Failed to evict cache: " + e.getMessage());
-	        }
+
+	    	if (!sessionContext.hasPermission(io, Right.OfferingCanUnlock))
+	    		throw new Exception(MSG.errorAccessDenied());
+
+	        io.getSession().unlockOffering(io, sessionContext.getUser());
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
         	return null;
         }
+        
+    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail))
+    		throw new Exception(MSG.errorAccessDenied());
 
         BackTracker.markForBack(
 				request,
@@ -309,20 +313,19 @@ public class InstructionalOfferingDetailAction extends Action {
             InstructionalOfferingDetailForm frm, 
             String instrOfferingIdStr) throws Exception {
         
-        HttpSession httpSession = request.getSession();
-        User user = Web.getUser(httpSession);
-
         // Load Instr Offering
         Long instrOfferingId = new Long(instrOfferingIdStr);
         InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
         InstructionalOffering io = idao.get(instrOfferingId);
         Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
         
+    	if (!sessionContext.hasPermission(io, Right.InstructionalOfferingDetail))
+    		throw new Exception(MSG.errorAccessDenied());
+        
 	    // Set Session Variables
-        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, subjectAreaId.toString());
-        if (httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null
-                && httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString().length()>0)
-            httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, io.getControllingCourseOffering().getCourseNbr());
+        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId.toString());
+        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber) != null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
+            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, io.getControllingCourseOffering().getCourseNbr());
         
         // Sort Offerings
         ArrayList offerings = new ArrayList(io.getCourseOfferings());
@@ -345,15 +348,13 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setUnlimited(Boolean.FALSE);
         frm.setDesignatorRequired(io.isDesignatorRequired());
         frm.setCreditText((io.getCredit() != null)?io.getCredit().creditText():"");
-		frm.setCanLock(false);
-        frm.setCanUnlock(false);
         frm.setByReservationOnly(io.isByReservationOnly());
         frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
         frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         String coordinators = "";
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+        String instructorNameFormat = sessionContext.getUser().getProperty(UserProperty.NameFormat);
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators())) {
         	if (!coordinators.isEmpty()) coordinators += "<br>";
         	coordinators += "<a href='instructorDetail.do?instructorId=" + instructor.getUniqueId() + "' class='noFancyLinks'>" +
@@ -361,13 +362,6 @@ public class InstructionalOfferingDetailAction extends Action {
         			"</a>";
         }
         frm.setCoordinators(coordinators);
-        if (io.isLockableBy(user)) {
-        	if (io.getSession().isOfferingLocked(io.getUniqueId())) {
-        		frm.setCanUnlock(true);
-        	} else {
-        		frm.setCanLock(true);
-        	}
-        }
         
         if (io.getConsentType()==null)
             frm.setConsentType(MSG.noConsentRequired());
@@ -380,9 +374,6 @@ public class InstructionalOfferingDetailAction extends Action {
         	}
         frm.setNotOffered(io.isNotOffered());
         frm.setCourseOfferings(offerings);
-	    frm.setIsEditable(new Boolean(io.isEditableBy(user)));
-	    frm.setIsFullyEditable(new Boolean(io.getControllingCourseOffering().isFullyEditableBy(user)));
-	    frm.setIsManager(new Boolean(io.getControllingCourseOffering().isEditableBy(user) && !io.getSession().isOfferingFullLockNeeded(io.getUniqueId())));
 	    
         // Check limits on courses if cross-listed
         if (io.getCourseOfferings().size()>1 && !frm.getUnlimited().booleanValue()) {
@@ -437,9 +428,9 @@ public class InstructionalOfferingDetailAction extends Action {
             frm.setCatalogLinkLocation((String)results.get(ExternalLinkLookup.LINK_LOCATION));
         }
         
-	    InstructionalOffering next = io.getNextInstructionalOffering(request.getSession(), Web.getUser(request.getSession()), false, true);
+	    InstructionalOffering next = io.getNextInstructionalOffering(sessionContext);
         frm.setNextId(next==null?null:next.getUniqueId().toString());
-        InstructionalOffering previous = io.getPreviousInstructionalOffering(request.getSession(), Web.getUser(request.getSession()), false, true);
+        InstructionalOffering previous = io.getPreviousInstructionalOffering(sessionContext);
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 	    
 		DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
@@ -458,6 +449,9 @@ public class InstructionalOfferingDetailAction extends Action {
             HttpServletRequest request, 
             InstructionalOfferingDetailForm frm) throws Exception {
         
+    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered))
+    		throw new Exception(MSG.errorAccessDenied());
+
         org.hibernate.Session hibSession = null;
         
         try {
@@ -486,7 +480,7 @@ public class InstructionalOfferingDetailAction extends Action {
 
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     io, 
                     ChangeLog.Source.MAKE_NOT_OFFERED, 
                     ChangeLog.Operation.UPDATE, 
@@ -521,7 +515,10 @@ public class InstructionalOfferingDetailAction extends Action {
             HttpServletRequest request, 
             InstructionalOfferingDetailForm frm) throws Exception {
 
-        org.hibernate.Session hibSession = null;
+    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
+    		throw new Exception(MSG.errorAccessDenied());
+
+    	org.hibernate.Session hibSession = null;
         
         try {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
@@ -535,7 +532,7 @@ public class InstructionalOfferingDetailAction extends Action {
             
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     io, 
                     ChangeLog.Source.MAKE_OFFERED, 
                     ChangeLog.Operation.UPDATE, 

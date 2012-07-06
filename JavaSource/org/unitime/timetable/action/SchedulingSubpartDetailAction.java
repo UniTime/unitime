@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -50,6 +51,8 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -69,6 +72,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 @Service("/schedulingSubpartDetail")
 public class SchedulingSubpartDetailAction extends PreferencesAction {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -292,9 +297,9 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	    		frm.setSameItypeAsParent(new Boolean(false));
 	    	}
 
-	        SchedulingSubpart next = ss.getNextSchedulingSubpart(request.getSession(), Web.getUser(request.getSession()), false, true);
+	        SchedulingSubpart next = ss.getNextSchedulingSubpart(sessionContext, Right.SchedulingSubpartDetail);
 	        frm.setNextId(next==null?null:next.getUniqueId().toString());
-	        SchedulingSubpart previous = ss.getPreviousSchedulingSubpart(request.getSession(), Web.getUser(request.getSession()), false, true);
+	        SchedulingSubpart previous = ss.getPreviousSchedulingSubpart(sessionContext, Right.SchedulingSubpartDetail);
 	        frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 
 

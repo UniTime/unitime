@@ -33,7 +33,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
@@ -48,6 +50,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
@@ -794,6 +797,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		}
 	}
 	
+	@Deprecated
 	public void unlockOffering(Long offeringId, User user) {
 		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 		if (server != null) {
@@ -803,6 +807,29 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 					));
 			server.unlockOffering(offeringId);
 		}
+	}
+	
+	public void unlockOffering(InstructionalOffering offering, UserContext user) {
+		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
+		if (server != null) {
+			server.execute(new ReloadOfferingAction(offering.getUniqueId()),
+					(user == null ? null :
+					OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalUserId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
+					));
+			server.unlockOffering(offering.getUniqueId());
+		}
+        try {
+	        SessionFactory hibSessionFactory = SessionDAO.getInstance().getSession().getSessionFactory();
+	        hibSessionFactory.getCache().evictEntity(InstructionalOffering.class, offering.getUniqueId());
+	        for (CourseOffering course: offering.getCourseOfferings())
+	        	hibSessionFactory.getCache().evictEntity(CourseOffering.class, course.getUniqueId());
+	        for (InstrOfferingConfig config: offering.getInstrOfferingConfigs())
+	        	for (SchedulingSubpart subpart: config.getSchedulingSubparts())
+	        		for (Class_ clazz: subpart.getClasses())
+	        			hibSessionFactory.getCache().evictEntity(Class_.class, clazz.getUniqueId());
+        } catch (Exception e) {
+        	Debug.error("Failed to evict cache: " + e.getMessage());
+        }
 	}
 	
 	@Override

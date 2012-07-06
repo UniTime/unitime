@@ -39,6 +39,7 @@ public class Navigation {
 	public static int sSchedulingSubpartLevel = 1;
 	public static int sClassLevel = 2;
 	
+	@Deprecated
 	public static Long getNext(HttpSession session, int level, Long id) {
 		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
 		int idx = (ids==null?-1:ids[level].indexOf(id));
@@ -51,9 +52,36 @@ public class Navigation {
 		}
 		return null;
 	}
+	
+	public static Long getNext(SessionContext context, int level, Long id) {
+		Vector[] ids = (Vector[])context.getAttribute(sLastDisplayedIdsSessionAttribute);
+		int idx = (ids==null?-1:ids[level].indexOf(id));
+		if (idx>=0) {
+			try {
+				return (Long)ids[level].elementAt(idx+1);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				return new Long(-1);
+			}
+		}
+		return null;
+	}
 
+	@Deprecated
 	public static Long getPrevious(HttpSession session, int level, Long id) {
 		Vector[] ids = (Vector[])session.getAttribute(sLastDisplayedIdsSessionAttribute);
+		int idx = (ids==null?-1:ids[level].indexOf(id));
+		if (idx>=0) {
+			try {
+				return (Long)ids[level].elementAt(idx-1);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				return new Long(-1);
+			}
+		}
+		return null;
+	}
+	
+	public static Long getPrevious(SessionContext context, int level, Long id) {
+		Vector[] ids = (Vector[])context.getAttribute(sLastDisplayedIdsSessionAttribute);
 		int idx = (ids==null?-1:ids[level].indexOf(id));
 		if (idx>=0) {
 			try {
