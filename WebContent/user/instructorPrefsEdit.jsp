@@ -27,7 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
-
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "instructorEditForm";	
@@ -35,9 +35,10 @@
 %>	
 
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	// -->
 </SCRIPT>
 
@@ -46,6 +47,7 @@
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
 	<html:hidden property="deptCode"/>
+	<bean:define name='<%=frmName%>' property="instructorId" id="instructorId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -62,6 +64,7 @@
 						<loc:message name="actionUpdatePreferences" />
 					</html:submit> 
 					
+					<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEditClearPreferences')">
 					&nbsp;
 					<html:submit property="op" 
 						styleClass="btn" 
@@ -69,6 +72,7 @@
 						title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
 						<loc:message name="actionClearInstructorPreferences" />
 					</html:submit> 
+					</sec:authorize>
 									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
@@ -123,7 +127,62 @@
 			<jsp:param name="datePatternPref" value="false"/>
 		</jsp:include>
 		
+<!-- buttons -->
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="right">
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessUpdatePreferences() %>" 
+							title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
+						<loc:message name="actionUpdatePreferences" />
+					</html:submit> 
+					
+					<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEditClearPreferences')">
+					&nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessClearInstructorPreferences() %>" 
+						title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
+						<loc:message name="actionClearInstructorPreferences" />
+					</html:submit> 
+					</sec:authorize>
+									
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						&nbsp;
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey='<%=MSG.accessPreviousInstructor() %>' 
+								title='<%=MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor())%>'>
+							<loc:message name="actionPreviousInstructor" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						&nbsp;
+						<html:submit property="op" 
+								styleClass="btn" 
+								accesskey='<%=MSG.accessNextInstructor() %>' 
+								title='<%=MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor()) %>'>
+							<loc:message name="actionNextInstructor" />						
+						</html:submit> 
+					</logic:notEmpty>
+					&nbsp;
+					<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessBackToDetail()%>" 
+							title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
+						<loc:message name="actionBackToDetail"/>
+					</html:submit>
+			</TD>
+		</TR>
+
 	</TABLE>
+	
+	
 </html:form>
 
 <SCRIPT type="text/javascript" language="javascript">

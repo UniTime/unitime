@@ -38,11 +38,12 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SuggestionsForm;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver.AssignmentRecord;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
@@ -61,16 +62,16 @@ public class SuggestionsAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
+	@Autowired SessionContext sessionContext;
+	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SuggestionsForm myForm = (SuggestionsForm) form;
 		try {
-		
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
+			
+		if (!sessionContext.hasPermission(Right.Suggestions))
             throw new Exception (MSG.errorAccessDenied());
-        }
         
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {
@@ -151,9 +152,9 @@ public class SuggestionsAction extends Action {
 
         if ("Assign".equals(op)) {
         	if (model.getSelectedSuggestion()!=null)
-        		model.getSelectedSuggestion().assign(request.getSession());
+        		model.getSelectedSuggestion().assign(courseTimetablingSolverService.getSolver());
         	else if (model.getCurrentSuggestion()!=null)
-        		model.getCurrentSuggestion().assign(request.getSession());
+        		model.getCurrentSuggestion().assign(courseTimetablingSolverService.getSolver());
         	else
         		throw new Exception("Nothing to assign.");
         	model.reset(request.getSession());
@@ -191,7 +192,7 @@ public class SuggestionsAction extends Action {
 
         myForm.load(model);
 
-        ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(request.getSession(),myForm.getId(),true);
+        ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), myForm.getId(), true);
         Hint newAssignment = (ca==null?null:ca.getHint());
 
         if (model.compute(request.getSession())) {
@@ -199,11 +200,11 @@ public class SuggestionsAction extends Action {
         	
         	Hashtable confInfo = new Hashtable();
         	if (model.getSelectedSuggestion()!=null)
-        		confInfo.putAll(model.getSelectedSuggestion().conflictInfo(request.getSession()));
+        		confInfo.putAll(model.getSelectedSuggestion().conflictInfo(courseTimetablingSolverService.getSolver()));
         	if (model.getCurrentSuggestion()!=null)
-        		confInfo.putAll(model.getCurrentSuggestion().conflictInfo(request.getSession()));
+        		confInfo.putAll(model.getCurrentSuggestion().conflictInfo(courseTimetablingSolverService.getSolver()));
         	
-            String selectedAssignments = getHintTable(model.getSimpleMode(),request, "Selected Assignments", model.getHints(),null);
+            String selectedAssignments = getHintTable(model.getSimpleMode(), request, sessionContext, courseTimetablingSolverService.getSolver(), "Selected Assignments", model.getHints(),null);
             if (model.getHints()!=null) {
             	SolverProxy solver = courseTimetablingSolverService.getSolver();
             	confInfo.putAll(solver.conflictInfo(model.getHints()));
@@ -228,13 +229,13 @@ public class SuggestionsAction extends Action {
             		}
             		if (contains) i.remove();
             	}
-            	String selectedSuggestion =  (model.getSelectedSuggestion()==null?null:getHintTable(model.getSimpleMode(),request, "Selected Suggestion", ass, confInfo));
+            	String selectedSuggestion =  (model.getSelectedSuggestion()==null?null:getHintTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(), "Selected Suggestion", ass, confInfo));
             	if (selectedSuggestion!=null)
             		request.setAttribute("Suggestions.selectedSuggestion",selectedSuggestion);
             }
             Suggestion s = (model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()); 
             Set conf = (s==null?null:s.getUnresolvedConflicts());
-            String conflictAssignments = getHintTable(model.getSimpleMode(),request, "Conflicting Assignments", conf, confInfo);
+            String conflictAssignments = getHintTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(), "Conflicting Assignments", conf, confInfo);
             if (conf!=null) {
             	for (Iterator i=conf.iterator();i.hasNext();) {
             		Hint h = (Hint)i.next();
@@ -248,7 +249,7 @@ public class SuggestionsAction extends Action {
             String selectedInfo = getInfoTable(model.getSimpleMode(), request,model.getEmptySuggestion(),(model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()));
             if (selectedInfo!=null)
             	request.setAttribute("Suggestions.selectedInfo",selectedInfo);
-            String suggestions = getSuggestionsTable(model.getSimpleMode(),request,"Suggestions","Suggestion",model,model.getSuggestions());
+            String suggestions = getSuggestionsTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(),"Suggestions","Suggestion",model,model.getSuggestions());
             if (suggestions!=null)
             	request.setAttribute("Suggestions.suggestions",suggestions);
             String message = null;
@@ -269,7 +270,7 @@ public class SuggestionsAction extends Action {
             	
             request.setAttribute("Suggestions.suggestionsMessage",message);
             if (model.getTryAssignments()!=null) {
-            	String placements = getSuggestionsTable(model.getSimpleMode(),request,"Placements","Placement",model,model.getTryAssignments());
+            	String placements = getSuggestionsTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Placements","Placement",model,model.getTryAssignments());
             	if (placements!=null) 
             		request.setAttribute("Suggestions.placements",placements);
             	
@@ -285,12 +286,12 @@ public class SuggestionsAction extends Action {
             	request.removeAttribute("Suggestions.placements");
             
             if (model.getConfTable()!=null && !model.getConfTable().isEmpty()) {
-            	request.setAttribute("Suggestions.confTable", getConfTable(model.getSimpleMode(),request,model,model.getConfTable()));
+            	request.setAttribute("Suggestions.confTable", getConfTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),model,model.getConfTable()));
             }
         }
 		
         if (ca!=null) {
-        	String assignment = getAssignmentTable(request,ca,true,newAssignment);
+        	String assignment = getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca, true, newAssignment);
         	request.setAttribute("Suggestions.assignment",ca.getClazz().getName());
         	if (assignment!=null)
         		request.setAttribute("Suggestions.assignmentInfo", assignment);
@@ -305,7 +306,7 @@ public class SuggestionsAction extends Action {
 	    }
 	}
 	
-    public String getHintTable(boolean simple, HttpServletRequest request, String name, Collection hints, Hashtable confInfo) {
+    public String getHintTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Collection hints, Hashtable confInfo) {
     	if (hints==null || hints.isEmpty()) return null;
     	boolean hasConfInfo = false;
     	if (confInfo!=null) {
@@ -318,7 +319,7 @@ public class SuggestionsAction extends Action {
         	}
     	}
     	boolean remove = "Selected Assignments".equals(name);
-		WebTable.setOrder(request.getSession(),"suggestions.hints.ord",request.getParameter("hord"),1);
+		WebTable.setOrder(context, "suggestions.hints.ord", request.getParameter("hord"),1);
         WebTable webTable = (hasConfInfo?
         	(simple?
         		new WebTable(6,
@@ -352,9 +353,9 @@ public class SuggestionsAction extends Action {
         		if (conf==null) conf = "";
         		ClassAssignmentDetails ca = null;
         		if ("Conflicting Assignments".equals(name))
-        			ca = hint.getDetailsUnassign(request.getSession(),false);
+        			ca = hint.getDetailsUnassign(context, solver, false);
         		else
-        			ca = hint.getDetails(request.getSession(),false);
+        			ca = hint.getDetails(context, solver, false);
         		String remLink = null;
         		if (remove)
         			remLink = "<a href='suggestions.do?id="+ca.getClazz().getClassId()+"&op=Remove&noCacheTS=" + new Date().getTime()+"'><img src='images/Delete16.gif' border='0'></a>&nbsp;";
@@ -404,7 +405,7 @@ public class SuggestionsAction extends Action {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"suggestions.hints.ord"));
+        return webTable.printTable(WebTable.getOrder(context, "suggestions.hints.ord"));
     }	
     
     public String getInfoTable(boolean simple, HttpServletRequest request,Suggestion oldSuggestion, Suggestion newSuggestion) {
@@ -459,23 +460,23 @@ public class SuggestionsAction extends Action {
     			ClassAssignmentDetails.dispNumber(newSuggestion.getValue(),oldSuggestion.getValue())+
     			"</TD></TR>");
     	if (newSuggestion.hasStudentConflictInfo())
-    		sb.append("<TR><TD nowrap>Student conflicts:</TD><TD colspan='2' nowrap>"+newSuggestion.getStudentConflictInfosAsHtml(request.getSession(),true,0,3)+"</TD></TR>");
+    		sb.append("<TR><TD nowrap>Student conflicts:</TD><TD colspan='2' nowrap>"+newSuggestion.getStudentConflictInfosAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true,0,3)+"</TD></TR>");
     	if (newSuggestion.hasDistributionConstraintInfo() || newSuggestion.hasBtbInstructorInfo()) {
     		sb.append("<TR><TD nowrap>Violated constraints:</TD><TD colspan='2' nowrap>");
     		if (newSuggestion.hasDistributionConstraintInfo())
-    			sb.append(newSuggestion.getDistributionConstraintInfoAsHtml(request.getSession(),true,0,-1));
+    			sb.append(newSuggestion.getDistributionConstraintInfoAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true,0,-1));
     		if (newSuggestion.hasDistributionConstraintInfo() && newSuggestion.hasBtbInstructorInfo())
     			sb.append("<BR>");
     		if (newSuggestion.hasBtbInstructorInfo())
-    			sb.append(newSuggestion.getBtbInstructorInfosAsHtml(request.getSession(),true));
+    			sb.append(newSuggestion.getBtbInstructorInfosAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true));
     		sb.append("</TD></TR>");
     	}
     	return sb.toString();
     }
     
-    public String getSuggestionsTable(boolean simple, HttpServletRequest request, String name, String op, SuggestionsModel model, Collection suggestions) {
+    public String getSuggestionsTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, String op, SuggestionsModel model, Collection suggestions) {
     	//if (suggestions.isEmpty()) return null;
-		WebTable.setOrder(request.getSession(),"suggestions.suggestions."+op+".ord",request.getParameter(op+"_ord"),1);
+		WebTable.setOrder(context, "suggestions.suggestions."+op+".ord", request.getParameter(op+"_ord"),1);
 	   	WebTable webTable =
         	(simple?
        			new WebTable( 6,
@@ -508,7 +509,7 @@ public class SuggestionsAction extends Action {
         	    		if (!"Placement".equals(op) || !model.getClassId().equals(hint.getClassId()))
         	    			continue;
         	    	}
-        	    	ClassAssignmentDetails ca = hint.getDetails(request.getSession(),false);
+        	    	ClassAssignmentDetails ca = hint.getDetails(context, solver, false);
         	    	if (classesSort.length()>0) {
                         classesSort.append(":");
                         datesSort.append(":");
@@ -535,7 +536,7 @@ public class SuggestionsAction extends Action {
         	    for (Iterator j=s.getUnresolvedConflicts().iterator();j.hasNext();) {
         	    	Hint hint = (Hint)j.next();
         	    	if (model.getHints().contains(hint)) continue; //do not list stuff from hint
-        	    	ClassAssignmentDetails ca = hint.getDetailsUnassign(request.getSession(),false);
+        	    	ClassAssignmentDetails ca = hint.getDetailsUnassign(context, solver, false);
         	    	if (classesSort.length()>0) {
                         classesSort.append(":");
                         datesSort.append(":");
@@ -641,18 +642,18 @@ public class SuggestionsAction extends Action {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"suggestions.suggestions."+op+".ord"));
+        return webTable.printTable(WebTable.getOrder(context,"suggestions.suggestions."+op+".ord"));
     }
     
-    public static String getAssignmentTable(HttpServletRequest request, ClassAssignmentDetails ca, boolean dispLinks) {
-    	return getAssignmentTable(request, ca, dispLinks, null, true);
+    public static String getAssignmentTable(SessionContext context, SolverProxy solver, ClassAssignmentDetails ca, boolean dispLinks) {
+    	return getAssignmentTable(context, solver, ca, dispLinks, null, true);
     }
     
-    public static String getAssignmentTable(HttpServletRequest request, ClassAssignmentDetails ca, boolean dispLinks, Hint selection) {
-    	return getAssignmentTable(request, ca, dispLinks, selection, true);
+    public static String getAssignmentTable(SessionContext context, SolverProxy solver, ClassAssignmentDetails ca, boolean dispLinks, Hint selection) {
+    	return getAssignmentTable(context, solver, ca, dispLinks, selection, true);
     }
 
-    public static String getAssignmentTable(HttpServletRequest request, ClassAssignmentDetails ca, boolean dispLinks, Hint selection, boolean dispDate) {
+    public static String getAssignmentTable(SessionContext context, SolverProxy solver, ClassAssignmentDetails ca, boolean dispLinks, Hint selection, boolean dispDate) {
     	StringBuffer sb = new StringBuffer();
 		if (ca.getTime()==null) {
 			sb.append("<TR><TD colspan='2'><I>"+MSG.messageNotAssigned()+"</I></TD></TR>");
@@ -675,7 +676,7 @@ public class SuggestionsAction extends Action {
 				sb.append("<TR><TD></TD><TD>");
 				for (Enumeration e=ca.getBtbInstructors().elements();e.hasMoreElements();) {
 					ClassAssignmentDetails.BtbInstructorInfo btb = (ClassAssignmentDetails.BtbInstructorInfo)e.nextElement();
-					sb.append(btb.toHtml(request.getSession()));
+					sb.append(btb.toHtml(context, solver));
 				}
 				sb.append("</TD></TR>");
 			}
@@ -696,10 +697,10 @@ public class SuggestionsAction extends Action {
 		}
 		if (!ca.getStudentConflicts().isEmpty()) {
 			sb.append("<TR><TD nowrap>"+MSG.propertyStudentConflicts()+"</TD><TD>");
-			Collections.sort(ca.getStudentConflicts(), new ClassAssignmentDetails.StudentConflictInfoComparator(request.getSession()));
+			Collections.sort(ca.getStudentConflicts(), new ClassAssignmentDetails.StudentConflictInfoComparator(context, solver));
 			for (Enumeration e=ca.getStudentConflicts().elements();e.hasMoreElements();) {
 				ClassAssignmentDetails.StudentConflictInfo std = (ClassAssignmentDetails.StudentConflictInfo)e.nextElement();
-				sb.append(std.toHtml(request.getSession(),dispLinks));
+				sb.append(std.toHtml(context, solver, dispLinks));
 				if (e.hasMoreElements()) sb.append("<BR>");
 			}
 			sb.append("</TD></TR>");
@@ -709,7 +710,7 @@ public class SuggestionsAction extends Action {
 			for (Enumeration e=ca.getGroupConstraints().elements();e.hasMoreElements();) {
 				ClassAssignmentDetails.DistributionInfo gc = (ClassAssignmentDetails.DistributionInfo)e.nextElement();
 				if (gc.getInfo().isSatisfied()) continue;
-				sb.append(gc.toHtml(request.getSession(), dispLinks));
+				sb.append(gc.toHtml(context, solver, dispLinks));
 				if (e.hasMoreElements()) sb.append("<BR>");
 			}
 			sb.append("</TD></TR>");
@@ -735,8 +736,8 @@ public class SuggestionsAction extends Action {
     	return sb.toString();
     }
     
-    public String getConfTable(boolean simple, HttpServletRequest request, SuggestionsModel model, Collection suggestions) {
-		WebTable.setOrder(request.getSession(),"suggestions.suggestions.conf.ord",request.getParameter("conf_ord"),1);
+    public String getConfTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, SuggestionsModel model, Collection suggestions) {
+		WebTable.setOrder(context,"suggestions.suggestions.conf.ord",request.getParameter("conf_ord"),1);
 		boolean hasViolDistConst = false;
     	for (Iterator i=suggestions.iterator();i.hasNext();) {
     		Suggestion s = (Suggestion)i.next();
@@ -764,7 +765,7 @@ public class SuggestionsAction extends Action {
         		Suggestion s = (Suggestion)i.next();
         		if (s.getDifferentAssignments()==null || s.getDifferentAssignments().isEmpty()) continue;
         		Hint h = (Hint)s.getDifferentAssignments().firstElement();
-        		ClassAssignmentDetails ca = h.getDetails(request.getSession(),false);
+        		ClassAssignmentDetails ca = h.getDetails(context, solver, false);
 
         		StringBuffer sb = new StringBuffer();
         		if (s.getCommitedStudentConflicts()!=0) {
@@ -789,9 +790,9 @@ public class SuggestionsAction extends Action {
         						(s.getViolatedStudentConflicts()>0?"<font color='red'>":"")+
         						s.getViolatedStudentConflicts() + sb.toString()+
         						(s.getViolatedStudentConflicts()>0?"</font>":""),
-        						s.getStudentConflictInfosAsHtml(request.getSession(), true,(idx+1), 0),
+        						s.getStudentConflictInfosAsHtml(context, solver, true,(idx+1), 0),
         						""+s.getGlobalGroupConstraintPreference(),
-        						s.getDistributionConstraintInfoAsHtml(request.getSession(),true,(idx+1), 0) 
+        						s.getDistributionConstraintInfoAsHtml(context, solver,true,(idx+1), 0) 
         	    				},
         	    				new Comparable[] {
         						new Integer(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
@@ -807,7 +808,7 @@ public class SuggestionsAction extends Action {
         						(s.getViolatedStudentConflicts()>0?"<font color='red'>":"")+
         						s.getViolatedStudentConflicts() + sb.toString()+
         						(s.getViolatedStudentConflicts()>0?"</font>":""),
-        						s.getStudentConflictInfosAsHtml(request.getSession(), true,(idx+1), 0)
+        						s.getStudentConflictInfosAsHtml(context, solver, true,(idx+1), 0)
         	    				},
         	    				new Comparable[] {
         						new Integer(-ca.getAssignedTime().getDays()*1000+ca.getAssignedTime().getStartSlot()),
@@ -821,7 +822,7 @@ public class SuggestionsAction extends Action {
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
         if (nrLines==0) return null;
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"suggestions.suggestions.conf.ord"));
+        return webTable.printTable(WebTable.getOrder(context,"suggestions.suggestions.conf.ord"));
     }    
 }
 

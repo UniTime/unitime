@@ -34,12 +34,13 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionChangesForm;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableSolver.RecordedAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
@@ -56,15 +57,16 @@ import org.unitime.timetable.webutil.PdfWebTable;
 @Service("/solutionChanges")
 public class SolutionChangesAction extends Action {
 	
+	@Autowired SessionContext sessionContext;
+	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolutionChangesForm myForm = (SolutionChangesForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
+		if (!sessionContext.hasPermission(Right.SolutionChanges))
             throw new Exception ("Access Denied.");
-        }
         
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {
@@ -116,7 +118,7 @@ public class SolutionChangesAction extends Action {
 					changes.addAll(ch);
 			}
     	}
-    	String changeTable = getChangesTable(model.getSimpleMode(),model.getReversedMode(),request,"Changes",changes);
+    	String changeTable = getChangesTable(model.getSimpleMode(),model.getReversedMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Changes",changes);
         if (changeTable!=null) {
         	request.setAttribute("SolutionChanges.table",changeTable);
         	request.setAttribute("SolutionChanges.table.colspan",new Integer(model.getSimpleMode()?5:14));
@@ -124,7 +126,7 @@ public class SolutionChangesAction extends Action {
         	request.setAttribute("SolutionChanges.message","No changes."); 
         
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(model.getSimpleMode(),model.getReversedMode(),request,"Changes",changes);
+        	File f = exportPdf(model.getSimpleMode(),model.getReversedMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Changes",changes);
         	if (f!=null)
         		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
         		//response.sendRedirect("temp/"+f.getName());
@@ -133,9 +135,9 @@ public class SolutionChangesAction extends Action {
         return mapping.findForward("showSolutionChanges");
 	}
 
-    public String getChangesTable(boolean simple, boolean reversed, HttpServletRequest request, String name, Vector changes) {
+    public String getChangesTable(boolean simple, boolean reversed, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector changes) {
     	if (changes==null || changes.isEmpty()) return null;
-		WebTable.setOrder(request.getSession(),"solutionChanges.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(context, "solutionChanges.ord",request.getParameter("ord"),1);
         WebTable webTable =
         	(simple?
        			new WebTable( 5,
@@ -152,8 +154,8 @@ public class SolutionChangesAction extends Action {
         try {
         	for (Enumeration e=changes.elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
-    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
-    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
+    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
+    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
     	    	if (reversed) {
     	    		ClassAssignmentDetails x = after; after = before; before = x;
     	    	}
@@ -254,10 +256,10 @@ public class SolutionChangesAction extends Action {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"solutionChanges.ord"));
+        return webTable.printTable(WebTable.getOrder(context, "solutionChanges.ord"));
     }	
 
-    public File exportPdf(boolean simple, boolean reversed, HttpServletRequest request, String name, Vector changes) {
+    public File exportPdf(boolean simple, boolean reversed, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector changes) {
     	if (changes==null || changes.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -274,8 +276,8 @@ public class SolutionChangesAction extends Action {
         try {
         	for (Enumeration e=changes.elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
-    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
-    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
+    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
+    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
     	    	if (reversed) {
     	    		ClassAssignmentDetails x = after; after = before; before = x;
     	    	}
@@ -364,7 +366,7 @@ public class SolutionChangesAction extends Action {
             	             });
         	}
         	File file = ApplicationProperties.getTempFile("changes", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(request.getSession(),"solutionChanges.ord"));
+        	webTable.exportPdf(file, WebTable.getOrder(context,"solutionChanges.ord"));
         	return file;
         } catch (Exception e) {
         	Debug.error(e);

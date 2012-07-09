@@ -28,12 +28,13 @@ import java.util.TreeSet;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -49,15 +50,12 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
-import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -72,6 +70,10 @@ public class Exams extends BodyTagSupport {
     
     public Exams() {
         super();
+    }
+    
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
     }
 
     public void setType(String type) {
@@ -101,26 +103,21 @@ public class Exams extends BodyTagSupport {
     
     public int doEndTag() throws JspException {
         try {
-            User user = Web.getUser(pageContext.getSession());
-            if (user==null)return EVAL_PAGE; 
-            TimetableManager manager = TimetableManager.getManager(user);
-            Session session = Session.getCurrentAcadSession(user);
-            
+        	if (!getSessionContext().hasPermission(Right.Examinations) && !getSessionContext().hasPermission(Right.ExaminationSchedule))
+        		return EVAL_PAGE;
+        	
             String objectIdStr = (getBodyContent()==null?null:getBodyContent().getString().trim());
             if (objectIdStr==null || objectIdStr.length()==0) objectIdStr = (getId()==null?null:getId().trim());
             if (objectIdStr==null || objectIdStr.length()==0) return EVAL_PAGE;
             Long objectId = Long.parseLong(objectIdStr);
             
-            boolean edit = (manager==null || session==null? false : manager.canEditExams(session, user));
-            boolean view = (manager==null || session==null? false : manager.canSeeExams(session, user));
-            
             List exams = Exam.findAllRelated(getType(),objectId);
             if (exams==null || exams.isEmpty()) {
-                if (!edit || !iAdd) return EVAL_PAGE;
+                if (!iAdd || !getSessionContext().hasPermission(Right.ExaminationAdd)) return EVAL_PAGE;
             }
             
             String title = (exams.size()==1?MSG.sectionTitleExamination():MSG.sectionTitleExaminations());
-            if (edit && iAdd) 
+            if (iAdd && getSessionContext().hasPermission(Right.ExaminationAdd)) 
                 title = "<table width='100%'><tr><td width='100%'>" + 
                     "<DIV class=\"WelcomeRowHeadNoLine\">"+MSG.sectionTitleExaminations()+"</DIV>"+
                     "</td><td style='padding-bottom: 2px'>"+
@@ -140,9 +137,9 @@ public class Exams extends BodyTagSupport {
                         new boolean[] {true, true, true, true, true, true, true, true, true}
                     );
 
-            boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-            boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
-            String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+            boolean timeVertical = CommonValues.VerticalGrid.eq(getSessionContext().getUser().getProperty(UserProperty.GridOrientation));
+            boolean timeText = CommonValues.TextGrid.eq(getSessionContext().getUser().getProperty(UserProperty.GridOrientation));
+            String instructorNameFormat = getSessionContext().getUser().getProperty(UserProperty.NameFormat);
             
             String backId = null;
             if ("PreferenceGroup".equals(pageContext.getRequest().getParameter("backType")))
@@ -167,7 +164,7 @@ public class Exams extends BodyTagSupport {
                         hasSolution = true; break;
                     }
                 }
-                if (view) {
+                if (getSessionContext().hasPermission(Right.Examinations)) {
                     if (hasSolution)
                         table = new WebTable(10, title,
                                 new String[] { MSG.columnExamClassesCourses(), MSG.columnExamType(), 
@@ -182,6 +179,7 @@ public class Exams extends BodyTagSupport {
                 
                     for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
+                        boolean view = getSessionContext().hasPermission(exam, Right.ExaminationDetail);
                     
                         String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "";
                         
@@ -259,7 +257,7 @@ public class Exams extends BodyTagSupport {
                         }
                         
                         table.addLine(
-                                (view?"onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"":null),
+                                (view ? "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"":null),
                                 new String[] {
                                     objects,
                                     Exam.sExamTypes[exam.getExamType()],

@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,11 +35,11 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.form.PreferencesForm;
@@ -61,17 +60,14 @@ import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
@@ -79,13 +75,18 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
+import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -98,6 +99,12 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 public class PreferencesAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
     
     // --------------------------------------------------------- Class Constants
     
@@ -133,14 +140,8 @@ public class PreferencesAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
     	
-        HttpSession httpSession = request.getSession();
-		if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-
 		// Load Combo Box Lists 
         LookupTables.setupItypes(request,true);		 // Itypes
-        //LookupTables.setupTimePatterns(request); // Time Patterns
         LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupInstructorDistribTypes(request); // Distribution Types
         
@@ -823,8 +824,9 @@ public class PreferencesAction extends Action {
 		TimePattern timePattern = (tpat.equals("-1")?null:timePatternDao.get(new Long(tpat)));
 
 		// Generate grid prefs
-		RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(owner.canUseHardTimePreferences(Web.getUser(request.getSession()))));
-		rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(Web.getUser(request.getSession())));
+		boolean canUseHardTimePrefs = sessionContext.hasPermission(owner, Right.CanUseHardTimePrefs);
+		RequiredTimeTable rtt = (timePattern == null ? TimePattern.getDefaultRequiredTimeTable() : timePattern.getRequiredTimeTable(canUseHardTimePrefs));
+		rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(sessionContext.getUser()));
 		rtt.setName("p"+idx);
 		
 		rtt.update(request);
@@ -863,16 +865,15 @@ public class PreferencesAction extends Action {
         else if (exam!=null && exam.getAssignedPeriod()!=null)
             assignment = new ExamAssignment(exam);
         if (Exam.sExamTypeMidterm==((ExamEditForm)frm).getExamType()) {
-        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment);
+        	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), assignment);
         	if (exam!=null) epx.load(exam);
         	frm.setHasNotAvailable(true);
         	if (!op.equals("init")) epx.load(request);
         	request.setAttribute("ExamPeriodGrid", epx.print(editable, (editable?0:exam.getLength())));
         } else {
-            PeriodPreferenceModel px = new PeriodPreferenceModel(exam==null?Session.getCurrentAcadSession(Web.getUser(request.getSession())):exam.getSession(), assignment, ((ExamEditForm)frm).getExamType());
+            PeriodPreferenceModel px = new PeriodPreferenceModel(exam == null ? SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()) : exam.getSession(), assignment, ((ExamEditForm)frm).getExamType());
             if (exam!=null) px.load(exam);
-            User user = Web.getUser(request.getSession());
-            px.setAllowHard(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+            px.setAllowHard(sessionContext.hasPermission(exam, Right.CanUseHardTimePrefs));
             frm.setHasNotAvailable(px.hasNotAvailable());
             RequiredTimeTable rtt = new RequiredTimeTable(px);
             rtt.setName("PeriodPref");
@@ -897,9 +898,6 @@ public class PreferencesAction extends Action {
             String op, 
             boolean timeVertical, boolean editable, Vector leadInstructors ) throws Exception {
         
-        HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-
 		Vector timePrefs = null;
 		List tps = null;
 
@@ -937,22 +935,21 @@ public class PreferencesAction extends Action {
 		Assignment assignment = null;
 		
 		if (pg instanceof Class_) {
-	        String managerId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-	        TimetableManager manager = (new TimetableManagerDAO()).get(new Long(managerId));
-			if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user)) {
-				ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(request.getSession(),pg.getUniqueId(),true);
+			Class_ clazz = (Class_)pg;
+			if (sessionContext.hasPermission(clazz.getManagingDept(), Right.ClassAssignments)) {
+				ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), pg.getUniqueId(), true);
 				if (ca!=null) {
-					String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, true);
+					String assignmentTable = SuggestionsAction.getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
 					if (assignmentTable!=null)
 						request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 				} else {
-					ClassAssignmentProxy cap = WebSolver.getClassAssignmentProxy(request.getSession());
-					if (cap!=null) {
+					ClassAssignmentProxy cap = classAssignmentService.getAssignment();
+					if (cap != null) {
 						assignment = cap.getAssignment((Class_)pg);
 						if (assignment!=null && assignment.getUniqueId()!=null) {
-							ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(request.getSession(), assignment.getUniqueId(), true);
+							ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, assignment.getUniqueId(), true);
 							if (ca!=null) {
-								String assignmentTable = SuggestionsAction.getAssignmentTable(request,ca,false, null, true);
+								String assignmentTable = SuggestionsAction.getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);
 								if (assignmentTable!=null)
 									request.setAttribute("Suggestions.assignmentInfo", assignmentTable);
 							}
@@ -987,8 +984,8 @@ public class PreferencesAction extends Action {
 
 			// 	Display time grid
 				RequiredTimeTable rtt = (timePattern==null?TimePattern.getDefaultRequiredTimeTable():timePattern.getRequiredTimeTable(
-						assignment == null ? null : assignment.getTimeLocation(), pg.canUseHardTimePreferences(Web.getUser(request.getSession()))));
-				rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(Web.getUser(request.getSession())));
+						assignment == null ? null : assignment.getTimeLocation(), sessionContext.hasPermission(pg, Right.CanUseHardTimePrefs))); 
+				rtt.getModel().setDefaultSelection(sessionContext.getUser().getProperty(UserProperty.GridSize));
 
 				rtt.setName("p"+idx);
 
@@ -1024,7 +1021,6 @@ public class PreferencesAction extends Action {
      * @param ss
      */
     protected void initPrefs(
-    		User user,
             PreferencesForm frm,
             PreferenceGroup pg, Vector leadInstructors, boolean addBlankRows) {
         
@@ -1034,7 +1030,6 @@ public class PreferencesAction extends Action {
         }
         
     	// Room Prefs
-    	frm.setEditable(pg.isEditableBy(user));
     	frm.getRoomPrefs().clear();
     	frm.getRoomPrefLevels().clear();
         Set roomPrefs = pg.effectivePreferences(RoomPref.class, leadInstructors);

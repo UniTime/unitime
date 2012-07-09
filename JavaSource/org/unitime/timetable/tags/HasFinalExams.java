@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.tags;
 
-import org.unitime.commons.web.Web;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.security.SessionContext;
 
 
 /**
@@ -29,10 +29,14 @@ import org.unitime.timetable.model.Session;
  */
 public class HasFinalExams extends HasMidtermExams {
 	private static final long serialVersionUID = -2181817157444320749L;
+	
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    }
 
 	public boolean includeContent() {
         try {
-            return Exam.hasFinalExams(Session.getCurrentAcadSession(Web.getUser(pageContext.getSession())).getUniqueId());
+            return getSessionContext().isAuthenticated() && Exam.hasFinalExams(getSessionContext().getUser().getCurrentAcademicSessionId());
         } catch (Exception e) {}
         return false;
     }

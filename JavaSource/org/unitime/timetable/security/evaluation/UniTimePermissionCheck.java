@@ -112,8 +112,6 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 				Department dept = Department.findByDeptCode((String)targetId, user.getCurrentAcademicSessionId());
 				if (dept != null) 
 					return checkPermission(user, dept, right);
-				else
-					return false;
 			}
 			
 			if (targetId instanceof String) {

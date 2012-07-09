@@ -23,11 +23,13 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <loc:bundle name="CourseMessages">
 <TR>
 	<bean:parameter id="operation" name="operation"/>
 	<bean:parameter id="frmName" name="frmName"/>
+	<bean:parameter id="instructorId" name="instructorId"/>
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>		
 					<tt:section-title>&nbsp;</tt:section-title>
@@ -48,7 +50,7 @@
 								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
 							<loc:message name="actionUpdateInstructor" />
 						</html:submit> 	
-						<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
+						<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorDelete')">			
 						<html:submit property="op" 
 								styleClass="btn" 
 								accesskey="<%= MSG.accessDeleteInstructor() %>" 
@@ -56,7 +58,7 @@
 								onclick="return(confirmDelete());">
 							<loc:message name="actionDeleteInstructor" />
 						</html:submit> 
-						</logic:equal>	
+						</sec:authorize>
 					<% } %>
 					
 					<html:submit property="op" 
@@ -223,7 +225,7 @@
 								title="<%= MSG.titleUpdateInstructor(MSG.accessUpdateInstructor())%>" >
 							<loc:message name="actionUpdateInstructor" />
 						</html:submit> 	
-						<logic:equal name="<%=frmName%>" property="canDelete" value="true">			
+						<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorDelete')">			
 						<html:submit property="op" 
 								styleClass="btn" 
 								accesskey="<%= MSG.accessDeleteInstructor() %>" 
@@ -231,7 +233,7 @@
 								onclick="return(confirmDelete());">
 							<loc:message name="actionDeleteInstructor" />
 						</html:submit> 
-						</logic:equal>	
+						</sec:authorize>
 					<% } %>
 					
 					<html:submit property="op" 

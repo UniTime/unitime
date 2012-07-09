@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -40,11 +39,11 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.ChangeLog;
@@ -67,7 +66,6 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -108,7 +106,6 @@ public class ClassEditAction extends PreferencesAction {
 
         super.execute(mapping, form, request, response);
 
-        HttpSession httpSession = request.getSession();
         ClassEditForm frm = (ClassEditForm) form;
         MessageResources rsc = getResources(request);
         ActionMessages errors = new ActionMessages();
@@ -124,7 +121,6 @@ public class ClassEditAction extends PreferencesAction {
         String op = frm.getOp();
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
         	op = request.getParameter("op2");
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
         // Read class id from form
         if(//op.equals(rsc.getMessage("button.reload"))||
@@ -167,6 +163,11 @@ public class ClassEditAction extends PreferencesAction {
         // Check op exists
         if(op==null || op.trim()=="")
             throw new Exception (MSG.errorNullOperationNotSupported());
+        
+        if (!sessionContext.hasPermission(classId, "Class_", Right.ClassEdit))
+        	throw new Exception (MSG.errorAccessDenied());
+
+        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
         Debug.debug("op: " + op);
         Debug.debug("class: " + classId);
@@ -197,6 +198,9 @@ public class ClassEditAction extends PreferencesAction {
 
 		// Add Distribution Preference - Redirect to dist prefs screen
 	    if(op.equals(MSG.actionAddDistributionPreference())) {
+        	if (!sessionContext.hasPermission(c, Right.DistributionPreferenceClass))
+        		throw new Exception("Access denied.");
+
 	        SchedulingSubpart ss = c.getSchedulingSubpart();
 	        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 	        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
@@ -218,6 +222,8 @@ public class ClassEditAction extends PreferencesAction {
 
         // Restore all inherited preferences
         if(op.equals(MSG.actionClearClassPreferences())) {
+        	if (!sessionContext.hasPermission(c, Right.ClassEditClearPreferences))
+        		throw new Exception("Access denied.");
 
             Set s = c.getPreferences();
             s.clear();
@@ -227,7 +233,7 @@ public class ClassEditAction extends PreferencesAction {
 
             ChangeLog.addChange(
                     null,
-                    request,
+                    sessionContext,
                     c,
                     ChangeLog.Source.CLASS_EDIT,
                     ChangeLog.Operation.CLEAR_PREF,
@@ -313,10 +319,8 @@ public class ClassEditAction extends PreferencesAction {
         	} catch (NumberFormatException e) {}
         }
 
-        User user = Web.getUser(httpSession);
-        
         if (op.equals("updateDatePattern")) {        	
-			initPrefs(user, frm, c, leadInstructors, true);
+			initPrefs(frm, c, leadInstructors, true);
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
 			DatePattern selectedDatePattern = (frm.getDatePattern() < 0 ? c.effectiveDatePattern() : DatePatternDAO.getInstance().get(frm.getDatePattern()));
@@ -347,7 +351,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setAvailableTimePatterns(TimePattern.findApplicable(request,c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
 		Set timePatterns = null;
         if(op.equals("init")) {
-        	initPrefs(user, frm, c, leadInstructors, true);
+        	initPrefs(frm, c, leadInstructors, true);
 		    timePatterns = c.effectiveTimePatterns();
 		    
 		    DatePattern selectedDatePattern = c.effectiveDatePattern();
@@ -379,7 +383,7 @@ public class ClassEditAction extends PreferencesAction {
         LookupTables.setupRoomFeatures(request, c); // Room Features
         LookupTables.setupRoomGroups(request, c);   // Room Groups
 
-        frm.setAllowHardPrefs(c.canUseHardRoomPreferences(user));
+        frm.setAllowHardPrefs(sessionContext.hasPermission(c, Right.CanUseHardRoomPrefs));
 
         BackTracker.markForBack(
         		request,
@@ -552,7 +556,7 @@ public class ClassEditAction extends PreferencesAction {
 
         ChangeLog.addChange(
                 hibSession,
-                request,
+                sessionContext,
                 c,
                 ChangeLog.Source.CLASS_EDIT,
                 ChangeLog.Operation.UPDATE,

@@ -131,4 +131,17 @@ public class CurriculumPermissions {
 		@Override
 		public Class<Curriculum> type() { return Curriculum.class; }
 	}
+	
+	@PermissionForRight(Right.CurriculumAdmin)
+	public static class CurriculumAdmin implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && permissionSession.check(user, source);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
 }

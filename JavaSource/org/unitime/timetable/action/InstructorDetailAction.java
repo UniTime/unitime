@@ -27,41 +27,41 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
+import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DesignatorListBuilder;
 import org.unitime.timetable.webutil.Navigation;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /** 
@@ -73,6 +73,12 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 @Service("/instructorDetail")
 public class InstructorDetailAction extends PreferencesAction {
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+	
+	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -96,8 +102,6 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // Set common lookup tables
 	        super.execute(mapping, form, request, response);
 
-			HttpSession httpSession = request.getSession();  
-			User user = Web.getUser(httpSession);
 			InstructorEditForm frm = (InstructorEditForm) form;
 	        MessageResources rsc = getResources(request);
 	        ActionMessages errors = new ActionMessages();
@@ -107,10 +111,13 @@ public class InstructorDetailAction extends PreferencesAction {
 							        ? (request.getAttribute("instructorId")==null)
 							                ? null
 							                : request.getAttribute("instructorId").toString()
-									: request.getParameter("instructorId");		        
-		        
-	        String op = frm.getOp();
-	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
+									: request.getParameter("instructorId");
+							                
+		    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail))
+		    	throw new Exception ("Access denied.");
+	        
+		    String op = frm.getOp();
+	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 	        
 	        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 	        	op = request.getParameter("op2");
@@ -159,6 +166,10 @@ public class InstructorDetailAction extends PreferencesAction {
 	        //Edit Information - Redirect to info edit screen
 	        if(op.equals(rsc.getMessage("button.editInstructorInfo")) 
 	                && instructorId!=null && instructorId.trim()!="") {
+	        	
+			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit))
+			    	throw new Exception ("Access denied.");
+
 	        	response.sendRedirect( response.encodeURL("instructorInfoEdit.do?instructorId="+instructorId) );
 	        	return null;
 	        }
@@ -166,6 +177,10 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // Edit Preference - Redirect to prefs edit screen
 	        if(op.equals(rsc.getMessage("button.editInstructorPref")) 
 	                && instructorId!=null && instructorId.trim()!="") {
+	        	
+			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences))
+			    	throw new Exception ("Access denied.");
+
 	        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
 	        	return null;
 	        }
@@ -173,6 +188,10 @@ public class InstructorDetailAction extends PreferencesAction {
 	        // Add Designator
 	        if(op.equals(rsc.getMessage("button.addDesignator2")) 
 	                && instructorId!=null && instructorId.trim()!="") {
+	        	
+			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorAddDesignator))
+			    	throw new Exception ("Access denied.");
+
 	            request.setAttribute("instructorId", instructorId);
 	        	return mapping.findForward("addDesignator");
 	        }
@@ -203,24 +222,9 @@ public class InstructorDetailAction extends PreferencesAction {
                 allClasses.addAll(di.getClasses());
             }
 			if (!allClasses.isEmpty()) {
-				ClassAssignmentProxy proxy = WebSolver.getClassAssignmentProxy(request.getSession());
-		        TimetableManager manager = TimetableManager.getManager(user);
-								
-		        boolean hasTimetable = false;
-				try {
-					if (manager!=null && manager.canSeeTimetable(Session.getCurrentAcadSession(user), user) && proxy!=null) {
-						for (Iterator iterInst = allClasses.iterator(); iterInst.hasNext();) {
-							ClassInstructor ci = (ClassInstructor) iterInst.next();
-							Class_ c = ci.getClassInstructing();
-							if (proxy.getAssignment(c)!=null) {
-								hasTimetable = true; break;
-							}
-						}
-					}
-		        } catch (Exception e) {}
-				
-				
-			    WebTable classTable =
+				boolean hasTimetable = sessionContext.hasPermission(Right.ClassAssignments);
+
+				WebTable classTable =
 			    	(hasTimetable? 
 			    			new WebTable( 8,
 			    					null,
@@ -273,12 +277,12 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	String assignedTime = "";
 			    	String assignedDate = "";
 			    	String assignedRoom = "";
-			    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(request.getSession(),c.getUniqueId(),false);
+			    	ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), c.getUniqueId(),false);
 			    	if (ca == null) {
 			    		try {
-			    			Assignment a = proxy.getAssignment(c);
+			    			Assignment a = classAssignmentService.getAssignment().getAssignment(c);
 			    			if (a.getUniqueId() != null)
-			    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(request.getSession(), a.getUniqueId(), false);
+			    				ca = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(sessionContext, a.getUniqueId(), false);
 			    		} catch (Exception e) {}
 			    	}
 			    	if (ca != null) {
@@ -295,7 +299,7 @@ public class InstructorDetailAction extends PreferencesAction {
 			    	}
 		    		
 		    		String onClick = null;
-		    		if (c.isViewableBy(user)) {
+		    		if (sessionContext.hasPermission(c, Right.ClassDetail)) {
 		    			onClick = "onClick=\"document.location='classDetail.do?cid="+c.getUniqueId()+"';\"";
 		    		}
 		    		
@@ -331,7 +335,7 @@ public class InstructorDetailAction extends PreferencesAction {
 					}
 				}
 				
-				Navigation.set(request.getSession(), Navigation.sClassLevel, classIds);
+				Navigation.set(sessionContext, Navigation.sClassLevel, classIds);
 
 				String tblData = classTable.printTable();
 				request.setAttribute("classTable", tblData);
@@ -343,27 +347,27 @@ public class InstructorDetailAction extends PreferencesAction {
 					"<FONT color=696969>Distribution Preferences Not Applicable</FONT>");
 					*/
 
-			frm.setDisplayPrefs(UserData.getPropertyBoolean(request.getSession(),"InstructorDetail.distPref", false));
+			frm.setDisplayPrefs(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.DispInstructorPrefs)));
 			
 			if (op.equals(rsc.getMessage("button.displayPrefs"))
 			        || ( request.getAttribute("showPrefs")!=null 
 			                && request.getAttribute("showPrefs").equals("true")) ) {
 				frm.setDisplayPrefs(true);
-				UserData.setPropertyBoolean(request.getSession(),"InstructorDetail.distPref", true);
+				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.Yes.value());
 			}
 			
 			if (op.equals(rsc.getMessage("button.hidePrefs"))
 			        || ( request.getAttribute("showPrefs")!=null 
 			                && request.getAttribute("showPrefs").equals("false")) ) {
 				frm.setDisplayPrefs(false);
-				UserData.setPropertyBoolean(request.getSession(),"InstructorDetail.distPref", false);
+				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.No.value());
 			}
 
 			if (frm.isDisplayPrefs()) {
 		        // Initialize Preferences for initial load 
 		        Set timePatterns = new HashSet();
 		        frm.setAvailableTimePatterns(null);
-		        initPrefs(user, frm, inst, null, false);
+		        initPrefs(frm, inst, null, false);
 		        timePatterns.add(new TimePattern(new Long(-1)));
 		    	//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
 		        
@@ -379,9 +383,9 @@ public class InstructorDetailAction extends PreferencesAction {
 		        LookupTables.setupRoomGroups(request, inst);   // Room Groups
 			}
 			
-			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
-			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorDetail);
 			frm.setNextId(next==null?null:next.getUniqueId().toString());
 		
 	        return mapping.findForward("showInstructorDetail");
@@ -434,15 +438,6 @@ public class InstructorDetailAction extends PreferencesAction {
 			frm.setNote(inst.getNote().trim());
 		}
 				
-        User user = Web.getUser(request.getSession());
-
-		frm.setEditable(inst.isEditableBy(user));
-		frm.setLimitedEditable(frm.isEditable() || inst.getDepartment().isLimitedEditableBy(user));
-		if (frm.isEditable() && user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-		    frm.setLimitedEditable(true);
-		    frm.setEditable(false);
-		}
-
 		request.getSession().setAttribute(Constants.DEPT_ID_ATTR_NAME, inst.getDepartment().getUniqueId().toString());
 		
 		// Check column ordering - default to name

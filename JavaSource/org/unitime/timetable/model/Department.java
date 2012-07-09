@@ -369,6 +369,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		return ret;
 	}
 
+	@Deprecated
 	public static String[] getDeptCodesForUser(User user, boolean includeExternal) throws Exception {
 		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
 		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
@@ -519,5 +520,8 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 				departments.add(DepartmentDAO.getInstance().get((Long)q.getQualifierId()));
 		return departments;
 	}
+	
+	@Override
+	public Department getDepartment() { return this; }
 
 }

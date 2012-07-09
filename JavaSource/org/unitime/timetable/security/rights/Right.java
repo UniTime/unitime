@@ -23,9 +23,12 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -90,13 +93,23 @@ public enum Right {
 	AssignedClasses(Department.class),
 	AssignedExams(Session.class),
 	AssignmentHistory(Department.class),
+	SolutionChanges(Department.class),
+	Suggestions(Department.class),
 	
 	/** Class level rights */
 	ClassDetail(Class_.class),
 	ClassEdit(Class_.class),
+	ClassEditClearPreferences(Class_.class),
+	ClassAssignment(Class_.class),
 	
 	SchedulingSubpartDetail(SchedulingSubpart.class),
+	SchedulingSubpartDetailClearClassPreferences(SchedulingSubpart.class),
 	SchedulingSubpartEdit(SchedulingSubpart.class),
+	SchedulingSubpartEditClearPreferences(SchedulingSubpart.class),
+	
+	DistributionPreferenceClass(Class_.class),
+	DistributionPreferenceSubpart(SchedulingSubpart.class),
+	DistributionPreferenceExam(Exam.class),
 
 	/** Curriculum rights */
     CurriculumView(Session.class),
@@ -105,7 +118,33 @@ public enum Right {
     CurriculumEdit(Curriculum.class),
     CurriculumDelete(Curriculum.class),
     CurriculumMerge(Curriculum.class),
-    CurriculumAdmin(Session.class)
+    CurriculumAdmin(Session.class),
+    
+    Instructors(Department.class),
+    InstructorsExportPdf(Department.class),
+    ManageInstructors(Department.class),
+    InstructorDetail(DepartmentalInstructor.class),
+    InstructorAdd(Department.class),
+    InstructorEdit(DepartmentalInstructor.class),
+    InstructorEditClearPreferences(DepartmentalInstructor.class),
+    InstructorDelete(DepartmentalInstructor.class),
+    InstructorPreferences(DepartmentalInstructor.class),
+    InstructorAddDesignator(DepartmentalInstructor.class),
+    
+    ExaminationDetail(Exam.class),
+    ExaminationEdit(Exam.class),
+    ExaminationEditClearPreferences(Exam.class),
+    ExaminationDelete(Exam.class),
+    ExaminationClone(Exam.class),
+    ExaminationAdd(Session.class),
+    ExaminationAssignment(Exam.class),
+    
+    CanUseHardTimePrefs(PreferenceGroup.class),
+    CanUseHardRoomPrefs(PreferenceGroup.class),
+    CanUseHardDistributionPrefs(PreferenceGroup.class),
+    CanUseHardPeriodPrefs(PreferenceGroup.class),
+    
+    Registration,
 
     ;
 	

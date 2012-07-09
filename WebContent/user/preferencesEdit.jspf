@@ -473,200 +473,22 @@
 	   	</logic:iterate>
 	</logic:notEqual>
 
-<!-- Buttons -->
-		<TR>
-			<TD colspan='2'>
-				<tt:section-title/>
-			</TD>
-		</TR>
 
-		<TR>
-			<TD colspan="2" align="right">
-
-				<INPUT type="hidden" name="deleteType" id="deleteType" value="">
-				<INPUT type="hidden" name="deleteId" id="deleteId" value="">
-				<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
-				<INPUT type="hidden" name="doit" value="Cancel">
-
-				<!-- 
-				&nbsp;
-				<html:submit property="op" styleClass="btn" styleId="reload" accesskey="E" title="Discard Changes. Reload preferences from database">
-					<bean:message key="button.reload" />
-				</html:submit> 
-											
-				&nbsp;
-				<html:submit property="op" styleClass="btn" accesskey="X" title="Clear all preferences. (Does not commit to database)" onclick="javascript: doDel('prefs', '0'); return true;">
-					<bean:message key="button.deletePrefs" />
-				</html:submit> 
-				-->				
-				  
-				<% if (frmName.equals("SchedulingSubpartEditForm")) { %>  
+	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
+	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
+	<INPUT type="hidden" name="doit" value="Cancel">
+	
+	<SCRIPT type="text/javascript" language="javascript">
+		function doDel(type, id) {
+			var delType = document.<%=frmName%>.deleteType;
+			delType.value = type;
 				
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessUpdatePreferences() %>" 
-					title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
-					<loc:message name="actionUpdatePreferences" />
-				</html:submit> 
-				
-				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessClearSubpartPreferences() %>" 
-					title="<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>">
-					<loc:message name="actionClearSubpartPreferences" />
-				</html:submit> 
-
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessPreviousSubpart() %>" 
-						title="<%=MSG.titlePreviousSubpartWithUpdate(MSG.accessPreviousSubpart()) %>">
-						<loc:message name="actionPreviousSubpart" />
-					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey="<%=MSG.accessNextSubpart() %>" 
-						title="<%=MSG.titleNextSubpartWithUpdate(MSG.accessNextSubpart()) %>">
-						<loc:message name="actionNextSubpart" />
-					</html:submit> 
-				</logic:notEmpty>
-				<% } 
-				
-				   if (frmName.equals("ClassEditForm")) {%>
-
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessUpdatePreferences() %>" 
-					title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
-					<loc:message name="actionUpdatePreferences" />
-				</html:submit> 
-				
-				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-						accesskey='<%=MSG.accessClearClassPreferences() %>' 
-						title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
-						<loc:message name="actionClearClassPreferences" />
-				</html:submit> 
-
-				<logic:notEmpty name="<%=frmName%>" property="previousId">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn"
-							accesskey='<%=MSG.accessPreviousClass() %>' 
-							title='<%=MSG.titlePreviousClassWithUpdate(MSG.accessPreviousClass())%>'>
-							<loc:message name="actionPreviousClass" />
-					</html:submit> 
-				</logic:notEmpty>
-				<logic:notEmpty name="<%=frmName%>" property="nextId">
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-							accesskey='<%=MSG.accessNextClass() %>' 
-							title='<%=MSG.titleNextClassWithUpdate(MSG.accessNextClass()) %>'>
-							<loc:message name="actionNextClass" />
-					</html:submit> 
-				</logic:notEmpty>
-				<% } 
-
-				   if (frmName.equals("instructorEditForm")) {%>
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessUpdatePreferences() %>" 
-					title="<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>" >
-					<loc:message name="actionUpdatePreferences" />
-				</html:submit> 
-				
-				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessClearInstructorPreferences() %>" 
-					title="<%=MSG.titleClearInstructorPreferences(MSG.accessClearInstructorPreferences()) %>">
-					<loc:message name="actionClearInstructorPreferences" />
-				</html:submit> 
-								
-					<logic:notEmpty name="<%=frmName%>" property="previousId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessPreviousInstructor() %>' 
-							title='<%=MSG.titlePreviousInstructorWithUpdate(MSG.accessPreviousInstructor())%>'>
-							<loc:message name="actionPreviousInstructor" />
-
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:notEmpty name="<%=frmName%>" property="nextId">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessNextInstructor() %>' 
-							title='<%=MSG.titleNextInstructorWithUpdate(MSG.accessNextInstructor()) %>'>
-							<loc:message name="actionNextInstructor" />						
-						</html:submit> 
-					</logic:notEmpty>
-				<% } 
-
-				   if (frmName.equals("examEditForm")) {%>
-					<logic:notEmpty name="<%=frmName%>" property="examId">
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessUpdateExamination() %>" 
-							title="<%=MSG.titleUpdateExamination(MSG.accessUpdateExamination()) %>" >
-							<loc:message name="actionUpdateExamination" />
-						</html:submit> 
-					</logic:notEmpty>
-					<logic:empty name="<%=frmName%>" property="examId">
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey="<%=MSG.accessSaveExamination() %>" 
-							title="<%=MSG.titleSaveExamination(MSG.accessSaveExamination()) %>" >
-							<loc:message name="actionSaveExamination" />
-						</html:submit> 
-					</logic:empty>
-					<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
-						&nbsp;
-						<html:submit property="op" 
-								styleClass="btn" 
-							accesskey='<%=MSG.accessPreviousExamination() %>' 
-							title='<%=MSG.titlePreviousExaminationWithUpdate(MSG.accessPreviousExamination())%>'>
-							<loc:message name="actionPreviousExamination" />
-						</html:submit> 
-					</logic:greaterEqual>
-					<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
-						&nbsp;
-						<html:submit property="op" 
-							styleClass="btn" 
-							accesskey='<%=MSG.accessNextExamination() %>' 
-							title='<%=MSG.titleNextExaminationWithUpdate(MSG.accessNextExamination()) %>'>
-							<loc:message name="actionNextExamination" />	
-						</html:submit> 
-					</logic:greaterEqual>
-				<% } %>
-
-				&nbsp;
-				<html:submit property="op" 
-					styleClass="btn" 
-					accesskey="<%=MSG.accessBackToDetail()%>" 
-					title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
-					<loc:message name="actionBackToDetail"/>
-				</html:submit>
-				
-				<SCRIPT type="text/javascript" language="javascript">
-					function doDel(type, id) {
-						var delType = document.<%=frmName%>.deleteType;
-						delType.value = type;
-				
-						var delId = document.<%=frmName%>.deleteId;
-						delId.value = id;
-					}
-				</SCRIPT>				
-			</TD>
-		</TR>
+			var delId = document.<%=frmName%>.deleteId;
+			delId.value = id;
+		}
+	</SCRIPT>				
+	
 	</loc:bundle>
 <% } catch (Exception e) { 
 	 Debug.error(e);

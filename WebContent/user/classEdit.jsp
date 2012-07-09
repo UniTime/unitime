@@ -20,7 +20,6 @@
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.form.ClassEditForm" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.action.ClassEditAction" %>
 <%@ page import="java.util.Enumeration" %>
@@ -31,11 +30,13 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmRoomSizeChange() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -75,12 +76,12 @@
 				}
 			}
 			if (isLead && hasPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getInheritInstructorPreferencesCondition(Web.getUser(session))%>) {
+				if (op2Obj!=null && <%=JavascriptFunctions.getInheritInstructorPreferencesCondition(sessionContext)%>) {
 					op2Obj.value='updatePref';
 					document.forms[0].submit();
 				}
 			} else if (hadPreferences) {
-				if (op2Obj!=null && <%=JavascriptFunctions.getCancelInheritInstructorPreferencesCondition(Web.getUser(session))%>) {
+				if (op2Obj!=null && <%=JavascriptFunctions.getCancelInheritInstructorPreferencesCondition(sessionContext)%>) {
 					op2Obj.value='updatePref';
 					document.forms[0].submit();
 				}
@@ -121,14 +122,16 @@
 						accesskey='<%=MSG.accessUpdatePreferences()%>' 
 						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
 						<loc:message name="actionUpdatePreferences"/>
-					</html:submit> 
-					&nbsp;
-					<html:submit property="op" 
-						styleClass="btn" 
-						accesskey='<%=MSG.accessClearClassPreferences() %>' 
-						title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
-						<loc:message name="actionClearClassPreferences" />
-					</html:submit> 
+					</html:submit>
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey='<%=MSG.accessClearClassPreferences() %>' 
+							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
+							<loc:message name="actionClearClassPreferences" />
+						</html:submit>
+					</sec:authorize> 
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
@@ -484,6 +487,58 @@
 				</jsp:include>
 			</logic:notEqual>
 		</logic:notEqual>
+		
+<!-- buttons -->
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="right">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey='<%=MSG.accessUpdatePreferences()%>' 
+						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
+						<loc:message name="actionUpdatePreferences"/>
+					</html:submit>
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEditClearPreferences')"> 
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey='<%=MSG.accessClearClassPreferences() %>' 
+							title='<%=MSG.titleClearClassPreferences(MSG.accessClearClassPreferences()) %>'>
+							<loc:message name="actionClearClassPreferences" />
+						</html:submit>
+					</sec:authorize> 
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey='<%=MSG.accessPreviousClass() %>' 
+							title='<%=MSG.titlePreviousClassWithUpdate(MSG.accessPreviousClass())%>'>
+							<loc:message name="actionPreviousClass" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey='<%=MSG.accessNextClass() %>' 
+							title='<%=MSG.titleNextClassWithUpdate(MSG.accessNextClass()) %>'>
+							<loc:message name="actionNextClass" />
+						</html:submit> 
+					</logic:notEmpty>
+					&nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey='<%=MSG.accessBackToDetail()%>' 
+						title='<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>'>
+						<loc:message name="actionBackToDetail" />
+					</html:submit>
+				</TD>
+		</TR>
+		
 		
 		
 	</TABLE>

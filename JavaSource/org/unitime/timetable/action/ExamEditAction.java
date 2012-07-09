@@ -28,18 +28,18 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -55,11 +55,9 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameterDef;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -67,14 +65,18 @@ import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 @Service("/examEdit")
 public class ExamEditAction extends PreferencesAction {
+	
+	@Autowired SessionContext sessionContext;
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ExamEditForm frm = (ExamEditForm) form;
@@ -83,8 +85,6 @@ public class ExamEditAction extends PreferencesAction {
             // Set common lookup tables
             super.execute(mapping, form, request, response);
             
-            HttpSession httpSession = request.getSession();
-            User user = Web.getUser(httpSession);
             MessageResources rsc = getResources(request);
             ActionMessages errors = new ActionMessages();
             
@@ -131,7 +131,14 @@ public class ExamEditAction extends PreferencesAction {
                 throw new Exception ("Null Operation not supported.");
             
             Exam exam = (examId==null || examId.trim().length()==0 ? null: new ExamDAO().get(Long.valueOf(examId)));
-            
+
+	        if (exam != null && !sessionContext.hasPermission(examId, "Exam", Right.ExaminationEdit))
+	        	throw new Exception("Access denied.");
+	        if (exam == null && !sessionContext.hasPermission(Right.ExaminationAdd))
+	        	throw new Exception("Access denied.");
+
+	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+
             // Cancel - Go back to Instructors Detail Screen
             if(op.equals(rsc.getMessage("button.returnToDetail"))) {
                 if (BackTracker.hasBack(request, 1)) {
@@ -149,6 +156,8 @@ public class ExamEditAction extends PreferencesAction {
             
             // Clear all preferences
             if(exam!=null && op.equals(rsc.getMessage("button.clearExamPrefs"))) { 
+            	if (!sessionContext.hasPermission(exam, Right.ExaminationEditClearPreferences))
+            		throw new Exception("Access denied.");
                 Set s = exam.getPreferences();
                 s.clear();
                 exam.setPreferences(s);            
@@ -158,7 +167,7 @@ public class ExamEditAction extends PreferencesAction {
                 
                 ChangeLog.addChange(
                         null, 
-                        request,
+                        sessionContext,
                         exam, 
                         ChangeLog.Source.EXAM_EDIT, 
                         ChangeLog.Operation.CLEAR_PREF,
@@ -252,9 +261,8 @@ public class ExamEditAction extends PreferencesAction {
             // Initialize Preferences for initial load 
             frm.setAvailableTimePatterns(null);
             if(op.equals("init")) {
-                initPrefs(user, frm, exam, null, true);
+                initPrefs(frm, exam, null, true);
             }
-            boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
             generateExamPeriodGrid(request, frm, (frm.getClone()?null:exam), op, timeVertical, true);
             
             // Process Preferences Action
@@ -269,7 +277,7 @@ public class ExamEditAction extends PreferencesAction {
                 LookupTables.setupRoomGroups(request, exam);   // Room Groups
             } else {
                 Exam dummy = new Exam(); 
-                dummy.setSession(Session.getCurrentAcadSession(user));
+                dummy.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
                 dummy.setExamType(frm.getExamType());
                 LookupTables.setupRooms(request, dummy);      // Room Prefs
                 LookupTables.setupBldgs(request, dummy);      // Building Prefs
@@ -277,9 +285,9 @@ public class ExamEditAction extends PreferencesAction {
                 LookupTables.setupRoomGroups(request, dummy);   // Room Groups
             }
             
-            frm.setAllowHardPrefs(user.isAdmin() || user.hasRole(Roles.EXAM_MGR_ROLE));
+            frm.setAllowHardPrefs(sessionContext.hasPermission(exam, Right.CanUseHardPeriodPrefs));
             
-            frm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+            frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         
             if (!frm.getClone() && exam!=null) {
                 BackTracker.markForBack(
@@ -317,12 +325,8 @@ public class ExamEditAction extends PreferencesAction {
                 frm.getInstructors().add(instr.getUniqueId().toString());
             }
             
-            User user = Web.getUser(request.getSession());
-
-            frm.setEditable(exam.isEditableBy(user));
-
-            Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-            Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+            Long nextId = Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+            Long prevId = Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
             frm.setPreviousId(prevId==null?null:prevId.toString());
             frm.setNextId(nextId==null?null:nextId.toString());
             
@@ -404,8 +408,7 @@ public class ExamEditAction extends PreferencesAction {
                 if (own!=null) deptIds.add(own.getCourse().getDepartment().getUniqueId());
             }
             if (deptIds.isEmpty()) {
-                for (Iterator i = TimetableManager.getManager(Web.getUser(request.getSession())).getDepartments().iterator();i.hasNext();) {
-                    Department dept = (Department)i.next();
+            	for (Department dept: Department.getUserDepartments(sessionContext.getUser())) {
                     deptIds.add(dept.getUniqueId());
                 }
             }
@@ -429,7 +432,7 @@ public class ExamEditAction extends PreferencesAction {
         if (exam==null) {
             add = true;
             exam = new Exam();
-            exam.setSession(Session.getCurrentAcadSession(Web.getUser(request.getSession())));
+            exam.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
         }
         
         Set s = exam.getPreferences();
@@ -507,7 +510,7 @@ public class ExamEditAction extends PreferencesAction {
         
                 ChangeLog.addChange(
                 null, 
-                request,
+                sessionContext,
                 exam, 
                 ChangeLog.Source.EXAM_EDIT, 
                 (add?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 

@@ -27,7 +27,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -35,11 +34,12 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -52,6 +52,8 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -59,10 +61,11 @@ import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
 import org.unitime.timetable.webutil.Navigation;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 @Service("/examDetail")
 public class ExamDetailAction extends PreferencesAction {
+	
+	@Autowired SessionContext sessionContext;
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ExamEditForm frm = (ExamEditForm) form;
@@ -71,8 +74,6 @@ public class ExamDetailAction extends PreferencesAction {
             // Set common lookup tables
             super.execute(mapping, form, request, response);
             
-            HttpSession httpSession = request.getSession();
-            User user = Web.getUser(httpSession);
             MessageResources rsc = getResources(request);
             ActionMessages errors = new ActionMessages();
             
@@ -110,6 +111,8 @@ public class ExamDetailAction extends PreferencesAction {
             //Check exam exists
             if (examId==null || examId.trim()=="") throw new Exception ("Exam Info not supplied.");
             
+	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+
             Exam exam = new ExamDAO().get(Long.valueOf(examId));
             
             //After delete -> one more back
@@ -121,14 +124,21 @@ public class ExamDetailAction extends PreferencesAction {
                 BackTracker.doBack(request, response);
                 return null;
             }
+            
+	        if (!sessionContext.hasPermission(examId, "Exam", Right.ExaminationDetail))
+	        	throw new Exception("Access denied.");
 
             //Edit Information - Redirect to info edit screen
             if (op.equals(rsc.getMessage("button.editExam")) && examId!=null && examId.trim()!="") {
-                response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
+            	if (!sessionContext.hasPermission(exam, Right.ExaminationEdit))
+            		throw new Exception("Access denied.");
+            	response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
                 return null;
             }
 
             if (op.equals(rsc.getMessage("button.cloneExam")) && examId!=null && examId.trim()!="") {
+            	if (!sessionContext.hasPermission(exam, Right.ExaminationClone))
+            		throw new Exception("Access denied.");
                 response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId+"&clone=true") );
                 return null;
             }
@@ -144,13 +154,15 @@ public class ExamDetailAction extends PreferencesAction {
             }
             
             if (op.equals(rsc.getMessage("button.deleteExam"))) {
+            	if (!sessionContext.hasPermission(exam, Right.ExaminationDelete))
+            		throw new Exception("Access denied.");
                 org.hibernate.Session hibSession = new ExamDAO().getSession();
                 Transaction tx = null;
                 try {
                     tx = hibSession.beginTransaction();
                     ChangeLog.addChange(
                             hibSession, 
-                            request,
+                            sessionContext,
                             exam, 
                             ChangeLog.Source.EXAM_EDIT, 
                             ChangeLog.Operation.DELETE, 
@@ -175,6 +187,8 @@ public class ExamDetailAction extends PreferencesAction {
             
             // Add Distribution Preference - Redirect to dist prefs screen
             if(op.equals(rsc.getMessage("button.addDistPref"))) {
+            	if (!sessionContext.hasPermission(exam, Right.DistributionPreferenceExam))
+            		throw new Exception("Access denied.");
                 request.setAttribute("examId", examId);
                 return mapping.findForward("addDistributionPrefs");
             }
@@ -197,7 +211,7 @@ public class ExamDetailAction extends PreferencesAction {
                     switch (owner.getOwnerType()) {
                         case ExamOwner.sOwnerTypeClass :
                             Class_ clazz = (Class_)owner.getOwnerObject();
-                            if (clazz.isViewableBy(user))
+                            if (sessionContext.hasPermission(clazz, Right.ClassDetail))
                                 onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
                             name = owner.getLabel();//clazz.getClassLabel();
                             type = "Class";
@@ -209,7 +223,7 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                         case ExamOwner.sOwnerTypeConfig :
                             InstrOfferingConfig config = (InstrOfferingConfig)owner.getOwnerObject();
-                            if (config.isViewableBy(user))
+                            if (sessionContext.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
                             name = owner.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
                             type = "Configuration";
@@ -218,7 +232,7 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                         case ExamOwner.sOwnerTypeOffering :
                             InstructionalOffering offering = (InstructionalOffering)owner.getOwnerObject();
-                            if (offering.isViewableBy(user))
+                            if (sessionContext.hasPermission(offering, Right.InstructionalOfferingDetail))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
                             name = owner.getLabel();//offering.getCourseName();
                             type = "Offering";
@@ -227,7 +241,7 @@ public class ExamDetailAction extends PreferencesAction {
                             break;
                         case ExamOwner.sOwnerTypeCourse :
                             CourseOffering course = (CourseOffering)owner.getOwnerObject();
-                            if (course.isViewableBy(user))
+                            if (sessionContext.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
                                 onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
                             name = owner.getLabel();//course.getCourseName();
                             type = "Course";
@@ -282,8 +296,7 @@ public class ExamDetailAction extends PreferencesAction {
             
             // Initialize Preferences for initial load
             frm.setAvailableTimePatterns(null);
-            initPrefs(user, frm, exam, null, false);
-            boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
+            initPrefs(frm, exam, null, false);
             generateExamPeriodGrid(request, frm, exam, "init", timeVertical, false);
             
             // Process Preferences Action
@@ -324,12 +337,8 @@ public class ExamDetailAction extends PreferencesAction {
             frm.getInstructors().add(instr.getUniqueId().toString());
         }
         
-        User user = Web.getUser(request.getSession());
-
-        frm.setEditable(exam.isEditableBy(user));
-
-        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
-        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+        Long nextId = Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
+        Long prevId = Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, exam.getUniqueId());
         frm.setPreviousId(prevId==null?null:prevId.toString());
         frm.setNextId(nextId==null?null:nextId.toString());
         

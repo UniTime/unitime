@@ -21,6 +21,7 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -34,9 +35,102 @@ public class ExaminationPermissions {
 		@Override
 		public boolean check(UserContext user, Session source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source);
+				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
 			else
 				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ExaminationDetail)
+	public static class ExaminationDetail implements Permission<Exam> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Exam source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+			else
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView);
+		}
+
+		@Override
+		public Class<Exam> type() { return Exam.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ExaminationAdd)
+	public static class AddExamination implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+			else
+				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamEdit);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ExaminationEdit)
+	public static class EditExamination implements Permission<Exam> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Exam source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+			else
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamEdit);
+		}
+
+		@Override
+		public Class<Exam> type() { return Exam.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ExaminationDelete)
+	public static class ExaminationDelete extends EditExamination{}
+	
+	@PermissionForRight(Right.ExaminationClone)
+	public static class ExaminationClone extends EditExamination{}
+
+	@PermissionForRight(Right.DistributionPreferenceExam)
+	public static class DistributionPreferenceExam extends EditExamination{}
+	
+	@PermissionForRight(Right.ExaminationEditClearPreferences)
+	public static class ExaminationEditClearPreferences extends EditExamination{}
+	
+	@PermissionForRight(Right.ExaminationAssignment)
+	public static class ExaminationAssignment implements Permission<Exam> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Exam source) {
+			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) &&
+				 permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+		}
+
+		@Override
+		public Class<Exam> type() { return Exam.class; }
+		
+	}
+
+	@PermissionForRight(Right.ExaminationSchedule)
+	public static class ExaminationSchedule implements Permission<Session> {
+		
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsFinal, DepartmentStatusType.Status.ReportExamsMidterm);
 		}
 
 		@Override

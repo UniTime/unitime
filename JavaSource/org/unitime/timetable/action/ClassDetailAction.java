@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 
@@ -39,10 +38,11 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -54,7 +54,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -63,11 +62,9 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.TimetableDatabaseLoader;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -110,7 +107,6 @@ public class ClassDetailAction extends PreferencesAction {
 
 	        super.execute(mapping, form, request, response);
 
-	        HttpSession httpSession = request.getSession();
 	        ClassEditForm frm = (ClassEditForm) form;
 	        ActionMessages errors = new ActionMessages();
 
@@ -121,7 +117,6 @@ public class ClassDetailAction extends PreferencesAction {
 								        : null
 								: request.getParameter("cid");
 	        String op = frm.getOp();
-	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
 	        // Read class id from form
 	        if(op.equals(MSG.actionEditClass())
@@ -142,17 +137,10 @@ public class ClassDetailAction extends PreferencesAction {
 	        if(classId==null || classId.trim().length()==0)
 	            throw new Exception ("Class Info not supplied.");
 
-	        /* for deletion
-	        // backToInstrOffr - Go back to Instructional Offering Screen
-	        if(op.equals(rsc.getMessage("button.backToInstrOffrDet"))
-	                && classId!=null && classId.trim().length()!=0 ) {
-
-	            Class_DAO cdao = new Class_DAO();
-	            SchedulingSubpart ss = cdao.get(new Long(classId)).getSchedulingSubpart();
-
-	            response.sendRedirect( response.encodeURL("instructionalOfferingDetail.do?op=view&io="+ss.getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
-	        }
-	        */
+	        if (!sessionContext.hasPermission(classId, "Class_", Right.ClassDetail))
+	        	throw new Exception (MSG.errorAccessDenied());
+	        
+	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
 	        // If class id is not null - load class info
 	        Class_DAO cdao = new Class_DAO();
@@ -188,24 +176,10 @@ public class ClassDetailAction extends PreferencesAction {
 	        // Load form attributes that are constant
 	        doLoad(request, frm, c, op);
 
-	        User user = Web.getUser(httpSession);
-	        
-	        frm.setDisplayInfo(
-	        		c.getManagingDept()!=null &&
-	        		c.getManagingDept().getSolverGroup()!=null &&
-	        		c.getManagingDept().getSolverGroup().getCommittedSolution()!=null &&  // HAS A COMMITED SOLUTION
-	        		c.isEditableBy(user) && // CLASS IS EDITABLE
-	        		courseTimetablingSolverService.getSolver() == null && // NOT LOADED INTO THE SOLVER
-	        		c.effectiveDatePattern()!=null && //HAS DATE PATTERN
-	        		!c.effectivePreferences(TimePref.class).isEmpty() && //HAS TIME PATTERN
-	        		(request.getSession().getAttribute("Solver.selectedSolutionId") == null || ((String)request.getSession().getAttribute("Solver.selectedSolutionId")).isEmpty()) && // NO SOLUTION IS SELECTED 
-	        		user.isAdmin() //TODO: remove this once the info box allows to touch only classes editable by the user
-	        		);
-
 	        // Initialize Preferences for initial load
 	        frm.setAvailableTimePatterns(TimePattern.findApplicable(request,c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
 			Set timePatterns = null;
-        	initPrefs(user, frm, c, null, false);
+        	initPrefs(frm, c, null, false);
 		    timePatterns = c.effectiveTimePatterns();
 
 		    // Display distribution Prefs
@@ -255,29 +229,25 @@ public class ClassDetailAction extends PreferencesAction {
 	     * @param classId
 	     */
 	    private void doLoad(
-	            HttpServletRequest request,
+	    		HttpServletRequest request,
 	            ClassEditForm frm,
 	            Class_ c,
 	            String op) {
 
-	        HttpSession httpSession = request.getSession();
-	    	User user = Web.getUser(httpSession);
-
 	        String parentClassName = "-";
 	        Long parentClassId = null;
-	        if(c.getParentClass()!=null) {
+	        if (c.getParentClass()!=null) {
 	            parentClassName = c.getParentClass().toString();
-	            if (c.getParentClass().isViewableBy(user))
+	            if (sessionContext.hasPermission(c.getParentClass(), Right.ClassDetail))
 	            	parentClassId = c.getParentClass().getUniqueId();
 	        }
 
 	        CourseOffering cco = c.getSchedulingSubpart().getControllingCourseOffering();
 
 		    // Set Session Variables
-	        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, cco.getSubjectArea().getUniqueId().toString());
-	        if (httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null
-	                && httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString().length()>0)
-	            httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, cco.getCourseNbr());
+	        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, cco.getSubjectArea().getUniqueId().toString());
+	        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber)!=null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
+	            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, cco.getCourseNbr());
 
 	        // populate form
 	        frm.setClassId(c.getUniqueId());
@@ -294,7 +264,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setParentClassId(parentClassId);
 	        frm.setSubjectAreaId(cco.getSubjectArea().getUniqueId().toString());
 	        frm.setInstrOfferingId(cco.getInstructionalOffering().getUniqueId().toString());
-	        if (c.getSchedulingSubpart().isViewableBy(user))
+	        if (sessionContext.hasPermission(c.getSchedulingSubpart(), Right.SchedulingSubpartDetail))
 	        	frm.setSubpart(c.getSchedulingSubpart().getUniqueId());
 	        else
 	        	frm.setSubpart(null);

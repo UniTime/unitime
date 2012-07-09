@@ -21,7 +21,6 @@
 <%@ page import="org.unitime.timetable.action.SchedulingSubpartEditAction" %>
 <%@ page import="org.unitime.timetable.form.SchedulingSubpartEditForm" %>
 <%@ page import="org.unitime.timetable.model.ItypeDesc"%>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.CourseCreditType" %>
 <%@ page import="org.unitime.timetable.model.CourseCreditUnitType" %>
@@ -35,6 +34,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
@@ -45,9 +45,10 @@
 %>
 
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	
 	function datePatternChanged(){			
 		var op2Obj = document.getElementById('op2');
@@ -81,7 +82,8 @@
 						accesskey='<%=MSG.accessUpdatePreferences()%>' 
 						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
 						<loc:message name="actionUpdatePreferences"/>
-					</html:submit> 
+					</html:submit>
+					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
 					&nbsp;
 					<html:submit property="op" 
 						styleClass="btn" 
@@ -89,6 +91,7 @@
 						title='<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>'>
 						<loc:message name="actionClearSubpartPreferences" />
 					</html:submit> 
+					</sec:authorize>
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
 						<html:submit property="op" 
@@ -278,6 +281,57 @@
 				<jsp:param name="periodPref" value="false"/>
 			</jsp:include>
 		</logic:notEqual>
+
+<!-- buttons -->
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="right">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey='<%=MSG.accessUpdatePreferences()%>' 
+						title='<%=MSG.titleUpdatePreferences(MSG.accessUpdatePreferences()) %>' >
+						<loc:message name="actionUpdatePreferences"/>
+					</html:submit>
+					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEditClearPreferences')"> 
+					&nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey='<%=MSG.accessClearSubpartPreferences() %>' 
+						title='<%=MSG.titleClearSubpartPreferences(MSG.accessClearSubpartPreferences()) %>'>
+						<loc:message name="actionClearSubpartPreferences" />
+					</html:submit> 
+					</sec:authorize>
+					<logic:notEmpty name="<%=frmName%>" property="previousId">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessPreviousSubpart() %>" 
+							title="<%=MSG.titlePreviousSubpartWithUpdate(MSG.accessPreviousSubpart()) %>">
+							<loc:message name="actionPreviousSubpart" />
+						</html:submit> 
+					</logic:notEmpty>
+					<logic:notEmpty name="<%=frmName%>" property="nextId">
+						&nbsp;
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessNextSubpart() %>" 
+							title="<%=MSG.titleNextSubpartWithUpdate(MSG.accessNextSubpart()) %>">
+							<loc:message name="actionNextSubpart" />
+						</html:submit>
+					</logic:notEmpty>
+					&nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToDetail()%>" 
+						title="<%=MSG.titleBackToDetail(MSG.accessBackToDetail()) %>">
+						<loc:message name="actionBackToDetail"/>
+					</html:submit>
+			</TD>
+		</TR>
 
 	</TABLE>
 </html:form>

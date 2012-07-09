@@ -17,7 +17,6 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.form.InstructorEditForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.PositionType" %>
@@ -28,6 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
@@ -37,10 +37,10 @@
 %>	
 
 <loc:bundle name="CourseMessages">
-
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
 				return true;
@@ -56,6 +56,7 @@
 	<html:hidden property="nextId"/>
 	<html:hidden property="previousId"/>
 	<html:hidden property="lookupEnabled"/>
+	<bean:define name='<%=frmName%>' property="instructorId" id="instructorId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<jsp:include page="instructorLookup.jspf">
@@ -65,6 +66,7 @@
 			<jsp:include page="instructor.jspf">
 				<jsp:param name="operation" value="update"/>
 				<jsp:param name="frmName" value="instructorEditForm"/>
+				<jsp:param name="instructorId" value="<%=instructorId%>"/>
 			</jsp:include>
 		</logic:notEqual>
 	</TABLE>

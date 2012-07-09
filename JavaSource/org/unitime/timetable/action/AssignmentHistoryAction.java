@@ -65,7 +65,7 @@ public class AssignmentHistoryAction extends Action {
 		AssignmentHistoryForm myForm = (AssignmentHistoryForm) form;
 
         // Check Access
-        if (!sessionContext.hasPermission(null, "Department", Right.AssignmentHistory))
+        if (!sessionContext.hasPermission(Right.AssignmentHistory))
             throw new Exception ("Access Denied.");
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -89,7 +89,7 @@ public class AssignmentHistoryAction extends Action {
         
         SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver!=null) {
-        	String historyTable = getHistoryTable(model.getSimpleMode(),request,"History",solver.getAssignmentRecords());
+        	String historyTable = getHistoryTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"History",solver.getAssignmentRecords());
             if (historyTable!=null) {
             	request.setAttribute("AssignmentHistory.table",historyTable);
             	request.setAttribute("AssignmentHistory.table.colspan",new Integer(model.getSimpleMode()?7:17));
@@ -100,7 +100,7 @@ public class AssignmentHistoryAction extends Action {
         }
 		
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(model.getSimpleMode(),request,"History",solver.getAssignmentRecords());
+        	File f = exportPdf(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"History",solver.getAssignmentRecords());
         	if (f!=null)
         		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
         		//response.sendRedirect("temp/"+f.getName());
@@ -109,9 +109,9 @@ public class AssignmentHistoryAction extends Action {
         return mapping.findForward("showAssignmentHistory");
 	}
 	
-    public String getHistoryTable(boolean simple, HttpServletRequest request, String name, Vector history) {
+    public String getHistoryTable(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) {
     	if (history==null || history.isEmpty()) return null;
-		WebTable.setOrder(request.getSession(),"assignmentHistory.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(context,"assignmentHistory.ord",request.getParameter("ord"),1);
         WebTable webTable =
         	(simple?
        			new WebTable( 7,
@@ -142,8 +142,8 @@ public class AssignmentHistoryAction extends Action {
         	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
         	    	if (assignment.getBefore()!=null)
         	    		hasBefore=true;
-        	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
-        	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
+        	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
+        	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
         	    	if (before == null && after == null) continue;
         	    	if (!first) {
         	    		roomsSort.append(":");
@@ -258,10 +258,10 @@ public class AssignmentHistoryAction extends Action {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"assignmentHistory.ord"));
+        return webTable.printTable(WebTable.getOrder(context, "assignmentHistory.ord"));
     }	
 
-    public File exportPdf(boolean simple, HttpServletRequest request, String name, Vector history) {
+    public File exportPdf(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) {
     	if (history==null || history.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -288,8 +288,8 @@ public class AssignmentHistoryAction extends Action {
         	    boolean first = true;
         	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
         	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
-        	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(request.getSession(),false));
-        	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(request.getSession(),false));
+        	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context,solver,false));
+        	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context,solver,false));
         	    	if (!first) {
         	    		roomsSort.append(":");
         	    		timesSort.append(":");
@@ -392,7 +392,7 @@ public class AssignmentHistoryAction extends Action {
             	             });
         	}
         	File file = ApplicationProperties.getTempFile("history", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(request.getSession(),"assignmentHistory.ord"));
+        	webTable.exportPdf(file, WebTable.getOrder(context,"assignmentHistory.ord"));
         	return file;
         } catch (Exception e) {
         	Debug.error(e);

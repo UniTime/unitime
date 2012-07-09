@@ -86,9 +86,7 @@ public class InstructorEditForm extends PreferencesForm  {
     
     private boolean ignoreDist;
 	private Boolean lookupEnabled;
-    protected boolean limitedEditable;
-    private boolean canDelete;
-	
+    
 	// --------------------------------------------------------- Methods
     
     public boolean getIgnoreDist() {
@@ -179,9 +177,7 @@ public class InstructorEditForm extends PreferencesForm  {
         setPosType(request);
         prevId = nextId = null;
         ignoreDist = false;
-        limitedEditable = false;
         email = null;
-        canDelete = false;
 	}
 	
 	/**
@@ -358,11 +354,5 @@ public class InstructorEditForm extends PreferencesForm  {
 	public void setLookupEnabled(Boolean lookupEnabled) {
 		this.lookupEnabled = lookupEnabled;
 	}
-    
-    public boolean isLimitedEditable() { return limitedEditable; }
-    public void setLimitedEditable(boolean limitedEditable) { this.limitedEditable = limitedEditable; }
-    
-    public void setCanDelete(boolean canDelete) { this.canDelete = canDelete; }
-    public boolean getCanDelete() { return canDelete; }
 }
 
