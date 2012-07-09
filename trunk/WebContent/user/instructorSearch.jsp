@@ -24,7 +24,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
@@ -35,10 +37,10 @@
 <tiles:importAttribute />
 <loc:bundle name="CourseMessages">
 <html:form action="instructorList">
-	<TABLE border="0" cellspacing="0" cellpadding="3">
-		<% if (frm.isDisplayDeptList()) {%>
-		<TR>
-			<TD>
+	<TABLE border="0" cellspacing="0" cellpadding="3" style="width:100%;">
+	<TR><TD>
+		<tt:section-header>
+			<tt:section-title>
 				<B><loc:message name="propertyDepartment"/></B>
 				<html:select property="deptUniqueId"
 					onchange="displayLoading(); submit()"
@@ -48,28 +50,51 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>
-					</html:select>
-			</TD>
-		
-			<TD align="right">			
-				&nbsp;&nbsp;&nbsp;
+				</html:select>
 				<html:submit property='op' onclick="displayLoading();" 
 						accesskey="<%=MSG.accessSearchInstructors() %>" 
 						styleClass="btn" 
 						title="<%=MSG.titleSearchInstructors(MSG.accessSearchInstructors()) %>">
 					<loc:message name="actionSearchInstructors" />
 				</html:submit>
-				&nbsp;&nbsp;
-				<html:submit property='op' onclick="displayLoading();" 
-						accesskey="<%=MSG.accessExportPdf() %>" 
-						styleClass="btn" 
-						title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
-					<loc:message name="actionExportPdf" />
-				</html:submit>
-			</TD>
-		</TR>
-		<% } %>
-		
+			</tt:section-title>
+			<TABLE border="0" cellspacing="0" cellpadding="0" align="right"><TR>
+				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorsExportPdf')">
+					<TD>
+					<html:form action="instructorList" styleClass="FormWithNoPadding">			
+						<html:submit property="op" onclick="displayLoading();" styleClass="btn" 
+							accesskey="<%=MSG.accessExportPdf() %>" 
+							title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
+							<loc:message name="actionExportPdf" />
+						</html:submit>
+					</html:form>
+					</TD>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'ManageInstructors')">
+					<TD style="padding-left: 3px;">
+					<html:form action="instructorListUpdate" styleClass="FormWithNoPadding">
+						<html:submit onclick="displayLoading();" styleClass="btn"
+							accesskey="<%=MSG.accessManageInstructorList() %>" 
+							title="<%=MSG.titleManageInstructorList(MSG.accessManageInstructorList()) %>">
+							<loc:message name="actionManageInstructorList" />
+						</html:submit>
+					</html:form>
+					</TD>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorAdd')">
+					<TD style="padding-left: 3px;">
+					<html:form action="instructorAdd" styleClass="FormWithNoPadding">
+						<html:submit onclick="displayLoading();" styleClass="btn"
+							accesskey="<%=MSG.accessAddNewInstructor() %>" 
+							title="<%=MSG.titleAddNewInstructor(MSG.accessAddNewInstructor()) %>">
+							<loc:message name="actionAddNewInstructor" />
+						</html:submit>
+					</html:form>
+					</TD>
+				</sec:authorize>
+			</TR></TABLE>
+		</tt:section-header>
+		</TD></TR>
 	</TABLE>
 </html:form>
 </loc:bundle>

@@ -20,11 +20,17 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.ClassAssignmentProxy;
+import org.unitime.timetable.solver.service.AssignmentService;
 
 public class CourseTimetablingPermissions {
 	
@@ -58,19 +64,14 @@ public class CourseTimetablingPermissions {
 	}
 	
 	@PermissionForRight(Right.AssignmentHistory)
-	public static class AssignmentHistory implements Permission<Department> {
-		@Autowired PermissionDepartment permissionDepartment;
-
-		@Override
-		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
-		}
-
-		@Override
-		public Class<Department> type() { return Department.class; }
-		
-	}
+	public static class AssignmentHistory extends CourseTimetabling {}
 	
+	@PermissionForRight(Right.Suggestions)
+	public static class Suggestions extends CourseTimetabling {}
+
+	@PermissionForRight(Right.SolutionChanges)
+	public static class SolutionChanges extends CourseTimetabling {}
+
 	@PermissionForRight(Right.ClassAssignments)
 	public static class ClassAssignments implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
@@ -95,6 +96,54 @@ public class CourseTimetablingPermissions {
 
 		@Override
 		public Class<Session> type() { return Session.class; }
+		
+	}
+	
+	@PermissionForRight(Right.ClassAssignmentsExportCSV)
+	public static class ClassAssignmentsExportCSV extends ClassAssignments {}
+	
+	@PermissionForRight(Right.ClassAssignmentsExportPDF)
+	public static class ClassAssignmentsExportPDF extends ClassAssignments {}
+
+	@PermissionForRight(Right.ClassAssignment)
+	public static class ClassAssignment implements Permission<Class_> {
+		
+		@Autowired SessionContext sessionContext;
+		
+		@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+		
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			// Must have a committed solution (not the class per se, but the managing department)
+			if (source.getManagingDept() == null || source.getManagingDept().getSolverGroup() == null || source.getManagingDept().getSolverGroup().getCommittedSolution() == null)
+				return false;
+			
+			// No date or time pattern
+			if (source.effectiveDatePattern() == null || source.effectiveTimePatterns().isEmpty()) return false;
+			
+			// Showing an in-memory or uncommitted solution
+			try {
+				Assignment assignment = (classAssignmentService.getAssignment() == null ? null : classAssignmentService.getAssignment().getAssignment(source));
+				if (assignment.getUniqueId() == null || assignment.getSolution() == null || !assignment.getSolution().isCommited())
+					return false;
+			} catch (Exception e) {
+				return false;
+			}
+			
+			// Need an offering lock
+			if (permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()))
+				return false;
+			
+			// Check departmental permissions
+			return permissionDepartment.check(user, source.getManagingDept(), DepartmentStatusType.Status.Timetable);
+		}
+
+		@Override
+		public Class<Class_> type() { return Class_.class; }
 		
 	}
 }

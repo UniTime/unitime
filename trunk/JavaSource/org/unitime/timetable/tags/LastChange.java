@@ -27,10 +27,11 @@ import java.util.List;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -44,11 +45,10 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
 
 
 /**
@@ -97,6 +97,10 @@ public class LastChange extends BodyTagSupport {
         return EVAL_BODY_BUFFERED;
     }
     
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    }
+
     private int printLastChangeTableRow(WebTable webTable, ChangeLog lastChange) {
         if (lastChange==null) return 0;
         webTable.addLine(null,
@@ -125,7 +129,7 @@ public class LastChange extends BodyTagSupport {
         if (io==null) return false;
         int nrChanges = 0;
         
-        WebTable.setOrder(pageContext.getSession(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
+        WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
         WebTable webTable = new WebTable( 5, "Last Changes",
                 "instructionalOfferingDetail.do?io="+io.getUniqueId()+"&lcord=%%",
@@ -210,7 +214,7 @@ public class LastChange extends BodyTagSupport {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+
                     "<TR><TD colspan='2'><table border='0' width='100%' cellspacing='0' cellpadding='3'>"+
-                    webTable.printTable(WebTable.getOrder(pageContext.getSession(),"lastChanges.ord"))+
+                    webTable.printTable(WebTable.getOrder(getSessionContext(),"lastChanges.ord"))+
                     "</table></TD></TR>"
                     );
         }
@@ -222,7 +226,7 @@ public class LastChange extends BodyTagSupport {
         if (inst==null) return false;
         int nrChanges = 0;
         
-        WebTable.setOrder(pageContext.getSession(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
+        WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
         WebTable webTable = new WebTable( 5, "Last Changes",
                 "instructorDetail.do?instructorId="+inst.getUniqueId()+"&lcord=%%",
@@ -246,7 +250,7 @@ public class LastChange extends BodyTagSupport {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+
                     "<TR><TD colspan='2'><table border='0' width='100%' cellspacing='0' cellpadding='3'>"+
-                    webTable.printTable(WebTable.getOrder(pageContext.getSession(),"lastChanges.ord"))+
+                    webTable.printTable(WebTable.getOrder(getSessionContext(),"lastChanges.ord"))+
                     "</table></TD></TR>"
                     );
         }
@@ -258,7 +262,7 @@ public class LastChange extends BodyTagSupport {
         if (location==null) return false;
         int nrChanges = 0;
         
-        WebTable.setOrder(pageContext.getSession(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
+        WebTable.setOrder(getSessionContext(),"lastChanges.ord",pageContext.getRequest().getParameter("lcord"),5);
         
         WebTable webTable = new WebTable( 5, "Last Changes",
                 "roomDetail.do?id="+location.getUniqueId()+"&lcord=%%",
@@ -300,7 +304,7 @@ public class LastChange extends BodyTagSupport {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+
                     "<TR><TD colspan='2'><table border='0' width='100%' cellspacing='0' cellpadding='3'>"+
-                    webTable.printTable(WebTable.getOrder(pageContext.getSession(),"lastChanges.ord"))+
+                    webTable.printTable(WebTable.getOrder(getSessionContext(),"lastChanges.ord"))+
                     "</table></TD></TR>"
                     );
         }
@@ -310,9 +314,8 @@ public class LastChange extends BodyTagSupport {
 
     public int doEndTag() throws JspException {
         try {
-            User user = Web.getUser(pageContext.getSession());
-            if ("no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)))
-                return EVAL_PAGE;
+        	if (!getSessionContext().isAuthenticated() || CommonValues.No.eq(getSessionContext().getUser().getProperty(UserProperty.DisplayLastChanges)))
+        		return EVAL_PAGE;
             
             String objectIdStr = (getBodyContent()==null?null:getBodyContent().getString().trim());
             if (objectIdStr==null || objectIdStr.length()==0) objectIdStr = (getId()==null?null:getId().trim());

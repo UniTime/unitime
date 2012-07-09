@@ -30,8 +30,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
@@ -1681,5 +1679,8 @@ public class Class_ extends BaseClass_ {
 //		return(getClassSuffix(getSchedulingSubpart().getControllingCourseOffering()));
 //	}
 
+
+	@Override
+	public Department getDepartment() { return getManagingDept(); }
 
 }

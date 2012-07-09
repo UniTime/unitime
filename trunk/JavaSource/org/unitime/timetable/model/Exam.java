@@ -564,6 +564,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     public static boolean hasTimetable(Long sessionId, Integer examType) {
+    	if (sessionId == null) return false;
     	if (examType==null) return hasTimetable(sessionId);
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(x) from Exam x " +
@@ -573,6 +574,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     public static boolean hasTimetable(Long sessionId) {
+    	if (sessionId == null) return false;
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
@@ -581,6 +583,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
 
     public static boolean hasMidtermExams(Long sessionId) {
+    	if (sessionId == null) return false;
     	return ((Number)new ExamDAO().getSession().
     			createQuery("select count(p) from ExamPeriod p " +
     					"where p.session.uniqueId=:sessionId and "+
@@ -589,6 +592,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     }
     
     public static boolean hasFinalExams(Long sessionId) {
+    	if (sessionId == null) return false;
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
@@ -1294,5 +1298,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         c.set(Calendar.HOUR, min/60); c.set(Calendar.MINUTE, min%60);
         return c.getTime();
     }
+
+	@Override
+	public Department getDepartment() { return null; }
 
 }

@@ -25,7 +25,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -34,8 +33,9 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.SchedulingSubpartEditForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -53,11 +53,9 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -97,7 +95,6 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Set common lookup tables
 	        super.execute(mapping, form, request, response);
 
-	        HttpSession httpSession = request.getSession();
 	        SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) form;
 	        ActionMessages errors = new ActionMessages();
 
@@ -113,8 +110,6 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Check op exists
 	        if(op==null)
 	            throw new Exception (MSG.errorNullOperationNotSupported());
-
-	        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
 	        // Read subpart id from form
 	        if(op.equals(MSG.actionEditSubpart())
@@ -134,23 +129,15 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Check subpart exists
 	        if(subpartId==null || subpartId.trim()=="")
 	            throw new Exception (MSG.errorSubpartInfoNotSupplied());
+	        
+	        if (!sessionContext.hasPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartDetail))
+	        	throw new Exception(MSG.errorAccessDenied());
+
+	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
 	        // If subpart id is not null - load subpart info
 	        SchedulingSubpartDAO sdao = new SchedulingSubpartDAO();
 	        SchedulingSubpart ss = sdao.get(new Long(subpartId));
-
-	       /* for deletion 
-	        // Cancel - Go back to Instructional Offering Screen
-	        if(op.equals(rsc.getMessage("button.backToInstrOffrDet"))
-	                && subpartId!=null && subpartId.trim()!="") {
-
-	            // doCancel(request, subpartId);
-	            // return mapping.findForward("instructionalOfferingSearch");
-	            
-
-	        	response.sendRedirect( response.encodeURL("instructionalOfferingDetail.do?op=view&io="+ss.getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
-	        }
-	        */
 
 	        // Edit Preference - Redirect to prefs edit screen
 	        if(op.equals(MSG.actionEditSubpart())
@@ -160,7 +147,11 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 			// Add Distribution Preference - Redirect to dist prefs screen
 		    if(op.equals(MSG.actionAddDistributionPreference())) {
-		        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
+
+            	if (!sessionContext.hasPermission(ss, Right.DistributionPreferenceSubpart))
+            		throw new Exception("Access denied.");
+
+            	CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 		        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
 		        request.setAttribute("schedSubpartId", subpartId);
 		        request.setAttribute("courseOffrId", cco.getUniqueId().toString());
@@ -174,6 +165,10 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
             }
 
             if (op.equals(MSG.actionClearClassPreferencesOnSubpart()) && "y".equals(request.getParameter("confirm"))) {
+
+            	if (!sessionContext.hasPermission(ss, Right.SchedulingSubpartDetailClearClassPreferences))
+            		throw new Exception("Access denied.");
+
             	Class_DAO cdao = new Class_DAO();
             	for (Iterator i=ss.getClasses().iterator();i.hasNext();) {
             		Class_ c = (Class_)i.next();
@@ -183,7 +178,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
                 ChangeLog.addChange(
                         null,
-                        request,
+                        sessionContext,
                         ss,
                         ChangeLog.Source.SCHEDULING_SUBPART_EDIT,
                         ChangeLog.Operation.CLEAR_ALL_PREF,
@@ -199,12 +194,10 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Load form attributes that are constant
 	        doLoad(request, frm, ss, subpartId);
 
-	        User user = Web.getUser(httpSession);
-
 	        // Initialize Preferences for initial load
 			Set timePatterns = null;
 			frm.setAvailableTimePatterns(TimePattern.findApplicable(request,ss.getMinutesPerWk().intValue(),false,ss.getManagingDept()));
-			initPrefs(user, frm, ss, null, false);
+			initPrefs(frm, ss, null, false);
 	        timePatterns = ss.getTimePatterns();
 
 		    // Display distribution Prefs
@@ -253,16 +246,12 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	            SchedulingSubpart ss,
 	            String subpartId ) {
 
-	        HttpSession httpSession = request.getSession();
-	    	User user = Web.getUser(httpSession);
-
 	        CourseOffering co = ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 
 		    // Set Session Variables
-	        httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, co.getSubjectArea().getUniqueId().toString());
-	        if (httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null
-	                && httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString().length()>0)
-	            httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, co.getCourseNbr());
+	        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, co.getSubjectArea().getUniqueId().toString());
+	        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber)!=null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
+	            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, co.getCourseNbr());
 
 	        // populate form
 	        InstrOfferingConfig ioc = ss.getInstrOfferingConfig();
@@ -306,7 +295,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Set Parent Subpart
 	        String parentSubpart = "";
 	        SchedulingSubpart parentSS = ss.getParentSubpart();
-	        frm.setParentSubpartId(parentSS==null || !parentSS.isViewableBy(user)?null:parentSS.getUniqueId().toString());
+	        frm.setParentSubpartId(parentSS == null || !sessionContext.hasPermission(parentSS, Right.SchedulingSubpartDetail) ? null : parentSS.getUniqueId().toString());
 	        frm.setParentSubpartLabel(parentSS==null?null:parentSS.getSchedulingSubpartLabel());
 	        while(parentSS!=null) {
 	            parentSubpart = parentSS.getItype().getAbbv() + " - " + parentSubpart;

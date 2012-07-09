@@ -317,10 +317,12 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return null;
     }
     
+    @Deprecated
     public boolean canUseHardTimePreferences(User user) {
     	return true;
     }
     
+    @Deprecated
     public boolean canUseHardRoomPreferences(User user) {
         return true;
     }
@@ -353,4 +355,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     public Set getEffectiveExamPeriodPreferences(){
         return effectivePreferences(ExamPeriodPref.class);
     }
+    
+    public abstract Department getDepartment();
 }

@@ -23,7 +23,6 @@
 <%@ page import="org.unitime.timetable.model.ItypeDesc"%>
 <%@ page import="org.unitime.timetable.util.IdValue" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.WebClassListTableBuilder"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
 <jsp:directive.page import="org.unitime.timetable.webutil.JavascriptFunctions"/>
@@ -33,6 +32,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
@@ -47,7 +47,7 @@
 <tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmClearAllClassPreference() {
 			if (jsConfirm!=null && !jsConfirm) return;
@@ -80,20 +80,22 @@
 						<bean:write name="<%=frmName%>" property="instructionalTypeLabel" />
 					</tt:section-title>
 					
-					<logic:equal name="<%=frmName%>" property="editable" value="true">
+					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEdit')">
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessEditSubpart() %>" 
 							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
 							<loc:message name="actionEditSubpart" />
-						</html:submit> 
+						</html:submit>
+					</sec:authorize> 
 				
+					<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
 							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
 							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 					
 					<!-- for deletion
 					&nbsp;
@@ -250,13 +252,13 @@
 			<TD colspan='2'>
 				<tt:section-header>
 					<tt:section-title><loc:message name="sectionTitleClasses"/></tt:section-title>
-						<logic:equal name="<%=frmName%>" property="editable" value="true">
+						<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartDetailClearClassPreferences')">
 							<html:submit property="op" styleClass="btn" 
 								title="<%=MSG.titleClearClassPreferencesOnSubpart() %>"
 								onclick="confirmClearAllClassPreference();displayLoading();">
 								<loc:message name="actionClearClassPreferencesOnSubpart" />
-							</html:submit> 
-						</logic:equal>
+							</html:submit>
+						</sec:authorize> 
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -300,20 +302,22 @@
 			<TD colspan="2" align="right">
 				<INPUT type="hidden" name="doit" value="Cancel">
 
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'SchedulingSubpartEdit')">
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessEditSubpart() %>" 
 							title="<%=MSG.titleEditSubpart(MSG.accessEditSubpart()) %>" >
 							<loc:message name="actionEditSubpart" />
 						</html:submit> 
+				</sec:authorize>
 				
+				<sec:authorize access="hasPermission(#SchedulingSubpartEditForm.schedulingSubpartId, 'SchedulingSubpart', 'DistributionPreferenceSubpart')">
 					&nbsp;
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
 							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
 							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
-				</logic:equal>
+				</sec:authorize>
 				
 				<!-- for deletion
 				&nbsp;

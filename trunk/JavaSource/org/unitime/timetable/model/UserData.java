@@ -86,12 +86,14 @@ public class UserData extends BaseUserData {
 		setProperty(externalUniqueId, name, null);
 	}
 	
+	@Deprecated
 	public static void setProperty(HttpSession session, String name, String value) {
 		User user = Web.getUser(session);
 		if (user==null || user.getId()==null) return;
 		setProperty(user.getId(),name,value);
 	}
 
+	@Deprecated
 	public static String getProperty(HttpSession session, String name) {
 		User user = Web.getUser(session);
 		if (user==null || user.getId()==null) return null;
@@ -103,6 +105,7 @@ public class UserData extends BaseUserData {
 		return (value!=null?value:defaultValue);
 	}
 	
+	@Deprecated
 	public static HashMap<String,String> getProperties(HttpSession session, Collection<String> names) {
 		User user = Web.getUser(session);
 		if (user==null || user.getId()==null) return null;
@@ -154,6 +157,7 @@ public class UserData extends BaseUserData {
 		setProperty(session, name, String.valueOf(value));
 	}
 
+	@Deprecated
 	public static boolean getPropertyBoolean(HttpSession session, String name, boolean defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?"1".equals(value):defaultValue);
@@ -164,6 +168,7 @@ public class UserData extends BaseUserData {
 		return (value!=null?"1".equals(value):defaultValue);
 	}
 
+	@Deprecated
 	public static void setPropertyBoolean(HttpSession session, String name, boolean value) {
 		setProperty(session, name, (value?"1":"0"));
 	}

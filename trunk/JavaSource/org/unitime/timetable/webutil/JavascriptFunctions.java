@@ -64,6 +64,7 @@ public class JavascriptFunctions {
     	return "var jsConfirm = "+(isJsConfirm(context) ? "true" : "false")+";";
     }
     
+    @Deprecated
     public static String getInheritInstructorPreferencesCondition(User user) {
     	String inheritInstrPref = Settings.getSettingValue(user, Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF);
     	if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_YES.equals(inheritInstrPref)) {
@@ -77,6 +78,18 @@ public class JavascriptFunctions {
     	}
     }
     
+    public static String getInheritInstructorPreferencesCondition(SessionContext context) {
+    	String inheritInstrPref = context.getUser().getProperty(UserProperty.InheritInstructorPrefs);
+    	if (CommonValues.Always.eq(inheritInstrPref)) {
+    		return "true";
+    	} else if (CommonValues.Never.eq(inheritInstrPref)) {
+    		return "false";
+    	} else {
+    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
+    	}
+    }
+    
+    @Deprecated
     public static String getCancelInheritInstructorPreferencesCondition(User user) {
     	String inheritInstrPref = Settings.getSettingValue(user, Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF);
     	if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_YES.equals(inheritInstrPref)) {
@@ -85,6 +98,17 @@ public class JavascriptFunctions {
     		return "false";
     	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM.equals(inheritInstrPref)) {
     		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
+    	} else {
+    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
+    	}
+    }
+    
+    public static String getCancelInheritInstructorPreferencesCondition(SessionContext context) {
+    	String inheritInstrPref = context.getUser().getProperty(UserProperty.InheritInstructorPrefs);
+    	if (CommonValues.Always.eq(inheritInstrPref)) {
+    		return "true";
+    	} else if (CommonValues.Never.eq(inheritInstrPref)) {
+    		return "false";
     	} else {
     		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
     	}

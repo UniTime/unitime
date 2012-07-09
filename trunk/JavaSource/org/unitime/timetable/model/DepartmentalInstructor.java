@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
-
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.Query;
@@ -36,6 +34,8 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseDepartmentalInstructor;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -448,13 +448,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(null);
 	}
 
-	public DepartmentalInstructor getNextDepartmentalInstructor(HttpSession session, User user, boolean canEdit, boolean canView) throws Exception {
+	public DepartmentalInstructor getNextDepartmentalInstructor(SessionContext context, Right right) throws Exception {
     	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
     	DepartmentalInstructor next = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (canEdit && !di.isEditableBy(user)) continue;
-    		if (canView && !di.isViewableBy(user)) continue;
+    		if (right != null && !context.hasPermission(di, right)) continue;
     		if (this.compareTo(di)>=0) continue;
     		if (next==null || next.compareTo(di)>0)
     			next = di;
@@ -462,13 +461,12 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     	return next;
     }
 	
-    public DepartmentalInstructor getPreviousDepartmentalInstructor(HttpSession session, User user, boolean canEdit, boolean canView) throws Exception {
+    public DepartmentalInstructor getPreviousDepartmentalInstructor(SessionContext context, Right right) throws Exception {
     	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
     	DepartmentalInstructor prev = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
-    		if (canEdit && !di.isEditableBy(user)) continue;
-    		if (canView && !di.isViewableBy(user)) continue;
+    		if (right != null && !context.hasPermission(di, right)) continue;
     		if (this.compareTo(di)<=0) continue;
     		if (prev==null || prev.compareTo(di)<0)
     			prev = di;

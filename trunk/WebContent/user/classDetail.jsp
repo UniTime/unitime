@@ -29,6 +29,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
@@ -71,22 +72,24 @@
 						<bean:write name="<%=frmName%>" property="section"/>
 					</tt:section-title>
 					
-					<logic:equal name="<%=frmName%>" property="editable" value="true">
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEdit')">
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessEditClass()%>" 
 							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
 							<loc:message name="actionEditClass" />
 						</html:submit> 
+					</sec:authorize>
 				
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
 							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
 							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 					
-					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassAssignment')">
 						&nbsp;
 						<input type="button" value="<%=MSG.actionOpenClassAssignmentDialog() %>" 
 								title="<%=MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog()) %>" 
@@ -94,7 +97,7 @@
 								accesskey="<%=MSG.accessOpenClassAssignmentDialog() %>"
 								onClick="showGwtDialog('<%=MSG.dialogClassAssignment() %>', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 						/>
-					</logic:equal>
+					</sec:authorize>
 									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
@@ -391,22 +394,24 @@
 			<TD colspan="2" align="right">
 				<INPUT type="hidden" name="doit" value="Cancel">
 
-					<logic:equal name="<%=frmName%>" property="editable" value="true">
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassEdit')">
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessEditClass()%>" 
 							title="<%=MSG.titleEditClass(MSG.accessEditClass()) %>" >
 							<loc:message name="actionEditClass" />
-						</html:submit> 
-				
+						</html:submit>
+					</sec:authorize>
+					
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'DistributionPreferenceClass')">
 						&nbsp;
 						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessAddDistributionPreference() %>" 
 							title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>" >
 							<loc:message name="actionAddDistributionPreference" />
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 					
-					<logic:equal name="<%=frmName%>" property="displayInfo" value="true">
+					<sec:authorize access="hasPermission(#ClassEditForm.classId, 'Class_', 'ClassAssignment')">
 						&nbsp;
 						<input type="button" value="<%=MSG.actionOpenClassAssignmentDialog() %>" 
 								title="<%=MSG.titleOpenClassAssignmentDialog(MSG.accessOpenClassAssignmentDialog()) %>" 
@@ -414,7 +419,7 @@
 								accesskey="<%=MSG.accessOpenClassAssignmentDialog() %>"
 								onClick="showGwtDialog('<%=MSG.dialogClassAssignment() %>', 'classInfo.do?classId=<%=String.valueOf(classId)%>','900','90%');"
 						/>
-					</logic:equal>
+					</sec:authorize>
 									
 					<logic:notEmpty name="<%=frmName%>" property="previousId">
 						&nbsp;
@@ -423,7 +428,7 @@
 								accesskey="<%=MSG.accessPreviousClass()%>"
 								title="<%=MSG.titlePreviousClass(MSG.accessPreviousClass()) %>">
 							<loc:message name="actionPreviousClass" />
-						</html:submit> 
+						</html:submit>
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="nextId">
 						&nbsp;
@@ -432,7 +437,7 @@
 							accesskey="<%=MSG.accessNextClass()%>" 
 							title="<%=MSG.titleNextClass(MSG.accessNextClass())%>">
 							<loc:message name="actionNextClass" />
-						</html:submit> 
+						</html:submit>
 					</logic:notEmpty>
 
 					&nbsp;

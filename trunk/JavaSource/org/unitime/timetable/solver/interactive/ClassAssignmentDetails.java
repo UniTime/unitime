@@ -35,12 +35,11 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
 import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.NaturalOrderComparator;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.ConstraintInfo;
@@ -49,7 +48,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.ExactTimeMins;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
@@ -60,8 +58,8 @@ import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
@@ -325,21 +323,20 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		iClass = new ClassInfo(assignment.getClassName(), assignment.getClassId(), assignment.getRooms().size(), SolutionGridModel.hardConflicts2pref(iAssignmentInfo), -1, assignment.getClazz());
 	}
 	
-	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(HttpSession session, Long assignmentId, boolean includeConstraints) throws Exception {
+	public static ClassAssignmentDetails createClassAssignmentDetailsFromAssignment(SessionContext context, Long assignmentId, boolean includeConstraints) throws Exception {
 		AssignmentDAO dao = new AssignmentDAO();
 		org.hibernate.Session hibSession = dao.getSession();
-		Assignment assignment = dao.get(assignmentId,hibSession);
+		Assignment assignment = dao.get(assignmentId, hibSession);
 		if (assignment==null) return null;
-		String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+		String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
 		ClassAssignmentDetails ret = new ClassAssignmentDetails(assignment.getSolution(), assignment, includeConstraints, hibSession, instructorNameFormat);
 			
 		return ret;
 	}
 	
-	public static ClassAssignmentDetails createClassAssignmentDetails(HttpSession session, Long classId, boolean includeConstraints) throws Exception {
-		String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
-		SolverProxy solver = WebSolver.getSolver(session);
-		if (solver!=null) {
+	public static ClassAssignmentDetails createClassAssignmentDetails(SessionContext context, SolverProxy solver, Long classId, boolean includeConstraints) throws Exception {
+		String instructorNameFormat = context.getUser().getProperty(UserProperty.NameFormat);
+		if (solver != null) {
 			ClassAssignmentDetails details = solver.getClassAssignmentDetails(classId, includeConstraints);
 			if (details!=null) return details;
     		try {
@@ -361,7 +358,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		SolutionDAO dao = new SolutionDAO();
 		org.hibernate.Session hibSession = dao.getSession();
 
-		String solutionIdsStr = (String)session.getAttribute("Solver.selectedSolutionId");
+		String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 		if (solutionIdsStr!=null && solutionIdsStr.length()>0) {
 			for (StringTokenizer s=new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
 				Long solutionId = Long.valueOf(s.nextToken());
@@ -683,20 +680,20 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			}
 		}
 		public Long getOtherClassId() { return iOtherClassId; }
-		public void createOther(HttpSession session) throws Exception {
+		public void createOther(SessionContext context, SolverProxy solver) throws Exception {
 			if (iOtherAssignmentId!=null) {
-				iOther = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(session,iOtherAssignmentId,false);
+				iOther = ClassAssignmentDetails.createClassAssignmentDetailsFromAssignment(context, iOtherAssignmentId, false);
 			} else {
-				iOther = ClassAssignmentDetails.createClassAssignmentDetails(session,iOtherClassId,false);
+				iOther = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iOtherClassId, false);
 			}
 		}
 		public ClassAssignmentDetails getOther() {
 			return iOther;
 		}
 		public JenrlInfo getInfo() { return iInfo; }
-		public String toHtml(HttpSession session, boolean link) {
+		public String toHtml(SessionContext context, SolverProxy solver, boolean link) {
 			try {
-				if (getOther()==null) createOther(session);
+				if (getOther()==null) createOther(context, solver);
 				Vector props = new Vector();
 				if (iInfo.isCommited()) props.add("committed");
 		        if (iInfo.isFixed()) props.add("fixed");
@@ -726,9 +723,10 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 	}
 	
 	public static class StudentConflictInfoComparator implements Comparator {
-		HttpSession iSession = null;
-		public StudentConflictInfoComparator(HttpSession session) {
-			iSession = session;
+		SessionContext iContext = null;
+		SolverProxy iSolver = null;
+		public StudentConflictInfoComparator(SessionContext context, SolverProxy solver) {
+			iContext = context; iSolver = solver;
 		}
 		public int compare(Object o1, Object o2) {
 			try {
@@ -736,8 +734,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				StudentConflictInfo i2 = (StudentConflictInfo)o2;
 				int cmp = Double.compare(i1.getInfo().getJenrl(),i2.getInfo().getJenrl());
 				if (cmp!=0) return -cmp;
-				if (i1.getInfo()==null) i1.createOther(iSession);
-				if (i2.getInfo()==null) i2.createOther(iSession);
+				if (i1.getInfo()==null) i1.createOther(iContext, iSolver);
+				if (i2.getInfo()==null) i2.createOther(iContext, iSolver);
 				return i1.getOther().compareTo(i2.getOther());
 			} catch (Exception e) {
 				return 0;
@@ -755,9 +753,9 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		}
 		public Long getOtherClassId() { return iOtherClassId; }
 		public int getPreference() { return iPref; }
-		public String toHtml(HttpSession session) {
+		public String toHtml(SessionContext context, SolverProxy solver) {
 			try {
-				ClassAssignmentDetails other = ClassAssignmentDetails.createClassAssignmentDetails(session,iOtherClassId,false);
+				ClassAssignmentDetails other = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iOtherClassId, false);
 				StringBuffer sb = new StringBuffer();
 				sb.append("<font color='"+PreferenceLevel.int2color(getPreference())+"'>");
 				sb.append(PreferenceLevel.int2string(getPreference()));
@@ -916,12 +914,12 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		}
 		public Vector getClassIds() { return iClassIds; }
 		public GroupConstraintInfo getInfo() { return iInfo; }
-		public String toHtml(HttpSession session, boolean link) {
+		public String toHtml(SessionContext context, SolverProxy solver, boolean link) {
 			StringBuffer sb = new StringBuffer();
 			try {
 				for (Enumeration e=iClassIds.elements();e.hasMoreElements();) {
 					Long classId = (Long)e.nextElement();
-					ClassAssignmentDetails other = ClassAssignmentDetails.createClassAssignmentDetails(session,classId,false);
+					ClassAssignmentDetails other = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, classId, false);
 					sb.append("<br>&nbsp;&nbsp;&nbsp;");
 					sb.append(other.getClazz().toHtml(link)+" ");
 					if (other.getTime()!=null)

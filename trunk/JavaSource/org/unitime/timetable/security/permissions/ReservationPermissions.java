@@ -20,12 +20,28 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class ReservationPermissions {
+
+	@PermissionForRight(Right.Reservations)
+	public static class Reservations implements Permission<Department> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
 
 	@PermissionForRight(Right.AddReservation)
 	public static class AddReservation implements Permission<InstructionalOffering> {

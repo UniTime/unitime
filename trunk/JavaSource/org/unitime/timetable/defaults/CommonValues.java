@@ -38,6 +38,9 @@ public enum CommonValues {
 	Yes("yes"),
 	No("no"),
 	
+	Ask("ask"),
+	Always("always"),
+	Never("never"),
 	
 	;
 
@@ -48,7 +51,7 @@ public enum CommonValues {
 	
 	public String value() { return iValue; }
 	
-	public boolean eq(String value) { return value.equals(value); }
+	public boolean eq(String value) { return iValue.equals(value); }
 	
 	public boolean ne(String value) { return !eq(value); }
 }

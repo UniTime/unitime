@@ -25,20 +25,20 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
@@ -46,10 +46,11 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /** 
@@ -64,6 +65,9 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 public class InstructorPrefEditAction extends PreferencesAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
+
 	
 	// --------------------------------------------------------- Instance Variables
 
@@ -88,7 +92,6 @@ public class InstructorPrefEditAction extends PreferencesAction {
             // Set common lookup tables
             super.execute(mapping, form, request, response);
             
-            HttpSession httpSession = request.getSession();
     		InstructorEditForm frm = (InstructorEditForm) form;       
             MessageResources rsc = getResources(request);
     		ActionMessages errors = new ActionMessages();
@@ -97,7 +100,6 @@ public class InstructorPrefEditAction extends PreferencesAction {
             String instructorId = request.getParameter("instructorId");
             String op = frm.getOp();            
             String reloadCause = request.getParameter("reloadCause");
-            boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
             
             // Read subpart id from form
             if(op.equals(rsc.getMessage("button.reload"))
@@ -132,6 +134,11 @@ public class InstructorPrefEditAction extends PreferencesAction {
             if(instructorId==null || instructorId.trim()=="") 
                 throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
             
+            if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences))
+            	throw new Exception("Access denied.");
+            
+            boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+            
             // Set screen name
             frm.setScreenName("instructorPref");
             
@@ -159,7 +166,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
                 
                 ChangeLog.addChange(
                         null, 
-                        request,
+                        sessionContext,
                         inst, 
                         ChangeLog.Source.INSTRUCTOR_PREF_EDIT, 
                         ChangeLog.Operation.CLEAR_PREF, 
@@ -196,7 +203,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
                     
                     ChangeLog.addChange(
                             null, 
-                            request,
+                            sessionContext,
                             inst, 
                             ChangeLog.Source.INSTRUCTOR_PREF_EDIT, 
                             ChangeLog.Operation.UPDATE, 
@@ -221,13 +228,11 @@ public class InstructorPrefEditAction extends PreferencesAction {
                 }
             }
             
-	        User user = Web.getUser(httpSession);
-
 	        // Initialize Preferences for initial load 
             Set timePatterns = new HashSet();
             frm.setAvailableTimePatterns(null);
             if(op.equals("init")) {
-            	initPrefs(user, frm, inst, null, true);
+            	initPrefs(frm, inst, null, true);
             	timePatterns.add(new TimePattern(new Long(-1)));
         		//timePatterns.addAll(TimePattern.findApplicable(request,30,false));
             }
@@ -324,10 +329,9 @@ public class InstructorPrefEditAction extends PreferencesAction {
 		}
 		
 		try {
-			User user = Web.getUser(request.getSession());
-			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
-			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorPreferences);
 			frm.setNextId(next==null?null:next.getUniqueId().toString());
 		} catch (Exception e) {
 			Debug.error(e);

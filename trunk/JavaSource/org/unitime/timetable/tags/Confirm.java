@@ -23,7 +23,8 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.unitime.commons.web.Web;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.JavascriptFunctions;
 
 /**
@@ -41,6 +42,10 @@ public class Confirm extends BodyTagSupport {
         return EVAL_BODY_BUFFERED;
     }
     
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    }
+    
     public int doEndTag() throws JspException {
         try {
             String body = (getBodyContent()==null?null:getBodyContent().getString());
@@ -48,7 +53,7 @@ public class Confirm extends BodyTagSupport {
             pageContext.getOut().println("<SCRIPT language='javascript'>");
             pageContext.getOut().println("<!--");
             pageContext.getOut().println("function "+getName()+"() {");
-            if (JavascriptFunctions.isJsConfirm(Web.getUser(pageContext.getSession()))) {
+            if (JavascriptFunctions.isJsConfirm(getSessionContext())) {
                 pageContext.getOut().println("return confirm(\""+body+"\");");
             } else {
                 pageContext.getOut().println("return true;");
