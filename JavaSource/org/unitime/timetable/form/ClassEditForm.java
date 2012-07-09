@@ -99,7 +99,6 @@ public class ClassEditForm extends PreferencesForm {
     private Integer enrollment;
     //TODO Reservations Bypass - to be removed later
     private Boolean isCrosslisted;
-    private boolean iDisplayInfo; 
     //End Bypass
     
     // --------------------------------------------------------- Classes
@@ -273,8 +272,6 @@ public class ClassEditForm extends PreferencesForm {
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
         assignments = null;
         enrollment = null;
-        
-        iDisplayInfo = false;
         
         super.reset(mapping, request);
     }
@@ -713,12 +710,4 @@ public class ClassEditForm extends PreferencesForm {
 		this.enrollment = enrollment;
 	}
 	
-	public boolean getDisplayInfo() {
-		return iDisplayInfo;
-	}
-	
-	public void setDisplayInfo(boolean displayInfo) {
-		iDisplayInfo = displayInfo;
-	}
-    
 }

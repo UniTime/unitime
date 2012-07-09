@@ -25,10 +25,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
 import org.dom4j.Element;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 
 import net.sf.cpsolver.coursett.model.Lecture;
@@ -142,16 +141,16 @@ public class Hint implements Serializable {
 	}
 	public int hashCode() { return iClassId.hashCode(); }
 	
-	public ClassAssignmentDetails getDetails(HttpSession session, boolean includeConstraints) throws Exception {
+	public ClassAssignmentDetails getDetails(SessionContext context, SolverProxy solver, boolean includeConstraints) throws Exception {
 		if (iDetails!=null) return iDetails;
-		if (iInfo==null) iInfo = WebSolver.getSolver(session).getInfo(this);
-		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(session, iClassId, includeConstraints);
+		if (iInfo==null && solver != null) iInfo = solver.getInfo(this);
+		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iClassId, includeConstraints);
 		if (iDetails!=null) iDetails.setAssigned(iInfo, iRoomIds,iDays,iStartSlot,iPatternId,iDatePatternId);
 		return iDetails;
 	}
-	public ClassAssignmentDetails getDetailsUnassign(HttpSession session, boolean includeConstraints) throws Exception {
+	public ClassAssignmentDetails getDetailsUnassign(SessionContext context, SolverProxy solver, boolean includeConstraints) throws Exception {
 		if (iDetails!=null) return iDetails;
-		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(session, iClassId, includeConstraints);
+		iDetails = ClassAssignmentDetails.createClassAssignmentDetails(context, solver, iClassId, includeConstraints);
 		return iDetails;
 	}
 	public void setDetails(ClassAssignmentDetails details) {

@@ -36,10 +36,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorListUpdateForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
@@ -52,11 +51,12 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.StaffComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -70,6 +70,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/instructorListUpdate")
 public class InstructorListUpdateAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -90,10 +92,8 @@ public class InstructorListUpdateAction extends Action {
 		HttpServletResponse response) throws Exception {
 		
 		//Check permissions
-		HttpSession httpSession = request.getSession();
-		if (!Web.isLoggedIn(httpSession)) {
+		if (!sessionContext.hasPermission(Right.ManageInstructors))
 			throw new Exception("Access Denied.");
-		}
 		
 		InstructorListUpdateForm frm = (InstructorListUpdateForm) form;
 		MessageResources rsc = getResources(request);
@@ -140,9 +140,8 @@ public class InstructorListUpdateAction extends Action {
      * @param request
      */
     private void setupFilters(InstructorListUpdateForm frm, HttpServletRequest request) {
-        HttpSession httpSession = request.getSession();
         String[] defaultPosTypes = {"ADMIN_STAFF", "CLERICAL_STAFF", "SERVICE_STAFF", "FELLOWSHIP", "UNDRGRD_TEACH_ASST", "EMERITUS OTHER"};
-        boolean filterSet = UserData.getPropertyBoolean(httpSession, "instrListFilter", false);
+        boolean filterSet = "1".equals(sessionContext.getUser().getProperty("instrListFilter", "0"));
         String filterApplied = (String) request.getAttribute("filterApplied");
         
         if (filterApplied!=null && !filterApplied.equals("1"))
@@ -153,8 +152,8 @@ public class InstructorListUpdateAction extends Action {
             frm.setDisplayPosType(defaultPosTypes);
         } 
         else if (filterApplied == null) {            
-            frm.setDisplayListType(UserData.getProperty(httpSession, "displayListType"));
-            String displayPosType = UserData.getProperty(httpSession, "displayPosType");
+            frm.setDisplayListType(sessionContext.getUser().getProperty("displayListType"));
+            String displayPosType = sessionContext.getUser().getProperty("displayPosType");
             if (displayPosType!=null) {
                 String[] arr = null;
                 if (displayPosType.trim().length()==0) {
@@ -182,9 +181,9 @@ public class InstructorListUpdateAction extends Action {
                 frm.setDisplayPosType(defaultPosTypes);
         }
         
-        UserData.setProperty(httpSession, "instrListFilter", "1");
-        UserData.setProperty(httpSession, "displayListType", frm.getDisplayListType());
-        UserData.setProperty(httpSession, "displayPosType", Constants.arrayToStr(frm.getDisplayPosType(), "", " "));
+        sessionContext.getUser().setProperty("instrListFilter", "1");
+        sessionContext.getUser().setProperty("displayListType", frm.getDisplayListType());
+        sessionContext.getUser().setProperty("displayPosType", Constants.arrayToStr(frm.getDisplayPosType(), "", " "));
     }
 
     /**
@@ -227,7 +226,7 @@ public class InstructorListUpdateAction extends Action {
 						
                         ChangeLog.addChange(
                                 hibSession, 
-                                request, 
+                                sessionContext, 
                                 inst, 
                                 ChangeLog.Source.INSTRUCTOR_MANAGE, 
                                 ChangeLog.Operation.DELETE, 
@@ -297,7 +296,7 @@ public class InstructorListUpdateAction extends Action {
 
                         ChangeLog.addChange(
                                 hibSession, 
-                                request, 
+                                sessionContext, 
                                 inst, 
                                 ChangeLog.Source.INSTRUCTOR_MANAGE, 
                                 ChangeLog.Operation.CREATE, 
@@ -334,13 +333,10 @@ public class InstructorListUpdateAction extends Action {
 	 */
 	private Collection getAvailable(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
 		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);	
-		
 		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
 			Department d = new DepartmentDAO().get(new Long(deptId));
-			List available = Staff.getStaffByDept(d.getDeptCode().trim(), sessionId);			
+			List available = Staff.getStaffByDept(d.getDeptCode().trim(), sessionContext.getUser().getCurrentAcademicSessionId());			
 			Collections.sort(available, new StaffComparator(StaffComparator.COMPARE_BY_POSITION));
 			return available;
 		} else {
@@ -357,12 +353,9 @@ public class InstructorListUpdateAction extends Action {
 	 */
 	private Collection getAssigned(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
 		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);	
-		
 		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
 			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-			List assigned = DepartmentalInstructor.getInstructorByDept(sessionId, new Long(deptId));
+			List assigned = DepartmentalInstructor.getInstructorByDept(sessionContext.getUser().getCurrentAcademicSessionId(), new Long(deptId));
 			Collections.sort(assigned, new DepartmentalInstructorComparator(DepartmentalInstructorComparator.COMPARE_BY_POSITION));
 			return assigned;
 		} else {

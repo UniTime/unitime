@@ -30,6 +30,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -283,37 +284,6 @@ public class CoursePermissions {
 	public static class EditInstructionalOfferingConfig extends MultipleClassSetup {
 	}
 	
-	@PermissionForRight(Right.AssignInstructors)
-	public static class AssignInstructors implements Permission<InstrOfferingConfig> {
-		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
-
-		@Override
-		public boolean check(UserContext user, InstrOfferingConfig source) {
-			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
-			
-			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
-				return true;
-			
-			// Manager can edit external department
-			Set<Department> externals = new HashSet<Department>();
-			for (SchedulingSubpart subpart: source.getSchedulingSubparts()) {
-				for (Class_ clazz: subpart.getClasses()) {
-					if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
-						if (externals.add(clazz.getManagingDept()) &&
-							permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit))
-							return true;
-					}
-				}
-			}
-			
-			return false;
-		}
-
-		@Override
-		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
-	}
-	
 	@PermissionForRight(Right.AddInstructionalOfferingConfig)
 	public static class AddInstructionalOfferingConfig implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
@@ -427,5 +397,115 @@ public class CoursePermissions {
 		public Class<CourseOffering> type() { return CourseOffering.class; }
 		
 	}
+	
+	@PermissionForRight(Right.CanUseHardPeriodPrefs)
+	public static class CanUseHardPeriodPrefs implements Permission<PreferenceGroup> {
 
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, PreferenceGroup source) {
+			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+		}
+
+		@Override
+		public Class<PreferenceGroup> type() { return PreferenceGroup.class; }
+	}
+	
+	@PermissionForRight(Right.CanUseHardTimePrefs)
+	public static class CanUseHardTimePrefs implements Permission<PreferenceGroup> {
+
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, PreferenceGroup source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
+			
+			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqTime())) return false;
+			
+			return permissionDepartment.check(user, source.getDepartment());
+		}
+
+		@Override
+		public Class<PreferenceGroup> type() { return PreferenceGroup.class; }
+	}
+	
+	@PermissionForRight(Right.CanUseHardRoomPrefs)
+	public static class CanUseHardRoomPrefs implements Permission<PreferenceGroup> {
+
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, PreferenceGroup source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
+			
+			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqRoom())) return false;
+			
+			return permissionDepartment.check(user, source.getDepartment());
+		}
+
+		@Override
+		public Class<PreferenceGroup> type() { return PreferenceGroup.class; }
+	}
+	
+	@PermissionForRight(Right.CanUseHardDistributionPrefs)
+	public static class CanUseHardDistributionPrefs implements Permission<PreferenceGroup> {
+
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, PreferenceGroup source) {
+			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
+			
+			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqDistribution())) return false;
+			
+			return permissionDepartment.check(user, source.getDepartment());
+		}
+
+		@Override
+		public Class<PreferenceGroup> type() { return PreferenceGroup.class; }
+	}
+		
+	@PermissionForRight(Right.InstructionalOfferings)
+	public static class InstructionalOfferings implements Permission<Department> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.InstructionalOfferingsExportPDF)
+	public static class InstructionalOfferingsExportPDF extends InstructionalOfferings {}
+
+	@PermissionForRight(Right.InstructionalOfferingsWorksheetPDF)
+	public static class InstructionalOfferingsWorksheetPDF extends InstructionalOfferings {}
+
+	@PermissionForRight(Right.Classes)
+	public static class Classes extends InstructionalOfferings {}
+
+	@PermissionForRight(Right.ClassesExportPDF)
+	public static class ClassesExportPDF extends InstructionalOfferings {}
+			
+	@PermissionForRight(Right.DistributionPreferenceClass)
+	public static class DistributionPreferenceClass extends ClassEdit {}
+	
+	@PermissionForRight(Right.ClassEditClearPreferences)
+	public static class ClassEditClearPreferences extends ClassEdit {}
+	
+	@PermissionForRight(Right.DistributionPreferenceSubpart)
+	public static class DistributionPreferenceSubpart extends SchedulingSubpartEdit {}
+	
+	@PermissionForRight(Right.SchedulingSubpartDetailClearClassPreferences)
+	public static class SchedulingSubpartDetailClearClassPreferences extends SchedulingSubpartEdit {}
+	
+	@PermissionForRight(Right.SchedulingSubpartEditClearPreferences)
+	public static class SchedulingSubpartEditClearPreferences extends SchedulingSubpartEdit {}
+	
 }

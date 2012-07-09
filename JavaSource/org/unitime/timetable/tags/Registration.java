@@ -22,6 +22,7 @@ package org.unitime.timetable.tags;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URLEncoder;
@@ -43,10 +44,11 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.QueryLog;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 public class Registration extends BodyTagSupport {
@@ -69,6 +71,10 @@ public class Registration extends BodyTagSupport {
 	public boolean isUpdate() { return iUpdate; }
 	
 	private static long sLastRefresh = -1;
+	
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    }
 	
 	private synchronized void init() {
 		sLastRefresh = System.currentTimeMillis();
@@ -155,8 +161,7 @@ public class Registration extends BodyTagSupport {
 		if (sLastRefresh < 0) init();
 		switch (iMethod) {
 		case hasMessage:
-			User user = Web.getUser(pageContext.getSession());
-			if (user == null || !user.isAdmin())
+			if (!getSessionContext().hasPermission(Right.Registration))
 				return SKIP_BODY;
 			try {
 				refresh();
@@ -175,17 +180,15 @@ public class Registration extends BodyTagSupport {
 			return EVAL_PAGE;
 		case message:
 			try {
-				User user = Web.getUser(pageContext.getSession());
-				if (Registration.sNote != null && user != null && user.isAdmin())
-					pageContext.getOut().println(Registration.sNote);
-			} catch (Exception e) {}
+				if (Registration.sNote != null) pageContext.getOut().println(Registration.sNote);
+			} catch (IOException e) {}
 			return EVAL_PAGE;
 		case status:
+			if (sMessage == null) return EVAL_PAGE;
 			try {
-				if (sMessage != null) {
-					pageContext.getOut().println(sMessage);
-					User user = Web.getUser(pageContext.getSession());
-					if (isUpdate() && user != null && user.isAdmin()) {
+				pageContext.getOut().println(sMessage);
+				if (isUpdate()) {
+					if (getSessionContext().hasPermission(Right.Registration)) {
 						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
 						pageContext.getOut().println(
 								"<br><span style=\"font-size: x-small;\">Click <a "+
@@ -194,23 +197,18 @@ public class Registration extends BodyTagSupport {
 								"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
 								(sRegistered ? "update the current registration" : "register") + "." +
 								"</span>");
-					}
-					if (isUpdate()) {
-						if (user != null && user.isAdmin()) {
-							String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
-							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage +
-									"<br><span style='font-size: x-small;'>Click <a " +
-									"onMouseOver=\\\"this.style.cursor='hand';this.style.cursor='pointer';\\\" " +
-									"onCLick=\\\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\\\" " +
-									"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
-									(sRegistered ? "update the current registration" : "register") + "." +
-									"</span>\"); }</script>");
-						} else {
-							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage + "\"); }</script>");
-						}
+						pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage +
+								"<br><span style='font-size: x-small;'>Click <a " +
+								"onMouseOver=\\\"this.style.cursor='hand';this.style.cursor='pointer';\\\" " +
+								"onCLick=\\\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\\\" " +
+								"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
+								(sRegistered ? "update the current registration" : "register") + "." +
+								"</span>\"); }</script>");
+					} else {
+						pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage + "\"); }</script>");
 					}
 				}
-			} catch (Exception e) {}
+			} catch (IOException e) {}
 			return EVAL_PAGE;
 		default:
 			return EVAL_PAGE;

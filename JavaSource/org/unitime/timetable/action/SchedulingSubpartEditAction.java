@@ -24,7 +24,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -34,9 +33,9 @@ import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.SchedulingSubpartEditForm;
 import org.unitime.timetable.interfaces.ExternalSchedulingSubpartEditAction;
 import org.unitime.timetable.model.ChangeLog;
@@ -61,7 +60,6 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /**
@@ -95,7 +93,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Set common lookup tables
         super.execute(mapping, form, request, response);
 
-        HttpSession httpSession = request.getSession();
         SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) form;
         MessageResources rsc = getResources(request);
         ActionMessages errors = new ActionMessages();
@@ -111,7 +108,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         String op = frm.getOp();
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
         	op = request.getParameter("op2");
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(Web.getUser(httpSession));
 
         // Read subpart id from form
         if(		//op.equals(rsc.getMessage("button.reload"))
@@ -150,6 +146,11 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Check op exists
         if(op==null || op.trim()=="")
             throw new Exception (MSG.errorNullOperationNotSupported());
+        
+        if (!sessionContext.hasPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartEdit))
+        	throw new Exception(MSG.errorAccessDenied());
+
+        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
         Debug.debug("op: " + op);
         Debug.debug("subpart: " + subpartId);
@@ -174,6 +175,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Clear all preferences
         if(op.equals(MSG.actionClearSubpartPreferences())) {
 
+        	if (!sessionContext.hasPermission(ss, Right.SchedulingSubpartEditClearPreferences))
+        		throw new Exception("Access denied.");
+
             Set s = ss.getPreferences();
             s.clear();
             ss.setPreferences(s);
@@ -181,7 +185,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
             ChangeLog.addChange(
                     null,
-                    request,
+                    sessionContext,
                     ss,
                     ChangeLog.Source.SCHEDULING_SUBPART_EDIT,
                     ChangeLog.Operation.CLEAR_PREF,
@@ -229,13 +233,11 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             }
         }
 
-        User user = Web.getUser(httpSession);
-
         // Initialize Preferences for initial load
 		Set timePatterns = null;
 		frm.setAvailableTimePatterns(TimePattern.findApplicable(request,ss.getMinutesPerWk().intValue(),false,ss.getManagingDept()));
         if(op.equals("init")) {
-        	initPrefs(user, frm, ss, null, true);
+        	initPrefs(frm, ss, null, true);
         	timePatterns = ss.getTimePatterns();
         	
         	DatePattern selectedDatePattern = ss.effectiveDatePattern();
@@ -251,7 +253,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         }
         
         if (op.equals("updateDatePattern")) {        	
-			initPrefs(user, frm, ss, null, true);
+			initPrefs(frm, ss, null, true);
 			timePatterns = ss.getTimePatterns();
 			frm.getDatePatternPrefs().clear();
         	frm.getDatePatternPrefLevels().clear();
@@ -288,7 +290,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         LookupTables.setupCourseCreditTypes(request); //Course Credit Types
         LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
 
-        frm.setAllowHardPrefs(ss.canUseHardRoomPreferences(user));
+        frm.setAllowHardPrefs(sessionContext.hasPermission(ss, Right.CanUseHardRoomPrefs));
 
         BackTracker.markForBack(request,
         		"schedulingSubpartDetail.do?ssuid="+frm.getSchedulingSubpartId(),
@@ -492,7 +494,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 
         ChangeLog.addChange(
                 null,
-                request,
+                sessionContext,
                 ss,
                 ChangeLog.Source.SCHEDULING_SUBPART_EDIT,
                 ChangeLog.Operation.UPDATE,

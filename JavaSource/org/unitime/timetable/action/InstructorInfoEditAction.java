@@ -24,7 +24,6 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -32,10 +31,10 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -51,6 +50,8 @@ import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 
@@ -66,6 +67,8 @@ import org.unitime.timetable.webutil.BackTracker;
 public class InstructorInfoEditAction extends InstructorAction {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 	
 	// --------------------------------------------------------- Instance Variables
 
@@ -85,12 +88,6 @@ public class InstructorInfoEditAction extends InstructorAction {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		
-		//Check permissions
-		HttpSession httpSession = request.getSession();
-		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception(MSG.exceptionAccessDenied());
-		}	
-		
 		super.execute(mapping, form, request, response);
 		
 		InstructorEditForm frm = (InstructorEditForm) form;
@@ -104,6 +101,9 @@ public class InstructorInfoEditAction extends InstructorAction {
         //Check instructor exists
         if(instructorId==null || instructorId.trim()=="") 
             throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
+        
+		if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit))
+			throw new Exception(MSG.exceptionAccessDenied());
         
         frm.setInstructorId(instructorId);
         
@@ -196,6 +196,10 @@ public class InstructorInfoEditAction extends InstructorAction {
 	    String instructorId = frm.getInstructorId();
 	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 	    
+		if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete))
+			throw new Exception(MSG.exceptionAccessDenied());
+
+	    
 		org.hibernate.Session hibSession = idao.getSession();
 		Transaction tx = null;
 		
@@ -205,7 +209,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     inst, 
                     ChangeLog.Source.INSTRUCTOR_EDIT, 
                     ChangeLog.Operation.DELETE, 
@@ -334,13 +338,10 @@ public class InstructorInfoEditAction extends InstructorAction {
         
         frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
         
-        frm.setCanDelete(inst.getClasses().isEmpty() && inst.getExams().isEmpty());
-		
         try {
-			User user = Web.getUser(request.getSession());
-			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor previous = inst.getPreviousDepartmentalInstructor(sessionContext, Right.InstructorEdit);
 			frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
-			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(request.getSession(),user,false,true);
+			DepartmentalInstructor next = inst.getNextDepartmentalInstructor(sessionContext, Right.InstructorEdit);
 			frm.setNextId(next==null?null:next.getUniqueId().toString());
 		} catch (Exception e) {
 			Debug.error(e);

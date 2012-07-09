@@ -25,15 +25,17 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
 	String frmName = "instructorEditForm";	
 	InstructorEditForm frm = (InstructorEditForm) request.getAttribute(frmName);	
 %>	
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	// -->
 </SCRIPT>
 
@@ -43,6 +45,7 @@
 	<html:hidden property="previousId"/>
 	<html:hidden property="deptCode"/>
 	<html:hidden property="op2" value=""/>
+	<bean:define name='<%=frmName%>' property="instructorId" id="instructorId"/>
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -51,32 +54,18 @@
 					<tt:section-title>
 						<bean:write name='<%=frmName%>' property='name'/>
 					</tt:section-title>
-					
-<%--					
-				<% if (frm.isDisplayPrefs()) { %>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="H" titleKey="title.hidePrefs" >
-						<bean:message key="button.hidePrefs" />
-					</html:submit> 
-				<% } else {%>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="S" titleKey="title.displayPrefs" >
-						<bean:message key="button.displayPrefs" />
-					</html:submit> 
-				<% } %>
---%>
-				<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
 						<bean:message key="button.editInstructorInfo" />
 					</html:submit>
-				</logic:equal>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
 						<bean:message key="button.editInstructorPref" />
-					</html:submit> 
-				</logic:equal>
+					</html:submit>
+				</sec:authorize> 
 				<logic:notEmpty name="<%=frmName%>" property="previousId">
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previousInstructor">
@@ -92,12 +81,6 @@
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="PreferenceGroup">
 					<bean:write name="<%=frmName%>" property="instructorId"/>
 				</tt:back>
-<%--
-					<html:submit property="op" 
-						styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
-						<bean:message key="button.returnToDetail" />
-					</html:submit>
---%>
 				</tt:section-header>
 			</TD>
 		</TR>
@@ -153,12 +136,12 @@
 						Designator List
 					</tt:section-title>
 					
-				<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAddDesignator')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="A" titleKey="title.addDesignator2" >
 						<bean:message key="button.addDesignator2" />
-					</html:submit> 
-				</logic:equal>
+					</html:submit>
+				</sec:authorize> 
 					
 				</tt:section-header>
 			</TD>
@@ -263,18 +246,18 @@
 				</html:submit> 
 			<% } %>
 --%>
-			<logic:equal name="<%=frmName%>" property="limitedEditable" value="true">
-				<html:submit property="op" 
-					styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
-					<bean:message key="button.editInstructorInfo" />
-				</html:submit> 
-			</logic:equal>
-			<logic:equal name="<%=frmName%>" property="editable" value="true">
-				<html:submit property="op" 
-					styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
-					<bean:message key="button.editInstructorPref" />
-				</html:submit> 
-			</logic:equal>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorEdit')">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="I" titleKey="title.editInstructorInfo" >
+						<bean:message key="button.editInstructorInfo" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorPreferences')">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="P" titleKey="title.editInstructorPref" >
+						<bean:message key="button.editInstructorPref" />
+					</html:submit>
+				</sec:authorize> 
 				<logic:notEmpty name="<%=frmName%>" property="previousId">
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previousInstructor">

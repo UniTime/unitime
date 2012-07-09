@@ -25,16 +25,18 @@ import java.util.List;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -43,14 +45,18 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 public class OfferingLocks extends TagSupport {
 	private static CourseMessages MSG = Localization.create(CourseMessages.class);
 	private static final long serialVersionUID = 7947787141769725429L;
+	
+    public SessionContext getSessionContext() {
+    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    }
 
-	public String getOfferingLocksWarning(User user, Session session) {
+	public String getOfferingLocksWarning(SessionContext context, Session session) {
 		if (!session.getStatusType().canLockOfferings()) return null;
 		List<InstructionalOffering> lockedOfferings = new ArrayList<InstructionalOffering>();
 		if (session.getLockedOfferings() == null) return null;
 		for (Long offeringId: session.getLockedOfferings()) {
 			InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId);
-			if (io != null && io.isLockableBy(user))
+			if (io != null && context.hasPermission(io, Right.OfferingCanUnlock))
 				lockedOfferings.add(io);
 		}
 		if (lockedOfferings.isEmpty()) return null;
@@ -70,13 +76,11 @@ public class OfferingLocks extends TagSupport {
 
 	public int doStartTag() {
 		try {
-			User user = Web.getUser(pageContext.getSession());
-			if (user==null) return SKIP_BODY;
-			TimetableManager manager = TimetableManager.getManager(user);
-			if (manager==null) return SKIP_BODY;
-			Session acadSession = Session.getCurrentAcadSession(user);
+			UserContext user = getSessionContext().getUser();
+			if (user == null || user.getCurrentAcademicSessionId() == null || !user.getCurrentAuthority().hasRight(Right.OfferingCanUnlock)) return SKIP_BODY;
+			Session acadSession = SessionDAO.getInstance().get(user.getCurrentAcademicSessionId());
 			if (acadSession==null) return SKIP_BODY;
-			String warns = getOfferingLocksWarning(user, acadSession);
+			String warns = getOfferingLocksWarning(getSessionContext(), acadSession);
 			if (warns!=null) {
 				pageContext.getOut().println("<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>");
 				pageContext.getOut().println("<td class=\"unitime-MessageYellow\" width='5'>&nbsp;</td>");

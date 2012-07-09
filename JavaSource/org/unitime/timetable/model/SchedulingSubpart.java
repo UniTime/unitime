@@ -391,6 +391,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return getSession().getDefaultDatePatternNotNull();
 	}
 
+	@Deprecated
     public boolean canUseHardTimePreferences(User user) {
         if (user.isAdmin()) return true;
         TimetableManager tm = TimetableManager.getManager(user);
@@ -400,6 +401,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         return(false);
     }
     
+    @Deprecated
     public boolean canUseHardRoomPreferences(User user) {
         if (user.isAdmin()) return true;
         TimetableManager tm = TimetableManager.getManager(user);
@@ -753,5 +755,8 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
             setCacheable(true).
             uniqueResult();
     }
+    
+	@Override
+	public Department getDepartment() { return getManagingDept(); }
 
 }

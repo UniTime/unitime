@@ -81,6 +81,7 @@ public class LookupTables {
      * @param request
      * @return
      */
+	@Deprecated
     private static String getAcademicSessionId(HttpServletRequest request) {
         User user = Web.getUser(request.getSession());
 		return user.getAttribute(Constants.SESSION_ID_ATTR_NAME).toString();
@@ -154,6 +155,7 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
+    @Deprecated
     public static void setupTimePatterns(HttpServletRequest request) throws Exception {
         List<TimePattern> v = TimePattern.findAll(org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(request.getSession())), Boolean.TRUE);
         request.setAttribute(TimePattern.TIME_PATTERN_ATTR_NAME, v);
@@ -307,6 +309,7 @@ public class LookupTables {
      * @param clause
      * @throws Exception
      */
+    @Deprecated
     private static void getInstructors(HttpServletRequest request, StringBuffer clause) throws Exception {
         String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
         
@@ -377,6 +380,7 @@ public class LookupTables {
      * @param onlyControlling true indicates retrieve only controlling courses
      * @throws Exception
      */
+    @Deprecated
     private static void setupCourseOfferings(
             HttpServletRequest request, 
             boolean onlyOffered,
@@ -445,6 +449,7 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
+    @Deprecated
     public static void setupCourseOfferingDemands(HttpServletRequest request, CourseOffering includeCourseOffering) throws Exception {
         User user = Web.getUser(request.getSession());
 		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));

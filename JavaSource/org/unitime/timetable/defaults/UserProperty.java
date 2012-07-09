@@ -33,6 +33,11 @@ public enum UserProperty {
 	ClassesKeepSort("keepSort", CommonValues.No, "Sort classes on detail pages based on Classes page sorting options."),
 	ConfirmationDialogs("jsConfirm", CommonValues.Yes, "Display confirmation dialogs"),
 	
+	InheritInstructorPrefs("inheritInstrPref", CommonValues.Never, "Inherit instructor preferences on a class"),
+	DisplayLastChanges("dispLastChanges", CommonValues.Yes, "Display last changes"),
+	
+	DispInstructorPrefs("InstructorDetail.distPref", CommonValues.Yes, "Display instructor preferences"),
+	
 	;
 
 	String iKey, iDefault, iDescription;

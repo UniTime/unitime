@@ -26,15 +26,16 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "examEditForm";	
 	ExamEditForm frm = (ExamEditForm) request.getAttribute(frmName);	
 %>	
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	// -->
 </SCRIPT>
 <tt:confirm name="confirmDelete">The examination will be deleted. Continue?</tt:confirm>
@@ -53,25 +54,33 @@
 					<tt:section-title>
 						<bean:write name='<%=frmName%>' property='label'/>
 					</tt:section-title>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationEdit')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="E" titleKey="title.editExam" >
 						<bean:message key="button.editExam" />
-					</html:submit> 
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationClone')">
 					<html:submit property="op" 
 						styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
 						<bean:message key="button.cloneExam" />
 					</html:submit> 
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'DistributionPreferenceExam')">
 					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
 						<bean:message key="button.addDistPref" />
 					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationAssignment')">
 					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
 							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
 					/>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationDelete')">
 					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
 						<bean:message key="button.deleteExam" />
 					</html:submit>
-				</logic:equal>
+				</sec:authorize>
 				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previousExam">
@@ -261,25 +270,33 @@
 
 		<TR align="right">
 			<TD valign="middle" colspan='2'>
-			<logic:equal name="<%=frmName%>" property="editable" value="true">
-				<html:submit property="op" 
-					styleClass="btn" accesskey="E" titleKey="title.editExam" >
-					<bean:message key="button.editExam" />
-				</html:submit>
-				<html:submit property="op" 
-					styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
-					<bean:message key="button.cloneExam" />
-				</html:submit> 
-				<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
-					<bean:message key="button.addDistPref" />
-				</html:submit>
-				<input type="button" value="Assign" title="Open Examination Assignment Window (Alt+X)" class="btn" accesskey="X"
-						onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
-				/>
-				<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
-					<bean:message key="button.deleteExam" />
-				</html:submit>
-			</logic:equal>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationEdit')">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="E" titleKey="title.editExam" >
+						<bean:message key="button.editExam" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationClone')">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="C" titleKey="title.cloneExam" >
+						<bean:message key="button.cloneExam" />
+					</html:submit> 
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'DistributionPreferenceExam')">
+					<html:submit property="op" styleClass="btn" accesskey="A" titleKey="title.addDistPref" >
+						<bean:message key="button.addDistPref" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationAssignment')">
+					<input type="button" value="Assign" title="Open Examination Assignment Dialog (Alt+X)" class="btn" accesskey="X"
+							onClick="showGwtDialog('Examination Assignment', 'examInfo.do?examId=<%=String.valueOf(examId)%>','900','90%');"
+					/>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#examId, 'Exam', 'ExaminationDelete')">
+					<html:submit property="op" styleClass="btn" accesskey="D" titleKey="title.deleteExam" onclick="return confirmDelete();">
+						<bean:message key="button.deleteExam" />
+					</html:submit>
+				</sec:authorize>
 				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
 					<html:submit property="op" 
 							styleClass="btn" accesskey="P" titleKey="title.previous">

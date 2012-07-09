@@ -180,6 +180,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case AssignmentHistory:
 		case AddCourseOffering:
 		case ClassEdit:
+		case ClassEditClearPreferences:
 		case OfferingCanLock:
 		case OfferingCanUnlock:
 		case AssignInstructors:
@@ -193,6 +194,19 @@ public class Roles extends BaseRoles implements HasRights {
 		case OfferingMakeOffered:
 		case Reservations:
 		case SchedulingSubpartEdit:
+		case SchedulingSubpartEditClearPreferences:
+		case SchedulingSubpartDetailClearClassPreferences:
+		case InstructorPreferences:
+		case InstructorDelete:
+		case InstructorEdit:
+		case InstructorAdd:
+		case InstructorAddDesignator:
+		case ManageInstructors:
+		case InstructorEditClearPreferences: 
+		case SolutionChanges:
+		case Suggestions:
+		case DistributionPreferenceClass:
+		case DistributionPreferenceSubpart:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case AssignedExams:
@@ -212,9 +226,26 @@ public class Roles extends BaseRoles implements HasRights {
 		case ClassAssignmentsExportCSV:
 		case ClassAssignmentsExportPDF:
 		case Examinations:
+		case ExaminationDetail:
+		case InstructorDetail:
+		case Instructors:
+		case InstructorsExportPdf:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 			
+		case ExaminationAdd:
+		case ExaminationEdit:
+		case ExaminationEditClearPreferences:
+		case ExaminationDelete:
+		case ExaminationClone:
+		case DistributionPreferenceExam:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+			
+		case ExaminationAssignment:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+			
 		case OfferingDelete:
+		case ClassAssignment:
+		case Registration:
 			return ADMIN_ROLE.equals(getReference());
 
 		/* curriculum rights */
@@ -231,6 +262,10 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference());
 			
 		case ExaminationSchedule:
+		case CanUseHardDistributionPrefs:
+		case CanUseHardPeriodPrefs:
+		case CanUseHardRoomPrefs:
+		case CanUseHardTimePrefs:
 			return true;
 			
 		default:

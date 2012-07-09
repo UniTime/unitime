@@ -26,15 +26,17 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
 	String frmName = "examEditForm";	
 	ExamEditForm frm = (ExamEditForm) request.getAttribute(frmName);	
 %>	
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	// -->
 </SCRIPT>
 
@@ -234,7 +236,48 @@
 			<jsp:param name="timePref" value="false"/>
 			<jsp:param name="datePatternPref" value="false"/>
 		</jsp:include>
-	
+
+<!-- buttons -->
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title/>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan="2" align="right">
+				<logic:notEmpty name="<%=frmName%>" property="examId">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="U" titleKey="title.updateExam" >
+						<bean:message key="button.updateExam" />
+					</html:submit> 
+				</logic:notEmpty>
+				<logic:empty name="<%=frmName%>" property="examId">
+					<html:submit property="op" 
+						styleClass="btn" accesskey="S" titleKey="title.saveExam" >
+						<bean:message key="button.saveExam" />
+					</html:submit> 
+				</logic:empty>
+				<logic:greaterEqual name="<%=frmName%>" property="previousId" value="0">
+					&nbsp;
+					<html:submit property="op" 
+							styleClass="btn" accesskey="P" titleKey="title.previousExam">
+						<bean:message key="button.previousExam" />
+					</html:submit> 
+				</logic:greaterEqual>
+				<logic:greaterEqual name="<%=frmName%>" property="nextId" value="0">
+					&nbsp;
+					<html:submit property="op" 
+						styleClass="btn" accesskey="N" titleKey="title.nextExam">
+						<bean:message key="button.nextExam" />
+					</html:submit> 
+				</logic:greaterEqual>
+				&nbsp;
+				<html:submit property="op" 
+					styleClass="btn" accesskey="B" titleKey="title.returnToDetail">
+					<bean:message key="button.returnToDetail" />
+				</html:submit>
+			</TD>
+		</TR>	
 	</TABLE>
 </html:form>
 

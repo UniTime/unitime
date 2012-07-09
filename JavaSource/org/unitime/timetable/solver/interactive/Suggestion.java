@@ -32,13 +32,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
 import org.dom4j.Element;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.interactive.Hint.HintComparator;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
@@ -315,18 +313,8 @@ public class Suggestion implements Serializable, Comparable {
     public void setHint(Hint hint) { iHint = hint; }
     public Hint getHint() { return iHint; }
     public Vector getDifferentAssignments() { return iDifferentAssignments; }
-    public void assign(HttpSession session) throws Exception {
-    	SolverProxy solver = WebSolver.getSolver(session);
-    	if (solver==null) return;
-    	assign(solver);
-    }
     public void assign(SolverProxy solver) throws Exception {
-    	solver.assign(iDifferentAssignments);
-    }
-    public Hashtable conflictInfo(HttpSession session) throws Exception {
-    	SolverProxy solver = WebSolver.getSolver(session);
-    	if (solver==null) return null;
-    	return conflictInfo(solver);
+    	if (solver != null) solver.assign(iDifferentAssignments);
     }
     public Hashtable conflictInfo(SolverProxy solver) throws Exception {
     	return solver.conflictInfo(iDifferentAssignments);
@@ -362,8 +350,8 @@ public class Suggestion implements Serializable, Comparable {
     	return (iStudentConflictInfos!=null && !iStudentConflictInfos.isEmpty());
     }
     
-    public String getStudentConflictInfosAsHtml(HttpSession session, boolean link, int id, int spanLimit) {
-    	Collections.sort(iStudentConflictInfos,new StudentConflictInfoComparator(session));
+    public String getStudentConflictInfosAsHtml(SessionContext context, SolverProxy solver, boolean link, int id, int spanLimit) {
+    	Collections.sort(iStudentConflictInfos,new StudentConflictInfoComparator(context, solver));
     	StringBuffer sb = new StringBuffer();
     	int idx = 0; boolean span = false;
     	for (Enumeration e=iStudentConflictInfos.elements();e.hasMoreElements();idx++) {
@@ -372,7 +360,7 @@ public class Suggestion implements Serializable, Comparable {
     			sb.append("<span id='hint_conf_dots"+id+"' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('hint_conf_dots"+id+"').style.display='none';document.getElementById('hint_conf_rest"+id+"').style.display='inline';\">...</a></span><span id='hint_conf_rest"+id+"' style='display:none'>");
     			span = true;
     		}
-    		sb.append(info.toHtml(session, link));
+    		sb.append(info.toHtml(context, solver, link));
     	}
     	if (span) sb.append("</span>");
     	return sb.toString();
@@ -382,12 +370,12 @@ public class Suggestion implements Serializable, Comparable {
     	return (iBtbInstructorInfos!=null && !iBtbInstructorInfos.isEmpty());
     }
     
-    public String getBtbInstructorInfosAsHtml(HttpSession session, boolean link) {
-    	Collections.sort(iBtbInstructorInfos,new BtbInstructorInfoComparator(session));
+    public String getBtbInstructorInfosAsHtml(SessionContext context, SolverProxy solver, boolean link) {
+    	Collections.sort(iBtbInstructorInfos,new BtbInstructorInfoComparator(context, solver));
     	StringBuffer sb = new StringBuffer();
     	for (Enumeration e=iBtbInstructorInfos.elements();e.hasMoreElements();) {
     		BtbInstructorInfo info = (BtbInstructorInfo)e.nextElement();
-    		sb.append(info.toHtml(session, link));
+    		sb.append(info.toHtml(context, solver, link));
     	}
     	return sb.toString();
     }
@@ -396,7 +384,7 @@ public class Suggestion implements Serializable, Comparable {
     	return (iGroupConstraintInfos!=null && !iGroupConstraintInfos.isEmpty());
     }
     
-    public String getDistributionConstraintInfoAsHtml(HttpSession session, boolean link, int id, int spanLimit) {
+    public String getDistributionConstraintInfoAsHtml(SessionContext context, SolverProxy solver, boolean link, int id, int spanLimit) {
     	StringBuffer sb = new StringBuffer();
     	int idx = 0; 
     	boolean span = false;
@@ -406,7 +394,7 @@ public class Suggestion implements Serializable, Comparable {
     			sb.append("<span id='hint_dist_dots"+id+"' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('hint_dist_dots"+id+"').style.display='none';document.getElementById('hint_dist_rest"+id+"').style.display='inline';\">...</a></span><span id='hint_dist_rest"+id+"' style='display:none'>");
     			span = true;
     		}
-    		sb.append(info.toHtml(session, link));
+    		sb.append(info.toHtml(context, solver, link));
     	}
     	if (span) sb.append("</span>");
     	return sb.toString();
@@ -424,20 +412,20 @@ public class Suggestion implements Serializable, Comparable {
 			iFirst = first; iSecond = second;
 			iPref = pref; iInsturctor = instructor;
 		}
-		public void createInfo(HttpSession session) throws Exception {
+		public void createInfo(SessionContext context, SolverProxy solver) throws Exception {
 			if (iFirstInfo==null)
-				iFirstInfo = iFirst.getDetails(session,false);
+				iFirstInfo = iFirst.getDetails(context, solver, false);
 			if (iSecondInfo==null)
-				iSecondInfo = iSecond.getDetails(session,false);
+				iSecondInfo = iSecond.getDetails(context, solver, false);
 		}
 		public boolean hasInfo() {
 			return (iFirstInfo!=null && iSecondInfo!=null);
 		}
 		public int getPreference() { return iPref; }
 		public String getInstructor() { return iInsturctor; }
-		public String toHtml(HttpSession session, boolean link) {
+		public String toHtml(SessionContext context, SolverProxy solver, boolean link) {
 			try {
-				createInfo(session);
+				createInfo(context, solver);
 		        StringBuffer sb = new StringBuffer("<table border='0'>");
 		        sb.append("<tr><td nowrap align='center'>");
 		        sb.append("<font color='"+PreferenceLevel.int2color(getPreference())+"'>");
@@ -504,9 +492,10 @@ public class Suggestion implements Serializable, Comparable {
     }
     
 	public class BtbInstructorInfoComparator implements Comparator {
-		HttpSession iSession = null;
-		public BtbInstructorInfoComparator(HttpSession session) {
-			iSession = session;
+		SessionContext iContext;
+		SolverProxy iSolver;
+		public BtbInstructorInfoComparator(SessionContext context, SolverProxy solver) {
+			iContext = context; iSolver = solver;
 		}
 		public int compare(Object o1, Object o2) {
 			try {
@@ -514,8 +503,8 @@ public class Suggestion implements Serializable, Comparable {
 				BtbInstructorInfo i2 = (BtbInstructorInfo)o2;
 				int cmp = i1.getInstructor().compareTo(i2.getInstructor());
 				if (cmp!=0) return cmp;
-				if (!i1.hasInfo()) i1.createInfo(iSession);
-				if (!i2.hasInfo()) i2.createInfo(iSession);
+				if (!i1.hasInfo()) i1.createInfo(iContext, iSolver);
+				if (!i2.hasInfo()) i2.createInfo(iContext, iSolver);
 				cmp = i1.iFirstInfo.compareTo(i2.iFirstInfo);
 				if (cmp!=0) return cmp;
 				return i1.iSecondInfo.compareTo(i2.iSecondInfo);
@@ -535,19 +524,19 @@ public class Suggestion implements Serializable, Comparable {
 			iInfo = info; iFirst = first; iSecond = second;
 		}
 		public JenrlInfo getInfo() { return iInfo; }
-		public void createInfo(HttpSession session) throws Exception {
+		public void createInfo(SessionContext context, SolverProxy solver) throws Exception {
 			if (iFirstInfo==null)
-				iFirstInfo = iFirst.getDetails(session,false);
+				iFirstInfo = iFirst.getDetails(context, solver, false);
 			if (iSecondInfo==null && iSecond!=null)
-				iSecondInfo = iSecond.getDetails(session,false);
+				iSecondInfo = iSecond.getDetails(context, solver, false);
 		}
 		public boolean hasInfo() {
 			return (iFirstInfo!=null);
 		}
 		
-		public String toHtml(HttpSession session, boolean link) {
+		public String toHtml(SessionContext context, SolverProxy solver, boolean link) {
 			try {
-				createInfo(session);
+				createInfo(context, solver);
 				Vector props = new Vector();
 				if (iInfo.isCommited()) props.add("committed");
 		        if (iInfo.isFixed()) props.add("fixed");
@@ -626,9 +615,10 @@ public class Suggestion implements Serializable, Comparable {
 	}
     
 	public class StudentConflictInfoComparator implements Comparator {
-		HttpSession iSession = null;
-		public StudentConflictInfoComparator(HttpSession session) {
-			iSession = session;
+		SessionContext iContext;
+		SolverProxy iSolver;
+		public StudentConflictInfoComparator(SessionContext context, SolverProxy solver) {
+			iContext = context; iSolver = solver;
 		}
 		public int compare(Object o1, Object o2) {
 			try {
@@ -636,8 +626,8 @@ public class Suggestion implements Serializable, Comparable {
 				StudentConflictInfo i2 = (StudentConflictInfo)o2;
 				int cmp = Double.compare(i1.getInfo().getJenrl(),i2.getInfo().getJenrl());
 				if (cmp!=0) return -cmp;
-				if (!i1.hasInfo()) i1.createInfo(iSession);
-				if (!i2.hasInfo()) i2.createInfo(iSession);
+				if (!i1.hasInfo()) i1.createInfo(iContext, iSolver);
+				if (!i2.hasInfo()) i2.createInfo(iContext, iSolver);
 				cmp = i1.iFirstInfo.getClassName().compareTo(i2.iFirstInfo.getClassName());
 				if (cmp!=0 || i1.iSecondInfo==null) return cmp;
 				return i1.iSecondInfo.getClassName().compareTo(i2.iSecondInfo.getClassName());
@@ -661,7 +651,7 @@ public class Suggestion implements Serializable, Comparable {
 		}
 		public Vector getClassIds() { return iClassIds; }
 		public GroupConstraintInfo getInfo() { return iInfo; }
-		public String toHtml(HttpSession session, boolean link) {
+		public String toHtml(SessionContext context, SolverProxy solver, boolean link) {
 	        StringBuffer sb = new StringBuffer("<table border='0'>");
 	        sb.append("<tr><td nowrap align='center'>");
 	        sb.append("<font color='"+PreferenceLevel.prolog2color(iInfo.getPreference())+"'>");
@@ -673,7 +663,7 @@ public class Suggestion implements Serializable, Comparable {
 			try {
 				for (Enumeration e=iClassIds.elements();e.hasMoreElements();) {
 					Hint hint = (Hint)e.nextElement();
-					ClassAssignmentDetails other = hint.getDetails(session,false);
+					ClassAssignmentDetails other = hint.getDetails(context, solver, false);
 					if (other==null) continue;
 					sb.append(other.getClazz().toHtml(link)+" ");
 					if (other.getTime()!=null)

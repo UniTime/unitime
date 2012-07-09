@@ -854,4 +854,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	public String getQualifierLabel() {
 		return getLabel();
 	}
+	
+	@Override
+	public Department getDepartment() { return null; }
 }
