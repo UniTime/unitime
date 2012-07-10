@@ -27,13 +27,15 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
 
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmNumClasses(numClasses) {
 			/*integer maxNumClasses = 0;
@@ -89,10 +91,10 @@
 <% 
 	String crsNbr = "";
 	String subjArea = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
-	if (session.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME)!=null )
-		subjArea = session.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME).toString();
+	if (sessionContext.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
+		crsNbr = sessionContext.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	if (sessionContext.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME)!=null )
+		subjArea = sessionContext.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME).toString();
 %>
 
 <html:form action="/instructionalOfferingConfigEdit">
@@ -142,15 +144,15 @@
 								<loc:message name="actionUpdateConfiguration" />
 							</html:submit>						
 						</logic:equal>
-						<logic:greaterThan name="instructionalOfferingConfigEditForm" property="configCount" value="1">
+						<sec:authorize access="hasPermission(#instructionalOfferingConfigEditForm.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
 							<html:submit property="op" 
 								styleClass="btn" 
 								accesskey="<%=MSG.accessDeleteConfiguration() %>" 
 								title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
 								onclick="return (confirmDelete2());" >			
 								<loc:message name="actionDeleteConfiguration" />
-							</html:submit>						
-						</logic:greaterThan>
+							</html:submit>
+						</sec:authorize>						
 					</logic:notEqual>
 	
 					<bean:define id="instrOfferingId">
@@ -275,15 +277,15 @@
 								onclick="return (confirmDelete1());" >			
 								<loc:message name="actionUpdateConfiguration" />						</html:submit>						
 					</logic:equal>
-					<logic:greaterThan name="instructionalOfferingConfigEditForm" property="configCount" value="1">
+					<sec:authorize access="hasPermission(#instructionalOfferingConfigEditForm.configId, 'InstrOfferingConfig', 'InstrOfferingConfigDelete')">
 						<html:submit property="op" 
 							styleClass="btn" 
 							accesskey="<%=MSG.accessDeleteConfiguration() %>" 
 							title="<%=MSG.titleDeleteConfiguration(MSG.accessDeleteConfiguration()) %>" 
 							onclick="return (confirmDelete2());" >			
 							<loc:message name="actionDeleteConfiguration" />
-						</html:submit>						
-					</logic:greaterThan>
+						</html:submit>
+					</sec:authorize>						
 				</logic:notEqual>
 
 				<bean:define id="instrOfferingId">

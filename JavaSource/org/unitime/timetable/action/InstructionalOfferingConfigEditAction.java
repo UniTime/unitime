@@ -31,7 +31,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -41,10 +40,9 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -68,11 +66,9 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SicComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -80,7 +76,8 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
@@ -97,6 +94,8 @@ import org.unitime.timetable.webutil.SchedulingSubpartTableBuilder;
 public class InstructionalOfferingConfigEditAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -116,14 +115,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-
-        HttpSession httpSession = request.getSession();
-        MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());
+    	MessageResources rsc = getResources(request);
         InstructionalOfferingConfigEditForm frm = (InstructionalOfferingConfigEditForm) form;
+        
+        if ((frm.getConfigId() == null || frm.getConfigId() == 0) && !sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
+        	throw new Exception(MSG.errorAccessDenied());
+        
+        if (frm.getConfigId() != null && frm.getConfigId() != 0 && !sessionContext.hasPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigEdit))
+        	throw new Exception(MSG.errorAccessDenied());
 
         String html = "";
         String op = (request.getParameter("op")==null)
@@ -143,27 +142,18 @@ public class InstructionalOfferingConfigEditAction extends Action {
         // Set up itypes and subparts
         frm.setOp(op);
         LookupTables.setupItypes(request,true);
-        LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-        TimetableManager tm = TimetableManager.getManager(user);
-		if (!user.isAdmin()) {
-			TreeSet ts = new TreeSet();
-			for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
-				Department d = (Department) it.next();
-				if (tm.isExternalManager()) {
-					if (tm.getDepartments().contains(d))
-						ts.add(d);
-				} else {
-					if (d.effectiveStatusType().canOwnerEdit() || tm.getDepartments().contains(d)) {
-						ts.add(d);
-					}
-				}
-			}
-			request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME), ts);
+        LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		TreeSet ts = new TreeSet();
+		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
+			Department d = (Department) it.next();
+			if (sessionContext.hasPermission(d, Right.InstrOfferingConfigEditDepartment))
+				ts.add(d);
 		}
+		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME), ts);
         request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 
         // Clear previous error markers
-        search(httpSession, "-1111", new Vector(), true);
+        search("-1111", new Vector(), true);
 
         // First access to screen
         if(op.equalsIgnoreCase(rsc.getMessage("op.edit"))
@@ -177,21 +167,24 @@ public class InstructionalOfferingConfigEditAction extends Action {
             catch (Exception e) {
                 throw new Exception (MSG.errorConfigIDNotValid() + request.getParameter("configId"));
             }
+            
+            if (!sessionContext.hasPermission(configId, "InstrOfferingConfig", Right.InstrOfferingConfigEdit))
+            	throw new Exception(MSG.errorAccessDenied());
 
             loadDetailFromConfig(frm, configId, false);
 
             // load existing config from database
-            Vector sp = loadOriginalConfig(user, frm.getConfigId(), frm);
+            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
             boolean createAsNew = false;
 //            if(op.equalsIgnoreCase(rsc.getMessage("button.duplicateConfig")))
 //                createAsNew = true;
 
             if(sp!=null && sp.size()>0) {
-	            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+	            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
 	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             } else {
-	            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
             }
 
@@ -214,9 +207,12 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 			if(courseOfferingId==null || courseOfferingId.trim().length()==0)
 			    throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
+			
+            if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
+            	throw new Exception(MSG.errorAccessDenied());
 
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, false);
-            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
 		}
@@ -233,21 +229,24 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
 	        if(courseOfferingId==null || courseOfferingId.trim().length()==0)
 	            throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
+	        
+            if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
+            	throw new Exception(MSG.errorAccessDenied());
 
             // Get first available config
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, true);
-            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, "");
 
             // load existing config from database
             if (frm.getConfigId()!=null && frm.getConfigId().intValue()>0) {
-	            Vector sp = loadOriginalConfig(user, frm.getConfigId(), frm);
+	            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
 	            if(sp!=null && sp.size()>0) {
-		            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
 		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue());
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 	            } else {
-		            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
+	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
 	            }
             }
@@ -264,7 +263,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 return mapping.findForward("displayForm");
             }
 
-            addInstructionalType(httpSession, frm);
+            addInstructionalType(frm);
             frm.setItype(Constants.BLANK_OPTION_VALUE);
 
             html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
@@ -286,7 +285,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             frm.setLimit(limit);
 
-            processShiftOrDelete(httpSession, request.getParameter("id"), op);
+            processShiftOrDelete(request.getParameter("id"), op);
 
             html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
@@ -339,6 +338,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Delete configuration
 		if(op.equals(MSG.actionDeleteConfiguration())) {
+			
+            if (!sessionContext.hasPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigDelete))
+            	throw new Exception(MSG.errorAccessDenied());
+			
             deleteConfig(request, frm);
 
             // Redirect to instr offering detail on success
@@ -459,7 +462,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @param frm Form
      */
     private Vector loadOriginalConfig(
-            User user,
             Long configId,
             InstructionalOfferingConfigEditForm frm)
     	throws Exception {
@@ -467,7 +469,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         InstrOfferingConfigDAO cfgDao = new InstrOfferingConfigDAO();
         InstrOfferingConfig config = cfgDao.get(configId);
         frm.setLimit(config.getLimit().intValue());
-        Vector sp = config.toSimpleItypeConfig(user);
+        Vector sp = toSimpleItypeConfig(config);
 
         if(sp!=null && sp.size()>0)
             Collections.sort(sp, new SicComparator());
@@ -483,7 +485,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @throws Exception
      */
     private void addInstructionalType(
-            HttpSession httpSession,
             InstructionalOfferingConfigEditForm frm) throws Exception {
 
         // Create object
@@ -493,7 +494,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             throw new Exception ("Instructional Type not found");
 
         // Retrieve object containing user defined config from session
-        Vector sp = (Vector) httpSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
         if(sp==null)
             sp = new Vector();
 
@@ -507,7 +508,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         //Collections.sort(sp, new SicComparator());
 
         // Store back in session
-        httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+        sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
     }
 
     /**
@@ -518,11 +519,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @throws Exception
      */
     private void processShiftOrDelete(
-            HttpSession httpSession,
             String id, String op) throws Exception {
 
         // Read user defined config
-        Vector sp = (Vector) httpSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -530,7 +530,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // Locate config element
         Vector indx = new Vector();
-        SimpleItypeConfig result = search(httpSession, id, indx, false);
+        SimpleItypeConfig result = search(id, indx, false);
         if(result==null)
             throw new Exception ("Could not retrieve config element: " + id);
 
@@ -694,7 +694,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             }
         }
 
-        httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+        sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
     }
 
 
@@ -705,11 +705,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
      * @param indx Stores the row number of the config element that has the match
      * @return null if not found, SimpleItypeConfig object if found
      */
-    private SimpleItypeConfig search(
-            HttpSession httpSession, String id, Vector indx, boolean clearErrorFlags) {
+    private SimpleItypeConfig search(String id, Vector indx, boolean clearErrorFlags) {
 
         // Read user defined config
-        Vector sp = (Vector) httpSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
         // No subparts
         if(sp==null || sp.size()==0)
@@ -733,7 +732,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         }
 
         if (clearErrorFlags)
-            httpSession.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
+            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
 
         return result;
     }
@@ -800,7 +799,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             ChangeLog.addChange(
                     hibSession,
-                    request,
+                    sessionContext,
                     io,
                     io.getCourseName()+" ["+ioc.getName()+"]",
                     ChangeLog.Source.INSTR_CFG_EDIT,
@@ -850,23 +849,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
             HttpServletRequest request,
             InstructionalOfferingConfigEditForm frm) throws Exception {
 
-        HttpSession httpSession = request.getSession();
-
         // Read user defined config
-        Vector sp = (Vector) httpSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) sessionContext.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
 
         // No subparts
         if(sp==null || sp.size()==0)
             return;
 
-        // Get Manager
-        User user = Web.getUser(httpSession);
-        String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-        TimetableManager mgr = mgrDao.get(new Long(mgrId));
-        Debug.debug("Loaded manager: " + mgrId);
-
-		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(Session.getCurrentAcadSession(user));
+		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(sessionContext.getUser().getCurrentAcademicSessionId());
 		if (rg!=null)
 		    Debug.debug("Loaded default global room group: " + rg.getName());
 		else
@@ -914,7 +904,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             // Update subparts in the modified config
             for(int i=0; i<sp.size(); i++) {
                 SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
-                createOrUpdateSubpart(request, hibSession, sic, ioc, null, mgr, rg, notDeletedSubparts);
+                createOrUpdateSubpart(request, hibSession, sic, ioc, null, rg, notDeletedSubparts);
                 createOrUpdateClasses(request, hibSession, sic, ioc, null);
             }
 
@@ -938,7 +928,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             ChangeLog.addChange(
                     hibSession,
-                    request,
+                    sessionContext,
                     ioc,
                     ChangeLog.Source.INSTR_CFG_EDIT,
                     (configId==null || configId.intValue()==0?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE),
@@ -1186,7 +1176,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
             SimpleItypeConfig sic,
             InstrOfferingConfig ioc,
             SchedulingSubpart parent,
-            TimetableManager mgr,
             RoomGroup rg,
             HashMap notDeletedSubparts ) throws Exception {
 
@@ -1556,7 +1545,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         Vector v = sic.getSubparts();
         for(int i=0; i<v.size(); i++) {
             SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
-            createOrUpdateSubpart(request, hibSession, sic1, ioc, subpart, mgr, rg, notDeletedSubparts);
+            createOrUpdateSubpart(request, hibSession, sic1, ioc, subpart, rg, notDeletedSubparts);
         }
 
         hibSession.saveOrUpdate(ioc);
@@ -1939,5 +1928,108 @@ public class InstructionalOfferingConfigEditAction extends Action {
             hibSession.saveOrUpdate(parent);
         }
 
+    }
+    
+	public Vector toSimpleItypeConfig(InstrOfferingConfig config) throws Exception{
+	    
+	    Vector sp = new Vector();
+        Set subparts = config.getSchedulingSubparts();
+        Iterator iterSp = subparts.iterator();
+        
+        // Loop through subparts
+        while (iterSp.hasNext()) {
+            SchedulingSubpart subpart = (SchedulingSubpart) iterSp.next();
+            
+            // Select top most subparts only
+            if(subpart.getParentSubpart()!=null) continue;
+            
+            // Process each subpart
+            SimpleItypeConfig sic = toSimpleItypeConfig(config, subpart);
+            sp.addElement(sic);
+        }
+	    
+        return sp;
+	}
+
+    /**
+     * Read persistent class InstrOfferingConfig and convert it to a 
+     * representation that can be displayed
+     * @param config InstrOfferingConfig object
+     * @param subpart Scheduling subpart
+     * @return SimpleItypeConfig object representing the subpart
+     * @throws Exception
+     */
+    private SimpleItypeConfig toSimpleItypeConfig (
+            InstrOfferingConfig config, 
+            SchedulingSubpart subpart) throws Exception {
+        
+        ItypeDesc itype = subpart.getItype();
+        SimpleItypeConfig sic = new SimpleItypeConfig(itype);
+        
+        boolean isDisabled = setSicProps(config, subpart, sic);
+
+        Set s = subpart.getChildSubparts();
+        Iterator iter = s.iterator();
+        while(iter.hasNext()) {
+            SchedulingSubpart child = (SchedulingSubpart) iter.next();
+            SimpleItypeConfig childSic = toSimpleItypeConfig(config, child);
+            boolean isDisabledChild = setSicProps(config, child, childSic);
+            sic.addSubpart(childSic);            
+            if(isDisabledChild)
+                isDisabled = true;
+        }
+        
+        if (isDisabled)
+            sic.setDisabled(true);
+        
+        return sic;        	
+    }   
+
+    /**
+     * Sets the class limit, min per wk and num classes properties 
+     * @param config InstrOfferingConfig object
+     * @param subpart Scheduling subpart
+     * @return SimpleItypeConfig object representing the subpart
+     */
+    private boolean setSicProps(
+            InstrOfferingConfig config,
+            SchedulingSubpart subpart,
+            SimpleItypeConfig sic ) {
+        
+        int mnlpc = subpart.getMinClassLimit();
+        int mxlpc = subpart.getMaxClassLimit();
+        int mpw = subpart.getMinutesPerWk().intValue();
+        int numClasses = subpart.getNumClasses();
+        int numRooms = subpart.getMaxRooms();
+        float rc = subpart.getMaxRoomRatio();
+        long md = subpart.getManagingDept().getUniqueId().longValue(); 
+        boolean mixedManaged = subpart.hasMixedManagedClasses();
+        
+        if(mnlpc<0) 
+            mnlpc = config.getLimit().intValue();
+        if(mxlpc<0) 
+            mxlpc = mnlpc;
+        if(numClasses<0)
+            numClasses = 0;
+        if (mixedManaged) 
+            md = Constants.MANAGED_BY_MULTIPLE_DEPTS;
+        
+        sic.setMinLimitPerClass(mnlpc);
+        sic.setMaxLimitPerClass(mxlpc);
+        sic.setMinPerWeek(mpw);
+        sic.setNumClasses(numClasses);
+        sic.setNumRooms(numRooms);
+        sic.setRoomRatio(rc);
+        sic.setSubpartId(subpart.getUniqueId().longValue());
+        sic.setManagingDeptId(md);
+        
+        // Check Permissions on subpart
+        if (!sessionContext.hasPermission(subpart, Right.InstrOfferingConfigEditSubpart) || mixedManaged) {
+                sic.setDisabled(true);
+                sic.setNotOwned(true);
+                return true;
+        }
+        
+        return false;
     }
 }

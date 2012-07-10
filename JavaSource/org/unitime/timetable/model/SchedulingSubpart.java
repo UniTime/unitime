@@ -611,14 +611,10 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
      * @return
      */
     public boolean hasMixedManagedClasses() {
-        HashMap map = new HashMap();
-    	for (Iterator i=getClasses().iterator();i.hasNext();) {
-    		Class_ c = (Class_)i.next();
-    		map.put(c.getManagingDept().getUniqueId(), "");
-    		if (map.size()>1) {
-    		    map = null;
-    		    return true;
-    		}
+    	Department d = null;
+    	for (Class_ c: getClasses()) {
+    		if (d == null) d = c.getManagingDept();
+    		else if (!d.equals(c.getManagingDept())) return true;
     	}
     	return false;
     }
