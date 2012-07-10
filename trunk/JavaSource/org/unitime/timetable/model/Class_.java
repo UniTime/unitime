@@ -1605,7 +1605,7 @@ public class Class_ extends BaseClass_ {
 	    return(sb.toString());
 	}
 
-	public String buildInstructorHtml(User user){
+	public String buildInstructorHtml(String nameFormat){
 		StringBuffer sb = new StringBuffer();
 		if (getClassInstructors() != null && !getClassInstructors().isEmpty()){
 			boolean first = true;
@@ -1615,7 +1615,7 @@ public class Class_ extends BaseClass_ {
 				} else {
 					sb.append("<br>");
 				}
-				sb.append(ci.getInstructor().getName(user));
+				sb.append(ci.getInstructor().getName(nameFormat));
 			}
 		} else {
 			sb.append(" ");
