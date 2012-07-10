@@ -27,7 +27,6 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,12 +35,13 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.impl.SessionImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.CourseOfferingEditForm;
 import org.unitime.timetable.interfaces.ExternalCourseOfferingEditAction;
 import org.unitime.timetable.interfaces.ExternalLinkLookup;
@@ -59,6 +59,8 @@ import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.util.LookupTables;
@@ -75,6 +77,8 @@ import org.unitime.timetable.util.LookupTables;
 public class CourseOfferingEditAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -94,11 +98,6 @@ public class CourseOfferingEditAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-
-        HttpSession httpSession = request.getSession();
         ActionMessages errors = new ActionMessages();
         CourseOfferingEditForm frm = (CourseOfferingEditForm) form;
 
@@ -146,9 +145,9 @@ public class CourseOfferingEditAction extends Action {
 			if (errors.size() == 0) {
 			    doUpdate(request, frm);
 
-			    String cn = (String) httpSession.getAttribute(Constants.CRS_NBR_ATTR_NAME);
+			    String cn = (String) sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 				if (cn!=null)
-					httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, frm.getCourseNbr());
+					sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, frm.getCourseNbr());
 
 			    // Redirect to instr offering detail on success
 	            request.setAttribute("io", frm.getInstrOfferingId());
@@ -184,6 +183,9 @@ public class CourseOfferingEditAction extends Action {
      * @param frm
      */
     private void doUpdate(HttpServletRequest request, CourseOfferingEditForm frm) throws Exception {
+
+    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering))
+    		throw new Exception(MSG.errorAccessDenied());
 
         String title = frm.getTitle();
         String note = frm.getScheduleBookNote();
@@ -343,7 +345,7 @@ public class CourseOfferingEditAction extends Action {
 
             ChangeLog.addChange(
                     hibSession,
-                    request,
+                    sessionContext,
                     co,
                     ChangeLog.Source.COURSE_OFFERING_EDIT,
                     ChangeLog.Operation.UPDATE,
@@ -390,6 +392,9 @@ public class CourseOfferingEditAction extends Action {
             HttpServletRequest request,
             CourseOfferingEditForm frm,
             String crsOfferingId) throws Exception {
+    	
+    	if (!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering))
+    		throw new Exception(MSG.errorAccessDenied());
 
         // Load Course Offering
         Long courseOfferingId = new Long(crsOfferingId);
@@ -492,7 +497,12 @@ public class CourseOfferingEditAction extends Action {
         } else
             frm.setConsent(null);
 
-        LookupTables.setupCourseOfferingDemands(request, co.getDemandOffering());
+        LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+			@Override
+			public boolean accept(CourseOffering course) {
+				return course.getInstructionalOffering().isNotOffered(); 
+			}
+		});
     }
 
     /**
@@ -503,6 +513,9 @@ public class CourseOfferingEditAction extends Action {
     private void doReload(
             HttpServletRequest request,
             CourseOfferingEditForm frm) throws Exception {
+
+    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering))
+    		throw new Exception(MSG.errorAccessDenied());
 
     	frm.setAllowDemandCourseOfferings(true);
 
@@ -523,8 +536,13 @@ public class CourseOfferingEditAction extends Action {
             frm.setConsent(null);
 
         CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
-        LookupTables.setupCourseOfferingDemands(request, co.getDemandOffering());
-
+        LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+			@Override
+			public boolean accept(CourseOffering course) {
+				return course.getInstructionalOffering().isNotOffered();
+			}
+		});
+        
         if (co.isIsControl()) {
             // Setup instructors
             Set<Long> deptIds = new HashSet<Long>();

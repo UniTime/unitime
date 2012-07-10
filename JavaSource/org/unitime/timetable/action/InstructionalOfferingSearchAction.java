@@ -490,9 +490,13 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 
 	    // No Errors - create Course Offering	    
 	    CourseOffering newCourseOffering = CourseOffering.addNew(subjAreaId, courseNbr);
-
+	    	    	
 	    // Offering exists - redirect to offering detail
 	    if(newCourseOffering != null) {
+	    	// Lock the offering, if needed
+		    if (sessionContext.hasPermission(newCourseOffering.getInstructionalOffering(), Right.OfferingCanLock))
+		    	newCourseOffering.getInstructionalOffering().getSession().lockOffering(newCourseOffering.getInstructionalOffering().getUniqueId());
+	    	
 	        request.setAttribute("op", MSG.actionEditCourseOffering());
 	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
 	        return mapping.findForward("showCourseOfferingEdit");
