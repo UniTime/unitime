@@ -34,7 +34,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -923,7 +922,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 	}
 	    
-	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, User user){
+	public void addToClasses(Class_ cls, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy, String nameFormat){
 		this.classLabels.add(cls.htmlLabel());
 		this.classLabelIndents.add(indent);
 		this.classIds.add(cls.getUniqueId().toString());
@@ -977,7 +976,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		}
 		this.times.add(cls.buildAssignedTimeHtml(proxy));
 		this.rooms.add(cls.buildAssignedRoomHtml(proxy));
-		this.instructors.add(cls.buildInstructorHtml(user));
+		this.instructors.add(cls.buildInstructorHtml(nameFormat));
 		this.externalIds.add(cls.getClassSuffix() == null?"":cls.getClassSuffix());
 	}
 	

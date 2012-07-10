@@ -24,20 +24,19 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SimpleItypeConfig;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -60,24 +59,22 @@ public class SchedulingSubpartTableBuilder {
      * @return Html code for displaying user defined config
      */
     public static String buildSubpartsTable(
-            HttpServletRequest request, int limit, String uid, boolean createAsNew, boolean unlimitedEnroll) throws Exception {
+            HttpServletRequest request, SessionContext context, int limit, String uid, boolean createAsNew, boolean unlimitedEnroll) throws Exception {
         
-        HttpSession webSession = request.getSession();
-        User user = Web.getUser(webSession);
-
         // Check if variable limits is selected 
 		boolean varLimits = false;
 		if (request.getParameter("varLimits")!=null)
 		    varLimits = true;
 		
+		if (CommonValues.Yes.eq(UserProperty.VariableClassLimits.get(context.getUser())))
+			varLimits = true;
+		
         // Read user defined config
-        Vector sp = (Vector) webSession.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
+        Vector sp = (Vector) context.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
         
         // Read setting for auto calculation 
-        String autoCalcStr = Settings.getSettingValue(user, Constants.SETTINGS_AUTOCALC);
-        Debug.debug("User auto calc setting: " + autoCalcStr);
         boolean autoCalc = true;
-        if (autoCalcStr!=null && !autoCalcStr.equals("yes"))
+        if (!CommonValues.No.eq(UserProperty.ConfigAutoCalc.get(context.getUser())))
             autoCalc = false;
         
         // Get external depts
@@ -123,7 +120,7 @@ public class SchedulingSubpartTableBuilder {
 	        for(int i=0; i<sp.size(); i++) {
 	            SimpleItypeConfig sic = (SimpleItypeConfig) sp.elementAt(i);
 	            // Recursively process each itype config
-	            setupSubpart(request, sic, 1, tbl, i, sp.size(), 
+	            setupSubpart(request, context, sic, 1, tbl, i, sp.size(), 
 	                    -1, -1, limit, null, autoCalc, createAsNew, extDeptsOption, unlimitedEnroll, varLimits);
 	        }
 	        request.setAttribute("subpartsExist", "true");
@@ -137,8 +134,7 @@ public class SchedulingSubpartTableBuilder {
 	            tblStr = tblStr.replaceAll("<<11>>", MSG.columnSubpartMaxLimitPerClass());
 	        }
 	        else {
-	            String showVarLimits = Settings.getSettingValue(user, Constants.SETTINGS_SHOW_VAR_LIMITS);
-	            if (showVarLimits!=null && !showVarLimits.equalsIgnoreCase("no")) {
+	            if (CommonValues.Yes.eq(UserProperty.VariableClassLimits.get(context.getUser()))) {
 		            tblStr = tblStr.replaceAll("<<00>>", varLimitsCheckBox);
 	                tblStr = tblStr.replaceAll("<<0>>", " ");
 	            }
@@ -206,7 +202,7 @@ public class SchedulingSubpartTableBuilder {
      * @param autoCalc 
      */
     private static void setupSubpart(
-            HttpServletRequest request, SimpleItypeConfig sic, 
+            HttpServletRequest request, SessionContext context, SimpleItypeConfig sic, 
             int level, WebTable tbl, int rowNum, int maxRows, 
             int spRowNum, int maxSp, int limit, 
             SimpleItypeConfig parentSic, boolean autoCalc, 
@@ -252,8 +248,7 @@ public class SchedulingSubpartTableBuilder {
         
         // If status is not LLR Edit then do not show option to change to external manager
         boolean mgrDisabled = false;
-        User user = Web.getUser(request.getSession());
-		if (!user.isAdmin() && !Session.getCurrentAcadSession(user).getStatusType().canOwnerEdit()) { 
+		if (subpartId >= 0 && !context.hasPermission(subpartId, "SchedulingSubpart", Right.InstrOfferingConfigEditSubpart)) {
 		    mgrDisabled = true;
 		    if (createAsNew) {
 		        md = -1;
@@ -416,7 +411,7 @@ public class SchedulingSubpartTableBuilder {
         // Loop through children sub-parts
         for(int i=0; i<v.size(); i++) {
             SimpleItypeConfig sic1 = (SimpleItypeConfig) v.elementAt(i);
-            setupSubpart(request, sic1, level+1, tbl, rowNum, maxRows, 
+            setupSubpart(request, context, sic1, level+1, tbl, rowNum, maxRows, 
                     i, v.size(), limit, sic, autoCalc, createAsNew, extDepts, unlimitedEnroll, varLimits);
         }
     }

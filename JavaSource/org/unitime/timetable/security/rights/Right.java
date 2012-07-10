@@ -79,6 +79,9 @@ public enum Right {
 	
 	InstructionalOfferingDetail(InstructionalOffering.class),
 	MultipleClassSetup(InstrOfferingConfig.class),
+	MultipleClassSetupDepartment(Department.class),
+	MultipleClassSetupClass(Class_.class),
+	
 	AssignInstructors(InstrOfferingConfig.class),
 	
 	CourseTimetabling(Department.class),
