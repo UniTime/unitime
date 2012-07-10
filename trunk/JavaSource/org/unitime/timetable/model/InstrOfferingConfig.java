@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.Vector;
 
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseInstrOfferingConfig;
@@ -32,7 +31,6 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.Constants;
 
 
 
@@ -66,111 +64,6 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		return (this.getInstructionalOffering().getSessionId());
 	}
 	
-	public Vector toSimpleItypeConfig(User user) throws Exception{
-	    
-	    Vector sp = new Vector();
-        Set subparts = getSchedulingSubparts();
-        Iterator iterSp = subparts.iterator();
-        
-        // Loop through subparts
-        while (iterSp.hasNext()) {
-            SchedulingSubpart subpart = (SchedulingSubpart) iterSp.next();
-            
-            // Select top most subparts only
-            if(subpart.getParentSubpart()!=null) continue;
-            
-            // Process each subpart
-            SimpleItypeConfig sic = toSimpleItypeConfig(user, this, subpart);
-            sp.addElement(sic);
-        }
-	    
-        return sp;
-	}
-
-    /**
-     * Read persistent class InstrOfferingConfig and convert it to a 
-     * representation that can be displayed
-     * @param config InstrOfferingConfig object
-     * @param subpart Scheduling subpart
-     * @return SimpleItypeConfig object representing the subpart
-     * @throws Exception
-     */
-    private SimpleItypeConfig toSimpleItypeConfig (
-            User user,
-            InstrOfferingConfig config, 
-            SchedulingSubpart subpart) throws Exception {
-        
-        ItypeDesc itype = subpart.getItype();
-        SimpleItypeConfig sic = new SimpleItypeConfig(itype);
-        
-        boolean isDisabled = setSicProps(user, config, subpart, sic);
-
-        Set s = subpart.getChildSubparts();
-        Iterator iter = s.iterator();
-        while(iter.hasNext()) {
-            SchedulingSubpart child = (SchedulingSubpart) iter.next();
-            SimpleItypeConfig childSic = toSimpleItypeConfig(user, config, child);
-            boolean isDisabledChild = setSicProps(user, config, child, childSic);
-            sic.addSubpart(childSic);            
-            if(isDisabledChild)
-                isDisabled = true;
-        }
-        
-        if (isDisabled)
-            sic.setDisabled(true);
-        
-        return sic;        	
-    }   
-
-    /**
-     * Sets the class limit, min per wk and num classes properties 
-     * @param config InstrOfferingConfig object
-     * @param subpart Scheduling subpart
-     * @return SimpleItypeConfig object representing the subpart
-     */
-    private boolean setSicProps(
-            User user,
-            InstrOfferingConfig config,
-            SchedulingSubpart subpart,
-            SimpleItypeConfig sic ) {
-        
-        int mnlpc = subpart.getMinClassLimit();
-        int mxlpc = subpart.getMaxClassLimit();
-        int mpw = subpart.getMinutesPerWk().intValue();
-        int numClasses = subpart.getNumClasses();
-        int numRooms = subpart.getMaxRooms();
-        float rc = subpart.getMaxRoomRatio();
-        long md = subpart.getManagingDept().getUniqueId().longValue(); 
-        boolean mixedManaged = subpart.hasMixedManagedClasses();
-        
-        if(mnlpc<0) 
-            mnlpc = config.getLimit().intValue();
-        if(mxlpc<0) 
-            mxlpc = mnlpc;
-        if(numClasses<0)
-            numClasses = 0;
-        if (mixedManaged) 
-            md = Constants.MANAGED_BY_MULTIPLE_DEPTS;
-        
-        sic.setMinLimitPerClass(mnlpc);
-        sic.setMaxLimitPerClass(mxlpc);
-        sic.setMinPerWeek(mpw);
-        sic.setNumClasses(numClasses);
-        sic.setNumRooms(numRooms);
-        sic.setRoomRatio(rc);
-        sic.setSubpartId(subpart.getUniqueId().longValue());
-        sic.setManagingDeptId(md);
-        
-        // Check Permissions on subpart
-        if (!subpart.isEditableBy(user) || mixedManaged) {
-                sic.setDisabled(true);
-                sic.setNotOwned(true);
-                return true;
-        }
-        
-        return false;
-    }
-    
 	public String getCourseName(){
 		return(this.getControllingCourseOffering().getCourseName());
 	}
@@ -179,6 +72,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		return(this.getControllingCourseOffering().getCourseNameWithTitle());
 	}
 
+	@Deprecated
 	public boolean isEditableBy(User user){
     	if (user == null){
     		return(false);
@@ -208,6 +102,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		}
 		return(false);
      }
+	@Deprecated
     public boolean isViewableBy(User user){
     	if (user == null){
     		return(false);
@@ -227,6 +122,7 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
      * @param checkClasses checks classes as well for externally managed flags
      * @return
      */
+	@Deprecated
     public boolean hasExternallyManagedSubparts(User user, boolean checkClasses) {
     	if (getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
     		return false;

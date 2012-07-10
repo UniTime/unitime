@@ -85,7 +85,7 @@ public class WebInstrOfferingConfigTableBuilder extends
 		if (!notOffered) {
 	        btnTable.append("<table border='0' align='right' cellspacing='1' cellpadding='0'>");
 	        
-	        if (context.hasPermission(ioc, Right.EditInstructionalOfferingConfig)) {
+	        if (context.hasPermission(ioc, Right.InstrOfferingConfigEdit)) {
 		        btnTable.append("<td>");
 		        btnTable.append("	<form method='post' action='instructionalOfferingConfigEdit.do' class='FormWithNoPadding'>");
 		        btnTable.append("		<input type='hidden' name='configId' value='" + ioc.getUniqueId().toString() + "'>");

@@ -58,7 +58,11 @@ public enum Right {
 	OfferingMakeNotOffered(InstructionalOffering.class),
 	OfferingMakeOffered(InstructionalOffering.class),
 	OfferingDelete(InstructionalOffering.class),
-	AddInstructionalOfferingConfig(InstructionalOffering.class),
+	InstrOfferingConfigAdd(InstructionalOffering.class),
+	InstrOfferingConfigEdit(InstrOfferingConfig.class),
+	InstrOfferingConfigEditDepartment(Department.class),
+	InstrOfferingConfigEditSubpart(SchedulingSubpart.class),
+	InstrOfferingConfigDelete(InstrOfferingConfig.class),
 	InstructionalOfferingCrossLists(InstructionalOffering.class),
 	AddReservation(InstructionalOffering.class),
 	
@@ -74,7 +78,6 @@ public enum Right {
 	ClassesExportPDF(Department.class),
 	
 	InstructionalOfferingDetail(InstructionalOffering.class),
-	EditInstructionalOfferingConfig(InstrOfferingConfig.class),
 	MultipleClassSetup(InstrOfferingConfig.class),
 	AssignInstructors(InstrOfferingConfig.class),
 	

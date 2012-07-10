@@ -166,7 +166,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		// Add Configuration
 		if(op.equals(MSG.actionAddConfiguration())) {
 			
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.AddInstructionalOfferingConfig))
+	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
 	    		throw new Exception(MSG.errorAccessDenied());
 
 		    // Redirect to config edit
