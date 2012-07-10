@@ -116,7 +116,7 @@
 						<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />				
 					</bean:define>
 				 
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddInstructionalOfferingConfig')">
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 							<html:submit property="op" 
 									styleClass="btn" 
 									accesskey="<%=MSG.accessAddConfiguration() %>" 
@@ -528,7 +528,7 @@
 					<html:hidden property="nextId"/>
 					<html:hidden property="previousId"/>
 					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddInstructionalOfferingConfig')">
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 							<html:submit property="op" 
 									styleClass="btn" 
 									accesskey="<%=MSG.accessAddConfiguration() %>" 

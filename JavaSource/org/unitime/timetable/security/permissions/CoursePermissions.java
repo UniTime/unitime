@@ -256,6 +256,8 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, InstrOfferingConfig source) {
+			if (source.getInstructionalOffering().isNotOffered()) return false;
+			
 			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
 			
 			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit))
@@ -280,12 +282,12 @@ public class CoursePermissions {
 		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
 	}
 	
-	@PermissionForRight(Right.EditInstructionalOfferingConfig)
-	public static class EditInstructionalOfferingConfig extends MultipleClassSetup {
+	@PermissionForRight(Right.InstrOfferingConfigEdit)
+	public static class InstrOfferingConfigEdit extends MultipleClassSetup {
 	}
 	
-	@PermissionForRight(Right.AddInstructionalOfferingConfig)
-	public static class AddInstructionalOfferingConfig implements Permission<InstructionalOffering> {
+	@PermissionForRight(Right.InstrOfferingConfigAdd)
+	public static class InstrOfferingConfigAdd implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
 		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
@@ -304,6 +306,68 @@ public class CoursePermissions {
 		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
 		
 	}
+	
+	@PermissionForRight(Right.InstrOfferingConfigDelete)
+	public static class InstrOfferingConfigDelete implements Permission<InstrOfferingConfig> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstrOfferingConfig source) {
+			if (source.getInstructionalOffering().isNotOffered()) return false;
+			
+			if (source.getInstructionalOffering().getInstrOfferingConfigs().size() <= 1) return false;
+
+			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
+			
+			if (source.getInstructionalOffering().isNotOffered()) return false;
+			
+			// Manager can edit external department
+			Set<Department> externals = new HashSet<Department>();
+			for (SchedulingSubpart subpart: source.getSchedulingSubparts()) {
+				for (Class_ clazz: subpart.getClasses()) {
+					if (clazz.getManagingDept() != null && clazz.getManagingDept().isExternalManager()) {
+						if (externals.add(clazz.getManagingDept()) &&
+							!permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.ManagerEdit) &&
+							!clazz.getManagingDept().effectiveStatusType().can(DepartmentStatusType.Status.OwnerEdit))
+							return false;
+					}
+				}
+			}
+			
+			return permissionDepartment.check(user, source.getInstructionalOffering().getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+		}
+
+		@Override
+		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
+		
+	}
+
+	@PermissionForRight(Right.InstrOfferingConfigEditDepartment)
+	public static class InstrOfferingConfigEditDepartment implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			if (source.isExternalManager() && permissionDepartment.check(user, source, DepartmentStatusType.Status.ManagerEdit))
+				return true;
+			
+			if (!source.isExternalManager() && permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit))
+				return true;
+			
+			if (source.isExternalManager() && source.effectiveStatusType().can(DepartmentStatusType.Status.OwnerEdit))
+				return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.InstrOfferingConfigEditSubpart)
+	public static class InstrOfferingConfigEditSubpart extends SchedulingSubpartEdit {}
 	
 	@PermissionForRight(Right.InstructionalOfferingCrossLists)
 	public static class InstructionalOfferingCrossLists implements Permission<InstructionalOffering> {

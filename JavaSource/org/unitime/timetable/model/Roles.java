@@ -185,8 +185,11 @@ public class Roles extends BaseRoles implements HasRights {
 		case OfferingCanUnlock:
 		case AssignInstructors:
 		case MultipleClassSetup:
-		case EditInstructionalOfferingConfig:
-		case AddInstructionalOfferingConfig:
+		case InstrOfferingConfigAdd:
+		case InstrOfferingConfigDelete:
+		case InstrOfferingConfigEdit:
+		case InstrOfferingConfigEditDepartment:
+		case InstrOfferingConfigEditSubpart:
 		case AddReservation:
 		case EditCourseOffering:
 		case InstructionalOfferingCrossLists:
