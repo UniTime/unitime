@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -32,7 +31,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Query;
-import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -64,9 +62,9 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
-import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
 
 
 /**
@@ -356,145 +354,30 @@ public class LookupTables {
     }
 
     /**
-     * Gets all controlling course offerings (including not offered) 
-     * @param request
-     * @throws Exception
-     */
-    public static void setupCourseOfferings(HttpServletRequest request) throws Exception {
-        setupCourseOfferings(request, false, true);
-    }
-
-    /**
-     * Gets all course offerings (excluding not offered) 
-     * @param request
-     * @throws Exception
-     */
-    public static void setupAllOfferedCourseOfferings(HttpServletRequest request) throws Exception {
-        setupCourseOfferings(request, true, false);
-    }
-
-    /**
      * Gets course offereings based on parameters
      * @param request
      * @param onlyOffered true indicates only retrieve offered courses 
      * @param onlyControlling true indicates retrieve only controlling courses
      * @throws Exception
      */
-    @Deprecated
-    private static void setupCourseOfferings(
+    public static void setupCourseOfferings(
             HttpServletRequest request, 
-            boolean onlyOffered,
-            boolean onlyControlling ) throws Exception {
-        
-        User user = Web.getUser(request.getSession());
-		String acadSessionId = getAcademicSessionId(request);
-		String mgrId = user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME).toString();
-		StringBuffer query = new StringBuffer();
-
-		if( user.getRole().equals(Roles.ADMIN_ROLE) ){			
-			query.append("select distinct co ");
-		    query.append("  from InstructionalOffering io, CourseOffering co ");
-		    query.append("  where io.session.uniqueId=:acadSessionId ");
-		    
-		    if (onlyControlling)
-		        query.append("  and co.isControl=1 ");
-
-		    if (onlyOffered)
-		        query.append("  and io.notOffered=0 ");
-		    
-		    query.append("  and io.uniqueId=co.instructionalOffering.uniqueId ");
-	        query.append(" order by co.subjectAreaAbbv, co.courseNbr ");
-
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
-			Session hibSession = cdao.getSession();
-			
-			Query q = hibSession.createQuery(query.toString());
-			q.setFetchSize(5000);
-			q.setCacheable(true);
-			
-			q.setInteger("acadSessionId", Integer.parseInt(acadSessionId));
-			
-			request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, q.list());
+            SessionContext context,
+            CourseFilter filter) throws Exception {
+    	
+		List<CourseOffering> list = new ArrayList<CourseOffering>();
+		for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
+			for (CourseOffering co: subject.getCourseOfferings()) {
+				if (filter == null || filter.accept(co))
+					list.add(co);
+			}
 		}
-		else {
-		    Vector coList = new Vector();
-	        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-		    TimetableManager mgr = mgrDao.get(new Long(mgrId));
-		    Set depts = mgr.getDepartments();
-		    for (Iterator di = depts.iterator(); di.hasNext();) {
-		        Department dept = (Department) di.next();
-		        Set subjAreas = dept.getSubjectAreas();
-			    for (Iterator si = subjAreas.iterator(); si.hasNext();) {
-			        SubjectArea sa = (SubjectArea) si.next();
-			        if (!acadSessionId.equals(sa.getSessionId().toString()))
-			                continue;
-			        Set cos = sa.getCourseOfferings();
-				    for (Iterator ci = cos.iterator(); ci.hasNext();) {
-				        CourseOffering co = (CourseOffering) ci.next();
-				        if (!co.isIsControl().booleanValue()) continue;
-				        if (!co.isFullyEditableBy(user)) continue; //i.e., is the user able to make that course not offered?
-				        coList.addElement(co);
-				    }			        
-			    }
-		    }
-		    Collections.sort(coList, new CourseOfferingComparator());
-			request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, coList);
-		    
-		}
+	    Collections.sort(list, new CourseOfferingComparator());
+	    request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, list);
     }
     
-    
-    /**
-     * Gets the controlling course offerings for a user 
-     * @param request
-     * @throws Exception
-     */
-    @Deprecated
-    public static void setupCourseOfferingDemands(HttpServletRequest request, CourseOffering includeCourseOffering) throws Exception {
-        User user = Web.getUser(request.getSession());
-		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
-		String mgrId = user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME).toString();
-		StringBuffer query = new StringBuffer();
-
-		if( user.getRole().equals(Roles.ADMIN_ROLE) ){			
-			query.append("select distinct co ");
-		    query.append("  from InstructionalOffering io, CourseOffering co ");
-		    query.append("  where io.session.uniqueId=:acadSessionId ");
-		    query.append("  and co.demand>0 ");
-		    query.append("  and io.uniqueId=co.instructionalOffering.uniqueId ");
-	        query.append(" order by co.subjectAreaAbbv, co.courseNbr ");
-
-	        CourseOfferingDAO cdao = new CourseOfferingDAO();
-			Session hibSession = cdao.getSession();
-			
-			Query q = hibSession.createQuery(query.toString());
-			q.setFetchSize(5000);
-			q.setCacheable(false);
-			
-			q.setLong("acadSessionId", acadSessionId.longValue());
-			
-			request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, q.list());
-		} else {
-		    TreeSet coList = new TreeSet(new CourseOfferingComparator());
-	        TimetableManagerDAO mgrDao = new TimetableManagerDAO();
-		    TimetableManager mgr = mgrDao.get(new Long(mgrId));
-		    Set depts = mgr.departmentsForSession(acadSessionId);
-		    for (Iterator di = depts.iterator(); di.hasNext();) {
-		        Department dept = (Department) di.next();
-		        Set subjAreas = dept.getSubjectAreas();
-			    for (Iterator si = subjAreas.iterator(); si.hasNext();) {
-			        SubjectArea sa = (SubjectArea) si.next();
-				    for (Iterator ci = sa.getCourseOfferings().iterator(); ci.hasNext();) {
-				        CourseOffering co = (CourseOffering) ci.next();
-				        if (co.getDemand().intValue()>0)
-				            coList.add(co);
-				    }			        
-			    }
-		    }
-		    if (includeCourseOffering!=null) 
-		    	coList.add(includeCourseOffering);
-			request.setAttribute(CourseOffering.CRS_OFFERING_LIST_ATTR_NAME, coList);
-		}
+    public static interface CourseFilter {
+    	public boolean accept(CourseOffering course);
     }
 
     public static void setupCourseCreditFormats(HttpServletRequest request) throws Exception {

@@ -487,6 +487,10 @@ public class InstructionalOfferingDetailAction extends Action {
                     io.getControllingCourseOffering().getSubjectArea(),
                     null);
 
+            // Unlock the offering, if needed
+            if (sessionContext.hasPermission(io, Right.OfferingCanUnlock))
+            	io.getSession().unlockOffering(io, sessionContext.getUser());
+
             hibSession.flush();
             hibSession.clear();
             
@@ -499,6 +503,7 @@ public class InstructionalOfferingDetailAction extends Action {
             
             // Update Form 
             frm.setNotOffered(io.isNotOffered());
+
         }
         catch (Exception e) {
 			Debug.error(e);
@@ -539,6 +544,10 @@ public class InstructionalOfferingDetailAction extends Action {
                     io.getControllingCourseOffering().getSubjectArea(),
                     null);
             
+            // Lock the offering, if needed
+            if (sessionContext.hasPermission(io, Right.OfferingCanLock))
+            	io.getSession().lockOffering(io.getUniqueId());
+
             hibSession.flush();
             hibSession.clear();
 
@@ -549,7 +558,7 @@ public class InstructionalOfferingDetailAction extends Action {
         	}
 
             // Update Form 
-            frm.setNotOffered(io.isNotOffered());
+            frm.setNotOffered(io.isNotOffered());            
         }
         catch (Exception e) {
 			Debug.error(e);

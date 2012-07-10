@@ -41,10 +41,9 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -66,6 +65,8 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -81,6 +82,8 @@ import org.unitime.timetable.util.LookupTables;
 public class CrossListsModifyAction extends Action {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -100,12 +103,7 @@ public class CrossListsModifyAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-        
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());        
         CrossListsModifyForm frm = (CrossListsModifyForm) form;
         
         // Get operation
@@ -128,7 +126,12 @@ public class CrossListsModifyAction extends Action {
 
         // Set up Lists
         frm.setOp(op);
-        LookupTables.setupCourseOfferings(request);
+        LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
+			@Override
+			public boolean accept(CourseOffering course) {
+				return course.getDemand() != null && course.getDemand() > 0;
+			}
+		});
         
         // First access to screen
         if(op.equalsIgnoreCase(MSG.actionCrossLists())) {
@@ -139,7 +142,7 @@ public class CrossListsModifyAction extends Action {
 								        : request.getAttribute("uid").toString()
 								: request.getParameter("uid");
 
-            doLoad(frm, courseOfferingId, user);
+            doLoad(frm, courseOfferingId);
         }
         
         // Add a course offering
@@ -153,7 +156,7 @@ public class CrossListsModifyAction extends Action {
                 CourseOffering co = cdao.get(addedOffering);
                 
                 // Check reservations limit
-                frm.addToCourseOfferings(co, co.isEditableBy(user));
+                frm.addToCourseOfferings(co, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co.getDepartment()));
                 frm.setAddCourseOfferingId(null);
             }
             else {
@@ -506,7 +509,7 @@ public class CrossListsModifyAction extends Action {
 	        
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     io, 
                     ChangeLog.Source.CROSS_LIST, 
                     ChangeLog.Operation.UPDATE, 
@@ -561,17 +564,19 @@ public class CrossListsModifyAction extends Action {
      */
     private void doLoad(
             CrossListsModifyForm frm, 
-            String courseOfferingId,
-            User user ) throws Exception {
+            String courseOfferingId) throws Exception {
         
         // Check uniqueid
         if(courseOfferingId==null || courseOfferingId.trim().length()==0)
             throw new Exception (MSG.errorUniqueIdNeeded());
-
+        
         // Load details
         CourseOfferingDAO coDao = new CourseOfferingDAO();
         CourseOffering co = coDao.get(Long.valueOf(courseOfferingId));
         InstructionalOffering io = co.getInstructionalOffering();
+        
+        if (!sessionContext.hasPermission(io, Right.InstructionalOfferingCrossLists))
+        	throw new Exception (MSG.errorAccessDenied());
 
         // Sort Offerings
         ArrayList offerings = new ArrayList(io.getCourseOfferings());
@@ -585,14 +590,14 @@ public class CrossListsModifyAction extends Action {
         frm.setReadOnlyCrsOfferingId(null);
         frm.setSubjectAreaId(co.getSubjectArea().getUniqueId());
         frm.setInstrOfferingName(io.getCourseNameWithTitle());
-        frm.setOwnedInstrOffr(new Boolean(io.isEditableBy(user)));
+        frm.setOwnedInstrOffr(true); //?? new Boolean(io.isEditableBy(user)));
         frm.setIoLimit(io.getLimit());
         frm.setUnlimited(io.hasUnlimitedEnrollment());
 
         for(Iterator i = offerings.iterator(); i.hasNext(); ) {
             CourseOffering co1 = ((CourseOffering) i.next());
-            frm.addToCourseOfferings(co1, co1.isEditableBy(user));
+            frm.addToCourseOfferings(co1, sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent) || sessionContext.getUser().getCurrentAuthority().hasQualifier(co1.getDepartment()));
             frm.addToOriginalCourseOfferings(co1);
-        }        
+        }
     }
 }

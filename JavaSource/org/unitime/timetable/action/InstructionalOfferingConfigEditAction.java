@@ -230,9 +230,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	        if(courseOfferingId==null || courseOfferingId.trim().length()==0)
 	            throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 	        
-            if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
-            	throw new Exception(MSG.errorAccessDenied());
-
             // Get first available config
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, true);
             sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
