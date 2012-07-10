@@ -38,13 +38,14 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingModifyForm;
 import org.unitime.timetable.interfaces.ExternalInstrOffrConfigChangeAction;
 import org.unitime.timetable.model.BuildingPref;
@@ -60,11 +61,9 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -73,15 +72,20 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.util.LookupTables;
 
 @Service("/instructionalOfferingModify")
 public class InstructionalOfferingModifyAction extends Action {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
 	
 	/**
      * Method execute
@@ -97,32 +101,18 @@ public class InstructionalOfferingModifyAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.errorAccessDenied());
-        }
-
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());
-        TimetableManager tm = TimetableManager.getManager(user);
         InstructionalOfferingModifyForm frm = (InstructionalOfferingModifyForm) form;
-		LookupTables.setupExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-		if (user.isAdmin()) {
-			request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME));
-		} else {
-			TreeSet ts = new TreeSet();
-			for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
-				Department d = (Department) it.next();
-				if (tm.isExternalManager()) {
-					if (tm.getDepartments().contains(d))
-						ts.add(d);
-				} else {
-					if (d.effectiveStatusType().canOwnerEdit() || tm.getDepartments().contains(d)) {
-						ts.add(d);
-					}
-				}
-			}
-			request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
+        
+		LookupTables.setupExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		TreeSet ts = new TreeSet();
+		for (Iterator it = ((TreeSet) request.getAttribute(Department.EXTERNAL_DEPT_ATTR_NAME)).iterator(); it.hasNext();){
+			Department d = (Department) it.next();
+			if (sessionContext.hasPermission(d, Right.MultipleClassSetupDepartment))
+				ts.add(d);
 		}
+		request.setAttribute((Department.EXTERNAL_DEPT_ATTR_NAME + "list"), ts);
+
         // Get operation
         String op = (request.getParameter("op")==null)
 						? (frm.getOp()==null || frm.getOp().length()==0)
@@ -152,8 +142,8 @@ public class InstructionalOfferingModifyAction extends Action {
 								        ? null
 								        : request.getAttribute("uid").toString()
 								: request.getParameter("uid");
-
-            doLoad(request, frm, instrOffrConfigId, user);
+								        
+            doLoad(request, frm, instrOffrConfigId);
         }
 
         // Add a class
@@ -220,7 +210,7 @@ public class InstructionalOfferingModifyAction extends Action {
             ActionMessages errors = frm.validate(mapping, request);
 
             if(errors.size()==0) {
-                doUpdate(request, frm, user);
+                doUpdate(request, frm);
                 request.setAttribute("io", frm.getInstrOfferingId());
                 request.setAttribute("op", "view");
                 return mapping.findForward("instructionalOfferingDetail");
@@ -253,20 +243,21 @@ public class InstructionalOfferingModifyAction extends Action {
     private void doLoad(
     		HttpServletRequest request,
             InstructionalOfferingModifyForm frm,
-            String instrOffrConfigId,
-            User user ) throws Exception {
+            String instrOffrConfigId) throws Exception {
 
         // Check uniqueid
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
             throw new Exception (MSG.errorMissingIOConfig());
+        
+		if (!sessionContext.hasPermission(instrOffrConfigId, "InstrOfferingConfig", Right.MultipleClassSetup))
+			throw new Exception(MSG.errorAccessDenied());
 
         // Load details
         InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
         InstrOfferingConfig ioc = iocDao.get(Long.valueOf(instrOffrConfigId));
         InstructionalOffering io = ioc.getInstructionalOffering();
 
-        String showVarLimits = Settings.getSettingValue(user, Constants.SETTINGS_SHOW_VAR_LIMITS);
-        frm.setDisplayOptionForMaxLimit(new Boolean(showVarLimits!=null && !showVarLimits.equalsIgnoreCase("no")));
+        frm.setDisplayOptionForMaxLimit(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.VariableClassLimits)));
         // Load form properties
         frm.setInstrOffrConfigId(ioc.getUniqueId());
         frm.setInstrOffrConfigLimit(ioc.getLimit());
@@ -290,13 +281,13 @@ public class InstructionalOfferingModifyAction extends Action {
 
         ArrayList subpartList = new ArrayList(ioc.getSchedulingSubparts());
         Collections.sort(subpartList, new SchedulingSubpartComparator());
-        ClassAssignmentProxy proxy = WebSolver.getClassAssignmentProxy(request.getSession());
+        ClassAssignmentProxy proxy = classAssignmentService.getAssignment();
         for(Iterator it = subpartList.iterator(); it.hasNext();){
         	SchedulingSubpart ss = (SchedulingSubpart) it.next();
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception(MSG.errorInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String(), proxy);
+        		loadClasses(frm, ss.getClasses(), new Boolean(true), new String(), proxy);
         	}
         }
         frm.initializeOrigSubparts();
@@ -306,7 +297,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.initializeDisplayAllClassInstructors();
     }
 
-    private void loadClasses(InstructionalOfferingModifyForm frm, User user, Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
+    private void loadClasses(InstructionalOfferingModifyForm frm, Set classes, Boolean isReadOnly, String indent, ClassAssignmentProxy proxy){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
             Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
@@ -316,16 +307,16 @@ public class InstructionalOfferingModifyAction extends Action {
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
 	    		if (first){
-	    			frm.setDisplayEnrollment(new Boolean(org.unitime.timetable.model.Session.getCurrentAcadSession(user)==null?false:StudentClassEnrollment.sessionHasEnrollments(org.unitime.timetable.model.Session.getCurrentAcadSession(user).getUniqueId())));
+	    			frm.setDisplayEnrollment(new Boolean(StudentClassEnrollment.sessionHasEnrollments(sessionContext.getUser().getCurrentAcademicSessionId())));
 	    			first = false;
 	    		}
 	    		if (!isReadOnly.booleanValue()){
 	    			readOnlyClass = new Boolean(isReadOnly.booleanValue());
 	    		} else {
-	    			readOnlyClass = new Boolean(!cls.isEditableBy(user));
+	    			readOnlyClass = new Boolean(!sessionContext.hasPermission(cls, Right.MultipleClassSetupClass));
 	    		}
-				frm.addToClasses(cls, readOnlyClass, indent, proxy, user);
-	    		loadClasses(frm, user, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
+				frm.addToClasses(cls, readOnlyClass, indent, proxy, UserProperty.NameFormat.get(sessionContext.getUser()));
+	    		loadClasses(frm, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;", proxy);
 	    	}
     	}
     }
@@ -335,7 +326,7 @@ public class InstructionalOfferingModifyAction extends Action {
      * @param request
      * @param frm
      */
-    private void doUpdate(HttpServletRequest request, InstructionalOfferingModifyForm frm, User user)
+    private void doUpdate(HttpServletRequest request, InstructionalOfferingModifyForm frm)
     	throws Exception {
 
         // Get Instructional Offering Config
@@ -344,6 +335,9 @@ public class InstructionalOfferingModifyAction extends Action {
         Session hibSession = iocdao.getSession();
     	// Get default room group
 		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(ioc.getSession());
+
+		if (!sessionContext.hasPermission(ioc, Right.MultipleClassSetup))
+			throw new Exception(MSG.errorAccessDenied());
 
 		Transaction tx = null;
 
@@ -367,7 +361,7 @@ public class InstructionalOfferingModifyAction extends Action {
 	        }
 
 	        // For all added classes, create the classes and save them, get back a map of the temp ids to the new classes
-	        HashMap tmpClassIdsToClasses = addClasses(frm, ioc, hibSession, user);
+	        HashMap tmpClassIdsToClasses = addClasses(frm, ioc, hibSession);
 
 	        // For all changed classes, update them
 	        modifyClasses(frm, ioc, hibSession, rg, tmpClassIdsToClasses);
@@ -382,7 +376,7 @@ public class InstructionalOfferingModifyAction extends Action {
 
             ChangeLog.addChange(
                     hibSession,
-                    request,
+                    sessionContext,
                     ioc,
                     ChangeLog.Source.CLASS_SETUP,
                     ChangeLog.Operation.UPDATE,
@@ -618,7 +612,7 @@ public class InstructionalOfferingModifyAction extends Action {
     	}
      }
 
-    private HashMap addClasses(InstructionalOfferingModifyForm frm, InstrOfferingConfig ioc, Session hibSession, User user){
+    private HashMap addClasses(InstructionalOfferingModifyForm frm, InstrOfferingConfig ioc, Session hibSession){
     	HashMap tmpClsToRealClass = new HashMap();
 		SchedulingSubpartDAO ssdao = new SchedulingSubpartDAO();
 		SchedulingSubpart ss = null;

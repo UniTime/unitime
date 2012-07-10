@@ -388,6 +388,12 @@ public class CoursePermissions {
 		
 	}
 	
+	@PermissionForRight(Right.MultipleClassSetupDepartment)
+	public static class MultipleClassSetupDepartment extends InstrOfferingConfigEditDepartment {}
+	
+	@PermissionForRight(Right.MultipleClassSetupClass)
+	public static class MultipleClassSetupClassEdit extends ClassEdit {}
+
 	@PermissionForRight(Right.OfferingMakeOffered)
 	public static class OfferingMakeOffered implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;

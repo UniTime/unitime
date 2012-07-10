@@ -181,7 +181,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             if(sp!=null && sp.size()>0) {
 	            sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue());
+	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), configId.toString(), createAsNew, frm.getUnlimited().booleanValue());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             } else {
             	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -243,7 +243,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            Vector sp = loadOriginalConfig(frm.getConfigId(), frm);
 	            if(sp!=null && sp.size()>0) {
 	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, sp);
-		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue());
+		            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), courseOfferingId, false, frm.getUnlimited().booleanValue());
 		            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 	            } else {
 	            	sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -257,7 +257,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             ActionMessages errors = frm.validate(mapping, request);
             if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 saveErrors(request, errors);
                 return mapping.findForward("displayForm");
@@ -266,7 +266,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             addInstructionalType(frm);
             frm.setItype(Constants.BLANK_OPTION_VALUE);
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
@@ -287,14 +287,14 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
             processShiftOrDelete(request.getParameter("id"), op);
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
         // Multiple Limits
         if (op.equalsIgnoreCase("multipleLimits")) {
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
         }
 
@@ -302,10 +302,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
         if(op.equals(MSG.actionSaveConfiguration())
                 || op.equals(MSG.actionUpdateConfiguration()) ) {
 
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             ActionMessages errors = frm.validate(mapping, request);
             if(!errors.isEmpty()) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 saveErrors(request, errors);
                 return mapping.findForward("displayForm");
@@ -314,7 +314,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
             try {
                 updateConfig(request, frm);
 
-	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+	            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 
 	            // Redirect to instr offering detail on success
@@ -323,7 +323,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            return mapping.findForward("instructionalOfferingDetail");
             }
             catch (Exception e) {
-                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+                html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
                 request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
                 errors.add(
                         "subparts",
@@ -353,7 +353,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 
         // User clicks Unlimited Enrollment
 		if(op.equalsIgnoreCase("unlimitedEnrollment")) {
-            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
+            html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
             request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
             return mapping.findForward("displayForm");
 		}

@@ -37,6 +37,8 @@ public enum UserProperty {
 	DisplayLastChanges("dispLastChanges", CommonValues.Yes, "Display last changes"),
 	
 	DispInstructorPrefs("InstructorDetail.distPref", CommonValues.Yes, "Display instructor preferences"),
+	VariableClassLimits("showVarLimits", CommonValues.No, "Show the option to set variable class limits"),
+	ConfigAutoCalc("cfgAutoCalc", CommonValues.Yes, "Automatically calculate number of classes and room size when editing configuration"),
 	
 	;
 
