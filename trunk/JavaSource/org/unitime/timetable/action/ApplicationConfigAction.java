@@ -212,7 +212,7 @@ public class ApplicationConfigAction extends Action {
      * @throws Exception
      */
     private void getApplicationConfigList(HttpServletRequest request) throws Exception {
-        WebTable.setOrder(request.getSession(),"applicationConfig.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"applicationConfig.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
 
 		// Create web table instance 
@@ -259,7 +259,7 @@ public class ApplicationConfigAction extends Action {
 	    finally {
 	    }
 
-	    request.setAttribute(ApplicationConfig.APP_CFG_ATTR_NAME, webTable.printTable(WebTable.getOrder(request.getSession(),"applicationConfig.ord")));
+	    request.setAttribute(ApplicationConfig.APP_CFG_ATTR_NAME, webTable.printTable(WebTable.getOrder(sessionContext,"applicationConfig.ord")));
     }
     
 }

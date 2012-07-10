@@ -86,19 +86,19 @@ public class AssignedExamsAction extends Action {
                 assignedExams = Exam.findAssignedExams(session.getUniqueId(),myForm.getSubjectArea(),myForm.getExamType());
         }
         
-        WebTable.setOrder(request.getSession(),"assignedExams.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext, "assignedExams.ord",request.getParameter("ord"),1);
         
         WebTable table = getTable(true, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
             PdfWebTable pdfTable = getTable(false, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("assigned", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"assignedExams.ord"));
+            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext, "assignedExams.ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"assignedExams.ord")), 10, assignedExams.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext, "assignedExams.ord")), 10, assignedExams.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));

@@ -39,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.AssignedClassesForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Solution;
@@ -96,14 +97,14 @@ public class AssignedClassesAction extends Action {
         
         if ("Apply".equals(op) || "Export PDF".equals(op)) {
         	if (myForm.getSubjectArea() == null)
-        		request.getSession().removeAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	else if (myForm.getSubjectArea() < 0)
-        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, Constants.ALL_OPTION_VALUE);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, Constants.ALL_OPTION_VALUE);
         	else
-        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, myForm.getSubjectArea().toString());
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, myForm.getSubjectArea().toString());
         } else {
         	try {
-        		Object sa = request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		Object sa = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         		if (Constants.ALL_OPTION_VALUE.equals(sa))
         			myForm.setSubjectArea(-1l);
         		else if (sa != null)
@@ -271,7 +272,7 @@ public class AssignedClassesAction extends Action {
             	             });
         	}
         	File file = ApplicationProperties.getTempFile("assigned", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(request.getSession(),"assignedClasses.ord"));
+        	webTable.exportPdf(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
         	return file;
         } catch (Exception e) {
         	Debug.error(e);
@@ -281,7 +282,7 @@ public class AssignedClassesAction extends Action {
 
     public String getAssignmentTable(boolean simple, HttpServletRequest request, String name, Vector assignedClasses) {
     	if (assignedClasses==null || assignedClasses.isEmpty()) return null;
-		WebTable.setOrder(request.getSession(),"assignedClasses.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"assignedClasses.ord",request.getParameter("ord"),1);
         WebTable webTable =
         	(simple?
        			new WebTable( 6,
@@ -381,7 +382,7 @@ public class AssignedClassesAction extends Action {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
         }
-        return webTable.printTable(WebTable.getOrder(request.getSession(),"assignedClasses.ord"));
+        return webTable.printTable(WebTable.getOrder(sessionContext,"assignedClasses.ord"));
     }	
 }
 
