@@ -36,6 +36,7 @@
 		<form-login login-page="/login.jsp" default-target-url="/selectPrimaryRole.do" always-use-default-target="true"/>
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
 		<expression-handler ref="webExpressionHandler"/>
+		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
@@ -47,7 +48,7 @@
 	</beans:bean>
 	
 	<beans:bean id="webExpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler">
-		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluatorNoException"/>
 	</beans:bean>
 	
     <!-- LDAP Authentication -->

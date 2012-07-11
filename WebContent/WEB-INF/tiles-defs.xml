@@ -85,7 +85,8 @@
   	</definition>
 
   	<definition	name="loginRequiredTile" extends="pageLayoutDef">
-		<put name="header" value="/loginRequired.jsp" />
+  		<put name="title" type="string" value="Access Denied"/>
+		<put name="body" value="/loginRequired.jsp" />
 		<put name="checkLogin" value="false" />
 		<put name="checkRole" value="false" />
 		<put name="checkAccessLevel" value="false" />

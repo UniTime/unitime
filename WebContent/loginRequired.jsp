@@ -18,37 +18,25 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
-<HTML>
-<HEAD>
-	<META http-equiv="pragma" content="no-cache">
-	<META http-equiv="cache-control" content="no-cache">
-	<META http-equiv="expires" content="0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta charset="UTF-8"/>
-	<TITLE>Session Expired</TITLE>
-	<LINK rel="stylesheet" type="text/css" href="styles/timetabling.css">
-	<link rel="shortcut icon" href="images/timetabling.ico" />
-</HEAD>
-
-<BODY class="bodyMain">
-
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <DIV align="center" class="H1">
 	<BR> 
 	<IMG src="images/timetabling-nocopy.jpg" alt="Timetabling" title="Timetabling Log In">
 	<BR>
 	<BR>
+	<logic:notEmpty name="message" scope="request">
+		<bean:write name="message" scope="request" filter="false"/>
+		<br><br>
+	</logic:notEmpty>
 	<% if (request.getParameter("message")!=null && !"null".equals(request.getParameter("message"))) { %> 
 		<%=request.getParameter("message")%>
 		<BR>
 		<BR>
 	<% } %>
+	<A class="l7" href="javascript:self.history.back();">BACK</A>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	<A class="l7" href="<%=request.getContextPath()%>/login.do" target="_top">LOG IN</A>
 	<BR><BR>
 </DIV>
 
-	<%@ include file="/initializationError.jspf"%>
-
-
-</BODY>
-</HTML>
+<%@ include file="/initializationError.jspf"%>

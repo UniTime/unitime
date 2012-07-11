@@ -130,8 +130,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        if(subpartId==null || subpartId.trim()=="")
 	            throw new Exception (MSG.errorSubpartInfoNotSupplied());
 	        
-	        if (!sessionContext.hasPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartDetail))
-	        	throw new Exception(MSG.errorAccessDenied());
+	        sessionContext.checkPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartDetail);
 
 	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
@@ -148,8 +147,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 			// Add Distribution Preference - Redirect to dist prefs screen
 		    if(op.equals(MSG.actionAddDistributionPreference())) {
 
-            	if (!sessionContext.hasPermission(ss, Right.DistributionPreferenceSubpart))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(ss, Right.DistributionPreferenceSubpart);
 
             	CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
 		        request.setAttribute("subjectAreaId", cco.getSubjectArea().getUniqueId().toString());
@@ -166,8 +164,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
             if (op.equals(MSG.actionClearClassPreferencesOnSubpart()) && "y".equals(request.getParameter("confirm"))) {
 
-            	if (!sessionContext.hasPermission(ss, Right.SchedulingSubpartDetailClearClassPreferences))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(ss, Right.SchedulingSubpartDetailClearClassPreferences);
 
             	Class_DAO cdao = new Class_DAO();
             	for (Iterator i=ss.getClasses().iterator();i.hasNext();) {

@@ -19,10 +19,18 @@
 */
 package org.unitime.timetable.util;
 
-public class AccessDeniedException extends RuntimeException {
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.SecurityMessages;
+
+public class AccessDeniedException extends org.springframework.security.access.AccessDeniedException {
 	private static final long serialVersionUID = 2565632362237022274L;
+	private static final SecurityMessages MSG = Localization.create(SecurityMessages.class);
 
 	public AccessDeniedException(String message) {
 		super(message);
+	}
+	
+	public AccessDeniedException() {
+		super(MSG.accessDenied());
 	}
 }

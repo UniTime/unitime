@@ -72,8 +72,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 
-    	if (!sessionContext.hasPermission(Right.InstructionalOfferings))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(Right.InstructionalOfferings);
         
         BackTracker.markForBack(request, null, null, false, true); //clear back list
         

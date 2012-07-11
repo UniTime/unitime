@@ -125,20 +125,17 @@ public class ExamDetailAction extends PreferencesAction {
                 return null;
             }
             
-	        if (!sessionContext.hasPermission(examId, "Exam", Right.ExaminationDetail))
-	        	throw new Exception("Access denied.");
+	        sessionContext.checkPermission(examId, "Exam", Right.ExaminationDetail);
 
             //Edit Information - Redirect to info edit screen
             if (op.equals(rsc.getMessage("button.editExam")) && examId!=null && examId.trim()!="") {
-            	if (!sessionContext.hasPermission(exam, Right.ExaminationEdit))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(exam, Right.ExaminationEdit);
             	response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId) );
                 return null;
             }
 
             if (op.equals(rsc.getMessage("button.cloneExam")) && examId!=null && examId.trim()!="") {
-            	if (!sessionContext.hasPermission(exam, Right.ExaminationClone))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(exam, Right.ExaminationClone);
                 response.sendRedirect( response.encodeURL("examEdit.do?examId="+examId+"&clone=true") );
                 return null;
             }
@@ -154,8 +151,7 @@ public class ExamDetailAction extends PreferencesAction {
             }
             
             if (op.equals(rsc.getMessage("button.deleteExam"))) {
-            	if (!sessionContext.hasPermission(exam, Right.ExaminationDelete))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(exam, Right.ExaminationDelete);
                 org.hibernate.Session hibSession = new ExamDAO().getSession();
                 Transaction tx = null;
                 try {
@@ -187,8 +183,7 @@ public class ExamDetailAction extends PreferencesAction {
             
             // Add Distribution Preference - Redirect to dist prefs screen
             if(op.equals(rsc.getMessage("button.addDistPref"))) {
-            	if (!sessionContext.hasPermission(exam, Right.DistributionPreferenceExam))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(exam, Right.DistributionPreferenceExam);
                 request.setAttribute("examId", examId);
                 return mapping.findForward("addDistributionPrefs");
             }

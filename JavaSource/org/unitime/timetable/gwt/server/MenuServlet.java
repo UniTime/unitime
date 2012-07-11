@@ -309,7 +309,7 @@ public class MenuServlet implements MenuService {
 			} else if ("hasPersonalReport".equals(right)) {
 				return userInfo.getUser() != null && PersonalizedExamReportAction.hasPersonalReport(userInfo.getUser().getExternalUserId());
 			} else if ("isChameleon".equals(right)) {
-				return getSessionContext().getAttribute("hdnAdminAlias")!=null && getSessionContext().getAttribute("hdnAdminAlias").toString().equals("1");
+				return getSessionContext().isAuthenticated() && (getSessionContext().hasPermission(Right.Chameleon) || getSessionContext().getUser() instanceof UserContext.Chameleon);
 			} else if ("isSectioningEnabled".equals(right)) {
 				return OnlineSectioningService.isEnabled();
 			} else if ("isStudent".equals(right)) {
@@ -336,7 +336,7 @@ public class MenuServlet implements MenuService {
 				} else if ("canSectionStudents".equals(right)) {
 					return manager.canSectionStudents(session, user);
 				} else if ("canSeeExams".equals(right)) {
-					return manager.canSeeExams(session, user);
+					return sessionContext.hasPermission(Right.Examinations);
 				} else if ("canTimetableExams".equals(right)) {
 					return manager.canTimetableExams(session, user);
 				} else if ("canAudit".equals(right)) {

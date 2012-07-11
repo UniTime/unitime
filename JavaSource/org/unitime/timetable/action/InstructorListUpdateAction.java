@@ -92,8 +92,7 @@ public class InstructorListUpdateAction extends Action {
 		HttpServletResponse response) throws Exception {
 		
 		//Check permissions
-		if (!sessionContext.hasPermission(Right.ManageInstructors))
-			throw new Exception("Access Denied.");
+		sessionContext.checkPermission(Right.ManageInstructors);
 		
 		InstructorListUpdateForm frm = (InstructorListUpdateForm) form;
 		MessageResources rsc = getResources(request);

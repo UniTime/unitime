@@ -164,8 +164,7 @@ public class ClassEditAction extends PreferencesAction {
         if(op==null || op.trim()=="")
             throw new Exception (MSG.errorNullOperationNotSupported());
         
-        if (!sessionContext.hasPermission(classId, "Class_", Right.ClassEdit))
-        	throw new Exception (MSG.errorAccessDenied());
+        sessionContext.checkPermission(classId, "Class_", Right.ClassEdit);
 
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
@@ -198,8 +197,7 @@ public class ClassEditAction extends PreferencesAction {
 
 		// Add Distribution Preference - Redirect to dist prefs screen
 	    if(op.equals(MSG.actionAddDistributionPreference())) {
-        	if (!sessionContext.hasPermission(c, Right.DistributionPreferenceClass))
-        		throw new Exception("Access denied.");
+        	sessionContext.checkPermission(c, Right.DistributionPreferenceClass);
 
 	        SchedulingSubpart ss = c.getSchedulingSubpart();
 	        CourseOffering cco = ss.getInstrOfferingConfig().getControllingCourseOffering();
@@ -222,8 +220,7 @@ public class ClassEditAction extends PreferencesAction {
 
         // Restore all inherited preferences
         if(op.equals(MSG.actionClearClassPreferences())) {
-        	if (!sessionContext.hasPermission(c, Right.ClassEditClearPreferences))
-        		throw new Exception("Access denied.");
+        	sessionContext.checkPermission(c, Right.ClassEditClearPreferences);
 
             Set s = c.getPreferences();
             s.clear();

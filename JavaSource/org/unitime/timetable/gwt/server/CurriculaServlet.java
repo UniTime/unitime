@@ -117,7 +117,7 @@ public class CurriculaServlet implements CurriculaService {
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
@@ -173,7 +173,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public List<CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadClassifications(curriculumIds=" + curriculumIds + ")");
@@ -265,7 +265,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDetail')")
+	@PreAuthorize("checkPermission(#curriculumId, 'Curriculum', 'CurriculumDetail')")
 	public CurriculumInterface loadCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadCurriculum(curriculumId=" + curriculumId + ")");
@@ -439,7 +439,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit') or hasPermission(#curriculum.department.id, 'Department', 'CurriculumAdd')")
+	@PreAuthorize("(#curriculum.id != null and checkPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit')) or checkPermission(#curriculum.department.id, 'Department', 'CurriculumAdd')")
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");
@@ -679,7 +679,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(#curricula, 'Curriculum', 'CurriculumEdit')")
+	@PreAuthorize("checkPermission(#curricula, 'Curriculum', 'CurriculumEdit')")
 	public Boolean saveClassifications(List<CurriculumInterface> curricula) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveClassifications()");
@@ -759,7 +759,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(#curriculumId, 'Curriculum', 'CurriculumDelete')")
+	@PreAuthorize("checkPermission(#curriculumId, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurriculum(Long curriculumId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
@@ -811,7 +811,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumDelete')")
+	@PreAuthorize("checkPermission(#curriculumIds, 'Curriculum', 'CurriculumDelete')")
 	public Boolean deleteCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
@@ -866,7 +866,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
-	@PreAuthorize("hasPermission(#curriculumIds, 'Curriculum', 'CurriculumMerge')")
+	@PreAuthorize("checkPermission(#curriculumIds, 'Curriculum', 'CurriculumMerge')")
 	public Boolean mergeCurricula(Set<Long> curriculumIds) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
@@ -1063,7 +1063,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<AcademicClassificationInterface> loadAcademicClassifications() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicClassifications()");
@@ -1097,7 +1097,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public HashMap<String, CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("computeEnrollmentsAndLastLikes(acadAreaId=" + acadAreaId + ", majors=" + majors + ")");
@@ -1188,7 +1188,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	private TreeSet<CurriculumInterface> loadCurriculaForACourse(org.hibernate.Session hibSession, TreeSet<AcademicClassificationInterface> academicClassifications, TreeSet<AcademicAreaInterface> academicAreas, CourseOffering courseOffering) throws CurriculaException, PageAccessException {
 		TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
 		
@@ -1496,7 +1496,7 @@ public class CurriculaServlet implements CurriculaService {
 		return results;
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurriculaForACourse(String courseName) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("getCurriculaForACourse(courseName='" + courseName + "')");
@@ -1528,7 +1528,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<CurriculumInterface> findCurriculaForAnInstructionalOffering(Long offeringId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurriculaForAnOffering(offeringId='" + offeringId + "')");
@@ -1576,7 +1576,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadAcademicAreas()");
@@ -1610,7 +1610,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<MajorInterface> loadMajors(Long curriculumId, Long academicAreaId) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadMajors(academicAreaId=" + academicAreaId + ")");
@@ -1656,7 +1656,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public TreeSet<DepartmentInterface> loadDepartments() throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("loadDepartments()");
@@ -1706,7 +1706,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public String lastCurriculaFilter() throws CurriculaException, PageAccessException {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
@@ -1726,7 +1726,7 @@ public class CurriculaServlet implements CurriculaService {
 		return filter;
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(String query, Integer limit) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listCourseOfferings(query='" + query + "', limit=" + limit + ")");
@@ -1784,7 +1784,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public String retrieveCourseDetails(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("retrieveCourseDetails(course='" + course + "')");
@@ -1813,7 +1813,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumView')")
 	public Collection<ClassAssignmentInterface.ClassAssignment> listClasses(String course) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("listClasses(course='" + course + "')");
@@ -1917,7 +1917,7 @@ public class CurriculaServlet implements CurriculaService {
 		return ret;
 	}
 	
-	@PreAuthorize("hasRight('CurriculumAdd') and hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumAdd') and checkPermission('CurriculumView')")
 	public Boolean canAddCurriculum() throws CurriculaException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
@@ -1937,7 +1937,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("hasRight('CurriculumAdmin') and hasPermission('CurriculumView')")
+	@PreAuthorize("checkPermission('CurriculumAdmin') and checkPermission('CurriculumView')")
 	public Boolean isAdmin() throws CurriculaException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
