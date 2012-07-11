@@ -132,10 +132,10 @@ public class ExamEditAction extends PreferencesAction {
             
             Exam exam = (examId==null || examId.trim().length()==0 ? null: new ExamDAO().get(Long.valueOf(examId)));
 
-	        if (exam != null && !sessionContext.hasPermission(examId, "Exam", Right.ExaminationEdit))
-	        	throw new Exception("Access denied.");
-	        if (exam == null && !sessionContext.hasPermission(Right.ExaminationAdd))
-	        	throw new Exception("Access denied.");
+	        if (exam != null)
+	        	sessionContext.checkPermission(examId, "Exam", Right.ExaminationEdit);
+	        if (exam == null)
+	        	sessionContext.checkPermission(Right.ExaminationAdd);
 
 	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
@@ -156,8 +156,7 @@ public class ExamEditAction extends PreferencesAction {
             
             // Clear all preferences
             if(exam!=null && op.equals(rsc.getMessage("button.clearExamPrefs"))) { 
-            	if (!sessionContext.hasPermission(exam, Right.ExaminationEditClearPreferences))
-            		throw new Exception("Access denied.");
+            	sessionContext.checkPermission(exam, Right.ExaminationEditClearPreferences);
                 Set s = exam.getPreferences();
                 s.clear();
                 exam.setPreferences(s);            

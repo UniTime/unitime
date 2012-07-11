@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.defaults.SessionAttribute;
@@ -113,17 +114,47 @@ public class HttpSessionContext implements SessionContext {
 	}
 	
 	@Override
+	public void checkPermission(Right right) {
+		unitimePermissionCheck.checkPermission(getUser(), null, null, right);
+	}
+
+	@Override
+	public void checkPermission(Serializable targetId, String targetType, Right right) {
+		unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right);
+	}
+
+	@Override
+	public void checkPermission(Object targetObject, Right right) {
+		unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
+	}
+	
+	@Override
 	public boolean hasPermission(Right right) {
-		return unitimePermissionCheck.checkPermission(getUser(), null, null, right);
+		try {
+			unitimePermissionCheck.checkPermission(getUser(), null, null, right);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
-		return unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right);
+		try {
+			unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean hasPermission(Object targetObject, Right right) {
-		return unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
+		try {
+			unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
 	}
 }

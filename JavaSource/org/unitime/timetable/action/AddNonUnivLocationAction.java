@@ -38,8 +38,6 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.localization.impl.Localization;
-import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -52,7 +50,6 @@ import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
@@ -66,7 +63,6 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  */
 @Service("/addNonUnivLocation")
 public class AddNonUnivLocationAction extends Action {
-	private static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -92,8 +88,7 @@ public class AddNonUnivLocationAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
-		if (!sessionContext.hasPermission(Right.AddNonUnivLocation))
-			throw new AccessDeniedException(MSG.errorAccessDenied());
+		sessionContext.checkPermission(Right.AddNonUnivLocation);
 		
 		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
 		

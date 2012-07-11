@@ -70,8 +70,7 @@ public class SuggestionsAction extends Action {
 		SuggestionsForm myForm = (SuggestionsForm) form;
 		try {
 			
-		if (!sessionContext.hasPermission(Right.Suggestions))
-            throw new Exception (MSG.errorAccessDenied());
+		sessionContext.checkPermission(Right.Suggestions);
         
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {

@@ -29,6 +29,7 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.webutil.BackTracker;
 
 /**
@@ -43,7 +44,7 @@ public class BackAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if(!sessionContext.isAuthenticated() || sessionContext.getUser().getCurrentAuthority() == null)
-        	throw new Exception ("Access Denied.");
+        	throw new AccessDeniedException();
         
         BackTracker.doBack(request, response);
         

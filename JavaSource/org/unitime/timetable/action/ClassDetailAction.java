@@ -137,8 +137,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        if(classId==null || classId.trim().length()==0)
 	            throw new Exception ("Class Info not supplied.");
 
-	        if (!sessionContext.hasPermission(classId, "Class_", Right.ClassDetail))
-	        	throw new Exception (MSG.errorAccessDenied());
+	        sessionContext.checkPermission(classId, "Class_", Right.ClassDetail);
 	        
 	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 

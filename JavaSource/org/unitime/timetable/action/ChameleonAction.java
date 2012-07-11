@@ -38,10 +38,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.form.ChameleonForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.ChameleonUserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -77,16 +77,11 @@ public class ChameleonAction extends Action {
         HttpServletResponse response) throws Exception {
     	
     	UserContext user = sessionContext.getUser();
-    	if (user == null)
-    		throw new Exception ("Access Denied.");
-    	
-    	if (user instanceof UserContext.Chameleon)
+    	if (user != null && user instanceof UserContext.Chameleon)
     		user = ((UserContext.Chameleon)user).getOriginalUserContext();
-    	
-    	if (user.getCurrentAuthority() == null || !Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole()))
-    		throw new Exception ("Access Denied.");
-    	
-    	
+    	else
+    		sessionContext.checkPermission(Right.Chameleon);
+    	    	
         MessageResources rsc = getResources(request);
         
         ChameleonForm frm = (ChameleonForm) form;

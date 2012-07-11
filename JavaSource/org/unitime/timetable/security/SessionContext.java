@@ -47,6 +47,9 @@ public interface SessionContext {
     @Deprecated
     public HttpServletRequest getHttpServletRequest();
     
+    public void checkPermission(Right right);
+    public void checkPermission(Serializable targetId, String targetType, Right right);
+    public void checkPermission(Object targetObject, Right right);
     public boolean hasPermission(Right right);
     public boolean hasPermission(Serializable targetId, String targetType, Right right);
     public boolean hasPermission(Object targetObject, Right right);

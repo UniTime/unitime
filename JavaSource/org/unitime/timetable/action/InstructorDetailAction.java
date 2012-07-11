@@ -113,8 +113,7 @@ public class InstructorDetailAction extends PreferencesAction {
 							                : request.getAttribute("instructorId").toString()
 									: request.getParameter("instructorId");
 							                
-		    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail))
-		    	throw new Exception ("Access denied.");
+		    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail);
 	        
 		    String op = frm.getOp();
 	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
@@ -167,8 +166,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        if(op.equals(rsc.getMessage("button.editInstructorInfo")) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	
-			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit))
-			    	throw new Exception ("Access denied.");
+			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
 
 	        	response.sendRedirect( response.encodeURL("instructorInfoEdit.do?instructorId="+instructorId) );
 	        	return null;
@@ -178,8 +176,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        if(op.equals(rsc.getMessage("button.editInstructorPref")) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	
-			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences))
-			    	throw new Exception ("Access denied.");
+			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
 
 	        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
 	        	return null;
@@ -189,8 +186,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        if(op.equals(rsc.getMessage("button.addDesignator2")) 
 	                && instructorId!=null && instructorId.trim()!="") {
 	        	
-			    if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorAddDesignator))
-			    	throw new Exception ("Access denied.");
+			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorAddDesignator);
 
 	            request.setAttribute("instructorId", instructorId);
 	        	return mapping.findForward("addDesignator");

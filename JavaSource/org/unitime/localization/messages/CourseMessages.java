@@ -1514,9 +1514,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Course Number cannot be matched to regular expression: {0}. Reason: {1}")
 	String errorCourseDoesNotMatchRegEx(String regEx, String reason);
 	
-	@DefaultMessage("Access Denied.")  //better use exceptionAccessDenied
-	String errorAccessDenied();
-
 	@DefaultMessage("ERRORS") //preferable to use this than errors for each page
 	String errors();
 	

@@ -65,8 +65,7 @@ public class SolutionChangesAction extends Action {
 		SolutionChangesForm myForm = (SolutionChangesForm) form;
 
         // Check Access
-		if (!sessionContext.hasPermission(Right.SolutionChanges))
-            throw new Exception ("Access Denied.");
+		sessionContext.checkPermission(Right.SolutionChanges);
         
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {

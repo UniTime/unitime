@@ -70,8 +70,7 @@ public class AssignedClassesAction extends Action {
 		AssignedClassesForm myForm = (AssignedClassesForm) form;
 
         // Check Access
-		if (!sessionContext.hasPermission(null, "Department", Right.AssignedClasses))
-			throw new Exception ("Access Denied.");
+		sessionContext.checkPermission(null, "Department", Right.AssignedClasses);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 

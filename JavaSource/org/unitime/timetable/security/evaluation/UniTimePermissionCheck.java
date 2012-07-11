@@ -28,7 +28,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -41,6 +44,7 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("unitimePermissionCheck")
 public class UniTimePermissionCheck implements PermissionCheck, InitializingBean {
+	protected static SecurityMessages MSG = Localization.create(SecurityMessages.class); 
 	private static Log sLog = LogFactory.getLog(UniTimePermissionCheck.class);
 	
 	@Autowired
@@ -53,22 +57,37 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 	PermissionSession permissionSession;
 	
 	@Override
-    public boolean checkPermission(UserContext user, Serializable targetId, String targetType, Right right) {
-		if (targetType == null && right != null && right.hasType())
+    public void checkPermission(UserContext user, Serializable targetId, String targetType, Right right) throws AccessDeniedException {
+		if (user == null)
+			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
+
+		if (user.getCurrentAuthority() == null)
+			throw new AccessDeniedException(MSG.noAuthority(right == null ? "NULL" : right.toString()));
+		
+		if (right == null)
+			throw new AccessDeniedException(MSG.noRight());
+
+		if (!user.getCurrentAuthority().hasRight(right))
+			throw new AccessDeniedException(MSG.missingRight(right.toString()));
+
+		if (targetType == null && right.hasType())
 			targetType = right.type().getSimpleName();
 		
-		if (targetType == null)
-			return checkPermission(user, null, right);
+		if (targetType == null) return;
 		
-		if (targetId instanceof Collection) {
-			for (Serializable id: (Collection<Serializable>)targetId) {
-				if (!checkPermission(user, id, targetType, right)) return false;
-			}
-			return true;
+		if (targetId != null && targetId instanceof Collection) {
+			for (Serializable id: (Collection<Serializable>) targetId)
+				checkPermission(user, id, targetType, right);
+			return;
+		}
+		
+		if (targetId != null && targetId.getClass().isArray()) {
+			for (Serializable id: (Serializable[])targetId)
+				checkPermission(user, id, targetType, right);
+			return;
 		}
 		
 		try {
-			sLog.info("Checking " + right + " for " + targetType + "@" + targetId);
 			String className = targetType;
 			if (className.indexOf('.') < 0) className = "org.unitime.timetable.model." + className;
 
@@ -79,39 +98,46 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			
 			if (targetId == null && Department.class.getName().equals(className)) {
 				
-				if (user.getCurrentAuthority() == null) {
-					sLog.info("   ... no role");
-					return false;
+				AccessDeniedException firstDenial = null;
+				for (Department d: Department.getUserDepartments(user)) {
+					try {
+						checkPermission(user, d, right);
+						return;
+					} catch (AccessDeniedException e) {
+						if (firstDenial == null) firstDenial = e;
+					}
 				}
 				
-				for (Department d: Department.getUserDepartments(user))
-					if (checkPermission(user, d, right)) return true;
+				if (firstDenial != null) throw firstDenial;
+				throw new AccessDeniedException(MSG.noDepartment(right.toString()));
 				
-				return false;
 			}
 			
 			if (targetId == null && SubjectArea.class.getName().equals(className)) {
 				
-				if (user.getCurrentAuthority() == null) {
-					sLog.info("   ... no role");
-					return false;
+				AccessDeniedException firstDenial = null;
+				for (SubjectArea sa: SubjectArea.getUserSubjectAreas(user)) {
+					try {
+						checkPermission(user, sa, right);
+						return;
+					} catch (AccessDeniedException e) {
+						if (firstDenial == null) firstDenial = e;
+					}
 				}
 				
-				for (SubjectArea sa: SubjectArea.getUserSubjectAreas(user))
-					if (checkPermission(user, sa, right)) return true;
-				
-				return false;
+				if (firstDenial != null) throw firstDenial;
+				throw new AccessDeniedException(MSG.noSubject(right.toString()));
 			}
 			
-			if (targetId == null) {
-				sLog.info("   ... no id");
-				return false;
-			}
+			if (targetId == null)
+				throw new AccessDeniedException(MSG.noDomainObject(right.toString(), targetType));
 			
 			if (targetId instanceof String && Department.class.getName().equals(className)) {
 				Department dept = Department.findByDeptCode((String)targetId, user.getCurrentAcademicSessionId());
-				if (dept != null) 
-					return checkPermission(user, dept, right);
+				if (dept != null) {
+					checkPermission(user, dept, right);
+					return;
+				}
 			}
 			
 			if (targetId instanceof String) {
@@ -129,100 +155,79 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 			}
 			
 			Object domainObject = new _RootDAO().getSession().get(Class.forName(className), targetId);
-			if (domainObject == null) {
-				sLog.info("   ... no match");
-				return false;
-			} else { 
-				return checkPermission(user, domainObject, right);
-			}
+			if (domainObject == null)
+				throw new AccessDeniedException(MSG.domainObjectNotExists(right.toString(), targetType));
+			checkPermission(user, domainObject, right);
+		} catch (AccessDeniedException e) {
+			throw e;
 		} catch (Exception e) {
-			sLog.warn("Failed to evaluate permission " + right + " for " + targetType + "@ "+ targetId + ": " + e.getMessage());
-			return false;
+			throw new AccessDeniedException(MSG.permissionCheckFailedException(right.toString(), targetType, e.getMessage()));
 		}
 	}
     
 	@Override
-    public boolean checkPermission(UserContext user, Object domainObject, Right right) {
+    public void checkPermission(UserContext user, Object domainObject, Right right) throws AccessDeniedException {
+		if (user == null)
+			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
 
-		if (domainObject != null && domainObject instanceof Collection) {
-			for (Object o: (Collection<?>)domainObject) {
-				if (!checkPermission(user, o, right)) return false;
-			}
-			return true;
+		if (user.getCurrentAuthority() == null)
+			throw new AccessDeniedException(MSG.noAuthority(right == null ? "NULL" : right.toString()));
+		
+		if (right == null)
+			throw new AccessDeniedException(MSG.noRight());
+
+		if (!user.getCurrentAuthority().hasRight(right))
+			throw new AccessDeniedException(MSG.missingRight(right.toString()));
+		
+		if (domainObject == null)
+			return;
+
+		if (domainObject instanceof Collection) {
+			for (Object o: (Collection<?>) domainObject)
+				checkPermission(user, o, right);
+			return;
 		}
 		
-		
-		sLog.info("Checking " + right + " for " + domainObject);
-		if (user == null) {
-			sLog.info("   ... not authenticated");
-			return false;
-		}
-		
-		if (user.getCurrentAuthority() == null) {
-			sLog.info("   ... no role");
-			return false;
-		}
-		
-		if (right == null) {
-			sLog.info("   ... no right");
-			return false;
-		}
-		
-		if (!user.getCurrentAuthority().hasRight(right)) {
-			sLog.info("   ... right check failed");
-			return false;
+		if (domainObject.getClass().isArray()) {
+			for (Object o: (Object[]) domainObject)
+				checkPermission(user, o, right);
+			return;
 		}
 
-		if (domainObject == null) {
-			sLog.info("   ... no object");
-			return true;
-		}
-		
-		if (right.hasType() && !right.type().isInstance(domainObject)) {
-			sLog.warn("   ... wrong domain type (" + domainObject.getClass().getSimpleName() + " != " + right.type().getSimpleName() + ")");
-		}
-		
-		sLog.info("   ... user: " + user.getName() + " " + user.getCurrentAuthority());
+		if (right.hasType() && !right.type().isInstance(domainObject))
+			throw new AccessDeniedException(MSG.wrongDomainObject(right.toString(), domainObject.getClass().getSimpleName(), right.type().getSimpleName()));
 		
 		try {
 			Permission<?> perm = (Permission<?>)applicationContext.getBean("permission" + right.name(), Permission.class);
 			if (perm != null && perm.type().isInstance(domainObject)) {
 				if ((Boolean)perm.getClass().getMethod("check", UserContext.class, perm.type()).invoke(perm, user, domainObject)) {
-					return true;
+					return;
 				} else {
-					sLog.info("   ... permission " + right + " check failed");
-					return false;
+					throw new AccessDeniedException(MSG.permissionCheckFailed(right.toString(), domainObject.toString()));
 				}
-			} else if (perm == null) {
-				sLog.info("   ... permission " + right + " not found");
-			} else {
-				sLog.info("   ... permission " + right + " has different type (" + perm.type().getSimpleName() + " != " + domainObject.getClass().getSimpleName() + ")");
 			}
 		} catch (BeansException e) {
+		} catch (AccessDeniedException e) {
+			throw e;
 		} catch (Exception e) {
-			sLog.warn("   ... permission " + right + " check failed: " + e.getMessage(), e);
-			return false;
+			throw new AccessDeniedException(MSG.permissionCheckFailedException(right.toString(), domainObject.toString(), e.getMessage()));
 		}
 		
 		if (domainObject instanceof Session) {
 			if (permissionSession.check(user, (Session)domainObject)) {
-				return true;
+				return;
 			} else {
-				sLog.info("   ... session check failed");
-				return false;
+				throw new AccessDeniedException(MSG.sessionCheckFailed(right.toString(), domainObject.toString()));
 			}
 		}
 		
 		if (domainObject instanceof Department) {
 			if (permissionDepartment.check(user, (Department)domainObject)) {
-				return true;
+				return;
 			} else {
-				sLog.info("   ... session check failed");
-				return false;
+				throw new AccessDeniedException(MSG.departmentCheckFailed(right.toString(), domainObject.toString()));
 			}
 		}
-		
-		return false;
 	}
 
 	@Override

@@ -40,8 +40,6 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.localization.impl.Localization;
-import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.form.SpecialUseRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
@@ -59,7 +57,6 @@ import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
@@ -73,7 +70,6 @@ import org.unitime.timetable.util.LocationPermIdGenerator;
  */
 @Service("/addSpecialUseRoom")
 public class AddSpecialUseRoomAction extends Action {
-	private static final CourseMessages MSG = Localization.create(CourseMessages.class);
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -99,8 +95,7 @@ public class AddSpecialUseRoomAction extends Action {
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
 		
-		if (!sessionContext.hasPermission(Right.AddSpecialUseRoom))
-			throw new AccessDeniedException(MSG.errorAccessDenied());
+		sessionContext.checkPermission(Right.AddSpecialUseRoom);
 		
 		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
 		List<Building> buildings = Building.findAll(sessionContext.getUser().getCurrentAcademicSessionId());

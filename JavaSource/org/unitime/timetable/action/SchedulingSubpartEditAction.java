@@ -147,8 +147,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if(op==null || op.trim()=="")
             throw new Exception (MSG.errorNullOperationNotSupported());
         
-        if (!sessionContext.hasPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartEdit))
-        	throw new Exception(MSG.errorAccessDenied());
+        sessionContext.checkPermission(subpartId, "SchedulingSubpart", Right.SchedulingSubpartEdit);
 
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
@@ -175,8 +174,7 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         // Clear all preferences
         if(op.equals(MSG.actionClearSubpartPreferences())) {
 
-        	if (!sessionContext.hasPermission(ss, Right.SchedulingSubpartEditClearPreferences))
-        		throw new Exception("Access denied.");
+        	sessionContext.checkPermission(ss, Right.SchedulingSubpartEditClearPreferences);
 
             Set s = ss.getPreferences();
             s.clear();

@@ -87,17 +87,47 @@ public class GwtRpcHelper implements SessionContext {
 	public HttpServletRequest getHttpServletRequest() { return null; }
 	
 	@Override
+	public void checkPermission(Right right) {
+		iCheck.checkPermission(getUser(), null, null, right);
+	}
+
+	@Override
+	public void checkPermission(Serializable targetId, String targetType, Right right) {
+		iCheck.checkPermission(getUser(), targetId, targetType, right);
+	}
+
+	@Override
+	public void checkPermission(Object targetObject, Right right) {
+		iCheck.checkPermission(getUser(), targetObject, right);
+	}
+	
+	@Override
 	public boolean hasPermission(Right right) {
-		return iCheck.checkPermission(getUser(), null, null, right);
+		try {
+			iCheck.checkPermission(getUser(), null, null, right);
+			return true;
+		} catch (SecurityException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
-		return iCheck.checkPermission(getUser(), targetId, targetType, right);
+		try {
+			iCheck.checkPermission(getUser(), targetId, targetType, right);
+			return true;
+		} catch (SecurityException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean hasPermission(Object targetObject, Right right) {
-		return iCheck.checkPermission(getUser(), targetObject, right);
+		try {
+			iCheck.checkPermission(getUser(), targetObject, right);
+			return true;
+		} catch (SecurityException e) {
+			return false;
+		}
 	}
 }

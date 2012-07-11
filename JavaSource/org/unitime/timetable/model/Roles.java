@@ -251,6 +251,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case OfferingDelete:
 		case ClassAssignment:
 		case Registration:
+		case Chameleon:
 			return ADMIN_ROLE.equals(getReference());
 
 		/* curriculum rights */

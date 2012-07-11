@@ -20,12 +20,10 @@
 package org.unitime.timetable.spring.security;
 
 import org.aopalliance.intercept.MethodInvocation;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.core.Authentication;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.rights.Right;
 
 public class UniTimeSecurityExpressionHandler extends DefaultMethodSecurityExpressionHandler {
 	
@@ -72,29 +70,41 @@ public class UniTimeSecurityExpressionHandler extends DefaultMethodSecurityExpre
         }
         
         public boolean hasPermission(Object permission) {
-        	if (getPrincipal() == null || !(getPrincipal() instanceof UserContext)) return false;
-        	UserContext user = (UserContext)getPrincipal();
-        	if (user.getCurrentAcademicSessionId() == null) return false;
-        	return hasPermission(user.getCurrentAcademicSessionId(), Session.class.getName(), permission);
+        	try {
+        		return super.hasPermission(null, null, permission);
+        	} catch (AccessDeniedException e) {
+        		return false;
+        	}
         }
         
-        public boolean hasRight(String right) {
+        public boolean checkPermission(Object permission) {
+        	return super.hasPermission(null, null, permission);
+        }
+        
+        @Override
+        public boolean hasPermission(Object targetId, String targetType, Object permission) {
         	try {
-        		return ((UserContext)getPrincipal()).getCurrentAuthority().hasRight(Right.valueOf(right));
-        	} catch (Exception e) {
+        		return super.hasPermission(targetId, targetType, permission);
+        	} catch (AccessDeniedException e) {
         		return false;
         	}
         }
-
-        public boolean hasAnyRight(String... right) {
+        
+        public boolean checkPermission(Object targetId, String targetType, Object permission) {
+        	return super.hasPermission(targetId, targetType, permission);
+        }
+        
+        @Override
+        public boolean hasPermission(Object target, Object permission) {
         	try {
-        		UserContext user = (UserContext)getPrincipal();
-        		for (String r: right)
-        			if (user.getCurrentAuthority().hasRight(Right.valueOf(r))) return true;
-        		return false;
-        	} catch (Exception e) {
+        		return super.hasPermission(target, permission);
+        	} catch (AccessDeniedException e) {
         		return false;
         	}
         }
-}
+        
+        public boolean checkPermission(Object target, Object permission) {
+        	return super.hasPermission(target, permission);
+        }
+    }
 }

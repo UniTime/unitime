@@ -118,8 +118,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		// Delete insructional offering
 		if(op.equals(MSG.actionDeleteIO()) && request.getAttribute("cfgDelete") == null) {
 			
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingDelete);
 
 			doDelete(request, frm);
 			
@@ -147,8 +146,7 @@ public class InstructionalOfferingDetailAction extends Action {
 			    throw new Exception (MSG.exceptionIODataNotCorrect() + instrOfferingId);
 			else  {
 
-		    	if (!sessionContext.hasPermission(instrOfferingId, "InstructionalOffering", Right.InstructionalOfferingDetail))
-		    		throw new Exception(MSG.errorAccessDenied());
+		    	sessionContext.checkPermission(instrOfferingId, "InstructionalOffering", Right.InstructionalOfferingDetail);
 
 		    	doLoad(request, frm, instrOfferingId);
 			}
@@ -166,8 +164,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		// Add Configuration
 		if(op.equals(MSG.actionAddConfiguration())) {
 			
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
 
 		    // Redirect to config edit
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
@@ -179,8 +176,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		// Make Offering 'Offered'
 		if(op.equals(MSG.actionMakeOffered())) {
 			
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
 
 		    doMakeOffered(request, frm);
 		    
@@ -193,8 +189,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Make Offering 'Not Offered'
 		if(op.equals(MSG.actionMakeNotOffered())) {
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
 
 	    	doMakeNotOffered(request, frm);
 	        return mapping.findForward("showInstructionalOfferings");
@@ -202,8 +197,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		
 		// Change controlling course, add other offerings
 		if(op.equals(MSG.actionCrossLists())) {
-	    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingCrossLists))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingCrossLists);
 
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
@@ -225,8 +219,7 @@ public class InstructionalOfferingDetailAction extends Action {
 		    InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 
-	    	if (!sessionContext.hasPermission(io, Right.OfferingCanLock))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(io, Right.OfferingCanLock);
 
 	    	io.getSession().lockOffering(io.getUniqueId());
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
@@ -237,16 +230,14 @@ public class InstructionalOfferingDetailAction extends Action {
 	    	InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
 	        InstructionalOffering io = idao.get(frm.getInstrOfferingId());
 
-	    	if (!sessionContext.hasPermission(io, Right.OfferingCanUnlock))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(io, Right.OfferingCanUnlock);
 
 	        io.getSession().unlockOffering(io, sessionContext.getUser());
         	response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+io.getUniqueId()));
         	return null;
         }
         
-    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstructionalOfferingDetail);
 
         BackTracker.markForBack(
 				request,
@@ -319,8 +310,7 @@ public class InstructionalOfferingDetailAction extends Action {
         InstructionalOffering io = idao.get(instrOfferingId);
         Long subjectAreaId = io.getControllingCourseOffering().getSubjectArea().getUniqueId();
         
-    	if (!sessionContext.hasPermission(io, Right.InstructionalOfferingDetail))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(io, Right.InstructionalOfferingDetail);
         
 	    // Set Session Variables
         sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId.toString());
@@ -449,8 +439,7 @@ public class InstructionalOfferingDetailAction extends Action {
             HttpServletRequest request, 
             InstructionalOfferingDetailForm frm) throws Exception {
         
-    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
 
         org.hibernate.Session hibSession = null;
         
@@ -520,8 +509,7 @@ public class InstructionalOfferingDetailAction extends Action {
             HttpServletRequest request, 
             InstructionalOfferingDetailForm frm) throws Exception {
 
-    	if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeOffered);
 
     	org.hibernate.Session hibSession = null;
         
