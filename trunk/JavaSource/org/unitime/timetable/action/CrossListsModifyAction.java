@@ -575,8 +575,7 @@ public class CrossListsModifyAction extends Action {
         CourseOffering co = coDao.get(Long.valueOf(courseOfferingId));
         InstructionalOffering io = co.getInstructionalOffering();
         
-        if (!sessionContext.hasPermission(io, Right.InstructionalOfferingCrossLists))
-        	throw new Exception (MSG.errorAccessDenied());
+        sessionContext.checkPermission(io, Right.InstructionalOfferingCrossLists);
 
         // Sort Offerings
         ArrayList offerings = new ArrayList(io.getCourseOfferings());

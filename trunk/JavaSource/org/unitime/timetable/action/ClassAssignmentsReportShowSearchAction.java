@@ -78,8 +78,7 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		
-    	if (!sessionContext.hasPermission(Right.ClassAssignments))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(Right.ClassAssignments);
         
 	    ClassAssignmentsReportForm classListForm = (ClassAssignmentsReportForm)form;
 

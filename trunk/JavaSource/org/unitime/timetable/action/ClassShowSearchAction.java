@@ -74,9 +74,7 @@ public class ClassShowSearchAction extends Action {
 
         BackTracker.markForBack(request, null, null, false, true);
         
-    	if (!sessionContext.hasPermission(Right.Classes))
-    		throw new Exception(MSG.errorAccessDenied());
-        
+    	sessionContext.checkPermission(Right.Classes);
         
     	sessionContext.setAttribute("callingPage", "classShowSearch");
     	

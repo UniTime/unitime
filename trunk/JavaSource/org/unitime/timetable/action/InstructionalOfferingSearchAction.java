@@ -100,8 +100,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-	    	if (!sessionContext.hasPermission(null, "Department", Right.InstructionalOfferings))
-	    		throw new Exception(MSG.errorAccessDenied());
+	    	sessionContext.checkPermission(null, "Department", Right.InstructionalOfferings);
 	        
 	        // Check that a valid subject area is selected
 		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
@@ -425,8 +424,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			HttpServletResponse response) throws Exception {
 		
         InstructionalOfferingListForm frm = (InstructionalOfferingListForm)form;
-    	if (!sessionContext.hasPermission(frm.getSubjectAreaId(), "SubjectArea", Right.AddCourseOffering))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getSubjectAreaId(), "SubjectArea", Right.AddCourseOffering);
 
 
 	    Long subjAreaId = frm.getSubjectAreaId();

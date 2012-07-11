@@ -116,8 +116,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response, String action) throws Exception {
 		
-    	if (!sessionContext.hasPermission(Right.Classes))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(Right.Classes);
 		
     	ClassListForm classListForm = (ClassListForm) form;
     	

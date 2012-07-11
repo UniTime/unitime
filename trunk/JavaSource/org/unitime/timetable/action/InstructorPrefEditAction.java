@@ -134,8 +134,7 @@ public class InstructorPrefEditAction extends PreferencesAction {
             if(instructorId==null || instructorId.trim()=="") 
                 throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
             
-            if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences))
-            	throw new Exception("Access denied.");
+            sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorPreferences);
             
             boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
             

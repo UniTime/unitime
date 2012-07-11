@@ -249,8 +249,7 @@ public class InstructionalOfferingModifyAction extends Action {
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
             throw new Exception (MSG.errorMissingIOConfig());
         
-		if (!sessionContext.hasPermission(instrOffrConfigId, "InstrOfferingConfig", Right.MultipleClassSetup))
-			throw new Exception(MSG.errorAccessDenied());
+		sessionContext.checkPermission(instrOffrConfigId, "InstrOfferingConfig", Right.MultipleClassSetup);
 
         // Load details
         InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
@@ -336,8 +335,7 @@ public class InstructionalOfferingModifyAction extends Action {
     	// Get default room group
 		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(ioc.getSession());
 
-		if (!sessionContext.hasPermission(ioc, Right.MultipleClassSetup))
-			throw new Exception(MSG.errorAccessDenied());
+		sessionContext.checkPermission(ioc, Right.MultipleClassSetup);
 
 		Transaction tx = null;
 

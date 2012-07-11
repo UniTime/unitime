@@ -61,8 +61,7 @@ public class AssignedExamsAction extends Action {
 		ExamReportForm myForm = (ExamReportForm) form;
 
         // Check Access
-        if (!sessionContext.hasPermission(Right.AssignedExams))
-            throw new Exception ("Access Denied.");
+        sessionContext.checkPermission(Right.AssignedExams);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 

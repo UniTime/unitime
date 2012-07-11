@@ -184,8 +184,7 @@ public class CourseOfferingEditAction extends Action {
      */
     private void doUpdate(HttpServletRequest request, CourseOfferingEditForm frm) throws Exception {
 
-    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 
         String title = frm.getTitle();
         String note = frm.getScheduleBookNote();
@@ -393,8 +392,7 @@ public class CourseOfferingEditAction extends Action {
             CourseOfferingEditForm frm,
             String crsOfferingId) throws Exception {
     	
-    	if (!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering);
 
         // Load Course Offering
         Long courseOfferingId = new Long(crsOfferingId);
@@ -514,8 +512,7 @@ public class CourseOfferingEditAction extends Action {
             HttpServletRequest request,
             CourseOfferingEditForm frm) throws Exception {
 
-    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering))
-    		throw new Exception(MSG.errorAccessDenied());
+    	sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 
     	frm.setAllowDemandCourseOfferings(true);
 

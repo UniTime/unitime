@@ -65,8 +65,7 @@ public class AssignmentHistoryAction extends Action {
 		AssignmentHistoryForm myForm = (AssignmentHistoryForm) form;
 
         // Check Access
-        if (!sessionContext.hasPermission(Right.AssignmentHistory))
-            throw new Exception ("Access Denied.");
+        sessionContext.checkPermission(Right.AssignmentHistory);
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         

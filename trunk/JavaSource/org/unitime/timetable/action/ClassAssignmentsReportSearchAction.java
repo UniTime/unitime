@@ -159,8 +159,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 			HttpServletResponse response,
 			String action) throws Exception{
 		
-		if (!sessionContext.hasPermission(Right.ClassAssignments))
-			throw new Exception ("Access Denied.");
+		sessionContext.checkPermission(Right.ClassAssignments);
         
         if (!action.equals("search") && !action.equals("exportPdf") && !action.equals("exportCsv"))
         	throw new Exception ("Unrecognized Action");

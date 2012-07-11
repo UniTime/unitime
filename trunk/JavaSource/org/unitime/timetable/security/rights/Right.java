@@ -53,6 +53,8 @@ public enum Right {
 	/** Status dependency -- session / department status must match */
 	StatusIndependent,
 	
+	Chameleon(Session.class),
+	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),
 	OfferingMakeNotOffered(InstructionalOffering.class),
@@ -160,4 +162,6 @@ public enum Right {
 	
 	public Class<?> type() { return iType; }
 	public boolean hasType() { return iType != null; }
+	@Override
+	public String toString() { return name().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2"); }
 }

@@ -102,8 +102,7 @@ public class InstructorInfoEditAction extends InstructorAction {
         if(instructorId==null || instructorId.trim()=="") 
             throw new Exception (MSG.exceptionInstructorInfoNotSupplied());
         
-		if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit))
-			throw new Exception(MSG.exceptionAccessDenied());
+		sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorEdit);
         
         frm.setInstructorId(instructorId);
         
@@ -196,8 +195,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 	    String instructorId = frm.getInstructorId();
 	    DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
 	    
-		if (!sessionContext.hasPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete))
-			throw new Exception(MSG.exceptionAccessDenied());
+		sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDelete);
 
 	    
 		org.hibernate.Session hibSession = idao.getSession();

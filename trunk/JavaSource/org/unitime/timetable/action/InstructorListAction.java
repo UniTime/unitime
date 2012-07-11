@@ -84,8 +84,7 @@ public class InstructorListAction extends Action {
 
 		// Check permissions
 		HttpSession httpSession = request.getSession();
-		if (!sessionContext.hasPermission(Right.Instructors))
-			throw new Exception(MSG.exceptionAccessDenied());
+		sessionContext.checkPermission(Right.Instructors);
 
 		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
 		ActionMessages errors = new ActionMessages();

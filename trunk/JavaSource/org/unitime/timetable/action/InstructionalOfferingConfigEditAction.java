@@ -118,11 +118,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
     	MessageResources rsc = getResources(request);
         InstructionalOfferingConfigEditForm frm = (InstructionalOfferingConfigEditForm) form;
         
-        if ((frm.getConfigId() == null || frm.getConfigId() == 0) && !sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
-        	throw new Exception(MSG.errorAccessDenied());
+        if (frm.getConfigId() == null || frm.getConfigId() == 0)
+        	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
         
-        if (frm.getConfigId() != null && frm.getConfigId() != 0 && !sessionContext.hasPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigEdit))
-        	throw new Exception(MSG.errorAccessDenied());
+        if (frm.getConfigId() != null && frm.getConfigId() != 0)
+        	sessionContext.checkPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigEdit);
 
         String html = "";
         String op = (request.getParameter("op")==null)
@@ -168,8 +168,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                 throw new Exception (MSG.errorConfigIDNotValid() + request.getParameter("configId"));
             }
             
-            if (!sessionContext.hasPermission(configId, "InstrOfferingConfig", Right.InstrOfferingConfigEdit))
-            	throw new Exception(MSG.errorAccessDenied());
+            sessionContext.checkPermission(configId, "InstrOfferingConfig", Right.InstrOfferingConfigEdit);
 
             loadDetailFromConfig(frm, configId, false);
 
@@ -208,8 +207,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
 			if(courseOfferingId==null || courseOfferingId.trim().length()==0)
 			    throw new Exception (MSG.exceptionCourseOfferingIdNeeded());
 			
-            if (!sessionContext.hasPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd))
-            	throw new Exception(MSG.errorAccessDenied());
+            sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.InstrOfferingConfigAdd);
 
             loadDetailFromCourseOffering(frm, new Long(courseOfferingId), true, false);
             sessionContext.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, null);
@@ -336,8 +334,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
         // Delete configuration
 		if(op.equals(MSG.actionDeleteConfiguration())) {
 			
-            if (!sessionContext.hasPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigDelete))
-            	throw new Exception(MSG.errorAccessDenied());
+            sessionContext.checkPermission(frm.getConfigId(), "InstrOfferingConfig", Right.InstrOfferingConfigDelete);
 			
             deleteConfig(request, frm);
 
