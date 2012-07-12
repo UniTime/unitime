@@ -33,10 +33,13 @@
 		<intercept-url pattern="/exams.do" access="permitAll" />
 		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
 		<intercept-url pattern="/**" access="permitAll" />
-		<form-login login-page="/login.jsp" default-target-url="/selectPrimaryRole.do" always-use-default-target="true"/>
+		<form-login login-page="/login.jsp"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
 		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
+		
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">
@@ -67,7 +70,7 @@
 		</beans:property>
 	</beans:bean>
  	
-	<authentication-manager>
+	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication -->
 		<authentication-provider user-service-ref="unitimeUserDetailsService">
 			<password-encoder hash="md5" base64="true"/>
