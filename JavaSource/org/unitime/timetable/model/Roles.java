@@ -254,7 +254,11 @@ public class Roles extends BaseRoles implements HasRights {
 		case Registration:
 		case Chameleon:
 			return ADMIN_ROLE.equals(getReference());
-
+			
+		case PersonalSchedule:
+		case PersonalScheduleLookup:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference());
+			
 		/* curriculum rights */
 		case CurriculumAdd:
 		case CurriculumEdit:

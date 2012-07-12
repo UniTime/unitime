@@ -54,6 +54,8 @@ public enum Right {
 	StatusIndependent,
 	
 	Chameleon(Session.class),
+	PersonalSchedule(Session.class),
+	PersonalScheduleLookup(Session.class),
 	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),
