@@ -28,15 +28,16 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -46,19 +47,11 @@ import org.unitime.timetable.util.RoomAvailability;
  */
 @Service("/classInfo")
 public class ClassInfoAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ClassInfoForm myForm = (ClassInfoForm) form;
-        
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-        //FIXME: Only allow administrator for the time being (anything can be assigned anywhere).
-        if (!Web.getUser(request.getSession()).isAdmin()) {
-        	throw new Exception ("Access Denied.");
-        }
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0) {
@@ -71,7 +64,7 @@ public class ClassInfoAction extends Action {
             model = new ClassInfoModel();
             request.getSession().setAttribute("ClassInfo.model", model);
         }
-
+        
         if (op==null && model.getClass()!=null && request.getParameter("classId")==null) {
             op="Apply";
         }
@@ -87,7 +80,7 @@ public class ClassInfoAction extends Action {
         model.apply(request, myForm);
         
         if (op==null) {
-            model.clear(TimetableManager.getManager(Web.getUser(request.getSession())));
+            model.clear(sessionContext.getUser().getExternalUserId());
         } else if ("Apply".equals(op)) {
             model.refreshRooms();
             if (model.isKeepConflictingAssignments()!=myForm.getKeepConflictingAssignments())
@@ -102,10 +95,12 @@ public class ClassInfoAction extends Action {
             myForm.save(request.getSession());
         }
         
-        if (model.getClass()==null) throw new Exception("No class given.");
+        if (model.getClazz()==null) throw new Exception("No class given.");
+        
+        sessionContext.checkPermission(model.getClazz().getClazz(), Right.ClassAssignment);
         
         if (RoomAvailability.getInstance()!=null && op==null && !(RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService)) {
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = DatePattern.getBounds(session.getUniqueId());
             RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],RoomAvailabilityInterface.sClassType, false);
             RoomAvailability.setAvailabilityWarning(request, session, true, true);
@@ -126,8 +121,7 @@ public class ClassInfoAction extends Action {
         
         if ("Assign".equals(op)) {
             synchronized (model) {
-            	User user = Web.getUser(request.getSession());
-                String message = model.assign(Session.getCurrentAcadSession(user).getUniqueId(), user);
+                String message = model.assign(sessionContext);
                 if (message==null || message.trim().length()==0) {
                     myForm.setOp("Close");
                 } else {

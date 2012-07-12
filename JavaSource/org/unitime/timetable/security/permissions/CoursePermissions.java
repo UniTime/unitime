@@ -64,6 +64,29 @@ public class CoursePermissions {
 		
 	}
 	
+	@Service("permissionOfferingLockNeededLimitedEdit")
+	public static class OfferingLockNeededLimitedEdit implements Permission<InstructionalOffering> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (source.isNotOffered()) return false;
+			
+			if (!permissionSession.check(
+					user,
+					source.getSession(),
+					DepartmentStatusType.Status.StudentsOnline))
+				return false;
+			
+			OnlineSectioningServer server = OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId());
+			
+			return server != null && server.getAcademicSession().isSectioningEnabled() && !server.isOfferingLocked(source.getUniqueId());
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+	}
+	
 	@Service("permissionOfferingEdit")
 	public static class OfferingEdit implements Permission<InstructionalOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
@@ -195,11 +218,12 @@ public class CoursePermissions {
 	
 	@PermissionForRight(Right.SchedulingSubpartDetail)
 	public static class SchedulingSubpartDetail implements Permission<SchedulingSubpart> {
-		@Autowired Permission<InstructionalOffering> permissionInstructionalOfferingDetail;
+		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, SchedulingSubpart source) {
-			return permissionInstructionalOfferingDetail.check(user, source.getInstrOfferingConfig().getInstructionalOffering());
+			return permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerView,
+					source.getManagingDept(), DepartmentStatusType.Status.ManagerView);
 		}
 
 		@Override
@@ -208,11 +232,12 @@ public class CoursePermissions {
 	
 	@PermissionForRight(Right.ClassDetail)
 	public static class ClassDetail implements Permission<Class_> {
-		@Autowired Permission<SchedulingSubpart> permissionSchedulingSubpartDetail;
+		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Class_ source) {
-			return permissionSchedulingSubpartDetail.check(user, source.getSchedulingSubpart());
+			return permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerView,
+					source.getManagingDept(), DepartmentStatusType.Status.ManagerView);
 		}
 
 		@Override
@@ -226,9 +251,9 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, Class_ source) {
-			return  !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
-					(permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit) ||
-					 permissionDepartment.check(user, source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit));
+			return !permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
 		}
 
 		@Override
@@ -242,9 +267,9 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, SchedulingSubpart source) {
-			return  !permissionOfferingLockNeeded.check(user, source.getInstrOfferingConfig().getInstructionalOffering()) &&
-					(permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit) ||
-					 permissionDepartment.check(user, source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit));
+			return !permissionOfferingLockNeeded.check(user, source.getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerEdit);
 		}
 
 		@Override

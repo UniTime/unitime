@@ -27,7 +27,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -37,11 +36,11 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassInstructorAssignmentForm;
 import org.unitime.timetable.interfaces.ExternalInstrOfferingConfigAssignInstructorsAction;
 import org.unitime.timetable.model.ChangeLog;
@@ -50,16 +49,14 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.util.Constants;
 
 @Service("/classInstructorAssignment")
 public class ClassInstructorAssignmentAction extends Action {
@@ -82,12 +79,7 @@ public class ClassInstructorAssignmentAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        if(!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception (MSG.exceptionAccessDenied());
-        }
-
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());
         ClassInstructorAssignmentForm frm = (ClassInstructorAssignmentForm) form;
 
         // Get operation
@@ -125,6 +117,8 @@ public class ClassInstructorAssignmentAction extends Action {
         InstrOfferingConfigDAO iocDao = new InstrOfferingConfigDAO();
         InstrOfferingConfig ioc = iocDao.get(Long.valueOf(instrOffrConfigId));
         frm.setInstrOffrConfigId(Long.valueOf(instrOffrConfigId));
+        
+        sessionContext.checkPermission(ioc, Right.AssignInstructors);
 
         ArrayList instructors = new ArrayList(ioc.getDepartment().getInstructors());
 	    Collections.sort(instructors, new DepartmentalInstructorComparator());
@@ -132,7 +126,7 @@ public class ClassInstructorAssignmentAction extends Action {
 
         // First access to screen
         if(op.equalsIgnoreCase(MSG.actionAssignInstructors())) {
-            doLoad(request, frm, instrOffrConfigId, user, ioc);
+            doLoad(request, frm, instrOffrConfigId, ioc);
         }
 
         if(op.equals(MSG.actionUpdateClassInstructorsAssignment()) ||
@@ -157,7 +151,7 @@ public class ClassInstructorAssignmentAction extends Action {
 
                     ChangeLog.addChange(
                             null,
-                            request,
+                            sessionContext,
                             cfg,
                             ChangeLog.Source.CLASS_INSTR_ASSIGN,
                             ChangeLog.Operation.UPDATE,
@@ -214,10 +208,7 @@ public class ClassInstructorAssignmentAction extends Action {
     		HttpServletRequest request,
     		ClassInstructorAssignmentForm frm,
             String instrOffrConfigId,
-            User user,
             InstrOfferingConfig ioc) throws Exception {
-
-    	HttpSession session = request.getSession();
 
         // Check uniqueid
         if(instrOffrConfigId==null || instrOffrConfigId.trim().length()==0)
@@ -265,19 +256,19 @@ public class ClassInstructorAssignmentAction extends Action {
     		if (ss.getClasses() == null || ss.getClasses().size() == 0)
     			throw new Exception(MSG.exceptionInitialIOSetupIncomplete());
     		if (ss.getParentSubpart() == null){
-        		loadClasses(frm, user, ss.getClasses(), new Boolean(true), new String());
+        		loadClasses(frm, ss.getClasses(), new String());
         	}
         }
     }
 
-    private void loadClasses(ClassInstructorAssignmentForm frm, User user, Set classes, Boolean isReadOnly, String indent){
+    private void loadClasses(ClassInstructorAssignmentForm frm, Set classes, String indent){
     	if (classes != null && classes.size() > 0){
     		ArrayList classesList = new ArrayList(classes);
 
-        	if ("yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_KEEP_SORT))) {
+    		if (CommonValues.Yes.eq(UserProperty.ClassesKeepSort.get(sessionContext.getUser()))) {
         		Collections.sort(classesList,
         			new ClassCourseComparator(
-        					UserData.getProperty(user.getId(),"InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
+        					sessionContext.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)),
         					frm.getProxy(),
         					false
         			)
@@ -286,17 +277,11 @@ public class ClassInstructorAssignmentAction extends Action {
         		Collections.sort(classesList, new ClassComparator(ClassComparator.COMPARE_BY_ITYPE) );
         	}
 
-	    	Boolean readOnlyClass = new Boolean(false);
 	    	Class_ cls = null;
 	    	for(Iterator it = classesList.iterator(); it.hasNext();){
 	    		cls = (Class_) it.next();
-	    		if (!isReadOnly.booleanValue()){
-	    			readOnlyClass = new Boolean(isReadOnly.booleanValue());
-	    		} else {
-	    			readOnlyClass = new Boolean(!cls.isLimitedEditable(user));
-	    		}
-	    		frm.addToClasses(cls, readOnlyClass, indent);
-	    		loadClasses(frm, user, cls.getChildClasses(), new Boolean(true), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
+	    		frm.addToClasses(cls, !sessionContext.hasPermission(cls, Right.AssignInstructorsClass), indent);
+	    		loadClasses(frm, cls.getChildClasses(), indent + "&nbsp;&nbsp;&nbsp;&nbsp;");
 	    	}
     	}
     }

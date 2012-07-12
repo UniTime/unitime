@@ -114,7 +114,7 @@ public class CourseTimetablingPermissions {
 
 		@Autowired PermissionDepartment permissionDepartment;
 		
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededLimitedEdit;
 		
 		@Override
 		public boolean check(UserContext user, Class_ source) {
@@ -135,7 +135,7 @@ public class CourseTimetablingPermissions {
 			}
 			
 			// Need an offering lock
-			if (permissionOfferingLockNeeded.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()))
+			if (permissionOfferingLockNeededLimitedEdit.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()))
 				return false;
 			
 			// Check departmental permissions
