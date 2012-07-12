@@ -29,12 +29,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
@@ -42,16 +38,16 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
-import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
 import org.unitime.timetable.form.ClassesForm;
-import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -64,6 +60,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -73,6 +73,11 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/classes")
 public class ClassesAction extends Action {
+	
+	@Autowired AuthenticationManager authenticationManager;
+	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    ClassesForm myForm = (ClassesForm)form;
 
@@ -105,53 +110,33 @@ public class ClassesAction extends Action {
         if ("Apply".equals(op)) {
             myForm.save(request.getSession());
             if (myForm.getUsername()!=null && myForm.getUsername().length()>0 && myForm.getPassword()!=null && myForm.getPassword().length()>0) {
-        		Date attemptDateTime = new Date();
-        		if (LoginManager.isUserLockedOut(myForm.getUsername(), attemptDateTime)){
-        			// count this attempt, allows for slowing down of responses if the user is flooding the system with failed requests
-        			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-        			myForm.setMessage("User temporarily locked out - Exceeded maximum failed login attempts.");
-        		} else {
-	                try {
-	                    UserPasswordHandler handler = new UserPasswordHandler(myForm.getUsername(), myForm.getPassword());
-	                    LoginContext lc = new LoginContext("Timetabling", new Subject(), handler, new LoginConfiguration());
-	                    lc.login();
-	                    
-	                    Set creds = lc.getSubject().getPublicCredentials();
-	                    if (creds==null || creds.size()==0) {
-	            			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-	                        myForm.setMessage("Authentication failed");
-	                    } else {
-	                        for (Iterator i=creds.iterator(); i.hasNext(); ) {
-	                            Object o = i.next();
-	                            if (o instanceof User) {
-	                                User user = (User) o;
-	                                HttpSession session = request.getSession();
-	                                session.setAttribute("loggedOn", "true");
-	                                session.setAttribute("hdnCallingScreen", "main.jsp");
-	                                Web.setUser(session, user);
-	                                
-	                                String appStatus = ApplicationConfig.getConfigValue(Constants.CFG_APP_ACCESS_LEVEL, Constants.APP_ACL_ALL);
-	                                session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
-	                                
-	                                session.setAttribute("authUserExtId", user.getId());
-	                                session.setAttribute("loginPage", "classes");
-	            				    LoginManager.loginSuceeded(myForm.getUsername());
-
-	                                return mapping.findForward("personal");
-	                                //response.sendRedirect("selectPrimaryRole.do"); break;
-	                            }
-	                        }
-	                    }
-	                } catch (LoginException le) {
-	        			LoginManager.addFailedLoginAttempt(myForm.getUsername(), attemptDateTime);
-	                    myForm.setMessage("Authentication failed");
-	                }
-        		}
+            	try {
+            		Authentication authRequest = new UsernamePasswordAuthenticationToken(myForm.getUsername(), myForm.getPassword());
+            		Authentication authResult = authenticationManager.authenticate(authRequest);
+            		SecurityContextHolder.getContext().setAuthentication(authResult);
+            		UserContext user = (UserContext)authResult.getPrincipal();
+            		if (user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.PersonalSchedule))
+            			for (UserAuthority auth: user.getAuthorities()) {
+            				if (auth.getAcademicSession() != null && auth.getAcademicSession().getQualifierId().equals(myForm.getSession()) && auth.hasRight(Right.PersonalSchedule)) {
+            					user.setCurrentAuthority(auth); break;
+            				}
+            			}
+            		request.getSession().setAttribute("loginPage", "classes");
+            		LoginManager.loginSuceeded(authResult.getName());
+            		if (user.getCurrentAuthority() == null) {
+            			response.sendRedirect("selectPrimaryRole.do");
+            			return null;
+            		}
+            		return mapping.findForward("personal");
+            	} catch (Exception e) {
+            		myForm.setMessage("Authentication failed: " + e.getMessage());
+            		LoginManager.addFailedLoginAttempt(myForm.getUsername(), new Date());
+            	}
             }
         }
         myForm.load(request.getSession());
         
-        WebTable.setOrder(request.getSession(),"classes.order",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"classes.order",request.getParameter("ord"),1);
         
         if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0) {
             org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
@@ -184,7 +169,7 @@ public class ClassesAction extends Action {
                     }
                 }
                 if (classes!=null && !classes.isEmpty()) {
-                    int ord = WebTable.getOrder(request.getSession(),"classes.order");
+                    int ord = WebTable.getOrder(sessionContext,"classes.order");
                     PdfWebTable table = getTable(true, myForm, classes, ord);
                     if (table!=null)
                         myForm.setTable(table.printTable(ord), table.getNrColumns(), table.getLines().size());

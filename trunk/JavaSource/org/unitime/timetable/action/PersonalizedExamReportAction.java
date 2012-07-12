@@ -46,11 +46,11 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.commons.web.WebTable.WebTableTweakStyle;
@@ -76,9 +76,12 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -86,6 +89,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflic
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
+import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -93,6 +97,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
 public class PersonalizedExamReportAction extends Action {
     public static ExternalUidTranslation sTranslation;
     private static Log sLog = LogFactory.getLog(PersonalizedExamReportAction.class);
+    
+    @Autowired SessionContext sessionContext;
     
     static {
         if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
@@ -144,13 +150,13 @@ public class PersonalizedExamReportAction extends Action {
         PersonalizedExamReportForm myForm = (PersonalizedExamReportForm) form;
         
         String back = (String)request.getSession().getAttribute("loginPage");
-        if (back==null) back = "back";
+        if (back == null) back = "back";
         
-        User user = Web.getUser(request.getSession());
-        if (user==null) {
-            sLog.info("User not logged in, forwarding back.");
-            request.setAttribute("message", "Login is required.");
-            return mapping.findForward(back);
+        try {
+        	sessionContext.checkPermission(Right.PersonalSchedule);
+        } catch (AccessDeniedException e) {
+        	request.setAttribute("message", e.getMessage());
+        	return mapping.findForward(back);
         }
         
         if (request.getParameter("q") != null) {
@@ -161,33 +167,27 @@ public class PersonalizedExamReportAction extends Action {
         	}
         }
         
-        myForm.setAdmin(user.isAdmin());
+        String externalId = sessionContext.getUser().getExternalUserId();
+        String userName = sessionContext.getUser().getName();
+        
+        myForm.setAdmin(sessionContext.hasPermission(Right.PersonalScheduleLookup));
         myForm.setLogout(!"back".equals(back));
         
-        if (myForm.getAdmin() && myForm.getUid()!=null && myForm.getUid().length()>0) {
-            user = new User();
-            user.setId(myForm.getUid());
-            user.setName(
+        if (sessionContext.hasPermission(Right.PersonalScheduleLookup) && myForm.getUid() != null && !myForm.getUid().isEmpty()) {
+            externalId = myForm.getUid();
+            userName =
                     (myForm.getLname()==null || myForm.getLname().length()==0?"":" "+Constants.toInitialCase(myForm.getLname()))+
                     (myForm.getFname()==null || myForm.getFname().length()==0?"":" "+myForm.getFname().substring(0,1).toUpperCase())+
-                    (myForm.getMname()==null || myForm.getMname().length()==0?"":" "+myForm.getMname().substring(0,1).toUpperCase()));
+                    (myForm.getMname()==null || myForm.getMname().length()==0?"":" "+myForm.getMname().substring(0,1).toUpperCase());
         }
-        /*
-        if (user.getRole()!=null) {
-            sLog.info("User "+user.getName()+" has role "+user.getRole()+", forwarding to main page.");
-            return mapping.findForward("main");
-        }
-        */
-        String externalId = user.getId();
+
         if (externalId==null || externalId.length()==0) {
-            sLog.info("User "+user.getName()+" has no external id, forwarding to main page.");
             request.setAttribute("message", "No user id provided.");
             return mapping.findForward(back);
         }
         
         if ("Log Out".equals(myForm.getOp())) {
-            sLog.info("Logging out user "+user.getName()+", forwarding to main page.");
-            request.getSession().invalidate();
+        	SecurityContextHolder.getContext().setAuthentication(null);
             return mapping.findForward(back);
         }
         
@@ -248,7 +248,7 @@ public class PersonalizedExamReportAction extends Action {
                     request.setAttribute("message", "No examinations found.");
                 else
                     request.setAttribute("message", "No schedule found.");
-                sLog.info("No matching instructor or student found for "+user.getName()+" ("+translate(externalId,Source.Student)+"), forwarding back ("+back+").");
+                sLog.info("No matching instructor or student found for "+userName+" ("+translate(externalId,Source.Student)+"), forwarding back ("+back+").");
                 return mapping.findForward(back);
         	}
         }
@@ -310,20 +310,20 @@ public class PersonalizedExamReportAction extends Action {
                 instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
         }
         
-        WebTable.setOrder(request.getSession(),"exams.o0",request.getParameter("o0"),1);
-        WebTable.setOrder(request.getSession(),"exams.o1",request.getParameter("o1"),1);
-        WebTable.setOrder(request.getSession(),"exams.o2",request.getParameter("o2"),1);
-        WebTable.setOrder(request.getSession(),"exams.o3",request.getParameter("o3"),1);
-        WebTable.setOrder(request.getSession(),"exams.o4",request.getParameter("o4"),1);
-        WebTable.setOrder(request.getSession(),"exams.o5",request.getParameter("o5"),1);
-        WebTable.setOrder(request.getSession(),"exams.o6",request.getParameter("o6"),1);
-        WebTable.setOrder(request.getSession(),"exams.o7",request.getParameter("o7"),1);
+        WebTable.setOrder(sessionContext,"exams.o0",request.getParameter("o0"),1);
+        WebTable.setOrder(sessionContext,"exams.o1",request.getParameter("o1"),1);
+        WebTable.setOrder(sessionContext,"exams.o2",request.getParameter("o2"),1);
+        WebTable.setOrder(sessionContext,"exams.o3",request.getParameter("o3"),1);
+        WebTable.setOrder(sessionContext,"exams.o4",request.getParameter("o4"),1);
+        WebTable.setOrder(sessionContext,"exams.o5",request.getParameter("o5"),1);
+        WebTable.setOrder(sessionContext,"exams.o6",request.getParameter("o6"),1);
+        WebTable.setOrder(sessionContext,"exams.o7",request.getParameter("o7"),1);
         
         boolean hasClasses = false;
         if (student!=null && student.getSession().getStatusType().canNoRoleReportClass() && !student.getClassEnrollments().isEmpty()) {
             PdfWebTable table =  getStudentClassSchedule(true, student);
             if (!table.getLines().isEmpty()) {
-                request.setAttribute("clsschd", table.printTable(WebTable.getOrder(request.getSession(),"exams.o6")));
+                request.setAttribute("clsschd", table.printTable(WebTable.getOrder(sessionContext,"exams.o6")));
                 hasClasses = true;
                 myForm.setCanExport(true);
             }
@@ -331,7 +331,7 @@ public class PersonalizedExamReportAction extends Action {
         if (instructor!=null && instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
             PdfWebTable table = getInstructorClassSchedule(true, instructor);
             if (!table.getLines().isEmpty()) {
-                request.setAttribute("iclsschd", table.printTable(Math.abs(WebTable.getOrder(request.getSession(),"exams.o7"))));
+                request.setAttribute("iclsschd", table.printTable(Math.abs(WebTable.getOrder(sessionContext,"exams.o7"))));
                 hasClasses = true;
                 myForm.setCanExport(true);
             }
@@ -339,10 +339,10 @@ public class PersonalizedExamReportAction extends Action {
         
         if (instructor!=null && sessions.size()>1) {
             PdfWebTable table = getSessions(true, sessions, instructor.getName(DepartmentalInstructor.sNameFormatLastFist), instructor.getDepartment().getSession().getUniqueId());
-            request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
+            request.setAttribute("sessions", table.printTable(WebTable.getOrder(sessionContext,"exams.o0")));
         } else if (student!=null && sessions.size()>1) {
             PdfWebTable table = getSessions(true, sessions, student.getName(DepartmentalInstructor.sNameFormatLastFist), student.getSession().getUniqueId());
-            request.setAttribute("sessions", table.printTable(WebTable.getOrder(request.getSession(),"exams.o0")));
+            request.setAttribute("sessions", table.printTable(WebTable.getOrder(sessionContext,"exams.o0")));
         }
         
         if (!hasClasses && instructorExams.isEmpty() && studentExams.isEmpty()) {
@@ -352,11 +352,11 @@ public class PersonalizedExamReportAction extends Action {
                 myForm.setMessage("No examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
             else if (student!=null || instructor!=null)
                 myForm.setMessage("No classes or examinations found in "+(instructor!=null?instructor.getDepartment().getSession():student.getSession()).getLabel()+".");
-            else if (user.isAdmin()) 
-                myForm.setMessage("No classes or examinations found in "+Session.getCurrentAcadSession(user).getLabel()+".");
+            else if (sessionContext.hasPermission(Right.PersonalScheduleLookup)) 
+                myForm.setMessage("No classes or examinations found in " + SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()).getLabel()+".");
             else
-                myForm.setMessage("No classes or examinations found for "+user.getName()+".");
-            sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):user.getName()));
+                myForm.setMessage("No classes or examinations found for "+userName+".");
+            sLog.info("No classes or exams found for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):userName));
         }
         
         boolean useCache = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.conflicts.cache","true"));
@@ -466,11 +466,11 @@ public class PersonalizedExamReportAction extends Action {
             for (ExamOwner examOwner : studentExams) exams.add(new ExamAssignmentInfo(examOwner, student, studentExams));
             
             PdfWebTable table = getStudentExamSchedule(true, exams, student);
-            request.setAttribute("schedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o1")));
+            request.setAttribute("schedule", table.printTable(WebTable.getOrder(sessionContext,"exams.o1")));
             
-            table = getStudentConflits(true, exams, student, user);
+            table = getStudentConflits(true, exams, student);
             if (!table.getLines().isEmpty())
-                request.setAttribute("conf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o3")));
+                request.setAttribute("conf", table.printTable(WebTable.getOrder(sessionContext,"exams.o3")));
         }
         
         if (!instructorExams.isEmpty()) {
@@ -479,18 +479,18 @@ public class PersonalizedExamReportAction extends Action {
             for (Exam exam : instructorExams) exams.add(new ExamAssignmentInfo(exam, useCache));
             
             PdfWebTable table = getInstructorExamSchedule(true, exams, instructor);
-            request.setAttribute("ischedule", table.printTable(WebTable.getOrder(request.getSession(),"exams.o2")));
+            request.setAttribute("ischedule", table.printTable(WebTable.getOrder(sessionContext,"exams.o2")));
             
-            table = getInstructorConflits(true, exams, instructor, user);
+            table = getInstructorConflits(true, exams, instructor);
             if (!table.getLines().isEmpty())
-                request.setAttribute("iconf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o4")));
+                request.setAttribute("iconf", table.printTable(WebTable.getOrder(sessionContext,"exams.o4")));
 
             table = getStudentConflits(true, exams, instructor);
             if (!table.getLines().isEmpty())
-                request.setAttribute("sconf", table.printTable(WebTable.getOrder(request.getSession(),"exams.o5")));
+                request.setAttribute("sconf", table.printTable(WebTable.getOrder(sessionContext,"exams.o5")));
         }
         long t1 = System.currentTimeMillis();
-        sLog.info("Request processed in "+new DecimalFormat("0.00").format(((double)(t1-t0))/1000.0)+" s for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):user.getName()));
+        sLog.info("Request processed in "+new DecimalFormat("0.00").format(((double)(t1-t0))/1000.0)+" s for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student!=null?student.getName(DepartmentalInstructor.sNameFormatShort):userName));
         return mapping.findForward("show");
     }
     
@@ -651,7 +651,7 @@ public class PersonalizedExamReportAction extends Action {
         return table;
     }
     
-    public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student, User user) {
+    public PdfWebTable getStudentConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, Student student) {
         String nl = (html?"<br>":"\n");
         boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.student.btb","true"));
         PdfWebTable table = new PdfWebTable( 6,
@@ -808,7 +808,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                        (user.getRole() == null?"":"onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\""),
+                        (sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"" : ""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,
@@ -892,7 +892,7 @@ public class PersonalizedExamReportAction extends Action {
         return table;
     }
     
-    public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor, User user) {
+    public PdfWebTable getInstructorConflits(boolean html, TreeSet<ExamAssignmentInfo> exams, DepartmentalInstructor instructor) {
         String nl = (html?"<br>":"\n");
         boolean showBackToBack = "true".equals(ApplicationProperties.getProperty("tmtbl.exams.reports.instructor.btb","true"));
         PdfWebTable table = new PdfWebTable( 8,
@@ -1066,7 +1066,7 @@ public class PersonalizedExamReportAction extends Action {
                     }
                 }
                 table.addLine(
-                		(user.getRole() == null?"":"onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\""),
+                		(sessionContext.hasPermission(exam, Right.ExaminationDetail) ? "onClick=\"document.location='examDetail.do?examId="+exam.getExamId()+"';\"" : ""),
                         new String[] {
                             (html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>":"")+(html?"&gt;":"")+"2 A Day"+(html?"</font>":""),
                             classes,

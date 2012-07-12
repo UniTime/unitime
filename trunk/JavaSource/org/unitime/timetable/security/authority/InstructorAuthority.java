@@ -34,6 +34,7 @@ public class InstructorAuthority extends AbstractAuthority {
 	public boolean hasRight(Right right) {
 		switch (right) {
 		case SessionDefaultCurrent:
+		case PersonalSchedule:
 			return true;
 		default:
 			return false;

@@ -27,22 +27,22 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.InstructionalOfferingComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 
 
@@ -52,6 +52,8 @@ import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 
 @Service("/instructionalOfferingChange")
 public class InstructionalOfferingChangeAction extends SpringAwareLookupDispatchAction {
+	
+	@Autowired SessionContext sessionContext;
 
 	protected Map getKeyMethodMap() {
 	      Map map = new HashMap();
@@ -73,29 +75,25 @@ public class InstructionalOfferingChangeAction extends SpringAwareLookupDispatch
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+		
+		sessionContext.checkPermission(Right.InstructionalOfferings);
 
-		    HttpSession webSession = request.getSession();
-	        if(!Web.isLoggedIn( webSession )) {
-	            throw new Exception ("Access Denied.");
-	        }
-	        
-		    User user = Web.getUser(webSession);	    
-		    InstructionalOfferingListForm instructionalOfferingListForm = (InstructionalOfferingListForm) form;
-		    instructionalOfferingListForm.setSubjectAreas(Session.getCurrentAcadSession(user).getSubjectAreas());
-			instructionalOfferingListForm.setInstructionalOfferings(this.getInstructionalOfferings(instructionalOfferingListForm));
-			if (instructionalOfferingListForm.getInstructionalOfferings().isEmpty()) {
-			    return mapping.findForward("showInstructionalOfferingSearch");
-			} else {
-			    Iterator it = instructionalOfferingListForm.getInstructionalOfferings().iterator();
-			    InstructionalOffering io = null;
-			    InstructionalOfferingDAO dao = new InstructionalOfferingDAO(); 
-			    while (it.hasNext()){
-			        io = (InstructionalOffering) it.next();
-			        dao.save(io);
-			    }
-			    return mapping.findForward("showInstructionalOfferingList");
-			}
+	    InstructionalOfferingListForm instructionalOfferingListForm = (InstructionalOfferingListForm) form;
+	    instructionalOfferingListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		instructionalOfferingListForm.setInstructionalOfferings(this.getInstructionalOfferings(instructionalOfferingListForm));
+		if (instructionalOfferingListForm.getInstructionalOfferings().isEmpty()) {
+		    return mapping.findForward("showInstructionalOfferingSearch");
+		} else {
+		    Iterator it = instructionalOfferingListForm.getInstructionalOfferings().iterator();
+		    InstructionalOffering io = null;
+		    InstructionalOfferingDAO dao = new InstructionalOfferingDAO(); 
+		    while (it.hasNext()){
+		        io = (InstructionalOffering) it.next();
+		        dao.save(io);
+		    }
+		    return mapping.findForward("showInstructionalOfferingList");
 		}
+	}
 
     private Set getInstructionalOfferings(InstructionalOfferingListForm form) {
 		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
