@@ -38,11 +38,11 @@ public class InstructorPermissions {
 	@PermissionForRight(Right.AssignInstructors)
 	public static class AssignInstructors implements Permission<InstrOfferingConfig> {
 		@Autowired PermissionDepartment permissionDepartment;
-		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededLimitedEdit;
 
 		@Override
 		public boolean check(UserContext user, InstrOfferingConfig source) {
-			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
+			if (permissionOfferingLockNeededLimitedEdit.check(user, source.getInstructionalOffering())) return false;
 			
 			if (permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit))
 				return true;
@@ -64,6 +64,22 @@ public class InstructorPermissions {
 
 		@Override
 		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
+	}
+	
+	@PermissionForRight(Right.AssignInstructorsClass)
+	public static class AssignInstructorsClass implements Permission<Class_> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeededLimitedEdit;
+
+		@Override
+		public boolean check(UserContext user, Class_ source) {
+			return !permissionOfferingLockNeededLimitedEdit.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()) &&
+					permissionDepartment.check(user, source.getControllingDept(), DepartmentStatusType.Status.OwnerLimitedEdit,
+							source.getManagingDept(), DepartmentStatusType.Status.ManagerLimitedEdit);
+		}
+
+		@Override
+		public Class<Class_> type() { return Class_.class; }
 	}
 	
 	@PermissionForRight(Right.InstructorDetail)

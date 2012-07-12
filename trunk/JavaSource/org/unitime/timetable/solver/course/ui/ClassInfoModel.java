@@ -52,7 +52,6 @@ import net.sf.cpsolver.coursett.preference.SumPreferenceCombination;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.LazyInitializationException;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -81,10 +80,10 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.course.ui.ClassAssignmentInfo.StudentConflict;
 import org.unitime.timetable.util.DefaultRoomAvailabilityService;
 import org.unitime.timetable.util.RoomAvailability;
@@ -105,9 +104,9 @@ public class ClassInfoModel implements Serializable {
     private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
     private boolean iUnassignConflictingAssignments = false;
     
-    public void clear(TimetableManager manager) {
+    public void clear(String userId) {
         iClass = null; iChange = null; iRooms = null; iDates = null; iTimes = null; iUnassignConflictingAssignments = false;
-        iManagerExternalId = manager.getExternalUniqueId();
+        iManagerExternalId = userId;
     }
     
     public ClassInfo getClazz() {
@@ -260,7 +259,7 @@ public class ClassInfoModel implements Serializable {
         }
     }
     
-    public String assign(Long sessionId, User user) {
+    public String assign(SessionContext context) {
         if (iChange==null) return "Nothing to assign.";
         if (!"true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.allowUnassignment", "true")))
         	if (!iChange.getConflicts().isEmpty())
@@ -302,6 +301,7 @@ public class ClassInfoModel implements Serializable {
             }
         }
         
+        Long sessionId = context.getUser().getCurrentAcademicSessionId();
         Session session = SessionDAO.getInstance().get(sessionId, hibSession);
         if (!session.getStatusType().isTestSession()) {
             if (session.getStatusType().canOnlineSectionStudents()) {
@@ -310,11 +310,11 @@ public class ClassInfoModel implements Serializable {
             		if (!session.isOfferingLocked(offeringId))
             			unlockedOfferings.add(offeringId);
             	if (!unlockedOfferings.isEmpty())
-            		StudentSectioningQueue.offeringChanged(hibSession, user, sessionId, unlockedOfferings);
+            		StudentSectioningQueue.offeringChanged(hibSession, context.getUser(), sessionId, unlockedOfferings);
             } else if (session.getStatusType().canSectionAssistStudents()) {
             	for (Map.Entry<Long, List<Long>> entry: touchedOfferingIds.entrySet()) {
             		if (!session.isOfferingLocked(entry.getKey()))
-            			StudentSectioningQueue.classAssignmentChanged(hibSession, user, sessionId, entry.getValue());        		
+            			StudentSectioningQueue.classAssignmentChanged(hibSession, context.getUser(), sessionId, entry.getValue());        		
             	}
             }
         }

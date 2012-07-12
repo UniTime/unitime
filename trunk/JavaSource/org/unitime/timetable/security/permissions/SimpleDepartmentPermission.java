@@ -3,6 +3,7 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.DepartmentStatusType.Status;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
@@ -50,4 +51,33 @@ public class SimpleDepartmentPermission implements PermissionDepartment {
 	}
 	
 	public boolean checkStatus(DepartmentStatusType status) { return true; }
+
+	@Override
+	public boolean check(UserContext user, Department controllingDepartment, Status ownerStatus, Department managingDepartment, Status managerStatus) {
+		// Not authenticated or no authority -> no permission
+		if (user == null || user.getCurrentAuthority() == null || controllingDepartment == null) return false;
+		if (managingDepartment == null) managingDepartment = controllingDepartment;
+		
+		UserAuthority authority = user.getCurrentAuthority();
+		
+		// Academic session check
+		if (!authority.hasRight(Right.SessionIndependent) && !authority.hasQualifier(controllingDepartment.getSession()))
+			return false;
+		
+		// Department check
+		if (!authority.hasRight(Right.DepartmentIndependent) && !authority.hasQualifier(controllingDepartment) && !authority.hasQualifier(managingDepartment))
+			return false;
+
+		// Check department status
+		if ((ownerStatus != null || managerStatus != null) && !authority.hasRight(Right.StatusIndependent)) {
+			DepartmentStatusType type = managingDepartment.effectiveStatusType();
+			if (ownerStatus != null && authority.hasQualifier(controllingDepartment) && type.can(ownerStatus))
+				return true;
+			if (managerStatus != null && authority.hasQualifier(managingDepartment) && type.can(managerStatus))
+				return true;
+			return false;
+		}
+		
+		return true;
+	}
 }

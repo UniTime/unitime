@@ -85,6 +85,7 @@ public enum Right {
 	MultipleClassSetupClass(Class_.class),
 	
 	AssignInstructors(InstrOfferingConfig.class),
+	AssignInstructorsClass(Class_.class),
 	
 	CourseTimetabling(Department.class),
 	ClassAssignments(Session.class),
