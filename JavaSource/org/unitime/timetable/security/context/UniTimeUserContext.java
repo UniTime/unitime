@@ -48,6 +48,7 @@ import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.LoginManager;
 
 public class UniTimeUserContext extends AbstractUserContext {
 	private static final long serialVersionUID = 1L;
@@ -147,7 +148,9 @@ public class UniTimeUserContext extends AbstractUserContext {
 					"from Student where externalUniqueId = :id")
 					.setString("id", userId).list()) {
 				if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
-				addAuthority(new StudentAuthority(student));
+				StudentAuthority authority = new StudentAuthority(student);
+				authority.addQualifier(student.getSession());
+				addAuthority(authority);
 				sessions.add(student.getSession());
 			}
 			
@@ -303,4 +306,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 
 	@Override
 	public String getUsername() { return iLogin; }
+	
+	@Override
+	public boolean isAccountNonLocked() { return !LoginManager.isUserLockedOut(getUsername(), new Date()); }
 }
