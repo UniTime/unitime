@@ -30,6 +30,8 @@ public interface Permission<T> {
 	
 	public static interface PermissionDepartment extends Permission<Department> {
 		public boolean check(UserContext user, Department department, DepartmentStatusType.Status... status);
+		public boolean check(UserContext user, Department controllingDepartment, DepartmentStatusType.Status ownerStatus,
+											   Department managingDepartment, DepartmentStatusType.Status managerStatus);
 	}
 	
 	public static interface PermissionSession extends Permission<Session> {

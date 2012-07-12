@@ -218,6 +218,10 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 	
+	public static void classAssignmentChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Collection<Long> classIds) {
+		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
+	}
+
 	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... classIds) {
 		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}

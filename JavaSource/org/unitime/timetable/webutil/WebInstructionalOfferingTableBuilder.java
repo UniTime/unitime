@@ -346,14 +346,14 @@ public class WebInstructionalOfferingTableBuilder {
         	cell.setOnClick(onClick);
         }
         if (!isEditable){
-        	cell.addContent("<font color=" + disabledColor + ">");
+        	cell.addContent("<span style=\"color:" + disabledColor + ";\">");
         }
         return (cell);
     }
 
     private void endCell(TableCell cell, boolean isEditable){
         if (!isEditable){
-            cell.addContent("</font>");
+            cell.addContent("</span>");
         }   
     }
    
@@ -597,7 +597,7 @@ public class WebInstructionalOfferingTableBuilder {
     	TableCell cell = null;
     	if (dp==null) {
     		cell = initNormalCell("", isEditable);
-    	} else if (dp.getType() == DatePattern.sTypePatternSet) {
+    	} else if (dp.getType() == DatePattern.sTypePatternSet && isEditable) {
     		String text = "";
     		boolean hasReq = false;
 			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
@@ -806,6 +806,9 @@ public class WebInstructionalOfferingTableBuilder {
     		String label = aClass.instructorHtml(getInstructorNameFormat());
     		if (!aClass.isDisplayInstructor().booleanValue()){
     			label = "<i>" + label + "</i>";
+    		}
+    		if (!isEditable) {
+    			label = "<span style=\"color:gray;\">" + label + "</span>";
     		}
     		cell.addContent(label);
             cell.setAlign("left");	
