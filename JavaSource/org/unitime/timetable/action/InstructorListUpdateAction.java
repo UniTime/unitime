@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorListUpdateForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.model.Assignment;
@@ -116,7 +117,7 @@ public class InstructorListUpdateAction extends Action {
             request.setAttribute("filterApplied", "1");
         }
         
-        Collection assigned = getAssigned(frm, request);
+        Collection assigned = getAssigned();
 		if (assigned != null) {
 			frm.setAssignedInstr(assigned);
 		} 
@@ -193,7 +194,7 @@ public class InstructorListUpdateAction extends Action {
 	private void update(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
 		String[] selectedAssigned = frm.getAssignedSelected();
 		String[] selectedNotAssigned = frm.getAvailableSelected();
-		Collection assigned = getAssigned(frm, request);
+		Collection assigned = getAssigned();
 		Collection available = getAvailable(frm, request);
 		
 		StringBuffer s1 = new StringBuffer();
@@ -350,11 +351,10 @@ public class InstructorListUpdateAction extends Action {
 	 * @return
 	 * @throws Exception
 	 */
-	private Collection getAssigned(InstructorListUpdateForm frm, HttpServletRequest request) throws Exception {
-		HttpSession httpSession = request.getSession();
-		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-			List assigned = DepartmentalInstructor.getInstructorByDept(sessionContext.getUser().getCurrentAcademicSessionId(), new Long(deptId));
+	private Collection getAssigned() throws Exception {
+		String deptId = (String)sessionContext.getAttribute(SessionAttribute.DepartmentId);
+		if (deptId != null) {
+			List<DepartmentalInstructor> assigned = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
 			Collections.sort(assigned, new DepartmentalInstructorComparator(DepartmentalInstructorComparator.COMPARE_BY_POSITION));
 			return assigned;
 		} else {

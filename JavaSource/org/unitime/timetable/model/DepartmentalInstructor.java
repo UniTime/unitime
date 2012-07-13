@@ -346,33 +346,20 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return getAllForInstructor(di, di.getDepartment().getSessionId());
 	}
 	
-	/**
-	 * 
-	 * @param deptCode
-	 * @return
-	 */
-	public static List getInstructorByDept(Long sessionId, Long deptId) throws Exception {	
-		
-		StringBuffer query = new StringBuffer();
-		query.append("select distinct i ");
-	    query.append("  from DepartmentalInstructor i ");
-		query.append(" where i.department.session.uniqueId = :acadSessionId ");
-		if (deptId!=null)
-			query.append(" and i.department.uniqueId = :deptId");
-        query.append(" order by i.lastName ");
-        
-        DepartmentalInstructorDAO idao = new DepartmentalInstructorDAO();
-		org.hibernate.Session hibSession = idao.getSession();
-
-		Query q = hibSession.createQuery(query.toString());
-		q.setFetchSize(5000);
-		q.setCacheable(true);
-		q.setLong("acadSessionId", sessionId.longValue());
-		if (deptId!=null)
-		    q.setLong("deptId", deptId.longValue());
-        
-		List result = q.list();
-		return result;
+	public static List<DepartmentalInstructor> findInstructorsForDepartment(Long departmentId) throws Exception {
+		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where department.uniqueId = :departmentId order by lastName, firstName, middleName")
+				.setLong("departmentId", departmentId)
+				.setCacheable(true)
+				.list();
+	}
+	
+	public static List<DepartmentalInstructor> findInstructorsForSession(Long sessionId) throws Exception {
+		return (List<DepartmentalInstructor>) DepartmentalInstructorDAO.getInstance().getSession().createQuery(
+				"from DepartmentalInstructor where department.session.uniqueId = :sessionId order by lastName, firstName, middleName")
+				.setLong("sessionId", sessionId)
+				.setCacheable(true)
+				.list();
 	}
 	
 	/**
@@ -449,7 +436,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	}
 
 	public DepartmentalInstructor getNextDepartmentalInstructor(SessionContext context, Right right) throws Exception {
-    	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
+    	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
     	DepartmentalInstructor next = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();
@@ -462,7 +449,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     }
 	
     public DepartmentalInstructor getPreviousDepartmentalInstructor(SessionContext context, Right right) throws Exception {
-    	List instructors = DepartmentalInstructor.getInstructorByDept(getDepartment().getSessionId(),getDepartment().getUniqueId());
+    	List instructors = DepartmentalInstructor.findInstructorsForDepartment(getDepartment().getUniqueId());
     	DepartmentalInstructor prev = null;
     	for (Iterator i=instructors.iterator();i.hasNext();) {
     		DepartmentalInstructor di = (DepartmentalInstructor)i.next();

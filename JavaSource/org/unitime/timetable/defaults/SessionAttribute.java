@@ -36,6 +36,8 @@ public enum SessionAttribute {
 	ClassesCourseNumber("crsLstCrsNbr", "Last used course number (String containing course number)"),
 	ClassAssignmentsSubjectAreas("crsAsgnLstSubjectAreaIds", "Last used subject areas (String containing a comma separated list of ids)"),
 	
+	DepartmentId("deptUniqueId", "Last department (String containing department unique id)"),
+	
 	TableOrder("OrderInfo", "WebTable order info");
 	;
 

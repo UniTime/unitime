@@ -135,19 +135,23 @@ public class UserData extends BaseUserData {
 		return ret;
 	}
 
+	@Deprecated
 	public static void removeProperty(HttpSession session, String name) {
 		setProperty(session, name, null);
 	}
 	
+	@Deprecated
 	public static int getPropertyInt(HttpSession session, String name, int defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?Integer.parseInt(value):defaultValue);
 	}
 	
+	@Deprecated
 	public static void setPropertyInt(HttpSession session, String name, int value) {
 		setProperty(session, name, String.valueOf(value));
 	}
 
+	@Deprecated
 	public static double getPropertyDouble(HttpSession session, String name, double defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?Double.parseDouble(value):defaultValue);

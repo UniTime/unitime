@@ -72,6 +72,9 @@ public class CourseTimetablingPermissions {
 	@PermissionForRight(Right.SolutionChanges)
 	public static class SolutionChanges extends CourseTimetabling {}
 
+	@PermissionForRight(Right.ConflictStatistics)
+	public static class ConflictStatistics extends CourseTimetabling {}
+
 	@PermissionForRight(Right.ClassAssignments)
 	public static class ClassAssignments implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;

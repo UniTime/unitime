@@ -106,6 +106,7 @@ public enum Right {
 	AssignmentHistory(Department.class),
 	SolutionChanges(Department.class),
 	Suggestions(Department.class),
+	ConflictStatistics(Department.class),
 	
 	/** Class level rights */
 	ClassDetail(Class_.class),

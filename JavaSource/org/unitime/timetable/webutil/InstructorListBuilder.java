@@ -25,14 +25,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -44,10 +42,10 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -58,14 +56,12 @@ public class InstructorListBuilder {
     
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-    public String htmlTableForInstructor(HttpServletRequest request, String deptId, int order, String backId) throws Exception {
+    public String htmlTableForInstructor(SessionContext context, String deptId, int order, String backId) throws Exception {
         
 		int cols = 11;
-		User user = Web.getUser(request.getSession());
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
-		String timeGridSize = RequiredTimeTable.getTimeGridSize(user);
+		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
+		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
+		String timeGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
 
 		// Create new table
 		WebTable webTable = new WebTable(cols, "",
@@ -89,16 +85,15 @@ public class InstructorListBuilder {
 		// Loop through Instructor class
 		List list = null;
 		if (deptId.equals(Constants.ALL_OPTION_VALUE))
-		    list = DepartmentalInstructor.getInstructorByDept(sessionId, null);
+		    list = DepartmentalInstructor.findInstructorsForSession(context.getUser().getCurrentAcademicSessionId());
 		else
-		    list = DepartmentalInstructor.getInstructorByDept(sessionId, new Long(deptId));
+		    list = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
 
 		if (list==null || list.size() == 0) {		    
 			return null;
-		} 
-		else {
-			String instructorNameFormat =  Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
-			String instructorSortOrder = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_SORT);
+		}  else {
+			String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
+			String instructorSortOrder = UserProperty.SortNames.get(context.getUser());
 			
 			for (Iterator iter = list.iterator(); iter.hasNext();) {
 				DepartmentalInstructor di = (DepartmentalInstructor) iter.next(); 
@@ -114,7 +109,7 @@ public class InstructorListBuilder {
 				//get instructor name 
 				String name = Constants.toInitialCase(di.getName(instructorNameFormat), "-".toCharArray());
 				String nameOrd = di.nameLastNameFirst().toLowerCase();
-				if (instructorSortOrder!=null && instructorSortOrder.equals(Constants.SETTINGS_INSTRUCTOR_SORT_NATURAL))
+				if (CommonValues.SortAsDisplayed.eq(instructorSortOrder))
 				    nameOrd = name.toLowerCase();
 							
 				// position
@@ -289,13 +284,11 @@ public class InstructorListBuilder {
 		}        
     }
     
-    public void pdfTableForInstructor(HttpServletRequest request, String deptId, int order ) throws Exception {
+    public File pdfTableForInstructor(SessionContext context, String deptId, int order ) throws Exception {
 		int cols = 10;
-		User user = Web.getUser(request.getSession());
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(user);
-		String timeGridSize = RequiredTimeTable.getTimeGridSize(user);
+		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
+		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
+		String timeGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
 
 		// Create new table
 		PdfWebTable webTable = new PdfWebTable(cols, 
@@ -317,15 +310,15 @@ public class InstructorListBuilder {
 		// Loop through Instructor class
 		List list = null;
 		if (deptId.equals(Constants.ALL_OPTION_VALUE))
-		    list = DepartmentalInstructor.getInstructorByDept(sessionId, null);
+		    list = DepartmentalInstructor.findInstructorsForSession(context.getUser().getCurrentAcademicSessionId());
 		else
-		    list = DepartmentalInstructor.getInstructorByDept(sessionId, new Long(deptId));
+		    list = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
 
 		if (list==null || list.size() == 0)		    
-			return ;
+			return null;
 
-		String instructorNameFormat =  Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
-		String instructorSortOrder = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_SORT);
+		String instructorNameFormat =  UserProperty.NameFormat.get(context.getUser());
+		String instructorSortOrder = UserProperty.SortNames.get(context.getUser());
 		
 		for (Iterator iter = list.iterator(); iter.hasNext();) {
 			DepartmentalInstructor di = (DepartmentalInstructor) iter.next(); 
@@ -340,7 +333,7 @@ public class InstructorListBuilder {
 			//get instructor name 
 			String name = Constants.toInitialCase(di.getName(instructorNameFormat), "-".toCharArray());
 			String nameOrd = di.nameLastNameFirst().toLowerCase();
-			if (instructorSortOrder!=null && instructorSortOrder.equals(Constants.SETTINGS_INSTRUCTOR_SORT_NATURAL))
+			if (CommonValues.SortAsDisplayed.eq(instructorSortOrder))
 			    nameOrd = name.toLowerCase();
 						
 			// position
@@ -493,7 +486,7 @@ public class InstructorListBuilder {
 		
 		webTable.exportPdf(file, order);
 		
-		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+		return file;
     }    
     
     /**
