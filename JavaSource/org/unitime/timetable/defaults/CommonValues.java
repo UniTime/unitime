@@ -42,6 +42,9 @@ public enum CommonValues {
 	Always("always"),
 	Never("never"),
 	
+	SortByLastName("Always by Last Name"),
+	SortAsDisplayed("Natural Order (as displayed)"),
+	
 	;
 
 	String iValue;

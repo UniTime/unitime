@@ -19,15 +19,12 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,17 +33,16 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorSearchForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -61,6 +57,8 @@ import org.unitime.timetable.util.Constants;
 public class InstructorSearchAction extends Action {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 	
 	// --------------------------------------------------------- Instance Variables
 
@@ -78,112 +76,52 @@ public class InstructorSearchAction extends Action {
 			HttpServletRequest request, HttpServletResponse response)
 			throws Exception {
 
-		//Check permissions
-		HttpSession httpSession = request.getSession();
-		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception(MSG.exceptionAccessDenied());
-		}		
+		sessionContext.checkPermission(Right.Instructors);
 
 		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
 
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		Set mgrDepts = setupManagerDepartments(request);
+		Set<Department> departments = setupManagerDepartments(request);
 
 		// Dept code is saved to the session - go to instructor list
-		Object dc = httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
-		String deptId= "";
-
-		if (dc != null && !dc.toString().equals(Constants.BLANK_OPTION_VALUE)) {
-		    boolean allowed = false;
-		    deptId = dc.toString();
-			if (mgrDepts!=null && mgrDepts.size()>0 && !user.isAdmin()) {
-			    for (Iterator i=mgrDepts.iterator(); i.hasNext(); ) {
-			        Department d = (Department) i.next();
-			        if (d.getUniqueId().toString().equals(deptId)) {
-			            allowed = true;
-			            break;
-			        }
-			    }
-			}
-		    
-			if (user.isAdmin() || allowed) {
-			    getInstructorList(instructorSearchForm, request, deptId, sessionId);
-			    return mapping.findForward("instructorList");
-			}
-		}
-
-		// No session attribute found - Load dept code
-		else {
-		    if (mgrDepts.size()==1) {
-		        Department d = (Department) mgrDepts.iterator().next();
-		        deptId = d.getUniqueId().toString();
-		        httpSession.setAttribute(Constants.DEPT_ID_ATTR_NAME, deptId);
-			    getInstructorList(instructorSearchForm, request, deptId, sessionId);
-			    return mapping.findForward("instructorList");
-		    }
-		}
-
-		return mapping.findForward("showInstructorSearch");
-	}
-
-	private void getInstructorList(
-	        InstructorSearchForm instructorSearchForm,
-	        HttpServletRequest request,
-	        String deptId, 
-	        Long sessionId ) throws Exception {
-		instructorSearchForm.setDeptUniqueId(deptId);
-		List v = DepartmentalInstructor.getInstructorByDept(sessionId, new Long(deptId));
+		String deptId = (String)sessionContext.getAttribute(SessionAttribute.DepartmentId);
 		
-		if (v==null || v.size()==0) {
-			ActionMessages errors = new ActionMessages();
-			errors.add("searchResult", 
-			        	new ActionMessage(
-			        	        "errors.generic",
-			        	        MSG.errorNoInstructorsFoundForDepartment()));
-			saveErrors(request, errors);
+		if ((deptId == null || deptId.isEmpty()) && departments.size() == 1)
+			deptId = departments.iterator().next().getUniqueId().toString();
+		
+		if (deptId == null || deptId.isEmpty() || !sessionContext.hasPermission(deptId, "Department", Right.Instructors)) {
+			return mapping.findForward("showInstructorSearch");
+		} else {
+			instructorSearchForm.setDeptUniqueId(deptId);
+			List instructors = DepartmentalInstructor.findInstructorsForDepartment(Long.valueOf(deptId));
+			if (instructors == null || instructors.isEmpty()) {
+				ActionMessages errors = new ActionMessages();
+				errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoInstructorsFoundForDepartment()));
+				saveErrors(request, errors);
+			}
+			return mapping.findForward("instructorList");
 		}
 	}
+
 	
     /**
      * @return
      */
-    private Set setupManagerDepartments(HttpServletRequest request) throws Exception{
-        Set mgrDepts = null;
-        
-		User user = Web.getUser(request.getSession());
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+    private Set<Department> setupManagerDepartments(HttpServletRequest request) throws Exception{
+    	Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
 
-		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
-		    mgrDepts = Department.findAllBeingUsed(sessionId);
-		}
-		else {
-			// Get manager info
-			TimetableManager mgr = TimetableManager.getManager(user);
-			mgrDepts = new TreeSet(mgr.departmentsForSession(sessionId));
-		}
+		if (departments.isEmpty())
+			throw new Exception(MSG.exceptionNoDepartmentToManage());
 		
-		//get depts owned by user and forward to the appropriate page
-		if (mgrDepts.size() == 0) {
-			throw new Exception(
-					MSG.exceptionNoDepartmentToManage());
-		} 
+		List<LabelValueBean> labelValueDepts = new ArrayList<LabelValueBean>();
+		for (Department d: departments)
+			labelValueDepts.add(new LabelValueBean(d.getDeptCode() + "-" + d.getName(), d.getUniqueId().toString()));
 		
-		Vector labelValueDepts = new Vector();
-		for (Iterator it = mgrDepts.iterator(); it.hasNext();) {
-			Department d = (Department) it.next();
-			labelValueDepts.add(
-			        new LabelValueBean(
-			                d.getDeptCode() + "-" + d.getName(),
-			                d.getUniqueId().toString() ) );
-			if (mgrDepts.size() == 1) {
-				request.setAttribute("deptId", d.getUniqueId().toString());
-			} 
-
-		}
+		if (labelValueDepts.size() == 1)
+			request.setAttribute("deptId", labelValueDepts.get(0).getValue());
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME,labelValueDepts);
-		return mgrDepts;
+		
+		return departments;
     }
 
 }

@@ -21,21 +21,22 @@ package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -49,6 +50,8 @@ import org.unitime.timetable.util.Constants;
 public class InstructorAddAction extends InstructorAction {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -68,12 +71,6 @@ public class InstructorAddAction extends InstructorAction {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		
-		//Check permissions
-		HttpSession httpSession = request.getSession();
-		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception(MSG.exceptionAccessDenied());
-		}	
-		
 		super.execute(mapping, form, request, response);
 		
 		InstructorEditForm frm = (InstructorEditForm) form;
@@ -87,11 +84,14 @@ public class InstructorAddAction extends InstructorAction {
         }
         
 		//get department
-		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-			String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
+		if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
+			String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
 			Department d = new DepartmentDAO().get(new Long(deptId));
 			frm.setDeptName(d.getName().trim());
+			frm.setDeptCode(d.getDeptCode());
 		}
+		
+		sessionContext.checkPermission(frm.getDeptCode(), "Department", Right.InstructorAdd);
 				
         //update - Update the instructor and go back to Instructor List Screen
         if(op.equals(MSG.actionSaveInstructor()) ) {

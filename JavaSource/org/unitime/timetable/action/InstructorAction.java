@@ -31,11 +31,13 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
@@ -47,6 +49,7 @@ import org.unitime.timetable.model.Staff;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.StaffDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -56,6 +59,8 @@ import org.unitime.timetable.util.Constants;
 public class InstructorAction extends Action {
 
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 	
 	/** 
 	 * Method execute
@@ -195,8 +200,6 @@ public class InstructorAction extends Action {
 		try {	
 			tx = hibSession.beginTransaction();
 			
-			HttpSession httpSession = request.getSession();
-			
 			DepartmentalInstructor inst = null;
 			String instrId = frm.getInstructorId();
 			
@@ -245,8 +248,8 @@ public class InstructorAction extends Action {
 			
 			Department d = null;
 			//get department
-			if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-				String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
+			if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
+				String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
 				d = new DepartmentDAO().get(new Long(deptId));
 				inst.setDepartment(d);
 			}
@@ -259,7 +262,7 @@ public class InstructorAction extends Action {
 
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     inst, 
                     ChangeLog.Source.INSTRUCTOR_EDIT, 
                     (instrId==null || instrId.trim().length()<=0?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
