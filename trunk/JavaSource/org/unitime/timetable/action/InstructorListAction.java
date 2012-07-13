@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.File;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.InstructorSearchForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -83,7 +84,6 @@ public class InstructorListAction extends Action {
 			throws Exception {
 
 		// Check permissions
-		HttpSession httpSession = request.getSession();
 		sessionContext.checkPermission(Right.Instructors);
 
 		InstructorSearchForm instructorSearchForm = (InstructorSearchForm) form;
@@ -105,24 +105,20 @@ public class InstructorListAction extends Action {
 		}
 
 		// Set Form Variable
-		if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null
-				&& ( httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME).equals(instructorSearchForm.getDeptUniqueId())
+		if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null
+				&& ( sessionContext.getAttribute(SessionAttribute.DepartmentId).equals(instructorSearchForm.getDeptUniqueId())
 				     || instructorSearchForm.getDeptUniqueId().equalsIgnoreCase("") ) ) {
-			instructorSearchForm.setDeptUniqueId(
-			        httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME).toString());
+			instructorSearchForm.setDeptUniqueId(sessionContext.getAttribute(SessionAttribute.DepartmentId).toString());
 		}
 
 		// Set Session Variable
 		if (!instructorSearchForm.getDeptUniqueId().equalsIgnoreCase("")) {
-			httpSession.setAttribute(
-			        Constants.DEPT_ID_ATTR_NAME,
-					instructorSearchForm.getDeptUniqueId());
+			sessionContext.setAttribute(SessionAttribute.DepartmentId, instructorSearchForm.getDeptUniqueId());
 		}
 
 		if (request.getAttribute(Department.DEPT_ATTR_NAME)!=null) {
 		    request.setAttribute(Department.DEPT_ATTR_NAME,	request.getAttribute(Department.DEPT_ATTR_NAME));		    
-		}
-		else {
+		} else {
 		    setupManagerDepartments(request);
 		}
 		
@@ -139,17 +135,15 @@ public class InstructorListAction extends Action {
 
 		InstructorListBuilder ilb = new InstructorListBuilder();
 		String backId = ("PreferenceGroup".equals(request.getParameter("backType"))?request.getParameter("backId"):null);
-		String tblData = ilb.htmlTableForInstructor(request, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(sessionContext,"instructorList.ord"), backId);
-		if (tblData==null || tblData.trim().length()==0) {
-			errors.add(
-			        "searchResult", 
-			        new ActionMessage(
-			                "errors.generic",
-			                MSG.errorNoInstructorsFoundInSearch()));
+		String tblData = ilb.htmlTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(sessionContext,"instructorList.ord"), backId);
+		if (tblData == null || tblData.trim().isEmpty()) {
+			errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorNoInstructorsFoundInSearch()));
 			saveErrors(request, errors);
 		} else {
 			if (MSG.actionExportPdf().equals(op)) {
-				ilb.pdfTableForInstructor(request, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(sessionContext,"instructorList.ord"));
+				File file = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(sessionContext,"instructorList.ord"));
+				if (file != null && file.exists())
+					request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
 			}
 		}
 		
@@ -163,8 +157,8 @@ public class InstructorListAction extends Action {
 						true, true
 						);
 			}
-		} else if (httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME) != null) {
-			Department d = (new DepartmentDAO()).get(Long.valueOf(httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME).toString()));
+		} else if (sessionContext.getAttribute(SessionAttribute.DepartmentId) != null) {
+			Department d = (new DepartmentDAO()).get(Long.valueOf(sessionContext.getAttribute(SessionAttribute.DepartmentId).toString()));
 			if (d!=null) {
 				BackTracker.markForBack(
 						request,

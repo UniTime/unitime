@@ -178,6 +178,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case CourseTimetabling:
 		case AssignedClasses:
 		case AssignmentHistory:
+		case ConflictStatistics:
 		case AddCourseOffering:
 		case ClassEdit:
 		case ClassEditClearPreferences:

@@ -17,19 +17,7 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.solver.WebSolver" %>
-<%@ page import="org.unitime.timetable.solver.SolverProxy" %>
 <%@ page import="org.unitime.timetable.solver.ui.ConflictStatisticsInfo" %>
-<%@ page import="org.unitime.timetable.model.Solution" %>
-<%@ page import="org.unitime.timetable.model.dao.SolutionDAO" %>
-<%@ page import="org.unitime.timetable.form.CbsForm" %>
-<%@ page import="org.unitime.commons.Debug" %>
-<%@ page import="org.unitime.timetable.model.TimetableManager" %>
-<%@ page import="org.unitime.commons.User" %>
-<%@ page import="org.unitime.timetable.model.Session" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.model.UserData" %>
-<%@ page import="java.util.StringTokenizer" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -38,11 +26,8 @@
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 
 <tiles:importAttribute />
+<tt:session-context/>
 <html:form action="/cbs">
-<%
-try {
-	ConflictStatisticsInfo.printHtmlHeader(out);
-%>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -76,61 +61,25 @@ try {
 			</TR>
 		</TABLE>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-<%
-	ConflictStatisticsInfo cbs = null;
-	SolverProxy solver = WebSolver.getSolver(session);
-	if (solver!=null) {
-		//if (!solver.isWorking())
-		cbs = solver.getCbsInfo();
-	} else {
-		String solutionIdsStr = (String)session.getAttribute("Solver.selectedSolutionId");
-		if (solutionIdsStr!=null) {
-			for (StringTokenizer s = new StringTokenizer(solutionIdsStr,",");s.hasMoreTokens();) {
-				Long solutionId = Long.valueOf(s.nextToken());
-				Solution solution = (new SolutionDAO()).get(solutionId);
-				if (solution==null) continue;
-				ConflictStatisticsInfo x = (ConflictStatisticsInfo)solution.getInfo("CBSInfo");
-				if (x!=null) {
-					if (cbs==null) cbs = x;
-					else cbs.merge(x);
-				}
-			}
-		}
-	}
-	if (cbs!=null) {
-		double limit = UserData.getPropertyDouble(session, "Cbs.limit", CbsForm.sDefaultLimit);
-		int type = UserData.getPropertyInt(session, "Cbs.type", CbsForm.sDefaultType);
-		User user = Web.getUser(request.getSession());
-		TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-		Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
-		boolean clickable = manager.canSeeTimetable(acadSession, user);
-		
-%>
-	<font size='2'>
-<%
-	cbs.printHtml(out, limit/100.0, type, clickable);
-%>
-	</font>
-	<table border='0' width='100%'><tr><td>
-		<tt:displayPrefLevelLegend/>
-	</td></tr></table>
-<%
-	} else {
-%>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<TR>
-			<TD colspan="2">	
-				<i>Conflict-based statistics is not available at the moment.</i>
-			</TD>
-		</TR>
-	</TABLE>
-<%
-	}
-} catch (Exception e) {
-	Debug.error(e);
-%>		
-		<font color='red'><B>ERROR:<%=e.getMessage()%></B></font>
-<%
-}
-%>
+	<logic:notEmpty name="cbs" scope="request">
+		<bean:define id="limit" name="cbsForm" property="limit" type="Double"/>
+		<bean:define id="type" name="cbsForm" property="typeInt" type="Integer"/>
+		<bean:define id="cbs" name="cbs" type="ConflictStatisticsInfo" scope="request"/>
+		<font size='2'>
+			<% ConflictStatisticsInfo.printHtmlHeader(out); %>
+			<% cbs.printHtml(out, limit / 100.0, type, true); %>
+		</font>
+		<table border='0' width='100%'><tr><td>
+			<tt:displayPrefLevelLegend/>
+		</td></tr></table>
+	</logic:notEmpty>
+	<logic:empty name="cbs" scope="request">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+			<TR>
+				<TD colspan="2">	
+					<i>Conflict-based statistics is not available at the moment.</i>
+				</TD>
+			</TR>
+		</TABLE>
+	</logic:empty>
 </html:form>

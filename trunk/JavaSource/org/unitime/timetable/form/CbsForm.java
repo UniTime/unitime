@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.UserData;
 
 
 /** 
@@ -46,9 +45,7 @@ public class CbsForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iOp = null; iLimit = sDefaultLimit;
-		iType = sTypes[UserData.getPropertyInt(request.getSession(), "Cbs.type" ,sDefaultType)];
-		iLimit = UserData.getPropertyDouble(request.getSession(), "Cbs.limit", sDefaultLimit);
+		iOp = null; iLimit = sDefaultLimit; iType = sTypes[sDefaultType];
 	}
 	
 	public String getOp() { return iOp; }
@@ -59,6 +56,10 @@ public class CbsForm extends ActionForm {
 		for (int i=0;i<sTypes.length;i++)
 			if (sTypes[i].equals(iType)) return i;
 		return 0;
+	}
+	public void setTypeInt(int type) {
+		if (type < 0 || type >= sTypes.length) type = 0;
+		iType = sTypes[type];
 	}
 	public double getLimit() { return iLimit; }
 	public void setLimit(double limit) { iLimit = limit; }
