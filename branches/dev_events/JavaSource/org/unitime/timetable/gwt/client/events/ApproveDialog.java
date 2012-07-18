@@ -50,7 +50,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		
 		if (iTable instanceof Widget) {
 			ScrollPanel scroll = new ScrollPanel((Widget)iTable);
-			ToolBox.setMaxHeight(scroll.getElement().getStyle(), "200px");
+			scroll.addStyleName("scroll");
 			iForm.addRow(MESSAGES.propMeetings(), scroll);
 		}
 		

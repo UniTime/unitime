@@ -188,6 +188,10 @@ h1 {
 	vertical-align: top;
 }
 
+.unitime-MainTable .scroll {
+	max-height: 200px;
+}
+
 .unitime-LoadingPanel {
 	position: absolute;
 	top: 0px;
