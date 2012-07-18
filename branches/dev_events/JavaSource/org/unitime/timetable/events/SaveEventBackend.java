@@ -160,7 +160,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						if (m.getId().equals(x.getUniqueId())) { meeting = x; i.remove(); break; }
 					}
 				if (meeting != null) {
-					if (m.getStartOffset() != meeting.getStartOffset() || m.getEndOffset() != meeting.getStopOffset()) {
+					if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
 						if (!rights.canEdit(meeting))
 							throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
 						meeting.setStartOffset(m.getStartOffset());
