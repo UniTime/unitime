@@ -33,15 +33,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseDatePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
@@ -415,44 +415,50 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		}
 	}
 
+	@Deprecated
     public static DatePattern findByName(HttpServletRequest request, String name) throws Exception {
     	return findByName(Session.getCurrentAcadSession(Web.getUser(request.getSession())), name);
 	}
+	
+	public static DatePattern findByName(Session session, String name) {
+		return findByName(session.getUniqueId(), name);
+	}
 
-    public static DatePattern findByName(Session session, String name) {
+    public static DatePattern findByName(Long sessionId, String name) {
     	List list = (new DatePatternDAO()).getSession().
     		createQuery("select distinct p from DatePattern as p where p.session.uniqueId=:sessionId and p.name=:name").
-    		setLong("sessionId",session.getUniqueId().longValue()).
+    		setLong("sessionId",sessionId).
 			setText("name",name).setCacheable(true).list();
     	if (list==null || list.isEmpty()) return null;
     	return (DatePattern)list.get(0);
 	}
     
-    public static Vector findAll(HttpServletRequest request, Department department, DatePattern includeGiven) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-    	boolean includeExtended = user.isAdmin();
-    	return findAll(session, includeExtended, department, includeGiven);
+    public static List<DatePattern> findAll(UserContext user, Department department, DatePattern includeGiven) throws Exception {
+    	boolean includeExtended = user.getCurrentAuthority().hasRight(Right.ExtendedDatePatterns);
+    	return findAll(user.getCurrentAcademicSessionId(), includeExtended, department, includeGiven);
     }
     
-    public static Vector findAll(Session session, boolean includeExtended, Department department, DatePattern includeGiven) {
-    	Vector list = new Vector((new DatePatternDAO()).getSession().
-    		createQuery("select distinct p from DatePattern as p where p.session.uniqueId=:sessionId"+(!includeExtended?" and p.type!="+sTypeExtended:"")).
-    		setLong("sessionId",session.getUniqueId().longValue()).
-    		setCacheable(true).
-			list());
+    public static List<DatePattern> findAll(Session session, boolean includeExtended, Department department, DatePattern includeGiven) {
+    	return findAll(session.getUniqueId(), includeExtended, department, includeGiven);
+    }
+    
+    public static List<DatePattern> findAll(Long sessionId, boolean includeExtended, Department department, DatePattern includeGiven) {
+    	List<DatePattern> list = (List<DatePattern>)DatePatternDAO.getInstance().getSession().createQuery(
+    			"select distinct p from DatePattern as p where p.session.uniqueId=:sessionId" + (!includeExtended ? " and p.type!="+sTypeExtended : ""))
+    			.setLong("sessionId",sessionId)
+    			.setCacheable(true).list();
 
-    	if (!includeExtended && department!=null) {
-    		for (Iterator i=department.getDatePatterns().iterator();i.hasNext();) {
-    			DatePattern dp = (DatePattern)i.next();
-    			if (dp.getType().intValue()!=sTypeExtended) continue;
-    			list.add(dp);
+    	if (!includeExtended && department != null)
+    		for (DatePattern dp: department.getDatePatterns()) {
+    			if (dp.getType() == sTypeExtended)
+    				list.add(dp);
     		}
-    	}
-    	if (includeGiven!=null && !list.contains(includeGiven))
+    	
+    	if (includeGiven != null && !list.contains(includeGiven))
     		list.add(includeGiven);
     	
     	Collections.sort(list);
+    	
     	return list;
 	}
 
@@ -570,7 +576,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     }
     
     public DatePattern findCloseMatchDatePatternInSession(Session session){
-    	Vector allDatePatterns = DatePattern.findAll(session, true, null, null);
+    	List<DatePattern> allDatePatterns = DatePattern.findAll(session, true, null, null);
  		TreeSet days = new TreeSet();
 
  		

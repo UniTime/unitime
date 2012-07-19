@@ -159,6 +159,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	 *      subjectArea of the subpart and can edit at least one class owned by the
 	 *      subpart
 	 */
+	@Deprecated
 	protected boolean canUserEdit(User user) {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
@@ -178,6 +179,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return false;
 	}
 	
+	@Deprecated
 	protected boolean canUserView(User user){
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
@@ -200,6 +202,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 	}
 	
 	@Override
+	@Deprecated
 	public boolean isEditableBy(User user) {
     	if (getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLockNeeded(getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
     		return false;
@@ -207,6 +210,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	return super.isEditableBy(user);
 	}
 	
+	@Deprecated
 	public boolean isLimitedEditable(User user) {
 		if (isEditableBy(user)) return true;
 		if (user==null) return false;
@@ -624,6 +628,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
      * @param user
      * @return
      */
+    @Deprecated
     public boolean hasExternallyManagedClasses(User user) {
     	for (Iterator i=getClasses().iterator();i.hasNext();) {
     		Class_ c = (Class_)i.next();

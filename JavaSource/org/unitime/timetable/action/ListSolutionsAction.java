@@ -47,6 +47,7 @@ import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.ListSolutionsForm.SolutionBean;
@@ -58,6 +59,7 @@ import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
@@ -74,6 +76,8 @@ public class ListSolutionsAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ListSolutionsForm myForm = (ListSolutionsForm) form;
@@ -251,7 +255,6 @@ public class ListSolutionsAction extends Action {
         if ("Load".equals(op) || "Load Empty Solution".equals(op)) {
         	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver!=null && solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	Long sessionId = null;
         	Long settingsId = null;
         	Long[] ownerId = null;
         	Transaction tx = null;
@@ -272,7 +275,6 @@ public class ListSolutionsAction extends Action {
         					ownerId[i] = ((SolverForm.LongIdValue)myForm.getOwners().elementAt(i)).getId();
         			}
         		}
-            	sessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
             	
             	List list = null;
             	if ("Load".equals(op)) {
@@ -379,7 +381,7 @@ public class ListSolutionsAction extends Action {
         		SolutionBean sb = (SolutionBean)e.nextElement();
         		Solution solution = (new SolutionDAO()).get(sb.getUniqueId());
         		if (solution!=null) {
-        			solution.export(csvFile, Web.getUser(request.getSession()));
+        			solution.export(csvFile, UserProperty.NameFormat.get(sessionContext.getUser()));
         			if (solutionIds.length()>0) solutionIds+="-";
         			solutionIds+=solution.getUniqueId().toString();
         		}

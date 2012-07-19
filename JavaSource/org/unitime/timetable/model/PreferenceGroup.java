@@ -238,10 +238,13 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
     }
 
+    @Deprecated
     protected abstract boolean canUserEdit(User user);
     
+    @Deprecated
     protected abstract boolean canUserView(User user);
    
+    @Deprecated
     public boolean isEditableBy(User user){
     	if (user == null){
     		return(false);
@@ -254,6 +257,7 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return(this.canUserEdit(user));
     }
     
+    @Deprecated
     public boolean isViewableBy(User user){
     	if(user == null){
     		return(false);

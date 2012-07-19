@@ -61,17 +61,17 @@ public class AssignedExamsAction extends Action {
 		ExamReportForm myForm = (ExamReportForm) form;
 
         // Check Access
-        sessionContext.checkPermission(Right.AssignedExams);
+        sessionContext.checkPermission(Right.AssignedExaminations);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
         }
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
         Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);

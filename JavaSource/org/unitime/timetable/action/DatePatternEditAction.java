@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,10 +46,9 @@ import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.DatePatternEditForm;
@@ -58,13 +56,13 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
@@ -74,6 +72,8 @@ import net.sf.cpsolver.ifs.util.CSVFile;
  */
 @Service("/datePatternEdit")
 public class DatePatternEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 	
 	// --------------------------------------------------------- Instance Variables
 	
@@ -104,10 +104,7 @@ public class DatePatternEditAction extends Action {
 		try {
 			DatePatternEditForm myForm = (DatePatternEditForm) form;
 			
-	        // Check Access
-	        if (!Web.isLoggedIn(request.getSession()) || !Web.hasRole(request.getSession(),Roles.getAdminRoles())) {
-	            throw new Exception ("Access Denied.");
-	        }
+			sessionContext.checkPermission(Right.DatePatterns);
 	        
 	        // Read operation to be performed
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -130,14 +127,11 @@ public class DatePatternEditAction extends Action {
 	            myForm.setOp("List");
 	        }
 	        
-	    	User user = Web.getUser(request.getSession());
-	    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-
-	        request.setAttribute(DatePattern.DATE_PATTERN_PARENT_LIST_ATTR, DatePattern.findAllParents(sessionId));
+	        request.setAttribute(DatePattern.DATE_PATTERN_PARENT_LIST_ATTR, DatePattern.findAllParents(sessionContext.getUser().getCurrentAcademicSessionId()));
 
 	        List list = (new DepartmentDAO()).getSession()
 						.createCriteria(Department.class)
-						.add(Restrictions.eq("session.uniqueId", sessionId))
+						.add(Restrictions.eq("session.uniqueId", sessionContext.getUser().getCurrentAcademicSessionId()))
 						.addOrder(Order.asc("deptCode"))
 						.list();
 	    	Vector availableDepts = new Vector();
@@ -252,7 +246,7 @@ public class DatePatternEditAction extends Action {
 	                	
                         ChangeLog.addChange(
                                 hibSession, 
-                                request, 
+                                sessionContext, 
                                 dp, 
                                 ChangeLog.Source.DATE_PATTERN_EDIT, 
                                 ("Save".equals(op)?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
@@ -306,7 +300,7 @@ public class DatePatternEditAction extends Action {
                     DatePattern dp = (new DatePatternDAO()).get(myForm.getUniqueId(), hibSession);
                     ChangeLog.addChange(
                             hibSession, 
-                            request, 
+                            sessionContext, 
                             dp, 
                             ChangeLog.Source.DATE_PATTERN_EDIT, 
                             ChangeLog.Operation.DELETE, 
@@ -338,10 +332,8 @@ public class DatePatternEditAction extends Action {
 	            	File file = ApplicationProperties.getTempFile("fix", "txt");
 	            	out = new PrintWriter(new FileWriter(file));
 	            	
-	            	Session session = Session.getCurrentAcadSession(user);
-	            	Vector allDatePatterns = DatePattern.findAll(session, true, null, null);
-	            	for (Iterator i=allDatePatterns.iterator();i.hasNext();) {
-	            		DatePattern dp = (DatePattern)i.next();
+	            	List<DatePattern> allDatePatterns = DatePattern.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), true, null, null);
+	            	for (DatePattern dp: allDatePatterns) {
 	            		if (!dp.getName().startsWith("generated")) continue;
                         
                         out.println("Checking "+dp.getName()+" ...");
@@ -376,7 +368,7 @@ public class DatePatternEditAction extends Action {
 	            			}
                             ChangeLog.addChange(
                                     hibSession, 
-                                    request, 
+                                    sessionContext, 
                                     dp, 
                                     ChangeLog.Source.DATE_PATTERN_EDIT, 
                                     ChangeLog.Operation.DELETE, 
@@ -446,7 +438,7 @@ public class DatePatternEditAction extends Action {
                                 }
                                 ChangeLog.addChange(
                                         hibSession, 
-                                        request, 
+                                        sessionContext, 
                                         dp, 
                                         ChangeLog.Source.DATE_PATTERN_EDIT, 
                                         ChangeLog.Operation.DELETE, 
@@ -484,7 +476,7 @@ public class DatePatternEditAction extends Action {
 	                File file = ApplicationProperties.getTempFile("tp", "sql");
 	                out = new PrintWriter(new FileWriter(file));
 	                
-	                TreeSet patterns = new TreeSet(DatePattern.findAll(request, null, null));
+	                TreeSet patterns = new TreeSet(DatePattern.findAll(sessionContext.getUser(), null, null));
 	                
 	                boolean mysql = false;
 
@@ -505,12 +497,12 @@ public class DatePatternEditAction extends Action {
 	                    
 	                        out.print(" ("+dp.getUniqueId()+", '"+dp.getName()+"', '"+dp.getPattern()+"', "+
 	                            dp.getOffset()+", "+dp.getType()+", "+(dp.isVisible()?"1":"0")+", "+
-	                            sessionId+")");
+	                            sessionContext.getUser().getCurrentAcademicSessionId()+")");
 	                    } else {
 	                        out.println("insert into DATE_PATTERN (UNIQUEID, NAME, PATTERN, OFFSET, TYPE, VISIBLE, SESSION_ID)");
 	                        out.println("values ("+dp.getUniqueId()+", '"+dp.getName()+"', '"+dp.getPattern()+"', "+
                                 dp.getOffset()+", "+dp.getType()+", "+(dp.isVisible()?"1":"0")+", "+
-                                sessionId+");");
+                                sessionContext.getUser().getCurrentAcademicSessionId()+");");
 	                    }
 	                    
 	                    line++;
@@ -548,13 +540,11 @@ public class DatePatternEditAction extends Action {
 	            	
 	            	File file = ApplicationProperties.getTempFile("push", "txt");
 	            	out = new PrintWriter(new FileWriter(file));
-	            	
-	            	Session session = Session.getCurrentAcadSession(user);
-	            	
+	            		            	
 	            	List subparts =
        					hibSession.
        					createQuery("select distinct c.schedulingSubpart from Class_ as c inner join c.datePattern as dp where dp.session.uniqueId=:sessionId").
-       					setLong("sessionId", session.getUniqueId().longValue()).list();
+       					setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId()).list();
 
 	            	for (Iterator i=subparts.iterator();i.hasNext();) {
 	            		SchedulingSubpart subpart = (SchedulingSubpart)i.next();
@@ -618,8 +608,7 @@ public class DatePatternEditAction extends Action {
 	            	File file = ApplicationProperties.getTempFile("assigndept", "txt");
 	            	out = new PrintWriter(new FileWriter(file));
 	            	
-	            	Session session = Session.getCurrentAcadSession(user);
-	            	TreeSet allDatePatterns = new TreeSet(DatePattern.findAll(session, true, null, null));
+	            	TreeSet allDatePatterns = new TreeSet(DatePattern.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), true, null, null));
 	            	for (Iterator i=allDatePatterns.iterator();i.hasNext();) {
 	            		DatePattern dp = (DatePattern)i.next();
 	            		
@@ -677,7 +666,7 @@ public class DatePatternEditAction extends Action {
 	            			hibSession.saveOrUpdate(dp);
                             ChangeLog.addChange(
                                     hibSession, 
-                                    request, 
+                                    sessionContext, 
                                     dp, 
                                     ChangeLog.Source.DATE_PATTERN_EDIT, 
                                     ChangeLog.Operation.UPDATE, 
@@ -729,9 +718,8 @@ public class DatePatternEditAction extends Action {
 	            					new CSVFile.CSVField("Classes")
 	            			});
 	            	
-	            	Session session = Session.getCurrentAcadSession(user);
 	            	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
-	            	TreeSet allDatePatterns = new TreeSet(DatePattern.findAll(session, true, null, null));
+	            	TreeSet allDatePatterns = new TreeSet(DatePattern.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), true, null, null));
 	            	for (Iterator i=allDatePatterns.iterator();i.hasNext();) {
 	            		DatePattern dp = (DatePattern)i.next();
 	            		
@@ -835,13 +823,11 @@ public class DatePatternEditAction extends Action {
 	
 	
     private void getDatePatterns(HttpServletRequest request) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-		Set used = DatePattern.findAllUsed(session.getUniqueId());
-		boolean hasSet = !DatePattern.findAllParents(session.getUniqueId()).isEmpty(); 
+		Set used = DatePattern.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+		boolean hasSet = !DatePattern.findAllParents(sessionContext.getUser().getCurrentAcademicSessionId()).isEmpty(); 
         SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd");
 
-		WebTable.setOrder(request.getSession(),"datePatterns.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"datePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = (hasSet ?
         		new WebTable( 6,
@@ -857,13 +843,12 @@ public class DatePatternEditAction extends Action {
 						new String[] {"left", "left", "left", "left", "left"},
 						null ) );
         
-        Vector patterns = DatePattern.findAll(request, null, null);
+        List<DatePattern> patterns = DatePattern.findAll(sessionContext.getUser(), null, null);
 		if(patterns.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No date pattern defined for this session."}, null, null);			    
 		}
 		
-        for (Enumeration e=patterns.elements();e.hasMoreElements();) {
-        	DatePattern pattern = (DatePattern)e.nextElement();
+        for (DatePattern pattern: patterns) {
         	String onClick = "onClick=\"document.location='datePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
         	String deptStr = "";
         	String deptCmp = "";
@@ -956,7 +941,7 @@ public class DatePatternEditAction extends Action {
             		});
         }
         
-	    request.setAttribute("DatePatterns.table", webTable.printTable(WebTable.getOrder(request.getSession(),"datePatterns.ord")));
+	    request.setAttribute("DatePatterns.table", webTable.printTable(WebTable.getOrder(sessionContext,"datePatterns.ord")));
     }	
 }
 

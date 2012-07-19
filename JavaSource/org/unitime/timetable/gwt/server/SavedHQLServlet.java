@@ -204,7 +204,7 @@ public class SavedHQLServlet implements SavedHQLService {
 		case APPEARANCE_ADMINISTRATION:
 			title = "Administration Reports"; break;
 		}
-		BackTracker.markForBack(getSessionContext().getHttpServletRequest(), "gwt.jsp?page=hql&appearance=" + appearance + "#" + history, title, true, true);
+		BackTracker.markForBack(getSessionContext(), "gwt.jsp?page=hql&appearance=" + appearance + "#" + history, title, true, true);
 		if ("__Class".equals(type))
 			Navigation.set(getSessionContext(), Navigation.sClassLevel, ids);
 		else if ("__Offering".equals(type))

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
@@ -725,7 +724,7 @@ public class SessionRollForward {
 	public void rollDatePatternsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollDatePatternsForwardFrom());
-		Vector fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
+		List<DatePattern> fromDatePatterns = DatePattern.findAll(fromSession, true, null, null);
 		DatePattern fromDatePattern = null;
 		DatePattern toDatePattern = null;
 		DatePatternDAO dpDao = new DatePatternDAO();

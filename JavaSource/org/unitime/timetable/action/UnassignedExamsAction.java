@@ -30,9 +30,9 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
@@ -48,6 +48,9 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
@@ -62,25 +65,26 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 @Service("/unassignedExams")
 public class UnassignedExamsAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamReportForm myForm = (ExamReportForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.NotAssignedExaminations);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
         }
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
-        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
@@ -89,22 +93,22 @@ public class UnassignedExamsAction extends Action {
             if (solver!=null && solver.getExamType()==myForm.getExamType())
                 unassignedExams = solver.getUnassignedExams(myForm.getSubjectArea());
             else
-                unassignedExams = Exam.findUnassignedExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), myForm.getSubjectArea(),myForm.getExamType());
+                unassignedExams = Exam.findUnassignedExams(sessionContext.getUser().getCurrentAcademicSessionId(), myForm.getSubjectArea(),myForm.getExamType());
         }
         
-        WebTable.setOrder(request.getSession(),"unassignedExams.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"unassignedExams.ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(Web.getUser(request.getSession()), true, myForm, unassignedExams);
+        WebTable table = getTable(true, myForm, unassignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(Web.getUser(request.getSession()), false, myForm, unassignedExams);
+            PdfWebTable pdfTable = getTable(false, myForm, unassignedExams);
             File file = ApplicationProperties.getTempFile("unassigned", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"unassignedExams.ord"));
+            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"unassignedExams.ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"unassignedExams.ord")), 9, unassignedExams.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"unassignedExams.ord")), 9, unassignedExams.size());
 
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
@@ -112,10 +116,10 @@ public class UnassignedExamsAction extends Action {
         return mapping.findForward("showReport");
 	}
 	
-    public PdfWebTable getTable(org.unitime.commons.User user, boolean html, ExamReportForm form, Collection<ExamInfo> exams) {
+    public PdfWebTable getTable( boolean html, ExamReportForm form, Collection<ExamInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-        boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
+        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(sessionContext.getUser());
+        boolean timeText = RequiredTimeTable.getTimeGridAsText(sessionContext.getUser());
         
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =

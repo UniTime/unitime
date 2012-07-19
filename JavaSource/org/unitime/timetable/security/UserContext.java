@@ -32,6 +32,8 @@ public interface UserContext extends UserDetails {
 	
 	public String getName();
 	
+	public String getEmail();
+	
 	public UserAuthority getCurrentAuthority();
 	
 	public void setCurrentAuthority(UserAuthority authority);
@@ -53,6 +55,7 @@ public interface UserContext extends UserDetails {
 
 	public Long getCurrentAcademicSessionId();
 	
+	@Deprecated
 	public String getCurrentRole();
 
 	public boolean hasDepartment(Long departmentId);

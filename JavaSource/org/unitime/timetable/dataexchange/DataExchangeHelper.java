@@ -243,10 +243,11 @@ public class DataExchangeHelper {
         return (BaseExport)sExportRegister.get(type).getConstructor().newInstance();
     }
     
-    public static void importDocument(Document document, TimetableManager manager, LogWriter log) throws Exception {
+    public static void importDocument(Document document, String userId, LogWriter log) throws Exception {
         BaseImport imp = createImportBase(document.getRootElement().getName());
         imp.setLog(log);
-        imp.setManager(manager);
+        if (userId != null)
+        	imp.setManager(TimetableManager.findByExternalId(userId));
         imp.loadXml(document.getRootElement());
     }
     

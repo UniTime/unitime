@@ -46,10 +46,12 @@ public class ManagerSettings extends BaseManagerSettings {
 /*[CONSTRUCTOR MARKER END]*/
 
 	
+	@Deprecated
 	public static String getValue(HttpSession session, String name, String defaultValue) {
 		return getValue(Web.getUser(session), name, defaultValue);
 	}
 	
+	@Deprecated
 	public static String getValue(HttpSession session, String name) {
 		return getValue(session, name, null);
 	}

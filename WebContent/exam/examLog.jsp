@@ -17,8 +17,6 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.solver.exam.ExamSolverProxy" %>
-<%@ page import="org.unitime.timetable.solver.WebSolver" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -49,21 +47,12 @@
 			</TD>
 		</TR>
 	</TABLE>
-<%
-	ExamSolverProxy solver = WebSolver.getExamSolver(session);
-	if (solver!=null) {
-%>
-	<font size='2'>
-<%=solver.getLog()%>
-	</font>
-<%		
-	} else {
-%>
-	<logic:notEmpty name="examSolverLogForm" property="log">
-		<bean:write name="examSolverLogForm" property="log" filter="false"/>
+	<logic:notEmpty name="log" scope="request">
+		<font size='2'>
+			<bean:write name="log" scope="request" filter="false"/>
+		</font>
 	</logic:notEmpty>
-	
-	<logic:empty name="examSolverLogForm" property="log">
+	<logic:empty name="log" scope="request">
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan="2">	
@@ -72,7 +61,4 @@
 			</TR>
 		</TABLE>
 	</logic:empty>
-<%
-	}
-%>
 </html:form>

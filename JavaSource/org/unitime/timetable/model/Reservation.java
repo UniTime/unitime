@@ -52,6 +52,7 @@ public class Reservation extends BaseReservation {
 		return getExpirationDate().before(c.getTime());
 	}
 
+	@Deprecated
 	public boolean isEditableBy(org.unitime.commons.User user) {
 		if (user == null) return false;
 		
@@ -64,6 +65,7 @@ public class Reservation extends BaseReservation {
 		return d != null && d.isLimitedEditableBy(user);
 	}
 	
+	@Deprecated
 	public boolean isEditableBy(UserContext user) {
 		if (user == null) return false;
 		

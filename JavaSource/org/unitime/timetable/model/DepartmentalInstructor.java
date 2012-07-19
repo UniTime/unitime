@@ -28,7 +28,6 @@ import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
-import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -195,15 +194,6 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 				+ " " + (this.getLastName() == null ? "" : this.getLastName().trim())));
 	}
 	
-	/**
-	 * 
-	 * @param user
-	 * @return
-	 */
-	public String getName(User user) {
-		return getName(Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
-	}
-	
 	public String getName(String instructorNameFormat) {
 		if (sNameFormatLastFist.equals(instructorNameFormat))
 			return getNameLastFirst();
@@ -277,6 +267,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		}
 	}
 
+	@Deprecated
 	protected boolean canUserEdit(User user) {
 	    if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && 
 	        getDepartment().effectiveStatusType().canExamTimetable()) return true;
@@ -286,6 +277,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return getDepartment().canUserEdit(user);
 	}
 	
+	@Deprecated
 	protected boolean canUserView(User user){
 		return getDepartment().canUserView(user);
 	}

@@ -29,13 +29,16 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
@@ -46,23 +49,23 @@ import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
  */
 @Service("/examGrid")
 public class ExamGridAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamGridForm myForm = (ExamGridForm) form;
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.ExaminationTimetable);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (op==null && request.getParameter("resource")!=null) op="Change";
         
         if ("Change".equals(op) || "Export PDF".equals(op)) {
-        	myForm.save(request.getSession());
+        	myForm.save(sessionContext);
         }
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
         if ("Cbs".equals(op)) {
             if (request.getParameter("resource")!=null)
@@ -72,7 +75,7 @@ public class ExamGridAction extends Action {
         }
         
         if (RoomAvailability.getInstance()!=null) {
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
             String exclude = (myForm.getExamType()==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
             if (bounds != null) {

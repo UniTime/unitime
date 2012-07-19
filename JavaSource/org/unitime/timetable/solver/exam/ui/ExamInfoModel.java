@@ -57,9 +57,9 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.RoomAvailability;
 
@@ -83,9 +83,9 @@ public class ExamInfoModel implements Serializable {
     public void setSolver(ExamSolverProxy solver) { iSolver = solver; }
     public ExamSolverProxy getSolver() { return iSolver; }
     
-    public void clear(TimetableManager manager) {
+    public void clear(UserContext user) {
         iExam = null; iChange = null; iRooms = null; iPeriods = null;
-        iManagerExternalId = manager.getExternalUniqueId();
+        iManagerExternalId = (user == null ? null : user.getExternalUserId());
     }
     
     public ExamInfo getExam() {

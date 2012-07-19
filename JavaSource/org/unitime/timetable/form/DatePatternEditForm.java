@@ -31,13 +31,11 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 
 /** 
@@ -57,6 +55,7 @@ public class DatePatternEditForm extends ActionForm {
     private Long iDepartmentId;
     private Vector iParentIds = new Vector();
     private Long iParentId;
+    private Long iSessionId;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -65,7 +64,7 @@ public class DatePatternEditForm extends ActionForm {
 			errors.add("name", new ActionMessage("errors.required", ""));
 		else {
 			try {
-				DatePattern pat = DatePattern.findByName(request,iName);
+				DatePattern pat = DatePattern.findByName(iSessionId,iName);
 				if (pat!=null && !pat.getUniqueId().equals(iUniqueId))
 					errors.add("name", new ActionMessage("errors.exists", iName));
 			} catch (Exception e) {
@@ -116,6 +115,7 @@ public class DatePatternEditForm extends ActionForm {
 			setTypeInt(dp.getType().intValue());
 			setUniqueId(dp.getUniqueId());
 			setIsDefault(dp.isDefault());
+			setSessionId(dp.getSession().getUniqueId());
 			
 			iParentIds.clear();
 			TreeSet parents = new TreeSet(dp.getParents());
@@ -180,11 +180,9 @@ public class DatePatternEditForm extends ActionForm {
 	}
 	
 	public DatePattern create(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
 		DatePattern dp = new DatePattern();
 		dp.setName(getName());
-		dp.setSession(session);
+		dp.setSession(SessionDAO.getInstance().get(getSessionId(), hibSession));
 		dp.setVisible(new Boolean(getVisible()));
 		dp.setType(new Integer(getTypeInt()));
 		dp.setPatternAndOffset(request);
@@ -275,6 +273,9 @@ public class DatePatternEditForm extends ActionForm {
 	public Vector getParentIds() {return iParentIds;}
 	public void setParentIds(Vector parentIds) {iParentIds = parentIds;}
 	
+	public Long getSessionId() { return iSessionId; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	
 	public DatePattern getDatePattern(HttpServletRequest request) throws Exception {
 		if (getUniqueId()!=null) {
 			iDp = (new DatePatternDAO()).get(getUniqueId());
@@ -284,9 +285,7 @@ public class DatePatternEditForm extends ActionForm {
 			iDp = new DatePattern();
 		}
 		if (iDp.getSession()==null) {
-			User user = Web.getUser(request.getSession());
-			Session session = Session.getCurrentAcadSession(user);
-			iDp.setSession(session);
+			iDp.setSession(SessionDAO.getInstance().get(getSessionId()));
 		}
 		if (request.getParameter("cal_select")!=null) {
 			iDp.setName(getName());

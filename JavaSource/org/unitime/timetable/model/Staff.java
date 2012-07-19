@@ -26,7 +26,6 @@ import org.hibernate.Query;
 import org.hibernate.criterion.Conjunction;
 import org.hibernate.criterion.MatchMode;
 import org.hibernate.criterion.Restrictions;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseStaff;
 import org.unitime.timetable.model.dao.StaffDAO;
 import org.unitime.timetable.util.Constants;
@@ -144,10 +143,6 @@ public class Staff extends BaseStaff implements Comparable {
 			return "<span title='"+d.getHtmlTitle()+"'>"+d.getShortLabel()+"</span>";
 		else
 			return getDept();
-	}
-	
-	public String getName(User user) {
-		return getName(Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
 	}
 	
 	public String getName() {

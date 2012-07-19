@@ -25,11 +25,8 @@ import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
-
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 
 
 /**
@@ -77,15 +74,15 @@ public class SuggestionsModel implements Serializable {
     public SuggestionsModel() {
 	}
 
-    public void reset(HttpSession session) throws Exception { 
-        iCanAllowBreakHard = getCanAllowBreakHard(session);
+    public void reset(SolverProxy solver) throws Exception { 
+        iCanAllowBreakHard = getCanAllowBreakHard(solver);
         if (!iCanAllowBreakHard) iAllowBreakHard = false;
         iSelectedSuggestion = null;
         iDepth = 2; 
         iTimeOut = 5000;
         iCompute = true;
         iHints.clear();
-        iDisplayFilter = canDisplayFilter(session);
+        iDisplayFilter = canDisplayFilter(solver);
         iFilter = sFilterNoFilter;
         iFilterText = null;
         iMinRoomSize = -1;
@@ -203,12 +200,10 @@ public class SuggestionsModel implements Serializable {
         }
     }
 	
-	public boolean getCanAllowBreakHard(HttpSession session) throws Exception {
-		SolverProxy solver = WebSolver.getSolver(session);
-		if (solver==null) return false;
-		return solver.getProperties().getPropertyBoolean("General.InteractiveMode",false);
+	public boolean getCanAllowBreakHard(SolverProxy solver) throws Exception {
+		return (solver == null ? false : solver.getProperties().getPropertyBoolean("General.InteractiveMode", false));
 	}
-    public boolean canDisplayFilter(HttpSession session) { return WebSolver.getSolver(session)!=null;}
+    public boolean canDisplayFilter(SolverProxy solver) { return solver != null;}
 	
     public Suggestion getSelectedSuggestion() { return iSelectedSuggestion; }
     public void selectSuggestion(int ord) {
@@ -221,9 +216,8 @@ public class SuggestionsModel implements Serializable {
     }
     public Suggestion getEmptySuggestion() { return iEmptySuggestion; }
     
-    public boolean compute(HttpSession session) throws Exception {
+    public boolean compute(SolverProxy solver) throws Exception {
     	if (iCompute==false) return true;
-    	SolverProxy solver = WebSolver.getSolver(session);
     	if (solver==null) return false;
     	Suggestions suggestions = solver.getSuggestions(this);
     	//solver.getSuggestions(iDepth,iTimeOut,iAllTheSame,iFilter==sFilterSameTime,iFilter==sFilterSameRoom,iAllowBreakHard,iClassId,iHints,iDisplayPlacements,iLimit,iFilterText,iMinRoomSize,iMaxRoomSize,iDisplaySuggestions,iDisplayConfTable);
@@ -250,38 +244,26 @@ public class SuggestionsModel implements Serializable {
     public long getNrTries() { return iNrTries; }
     public Vector getConfTable() { return iConfTable; }
     
-    public void save(HttpSession session) {
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.allowBreakHard", getAllowBreakHard());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.displayCBS", getDisplayCBS());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.displayPlacements", getDisplayPlacements());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.simpleMode", getSimpleMode());
-    	UserData.setPropertyInt(session,"SuggestionsModel.limit", getLimit());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.displayConfTable", getDisplayConfTable());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.displaySuggestions",getDisplaySuggestions());
-    	UserData.setPropertyBoolean(session,"SuggestionsModel.reversedMode", getReversedMode());
-        /*
-        UserData.setProperty(session,"SuggestionsModel.filterText", getFilterText());
-        UserData.setPropertyInt(session,"SuggestionsModel.filter", getFilter());
-        UserData.setPropertyInt(session,"SuggestionsModel.minRoomSize", getMinRoomSize());
-        UserData.setPropertyInt(session,"SuggestionsModel.maxRoomSize", getMaxRoomSize());
-        */
+    public void save(UserContext user) {
+    	user.setProperty("SuggestionsModel.allowBreakHard", getAllowBreakHard() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.displayCBS", getDisplayCBS() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.displayPlacements", getDisplayPlacements() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.simpleMode", getSimpleMode() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.limit", String.valueOf(getLimit()));
+    	user.setProperty("SuggestionsModel.displayConfTable", getDisplayConfTable() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.displaySuggestions",getDisplaySuggestions() ? "1" : "0");
+    	user.setProperty("SuggestionsModel.reversedMode", getReversedMode() ? "1" : "0");
     }
 
-    public void load(HttpSession session) {
-    	setAllowBreakHard(getCanAllowBreakHard() && UserData.getPropertyBoolean(session,"SuggestionsModel.allowBreakHard", getAllowBreakHard()));
-    	setDisplayCBS(UserData.getPropertyBoolean(session,"SuggestionsModel.displayCBS", getDisplayCBS()));
-    	setDisplayPlacements(UserData.getPropertyBoolean(session,"SuggestionsModel.displayPlacements", getDisplayPlacements()));
-    	setSimpleMode(UserData.getPropertyBoolean(session,"SuggestionsModel.simpleMode", getSimpleMode()));
-    	setLimit(UserData.getPropertyInt(session,"SuggestionsModel.limit", getLimit()));
-    	setDisplayConfTable(UserData.getPropertyBoolean(session,"SuggestionsModel.displayConfTable", getDisplayConfTable()));
-    	setDisplaySuggestions(UserData.getPropertyBoolean(session,"SuggestionsModel.displaySuggestions",getDisplaySuggestions()));    	
-    	setReversedMode(UserData.getPropertyBoolean(session,"SuggestionsModel.reversedMode", getReversedMode()));
-        /*
-        setFilterText(UserData.getProperty(session,"SuggestionsModel.filterText", getFilterText()));
-        setFilter(UserData.getPropertyInt(session,"SuggestionsModel.filter", getFilter()));
-        setMinRoomSize(UserData.getPropertyInt(session,"SuggestionsModel.minRoomSize", getMinRoomSize()));
-        setMaxRoomSize(UserData.getPropertyInt(session,"SuggestionsModel.maxRoomSize", getMaxRoomSize()));
-        */
+    public void load(UserContext context) {
+    	setAllowBreakHard(getCanAllowBreakHard() && "1".equals(context.getProperty("SuggestionsModel.allowBreakHard", getAllowBreakHard() ? "1" : "0")));
+    	setDisplayCBS("1".equals(context.getProperty("SuggestionsModel.displayCBS", getDisplayCBS() ? "1" : "0")));
+    	setDisplayPlacements("1".equals(context.getProperty("SuggestionsModel.displayPlacements", getDisplayPlacements() ? "1" : "0")));
+    	setSimpleMode("1".equals(context.getProperty("SuggestionsModel.simpleMode", getSimpleMode() ? "1" : "0")));
+    	setLimit(Integer.parseInt(context.getProperty("SuggestionsModel.limit", String.valueOf(getLimit()))));
+    	setDisplayConfTable("1".equals(context.getProperty("SuggestionsModel.displayConfTable", getDisplayConfTable() ? "1" : "0")));
+    	setDisplaySuggestions("1".equals(context.getProperty("SuggestionsModel.displaySuggestions",getDisplaySuggestions() ? "1" : "0")));
+    	setReversedMode("1".equals(context.getProperty("SuggestionsModel.reversedMode", getReversedMode()? "1" : "0")));
     }
     
     public String toString() {

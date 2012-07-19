@@ -26,12 +26,13 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
-
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -49,6 +50,7 @@
 
 <html:form action="/buildingEdit">
 	<html:hidden property="uniqueId"/>
+	<html:hidden property="sessionId"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -68,7 +70,9 @@
 					</logic:equal>
 					<logic:equal name="buildingEditForm" property="op" value="Update">
 						<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/> 
-						<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/> 
+						<sec:authorize access="hasPermission(#buildingEditForm.uniqueId, 'Building', 'BuildingDelete')">
+							<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/>
+						</sec:authorize> 
 					</logic:equal>
 					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 				</tt:section-header>
@@ -128,7 +132,9 @@
 				</logic:equal>
 				<logic:equal name="buildingEditForm" property="op" value="Update">
 					<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/> 
-					<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/> 
+					<sec:authorize access="hasPermission(#buildingEditForm.uniqueId, 'Building', 'BuildingDelete')">
+						<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D" onclick="return confirmDelete();"/>
+					</sec:authorize> 
 				</logic:equal>
 				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 			</TD>

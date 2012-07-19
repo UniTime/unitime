@@ -33,16 +33,17 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.queue.PdfExamReportQueueItem;
 import org.unitime.timetable.util.queue.QueueItem;
@@ -54,15 +55,17 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 @Service("/examPdfReport")
 public class ExamPdfReportAction extends Action {
     protected static Logger sLog = Logger.getLogger(ExamPdfReportAction.class);
+    
+    @Autowired SessionContext sessionContext;
+    
+    @Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamPdfReportForm myForm = (ExamPdfReportForm) form;
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		
+		sessionContext.checkPermission(Right.ExaminationPdfReports);
         
-        ExamSolverProxy examSolver = WebSolver.getExamSolver(request.getSession());
+        ExamSolverProxy examSolver = examinationSolverService.getSolver();
         
         if (examSolver!=null) {
             if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) 
@@ -71,39 +74,40 @@ public class ExamPdfReportAction extends Action {
                 request.setAttribute(Constants.REQUEST_WARN, "Examination PDF reports are generated from the saved solution (solver assignments are ignored).");
         }
         
-        TimetableManager mgr = TimetableManager.getManager(Web.getUser(request.getSession()));
-
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if ("Generate".equals(op)) myForm.save(request.getSession());
-        myForm.load(request.getSession());
+        if ("Generate".equals(op)) myForm.save(sessionContext);
+        myForm.load(sessionContext);
+        if (myForm.getAddress() == null)
+        	myForm.setAddress(sessionContext.getUser().getEmail());
         
         if ("Generate".equals(op)) {
             ActionMessages errors = myForm.validate(mapping, request);
             if (!errors.isEmpty()) {
                 saveErrors(request, errors);
             } else {
+
                 QueueProcessor.getInstance().add(new PdfExamReportQueueItem(
-                		Session.getCurrentAcadSession(Web.getUser(request.getSession())),
-                		TimetableManager.getManager(Web.getUser(request.getSession())),
+                		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()),
+                		sessionContext.getUser(),
                 		(ExamPdfReportForm) myForm.clone(), request, examSolver));
-            }                        
+            }
         }
         
         if (request.getParameter("remove") != null) {
         	QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
         }
         
-        WebTable table = getQueueTable(request, mgr.getUniqueId());
+        WebTable table = getQueueTable(request);
         if (table != null) {
-        	request.setAttribute("table", table.printTable(WebTable.getOrder(request.getSession(),"examPdfReport.ord")));
+        	request.setAttribute("table", table.printTable(WebTable.getOrder(sessionContext,"examPdfReport.ord")));
         }
         
         return mapping.findForward("show");
 	}
 	
-	private WebTable getQueueTable(HttpServletRequest request, Long managerId) {
-        WebTable.setOrder(request.getSession(),"examPdfReport.ord",request.getParameter("ord"),1);
+	private WebTable getQueueTable(HttpServletRequest request) {
+        WebTable.setOrder(sessionContext,"examPdfReport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
 		DateFormat df = new SimpleDateFormat("h:mma");
 		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, PdfExamReportQueueItem.TYPE);
@@ -119,7 +123,7 @@ public class ExamPdfReportAction extends Action {
 			String name = item.name();
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
-			if (managerId.equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
+			if (sessionContext.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
 				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this report?')) document.location='examPdfReport.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
 			WebTableLine line = table.addLine(item.log().isEmpty() ? null : "onClick=\"document.location='examPdfReport.do?log=" + item.getId() + "';\"",
@@ -127,7 +131,7 @@ public class ExamPdfReportAction extends Action {
 						name + (delete == null ? "": " " + delete),
 						item.status(),
 						(item.progress() <= 0.0 || item.progress() >= 1.0 ? "" : String.valueOf(Math.round(100 * item.progress())) + "%"),
-						item.getOwner().getName(),
+						item.getOwnerName(),
 						item.getSession().getLabel(),
 						df.format(item.created()),
 						item.started() == null ? "" : df.format(item.started()),
@@ -138,7 +142,7 @@ public class ExamPdfReportAction extends Action {
 						item.getId(),
 						item.status(),
 						item.progress(),
-						item.getOwner().getName(),
+						item.getOwnerName(),
 						item.getSession(),
 						item.created().getTime(),
 						item.started() == null ? Long.MAX_VALUE : item.started().getTime(),
@@ -151,7 +155,7 @@ public class ExamPdfReportAction extends Action {
 				request.setAttribute("log", item.log());
 				line.setBgColor("rgb(168,187,225)");
 			}
-			if (log == null && item.started() != null && item.finished() == null && managerId.equals(item.getOwnerId())) {
+			if (log == null && item.started() != null && item.finished() == null && sessionContext.getUser().getExternalUserId().equals(item.getOwnerId())) {
 				request.setAttribute("logname", name);
 				request.setAttribute("logid", item.getId().toString());
 				request.setAttribute("log", item.log());

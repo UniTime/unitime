@@ -58,6 +58,7 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
             .setCacheable(true).list();
     }
     
+    @Deprecated
     public boolean canUserEdit(UserContext user) {
     	// Not authenticated -> false
     	if (user == null) return false;

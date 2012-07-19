@@ -25,15 +25,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.listeners.SessionListener;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -43,6 +47,18 @@ import org.unitime.timetable.listeners.SessionListener;
 public class SessionsTag extends TagSupport {
 
 	private static final long serialVersionUID = 1332135385302161770L;
+	
+	private UserContext getUser(SecurityContext context) {
+		if (context == null) return null;
+		Authentication authentication = context.getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
+	}
+	
+	private UserContext getUser() {
+		return getUser(SecurityContextHolder.getContext());
+	}
 
 	/**
 	 * Default method to handle start of tag.
@@ -50,10 +66,9 @@ public class SessionsTag extends TagSupport {
 	public int doStartTag() throws JspException {
 		
         // Check Access
-	    HttpServletRequest request = (HttpServletRequest) pageContext.getRequest();
-        if (!Web.isLoggedIn( request.getSession() ) && !Web.isAdmin( request.getSession() )) {
-            throw new JspException ("Access Denied.");
-        }
+	    UserContext user = getUser();
+        if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin))
+        	throw new PageAccessException("Access Denied.");
         
 		StringBuffer html = new StringBuffer("");
 		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
@@ -77,10 +92,11 @@ public class SessionsTag extends TagSupport {
 			    HttpSession session = (HttpSession) s.get(sessionId);
 			    
 			    if (session!=null) {
-			        User user = (User)(session.getAttribute("User"));
+			    	session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+			        UserContext u = getUser((SecurityContext)session.getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY));
 			        String userDetail = "Cannot be determined";
-			        if (user!=null && user.getLogin()!=null) 
-			            userDetail = user.getName() + " ("+ user.getCurrentRole() + ")";
+			        if (u != null && u.getUsername() != null) 
+			            userDetail = u.getUsername() + (u.getCurrentAuthority() == null ? "" : " ("+ u.getCurrentAuthority() + ")");
 			            
 					html.append("<TR>"); 
 					html.append("<TD align='left'>" + userDetail + "</TD>"); 

@@ -32,10 +32,8 @@
 <script language="javascript">displayLoading();</script>
 	<%// Get Form 
 			String frmName = "rollForwardSessionForm";
-			RollForwardSessionForm frm = (RollForwardSessionForm) request
-					.getAttribute(frmName);
-%>
-<% if (frm.isAdmin()) {  %>
+			RollForwardSessionForm frm = (RollForwardSessionForm) request.getAttribute(frmName);
+	%>
 		<html:form action="/rollForwardSession">
 		<table width="100%" cellspacing="0" cellpadding="3">
 		<logic:messagesPresent>
@@ -72,11 +70,9 @@
 	<TR><TD>
 		<tt:section-header>
 			<tt:section-title>Roll Forward Actions</tt:section-title>
-			<logic:equal name="<%=frmName%>" property="admin" value="true">
 					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
 					<bean:message key="button.rollForward" />
 				</html:submit>
-			</logic:equal>
 		</tt:section-header>
 	</TD></TR>
 		<tr>
@@ -217,18 +213,13 @@
 		</tr>
 		<tr>
 			<td align="right">
-				<logic:equal name="<%=frmName%>" property="admin" value="true">
 					<html:submit property="op" accesskey="M" styleClass="btn" onclick="displayElement('loading', true);">
 						<bean:message key="button.rollForward" />
 					</html:submit>
-				</logic:equal>
 			</TD>
 		</TR>
 		</TABLE>
 		</html:form>
-		<% } else { %>
-		<b>User must be an administrator to roll forward a session.</b>
-		<% } %>
 	<script language="javascript">displayElement('loading', false);</script>
 	</body>
 </html>

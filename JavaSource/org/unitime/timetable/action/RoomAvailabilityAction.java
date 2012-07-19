@@ -39,10 +39,10 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomAvailabilityForm;
@@ -54,6 +54,8 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -66,26 +68,27 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/roomAvailability")
 public class RoomAvailabilityAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         RoomAvailabilityForm myForm = (RoomAvailabilityForm) form;
-
+        
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+        sessionContext.checkPermission(Right.RoomAvailability);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
         }
         
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
-        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         
         if (myForm.getExamType()>=0) {
             
@@ -98,19 +101,19 @@ public class RoomAvailabilityAction extends Action {
                 RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], exclude, "Refresh".equals(op));
             }
             
-            WebTable.setOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
+            WebTable.setOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"),request.getParameter("ord"),1);
             
             WebTable table = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), true, myForm):getTable(request, session.getUniqueId(), true, myForm));
             
             if ("Export PDF".equals(op) && table!=null) {
                 PdfWebTable pdfTable = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm));
                 File file = ApplicationProperties.getTempFile("roomavail", "pdf");
-                pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")));
+                pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")));
                 request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
             }
             
             if (table!=null)
-                myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
+                myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord"))), 6, table.getLines().size());
             
             RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), false, true);
         }

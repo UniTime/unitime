@@ -44,11 +44,10 @@ import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
@@ -59,7 +58,10 @@ import org.unitime.timetable.dataexchange.DataExchangeHelper.LogWriter;
 import org.unitime.timetable.form.DataImportForm;
 import org.unitime.timetable.form.DataImportForm.ExportType;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
@@ -74,6 +76,8 @@ import org.unitime.timetable.util.queue.QueueProcessor;
  */
 @Service("/dataImport")
 public class DataImportAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -92,16 +96,10 @@ public class DataImportAction extends Action {
 
 		// Read operation to be performed
 		String op = (myForm.getOp() != null ? myForm.getOp() : request.getParameter("op"));
-
-		String userId = (String)request.getSession().getAttribute("authUserExtId");
-		User user = Web.getUser(request.getSession());
-		TimetableManager manager = null;
-		if (userId!=null) {
-		    manager = TimetableManager.findByExternalId(userId);
-		}
-		if (manager==null && user!=null) {
-		    manager = TimetableManager.getManager(user);
-		}
+		
+		sessionContext.checkPermission(Right.DataExchange);
+		
+		Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		if ("Import".equals(op)) {
             // Validate input
@@ -110,7 +108,7 @@ public class DataImportAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("display");
             }
-            QueueProcessor.getInstance().add(new ImportQueItem(Session.getCurrentAcadSession(user), manager, myForm, request));
+            QueueProcessor.getInstance().add(new ImportQueItem(session, sessionContext.getUser(), myForm, request));
         }
         
         if ("Export".equals(op)) {
@@ -119,23 +117,23 @@ public class DataImportAction extends Action {
                 saveErrors(request, errors);
                 return mapping.findForward("display");
             }
-            QueueProcessor.getInstance().add(new ExportQueItem(Session.getCurrentAcadSession(user), manager, myForm, request));
+            QueueProcessor.getInstance().add(new ExportQueItem(session, sessionContext.getUser(), myForm, request));
         }
         
         if (request.getParameter("remove") != null) {
         	QueueProcessor.getInstance().remove(Long.valueOf(request.getParameter("remove")));
         }
         
-        WebTable table = getQueueTable(request, manager.getUniqueId());
+        WebTable table = getQueueTable(request);
         if (table != null) {
-        	request.setAttribute("table", table.printTable(WebTable.getOrder(request.getSession(),"dataImport.ord")));
+        	request.setAttribute("table", table.printTable(WebTable.getOrder(sessionContext,"dataImport.ord")));
         }
 
 		return mapping.findForward("display");
 	}
 	
-	private WebTable getQueueTable(HttpServletRequest request, Long managerId) {
-        WebTable.setOrder(request.getSession(),"dataImport.ord",request.getParameter("ord"),1);
+	private WebTable getQueueTable(HttpServletRequest request) {
+        WebTable.setOrder(sessionContext,"dataImport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
 		DateFormat df = new SimpleDateFormat("h:mma");
 		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Data Exchange");
@@ -151,7 +149,7 @@ public class DataImportAction extends Action {
 			String name = item.name();
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
-			if (managerId.equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
+			if (sessionContext.getUser().getExternalUserId().equals(item.getOwnerId()) && (item.started() == null || item.finished() != null)) {
 				delete = "<img src='images/Delete16.gif' border='0' onClick=\"if (confirm('Do you really want to remove this data exchange?')) document.location='dataImport.do?remove="+item.getId()+"'; event.cancelBubble=true;\">";
 			}
 			WebTableLine line = table.addLine("onClick=\"document.location='dataImport.do?log=" + item.getId() + "';\"",
@@ -159,7 +157,7 @@ public class DataImportAction extends Action {
 						name + (delete == null ? "": " " + delete),
 						item.status(),
 						(item.progress() <= 0.0 || item.progress() >= 1.0 ? "" : String.valueOf(Math.round(100 * item.progress())) + "%"),
-						item.getOwner().getName(),
+						item.getOwnerName(),
 						item.getSession().getLabel(),
 						df.format(item.created()),
 						item.started() == null ? "" : df.format(item.started()),
@@ -170,7 +168,7 @@ public class DataImportAction extends Action {
 						item.getId(),
 						item.status(),
 						item.progress(),
-						item.getOwner().getName(),
+						item.getOwnerName(),
 						item.getSession(),
 						item.created().getTime(),
 						item.started() == null ? Long.MAX_VALUE : item.started().getTime(),
@@ -183,7 +181,7 @@ public class DataImportAction extends Action {
 				request.setAttribute("log", item.log());
 				line.setBgColor("rgb(168,187,225)");
 			}
-			if (log == null && item.started() != null && item.finished() == null && managerId.equals(item.getOwnerId())) {
+			if (log == null && item.started() != null && item.finished() == null && sessionContext.getUser().getExternalUserId().equals(item.getOwnerId())) {
 				request.setAttribute("logname", name);
 				request.setAttribute("logid", item.getId().toString());
 				request.setAttribute("log", item.log());
@@ -200,7 +198,7 @@ public class DataImportAction extends Action {
 		String iSessionName;
 		Progress iProgress;
 		
-		public DataExchangeQueueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request, boolean isImport) {
+		public DataExchangeQueueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request, boolean isImport) {
 			super(session, owner);
 			iForm = (DataImportForm)form.clone();
 			iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
@@ -305,7 +303,7 @@ public class DataImportAction extends Action {
 	
 	public class ImportQueItem extends DataExchangeQueueItem {
 		
-		public ImportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
+		public ImportQueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request) {
 			super(session, owner, form, request, true);
 		}
 
@@ -314,7 +312,7 @@ public class DataImportAction extends Action {
 			if (iForm.getFile().getFileName().toLowerCase().endsWith(".dat")) {
 				new SessionRestore(iForm.getFile().getInputStream(), iProgress).restore();
 			} else {
-				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwner(), this);
+				DataExchangeHelper.importDocument((new SAXReader()).read(iForm.getFile().getInputStream()), getOwnerId(), this);
 			}
 		}
 
@@ -322,7 +320,7 @@ public class DataImportAction extends Action {
 	
 	public class ExportQueItem extends DataExchangeQueueItem {
 		
-		public ExportQueItem(Session session, TimetableManager owner, DataImportForm form, HttpServletRequest request) {
+		public ExportQueItem(Session session, UserContext owner, DataImportForm form, HttpServletRequest request) {
 			super(session, owner, form, request, false);
 		}
 
