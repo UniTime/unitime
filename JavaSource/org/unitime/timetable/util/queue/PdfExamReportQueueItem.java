@@ -44,7 +44,6 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ManagerRole;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
@@ -55,6 +54,8 @@ import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
 import org.unitime.timetable.reports.exam.PdfLegacyExamReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
@@ -74,8 +75,8 @@ public class PdfExamReportQueueItem extends QueueItem {
 	private String iName = null;
 	private double iProgress = 0;
 	
-	public PdfExamReportQueueItem(Session session, TimetableManager manager, ExamPdfReportForm form, HttpServletRequest request, ExamSolverProxy examSolver) {
-		super(session, manager);
+	public PdfExamReportQueueItem(Session session, UserContext owner, ExamPdfReportForm form, HttpServletRequest request, ExamSolverProxy examSolver) {
+		super(session, owner);
 		iForm = form;
 		iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
 		iExamSolver = examSolver;
@@ -389,8 +390,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                         for (Iterator i=entry.getKey().getDepartment().getTimetableManagers().iterator();i.hasNext();) {
                             TimetableManager g = (TimetableManager)i.next();
                             boolean receiveEmail = true;
-                            for(ManagerRole mr : (Set<ManagerRole>)g.getManagerRoles()){
-                            	if (Roles.getRole(Roles.DEPT_SCHED_MGR_ROLE).getRoleId().equals(mr.getRole().getRoleId())){
+                            for (ManagerRole mr : (Set<ManagerRole>)g.getManagerRoles()){
+                            	if (!mr.getRole().hasRight(Right.DepartmentIndependent)) {
                             		receiveEmail = mr.isReceiveEmails() == null?false:mr.isReceiveEmails().booleanValue();
                             		break;
                             	}

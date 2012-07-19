@@ -150,6 +150,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	    return getStartSlot().compareTo(period.getStartSlot());
 	}
     
+    @Deprecated
     public static TreeSet findAll(HttpServletRequest request, Integer type) throws Exception {
         return findAll(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(), type);
     }

@@ -80,6 +80,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	
 	public static final String sExamTypes[] = new String[] {MSG.typeFinal(), MSG.typeMidterm()};
 	
+	@Deprecated
 	protected boolean canUserEdit(User user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -103,6 +104,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
         return false;
 	}
 
+	@Deprecated
 	protected boolean canUserView(User user) {
 	    //can edit -> can view
         if (canUserEdit(user)) return true;

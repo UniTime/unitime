@@ -100,6 +100,7 @@ public class UserData extends BaseUserData {
 		return getProperty(user.getId(),name);
 	}
 	
+	@Deprecated
 	public static String getProperty(HttpSession session, String name, String defaultValue) {
 		String value = getProperty(session, name);
 		return (value!=null?value:defaultValue);

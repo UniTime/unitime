@@ -36,6 +36,9 @@ public class SimpleUserContext extends AbstractUserContext {
 	public String getName() { return iName; }
 	
 	public void setName(String name) { iName = name; }
+	
+	@Override
+	public String getEmail() { return null; }
 
 	@Override
 	public String getPassword() { return null; }

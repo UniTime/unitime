@@ -43,10 +43,11 @@ import org.apache.struts.tiles.TilesUtil;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.gwt.shared.PageAccessException;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 public class PageAccessFilter implements Filter {
@@ -84,6 +85,13 @@ public class PageAccessFilter implements Filter {
 		}
 	}
 	
+	private UserContext getUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
+	}
+	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws IOException, ServletException {
 		long t0 = System.currentTimeMillis();
 		
@@ -98,7 +106,7 @@ public class PageAccessFilter implements Filter {
 						ComponentDefinition c = TilesUtil.getDefinition(tile, request, iContext);
 						HttpSession s = r.getSession();
 						if (c!=null && "true".equals(c.getAttribute("checkLogin"))) {
-							if (!Web.isLoggedIn(s)) {
+							if (getUser() == null) {
 								sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
 								if (s.isNew()) 
 									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Your+timetabling+session+has+expired.+Please+log+in+again."));
@@ -108,21 +116,22 @@ public class PageAccessFilter implements Filter {
 							}
 						}
 						if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
-							User user = Web.getUser(s);
-							if (user==null || user.getCurrentRole()==null) {
+							UserContext user = getUser();
+							if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
 								sLog.warn("Page "+r.getRequestURI()+" denined: no role");
 								x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
 								return;
 							}
 						}
 						if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
-							User user = Web.getUser(s);
-							if (user==null || !user.isAdmin()) {
+							UserContext user = getUser();
+							if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
 								sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
 								x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
 								return;
 							}
 						}
+						/*
 						if (c!=null && "true".equals(c.getAttribute("checkAccessLevel"))) {
 							String appAccess = (String) s.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
 							if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
@@ -131,6 +140,7 @@ public class PageAccessFilter implements Filter {
 								return;
 							}
 						}
+						*/
 					}
 				} catch (Exception e) {
 					sLog.warn("Unable to check page access for "+r.getRequestURI()+", reason: "+e.getMessage(), e);
@@ -154,14 +164,14 @@ public class PageAccessFilter implements Filter {
 				message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
 			}
 			if (exception!=null || (t1-t0)>dumpTime) {
-				User u = null;
+				UserContext u = null;
 				try {
-					u = (r.getSession() == null ? null : Web.getUser(r.getSession()));
+					u = getUser();
 				} catch (IllegalStateException e) {}
 				if (u==null) {
 					message += "\n  User: no user";
 				} else {
-					message += "\n  User: "+u.getLogin()+(u.getCurrentRole()!=null?" ("+u.getCurrentRole()+")":u.isAdmin()?"(admin)":"");
+					message += "\n  User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
 				}
 				message += "\n  Request parameters:";
 				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
@@ -182,11 +192,11 @@ public class PageAccessFilter implements Filter {
 					message += "\n    INVALID SESSION";
 				}
 			} else {
-				User u = Web.getUser(r.getSession());
+				UserContext u = getUser();
 				if (u==null) {
 					message += "  (User: no user)";
 				} else {
-					message += "  (User: "+u.getLogin()+(u.getCurrentRole()!=null?", "+u.getCurrentRole():u.isAdmin()?", admin":"")+")";
+					message += "  (User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
 				}
 			}
 			if (exception!=null)
@@ -202,7 +212,7 @@ public class PageAccessFilter implements Filter {
 				String message = exception.getMessage();
 				if (message == null || message.isEmpty()) {
 					HttpSession s = r.getSession();
-					if (!Web.isLoggedIn(s)) {
+					if (getUser() == null) {
 						if (s.isNew()) 
 							message = "Your timetabling session has expired. Please log in again.";
 						else

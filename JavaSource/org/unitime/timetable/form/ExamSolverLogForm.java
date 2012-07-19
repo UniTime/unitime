@@ -25,8 +25,6 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.solver.ui.LogInfo;
 
 
 /** 
@@ -46,7 +44,6 @@ public class ExamSolverLogForm extends ActionForm {
 	};
     private String iLevel;
     private String iOp;
-    private LogInfo iLogInfo = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -58,9 +55,8 @@ public class ExamSolverLogForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iLevel = UserData.getProperty(request.getSession(), "SolverLog.level", null); 
+		iLevel = null; 
 		iOp = null;
-		iLogInfo = null;
 	}
 
 	public String getLevel() { return (iLevel==null?"Info":iLevel); }
@@ -74,9 +70,5 @@ public class ExamSolverLogForm extends ActionForm {
 	public String[] getLevels() { return sLevels; }
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
-	public String getLog() {
-		if (iLogInfo==null) return "";
-		return iLogInfo.getHtmlLog(getLevelInt(), true);
-	}
 }
 

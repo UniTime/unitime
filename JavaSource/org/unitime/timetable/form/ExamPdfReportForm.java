@@ -23,17 +23,13 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Email;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.reports.exam.AbbvExamScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.AbbvScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ConflictsByCourseAndInstructorReport;
@@ -47,6 +43,7 @@ import org.unitime.timetable.reports.exam.ScheduleByCourseReport;
 import org.unitime.timetable.reports.exam.ScheduleByPeriodReport;
 import org.unitime.timetable.reports.exam.ScheduleByRoomReport;
 import org.unitime.timetable.reports.exam.StudentExamReport;
+import org.unitime.timetable.security.SessionContext;
 
 /*
  * @author Tomas Muller
@@ -138,70 +135,66 @@ public class ExamPdfReportForm extends ExamReportForm {
         iClassSchedule = false;
         iIgnoreEmptyExams = false;
         iItype = false;
-        if (getAddress()==null) {
-            TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
-            if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
-        }
     }
     
-    public void load(HttpSession session) {
+    public void load(SessionContext session) {
         super.load(session);
         setAll(session.getAttribute("ExamPdfReport.all")==null?true:(Boolean)session.getAttribute("ExamPdfReport.all"));
         setReports((String[])session.getAttribute("ExamPdfReport.reports"));
         setMode(session.getAttribute("ExamPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("ExamPdfReport.mode"));
         setSubjects((String[])session.getAttribute("ExamPdfReport.subjects"));
-        setDispRooms(UserData.getPropertyBoolean(session,"ExamPdfReport.dispRooms", true));
-        setNoRoom(UserData.getProperty(session,"ExamPdfReport.noRoom", ApplicationProperties.getProperty("tmtbl.exam.report.noroom")));
-        setDirect(UserData.getPropertyBoolean(session,"ExamPdfReport.direct",true));
-        setM2d(UserData.getPropertyBoolean(session,"ExamPdfReport.m2d",true));
-        setBtb(UserData.getPropertyBoolean(session,"ExamPdfReport.btb",false));
-        setLimit(UserData.getProperty(session, "ExamPdfReport.limit"));
-        setTotals(UserData.getPropertyBoolean(session,"ExamPdfReport.totals",true));
-        setRoomCodes(UserData.getProperty(session,"ExamPdfReport.roomCodes", ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
-        setEmail(UserData.getPropertyBoolean(session, "ExamPdfReport.email", false));
-        setAddress(UserData.getProperty(session,"ExamPdfReport.addr"));
-        setCc(UserData.getProperty(session,"ExamPdfReport.cc"));
-        setBcc(UserData.getProperty(session,"ExamPdfReport.bcc"));
-        setEmailDeputies(UserData.getPropertyBoolean(session,"ExamPdfReport.emailDeputies", false));
-        setMessage(UserData.getProperty(session,"ExamPdfReport.message"));
-        setSubject(UserData.getProperty(session,"ExamPdfReport.subject","Examination Report"));
-        setDispLimit(UserData.getPropertyBoolean(session,"ExamPdfReport.dispLimit", true));
-        setSince(UserData.getProperty(session,"ExamPdfReport.since"));
-        setEmailInstructors(UserData.getPropertyBoolean(session,"ExamPdfReport.emailInstructors", false));
-        setEmailStudents(UserData.getPropertyBoolean(session,"ExamPdfReport.emailStudents", false));
-        setItype(UserData.getPropertyBoolean(session,"ExamPdfReport.itype", "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true"))));
-        setClassSchedule(UserData.getPropertyBoolean(session,"ExamPdfReport.cschedule", true));
-        setIgnoreEmptyExams(UserData.getPropertyBoolean(session,"ExamPdfReport.ignempty", true));
+        setDispRooms("1".equals(session.getUser().getProperty("ExamPdfReport.dispRooms", "1")));
+        setNoRoom(session.getUser().getProperty("ExamPdfReport.noRoom", ApplicationProperties.getProperty("tmtbl.exam.report.noroom")));
+        setDirect("1".equals(session.getUser().getProperty("ExamPdfReport.direct", "1")));
+        setM2d("1".equals(session.getUser().getProperty("ExamPdfReport.m2d", "1")));
+        setBtb("1".equals(session.getUser().getProperty("ExamPdfReport.btb", "0")));
+        setLimit(session.getUser().getProperty( "ExamPdfReport.limit"));
+        setTotals("1".equals(session.getUser().getProperty("ExamPdfReport.totals","1")));
+        setRoomCodes(session.getUser().getProperty("ExamPdfReport.roomCodes", ApplicationProperties.getProperty("tmtbl.exam.report.roomcode")));
+        setEmail("1".equals(session.getUser().getProperty( "ExamPdfReport.email", "0")));
+        setAddress(session.getUser().getProperty("ExamPdfReport.addr"));
+        setCc(session.getUser().getProperty("ExamPdfReport.cc"));
+        setBcc(session.getUser().getProperty("ExamPdfReport.bcc"));
+        setEmailDeputies("1".equals(session.getUser().getProperty("ExamPdfReport.emailDeputies", "0")));
+        setMessage(session.getUser().getProperty("ExamPdfReport.message"));
+        setSubject(session.getUser().getProperty("ExamPdfReport.subject","Examination Report"));
+        setDispLimit("1".equals(session.getUser().getProperty("ExamPdfReport.dispLimit", "1")));
+        setSince(session.getUser().getProperty("ExamPdfReport.since"));
+        setEmailInstructors("1".equals(session.getUser().getProperty("ExamPdfReport.emailInstructors", "0")));
+        setEmailStudents("1".equals(session.getUser().getProperty("ExamPdfReport.emailStudents", "0")));
+        setItype("1".equals(session.getUser().getProperty("ExamPdfReport.itype", "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")) ? "1" : "0")));
+        setClassSchedule("1".equals(session.getUser().getProperty("ExamPdfReport.cschedule", "1")));
+        setIgnoreEmptyExams("1".equals(session.getUser().getProperty("ExamPdfReport.ignempty", "1")));
     }
     
-    public void save(HttpSession session) {
+    public void save(SessionContext session) {
         super.save(session);
         session.setAttribute("ExamPdfReport.reports", getReports());
         session.setAttribute("ExamPdfReport.mode", getMode());
         session.setAttribute("ExamPdfReport.all", getAll());
         session.setAttribute("ExamPdfReport.subjects", getSubjects());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.dispRooms", getDispRooms());
-        UserData.setProperty(session,"ExamPdfReport.noRoom", getNoRoom());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.direct",getDirect());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.m2d",getM2d());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.btb",getBtb());
-        UserData.setProperty(session, "ExamPdfReport.limit", getLimit());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.totals",getTotals());
-        UserData.setProperty(session,"ExamPdfReport.roomCodes", getRoomCodes());
-        UserData.setPropertyBoolean(session, "ExamPdfReport.email", getEmail());
-        UserData.setProperty(session,"ExamPdfReport.addr", getAddress());
-        UserData.setProperty(session,"ExamPdfReport.cc", getCc());
-        UserData.setProperty(session,"ExamPdfReport.bcc", getBcc());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.emailDeputies", getEmailDeputies());
-        UserData.setProperty(session,"ExamPdfReport.message", getMessage());
-        UserData.setProperty(session,"ExamPdfReport.subject", getSubject());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.dispLimit", getDispLimit());
-        UserData.setProperty(session,"ExamPdfReport.since", getSince());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.emailInstructors", getEmailInstructors());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.emailStudents", getEmailStudents());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.itype", getItype());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.cschedule", getClassSchedule());
-        UserData.setPropertyBoolean(session,"ExamPdfReport.ignempty", getIgnoreEmptyExams());
+        session.getUser().setProperty("ExamPdfReport.dispRooms", getDispRooms() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.noRoom", getNoRoom());
+        session.getUser().setProperty("ExamPdfReport.direct",getDirect() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.m2d",getM2d() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.btb",getBtb() ? "1" : "0");
+        session.getUser().setProperty( "ExamPdfReport.limit", getLimit());
+        session.getUser().setProperty("ExamPdfReport.totals",getTotals() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.roomCodes", getRoomCodes());
+        session.getUser().setProperty( "ExamPdfReport.email", getEmail() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.addr", getAddress());
+        session.getUser().setProperty("ExamPdfReport.cc", getCc());
+        session.getUser().setProperty("ExamPdfReport.bcc", getBcc());
+        session.getUser().setProperty("ExamPdfReport.emailDeputies", getEmailDeputies() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.message", getMessage());
+        session.getUser().setProperty("ExamPdfReport.subject", getSubject());
+        session.getUser().setProperty("ExamPdfReport.dispLimit", getDispLimit() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.since", getSince());
+        session.getUser().setProperty("ExamPdfReport.emailInstructors", getEmailInstructors() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.emailStudents", getEmailStudents() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.itype", getItype() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.cschedule", getClassSchedule() ? "1" : "0");
+        session.getUser().setProperty("ExamPdfReport.ignempty", getIgnoreEmptyExams() ? "1" : "0");
     }
 
     public String[] getReports() { return iReports;}

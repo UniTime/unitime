@@ -45,7 +45,6 @@ import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ListSolutionsForm.InfoComparator;
 import org.unitime.timetable.model.base.BaseSolution;
@@ -595,8 +594,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 	}
 	
-	public void export(CSVFile file, User user) {
-		String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+	public void export(CSVFile file, String instructorFormat) {
 		file.setSeparator(",");
 		file.setQuotationMark("\"");
 		if (isCommited().booleanValue()) {

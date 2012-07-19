@@ -598,6 +598,7 @@ public class Class_ extends BaseClass_ {
  	/* (non-Javadoc)
 	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
 	 */
+	@Deprecated
 	protected boolean canUserEdit(User user) {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
@@ -621,6 +622,7 @@ public class Class_ extends BaseClass_ {
 	 * canUserEdit() - if the user can edit any of the classes in the same
 	 * 	   SchedulingSubpart as this class then the user can view this class
 	 */
+	@Deprecated
 	protected boolean canUserView(User user) {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm == null) return false;
@@ -641,6 +643,7 @@ public class Class_ extends BaseClass_ {
 	}
 
 	@Override
+	@Deprecated
 	public boolean isEditableBy(User user) {
     	if (getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLockNeeded(
     			getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
@@ -649,6 +652,7 @@ public class Class_ extends BaseClass_ {
     	return super.isEditableBy(user);
 	}
 
+	@Deprecated
 	public boolean isLimitedEditable(User user) {
 		if (isEditableBy(user)) return true;
 		if (user==null) return false;

@@ -173,6 +173,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	    return defaultSession(getAllSessions(), null);
 	}
 	
+	@Deprecated
 	public static Set availableSessions(ManagerRole role) {
 		if (role == null || role.getRole() == null)
 			return getAllSessions();
@@ -186,10 +187,12 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	    return sessions;
 	}
 
+	@Deprecated
     public static Session defaultSession(ManagerRole role) throws HibernateException {
         return defaultSession(availableSessions(role), role.getRole());
     }
 
+    @Deprecated
     public static Session defaultSession(Set sessions, Roles role) throws HibernateException {
         if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
         TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
@@ -353,6 +356,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	 * 
 	 * @return
 	 */
+	@Deprecated
 	public java.util.Set getRoomsFast(String[] depts) {
 		if (depts != null && depts.length > 0) {
 			return new TreeSet((new RoomDAO()).getSession().createQuery(
@@ -373,6 +377,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		}
 	}
 
+	@Deprecated
 	public java.util.Set getRoomsFast(User user) throws Exception {
 		if (user.getRole().equals(Roles.ADMIN_ROLE))
 			return getRoomsFast((String[]) null);
@@ -401,6 +406,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	 * @param depts
 	 * @return
 	 */
+	@Deprecated
 	public java.util.Set getBldgsFast(String[] depts) {
 		if (depts != null && depts.length > 0) {
 			List rooms = (new RoomDAO()).getSession().createQuery(

@@ -30,15 +30,14 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -108,17 +107,15 @@ public class ExamGridForm extends ActionForm {
 			if (solver!=null)
 				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
 		} catch (Exception e) {}
-        try {
-            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
-        } catch (Exception e) {}
     }
     
     public Long getSessionId() { return iSessionId; }
     public Date getExamBeginDate() { return iExamBeginDate; }
     public TreeSet getPeriods(int examType) { return iPeriods[examType]; }
     
-    public void load(HttpSession httpSession) throws Exception {
-        Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
+    public void load(SessionContext context) throws Exception {
+    	iHasMidtermExams = Exam.hasMidtermExams(context.getUser().getCurrentAcademicSessionId());
+        Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
         iSessionId = session.getUniqueId();
         Calendar cal = Calendar.getInstance(Locale.US);
         cal.setTime(session.getSessionBeginDateTime());
@@ -128,34 +125,34 @@ public class ExamGridForm extends ActionForm {
         iPeriods = new TreeSet[Exam.sExamTypes.length];
         for (int i=0;i<Exam.sExamTypes.length;i++) {
         	iPeriods[i] = ExamPeriod.findAll(session.getUniqueId(), i);
-        	setDate(i, UserData.getPropertyInt(httpSession,"ExamGrid.date."+i,Integer.MIN_VALUE));
-        	setStartTime(i, UserData.getPropertyInt(httpSession,"ExamGrid.start."+i,getFirstStart(i)));
-        	setEndTime(i, UserData.getPropertyInt(httpSession,"ExamGrid.end."+i,getLastEnd(i)));
+        	setDate(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.date."+i, String.valueOf(Integer.MIN_VALUE))));
+        	setStartTime(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.start."+i, String.valueOf(getFirstStart(i)))));
+        	setEndTime(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.end."+i, String.valueOf(getLastEnd(i)))));
         }
-        setResource(UserData.getPropertyInt(httpSession,"ExamGrid.resource",ExamGridTable.sResourceRoom));
-        setBackground(UserData.getPropertyInt(httpSession,"ExamGrid.background",ExamGridTable.sBgNone));
-        setFilter(UserData.getProperty(httpSession,"ExamGrid.filter"));
-        setDispMode(UserData.getPropertyInt(httpSession,"ExamGrid.dispMode",ExamGridTable.sDispModePerWeekVertical));
-        setOrder(UserData.getPropertyInt(httpSession,"ExamGrid.order",ExamGridTable.sOrderByNameAsc));
-        setBgPreferences(UserData.getPropertyBoolean(httpSession,"ExamGrid.bgPref",false));
-        setExamType(httpSession.getAttribute("Exam.Type")==null?iExamType:(Integer)httpSession.getAttribute("Exam.Type"));
-        setShowSections(UserData.getPropertyBoolean(httpSession,"ExamReport.showSections", true));
+        setResource(Integer.parseInt(context.getUser().getProperty("ExamGrid.resource", String.valueOf(ExamGridTable.sResourceRoom))));
+        setBackground(Integer.parseInt(context.getUser().getProperty("ExamGrid.background", String.valueOf(ExamGridTable.sBgNone))));
+        setFilter(context.getUser().getProperty("ExamGrid.filter"));
+        setDispMode(Integer.parseInt(context.getUser().getProperty("ExamGrid.dispMode", String.valueOf(ExamGridTable.sDispModePerWeekVertical))));
+        setOrder(Integer.parseInt(context.getUser().getProperty("ExamGrid.order", String.valueOf(ExamGridTable.sOrderByNameAsc))));
+        setBgPreferences("1".equals(context.getUser().getProperty("ExamGrid.bgPref", "0")));
+        setExamType(context.getAttribute("Exam.Type") == null ? iExamType : (Integer)context.getAttribute("Exam.Type"));
+        setShowSections("1".equals(context.getUser().getProperty("ExamReport.showSections", "1")));
     }
     
-    public void save(HttpSession httpSession) throws Exception {
+    public void save(SessionContext context) throws Exception {
     	for (int i=0;i<Exam.sExamTypes.length;i++) {
-    		UserData.setPropertyInt(httpSession, "ExamGrid.date."+i, getDate(i));
-    		UserData.setPropertyInt(httpSession, "ExamGrid.start."+i, getStartTime(i));
-    		UserData.setPropertyInt(httpSession, "ExamGrid.end."+i, getEndTime(i));
+    		context.getUser().setProperty("ExamGrid.date."+i, String.valueOf(getDate(i)));
+    		context.getUser().setProperty("ExamGrid.start."+i, String.valueOf(getStartTime(i)));
+    		context.getUser().setProperty("ExamGrid.end."+i, String.valueOf(getEndTime(i)));
     	}
-        UserData.setPropertyInt(httpSession, "ExamGrid.resource", getResource());
-        UserData.setPropertyInt(httpSession, "ExamGrid.background", getBackground());
-        UserData.setProperty(httpSession, "ExamGrid.filter", getFilter());
-        UserData.setPropertyInt(httpSession, "ExamGrid.dispMode", getDispMode());
-        UserData.setPropertyInt(httpSession, "ExamGrid.order", getOrder());
-        UserData.setPropertyBoolean(httpSession, "ExamGrid.bgPref", getBgPreferences());
-        httpSession.setAttribute("Exam.Type", getExamType());
-        UserData.setPropertyBoolean(httpSession,"ExamReport.showSections", getShowSections());
+        context.getUser().setProperty("ExamGrid.resource", String.valueOf(getResource()));
+        context.getUser().setProperty("ExamGrid.background", String.valueOf(getBackground()));
+        context.getUser().setProperty("ExamGrid.filter", String.valueOf(getFilter()));
+        context.getUser().setProperty("ExamGrid.dispMode", String.valueOf(getDispMode()));
+        context.getUser().setProperty("ExamGrid.order", String.valueOf(getOrder()));
+        context.getUser().setProperty("ExamGrid.bgPref", getBgPreferences() ? "1" : "0");
+        context.setAttribute("Exam.Type", getExamType());
+        context.getUser().setProperty("ExamReport.showSections", getShowSections() ? "1" : "0");
     }
 
     public Vector<ComboBoxLookup> getDates(int examType) {

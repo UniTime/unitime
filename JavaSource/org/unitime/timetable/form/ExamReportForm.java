@@ -24,16 +24,13 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -71,9 +68,7 @@ public class ExamReportForm extends ActionForm {
 			if (solver!=null)
 				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
 		} catch (Exception e) {}
-        try {
-            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
-        } catch (Exception e) {}
+		iHasMidtermExams = false;
 	}
 	
 	public String getOp() { return iOp; }
@@ -88,22 +83,23 @@ public class ExamReportForm extends ActionForm {
 	public Collection getSubjectAreas() { return iSubjectAreas; }
 	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }
 	
-	public void load(HttpSession session) {
-	    setShowSections(UserData.getPropertyBoolean(session,"ExamReport.showSections", true));
+	public void load(SessionContext session) {
+		iHasMidtermExams = Exam.hasMidtermExams(session.getUser().getCurrentAcademicSessionId());
+	    setShowSections("1".equals(session.getUser().getProperty("ExamReport.showSections", "1")));
 	    setSubjectArea(session.getAttribute("ExamReport.subjectArea")==null?null:(Long)session.getAttribute("ExamReport.subjectArea"));
 	    try {
 	        iSubjectAreas = new TreeSet(
 	                new SubjectAreaDAO().getSession().createQuery(
 	                        "select distinct o.course.subjectArea from Exam x inner join x.owners o where "+
 	                        "x.session.uniqueId=:sessionId")
-	                        .setLong("sessionId", Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId())
+	                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
 	                        .setCacheable(true).list());
 	    } catch (Exception e) {}
 	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Integer)session.getAttribute("Exam.Type"));
 	}
 	    
-    public void save(HttpSession session) {
-        UserData.setPropertyBoolean(session,"ExamReport.showSections", getShowSections());
+    public void save(SessionContext session) {
+    	session.getUser().setProperty("ExamReport.showSections", getShowSections() ? "1" : "0");
         if (getSubjectArea()==null)
             session.removeAttribute("ExamReport.subjectArea");
         else

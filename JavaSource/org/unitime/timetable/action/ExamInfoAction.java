@@ -28,14 +28,16 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamInfoForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 import org.unitime.timetable.util.RoomAvailability;
@@ -45,14 +47,11 @@ import org.unitime.timetable.util.RoomAvailability;
  */
 @Service("/examInfo")
 public class ExamInfoAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ExamInfoForm myForm = (ExamInfoForm) form;
-        
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
@@ -77,7 +76,7 @@ public class ExamInfoAction extends Action {
         model.apply(request, myForm);
         
         if (op==null) {
-            model.clear(TimetableManager.getManager(Web.getUser(request.getSession())));
+            model.clear(sessionContext.getUser());
         } else if ("Apply".equals(op)) {
             model.refreshRooms();
             model.refreshSuggestions();
@@ -100,8 +99,11 @@ public class ExamInfoAction extends Action {
         
         if (model.getExam()==null) throw new Exception("No exam given.");
         
+        sessionContext.checkPermission(model.getExam().getExam(), Right.ExaminationAssignment);
+        myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+        
         if (RoomAvailability.getInstance()!=null && op==null) {
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, model.getExam().getExamType());
             String exclude = (model.getExam().getExamType()==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
             RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);

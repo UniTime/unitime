@@ -63,6 +63,7 @@ public class DistributionType extends BaseDistributionType implements Comparable
 			list());
 	}
 	
+	@Deprecated
 	public static Set findApplicable(HttpServletRequest request, boolean instructorPrefOnly, boolean examPref) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);

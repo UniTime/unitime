@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -29,10 +30,14 @@ import java.util.Vector;
 import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSolverGroup;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
+import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserQualifier;
+import org.unitime.timetable.security.rights.Right;
 
 
 
-public class SolverGroup extends BaseSolverGroup implements Comparable {
+public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -155,6 +160,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
 		return true;
 	}
     
+	@Deprecated
     public boolean canCommit(User user) {
         if (user.isAdmin()) return true;
         if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
@@ -162,7 +168,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
         return canCommit();
     }
 
-    public boolean canCommit() {
+	public boolean canCommit() {
 		for (Iterator j=getDepartments().iterator();j.hasNext();) {
 			Department department = (Department)j.next();
 			if (!department.effectiveStatusType().canCommit())
@@ -195,6 +201,37 @@ public class SolverGroup extends BaseSolverGroup implements Comparable {
 		sg.setAbbv(getAbbv());
 		sg.setName(getName());
 		return sg;
+	}
+
+	@Override
+	public Serializable getQualifierId() {
+		return getUniqueId();
+	}
+
+	@Override
+	public String getQualifierType() {
+		return getClass().getSimpleName();
+	}
+
+	@Override
+	public String getQualifierReference() {
+		return getAbbv();
+	}
+
+	@Override
+	public String getQualifierLabel() {
+		return getName();
+	}
+	
+	public static TreeSet<SolverGroup> getUserSolverGroups(UserContext user) {
+		TreeSet<SolverGroup> solverGroups = new TreeSet<SolverGroup>();
+		if (user == null || user.getCurrentAuthority() == null) return solverGroups;
+		if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+			solverGroups.addAll(SolverGroup.findBySessionId(user.getCurrentAcademicSessionId()));
+		else
+			for (UserQualifier q: user.getCurrentAuthority().getQualifiers("SolverGroup"))
+				solverGroups.add(SolverGroupDAO.getInstance().get((Long)q.getQualifierId()));
+		return solverGroups;
 	}
 	
 }

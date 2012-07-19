@@ -72,13 +72,13 @@ public class AssignmentHistoryAction extends Action {
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {
         	model = new SuggestionsModel();
-        	model.load(request.getSession());
+        	model.load(sessionContext.getUser());
         	request.getSession().setAttribute("Suggestions.model", model);
         }
         
         if ("Apply".equals(op) || "Export PDF".equals(op)) {
         	myForm.save(model);
-        	model.save(request.getSession());
+        	model.save(sessionContext.getUser());
         }
         if ("Refresh".equals(op)) {
         	myForm.reset(mapping, request);

@@ -45,13 +45,13 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
-import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamAssignmentReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
@@ -59,14 +59,15 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -90,32 +91,31 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/examAssignmentReport")
 public class ExamAssignmentReportAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    ExamAssignmentReportForm myForm = (ExamAssignmentReportForm) form;
 	    
 	    // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
-        
+	    sessionContext.checkPermission(Right.ExaminationReports);
+	    
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
         }
         
-        User user = Web.getUser(request.getSession());
+        myForm.setCanSeeAll(sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent));
         
-        myForm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
-        
-        Session session = Session.getCurrentAcadSession(user);
+        Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
-        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
@@ -130,26 +130,26 @@ public class ExamAssignmentReportAction extends Action {
             }
         }
         
-        WebTable.setOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(session.getUniqueId(), Web.getUser(request.getSession()), true, myForm, assignedExams);
+        WebTable table = getTable(session.getUniqueId(), true, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(session.getUniqueId(), Web.getUser(request.getSession()), false, myForm, assignedExams);
+            PdfWebTable pdfTable = getTable(session.getUniqueId(), false, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("xreport", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord"));
+            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
         if ("Export CSV".equals(op) && table!=null) {
-            WebTable csvTable = getTable(session.getUniqueId(), Web.getUser(request.getSession()), false, myForm, assignedExams);
+            WebTable csvTable = getTable(session.getUniqueId(), false, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("xreport", "csv");
-            csvTable.toCSVFile(WebTable.getOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord")).save(file);
+            csvTable.toCSVFile(WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord")).save(file);
             request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
 
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"examAssignmentReport["+myForm.getReport()+"].ord")), table.getNrColumns(), assignedExams.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord")), table.getNrColumns(), assignedExams.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
@@ -435,7 +435,7 @@ public class ExamAssignmentReportAction extends Action {
 	    }
 	}
 	
-	public PdfWebTable getTable(Long sessionId, User user, boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
+	public PdfWebTable getTable(Long sessionId, boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
 		if (ExamAssignmentReportForm.sExamAssignmentReport.equals(form.getReport())) {
 		    return generateAssignmentReport(html, form, exams);
@@ -450,21 +450,21 @@ public class ExamAssignmentReportAction extends Action {
 		} else if (ExamAssignmentReportForm.sViolatedDistributions.equals(form.getReport())) {
 		    return generateViolatedDistributionsReport(html, form, exams);
         } else if (ExamAssignmentReportForm.sIndividualStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualDirectStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualBackToBackStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualMore2ADayStudentConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, true, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, true, true, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, true, false, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualBackToBackInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, false, true, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualMore2ADayInstructorConflicts.equals(form.getReport())) {
-            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, true, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualConflictsReport(html, sessionId, form, exams, false, false, true, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sDirectStudentConflicts.equals(form.getReport())) {
             return generateDirectConflictsReport(html, form, exams, true);
         } else if (ExamAssignmentReportForm.sBackToBackStudentConflicts.equals(form.getReport())) {
@@ -478,9 +478,9 @@ public class ExamAssignmentReportAction extends Action {
         } else if (ExamAssignmentReportForm.sMore2ADayInstructorConflicts.equals(form.getReport())) {
             return generate2MoreADayConflictsReport(html, form, exams, false);
         } else if (ExamAssignmentReportForm.sIndividualStudentSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, sessionId, form, exams, true, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualAssignmentReport(html, sessionId, form, exams, true, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sIndividualInstructorSchedule.equals(form.getReport())) {
-            return generateIndividualAssignmentReport(html, sessionId, form, exams, false, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT));
+            return generateIndividualAssignmentReport(html, sessionId, form, exams, false, UserProperty.NameFormat.get(sessionContext.getUser()));
         } else if (ExamAssignmentReportForm.sStatistics.equals(form.getReport())) {
             return generateStatisticsReport(html, sessionId, form, exams);
         } else  return null;

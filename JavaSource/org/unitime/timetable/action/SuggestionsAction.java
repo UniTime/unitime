@@ -75,9 +75,11 @@ public class SuggestionsAction extends Action {
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {
         	model = new SuggestionsModel();
-        	model.load(request.getSession());
+        	model.load(sessionContext.getUser());
         	request.getSession().setAttribute("Suggestions.model", model);
         }
+        
+        SolverProxy solver = courseTimetablingSolverService.getSolver();
 
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -93,13 +95,13 @@ public class SuggestionsAction extends Action {
         		throw new Exception("No class selected.");
         	Long classId = Long.valueOf(id);
         	if ("Reset".equals(op))
-        		model.reset(request.getSession());
+        		model.reset(solver);
         	model.setClassId(classId);
         }
         
         if ("Apply".equals(op)) {
         	myForm.save(model);
-        	model.save(request.getSession());
+        	model.save(sessionContext.getUser());
         }
         
         if ("Search Deeper".equals(op)) {
@@ -119,7 +121,7 @@ public class SuggestionsAction extends Action {
 
         if ("Try".equals(op)) {
         	if (request.getParameter("reset")!=null)
-        		model.reset(request.getSession());
+        		model.reset(solver);
         	String id = request.getParameter("id");
         	Vector roomIds = new Vector();
         	for (int idx=0;true;idx++) {
@@ -140,7 +142,6 @@ public class SuggestionsAction extends Action {
         		throw new Exception("No time selected.");
         	if (dates==null)
         		throw new Exception("No dates selected.");
-        	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver==null || solver.getInfo(new Hint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates)))!=null) {
         		model.addHint(Long.valueOf(id),Integer.parseInt(days),Integer.parseInt(slot),roomIds,Long.valueOf(pattern),Long.valueOf(dates));
         	} else {
@@ -151,12 +152,12 @@ public class SuggestionsAction extends Action {
 
         if ("Assign".equals(op)) {
         	if (model.getSelectedSuggestion()!=null)
-        		model.getSelectedSuggestion().assign(courseTimetablingSolverService.getSolver());
+        		model.getSelectedSuggestion().assign(solver);
         	else if (model.getCurrentSuggestion()!=null)
-        		model.getCurrentSuggestion().assign(courseTimetablingSolverService.getSolver());
+        		model.getCurrentSuggestion().assign(solver);
         	else
         		throw new Exception("Nothing to assign.");
-        	model.reset(request.getSession());
+        	model.reset(solver);
         	
         	myForm.setOp("close");
         	return mapping.findForward("showSuggestions");
@@ -177,9 +178,9 @@ public class SuggestionsAction extends Action {
         }
         
         if ("ShowHistory".equals(op)) {
-        	model.reset(request.getSession());
+        	model.reset(solver);
         	int idx = Integer.parseInt(request.getParameter("hist"));
-        	SolverProxy solver = courseTimetablingSolverService.getSolver();
+        	
         	AssignmentRecord record = (AssignmentRecord)solver.getAssignmentRecords().elementAt(idx);
         	for (Enumeration e=record.getAssignments().elements();e.hasMoreElements();) {
         		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
@@ -191,21 +192,20 @@ public class SuggestionsAction extends Action {
 
         myForm.load(model);
 
-        ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), myForm.getId(), true);
+        ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, solver, myForm.getId(), true);
         Hint newAssignment = (ca==null?null:ca.getHint());
 
-        if (model.compute(request.getSession())) {
+        if (model.compute(solver)) {
         	myForm.load(model);
         	
         	Hashtable confInfo = new Hashtable();
         	if (model.getSelectedSuggestion()!=null)
-        		confInfo.putAll(model.getSelectedSuggestion().conflictInfo(courseTimetablingSolverService.getSolver()));
+        		confInfo.putAll(model.getSelectedSuggestion().conflictInfo(solver));
         	if (model.getCurrentSuggestion()!=null)
-        		confInfo.putAll(model.getCurrentSuggestion().conflictInfo(courseTimetablingSolverService.getSolver()));
+        		confInfo.putAll(model.getCurrentSuggestion().conflictInfo(solver));
         	
-            String selectedAssignments = getHintTable(model.getSimpleMode(), request, sessionContext, courseTimetablingSolverService.getSolver(), "Selected Assignments", model.getHints(),null);
+            String selectedAssignments = getHintTable(model.getSimpleMode(), request, sessionContext, solver, "Selected Assignments", model.getHints(),null);
             if (model.getHints()!=null) {
-            	SolverProxy solver = courseTimetablingSolverService.getSolver();
             	confInfo.putAll(solver.conflictInfo(model.getHints()));
             	for (Enumeration e=model.getHints().elements();e.hasMoreElements();) {
             		Hint h = (Hint)e.nextElement();
@@ -228,13 +228,13 @@ public class SuggestionsAction extends Action {
             		}
             		if (contains) i.remove();
             	}
-            	String selectedSuggestion =  (model.getSelectedSuggestion()==null?null:getHintTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(), "Selected Suggestion", ass, confInfo));
+            	String selectedSuggestion =  (model.getSelectedSuggestion()==null?null:getHintTable(model.getSimpleMode(),request, sessionContext, solver, "Selected Suggestion", ass, confInfo));
             	if (selectedSuggestion!=null)
             		request.setAttribute("Suggestions.selectedSuggestion",selectedSuggestion);
             }
             Suggestion s = (model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()); 
             Set conf = (s==null?null:s.getUnresolvedConflicts());
-            String conflictAssignments = getHintTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(), "Conflicting Assignments", conf, confInfo);
+            String conflictAssignments = getHintTable(model.getSimpleMode(),request, sessionContext, solver, "Conflicting Assignments", conf, confInfo);
             if (conf!=null) {
             	for (Iterator i=conf.iterator();i.hasNext();) {
             		Hint h = (Hint)i.next();
@@ -248,7 +248,7 @@ public class SuggestionsAction extends Action {
             String selectedInfo = getInfoTable(model.getSimpleMode(), request,model.getEmptySuggestion(),(model.getSelectedSuggestion()!=null?model.getSelectedSuggestion():model.getCurrentSuggestion()));
             if (selectedInfo!=null)
             	request.setAttribute("Suggestions.selectedInfo",selectedInfo);
-            String suggestions = getSuggestionsTable(model.getSimpleMode(),request, sessionContext, courseTimetablingSolverService.getSolver(),"Suggestions","Suggestion",model,model.getSuggestions());
+            String suggestions = getSuggestionsTable(model.getSimpleMode(),request, sessionContext, solver,"Suggestions","Suggestion",model,model.getSuggestions());
             if (suggestions!=null)
             	request.setAttribute("Suggestions.suggestions",suggestions);
             String message = null;
@@ -269,7 +269,7 @@ public class SuggestionsAction extends Action {
             	
             request.setAttribute("Suggestions.suggestionsMessage",message);
             if (model.getTryAssignments()!=null) {
-            	String placements = getSuggestionsTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Placements","Placement",model,model.getTryAssignments());
+            	String placements = getSuggestionsTable(model.getSimpleMode(),request,sessionContext,solver,"Placements","Placement",model,model.getTryAssignments());
             	if (placements!=null) 
             		request.setAttribute("Suggestions.placements",placements);
             	
@@ -285,12 +285,12 @@ public class SuggestionsAction extends Action {
             	request.removeAttribute("Suggestions.placements");
             
             if (model.getConfTable()!=null && !model.getConfTable().isEmpty()) {
-            	request.setAttribute("Suggestions.confTable", getConfTable(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),model,model.getConfTable()));
+            	request.setAttribute("Suggestions.confTable", getConfTable(model.getSimpleMode(),request,sessionContext,solver,model,model.getConfTable()));
             }
         }
 		
         if (ca!=null) {
-        	String assignment = getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca, true, newAssignment);
+        	String assignment = getAssignmentTable(sessionContext, solver, ca, true, newAssignment);
         	request.setAttribute("Suggestions.assignment",ca.getClazz().getName());
         	if (assignment!=null)
         		request.setAttribute("Suggestions.assignmentInfo", assignment);
@@ -459,15 +459,15 @@ public class SuggestionsAction extends Action {
     			ClassAssignmentDetails.dispNumber(newSuggestion.getValue(),oldSuggestion.getValue())+
     			"</TD></TR>");
     	if (newSuggestion.hasStudentConflictInfo())
-    		sb.append("<TR><TD nowrap>Student conflicts:</TD><TD colspan='2' nowrap>"+newSuggestion.getStudentConflictInfosAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true,0,3)+"</TD></TR>");
+    		sb.append("<TR><TD nowrap>Student conflicts:</TD><TD colspan='2' nowrap>"+newSuggestion.getStudentConflictInfosAsHtml(sessionContext,courseTimetablingSolverService.getSolver(),true,0,3)+"</TD></TR>");
     	if (newSuggestion.hasDistributionConstraintInfo() || newSuggestion.hasBtbInstructorInfo()) {
     		sb.append("<TR><TD nowrap>Violated constraints:</TD><TD colspan='2' nowrap>");
     		if (newSuggestion.hasDistributionConstraintInfo())
-    			sb.append(newSuggestion.getDistributionConstraintInfoAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true,0,-1));
+    			sb.append(newSuggestion.getDistributionConstraintInfoAsHtml(sessionContext,courseTimetablingSolverService.getSolver(),true,0,-1));
     		if (newSuggestion.hasDistributionConstraintInfo() && newSuggestion.hasBtbInstructorInfo())
     			sb.append("<BR>");
     		if (newSuggestion.hasBtbInstructorInfo())
-    			sb.append(newSuggestion.getBtbInstructorInfosAsHtml(sessionContext, courseTimetablingSolverService.getSolver(),true));
+    			sb.append(newSuggestion.getBtbInstructorInfosAsHtml(sessionContext,courseTimetablingSolverService.getSolver(),true));
     		sb.append("</TD></TR>");
     	}
     	return sb.toString();

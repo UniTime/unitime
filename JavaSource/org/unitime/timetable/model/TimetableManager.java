@@ -176,6 +176,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 			   (getMiddleName()==null?"": " " + getMiddleName());
 	}
 	
+	@Deprecated
 	public boolean canAudit(Session session, User user) {
 		if (user.isAdmin()) return true;
 		if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
@@ -188,6 +189,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canAudit(Session session, UserContext user) {
 		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
 		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return false;
@@ -219,6 +221,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canSeeTimetable(Session session, UserContext user) {
 		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
 		if (Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole())) return true;
@@ -263,6 +266,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		return false;
 	}
 	
+	@Deprecated
 	public boolean canEditExams(Session session, User user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -279,6 +283,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
 	}
 	
+	@Deprecated
 	public boolean canEditExams(Session session, UserContext user) {
         //admin
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
@@ -295,6 +300,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
 	}
 	
+	@Deprecated
     public boolean canSeeCourses(Session session, User user) {
         //admin or exam manager
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
@@ -311,6 +317,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
     
+	@Deprecated
     public boolean canSeeCourses(Session session, UserContext user) {
         //admin or exam manager
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) return true;
@@ -360,6 +367,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
 	
+    @Deprecated
 	public boolean canSeeExams(Session session, UserContext user) {
         //can edit -> can view
         if (canEditExams(session, user)) return true;
@@ -375,6 +383,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
 
+    @Deprecated
     public boolean canTimetableExams(Session session, User user) {
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
             return true;
@@ -385,6 +394,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
     
+    @Deprecated
     public boolean canTimetableExams(Session session, UserContext user) {
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
             return true;
@@ -395,6 +405,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
 
+    @Deprecated
     public boolean canSectionStudents(Session session, User user) {
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
             return true;
@@ -402,6 +413,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
     
+    @Deprecated
     public boolean canSectionStudents(Session session, UserContext user) {
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
             return true;
@@ -409,6 +421,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return false;
     }
 
+    @Deprecated
     public boolean hasASolverGroup(Session session, User user) {
 		if (user.isAdmin() || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
@@ -417,6 +430,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		}
 	}
     
+    @Deprecated
     public boolean hasASolverGroup(Session session, UserContext user) {
 		if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) {
 			return !SolverGroup.findBySessionId(session.getUniqueId()).isEmpty();
@@ -425,7 +439,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
 		}
 	}
 
-    //needs to be implemented
+    @Deprecated
     public static boolean canSeeEvents (User user) {
     	for (RoomType roomType : RoomType.findAll()) {
     	    if (roomType.countManagableRooms()>0) return true;
@@ -433,6 +447,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
     	return false;
     }
 
+    @Deprecated
     public static boolean canSeeEvents (UserContext user) {
     	for (RoomType roomType : RoomType.findAll()) {
     	    if (roomType.countManagableRooms()>0) return true;
@@ -527,6 +542,7 @@ public class TimetableManager extends BaseTimetableManager implements Comparable
         return null;
     }
 
+    @Deprecated
     public Vector<RoomType> findDefaultEventManagerRoomTimesFor(String currentRole, Long acadSessionId){
     	Vector<RoomType> roomTypes = new Vector<RoomType>();
     	if (Roles.EVENT_MGR_ROLE.equals(currentRole)){

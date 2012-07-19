@@ -144,14 +144,15 @@ try {
 			</TD>		
 		</TR>
 	</logic:iterate>
-	<logic:empty name="examSolverForm" property="hosts">
+	<logic:empty name="hosts" scope="request">
 		<html:hidden property="host"/>
 	</logic:empty>
-	<logic:notEmpty name="examSolverForm" property="hosts">
+	<logic:notEmpty name="hosts" scope="request">
+		<bean:define id="hosts" name="hosts" scope="request"/>
 	   	<TR><TD>Host:</TD>
 			<TD>
 				<html:select property="host" disabled="<%=(solver!=null)%>">
-					<html:options name="examSolverForm" property="hosts"/>
+					<html:options name="hosts"/>
 				</html:select>
 				&nbsp;<html:errors property="host"/>
 			</TD>
@@ -170,7 +171,6 @@ try {
 <% }
    if (solver!=null && !solver.isWorking()) { %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
-				<logic:equal name="examSolverForm" property="canDo" value="true">
 <%
 				if (hasSolution) {
 %>
@@ -182,7 +182,6 @@ try {
 <%
 				}
 %>
-				</logic:equal>
 			<html:submit onclick="if (!confirmClear()) return false; displayLoading();" property="op" value="Clear"/>
 			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
 <% } %>

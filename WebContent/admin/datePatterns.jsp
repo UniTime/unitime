@@ -32,6 +32,7 @@
 <logic:notEqual name="datePatternEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="isUsed"/><html:errors property="isUsed"/>
+	<html:hidden property="sessionId"/>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD colspan="2">

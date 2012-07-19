@@ -34,15 +34,17 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamChangesForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -56,23 +58,24 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/examChanges")
 public class ExamChangesAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamChangesForm myForm = (ExamChangesForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.ExaminationAssignmentChanges);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if ("Export PDF".equals(op) || "Apply".equals(op)) {
-            myForm.save(request.getSession());
+            myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
         }
         
-        myForm.load(request.getSession());
+        myForm.load(sessionContext);
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         myForm.setNoSolver(solver==null);
@@ -122,19 +125,19 @@ public class ExamChangesAction extends Action {
             }
         }
         
-        WebTable.setOrder(request.getSession(),"examChanges.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"examChanges.ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(Web.getUser(request.getSession()), true, myForm, changes);
+        WebTable table = getTable(true, myForm, changes);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(Web.getUser(request.getSession()), false, myForm, changes);
+            PdfWebTable pdfTable = getTable(false, myForm, changes);
             File file = ApplicationProperties.getTempFile("changes", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"examChanges.ord"));
+            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"examChanges.ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
         if (table!=null)
-            myForm.setTable(table.printTable(WebTable.getOrder(request.getSession(),"examChanges.ord")), 9, changes.size());
+            myForm.setTable(table.printTable(WebTable.getOrder(sessionContext,"examChanges.ord")), 9, changes.size());
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
@@ -142,7 +145,7 @@ public class ExamChangesAction extends Action {
         return mapping.findForward("showReport");
 	}
 	
-    public PdfWebTable getTable(org.unitime.commons.User user, boolean html, ExamChangesForm form, Collection<ExamAssignmentInfo[]> changes) {
+    public PdfWebTable getTable(boolean html, ExamChangesForm form, Collection<ExamAssignmentInfo[]> changes) {
         if (changes==null || changes.isEmpty()) return null;
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =

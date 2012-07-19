@@ -20,10 +20,9 @@
 package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.security.SessionContext;
 
 public class ExamChangesForm extends ExamReportForm {
 	private static final long serialVersionUID = 4093360180461644275L;
@@ -46,16 +45,16 @@ public class ExamChangesForm extends ExamReportForm {
         iChage = sChangeInitial; iReverse = false;
     }
     
-    public void load(HttpSession session) {
+    public void load(SessionContext session) {
         super.load(session);
-        setReverse(UserData.getPropertyBoolean(session,"ExamChanges.reverse", false));
-        setChangeType(UserData.getProperty(session,"ExamChanges.changeType", sChangeInitial));
+        setReverse("1".equals(session.getUser().getProperty("ExamChanges.reverse", "0")));
+        setChangeType(session.getUser().getProperty("ExamChanges.changeType", sChangeInitial));
     }
         
-    public void save(HttpSession session) {
+    public void save(SessionContext session) {
         super.save(session);
-        UserData.setPropertyBoolean(session,"ExamChanges.reverse", getReverse());
-        UserData.setProperty(session,"ExamChanges.changeType", getChangeType());
+        session.getUser().setProperty("ExamChanges.reverse", getReverse() ? "1" : "0");
+        session.getUser().setProperty("ExamChanges.changeType", getChangeType());
     }
     
     public boolean getNoSolver() { return iNoSolver;}
