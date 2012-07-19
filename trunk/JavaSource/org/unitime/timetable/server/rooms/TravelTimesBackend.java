@@ -33,15 +33,14 @@ import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.client.rooms.TravelTimes$TravelTimesRequest")
 public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesRequest, TravelTimeResponse>{
@@ -49,22 +48,18 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 
 	@Override
 	public TravelTimeResponse execute(TravelTimesRequest request, SessionContext context) {
-		if (!context.isAuthenticated())
-			throw new PageAccessException(context.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		if (!Roles.ADMIN_ROLE.equals(context.getUser().getCurrentRole()))
-			throw new PageAccessException(MESSAGES.authenticationInsufficient());
-		if (context.getUser().getCurrentAcademicSessionId() == null)
-			throw new PageAccessException(MESSAGES.authenticationNoSession());
-		
 		TravelTimeResponse response = new TravelTimeResponse();
 		
 		switch (request.getCommand()) {
 		case INIT:
+			context.checkPermission(Right.TravelTimesLoad);
 			return new TravelTimeResponse(context.getUser().getCurrentAcademicSessionId(), SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()).getLabel());
 		case LOAD:
+			context.checkPermission(Right.TravelTimesLoad);
 			load(context.getUser().getCurrentAcademicSessionId(), request, response);
 			break;
 		case SAVE:
+			context.checkPermission(Right.TravelTimesSave);
 			save(context.getUser().getCurrentAcademicSessionId(), request);
 		}
 		

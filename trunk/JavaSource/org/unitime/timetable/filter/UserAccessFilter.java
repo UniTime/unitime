@@ -31,9 +31,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Roles;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * 
@@ -52,6 +53,13 @@ public class UserAccessFilter implements Filter {
 		iAllow = cfg.getInitParameter("allow");
 	}
 	
+	private UserContext getUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
+	}
+
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws IOException, ServletException {
 
 		if (!sAllowAll.equals(iAllow)) {
@@ -60,14 +68,15 @@ public class UserAccessFilter implements Filter {
 				HttpServletResponse httpResponse = (HttpServletResponse)response; 
 				HttpSession session = httpRequest.getSession();
 
-				if (sAllowLoggedIn.equals(iAllow) && !Web.isLoggedIn(session)) {
+				UserContext user = getUser();
+
+				if (sAllowLoggedIn.equals(iAllow) && user != null) {
 					session.setAttribute("exception", new ServletException("Access Denied."));
 					httpResponse.sendRedirect(httpRequest.getContextPath()+"/error.jsp");
 					return;
 				}
 				
-				User user = Web.getUser(session);
-				if (sAllowAdmin.equals(iAllow) && (user==null || !user.getRole().equals(Roles.ADMIN_ROLE))) {
+				if (sAllowAdmin.equals(iAllow) && (user==null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin))) {
 					session.setAttribute("exception", new ServletException("Access Denied."));
 					httpResponse.sendRedirect(httpRequest.getContextPath()+"/error.jsp");
 					return;

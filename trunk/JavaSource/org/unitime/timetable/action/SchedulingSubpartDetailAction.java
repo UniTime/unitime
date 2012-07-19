@@ -193,7 +193,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 	        // Initialize Preferences for initial load
 			Set timePatterns = null;
-			frm.setAvailableTimePatterns(TimePattern.findApplicable(request,ss.getMinutesPerWk().intValue(),false,ss.getManagingDept()));
+			frm.setAvailableTimePatterns(TimePattern.findApplicable(sessionContext.getUser(),ss.getMinutesPerWk().intValue(),false,ss.getManagingDept()));
 			initPrefs(frm, ss, null, false);
 	        timePatterns = ss.getTimePatterns();
 
@@ -210,7 +210,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        // Generate Time Pattern Grids
 			super.generateTimePatternGrids(request, frm, ss, timePatterns, "init", timeVertical, false, null);
 
-			LookupTables.setupDatePatterns(request, "Default", ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
+			LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", ss.getSession().getDefaultDatePatternNotNull(), ss.getManagingDept(), ss.effectiveDatePattern());
 
 	        LookupTables.setupRooms(request, ss);		 // Room Prefs
 	        LookupTables.setupBldgs(request, ss);		 // Building Prefs

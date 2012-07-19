@@ -20,11 +20,11 @@
 package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.security.SessionContext;
 
 
 /** 
@@ -57,14 +57,14 @@ public class RoomAvailabilityForm extends ExamReportForm {
     public boolean getCompare() { return iCompare; }
     public void setCompare(boolean compare) { iCompare = compare; }
 	
-	public void load(HttpSession session) {
+	public void load(SessionContext session) {
 	    super.load(session);
         setFilter((String)session.getAttribute("RoomAvailability.Filter"));
         setIncludeExams(Boolean.TRUE.equals(session.getAttribute("RoomAvailability.Exams")));
         setCompare(Boolean.TRUE.equals(session.getAttribute("RoomAvailability.Compare")));
     }
 	
-    public void save(HttpSession session) {
+    public void save(SessionContext session) {
         super.save(session);
         if (getFilter()==null)
             session.removeAttribute("RoomAvailability.Filter");

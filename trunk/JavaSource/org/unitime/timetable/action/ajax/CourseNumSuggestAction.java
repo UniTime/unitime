@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.hibernate.FlushMode;
 import org.hibernate.Query;
 import org.hibernate.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 
@@ -47,6 +47,8 @@ import fr.improve.struts.taglib.layout.suggest.MultipleSuggestAction;
  */
 @Service("/getCourseNumbers")
 public class CourseNumSuggestAction extends MultipleSuggestAction {
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Methods
 
@@ -89,17 +91,11 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
             return result;
         }
         
-        User user = Web.getUser(request.getSession());
-  
-        // Security Checks
-        if(!Web.isLoggedIn(request.getSession()) 
-                ||user==null 
-                || user.getAttribute(Constants.SESSION_ID_ATTR_NAME)==null)
-            return new ArrayList();
-        
         // Get Academic Session
-        String acadSessionId = user
-                .getAttribute(Constants.SESSION_ID_ATTR_NAME).toString();
+        Long acadSessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
+        
+        if (acadSessionId == null)
+        	return new ArrayList();
 
         // Read form variables -- Instructional Offerings Screen, Reservations Screen
         if(map.get("subjectAreaId")!=null && map.get("courseNbr")!=null 
@@ -122,8 +118,8 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setFlushMode(FlushMode.MANUAL);
-	        q.setInteger("acadSessionId", Integer.parseInt(acadSessionId));
-	        q.setInteger("subjectAreaId", Integer.parseInt(map.get("subjectAreaId").toString()));
+	        q.setLong("acadSessionId", acadSessionId);
+	        q.setLong("subjectAreaId", Long.valueOf(map.get("subjectAreaId").toString()));
 	        q.setString("courseNbr", map.get("courseNbr").toString() + "%");
 	
 	        result = q.list();
@@ -149,8 +145,8 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setFlushMode(FlushMode.MANUAL);
-	        q.setInteger("acadSessionId", Integer.parseInt(acadSessionId));
-	        q.setInteger("subjectAreaId", Integer.parseInt(map.get("filterSubjectAreaId").toString()));
+	        q.setLong("acadSessionId", acadSessionId);
+	        q.setLong("subjectAreaId", Long.valueOf(map.get("filterSubjectAreaId").toString()));
 	        q.setString("courseNbr", map.get("filterCourseNbr").toString() + "%");
 	
 	        result = q.list();
@@ -176,8 +172,8 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 	        q.setFetchSize(5000);
 	        q.setCacheable(true);
 	        q.setFlushMode(FlushMode.MANUAL);
-	        q.setInteger("acadSessionId", Integer.parseInt(acadSessionId));
-	        q.setInteger("subjectAreaId", Integer.parseInt(map.get("subjectAreaIds").toString()));
+	        q.setLong("acadSessionId", acadSessionId);
+	        q.setLong("subjectAreaId", Long.valueOf(map.get("subjectAreaIds").toString()));
 	        q.setString("courseNbr", map.get("courseNbr").toString() + "%");
 	
 	        result = q.list();

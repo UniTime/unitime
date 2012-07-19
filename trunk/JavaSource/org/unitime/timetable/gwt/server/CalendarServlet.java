@@ -46,8 +46,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
@@ -82,6 +81,8 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.SimpleUserContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -99,6 +100,9 @@ import net.sf.cpsolver.studentsct.model.Section;
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
+	@Autowired SessionContext sessionContext;
+	private SessionContext getSessionContext() { return sessionContext; }
+	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Params params = null;
 		String q = request.getParameter("q");
@@ -111,9 +115,9 @@ public class CalendarServlet extends HttpServlet {
 		if (params.getParameter("sid") != null) {
 			sessionId = Long.valueOf(params.getParameter("sid"));
 		} else {
-			User user = Web.getUser(request.getSession());
+			UserContext user = getSessionContext().getUser();
 			if (user != null)
-				sessionId = (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+				sessionId = (Long)user.getCurrentAcademicSessionId();
 			else
 				sessionId = (Long)request.getSession().getAttribute("sessionId");
 		}

@@ -25,9 +25,8 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.UserContext;
 
 /**
  * 
@@ -38,7 +37,8 @@ public abstract class QueueItem {
     protected static Logger sLog = Logger.getLogger(QueueItem.class);
 
 	private Long iSessionId;
-	private Long iOwnerId;
+	private String iOwnerId;
+	private String iOwnerName;
 	private File iOutput = null;
 	private String iLog = "";
 	private String iStatus = "Waiting...";
@@ -47,15 +47,16 @@ public abstract class QueueItem {
 	
 	private Long iId = null;
 	
-	public QueueItem(Session session, TimetableManager owner) {
+	public QueueItem(Session session, UserContext owner) {
 		iSessionId = session.getUniqueId();
-		iOwnerId = owner.getUniqueId();
+		iOwnerId = owner.getExternalUserId();
+		iOwnerName = owner.getName();
 	}
 	
 	public Long getSessionId() { return iSessionId; }
 	public Session getSession() { return SessionDAO.getInstance().get(iSessionId); }
-	public Long getOwnerId() { return iOwnerId; }
-	public TimetableManager getOwner() { return TimetableManagerDAO.getInstance().get(iOwnerId); }
+	public String getOwnerId() { return iOwnerId; }
+	public String getOwnerName() { return iOwnerName; }
 	
 	public abstract String type();
 	public abstract String name();

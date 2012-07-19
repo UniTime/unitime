@@ -27,12 +27,10 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.exam.ui.ExamInfoModel;
 
 /**
@@ -88,7 +86,6 @@ public class ExamInfoForm extends ActionForm {
         iRoomTypes = null;
         iRoomFeatures = null;
         iRoomGroups = null;
-        iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
     }
     
     public void load(HttpSession session) {
@@ -200,4 +197,7 @@ public class ExamInfoForm extends ActionForm {
     public Collection<RoomType> getAllRoomTypes() {
         return RoomType.findAll();
     }
+    
+    public Long getSessionId() { return iSessionId; }
+    public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 }

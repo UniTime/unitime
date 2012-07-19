@@ -156,6 +156,7 @@ public class Settings extends BaseSettings {
 	 * @param key Key 
 	 * @return user setting or default value if none exists
 	 */
+	@Deprecated
 	public static String getSettingValue(User user, String key) {
 		Settings setting = Settings.getSetting(key);
 		if (setting==null) return null;
@@ -165,6 +166,7 @@ public class Settings extends BaseSettings {
 		return valueArr[1];
 	}
 	
+	@Deprecated
 	public static String getSettingValue(UserContext user, String key) {
 		Settings setting = Settings.getSetting(key);
 		if (setting==null) return null;

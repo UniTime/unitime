@@ -21,7 +21,6 @@ package org.unitime.timetable.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -65,6 +64,7 @@ import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 
 
 /**
@@ -121,6 +121,7 @@ public class LookupTables {
         request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAll(sessionId));
     }
 
+    @Deprecated
     public static void setupDeptsForUser(HttpServletRequest request, User user, Long sessionId, boolean includeExternal) throws Exception {
 		ArrayList departments = new ArrayList();
 		TreeSet depts = new TreeSet();
@@ -204,18 +205,22 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
+    @Deprecated
     public static void setupDistribTypes(HttpServletRequest request) throws Exception {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, false));
     }
     
+    @Deprecated
     public static void setupExamDistribTypes(HttpServletRequest request) throws Exception {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, true));
     }
 
+    @Deprecated
     public static void setupInstructorDistribTypes(HttpServletRequest request) throws Exception {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
     }
 
+    @Deprecated
     public static void setupExaminationPeriods(HttpServletRequest request, Integer examType) throws Exception {
         request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request, examType));
     }
@@ -224,14 +229,12 @@ public class LookupTables {
         request.setAttribute(RoomGroup.GROUP_LIST_ATTR_NAME, pg.getAvailableRoomGroups());
     }
 
-    public static void setupDatePatterns(HttpServletRequest request, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
+    public static void setupDatePatterns(HttpServletRequest request, UserContext user, String inheritString, DatePattern inheritedDatePattern, Department department, DatePattern currentDatePattern) {
     	Vector list = new Vector();
     	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
-    		for (Enumeration e=DatePattern.findAll(request, department, currentDatePattern).elements();e.hasMoreElements();) {
-    			DatePattern dp = (DatePattern)e.nextElement();
+    		for (DatePattern dp: DatePattern.findAll(user, department, currentDatePattern))
     			list.addElement(new IdValue(dp.getUniqueId(),dp.getName()));
-    		}
     	} catch (Exception e) {
     		Debug.error(e);
     	}
@@ -250,15 +253,13 @@ public class LookupTables {
     	Vector list = new Vector();
     	list.addElement(new IdValue(new Long(-1),inheritString+(inheritedDatePattern==null?"":" ("+inheritedDatePattern.getName()+")")));
     	try {
-    		for (Enumeration e=(DatePattern.findAll(acadSession, includeExtended, department, currentDatePattern)).elements();e.hasMoreElements();) {
-    			DatePattern dp = (DatePattern)e.nextElement();
+    		for (DatePattern dp: DatePattern.findAll(acadSession, includeExtended, department, currentDatePattern))
     			list.addElement(new IdValue(dp.getUniqueId(),dp.getName()));
-    		}
     	} catch (Exception e) {
     		Debug.error(e);
     	}
     	
-    	if (inheritedDatePattern==null && list.size()==1)
+    	if (inheritedDatePattern == null && list.size() == 1)
     		request.setAttribute(DatePattern.DATE_PATTERN_LIST_ATTR, null);
     	else
     		request.setAttribute(DatePattern.DATE_PATTERN_LIST_ATTR, list);

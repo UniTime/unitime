@@ -24,64 +24,38 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <table width="100%" border="0" cellspacing="0" cellpadding="3">
 	<tr><td colspan='5' nowrap>
 		<tt:section-header>
 			<tt:section-title>Buildings</tt:section-title>
 				<table border='0'><tr><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Add"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingAdd')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Add"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
+					</html:form>
+				</sec:authorize>
 				</td><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Export PDF"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingExportPdf')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Export PDF"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
+					</html:form>
+				</sec:authorize>
 				</td><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Update Data"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingUpdateData')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Update Data"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
+					</html:form>
+				</sec:authorize>
 				</td></tr></table>
 		</tt:section-header>
 	</td></tr>
-<%
-	DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
-    WebTable webTable = new WebTable( 5,
-    null, "buildingList.do?ord=%%",
-    new String[] {"Abbreviation", "Name", "External ID", ellipsoid.getFirstCoordinateName(), ellipsoid.getSecondCoordinateName()},
-    new String[] {"left", "left","left","right","right"},
-    new boolean[] {true,true,true,true,true} );
-    WebTable.setOrder(session, "BuildingList.ord", request.getParameter("ord"), 1);
-%>
-
-<logic:iterate name="buildingListForm" property="buildings" id="bldg" >
-<%
-org.unitime.timetable.model.Building b = (org.unitime.timetable.model.Building) bldg;
-DecimalFormat df5 = new DecimalFormat("####0.######");
-webTable.addLine(
-	"onClick=\"document.location='buildingEdit.do?op=Edit&id="+b.getUniqueId()+"';\"",
-	new String[] {
-		b.getAbbreviation(),
-		b.getName(),
-		b.getExternalUniqueId()==null?"<i>N/A</i>":b.getExternalUniqueId().toString(),
-		(b.getCoordinateX()==null ? "" : df5.format(b.getCoordinateX())),
-		(b.getCoordinateY()==null ? "" : df5.format(b.getCoordinateY()))
-		}, 
-	new Comparable[] {
-		b.getAbbreviation(),
-		b.getName(),
-		b.getExternalUniqueId()==null?"":b.getExternalUniqueId().toString(),
-		b.getCoordinateX(),
-		b.getCoordinateY()
-		});
-%>
-
-</logic:iterate>
-
-<%	out.println( webTable.printTable(WebTable.getOrder(session, "BuildingList.ord")) ); %>
-
+	
+	<bean:write name="table" scope="request" filter="false"/>
 
 	<TR>
 		<TD colspan='5' align="right" class="WelcomeRowHead">
@@ -91,20 +65,26 @@ webTable.addLine(
 	<TR>
 		<TD colspan='5' align="right" nowrap width="100%">
 				<table border='0'><tr><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Add"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingAdd')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Add"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="A" title="Add Building (Alt+B)" value="Add Building"/>
+					</html:form>
+				</sec:authorize>
 				</td><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Export PDF"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingExportPdf')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Export PDF"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
+					</html:form>
+				</sec:authorize>
 				</td><td>
-				<html:form action="buildingEdit" styleClass="FormWithNoPadding">
-					<html:hidden property="op" value="Update Data"/>
-					<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
-				</html:form>
+				<sec:authorize access="hasPermission(null, 'Session', 'BuildingUpdateData')">
+					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
+						<html:hidden property="op" value="Update Data"/>
+						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="U" title="Synchronize classrooms and computing labs with external rooms (Alt+U)" value="Update Data"/>
+					</html:form>
+				</sec:authorize>
 				</td></tr></table>
 		</TD>
 	</TR>

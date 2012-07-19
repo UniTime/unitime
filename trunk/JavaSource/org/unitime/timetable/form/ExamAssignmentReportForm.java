@@ -20,10 +20,10 @@
 package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.security.SessionContext;
 
 
 /** 
@@ -87,13 +87,13 @@ public class ExamAssignmentReportForm extends ExamReportForm {
 	public String getFilter() { return iFilter; }
 	public void setFilter(String filter) { iFilter = filter; }
 
-    public void load(HttpSession session) {
+    public void load(SessionContext session) {
         super.load(session);
         setFilter(session.getAttribute("ExamReport.Filter")==null?"":(String)session.getAttribute("ExamReport.Filter"));
         setReport(session.getAttribute("ExamReport.Report")==null?"":(String)session.getAttribute("ExamReport.Report"));
     }
         
-    public void save(HttpSession session) {
+    public void save(SessionContext session) {
         super.save(session);
         if (getFilter()==null)
             session.removeAttribute("ExamReport.Filter");

@@ -260,6 +260,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	}
 	
 	/** The course as well as all its classes are editable by the user */
+	@Deprecated
 	public boolean isFullyEditableBy(User user) {
     	if (user==null) return false;
 
@@ -290,6 +291,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return true;
 	}
 
+	@Deprecated
     public boolean isEditableBy(User user){
     	if (user==null) return false;
 
@@ -311,6 +313,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return true;
     }
     
+	@Deprecated
     public boolean isEditableBy(UserContext user){
     	if (user == null || user.getCurrentAuthority() == null) return false;
 
@@ -330,6 +333,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	return true;
     }
     
+	@Deprecated
     public boolean isLimitedEditableBy(User user){
         if (user==null) return false;
         if (user.isAdmin()) return true;
@@ -347,6 +351,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
         return true;
     }
 
+	@Deprecated
     public boolean isViewableBy(User user){
     	if (user==null) return false;
     	if (user.isAdmin()) return true;

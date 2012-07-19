@@ -35,6 +35,7 @@ import org.unitime.timetable.model.ManagerSettings;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Settings;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
@@ -53,7 +54,7 @@ import org.unitime.timetable.util.LoginManager;
 public class UniTimeUserContext extends AbstractUserContext {
 	private static final long serialVersionUID = 1L;
 	
-	private String iId, iPassword, iName, iLogin;
+	private String iId, iPassword, iName, iLogin, iEmail;
 	
 	public UniTimeUserContext(String userId, String login, String name, String password) {
 		iLogin = login; iPassword = password; iId = userId; iName = name;
@@ -85,6 +86,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					.setString("id", userId).setMaxResults(1).uniqueResult();
 			if (manager != null) {
 				iName = manager.getName();
+				iEmail = manager.getEmailAddress();
 				Roles primary = null;
 				
 				TreeSet<Session> primarySessions = null;
@@ -113,6 +115,11 @@ public class UniTimeUserContext extends AbstractUserContext {
 						for (Department department: manager.getDepartments())
 							if (department.getSession().equals(session))
 								authority.addQualifier(department);
+						for (SolverGroup group: manager.getSolverGroups())
+							for (Department department: group.getDepartments())
+								if (department.getSession().equals(session)) {
+									authority.addQualifier(group); break;
+								}
 						addAuthority(authority);
 					}
 				}
@@ -133,6 +140,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					"from DepartmentalInstructor where externalUniqueId = :id")
 					.setString("id", userId).list()) {
 				if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				if (iEmail == null) iEmail = instructor.getEmail();
 				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, instructor.getDepartment().getSession());
 				InstructorAuthority authority = (authorities.isEmpty() ? null : (InstructorAuthority)authorities.get(0));
 				if (authority == null) {
@@ -148,6 +156,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					"from Student where externalUniqueId = :id")
 					.setString("id", userId).list()) {
 				if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+				if (iEmail == null) iEmail = student.getEmail();
 				StudentAuthority authority = new StudentAuthority(student);
 				authority.addQualifier(student.getSession());
 				addAuthority(authority);
@@ -253,6 +262,9 @@ public class UniTimeUserContext extends AbstractUserContext {
 
 	@Override
 	public String getName() { return iName; }
+	
+	@Override
+	public String getEmail() { return iEmail; }
 
 	@Override
 	public void setProperty(String key, String value) {

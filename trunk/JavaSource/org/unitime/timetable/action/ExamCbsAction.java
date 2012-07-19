@@ -26,10 +26,14 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ExamCbsForm;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo;
+import org.unitime.timetable.solver.service.SolverService;
 
 
 /** 
@@ -37,26 +41,41 @@ import org.unitime.timetable.model.UserData;
  */
 @Service("/ecbs")
 public class ExamCbsAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamCbsForm myForm = (ExamCbsForm) form;
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.ExaminationConflictStatistics);
 		
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null) op="Change";
+        if (op==null) op="Refresh";
         
         if ("Change".equals(op)) {
-        	UserData.setPropertyDouble(request.getSession(), "Ecbs.limit", myForm.getLimit());
-        	UserData.setPropertyInt(request.getSession(), "Ecbs.type" ,myForm.getTypeInt());
+        	sessionContext.getUser().setProperty("Ecbs.limit", String.valueOf(myForm.getLimit()));
+        	sessionContext.getUser().setProperty("Ecbs.type", String.valueOf(myForm.getTypeInt()));
+        } else {
+        	myForm.reset(mapping,request);
+        	myForm.setTypeInt(Integer.parseInt(sessionContext.getUser().getProperty("Ecbs.type", String.valueOf(ExamCbsForm.sDefaultType))));
+        	myForm.setLimit(Double.parseDouble(sessionContext.getUser().getProperty("Ecbs.limit", String.valueOf(ExamCbsForm.sDefaultLimit))));
         }
         
-        if ("Refresh".equals(op)) {
-        	myForm.reset(mapping,request);
-        }
+        ExamConflictStatisticsInfo cbs = null;
+    	if (examinationSolverService.getSolver() != null)
+    		cbs = examinationSolverService.getSolver().getCbsInfo();
+    	
+    	if (cbs != null) {
+    		request.setAttribute("cbs", cbs);
+    	} else {
+    		if (examinationSolverService.getSolver() == null)
+    			request.setAttribute("warning", "No examination data are loaded into the solver, conflict-based statistics is not available.");
+    		else
+    			request.setAttribute("warning", "Conflict-based statistics is not available at the moment.");
+    	}
 
         return mapping.findForward("show");
 	}

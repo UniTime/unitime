@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
 
 
@@ -48,7 +47,7 @@ public class SolutionChangesForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iReference = sReferences[UserData.getPropertyInt(request.getSession(),"SolutionChanges.reference", sReferenceInitial)];
+		iReference = sReferences[sReferenceInitial];
 		iSimpleMode = false; iReversedMode = false;
 	}
 	
@@ -76,6 +75,9 @@ public class SolutionChangesForm extends ActionForm {
 		for (int i=0;i<sReferences.length;i++)
 			if (sReferences[i].equals(iReference)) return i;
 		return sReferenceBest;
+	}
+	public void setReferenceInt(int reference) {
+		iReference = sReferences[reference];
 	}
 	public String[] getReferences() { return sReferences; }
 	public String getOp() { return iOp; }

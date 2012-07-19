@@ -41,7 +41,26 @@ public class CourseTimetablingPermissions {
 		@Override
 		public boolean check(UserContext user, Department source) {
 			return source != null && source.getSolverGroup() != null &&
-				permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
+				permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable) &&
+				(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || !user.getCurrentAuthority().getQualifiers("SolverGroup").isEmpty());
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	
+	@PermissionForRight(Right.CourseTimetablingAudit)
+	public static class CourseTimetablingAudit implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return source != null && source.getSolverGroup() != null &&
+				permissionDepartment.check(user, source, DepartmentStatusType.Status.Audit) &&
+				!permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable) &&
+				(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || !user.getCurrentAuthority().getQualifiers("SolverGroup").isEmpty());
 		}
 
 		@Override
@@ -50,18 +69,7 @@ public class CourseTimetablingPermissions {
 	}
 	
 	@PermissionForRight(Right.AssignedClasses)
-	public static class AssignedClasses implements Permission<Department> {
-		@Autowired PermissionDepartment permissionDepartment;
-
-		@Override
-		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable);
-		}
-
-		@Override
-		public Class<Department> type() { return Department.class; }
-		
-	}
+	public static class AssignedClasses extends CourseTimetabling {}
 	
 	@PermissionForRight(Right.AssignmentHistory)
 	public static class AssignmentHistory extends CourseTimetabling {}

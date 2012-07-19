@@ -176,7 +176,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        doLoad(request, frm, c, op);
 
 	        // Initialize Preferences for initial load
-	        frm.setAvailableTimePatterns(TimePattern.findApplicable(request,c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
+	        frm.setAvailableTimePatterns(TimePattern.findApplicable(sessionContext.getUser(),c.getSchedulingSubpart().getMinutesPerWk().intValue(),true,c.getManagingDept()));
 			Set timePatterns = null;
         	initPrefs(frm, c, null, false);
 		    timePatterns = c.effectiveTimePatterns();
@@ -199,7 +199,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        // date Patterns
 	        setupDatePatterns(request, frm, c);
 
-	        LookupTables.setupDatePatterns(request, "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
+	        LookupTables.setupDatePatterns(request, sessionContext.getUser(), "Default", c.getSchedulingSubpart().effectiveDatePattern(), c.getManagingDept(), c.effectiveDatePattern());
 
 	        LookupTables.setupRooms(request, c);		 // Room Prefs
 	        LookupTables.setupBldgs(request, c);		 // Building Prefs

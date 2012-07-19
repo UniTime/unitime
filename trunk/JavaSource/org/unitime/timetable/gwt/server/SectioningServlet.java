@@ -121,7 +121,8 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 /**
  * @author Tomas Muller
@@ -144,7 +145,8 @@ public class SectioningServlet implements SectioningService {
 	
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
-	private OnlineSectioningServer getStudentSolver() { return WebSolver.getStudentSolver(getSessionContext().getHttpSession()); }
+	private @Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	private StudentSolverProxy getStudentSolver() { return studentSectioningSolverService.getSolver(); }
 
 	public Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException {
 		if (sessionId==null) throw new SectioningException(MSG.exceptionNoAcademicSession());

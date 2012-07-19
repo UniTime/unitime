@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -28,13 +27,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
-import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.dao.BuildingDAO;
 
 /** 
  * 
@@ -44,23 +37,22 @@ import org.unitime.timetable.model.dao.BuildingDAO;
 public class BuildingEditForm extends ActionForm {
 	private static final long serialVersionUID = -4104780400760573687L;
 	private Long iUniqueId = null;
+	private Long iSessionId = null;
 	private String iOp = null;
     private String iExternalId = null;
     private String iName = null;
     private String iAbbreviation = null;
     private String iCoordX = null, iCoordY = null;
-
+    
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
         
         try {
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-            
             if (iName==null || iName.trim().length()==0)
                 errors.add("name", new ActionMessage("errors.required", ""));
             else {
                 try {
-                    Building building = Building.findByName(iName, session.getUniqueId());
+                    Building building = Building.findByName(iName, iSessionId);
                     if (building!=null && !building.getUniqueId().equals(iUniqueId))
                         errors.add("name", new ActionMessage("errors.exists", iName));
                 } catch (Exception e) {
@@ -72,7 +64,7 @@ public class BuildingEditForm extends ActionForm {
                 errors.add("abbreviation", new ActionMessage("errors.required", ""));
             else {
                 try {
-                    Building building = Building.findByBldgAbbv(iAbbreviation, session.getUniqueId());
+                    Building building = Building.findByBldgAbbv(iAbbreviation, iSessionId);
                     if (building!=null && !building.getUniqueId().equals(iUniqueId))
                         errors.add("abbreviation", new ActionMessage("errors.exists", iAbbreviation));
                 } catch (Exception e) {
@@ -108,6 +100,9 @@ public class BuildingEditForm extends ActionForm {
     public String getCoordY() { return iCoordY; }
     public void setCoordY(String coordY) { iCoordY = coordY; }
     
+    public Long getSessionId() { return iSessionId; }
+    public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+
     public void load(Building building) {
         setOp("Update");
         setUniqueId(building.getUniqueId());
@@ -117,55 +112,6 @@ public class BuildingEditForm extends ActionForm {
         setCoordX(building.getCoordinateX()==null ? null : building.getCoordinateX().toString());
         setCoordY(building.getCoordinateY()==null ? null : building.getCoordinateY().toString());
     }
-    
-    public void saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession, Session session) throws Exception {
-        Building building = null;
-        if (getUniqueId()!=null) building = new BuildingDAO().get(getUniqueId());
-        if (building==null) building = new Building();
-        building.setName(getName());
-        building.setAbbreviation(getAbbreviation());
-        building.setExternalUniqueId(getExternalId()!=null && getExternalId().length()==0?null:getExternalId());
-        building.setCoordinateX(getCoordX()==null || getCoordX().length()==0 ? null : Double.valueOf(getCoordX()));
-        building.setCoordinateY(getCoordY()==null || getCoordY().length()==0 ? null : Double.valueOf(getCoordY()));
-        building.setSession(session);
-        hibSession.saveOrUpdate(building);
-        ChangeLog.addChange(
-                hibSession, 
-                request, 
-                building, 
-                ChangeLog.Source.BUILDING_EDIT, 
-                (getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
-                null, 
-                null);
-    }
-    
-    public void delete(HttpServletRequest request, org.hibernate.Session hibSession) {
-        Building building = new BuildingDAO().get(getUniqueId());
-        if (building!=null) {
-            for (Iterator i=
-                hibSession.createQuery("select r from Room r where r.building.uniqueId=:buildingId").setLong("buildingId", getUniqueId()).iterate();
-                i.hasNext();) {
-                Room r = (Room)i.next();
-                hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setLong("roomId", r.getUniqueId()).executeUpdate();
-                for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
-                    Assignment a = (Assignment)j.next();
-                    a.getRooms().remove(r);
-                    hibSession.saveOrUpdate(a);
-                    j.remove();
-                }
-                hibSession.delete(r);
-            }
-            
-            ChangeLog.addChange(
-                    hibSession, 
-                    request, 
-                    building, 
-                    ChangeLog.Source.BUILDING_EDIT, 
-                    ChangeLog.Operation.DELETE, 
-                    null, 
-                    null);
-            hibSession.delete(building);
-        }
-    }
+
 }
 

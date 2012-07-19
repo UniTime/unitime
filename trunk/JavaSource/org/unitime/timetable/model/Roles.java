@@ -53,12 +53,18 @@ public class Roles extends BaseRoles implements HasRights {
 
 /*[CONSTRUCTOR MARKER END]*/
 
+	@Deprecated
 	public static String ADMIN_ROLE = "Administrator";
+	@Deprecated
 	public static String DEPT_SCHED_MGR_ROLE = "Dept Sched Mgr";
+	@Deprecated
 	public static String VIEW_ALL_ROLE = "View All";
+	@Deprecated
 	public static String EXAM_MGR_ROLE = "Exam Mgr";
 	public static String EVENT_MGR_ROLE = "Event Mgr";
+	@Deprecated
 	public static String CURRICULUM_MGR_ROLE = "Curriculum Mgr";
+	@Deprecated
 	public static String STUDENT_ADVISOR = "Advisor";
 	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
@@ -67,10 +73,11 @@ public class Roles extends BaseRoles implements HasRights {
 	/**
 	 * Define Admin and non - admin roles
 	 */
-	
+    @Deprecated
     private static String[] adminRoles = new String[] { 
     	Roles.ADMIN_ROLE };
     
+    @Deprecated
     private static String[] nonAdminRoles = new String[] { 
     	Roles.DEPT_SCHED_MGR_ROLE, 
     	Roles.VIEW_ALL_ROLE, 
@@ -82,7 +89,7 @@ public class Roles extends BaseRoles implements HasRights {
      * @return String Array of admin roles (defined in Roles class) 
      * @see Roles
      */
-	
+    @Deprecated
 	public static String[] getAdminRoles() {
 	    return adminRoles;
 	}
@@ -92,7 +99,7 @@ public class Roles extends BaseRoles implements HasRights {
      * @return String Array of admin roles (defined in Roles class) 
      * @see Roles
      */
-	
+    @Deprecated
 	public static String[] getNonAdminRoles() {
 	    return nonAdminRoles;
 	}
@@ -170,12 +177,15 @@ public class Roles extends BaseRoles implements HasRights {
 			
 		case AddNonUnivLocation:
 		case AddSpecialUseRoom:
+		case NonUniversityLocationDelete:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || EVENT_MGR_ROLE.endsWith(getReference());
 			
+		case RoomDelete: 
 		case ApplicationConfig:
 			return ADMIN_ROLE.equals(getReference());
 			
 		case CourseTimetabling:
+		case CourseTimetablingAudit:
 		case AssignedClasses:
 		case AssignmentHistory:
 		case ConflictStatistics:
@@ -216,8 +226,20 @@ public class Roles extends BaseRoles implements HasRights {
 		case DistributionPreferenceSubpart:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
-		case AssignedExams:
+		case ExaminationTimetabling:
+		case ExaminationSolver:
+		case ExaminationTimetable:
+		case AssignedExaminations:
+		case NotAssignedExaminations:
+		case ExaminationAssignmentChanges:
+		case ExaminationConflictStatistics:
+		case ExaminationSolverLog:
+		case ExaminationReports:
+		case ExaminationAssignment:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+			
+		case ExaminationPdfReports:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case InstructionalOfferings:
 		case InstructionalOfferingsExportPDF:
@@ -247,8 +269,8 @@ public class Roles extends BaseRoles implements HasRights {
 		case DistributionPreferenceExam:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
-		case ExaminationAssignment:
-			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+		case RoomAvailability:
+			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 			
 		case OfferingDelete:
 		case ClassAssignment:
@@ -280,6 +302,28 @@ public class Roles extends BaseRoles implements HasRights {
 		case CanUseHardTimePrefs:
 			return true;
 			
+		case BuildingList:
+		case BuildingAdd:
+		case BuildingEdit:
+		case BuildingDelete:
+		case BuildingExportPdf:
+		case BuildingUpdateData:
+		case TravelTimesLoad:
+		case TravelTimesSave:
+		case DatePatterns:
+		case SessionRollForward:
+		case DataExchange:
+		case CanSelectSolverServer:
+		case ExtendedDatePatterns:
+		case ExtendedTimePatterns: 
+			return ADMIN_ROLE.equals(getReference());
+			
+		case HasRole:
+			return true;
+
+		case IsAdmin:
+			return ADMIN_ROLE.equals(getReference());
+
 		default:
 			
 			return false;

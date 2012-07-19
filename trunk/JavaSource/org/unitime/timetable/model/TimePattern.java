@@ -35,6 +35,8 @@ import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -71,6 +73,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 
     /*[CONSTRUCTOR MARKER END]*/
 
+	@Deprecated
     public static List<TimePattern> findAll(HttpServletRequest request, Boolean visible) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);
@@ -99,12 +102,9 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         return v;
     }
     
-    public static List<TimePattern> findApplicable(HttpServletRequest request, int minPerWeek, boolean includeExactTime, Department department) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-    	TimetableManager mgr = TimetableManager.getManager(user);
-    	boolean includeExtended = user.isAdmin() || (mgr!=null && mgr.isExternalManager());
-    	return findByMinPerWeek(session, false, includeExtended, includeExactTime, minPerWeek,(includeExtended?null:department));
+    public static List<TimePattern> findApplicable(UserContext user, int minPerWeek, boolean includeExactTime, Department department) throws Exception {
+    	boolean includeExtended = user.getCurrentAuthority().hasRight(Right.ExtendedTimePatterns);
+    	return findByMinPerWeek(user.getCurrentAcademicSessionId(), false, includeExtended, includeExactTime, minPerWeek, (includeExtended ? null : department));
     }
     
     public static List<TimePattern> findByMinPerWeek(Session session, boolean includeHidden, boolean includeExtended, boolean includeExactTime, int minPerWeek, Department department) {
@@ -161,6 +161,7 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
         return list;
     }
     
+    @Deprecated
     public static TimePattern findByName(HttpServletRequest request, String name) throws Exception {
     	User user = Web.getUser(request.getSession());
     	Session session = Session.getCurrentAcadSession(user);

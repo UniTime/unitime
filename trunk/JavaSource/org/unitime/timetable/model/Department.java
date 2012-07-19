@@ -147,6 +147,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 	/* (non-Javadoc)
 	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
 	 */
+	@Deprecated
 	protected boolean canUserEdit(User user) {
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm==null) return false;
@@ -163,6 +164,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		return false;
 	}
 	
+	@Deprecated
 	protected boolean canUserView(User user){
 		TimetableManager tm = TimetableManager.getManager(user);
 		if (tm==null) return false;
@@ -457,6 +459,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		else return(null);
 	}
 	
+	@Deprecated
     public boolean isLimitedEditableBy(User user){
         if (user==null) return false;
         if (user.isAdmin()) return true;
@@ -475,6 +478,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
         return true;
     }
     
+    @Deprecated
     public boolean isLimitedEditableBy(UserContext user){
         if (user==null) return false;
         if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;

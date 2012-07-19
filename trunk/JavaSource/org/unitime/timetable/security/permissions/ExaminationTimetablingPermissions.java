@@ -21,23 +21,62 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class ExaminationTimetablingPermissions {
 
-	@PermissionForRight(Right.AssignedExams)
-	public static class AssignedClasses implements Permission<Session> {
+	@PermissionForRight(Right.ExaminationTimetabling)
+	public static class ExaminationTimetabling implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable) &&
+					(Exam.hasFinalExams(source.getUniqueId()) || Exam.hasMidtermExams(source.getUniqueId()));
 		}
 
 		@Override
 		public Class<Session> type() { return Session.class; }
 		
+	}
+	
+	@PermissionForRight(Right.ExaminationSolver)
+	public static class ExaminationSolver extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.ExaminationTimetable)
+	public static class ExaminationTimetable extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.AssignedExaminations)
+	public static class AssignedExaminations extends ExaminationTimetabling {}
+	
+	@PermissionForRight(Right.NotAssignedExaminations)
+	public static class NotAssignedExaminations extends ExaminationTimetabling {}
+	
+	@PermissionForRight(Right.ExaminationAssignmentChanges)
+	public static class ExaminationAssignmentChanges extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.ExaminationConflictStatistics)
+	public static class ExaminationConflictStatistics extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.ExaminationSolverLog)
+	public static class ExaminationSolverLog extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.ExaminationReports)
+	public static class ExaminationReports extends ExaminationTimetabling {}
+
+	@PermissionForRight(Right.ExaminationPdfReports)
+	public static class ExaminationPdfReports implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source) && Exam.hasTimetable(source.getUniqueId());
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
 	}
 }

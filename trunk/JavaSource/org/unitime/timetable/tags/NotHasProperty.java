@@ -21,8 +21,10 @@ package org.unitime.timetable.tags;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.ManagerSettings;
+import org.unitime.timetable.security.UserContext;
 
 
 /**
@@ -38,10 +40,16 @@ public class NotHasProperty extends TagSupport {
 	public boolean isUser() { return iUser; }
 	public void setUser(boolean user) { iUser = user; }
 	
+	private UserContext getUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
+	}
+	
 	protected String getProperty() {
-		if (isUser()) {
-			return ManagerSettings.getValue(pageContext.getSession(), getName(),
-					ApplicationProperties.getProperty(getName()));
+		if (isUser() && getUser() != null) {
+			return getUser().getProperty(getName(), ApplicationProperties.getProperty(getName()));
 		} else {
 			return ApplicationProperties.getProperty(getName());
 		}

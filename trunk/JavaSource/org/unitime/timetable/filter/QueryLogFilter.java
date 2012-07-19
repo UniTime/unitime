@@ -47,12 +47,13 @@ import net.sf.cpsolver.ifs.util.JProf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.server.UniTimePrincipal;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.model.dao.QueryLogDAO;
+import org.unitime.timetable.security.UserContext;
 
 public class QueryLogFilter implements Filter {
 	private static Log sLog = LogFactory.getLog(QueryLogFilter.class);
@@ -69,6 +70,13 @@ public class QueryLogFilter implements Filter {
 		}
 	}
 	
+	private UserContext getUser() {
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UserContext)
+			return (UserContext)authentication.getPrincipal();
+		return null;
+	}
+	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws ServletException, IOException {
 
 		String sessionId = null;
@@ -77,9 +85,9 @@ public class QueryLogFilter implements Filter {
 			if (request instanceof HttpServletRequest) {
 				HttpServletRequest r = (HttpServletRequest)request;
 				sessionId = r.getSession().getId();
-				User user = Web.getUser(r.getSession());
+				UserContext user = getUser();
 				if (user != null) {
-					userId = user.getId();
+					userId = user.getExternalUserId();
 				} else {
 					UniTimePrincipal principal = (UniTimePrincipal)r.getSession().getAttribute("user");
 					if (principal != null)
@@ -127,9 +135,9 @@ public class QueryLogFilter implements Filter {
 				if (sessionId == null)
 					q.setSessionId(r.getSession().getId());
 				if (userId == null) {
-					User user = Web.getUser(r.getSession());
+					UserContext user = getUser();
 					if (user != null)
-						q.setUid(user.getId());
+						q.setUid(user.getExternalUserId());
 				}
 			} catch (IllegalStateException e) {}
 			if (wrapper != null && wrapper.getBody() != null) {

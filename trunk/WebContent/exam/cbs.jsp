@@ -17,17 +17,7 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.solver.WebSolver" %>
-<%@ page import="org.unitime.timetable.form.ExamCbsForm" %>
-<%@ page import="org.unitime.commons.Debug" %>
-<%@ page import="org.unitime.timetable.model.TimetableManager" %>
-<%@ page import="org.unitime.commons.User" %>
-<%@ page import="org.unitime.timetable.model.Session" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.model.UserData" %>
-<%@ page import="java.util.StringTokenizer" %>
 <%@page import="org.unitime.timetable.solver.exam.ui.ExamConflictStatisticsInfo"%>
-<%@page import="org.unitime.timetable.solver.exam.ExamSolverProxy"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -37,10 +27,6 @@
 
 <tiles:importAttribute />
 <html:form action="/ecbs">
-<%
-try {
-	ExamConflictStatisticsInfo.printHtmlHeader(out);
-%>
 	<script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -74,51 +60,26 @@ try {
 			</TR>
 		</TABLE>
 	<script language="JavaScript">blEndCollapsed('dispFilter');</script>
-<%
-	ExamConflictStatisticsInfo cbs = null;
-	ExamSolverProxy solver = WebSolver.getExamSolver(session);
-	if (solver!=null) {
-		//if (!solver.isWorking())
-		cbs = solver.getCbsInfo();
-	}
-	if (cbs!=null) {
-		double limit = UserData.getPropertyDouble(session, "Ecbs.limit", ExamCbsForm.sDefaultLimit);
-		int type = UserData.getPropertyInt(session, "Ecbs.type", ExamCbsForm.sDefaultType);
-		User user = Web.getUser(request.getSession());
-		TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-		Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
-		boolean clickable = manager.canTimetableExams(acadSession, user);
-		
-%>
-	<font size='2'>
-<%
-	cbs.printHtml(out, limit/100.0, type, clickable);
-%>
-	</font>
-	<table border='0' width='100%'><tr><td>
-		<tt:displayPrefLevelLegend/>
-	</td></tr></table>
-<%
-	} else {
-%>
-	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<TR>
-			<TD colspan="2">	
-				<% if (solver==null) { %>
-					<i>No examination data are loaded into the solver, conflict-based statistics is not available.</i>
-				<% } else { %>
-					<i>Conflict-based statistics is not available at the moment.</i>
-				<% } %>
-			</TD>
-		</TR>
-	</TABLE>
-<%
-	}
-} catch (Exception e) {
-	Debug.error(e);
-%>		
-		<font color='red'><B>ERROR:<%=e.getMessage()%></B></font>
-<%
-}
-%>
+	
+	<logic:notEmpty name="cbs" scope="request">
+		<bean:define id="limit" name="ecbsForm" property="limit" type="Double"/>
+		<bean:define id="type" name="ecbsForm" property="typeInt" type="Integer"/>
+		<bean:define id="cbs" name="cbs" type="ExamConflictStatisticsInfo" scope="request"/>
+		<font size='2'>
+			<% ExamConflictStatisticsInfo.printHtmlHeader(out); %>
+			<% cbs.printHtml(out, limit / 100.0, type, true); %>
+		</font>
+		<table border='0' width='100%'><tr><td>
+			<tt:displayPrefLevelLegend/>
+		</td></tr></table>
+	</logic:notEmpty>
+	<logic:notEmpty name="warning" scope="request">
+		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+			<TR>
+				<TD colspan="2">	
+					<i><bean:write name="warning" scope="request"/></i>
+				</TD>
+			</TR>
+		</TABLE>	
+	</logic:notEmpty>
 </html:form>

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.unitime.timetable.model.base.BaseSavedHQL;
 import org.unitime.timetable.model.dao.SavedHQLDAO;
@@ -80,13 +79,8 @@ public class SavedHQL extends BaseSavedHQL {
 				TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
 				if (manager == null) return null;
 				Map<Long, String> ret = new Hashtable<Long, String>();
-				if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) {
-					for (Department d: (Set<Department>)Department.findAll(session.getUniqueId()))
-						ret.put(d.getUniqueId(), d.htmlLabel());
-				} else {
-					for (Department d: (Set<Department>)Department.findAllOwned(session.getUniqueId(), manager, true))
-						ret.put(d.getUniqueId(), d.htmlLabel());
-				}
+				for (Department d: Department.getUserDepartments(user))
+					ret.put(d.getUniqueId(), d.htmlLabel());
 				return ret;
 			}
 		}),
@@ -96,7 +90,7 @@ public class SavedHQL extends BaseSavedHQL {
 			public Map<Long, String> getValues(UserContext user) {
 				Map<Long, String> ret = new Hashtable<Long, String>();
 				try {
-					for (SubjectArea s: (Set<SubjectArea>)TimetableManager.getSubjectAreas(user)) {
+					for (SubjectArea s: SubjectArea.getUserSubjectAreas(user)) {
 						ret.put(s.getUniqueId(), s.getSubjectAreaAbbreviation());
 					}
 				} catch (Exception e) { return null; }

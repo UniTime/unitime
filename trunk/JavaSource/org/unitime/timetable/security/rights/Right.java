@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.security.rights;
 
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
@@ -28,7 +29,9 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -52,6 +55,10 @@ public enum Right {
 	
 	/** Status dependency -- session / department status must match */
 	StatusIndependent,
+	
+	/** For some old (backward compatible) checks */
+	HasRole,
+	IsAdmin,
 	
 	Chameleon(Session.class),
 	PersonalSchedule(Session.class),
@@ -90,6 +97,7 @@ public enum Right {
 	AssignInstructorsClass(Class_.class),
 	
 	CourseTimetabling(Department.class),
+	CourseTimetablingAudit(Department.class),
 	ClassAssignments(Session.class),
 	ClassAssignmentsExportPDF(Session.class),
 	ClassAssignmentsExportCSV(Session.class),
@@ -102,7 +110,6 @@ public enum Right {
 	AddSpecialUseRoom(ExternalRoom.class),
 	ApplicationConfig,
 	AssignedClasses(Department.class),
-	AssignedExams(Session.class),
 	AssignmentHistory(Department.class),
 	SolutionChanges(Department.class),
 	Suggestions(Department.class),
@@ -150,13 +157,46 @@ public enum Right {
     ExaminationClone(Exam.class),
     ExaminationAdd(Session.class),
     ExaminationAssignment(Exam.class),
+	
+	ExaminationTimetabling(Session.class),
+	ExaminationSolver(Session.class),
+	ExaminationTimetable(Session.class),
+	AssignedExaminations(Session.class),
+	NotAssignedExaminations(Session.class),
+	ExaminationAssignmentChanges(Session.class),
+	ExaminationConflictStatistics(Session.class),
+	ExaminationSolverLog(Session.class),
+	ExaminationReports(Session.class),
+	ExaminationPdfReports(Session.class),
+	
+	RoomAvailability(Session.class),
     
     CanUseHardTimePrefs(PreferenceGroup.class),
     CanUseHardRoomPrefs(PreferenceGroup.class),
     CanUseHardDistributionPrefs(PreferenceGroup.class),
     CanUseHardPeriodPrefs(PreferenceGroup.class),
     
+    BuildingList(Session.class),
+    BuildingAdd(Session.class),
+    BuildingEdit(Building.class),
+    BuildingDelete(Building.class),
+    BuildingUpdateData(Session.class),
+    BuildingExportPdf(Session.class),
+    
+    RoomDelete(Room.class),
+    NonUniversityLocationDelete(NonUniversityLocation.class),
+    
+    TravelTimesLoad(Session.class),
+    TravelTimesSave(Session.class),
+    
+    DatePatterns(Session.class),
+    DataExchange(Session.class),
+    
     Registration,
+    ExtendedTimePatterns,
+    ExtendedDatePatterns,
+    SessionRollForward,
+    CanSelectSolverServer,
 
     ;
 	

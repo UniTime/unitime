@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.struts.Globals;
 import org.apache.struts.util.MessageResources;
+import org.unitime.timetable.security.SessionContext;
 
 /**
  * @author Tomas Muller
@@ -78,6 +79,29 @@ public class BackTracker {
 				backList.addElement(new String[]{requestURI,(titleObj==null?null:titleObj.toString())});
 				//System.out.println("ADD BACK:"+requestURI+" ("+titleObj+")");
 			}
+		}
+	}
+	
+	public static void markForBack(SessionContext context, String uri, String title, boolean back, boolean clear) {
+		Vector backList = (Vector)context.getAttribute(BACK_LIST);
+		if (backList==null) {
+			backList = new Vector();
+			context.setAttribute("BackTracker.back", backList);
+		}
+		if (clear) backList.clear();
+		if (back) {
+			if (!backList.isEmpty()) {
+				int found = -1;
+				for (int idx = 0; idx<backList.size(); idx++) {
+					String[] lastBack = (String[])backList.elementAt(idx);
+					if (lastBack[0].equals(uri)) {
+						found = idx; break;
+					}
+				}
+				while (found>=0 && backList.size()>found)
+					backList.removeElementAt(backList.size()-1);
+			}
+			backList.addElement(new String[]{uri,title});
 		}
 	}
 	

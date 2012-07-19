@@ -326,21 +326,21 @@ public class MenuServlet implements MenuService {
 				Session session = userInfo.getSession();
 				if (session == null) return false;
 				if ("canSeeCourses".equals(right)) {
-					return manager.canSeeCourses(session, user);
+					return sessionContext.hasPermission(Right.InstructionalOfferings) || sessionContext.hasPermission(Right.Classes);
 				} else if ("canSeeTimetable".equals(right)) {
 					return sessionContext.hasPermission(Right.ClassAssignments);
 				} else if ("canDoTimetable".equals(right)) {
 					return sessionContext.hasPermission(Right.CourseTimetabling);
 				} else if ("hasASolverGroup".equals(right)) {
-					return manager.hasASolverGroup(session, user);
+					return !SolverGroup.getUserSolverGroups(user).isEmpty();
 				} else if ("canSectionStudents".equals(right)) {
 					return manager.canSectionStudents(session, user);
 				} else if ("canSeeExams".equals(right)) {
 					return sessionContext.hasPermission(Right.Examinations);
 				} else if ("canTimetableExams".equals(right)) {
-					return manager.canTimetableExams(session, user);
+					return sessionContext.hasPermission(Right.ExaminationTimetabling);
 				} else if ("canAudit".equals(right)) {
-					return manager.canAudit(session, user);
+					return sessionContext.hasPermission(Right.CourseTimetablingAudit);
 				} else if ("hasCourseReports".equals(right)) {
 					return SavedHQL.hasQueries(SavedHQL.Flag.APPEARANCE_COURSES, Roles.ADMIN_ROLE.equals(user.getCurrentRole()));
 				} else if ("hasExamReports".equals(right)) {
@@ -427,7 +427,7 @@ public class MenuServlet implements MenuService {
 		 		if (role==null) role = "No Role";
 		 		ret.put("2Role", role);
 		 		
-		 		if (user.getUser() != null && (Roles.ADMIN_ROLE.equals(user.getUser().getCurrentRole()) || user.getUser() instanceof UserContext.Chameleon))
+		 		if (sessionContext.hasPermission(Right.Chameleon) || (user.getUser() != null && user.getUser() instanceof UserContext.Chameleon))
 		 			ret.put("Chameleon", "");
 		 		
 			} finally {

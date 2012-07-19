@@ -38,7 +38,6 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionChangesForm;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -70,7 +69,7 @@ public class SolutionChangesAction extends Action {
         SuggestionsModel model = (SuggestionsModel)request.getSession().getAttribute("Suggestions.model");
         if (model==null) {
         	model = new SuggestionsModel();
-        	model.load(request.getSession());
+        	model.load(sessionContext.getUser());
         	request.getSession().setAttribute("Suggestions.model", model);
         }
 
@@ -78,15 +77,16 @@ public class SolutionChangesAction extends Action {
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         if ("Apply".equals(op) || "Export PDF".equals(op)) {
-        	UserData.setPropertyInt(request.getSession(),"SolutionChanges.reference",myForm.getReferenceInt());
+        	sessionContext.getUser().setProperty("SolutionChanges.reference", String.valueOf(myForm.getReferenceInt()));
         	myForm.save(model);
-        	model.save(request.getSession());
+        	model.save(sessionContext.getUser());
         }
-        if ("Refresh".equals(op)) {
+        if ("Refresh".equals(op) || op == null) {
         	myForm.reset(mapping, request);
         }
         
         myForm.load(model);
+    	myForm.setReferenceInt(Integer.parseInt(sessionContext.getUser().getProperty("SolutionChanges.reference", String.valueOf(myForm.getReferenceInt()))));
 
         SolverProxy solver = courseTimetablingSolverService.getSolver();
         if (solver==null) {

@@ -143,7 +143,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		return (this.getControllingCourseOffering().getDepartment());
 	}
 
-
+	@Deprecated
 	public boolean isLockableBy(User user) {
 		if (user == null) return false;
 		if (!getSession().getStatusType().canLockOfferings()) return false;
@@ -159,6 +159,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		return true;
 	}
 	
+	@Deprecated
 	public boolean isEditableBy(User user){
     	Debug.debug("Checking edit permission on: " + this.getCourseName());
 
@@ -199,6 +200,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
     	}
      }
 	
+	@Deprecated
 	public boolean isEditableBy(UserContext user){
     	if (user == null) return false;
 

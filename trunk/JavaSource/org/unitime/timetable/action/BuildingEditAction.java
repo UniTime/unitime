@@ -33,18 +33,20 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.BuildingEditForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
-import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.BuildingDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -54,28 +56,22 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/buildingEdit")
 public class BuildingEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
         BuildingEditForm myForm = (BuildingEditForm) form;
-		
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         if (op==null) {
             myForm.reset(mapping, request);
+            myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
             myForm.setOp("Save");
         }
         
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-
         // Return
         if ("Back".equals(op)) {
             return mapping.findForward("back");
@@ -93,6 +89,12 @@ public class BuildingEditAction extends Action {
                 saveErrors(request, errors);
                 mapping.findForward("Save".equals(op)?"add":"edit");
             } else {
+            	
+            	if ("Save".equals(op))
+            		sessionContext.checkPermission(Right.BuildingAdd);
+            	else
+            		sessionContext.checkPermission(myForm.getUniqueId(), "Building", Right.BuildingEdit);
+            	
         		Transaction tx = null;
         		
                 try {
@@ -100,7 +102,7 @@ public class BuildingEditAction extends Action {
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(request, hibSession, session);
+                	saveOrUpdate(myForm, hibSession);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -126,6 +128,7 @@ public class BuildingEditAction extends Action {
                 if (b==null) {
                     return mapping.findForward("back");
                 } else {
+                	sessionContext.checkPermission(b, Right.BuildingEdit);
                 	myForm.load(b);
                 }
             }
@@ -133,6 +136,9 @@ public class BuildingEditAction extends Action {
 
         // Delete 
         if("Delete".equals(op)) {
+        	
+        	sessionContext.checkPermission(myForm.getUniqueId(), "Building", Right.BuildingDelete);
+        	
     		Transaction tx = null;
     		
             try {
@@ -140,7 +146,7 @@ public class BuildingEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	myForm.delete(request, hibSession);
+            	delete(myForm, hibSession);
             	
     			tx.commit();
     			
@@ -160,8 +166,7 @@ public class BuildingEditAction extends Action {
                     new String[] {"Abbreviation", "Name", "External ID", "X-Coordinate", "Y-Coordinate"},
                     new String[] {"left", "left","left","right","right"},
                     new boolean[] {true,true,true,true,true} );
-            for (Iterator i=session.getBldgsFast(null).iterator();i.hasNext();) {
-                Building b = (Building)i.next();
+            for (Building b: Building.findAll(sessionContext.getUser().getCurrentAcademicSessionId())) {
                 table.addLine(
                         null,
                         new String[] {
@@ -183,7 +188,7 @@ public class BuildingEditAction extends Action {
             
             File file = ApplicationProperties.getTempFile("buildings", "pdf");
             
-            table.exportPdf(file, PdfWebTable.getOrder(request.getSession(), "BuildingList.ord"));
+            table.exportPdf(file, PdfWebTable.getOrder(sessionContext, "BuildingList.ord"));
             
             request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
             
@@ -191,7 +196,9 @@ public class BuildingEditAction extends Action {
         }
         
         if ("Update Data".equals(op)) {
-    		Room.addNewExternalRoomsToSession(session);
+        	sessionContext.checkPermission(Right.BuildingUpdateData);
+        	
+    		Room.addNewExternalRoomsToSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
         	
             return mapping.findForward("back");
         }
@@ -202,7 +209,57 @@ public class BuildingEditAction extends Action {
 			throw e;
 		}
 	}
-	
-	
+	    
+    public void saveOrUpdate(BuildingEditForm form, org.hibernate.Session hibSession) throws Exception {
+        Building building = null;
+        if (form.getUniqueId() != null) {
+        	building = BuildingDAO.getInstance().get(form.getUniqueId());
+        }
+        if (building==null) {
+        	building = new Building();
+        	building.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession));
+        }
+        building.setName(form.getName());
+        building.setAbbreviation(form.getAbbreviation());
+        building.setExternalUniqueId(form.getExternalId()!=null && form.getExternalId().length()==0 ? null : form.getExternalId());
+        building.setCoordinateX(form.getCoordX()==null || form.getCoordX().length()==0 ? null : Double.valueOf(form.getCoordX()));
+        building.setCoordinateY(form.getCoordY()==null || form.getCoordY().length()==0 ? null : Double.valueOf(form.getCoordY()));
+        hibSession.saveOrUpdate(building);
+        ChangeLog.addChange(
+                hibSession, 
+                sessionContext, 
+                building, 
+                ChangeLog.Source.BUILDING_EDIT, 
+                (form.getUniqueId() == null ? ChangeLog.Operation.CREATE : ChangeLog.Operation.UPDATE), 
+                null, 
+                null);
+    }
+    
+    public void delete(BuildingEditForm form, org.hibernate.Session hibSession) {
+        Building building = BuildingDAO.getInstance().get(form.getUniqueId());
+        if (building != null) {
+            for (Iterator i= hibSession.createQuery("select r from Room r where r.building.uniqueId=:buildingId").setLong("buildingId", form.getUniqueId()).iterate(); i.hasNext();) {
+                Room r = (Room)i.next();
+                hibSession.createQuery("delete RoomPref p where p.room.uniqueId=:roomId").setLong("roomId", r.getUniqueId()).executeUpdate();
+                for (Iterator j=r.getAssignments().iterator();j.hasNext();) {
+                    Assignment a = (Assignment)j.next();
+                    a.getRooms().remove(r);
+                    hibSession.saveOrUpdate(a);
+                    j.remove();
+                }
+                hibSession.delete(r);
+            }
+            
+            ChangeLog.addChange(
+                    hibSession, 
+                    sessionContext, 
+                    building, 
+                    ChangeLog.Source.BUILDING_EDIT, 
+                    ChangeLog.Operation.DELETE, 
+                    null, 
+                    null);
+            hibSession.delete(building);
+        }
+    }
 }
 
