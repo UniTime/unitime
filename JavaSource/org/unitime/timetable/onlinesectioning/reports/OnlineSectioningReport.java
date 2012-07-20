@@ -51,8 +51,8 @@ public class OnlineSectioningReport implements Runnable {
 	protected static DecimalFormat sDF = new DecimalFormat("0.00000");
 	private Report iReport = null;
 	
-	private Map<String, Counter> iCounters = new Hashtable<String, Counter>();
-	private Map<String, Map<String, Map<String, Counter>>> iReports = new Hashtable<String, Map<String,Map<String,Counter>>>();
+	protected Map<String, Counter> iCounters = new Hashtable<String, Counter>();
+	protected Map<String, Map<String, Map<String, Counter>>> iReports = new Hashtable<String, Map<String,Map<String,Counter>>>();
 	
 	public OnlineSectioningReport(Report report) throws Exception {
 		iReport = report;
@@ -78,7 +78,7 @@ public class OnlineSectioningReport implements Runnable {
         	return;
         }
 
-        org.hibernate.Session hibSession = new _RootDAO().getSession();
+        org.hibernate.Session hibSession = new _RootDAO().createNewSession();
         
         Session session = Session.getSessionUsingInitiativeYearTerm(
                 iReport.getCampus(),
@@ -173,13 +173,14 @@ public class OnlineSectioningReport implements Runnable {
 		HibernateUtil.closeHibernate();
 	}
 
-	public void inc(String counter, double value) {
+	public double inc(String counter, double value) {
 		Counter cnt = iCounters.get(counter);
 		if (cnt == null) {
 			cnt = new Counter();
 			iCounters.put(counter, cnt);
 		}
 		cnt.inc(value);
+		return cnt.sum();
 	}
 	
 	public void inc(String report, String record, String property, double value) {
