@@ -39,12 +39,12 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 
 	@Override
 	public String getYear() {
-		return System.getProperty("year", "2010");
+		return System.getProperty("year", "2012");
 	}
 
 	@Override
 	public String getTerm() {
-		return System.getProperty("term", "Spring");
+		return System.getProperty("term", "Fall");
 	}
 
 	@Override
@@ -69,8 +69,12 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 		Counter cpu = new Counter();
 		Counter err = new Counter();
 		Counter req = new Counter();
+		Counter rft = new Counter();
 		Counter asgn = new Counter();
+		Counter asft = new Counter();
 		Counter val = new Counter();
+		boolean useft = false;
+		boolean usealt = false;
 		for (Action action: actions) {
 			cpu.inc(action.getCpuTime() / 1e6);
 			report.inc("CPU Time", action.getCpuTime() / 1e9);
@@ -88,12 +92,12 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 			}
 			HashSet<String> assigned = new HashSet<String>();
 			
+			int ac = 0, aft = 0;
 			if (computed != null) {
 				if (computed.hasValue()) {
 					report.inc("Value", computed.getValue());
 					val.inc(computed.getValue());
 				}
-				int ac = 0;
 				for (Section section: computed.getSectionList()) {
 					if (section.hasCourse() && section.getCourse().hasName()) {
 						if (assigned.add(section.getCourse().getName())) {
@@ -110,14 +114,19 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 							report.inc("Courses", section.getCourse().getName(), "Priority", priority);
 							report.inc("Courses", section.getCourse().getName(), "Alternative", alt ? 1 : 0);
 						}
+					} else {
+						aft ++;
 					}
 				}
 				asgn.inc(ac);
+				asft.inc(aft);
 			}
 			
 			int rc = 0;
+			int ft = 0;
 			for (Request request: action.getRequestList()) {
 				if (!request.getAlternative() && request.getCourseCount() > 0) rc ++;
+				if (request.getAlternative() || request.getCourseCount() > 1) usealt = true;
 				for (Entity course: request.getCourseList())
 					if (course.hasName()) {
 						courses.add(course.getName());
@@ -127,9 +136,21 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 						if (idx == actions.size() - 1)
 							report.inc("Courses", course.getName(), "Last", 1);
 					}
+				if (request.getFreeTimeCount() > 0)
+					ft++;
 			}
 			req.inc(rc);
+			rft.inc(ft);
 			idx ++;
+			report.inc("[1] Courses", rc);
+			report.inc("[1] Assigned Courses", ac);
+			report.inc("[1] Free Times", ft);
+			report.inc("[1] Assigned Free Times", aft);
+			report.inc("[1] Complete Schedule", (rc == ac ? 1 : 0));
+			report.inc("[1] Complete Schedule Including Free Times", (rc == ac && ft == aft ? 1 : 0));
+			report.inc("[1] Has Free Times", (ft > 0 ? 1 : 0));
+			if (ft > 0) useft = true;
+			
 		}
 		for (String course: courses) {
 			report.inc("Courses", course, "Student", 1);
@@ -137,11 +158,25 @@ public class FindAssignmentsReport implements OnlineSectioningReport.Report {
 		report.inc("Students", student, "Avg. CPU", cpu.avg());
 		report.inc("Students", student, "Calls", cpu.count());
 		report.inc("Students", student, "Errors", err.count());
-		report.inc("Students", student, "Requests", req.avg());
-		report.inc("Students", student, "Assigned", asgn.avg());
+		report.inc("Students", student, "Requests [Course]", req.avg());
+		report.inc("Students", student, "Requests [Free Time]", rft.avg());
+		report.inc("Students", student, "Assigned [Course]", asgn.avg());
+		report.inc("Students", student, "Assigned [Free Time]", asft.avg());
 		report.inc("Students", student, "Value", val.avg());
 		report.inc("Courses", req.avg());
-		report.inc("Assigned", asgn.avg());
+		report.inc("Free Times", rft.avg());
+		report.inc("Assigned Course", asgn.avg());
+		report.inc("Assigned Free Time", asft.avg());
+		report.inc("Students Using Free Times", (useft ? 1 : 0));
+		report.inc("Students Using Alternatives", (usealt ? 1 : 0));
+		
+		long done = Math.round(report.inc("Students", 1.0));
+		if ((done % 100) == 0) {
+			OnlineSectioningReport.sLog.info("---- after " + done + " students");
+			for (String name: new TreeSet<String>(report.iCounters.keySet())) {
+				OnlineSectioningReport.sLog.info(name + ": " + report.iCounters.get(name));
+			}			
+		}
 	}
 	
 	public static void main(String[] args) {
