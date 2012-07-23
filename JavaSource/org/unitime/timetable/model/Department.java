@@ -89,6 +89,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
                 list());
     }
 
+    @Deprecated
     public static TreeSet findAllOwned(Long sessionId, TimetableManager mgr, boolean includeExternal) {
 		TreeSet ret = new TreeSet(mgr.departmentsForSession(sessionId));
 		if (includeExternal && !mgr.isExternalManager()) ret.addAll(findAllExternal(sessionId));

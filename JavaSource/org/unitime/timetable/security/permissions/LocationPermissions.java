@@ -21,9 +21,12 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
@@ -35,6 +38,127 @@ import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 public class LocationPermissions {
+	
+	@PermissionForRight(Right.Rooms)
+	public static class Rooms implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
+	
+	@PermissionForRight(Right.RoomsExportPdf)
+	public static class RoomsExportPdf extends Rooms {}
+	
+	@PermissionForRight(Right.RoomsExportCsv)
+	public static class RoomsExportCsv extends Rooms {}
+
+	@PermissionForRight(Right.RoomDetail)
+	public static class RoomDetail implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source.getRoomDepts().isEmpty())
+				return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+			
+			for (RoomDept rd: source.getRoomDepts())
+				if (permissionDepartment.check(user, rd.getDepartment()))
+					return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
+	
+	@PermissionForRight(Right.RoomEdit)
+	public static class RoomEdit implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
+			
+			for (RoomDept rd: source.getRoomDepts()) {
+				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
+					controls = true;
+			}
+			
+			return controls;
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
+	
+	@PermissionForRight(Right.RoomEditChangeControll)
+	public static class RoomEditChangeControll implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
+			boolean allDepts = true;
+			for (RoomDept rd: source.getRoomDepts()) {
+				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
+					controls = true;
+				if (!permissionDepartment.check(user, rd.getDepartment()))
+					allDepts = false;
+			}
+			
+			return controls && allDepts;
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
+
+	@PermissionForRight(Right.EditRoomDepartments)
+	public static class EditRoomDepartments implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) ||
+					(source.isExternalManager() && permissionDepartment.check(user, source));
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
+	
+	@PermissionForRight(Right.EditRoomDepartmentsFinalExams)
+	public static class EditRoomDepartmentsFinalExams implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.EditRoomDepartmentsMidtermExams)
+	public static class EditRoomDepartmentsMidtermExams implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
 	
 	@PermissionForRight(Right.BuildingList)
 	public static class BuildingList implements Permission<Session> {
@@ -103,7 +227,7 @@ public class LocationPermissions {
 			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && source.getExamType() != null && source.getExamType() != 0)
 				return false;
 			
-			boolean controls = false;
+			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
 			boolean allDepts = true;
 			for (RoomDept rd: source.getRoomDepts()) {
 				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
@@ -150,8 +274,8 @@ public class LocationPermissions {
 		public Class<NonUniversityLocation> type() { return NonUniversityLocation.class; }
 	}
 	
-	@PermissionForRight(Right.AddSpecialUseRoom)
-	public static class AddSpecialUseRoom implements Permission<ExternalRoom> {
+	@PermissionForRight(Right.AddSpecialUseRoomExternalRoom)
+	public static class AddSpecialUseRoomExternalRoom implements Permission<ExternalRoom> {
 
 		@Override
 		public boolean check(UserContext user, ExternalRoom source) {
@@ -177,6 +301,19 @@ public class LocationPermissions {
 		public Class<ExternalRoom> type() { return ExternalRoom.class; }
 	}
 	
+	@PermissionForRight(Right.AddSpecialUseRoom)
+	public static class AddSpecialUseRoom implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source) && !ExternalRoom.findAll(source.getSessionId()).isEmpty();
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
+	
 	@PermissionForRight(Right.AddNonUnivLocation)
 	public static class AddNonUnivLocation implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
@@ -188,6 +325,19 @@ public class LocationPermissions {
 
 		@Override
 		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.AddRoom)
+	public static class AddRoom implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
 	}
 	
 	@PermissionForRight(Right.TravelTimesLoad)

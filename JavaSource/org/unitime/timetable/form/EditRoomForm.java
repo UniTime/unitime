@@ -24,18 +24,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.WebTextValidation;
 
 /** 
@@ -64,7 +66,6 @@ public class EditRoomForm extends ActionForm {
 	private String coordX, coordY;
     private String externalId;
     private Long type;
-	private boolean owner;
 	private boolean room;
     private Boolean examEnabled;
     private Boolean examEEnabled;
@@ -160,14 +161,6 @@ public class EditRoomForm extends ActionForm {
 	public void setDoit(String doit) {
 		this.doit = doit;
 	}
-	
-	public boolean isOwner() {
-		return owner;
-	}
-	
-	public void setOwner(boolean owner) {
-		this.owner = owner;
-	}
 
 	public boolean isRoom() {
 		return room;
@@ -196,6 +189,11 @@ public class EditRoomForm extends ActionForm {
     public void setBldgId(String bldgId) {
         this.bldgId = bldgId;
     }
+    
+    private static SessionContext getSessionContext(HttpSession session) {
+		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(session.getServletContext());
+		return (SessionContext)applicationContext.getBean("sessionContext");
+	}
 
 	/** 
 	 * Method validate
@@ -207,7 +205,7 @@ public class EditRoomForm extends ActionForm {
 		ActionMapping mapping,
 		HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
-
+		
         if ((id==null || id.length()==0) && (bldgId==null || bldgId.length()==0)) {
             errors.add("Building", new ActionMessage("errors.required", "Building") );
         }
@@ -241,7 +239,7 @@ public class EditRoomForm extends ActionForm {
             if (id==null || id.length()==0) {
                 if (bldgId!=null && bldgId.length()>0) {
                     try {
-                        Room room = Room.findByBldgIdRoomNbr(Long.valueOf(bldgId), name, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+                        Room room = Room.findByBldgIdRoomNbr(Long.valueOf(bldgId), name, getSessionContext(request.getSession()).getUser().getCurrentAcademicSessionId());
                         if (room!=null) errors.add("Name", new ActionMessage("errors.exists", room.getLabel()));
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -249,7 +247,7 @@ public class EditRoomForm extends ActionForm {
                 }
             } else {
                 try {
-                    Room room = Room.findByBldgIdRoomNbr(new RoomDAO().get(Long.valueOf(id)).getBuilding().getUniqueId(), name, Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
+                    Room room = Room.findByBldgIdRoomNbr(new RoomDAO().get(Long.valueOf(id)).getBuilding().getUniqueId(), name, getSessionContext(request.getSession()).getUser().getCurrentAcademicSessionId());
                     if (room!=null && !room.getUniqueId().toString().equals(id)) errors.add("Name", new ActionMessage("errors.exists", room.getLabel()));
                 } catch (Exception e) {}
             }
@@ -282,7 +280,7 @@ public class EditRoomForm extends ActionForm {
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
         bldgName=null; capacity=null; coordX=null; coordY=null; doit=null;
-        externalId=null; id=null; name=null; owner=false; room=true; type=null; bldgId = null;
+        externalId=null; id=null; name=null; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
 		examEnabled=Boolean.FALSE; examEEnabled=Boolean.FALSE;  examCapacity=null;
 	}

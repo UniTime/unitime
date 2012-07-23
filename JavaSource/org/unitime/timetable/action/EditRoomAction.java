@@ -23,13 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -39,9 +37,11 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.EditRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
@@ -51,17 +51,15 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -77,6 +75,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 @Service("/editRoom")
 public class EditRoomAction extends Action {
 
+	@Autowired SessionContext sessionContext;
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -95,10 +95,6 @@ public class EditRoomAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception{
 		EditRoomForm editRoomForm = (EditRoomForm) form;
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
 		
 		MessageResources rsc = getResources(request);
 		String doit = editRoomForm.getDoit();
@@ -114,19 +110,12 @@ public class EditRoomAction extends Action {
 			//return mapping.findForward("showRoomDetail");
 		}
         
-        User user = Web.getUser(webSession);
-        Session s = Session.getCurrentAcadSession(user);
-        String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-        boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
-        
         //update location
 		if(doit != null && (doit.equals(rsc.getMessage("button.update")) || doit.equals(rsc.getMessage("button.save")))) {
 			ActionMessages errors = new ActionMessages();
 			errors = editRoomForm.validate(mapping, request);
 			if (errors.size() == 0) {
-                if (editRoomForm.getId()==null || editRoomForm.getId().length()==0) {
+                if (editRoomForm.getId()==null || editRoomForm.getId().isEmpty()) {
                     doSave(editRoomForm, request);
                 } else {
                     doUpdate(editRoomForm,request);
@@ -135,15 +124,19 @@ public class EditRoomAction extends Action {
 				return null;
 			} else {
 				saveErrors(request, errors);
-                setupDepartments(user, owner, s.getUniqueId(), request);
-                setBldgs(s, request);
+				if (editRoomForm.getId()==null || editRoomForm.getId().isEmpty())
+					setupDepartments(request, sessionContext);
+				else
+					setupDepartments(request, LocationDAO.getInstance().get(Long.valueOf(editRoomForm.getId())));
+                setupBuildings(request);
                 return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
 			}
 		}	
         
-        if (request.getParameter("id")!=null && request.getParameter("id").length()>0) {
+        if (request.getParameter("id")!=null && request.getParameter("id").length() > 0) {
             //get location information
             Long id = Long.valueOf(request.getParameter("id"));
+            sessionContext.checkPermission(id, "Location", Right.RoomEdit);
             LocationDAO ldao = new LocationDAO();
             Location location = ldao.get(id);
             if (location instanceof Room) {
@@ -169,14 +162,14 @@ public class EditRoomAction extends Action {
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
             editRoomForm.setCoordX(location.getCoordinateX()==null ? null : location.getCoordinateX().toString());
             editRoomForm.setCoordY(location.getCoordinateY()==null ? null : location.getCoordinateY().toString());
-            editRoomForm.setControlDept(null);
+            editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
             
             PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
             px.load(location);
             px.setAllowRequired(false);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
             rttPx.setName("PeriodPrefs");
-            request.setAttribute("PeriodPrefs", rttPx.print(true, RequiredTimeTable.getTimeGridVertical(user))); 
+            request.setAttribute("PeriodPrefs", rttPx.print(true, CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(sessionContext.getUser())))); 
 
             if (Exam.hasMidtermExams(location.getSession().getUniqueId())) {
                 MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
@@ -184,37 +177,18 @@ public class EditRoomAction extends Action {
                 request.setAttribute("PeriodEPrefs", epx.print(true));
             }
 
-            Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
-            boolean controls = false;
-            boolean allDepts = true;
-            for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-                RoomDept rd = (RoomDept)i.next();
-                if (rd.isControl().booleanValue())
-                    editRoomForm.setControlDept(rd.getDepartment().getUniqueId().toString());
-                if (rd.isControl().booleanValue() && ownedDepts!=null && ownedDepts.contains(rd.getDepartment()))
-                    controls = true;
-                if (ownedDepts==null || !ownedDepts.contains(rd.getDepartment())) {
-                    allDepts = false;
-                }
-            }
-            editRoomForm.setOwner(admin || controls || allDepts);
-            
             EditRoomAction.setupDepartments(request, location);
         } else {
+        	sessionContext.checkPermission(Right.AddRoom);
             editRoomForm.reset(mapping, request);
             
-            Set departments = owner.departmentsForSession(s.getUniqueId());
-            if (!admin && (departments.size() == 1)) {
-                Department d = (Department) departments.iterator().next();
-                editRoomForm.setControlDept(d.getUniqueId().toString());
-            } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-                Department d = Department.findByDeptCode(webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString(), s.getUniqueId());
-                if (d!=null)
-                    editRoomForm.setControlDept(d.getUniqueId().toString());
+            if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
+            	Department d = Department.findByDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom), sessionContext.getUser().getCurrentAcademicSessionId());
+                if (d!=null) editRoomForm.setControlDept(d.getUniqueId().toString());
             }
 
-            setupDepartments(user, owner, s.getUniqueId(), request);
-            setBldgs(s, request);
+            setupDepartments(request, sessionContext);
+            setupBuildings(request);
         }
 		
 		return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
@@ -223,7 +197,7 @@ public class EditRoomAction extends Action {
     public static void setupDepartments(HttpServletRequest request, Location location) throws Exception {
     	Collection availableDepts = new Vector();
 
-        for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
+        for (Iterator i=new TreeSet(location.getRoomDepts()).iterator();i.hasNext();) {
             RoomDept rd = (RoomDept)i.next();
             Department d = rd.getDepartment();
             availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
@@ -232,30 +206,18 @@ public class EditRoomAction extends Action {
 		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
     }
     
-    public static void setupDepartments(User user, TimetableManager manager, Long sessionId, HttpServletRequest request) throws Exception {
-        Set departments = new TreeSet();
-        if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-            departments = Department.findAllBeingUsed(sessionId);
-        } else {
-            departments = manager.departmentsForSession(sessionId);
-        }
-        
-        Collection availableDepts = new Vector();
-        
-        for (Iterator i=departments.iterator();i.hasNext();) {
-            Department d = (Department)i.next();
+    public static void setupDepartments(HttpServletRequest request, SessionContext context) throws Exception {
+    	Collection availableDepts = new Vector();
+
+        for (Department d: Department.getUserDepartments(context.getUser()))
             availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
-        }
-        
-        request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
+		
+		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
     }
     
-    private void setBldgs(Session session, HttpServletRequest request) throws Exception {
-        Collection bldgs = session.getBldgsFast(null);
-        
+    private void setupBuildings(HttpServletRequest request) throws Exception {
         ArrayList list = new ArrayList();
-        for (Iterator iter = bldgs.iterator(); iter.hasNext();) {
-            Building b = (Building) iter.next();
+        for (Building b: Building.findAll(sessionContext.getUser().getCurrentAcademicSessionId())) {
             list.add(new LabelValueBean(
                     b.getAbbreviation() + "-" + b.getName(), 
                     b.getUniqueId().toString()));
@@ -272,11 +234,9 @@ public class EditRoomAction extends Action {
 	 * @throws Exception 
 	 */
 	private void doUpdate(EditRoomForm editRoomForm, HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Session session = Session.getCurrentAcadSession(user);
-        
-        Long id = Long.valueOf(editRoomForm.getId());
+
+		Long id = Long.valueOf(editRoomForm.getId());
+        sessionContext.checkPermission(id, "Location", Right.RoomEdit);
 		LocationDAO ldao = new LocationDAO();
 		org.hibernate.Session hibSession = ldao.getSession();
 		Transaction tx = null;
@@ -325,7 +285,7 @@ public class EditRoomAction extends Action {
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
 			
 			if (location.isExamEnabled(Exam.sExamTypeFinal)) {
-			    PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
+			    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
 			    RequiredTimeTable rttPx = new RequiredTimeTable(px);
 			    rttPx.setName("PeriodPrefs");
 			    rttPx.update(request);
@@ -356,7 +316,7 @@ public class EditRoomAction extends Action {
 			
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     (Location)location, 
                     ChangeLog.Source.ROOM_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -372,10 +332,9 @@ public class EditRoomAction extends Action {
 	}
     
     private void doSave(EditRoomForm editRoomForm, HttpServletRequest request) throws Exception {
-        HttpSession webSession = request.getSession();
-        User user = Web.getUser(webSession);
-        Session session = Session.getCurrentAcadSession(user);
-
+    	
+    	sessionContext.checkPermission(editRoomForm.getControlDept(), "Department", Right.AddRoom);
+    	
         LocationDAO ldao = new LocationDAO();
         org.hibernate.Session hibSession = ldao.getSession();
         Transaction tx = null;
@@ -402,11 +361,12 @@ public class EditRoomAction extends Action {
             room.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
             room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
-            room.setSession(session);
+            room.setSession(room.getControllingDepartment() == null ?
+            		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession) : room.getControllingDepartment().getSession());
             
             LocationPermIdGenerator.setPermanentId(room);
 
-            PeriodPreferenceModel px = new PeriodPreferenceModel(session, Exam.sExamTypeFinal);
+            PeriodPreferenceModel px = new PeriodPreferenceModel(room.getSession(), Exam.sExamTypeFinal);
             RequiredTimeTable rttPx = new RequiredTimeTable(px);
             rttPx.setName("PeriodPrefs");
             rttPx.update(request);
@@ -416,7 +376,7 @@ public class EditRoomAction extends Action {
             
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     (Location)room, 
                     ChangeLog.Source.ROOM_EDIT, 
                     ChangeLog.Operation.CREATE, 
