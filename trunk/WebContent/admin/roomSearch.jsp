@@ -25,6 +25,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "roomListForm";	
@@ -34,7 +35,6 @@
 <tiles:importAttribute />
 <html:form action="roomList">
 	<TABLE border="0" cellspacing="0" cellpadding="3">
-		<% if (frm.isDeptSize()) {%>
 		<TR>
 			<TD>
 				<B>Department: </B>
@@ -63,17 +63,20 @@
 				<html:submit property="op" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchRooms">
 					<bean:message key="button.search" />
 				</html:submit>
-				&nbsp;&nbsp;
-				<html:submit property="op" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
-					<bean:message key="button.exportPDF" />
-				</html:submit>
-				&nbsp;&nbsp;
-				<html:submit property="op" onclick="displayLoading();" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
-					<bean:message key="button.exportCSV" />
-				</html:submit>
+				<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportPdf')">
+					&nbsp;&nbsp;
+					<html:submit property="op" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
+						<bean:message key="button.exportPDF" />
+					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportCsv')">
+					&nbsp;&nbsp;
+					<html:submit property="op" onclick="displayLoading();" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
+						<bean:message key="button.exportCSV" />
+					</html:submit>
+				</sec:authorize>
 			</TD>
 		</TR>
-		<%}%>
 		
 		<TR>
 			<TD colspan="2" valign="top" align="center">

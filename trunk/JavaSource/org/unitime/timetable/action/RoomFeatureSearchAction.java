@@ -32,6 +32,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.util.LabelValueBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
@@ -39,6 +40,7 @@ import org.unitime.timetable.form.RoomFeatureListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -55,6 +57,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/roomFeatureSearch")
 public class RoomFeatureSearchAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -111,7 +115,7 @@ public class RoomFeatureSearchAction extends Action {
 		else {
 			if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) {
 				//set departments
-				LookupTables.setupDeptsForUser(request, user, sessionId, true);
+				LookupTables.setupDepartments(request, sessionContext, true);
 				return mapping.findForward("showRoomFeatureSearch");
 			} else {
 				//get user info

@@ -62,7 +62,6 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 
@@ -121,32 +120,21 @@ public class LookupTables {
         request.setAttribute(Department.DEPT_ATTR_NAME, Department.findAll(sessionId));
     }
 
-    @Deprecated
-    public static void setupDeptsForUser(HttpServletRequest request, User user, Long sessionId, boolean includeExternal) throws Exception {
-		ArrayList departments = new ArrayList();
-		TreeSet depts = new TreeSet();
-		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-
-        if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
-			depts = Department.findAllBeingUsed(sessionId);
-		} else {
-			depts = Department.findAllOwned(sessionId, owner, includeExternal);
-		}
-			
-		for (Iterator i=depts.iterator();i.hasNext();) {
-			Department d = (Department)i.next();
+    public static void setupDepartments(HttpServletRequest request, SessionContext context, boolean includeExternal) throws Exception {
+    	TreeSet<Department> departments = Department.getUserDepartments(context.getUser());
+    	if (includeExternal)
+    		departments.addAll(Department.findAllExternal(context.getUser().getCurrentAcademicSessionId()));
+    	
+		List<LabelValueBean> deptList = new ArrayList<LabelValueBean>();
+		for (Department d: departments) {
 			String code = d.getDeptCode().trim();
 			String abbv = d.getName().trim();
-			if (d.isExternalManager().booleanValue())
-				departments.add(new LabelValueBean(code + " - " + abbv + " ("+d.getExternalMgrLabel()+")", code));
-			else
-				departments.add(new LabelValueBean(code + " - " + abbv, code));
+			if (d.isExternalManager())
+				deptList.add(new LabelValueBean(code + " - " + abbv + " (" + d.getExternalMgrLabel() + ")", code));
+			else	
+				deptList.add(new LabelValueBean(code + " - " + abbv, code)); 
 		}
-		
-		request.setAttribute(Department.DEPT_ATTR_NAME, departments);
+		request.setAttribute(Department.DEPT_ATTR_NAME, deptList);
     }
 
     /**

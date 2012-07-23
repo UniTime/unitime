@@ -29,13 +29,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
@@ -54,29 +48,8 @@ public class RoomListForm extends ActionForm {
 	// --------------------------------------------------------- Instance Variables
 	private Collection rooms;
 	private String deptCode;
-	private boolean editRoomSharing;
-	private boolean deptSize;
-	private boolean canAdd;
-    private boolean canAddNonUniv;
-    private boolean canAddSpecial;
 	
 	// --------------------------------------------------------- Methods
-
-	public String getDeptCodeX() {
-		return deptCode;
-	}
-
-	public void setDeptCodeX(String deptCode) {
-		this.deptCode = deptCode;
-	}
-
-	public boolean getEditRoomSharing() {
-		return editRoomSharing;
-	}
-
-	public void setEditRoomSharing(boolean editRoomSharing) {
-		this.editRoomSharing = editRoomSharing;
-	}
 
 	/** 
 	 * Method reset
@@ -85,28 +58,6 @@ public class RoomListForm extends ActionForm {
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		rooms = new ArrayList();
-		editRoomSharing = false;
-		deptSize=displayDeptList(request);
-		canAdd = false; canAddNonUniv = false; canAddSpecial = false;
-	}
-	
-	/**
-	 * 
-	 * @param request
-	 * @return
-	 */
-    private boolean displayDeptList(HttpServletRequest request) {
-    	deptSize = true;
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-    	if (!user.getRole().equals(Roles.ADMIN_ROLE) && !user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-	    	TimetableManager mgr = TimetableManager.getManager(user);
-	    	Set mgrDepts = Department.findAllOwned(sessionId, mgr, true);
-	    	if (mgrDepts.size() == 1) {
-	    		deptSize = false;
-	    	}
-    	} 
-    	return deptSize;
 	}
 	
 	/**
@@ -122,6 +73,14 @@ public class RoomListForm extends ActionForm {
 		this.rooms = rooms;
 	}
 	
+	public String getDeptCodeX() {
+		return deptCode;
+	}
+
+	public void setDeptCodeX(String deptCode) {
+		this.deptCode = deptCode;
+	}
+
 	/* (non-Javadoc)
      * @see org.apache.struts.action.ActionForm#validate(org.apache.struts.action.ActionMapping, javax.servlet.http.HttpServletRequest)
      */
@@ -134,29 +93,6 @@ public class RoomListForm extends ActionForm {
         }
        
         return errors;
-    }
-    
-	public boolean isDeptSize() {
-		return deptSize;
-	}
-
-	public void setCanAdd(boolean canAdd) {
-		this.canAdd = canAdd;
-	}
-	public boolean getCanAdd() {
-		return canAdd;
-	}
-    public void setCanAddNonUniv(boolean canAddNonUniv) {
-        this.canAddNonUniv = canAddNonUniv;
-    }
-    public boolean getCanAddNonUniv() {
-        return canAddNonUniv;
-    }
-    public void setCanAddSpecial(boolean canAddSpecial) {
-        this.canAddSpecial = canAddSpecial;
-    }
-    public boolean getCanAddSpecial() {
-        return canAddSpecial;
     }
     
     public Set<RoomType> getRoomTypes() {

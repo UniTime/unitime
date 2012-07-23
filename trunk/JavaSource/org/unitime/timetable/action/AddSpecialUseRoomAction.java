@@ -194,7 +194,7 @@ public class AddSpecialUseRoomAction extends Action {
 			return null;
 		}
 		
-		if (!sessionContext.hasPermission(extRoom, Right.AddSpecialUseRoom)) {
+		if (!sessionContext.hasPermission(extRoom, Right.AddSpecialUseRoomExternalRoom)) {
 			errors.add("specialUseRoom", new ActionMessage( "errors.room.ownership"));
 			saveErrors(request, errors);
 			return null;

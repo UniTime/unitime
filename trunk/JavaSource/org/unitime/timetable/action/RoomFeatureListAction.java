@@ -42,6 +42,7 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -60,6 +61,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
@@ -84,6 +86,8 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 @Service("/roomFeatureList")
 public class RoomFeatureListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance
 	// Variables
@@ -196,7 +200,7 @@ public class RoomFeatureListAction extends Action {
 		buildFeatureTable(request, roomFeatureListForm);
 		
 		//set request attribute for department
-		LookupTables.setupDeptsForUser(request, user, sessionId, true);
+		LookupTables.setupDepartments(request, sessionContext, true);
 		
 		if (user.getRole().equals(Roles.ADMIN_ROLE) || (user.getRole().equals(Roles.EXAM_MGR_ROLE) 
 		        && session.getStatusType().canExamTimetable()))

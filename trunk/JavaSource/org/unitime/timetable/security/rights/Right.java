@@ -29,6 +29,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Room;
@@ -106,8 +107,9 @@ public enum Right {
 	ExaminationSchedule(Session.class),
 	AddCourseOffering(SubjectArea.class),
 	
-	AddNonUnivLocation(Session.class),
-	AddSpecialUseRoom(ExternalRoom.class),
+	AddNonUnivLocation(Department.class),
+	AddSpecialUseRoom(Department.class),
+	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
 	ApplicationConfig,
 	AssignedClasses(Department.class),
 	AssignmentHistory(Department.class),
@@ -169,7 +171,17 @@ public enum Right {
 	ExaminationReports(Session.class),
 	ExaminationPdfReports(Session.class),
 	
+	Rooms(Department.class),
+	RoomsExportPdf(Department.class),
+	RoomsExportCsv(Department.class),
+	RoomDetail(Location.class),
+	RoomEdit(Location.class),
+	RoomEditChangeControll(Location.class),
 	RoomAvailability(Session.class),
+	EditRoomDepartments(Department.class),
+	EditRoomDepartmentsFinalExams(Session.class),
+	EditRoomDepartmentsMidtermExams(Session.class),
+	AddRoom(Department.class),
     
     CanUseHardTimePrefs(PreferenceGroup.class),
     CanUseHardRoomPrefs(PreferenceGroup.class),

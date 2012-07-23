@@ -31,6 +31,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
 	// Get Form 
@@ -186,20 +187,20 @@
 				<TR>
 					<TD nowrap>Controlling Department:</TD>
 					<TD>
-						<logic:equal name="<%=frmName%>" property="owner" value="true">
+						<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeControll')">
 							<html:select property="controlDept">
 								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No controlling department</html:option>
 								<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
 							</html:select>
-						</logic:equal>
-						<logic:equal name="<%=frmName%>" property="owner" value="false">
+						</sec:authorize>
+						<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeControll')">
 							<html:hidden property="controlDept"/>
 							<logic:iterate scope="request" name="<%=Department.DEPT_ATTR_NAME%>" id="d">
 								<logic:equal name="<%=frmName%>" property="controlDept" value="<%=((LabelValueBean)d).getValue()%>">
 									<bean:write name="d" property="label"/>
 								</logic:equal>
 							</logic:iterate>
-						</logic:equal>
+						</sec:authorize>
 					</TD>
 				</TR>
 			</logic:notEmpty>
