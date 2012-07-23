@@ -32,11 +32,10 @@
 %>
 
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-<%
-	String colspan = request.getAttribute("colspan")!=null
-					 ? request.getAttribute("colspan").toString()
-					 : "7";
-%>
+	<bean:define id="colspan" name="colspan" scope="request"/>
+	<logic:empty name="colspan">
+		<bean:define id="colspan" value="7"/>
+	</logic:empty>
 
 <!-- Buttons -->
 	<TR>
@@ -54,16 +53,7 @@
 			</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
-					<logic:equal name="<%=frmName%>" property="deptSize" value="false">
-						<TD>
-							<html:form action="roomList" styleClass="FormWithNoPadding">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddRoom')">
 						<TD nowrap>
 							<html:form action="editRoom" styleClass="FormWithNoPadding">
 								<html:hidden property="op" value="Add"/>
@@ -72,7 +62,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
+					</sec:authorize>
 					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddNonUnivLocation')">
 						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
@@ -91,8 +81,17 @@
 							</html:form>
 						</TD>
 					</sec:authorize>
-					<logic:equal name="<%=frmName%>" property="editRoomSharing" value="true">
-						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="All">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'EditRoomDepartments')">
+						<TD nowrap>
+							<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
+								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
+									<bean:message key="button.editRoomSharing" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</sec:authorize>
+					<logic:equal value="Exam" name="roomListForm" property="deptCodeX">
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsFinalExams')">
 							<TD nowrap>
 								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
@@ -100,56 +99,25 @@
 									</html:submit>
 								</html:form>
 							</TD>
-						</logic:notEqual>
+						</sec:authorize>
 					</logic:equal>
-
-					<%--
-					<TD nowrap>
-						<html:form action="roomFeatureList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="F" titleKey="title.roomFeatures" >
-								<bean:message key="button.roomFeatures" />
-							</html:submit>
-						</html:form>
-					</TD>
-					<TD nowrap>
-						<html:form action="roomGroupList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="G" titleKey="title.roomGroups">
-								<bean:message key="button.roomGroups" />
-							</html:submit>
-						</html:form>
-					</TD>
-					<TD nowrap>
-						<html:form action="roomDeptList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.roomDepts">
-								<bean:message key="button.roomDepts" />
-							</html:submit>
-						</html:form>
-					</TD>
-					--%>
+					<logic:equal value="EExam" name="roomListForm" property="deptCodeX">
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsMidtermExams')">
+							<TD nowrap>
+								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
+									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
+										<bean:message key="button.editRoomSharing" />
+									</html:submit>
+								</html:form>
+							</TD>
+						</sec:authorize>
+					</logic:equal>
 				</TR>
 			</TABLE>
 		</tt:section-header>
 		</TD>
 	</TR>
 
-<!--
-	<logic:messagesPresent>
-	<TR>
-		<TD colspan="<%=colspan%>" align="left" class="errorCell">
-			<B><U>ERRORS</U></B><BR>
-			<BLOCKQUOTE>
-			<UL>
-			    <html:messages id="error">
-			      <LI>
-					${error}
-			      </LI>
-			    </html:messages>
-		    </UL>
-		    </BLOCKQUOTE>
-		</TD>
-	</TR>
-	</logic:messagesPresent>
--->
 <!-- rooms -->
 	<% boolean empty = true; %>
 	<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
@@ -195,16 +163,7 @@
 		<TD valign="middle" colspan="<%=colspan%>" align="right">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
-					<logic:equal name="<%=frmName%>" property="deptSize" value="false">
-						<TD>
-							<html:form action="roomList" styleClass="FormWithNoPadding">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-					<logic:equal name="<%=frmName%>" property="canAdd" value="true">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddRoom')">
 						<TD nowrap>
 							<html:form action="editRoom" styleClass="FormWithNoPadding">
 								<html:hidden property="op" value="Add"/>
@@ -213,7 +172,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
+					</sec:authorize>
 					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'AddNonUnivLocation')">
 						<TD nowrap>
 							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
@@ -232,31 +191,17 @@
 							</html:form>
 						</TD>
 					</sec:authorize>
-					<%--
-					<TD nowrap>
-						<html:form action="roomFeatureList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="F" titleKey="title.roomFeatures" >
-								<bean:message key="button.roomFeatures" />
-							</html:submit>
-						</html:form>
-					</TD>
-					<TD nowrap>
-						<html:form action="roomGroupList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="G" titleKey="title.roomGroups">
-								<bean:message key="button.roomGroups" />
-							</html:submit>
-						</html:form>
-					</TD>
-					<TD nowrap>
-						<html:form action="roomDeptList" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="D" titleKey="title.roomDepts">
-								<bean:message key="button.roomDepts" />
-							</html:submit>
-						</html:form>
-					</TD>
-					--%>
-					<logic:equal name="<%=frmName%>" property="editRoomSharing" value="true">
-						<logic:notEqual name="<%=frmName%>" property="deptCodeX" value="All">
+					<sec:authorize access="hasPermission(#roomListForm.deptCodeX, 'Department', 'EditRoomDepartments')">
+						<TD nowrap>
+							<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
+								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
+									<bean:message key="button.editRoomSharing" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</sec:authorize>
+					<logic:equal value="Exam" name="roomListForm" property="deptCodeX">
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsFinalExams')">
 							<TD nowrap>
 								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
@@ -264,7 +209,18 @@
 									</html:submit>
 								</html:form>
 							</TD>
-						</logic:notEqual>
+						</sec:authorize>
+					</logic:equal>
+					<logic:equal value="EExam" name="roomListForm" property="deptCodeX">
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsMidtermExams')">
+							<TD nowrap>
+								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
+									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
+										<bean:message key="button.editRoomSharing" />
+									</html:submit>
+								</html:form>
+							</TD>
+						</sec:authorize>
 					</logic:equal>
 				</TR>
 			</TABLE>

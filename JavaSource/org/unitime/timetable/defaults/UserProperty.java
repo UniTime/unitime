@@ -41,6 +41,8 @@ public enum UserProperty {
 	ConfigAutoCalc("cfgAutoCalc", CommonValues.Yes, "Automatically calculate number of classes and room size when editing configuration"),
 		
 	SortNames("instrNameSort", CommonValues.SortByLastName, "Sort instructor names"),
+	
+	RoomFeaturesInOneColumn("roomFeaturesInOneColumn", CommonValues.Yes, "Display Room Features In One Column");
 	;
 
 	String iKey, iDefault, iDescription;

@@ -19,30 +19,19 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Set;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionMessage;
-import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomListForm;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -58,6 +47,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/roomSearch")
 public class RoomSearchAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -79,62 +70,29 @@ public class RoomSearchAction extends Action {
 		HttpServletResponse response) throws Exception {
 		RoomListForm roomListForm = (RoomListForm) form;
 		
-		//Check permissions
-		HttpSession httpSession = request.getSession();
-		if (!Web.isLoggedIn(httpSession)) {
-			throw new Exception("Access Denied.");
-		}
-
-		User user = Web.getUser(httpSession);
-		Long sessionId = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+		sessionContext.checkPermission(Right.Rooms);
 		
-		// Check if dept code saved to session
-		Object dc = roomListForm.getDeptCodeX();
-		if (dc==null)
-		    dc = httpSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME);
-		if (dc==null) {
-		    dc = request.getParameter("default");
-		    if (dc!=null)
-		        httpSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, dc);
+		String deptCode = roomListForm.getDeptCodeX();
+		if (deptCode==null)
+			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+		if (deptCode==null) {
+			deptCode = request.getParameter("default");
+		    if (deptCode != null)
+		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
-		String deptCode = "";
 		
-		// Dept code is saved to the session - go to instructor list
-		if (dc != null && !Constants.BLANK_OPTION_VALUE.equals(dc)) {
-			deptCode = dc.toString();
+		if (deptCode != null && !deptCode.isEmpty()) {
+			
 			roomListForm.setDeptCodeX(deptCode);
-			if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-				if (Session.getCurrentAcadSession(user).getRoomsFast(new String[] {roomListForm.getDeptCodeX()}).size() == 0) {
-					ActionMessages errors = new ActionMessages();
-					errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
-					saveErrors(request, errors);
-				}
-			}
-			
-			int examType = -1;
-			if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-			if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
-			
-			if ("Export PDF".equals(request.getParameter("op"))) {
-				RoomListAction.buildPdfWebTable(request, roomListForm, "yes".equals(Settings.getSettingValue(user, Constants.SETTINGS_ROOMS_FEATURES_ONE_COLUMN)),
-				        examType);
-			}
-			
 			return mapping.findForward("roomList");
+			
 		} else {
-            // No session attribute found - Load dept code
-			LookupTables.setupDeptsForUser(request, user, sessionId, true);
-            
-            TimetableManager owner = new TimetableManagerDAO().get(Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
-            
-            if (!user.getRole().equals(Roles.ADMIN_ROLE) && !user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-                Set depts = Department.findAllOwned(sessionId, owner, true);
-                if (depts.size()==1) {
-                    roomListForm.setDeptCodeX(((Department)depts.iterator().next()).getDeptCode());
-                    httpSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, roomListForm.getDeptCodeX());
-                    return mapping.findForward("roomList");
-                }
-            }
+			if (sessionContext.getUser().getCurrentAuthority().getQualifiers("Department").size() == 1) {
+				roomListForm.setDeptCodeX(sessionContext.getUser().getCurrentAuthority().getQualifiers("Department").get(0).getQualifierReference());
+				return mapping.findForward("roomList");
+			}
+			
+			LookupTables.setupDepartments(request, sessionContext, true);
 			
 			return mapping.findForward("showRoomSearch");
 		}

@@ -24,7 +24,6 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -32,10 +31,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomDeptEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -45,32 +44,33 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("/roomDeptEdit")
 public class RoomDeptEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		RoomDeptEditForm myForm = (RoomDeptEditForm)form;
 		
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		
 		Department d = null;
-		if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-			String deptCode = webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString();
+		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
+			String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
 			if ("Exam".equalsIgnoreCase(deptCode)) {
 			    myForm.setId(null);
 			    myForm.setExamType(Exam.sExamTypeFinal);
+			    sessionContext.checkPermission(Right.EditRoomDepartmentsFinalExams);
 			} else if ("EExam".equalsIgnoreCase(deptCode)) { 
                 myForm.setId(null);
                 myForm.setExamType(Exam.sExamTypeMidterm);
+                sessionContext.checkPermission(Right.EditRoomDepartmentsMidtermExams);
 			} else {
-			    d = Department.findByDeptCode(deptCode, sessionId);
+				sessionContext.checkPermission(deptCode, "Department", Right.EditRoomDepartments);
+			    d = Department.findByDeptCode(deptCode, sessionContext.getUser().getCurrentAcademicSessionId());
 			    myForm.setId(d.getUniqueId());
 			    myForm.setExamType(-1);
 			}
@@ -79,33 +79,38 @@ public class RoomDeptEditAction extends Action {
 		if (request.getParameter("deptId") != null) {
 			String id = request.getParameter("deptId");
             if ("Exam".equalsIgnoreCase(id)) {
+            	sessionContext.checkPermission(Right.EditRoomDepartmentsFinalExams);
                 myForm.setId(null);
                 myForm.setExamType(Exam.sExamTypeFinal);
-            } else if ("EExam".equalsIgnoreCase(id)) { 
+            } else if ("EExam".equalsIgnoreCase(id)) {
+            	sessionContext.checkPermission(Right.EditRoomDepartmentsMidtermExams);
                 myForm.setId(null);
                 myForm.setExamType(Exam.sExamTypeMidterm);
             } else {
                 d = new DepartmentDAO().get(Long.valueOf(id));
+            	sessionContext.checkPermission(d, Right.EditRoomDepartments);
                 myForm.setId(d.getUniqueId());
                 myForm.setExamType(-1);
             }
 		}
 		
-		TreeSet rooms = null;
-		if (myForm.getId()==null && myForm.getExamType()>=0) {
-		    rooms = new TreeSet(Room.findAll(Session.getCurrentAcadSession(user).getUniqueId()));
+        if (d == null && myForm.getId() != null && myForm.getExamType() < 0)
+        	d = new DepartmentDAO().get(myForm.getId());
+
+		TreeSet<Room> rooms = null;
+		if (d != null) {
+			rooms = new TreeSet<Room>();
+			for (RoomDept rd: d.getRoomDepts()) {
+				if (rd.getRoom() instanceof Room)
+					rooms.add((Room)rd.getRoom());
+			}
 		} else {
-		    rooms = new TreeSet(Session.getCurrentAcadSession(user).getRoomsFast(user));
-		    for (Iterator i=rooms.iterator();i.hasNext();) {
-		        Location location = (Location)i.next();
-		        if (!(location instanceof Room)) i.remove();
-		    }
+		    rooms = new TreeSet(Room.findAllRooms(sessionContext.getUser().getCurrentAcademicSessionId()));
 		}
 		
         int examType = myForm.getExamType();
-        if (myForm.getId()!=null && myForm.getExamType()<0) d = new DepartmentDAO().get(myForm.getId());
         
-        if (d!=null)
+        if (d != null)
             myForm.setName(d.getDeptCode()+" "+d.getName());
         else if (examType==Exam.sExamTypeFinal)
             myForm.setName("Final Examination Rooms");
@@ -121,7 +126,7 @@ public class RoomDeptEditAction extends Action {
         if (op==null) {
             myForm.getAssignedSet().clear();
 		    if (d==null) {
-		        for (Iterator i=Location.findAllExamLocations(sessionId, examType).iterator();i.hasNext();) {
+		        for (Iterator i=Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), examType).iterator();i.hasNext();) {
 		            Location location = (Location)i.next();
 		            myForm.getAssignedSet().add(location.getUniqueId());
 		        }
@@ -153,7 +158,7 @@ public class RoomDeptEditAction extends Action {
                             if (d==null) {
                                 location.setExamEnabled(examType, checked);
                                 hibSession.update(location);
-                                ChangeLog.addChange(hibSession, request, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);
+                                ChangeLog.addChange(hibSession, sessionContext, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, null);
                             } else if (checked) {
                                 RoomDept rd = new RoomDept();
                                 rd.setDepartment(d);
@@ -163,7 +168,7 @@ public class RoomDeptEditAction extends Action {
                                 location.getRoomDepts().add(rd);
                                 hibSession.saveOrUpdate(location);
                                 hibSession.saveOrUpdate(rd);
-                                ChangeLog.addChange(hibSession, request, location,
+                                ChangeLog.addChange(hibSession, sessionContext, location,
                                         ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.CREATE, null, d);
                             } else {
                                 RoomDept rd = null;
@@ -171,7 +176,7 @@ public class RoomDeptEditAction extends Action {
                                     RoomDept x = (RoomDept)j.next();
                                     if (x.getDepartment().equals(d)) rd=x;
                                 }
-                                ChangeLog.addChange(hibSession, request, location,
+                                ChangeLog.addChange(hibSession, sessionContext, location,
                                         ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.DELETE, null, d);
                                 d.getRoomDepts().remove(rd);
                                 location.getRoomDepts().remove(rd);
@@ -261,8 +266,8 @@ public class RoomDeptEditAction extends Action {
 		}
         
         
-        WebTable.setOrder(webSession, "RoomDeptEdit.ord", request.getParameter("ord"), (d==null?4:5));
-        myForm.setTable(table.printTable(WebTable.getOrder(webSession, "RoomDeptEdit.ord")));
+        WebTable.setOrder(sessionContext, "RoomDeptEdit.ord", request.getParameter("ord"), (d==null?4:5));
+        myForm.setTable(table.printTable(WebTable.getOrder(sessionContext, "RoomDeptEdit.ord")));
 
 		return mapping.findForward("show");
 	}

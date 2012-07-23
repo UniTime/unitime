@@ -38,6 +38,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -50,7 +51,6 @@ import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
@@ -124,8 +124,8 @@ public class AddNonUnivLocationAction extends Action {
         if (departments.size() == 1) {
         	Department d = departments.iterator().next();
         	nonUnivLocationForm.setDeptCode(d.getDeptCode());
-        } else if (sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-			nonUnivLocationForm.setDeptCode(sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+        } else if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
+			nonUnivLocationForm.setDeptCode((String) sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 		
 		return mapping.findForward("showAdd");
