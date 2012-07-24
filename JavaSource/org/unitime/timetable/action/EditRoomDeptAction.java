@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -39,23 +38,21 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.EditRoomDeptForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
@@ -69,6 +66,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 @Service("/editRoomDept")
 public class EditRoomDeptAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -88,11 +87,6 @@ public class EditRoomDeptAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		EditRoomDeptForm editRoomDeptForm = (EditRoomDeptForm) form;
-		
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
 		
 		MessageResources rsc = getResources(request);
 		String doit = editRoomDeptForm.getDoit();
@@ -154,6 +148,8 @@ public class EditRoomDeptAction extends Action {
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
 		
+		sessionContext.checkPermission(location, Right.RoomEditAvailability);
+		
 		if(doit!=null && doit.equals(rsc.getMessage("button.modifyRoomDepts"))) {
 			TreeSet roomDepts = new TreeSet(location.getRoomDepts());
 			for (Iterator i=roomDepts.iterator();i.hasNext();) {
@@ -163,12 +159,9 @@ public class EditRoomDeptAction extends Action {
 		}
 		
 		//get roomSharingTable and user preference on location
-		User user = Web.getUser(webSession);
-		Session s = Session.getCurrentAcadSession(user);
-
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-        RequiredTimeTable rtt = location.getRoomSharingTable(s, user, editRoomDeptForm.getDepartmentIds());
-        rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(user));
+        boolean timeVertical = CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(sessionContext.getUser()));
+        RequiredTimeTable rtt = location.getRoomSharingTable(sessionContext.getUser(), editRoomDeptForm.getDepartmentIds());
+        rtt.getModel().setDefaultSelection(UserProperty.GridSize.get(sessionContext.getUser()));
         if (doit!=null && (doit.equals(rsc.getMessage("button.removeRoomDept")) || doit.equals(rsc.getMessage("button.addRoomDept")))) {
         	rtt.update(request);
         }
@@ -213,6 +206,8 @@ public class EditRoomDeptAction extends Action {
 			tx = hibSession.beginTransaction();
 
 			Location location = ldao.get(new Long(editRoomDeptForm.getId()), hibSession);
+			
+			sessionContext.checkPermission(location, Right.RoomEditAvailability);
 		
 			Set deptIds = new HashSet(editRoomDeptForm.getDepartmentIds());
 			
@@ -251,7 +246,7 @@ public class EditRoomDeptAction extends Action {
 			
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     (Location)location, 
                     ChangeLog.Source.ROOM_DEPT_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -269,37 +264,24 @@ public class EditRoomDeptAction extends Action {
 	}
 
     public void setupDepartments(EditRoomDeptForm editRoomDeptForm, HttpServletRequest request, Location location) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 
     	Collection availableDepts = new Vector();
     	Collection currentDepts = new HashSet();
-    	
-    	boolean admin = false;
-    	Set depts = null;
-        String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-        if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-        	admin = true;
-        } else {
-        	depts = manager.departmentsForSession(sessionId);
-        }
 
-        for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-    		RoomDept rd = (RoomDept)i.next();
+        Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+        
+    	boolean hasControl = false;
+        for (RoomDept rd: location.getRoomDepts()) {
     		currentDepts.add(rd.getDepartment());
-    		if (depts!=null && rd.isControl().booleanValue() && depts.contains(rd.getDepartment()))
-    			admin = true;
+    		if (departments.contains(rd.getDepartment()) && rd.isControl())
+    			hasControl = true;
     	}
         
-		Set set = Department.findAllBeingUsed(sessionId);
+		Set<Department> set = Department.findAllBeingUsed(location.getSession().getUniqueId());
 				
-		for (Iterator iter = set.iterator();iter.hasNext();) {
-			Department d = (Department) iter.next();
-			if (!admin && (depts==null || !depts.contains(d))) {
-				if (currentDepts.contains(d)) continue; //department already added, but cannot be removed
-			}
-			availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
+		for (Department d: set) {
+			if (hasControl || departments.contains(d) || !currentDepts.contains(d)) 
+				availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
 		}
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);

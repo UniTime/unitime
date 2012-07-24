@@ -17,7 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.form.RoomDetailForm" %>
 <%@ page import="org.unitime.timetable.model.RoomGroup" %>
@@ -34,18 +33,17 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
-	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
-	boolean examMgr = Web.hasRole(request.getSession(), new String[] { Roles.EXAM_MGR_ROLE});
-
 	// Get Form 
 	String frmName = "roomDetailForm";	
 	RoomDetailForm frm = (RoomDetailForm) request.getAttribute(frmName);
 %>	
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -71,72 +69,68 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><%=frm.getName()%></tt:section-title>
-					<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<% if (admin || examMgr || (frm.isNonUniv() && frm.isOwner())) { %>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
 						<html:submit property="doit" 
 								accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
 								>
 								<bean:message key="button.modifyRoom" />
 						</html:submit>						
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditAvailability')">
 						&nbsp;
-					<% } %>
-					<% if (!examMgr) { %>
-					<html:submit property="doit" 
-							accesskey="A" styleClass="btn" titleKey="title.modifyRoomDepts"
+						<html:submit property="doit" 
+								accesskey="A" styleClass="btn" titleKey="title.modifyRoomDepts"
 							>
-						<bean:message key="button.modifyRoomDepts" />
-					</html:submit>
-					&nbsp;
-					<html:submit property="doit" 
-							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
-							>
-							<bean:message key="button.modifyRoomPreference" />
-					</html:submit>
-					&nbsp;
-					<% } %>
-					<html:submit property="doit" 
-							accesskey="G" styleClass="btn" titleKey="title.modifyRoomGroups"
-							>
-						<bean:message key="button.modifyRoomGroups" />
-					</html:submit>
-					&nbsp;
-					<html:submit property="doit" 
-							accesskey="F" styleClass="btn" titleKey="title.modifyRoomFeatures"
-							>
-							<bean:message key="button.modifyRoomFeatures" />
-					</html:submit>
-					<%--
-					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-						&nbsp;
-						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
-							<bean:message key="button.modifyRoomPeriodPreferences" />
+							<bean:message key="button.modifyRoomDepts" />
 						</html:submit>
-					</logic:equal>
-					--%>
-					<% if (!frm.isUsed() && (admin || (frm.isDeleteFlag() && frm.isOwner()))) {%>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditPreference')">
+						&nbsp;
+						<html:submit property="doit" 
+								accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
+								>
+								<bean:message key="button.modifyRoomPreference" />
+						</html:submit>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditGroups')">
+						&nbsp;
+						<html:submit property="doit" 
+								accesskey="G" styleClass="btn" titleKey="title.modifyRoomGroups"
+								>
+							<bean:message key="button.modifyRoomGroups" />
+						</html:submit>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditFeatures')">
+						&nbsp;
+						<html:submit property="doit" 
+								accesskey="F" styleClass="btn" titleKey="title.modifyRoomFeatures"
+								>
+								<bean:message key="button.modifyRoomFeatures" />
+						</html:submit>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete')">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
 							<bean:message key="button.delete" />
 						</html:submit>
-					<%}%>
-					&nbsp;
-					</logic:equal>
+					</sec:authorize>
 					<logic:notEmpty name="<%=frmName%>" property="previous">
 						<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
-						<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
-							<bean:message key="button.previousRoom" />
-						</html:submit>
-						&nbsp;
+							&nbsp;
+							<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
+								<bean:message key="button.previousRoom" />
+							</html:submit>
 						</logic:greaterEqual>
 					</logic:notEmpty>
 					<logic:notEmpty name="<%=frmName%>" property="next">
 						<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
-						<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
-							<bean:message key="button.nextRoom" />
-						</html:submit>
-						&nbsp;
+							&nbsp;
+							<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+								<bean:message key="button.nextRoom" />
+							</html:submit>
 						</logic:greaterEqual>
 					</logic:notEmpty>
+					&nbsp;
 					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
 						<bean:write name="<%=frmName%>" property="id"/>
 					</tt:back>
@@ -320,7 +314,7 @@
 			<TD colspan='2'>&nbsp;</TD>
 		</TR>
 		
-		<% if (!examMgr) { %>
+		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDetailAvailability')">
 		
 		<TR>
 			<TD colspan='2'>
@@ -334,7 +328,7 @@
 			</TD>
 		</TR>
 		
-		<logic:equal name="<%=frmName%>" property="editable" value="true">
+		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditAvailability')">
 			<TR>
 				<TD colspan="2" align='center' style='border-top:black 1px dashed'>
 					<font size='-1'><i>
@@ -342,9 +336,10 @@
 					</i></font>
 				</TD>
 			</TR>
-		</logic:equal>
+		</sec:authorize>
 
-		<% } %>
+		</sec:authorize>
+		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDetailPeriodPreferences')">
 		
 		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 			<logic:notEmpty name="<%=frmName%>" property="examPref">
@@ -356,7 +351,7 @@
 						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
 					</TD>
 				</TR>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
 					<TR>
 						<TD colspan="2" align="center" style='border-top:black 1px dashed'>
 							<font size='-1'><i>
@@ -364,7 +359,7 @@
 							</i></font>
 						</TD>
 					</TR>
-				</logic:equal>
+				</sec:authorize>
 			</logic:notEmpty>
 		</logic:equal>
 		
@@ -378,7 +373,7 @@
 						<bean:write name="<%=frmName%>" property="examEPref" filter="false"/>
 					</TD>
 				</TR>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
 					<TR>
 						<TD colspan="2" align='center' style='border-top:black 1px dashed'>
 							<font size='-1'><i>
@@ -386,9 +381,10 @@
 							</i></font>
 						</TD>
 					</TR>
-				</logic:equal>
+				</sec:authorize>
 			</logic:notEmpty>
 		</logic:equal>
+		</sec:authorize>
 
 
 		<tt:last-change type='Location'>
@@ -403,80 +399,71 @@
 		
 		<TR>
 			<TD colspan='2' align='right'>
-				<logic:equal name="<%=frmName%>" property="editable" value="true">
-					<% if (admin || examMgr || (frm.isNonUniv() && frm.isOwner())) { %>
-						<html:submit property="doit" 
-								accesskey="P" styleClass="btn" titleKey="title.modifyRoom"
-								>
-								<bean:message key="button.modifyRoom" />
-						</html:submit>				
-						&nbsp;
-					<% } %>
-					<% if (!examMgr) { %>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
+					<html:submit property="doit" 
+							accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
+							>
+							<bean:message key="button.modifyRoom" />
+					</html:submit>						
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditAvailability')">
+					&nbsp;
 					<html:submit property="doit" 
 							accesskey="A" styleClass="btn" titleKey="title.modifyRoomDepts"
-							>
+						>
 						<bean:message key="button.modifyRoomDepts" />
 					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditPreference')">
 					&nbsp;
 					<html:submit property="doit" 
 							accesskey="M" styleClass="btn" titleKey="title.modifyRoomPreference"
 							>
 							<bean:message key="button.modifyRoomPreference" />
 					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditGroups')">
 					&nbsp;
-					<% } %>
 					<html:submit property="doit" 
 							accesskey="G" styleClass="btn" titleKey="title.modifyRoomGroups"
 							>
 						<bean:message key="button.modifyRoomGroups" />
 					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditFeatures')">
 					&nbsp;
 					<html:submit property="doit" 
-							accesskey="F" styleClass="btn" titleKey="title.modifyRoomFeatures"
-							>
-							<bean:message key="button.modifyRoomFeatures" />
+						accesskey="F" styleClass="btn" titleKey="title.modifyRoomFeatures"
+						>
+						<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
-					<%--
-					<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-						&nbsp;
-						<html:submit property="doit"  styleClass="btn" accesskey="X" titleKey="title.modifyRoomPeriodPreferences">
-							<bean:message key="button.modifyRoomPeriodPreferences" />
-						</html:submit>
-					</logic:equal>
-					--%>
-					<% if (!frm.isUsed() && (admin || (frm.isDeleteFlag() && frm.isOwner()))) {%>
-						&nbsp;
-						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
-							<bean:message key="button.delete" />
-						</html:submit>
-					<%}%>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete')">
 					&nbsp;
-				</logic:equal>
-				<logic:notEmpty name="<%=frmName%>" property="previous">
-					<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+					<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
+						<bean:message key="button.delete" />
+					</html:submit>
+				</sec:authorize>
+			<logic:notEmpty name="<%=frmName%>" property="previous">
+				<logic:greaterEqual name="<%=frmName%>" property="previous" value="0">
+					&nbsp;
 					<html:submit property="doit"  styleClass="btn" accesskey="P" titleKey="title.previousRoom">
 						<bean:message key="button.previousRoom" />
 					</html:submit>
-					&nbsp;
-					</logic:greaterEqual>
+				</logic:greaterEqual>
 				</logic:notEmpty>
 				<logic:notEmpty name="<%=frmName%>" property="next">
 					<logic:greaterEqual name="<%=frmName%>" property="next" value="0">
-					<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
-						<bean:message key="button.nextRoom" />
-					</html:submit>
-					&nbsp;
+						&nbsp;
+						<html:submit property="doit"  styleClass="btn" accesskey="N" titleKey="title.nextRoom">
+							<bean:message key="button.nextRoom" />
+						</html:submit>
 					</logic:greaterEqual>
 				</logic:notEmpty>
+				&nbsp;
 				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
 					<bean:write name="<%=frmName%>" property="id"/>
 				</tt:back>
-				<%--
-				<html:submit property="doit"  styleClass="btn" accesskey="B" titleKey="title.returnToRoomList">
-					<bean:message key="button.returnToRoomList" />
-				</html:submit>
-				--%>
 			</TD>
 		</TR>
 

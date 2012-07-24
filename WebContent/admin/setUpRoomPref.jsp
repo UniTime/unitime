@@ -76,7 +76,7 @@
 			</TD>
 			
 			<TD width='100%'>
-				<html:select property='<%= "selectedPref[" + ctr + "]" %>' >			
+				<html:select property='<%= "roomPrefLevels[" + ctr + "]" %>' >			
 					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 						<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
 					<html:option

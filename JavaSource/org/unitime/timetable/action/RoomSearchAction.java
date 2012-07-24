@@ -73,15 +73,16 @@ public class RoomSearchAction extends Action {
 		sessionContext.checkPermission(Right.Rooms);
 		
 		String deptCode = roomListForm.getDeptCodeX();
-		if (deptCode==null)
+		if (deptCode==null) {
 			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+		}
 		if (deptCode==null) {
 			deptCode = request.getParameter("default");
 		    if (deptCode != null)
 		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
 		
-		if (deptCode != null && !deptCode.isEmpty()) {
+		if (deptCode != null && !deptCode.isEmpty() && sessionContext.hasPermission(deptCode, "Department", Right.Rooms)) {
 			
 			roomListForm.setDeptCodeX(deptCode);
 			return mapping.findForward("roomList");

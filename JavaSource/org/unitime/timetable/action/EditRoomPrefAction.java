@@ -22,13 +22,13 @@ package org.unitime.timetable.action;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -38,9 +38,9 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.EditRoomPrefForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -48,17 +48,13 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -71,6 +67,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/editRoomPref")
 public class EditRoomPrefAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -91,10 +89,6 @@ public class EditRoomPrefAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		EditRoomPrefForm editRoomPrefForm = (EditRoomPrefForm) form;
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
 		
 		MessageResources rsc = getResources(request);
 		String doit = editRoomPrefForm.getDoit();
@@ -137,63 +131,43 @@ public class EditRoomPrefAction extends Action {
 			saveErrors(request, errors);
 		}
 		
-		//get user preference information
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-        Set departments = new TreeSet();
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-			departments = Department.findAllBeingUsed(sessionId);
-		} else {
-			departments = owner.departmentsForSession(sessionId);
-		}
-        //Set departments = new TreeSet(owner.departmentsForSession(sessionId));
+		sessionContext.checkPermission(location, Right.RoomEditPreference);
 		
-        Set availableDepts = new TreeSet();
-        for (Iterator iter = location.getRoomDepts().iterator(); iter.hasNext();) {
-        	RoomDept rd = (RoomDept) iter.next();
-        	Department d = rd.getDepartment();
-        	if (departments.contains(d)) {
-        		availableDepts.add(d);
-        	}
+        TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+		
+        TreeSet<Department> availableDepts = new TreeSet<Department>();
+        for (RoomDept rd: location.getRoomDepts()) {
+        	if (departments.contains(rd.getDepartment()))
+        		availableDepts.add(rd.getDepartment());
         }
-        ArrayList list = new ArrayList();
-        list.addAll(availableDepts);
-		editRoomPrefForm.setDepts(list);
+        
+		editRoomPrefForm.setDepts(new ArrayList<Department>(availableDepts));
         
         ArrayList depts = new ArrayList();
-        String[] selectedPrefs = new String[availableDepts.size()];
-        int i = 0;
-        for (Iterator iter = availableDepts.iterator(); iter.hasNext();) {
-        	Department dept = (Department) iter.next();
+        ArrayList selectedPrefs = new ArrayList();
+        for (Department dept: availableDepts) {
         	RoomPref roomPref = location.getRoomPreference(dept);
         	if (roomPref != null) {
-        		selectedPrefs[i] = roomPref.getPrefLevel().getUniqueId().toString();
+        		selectedPrefs.add(roomPref.getPrefLevel().getUniqueId().toString());
         	} else{
-        		selectedPrefs[i] = PreferenceLevel.PREF_LEVEL_NEUTRAL;
+        		selectedPrefs.add(PreferenceLevel.PREF_LEVEL_NEUTRAL);
         	}
-        	i++;
-	        depts.add(new LabelValueBean( dept.getDeptCode()+"-"+dept.getAbbreviation(), dept.getDeptCode())); 
+	        depts.add(new LabelValueBean(dept.getDeptCode() + "-" + dept.getAbbreviation(), dept.getDeptCode())); 
         }
-        editRoomPrefForm.setSelectedPref(selectedPrefs);
+        editRoomPrefForm.setRoomPrefLevels(selectedPrefs);
         
         request.setAttribute(Department.DEPT_ATTR_NAME, depts);
         
         //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	editRoomPrefForm.setDeptCode(d.getDeptCode());
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	editRoomPrefForm.setDeptCode(webSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+        if (departments.size() == 1) {
+        	editRoomPrefForm.setDeptCode(departments.first().getDeptCode());
+        } else if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
+        	editRoomPrefForm.setDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 		
         //set availabe room preferences
-    	Vector prefs = new Vector();
-    	for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
+    	Vector<PreferenceLevel> prefs = new Vector<PreferenceLevel>();
+    	for (Enumeration e = PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
     		PreferenceLevel pref = (PreferenceLevel)e.nextElement();
     		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))
     			prefs.addElement(pref);
@@ -209,48 +183,51 @@ public class EditRoomPrefAction extends Action {
 	 * @param request
 	 */
 	private void doUpdate(EditRoomPrefForm editRoomPrefForm, HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();	
-		
+
 		//get location information
 		Long id = Long.valueOf(request.getParameter("id"));
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
 		
+		sessionContext.checkPermission(location, Right.RoomEditPreference);
+		
 		//update dept preference information
-		String[] selectedId = editRoomPrefForm.getSelectedPref();
-		PreferenceLevelDAO pldao = new PreferenceLevelDAO();
-		DepartmentDAO ddao = new DepartmentDAO();
-		for (int i = 0; i<selectedId.length; i++) {
-			PreferenceLevel seletedPL = pldao.get(Long.valueOf(selectedId[i]));
+		
+        TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+		TreeSet<Department> availableDepts = new TreeSet<Department>();
+        for (RoomDept rd: location.getRoomDepts()) {
+        	if (departments.contains(rd.getDepartment()))
+        		availableDepts.add(rd.getDepartment());
+        }
+
+		List selectedId = editRoomPrefForm.getRoomPrefLevels();
+		int i = 0;
+		for (Department dept: availableDepts) {
+			PreferenceLevel seletedPL = PreferenceLevelDAO.getInstance().get(Long.valueOf((String)selectedId.get(i++)));
 			RoomPref selectedRP = new RoomPref();
 			selectedRP.setRoom(location);
 			selectedRP.setPrefLevel(seletedPL);
-				
-			String deptCode = editRoomPrefForm.getDepts(i).split("-")[0].trim();
-			Department d = Department.findByDeptCode(deptCode, sessionId);
-			selectedRP.setOwner(d);
-			Set prefs = d.getPreferences();
+			selectedRP.setOwner(dept);
+			Set prefs = dept.getPreferences();
 	
 			for (Iterator iter = prefs.iterator(); iter.hasNext();) {
 				Preference p = (Preference)iter.next();
 	           	if (p instanceof RoomPref && ((RoomPref)p).getRoom().equals(location)) {
-	           		pldao.getSession().delete(p);
+	           		PreferenceLevelDAO.getInstance().getSession().delete(p);
 	           		iter.remove();
 	            }
 			}
 	  
 	       	prefs.add(selectedRP);
-	       	ddao.saveOrUpdate(d);
+	       	PreferenceLevelDAO.getInstance().getSession().saveOrUpdate(dept);
             ChangeLog.addChange(
                     null, 
-                    request, 
+                    sessionContext, 
                     location, 
                     ChangeLog.Source.ROOM_PREF_EDIT, 
                     ChangeLog.Operation.UPDATE, 
                     null, 
-                    d);
+                    dept);
 		}
         
 	}

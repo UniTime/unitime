@@ -71,8 +71,8 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 			list());
     }
     
-	public static TreeSet findAllExternal(Long sessionId) {
-		return new TreeSet((new DepartmentDAO()).
+	public static TreeSet<Department> findAllExternal(Long sessionId) {
+		return new TreeSet<Department>((new DepartmentDAO()).
 				getSession().
 				createQuery("select distinct d from Department as d where d.externalManager=1 and d.session.uniqueId=:sessionId").
 				setLong("sessionId", sessionId.longValue()).

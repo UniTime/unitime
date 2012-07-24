@@ -308,11 +308,25 @@ public class Roles extends BaseRoles implements HasRights {
 		case RoomsExportPdf:
 		case RoomDetail:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
+			
+		case RoomDetailAvailability:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
+
+		case RoomDetailPeriodPreferences:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 
 		case EditRoomDepartments:
+		case RoomEditAvailability:
+		case RoomEditPreference:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 		case EditRoomDepartmentsFinalExams:
 		case EditRoomDepartmentsMidtermExams:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+		case RoomEditFeatures:
+		case RoomEditGroups:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+		case RoomEditGlobalFeatures:
+		case RoomEditGlobalGroups:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
 			
 		case AddRoom:
