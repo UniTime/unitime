@@ -85,13 +85,15 @@ public class LocationPermissions {
 		@Override
 		public boolean check(UserContext user, Location source) {
 			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
+			boolean allDepts = true;
 			
 			for (RoomDept rd: source.getRoomDepts()) {
 				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
 					controls = true;
-			}
-			
-			return controls;
+				if (!permissionDepartment.check(user, rd.getDepartment()))
+					allDepts = false;
+			}			
+			return controls || allDepts;
 		}
 
 		@Override
@@ -315,16 +317,16 @@ public class LocationPermissions {
 	}
 	
 	@PermissionForRight(Right.AddNonUnivLocation)
-	public static class AddNonUnivLocation implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
+	public static class AddNonUnivLocation implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
-		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source);
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source);
 		}
 
 		@Override
-		public Class<Session> type() { return Session.class; }
+		public Class<Department> type() { return Department.class; }
 	}
 	
 	@PermissionForRight(Right.AddRoom)
@@ -359,4 +361,45 @@ public class LocationPermissions {
 		@Override
 		public Class<Session> type() { return Session.class; }
 	}
+	
+	@PermissionForRight(Right.RoomDetailAvailability)
+	public static class RoomDetailAvailability extends RoomDetail {}
+	
+	@PermissionForRight(Right.RoomDetailPeriodPreferences)
+	public static class RoomDetailPeriodPreferences extends RoomDetail {}
+	
+	@PermissionForRight(Right.RoomEditAvailability)
+	public static class RoomEditAvailability implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source.getRoomDepts().isEmpty())
+				return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+			
+			for (RoomDept rd: source.getRoomDepts())
+				if (permissionDepartment.check(user, rd.getDepartment()))
+					return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
+	
+	@PermissionForRight(Right.RoomEditPreference)
+	public static class RoomEditPreference extends RoomEditAvailability{}
+
+	@PermissionForRight(Right.RoomEditFeatures)
+	public static class RoomEditFeatures extends RoomEditAvailability{}
+
+	@PermissionForRight(Right.RoomEditGroups)
+	public static class RoomEditGroups extends RoomEditAvailability{}
+
+	@PermissionForRight(Right.RoomEditGlobalFeatures)
+	public static class RoomEditGlobalFeatures extends RoomEditAvailability{}
+
+	@PermissionForRight(Right.RoomEditGlobalGroups)
+	public static class RoomEditGlobalGroups extends RoomEditAvailability{}
 }

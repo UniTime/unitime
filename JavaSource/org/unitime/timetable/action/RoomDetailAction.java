@@ -28,7 +28,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -39,9 +38,10 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.RoomDetailForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
@@ -53,16 +53,13 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -83,6 +80,8 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
  */
 @Service("/roomDetail")
 public class RoomDetailAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -103,17 +102,14 @@ public class RoomDetailAction extends Action {
 		HttpServletResponse response) throws Exception {
 		RoomDetailForm roomDetailForm = (RoomDetailForm) form;
 		
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
-			
+		
 		MessageResources rsc = getResources(request);
 		String doit = roomDetailForm.getDoit();
 		
 		if (doit != null) {
 			//delete location
 			if(doit.equals(rsc.getMessage("button.delete"))) {
+				
 				if ("y".equals(request.getParameter("confirm"))) {
 					doDelete(roomDetailForm, request);
 					return mapping.findForward("showRoomList");
@@ -170,6 +166,9 @@ public class RoomDetailAction extends Action {
 				
 		//get location
 		Long id = Long.valueOf(request.getParameter("id")!=null?request.getParameter("id"):roomDetailForm.getId());
+		
+		sessionContext.checkPermission(id, "Location", Right.RoomDetail);
+
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
 		if (location instanceof Room) {
@@ -178,8 +177,8 @@ public class RoomDetailAction extends Action {
 			roomDetailForm.setNonUniv(true);
 		}
 		
-        roomDetailForm.setPrevious(Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, id));
-        roomDetailForm.setNext(Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, id));
+        roomDetailForm.setPrevious(Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, id));
+        roomDetailForm.setNext(Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, id));
         
         BackTracker.markForBack(
         		request,
@@ -188,29 +187,19 @@ public class RoomDetailAction extends Action {
         		true, false);
 
 		//set roomSharingTable and user preference on location in form
-		User user = Web.getUser(webSession);
-		Session s = Session.getCurrentAcadSession(user);
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-        
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-        RequiredTimeTable rtt = location.getRoomSharingTable(s, user);
-        rtt.getModel().setDefaultSelection(RequiredTimeTable.getTimeGridSize(user));
+        boolean timeVertical = CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(sessionContext.getUser()));
+        RequiredTimeTable rtt = location.getRoomSharingTable(sessionContext.getUser());
+        rtt.getModel().setDefaultSelection(UserProperty.GridSize.get(sessionContext.getUser()));
         roomDetailForm.setSharingTable(rtt.print(false, timeVertical));
 			
 		//get room preferences
-		Vector depts = new Vector();
-		roomDetailForm.setEditable(user.isAdmin() || (Roles.EXAM_MGR_ROLE.equals(user.getRole()) && s.getStatusType().canExamTimetable()));
-		for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-			RoomDept rd = (RoomDept)i.next();
+		Vector<Department> depts = new Vector<Department>();
+		for (RoomDept rd: location.getRoomDepts())
 			depts.add(rd.getDepartment());
-			if (rd.getDepartment().isEditableBy(user)) roomDetailForm.setEditable(true);
-		}
 		Collections.sort(depts);
 		Vector prefs = new Vector(depts.size());
-		for (Iterator i=depts.iterator();i.hasNext();) {
-			Department d = (Department)i.next();
+		for (Iterator<Department> i=depts.iterator();i.hasNext();) {
+			Department d = i.next();
 			PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral);
 	        Set roomPrefs = d.getEffectiveRoomPreferences();
 			for (Iterator j=roomPrefs.iterator();j.hasNext();) {
@@ -280,7 +269,7 @@ public class RoomDetailAction extends Action {
 		if (location instanceof Room) {
 			Room r = (Room) location;
 			roomDetailForm.setName(r.getLabel());
-            roomDetailForm.setExternalId(user.isAdmin()?r.getExternalUniqueId():null);
+            roomDetailForm.setExternalId(r.getExternalUniqueId());
 		} else if (location instanceof NonUniversityLocation) {
 			NonUniversityLocation nonUnivLocation = (NonUniversityLocation) location;
 			roomDetailForm.setName(nonUnivLocation.getName());
@@ -294,25 +283,9 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setType(location.getRoomType().getUniqueId());
         roomDetailForm.setTypeName(location.getRoomType().getLabel());
 		
-		roomDetailForm.setOwner(true);
-		roomDetailForm.setControl(null);
-		Set ownedDepts = owner.departmentsForSession(s.getUniqueId());
-		boolean controls = false;
-		boolean allDepts = true;
-		for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
-			RoomDept rd = (RoomDept)i.next();
+		for (RoomDept rd: location.getRoomDepts())
 			if (rd.isControl().booleanValue())
 				roomDetailForm.setControl(rd.getDepartment().getUniqueId().toString());
-			if (rd.isControl().booleanValue() && ownedDepts!=null && ownedDepts.contains(rd.getDepartment()))
-				controls = true;
-			if (ownedDepts==null || !ownedDepts.contains(rd.getDepartment())) {
-				allDepts = false;
-			}
-		}
-		roomDetailForm.setOwner(controls || allDepts);
-		roomDetailForm.setDeleteFlag(!location.isExamEnabled(Exam.sExamTypeFinal) && !location.isExamEnabled(Exam.sExamTypeMidterm) && allDepts
-				&& location instanceof NonUniversityLocation);
-		roomDetailForm.setUsed(location.isUsed());
 		
 		EditRoomAction.setupDepartments(request, location);
 
@@ -327,6 +300,7 @@ public class RoomDetailAction extends Action {
     private void doDelete(RoomDetailForm roomDetailForm, HttpServletRequest request) throws Exception {
 		//get location
     	Long id = Long.valueOf(request.getParameter("id"));
+    	sessionContext.checkPermission(id, "Location", Right.RoomDelete);
 		LocationDAO ldao = new LocationDAO();
 		org.hibernate.Session hibSession = ldao.getSession();
 		Transaction tx = null;
@@ -336,7 +310,7 @@ public class RoomDetailAction extends Action {
 			if (location != null){
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         location, 
                         ChangeLog.Source.ROOM_EDIT, 
                         ChangeLog.Operation.DELETE, 

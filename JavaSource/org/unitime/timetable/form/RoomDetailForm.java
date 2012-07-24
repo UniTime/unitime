@@ -54,16 +54,12 @@ public class RoomDetailForm extends ActionForm {
 	private Collection departmentFeatures;	
 	private List roomPrefs;	
 	private List depts;
-	private boolean deleteFlag;
-	private boolean owner;
 	private boolean ignoreTooFar = false;
 	private boolean ignoreRoomCheck = false;
 	private String control = null;
 	private boolean nonUniv;
-	private boolean editable = false;
 	private boolean examEnabled = false;
 	private boolean examEEnabled = false;
-	private boolean used = false;
 	private Integer examCapacity;
 	private String examPref;
 	private String examEPref;
@@ -98,7 +94,6 @@ public class RoomDetailForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
-		editable = false; used = false;
 		control = null;
 		examEnabled = false; examEEnabled = false;
 		examPref = null; examEPref = null;
@@ -193,14 +188,6 @@ public class RoomDetailForm extends ActionForm {
         this.typeName = typeName;
     }
 
-    public boolean isDeleteFlag() {
-		return deleteFlag;
-	}
-
-	public void setDeleteFlag(boolean deleteFlag) {
-		this.deleteFlag = deleteFlag;
-	}
-
 	public String getId() {
 		return id;
 	}
@@ -223,14 +210,6 @@ public class RoomDetailForm extends ActionForm {
 
 	public void setDoit(String doit) {
 		this.doit = doit;
-	}
-
-	public boolean isOwner() {
-		return owner;
-	}
-
-	public void setOwner(boolean owner) {
-		this.owner = owner;
 	}
 
 	public void setIgnoreTooFar(boolean ignoreTooFar) {
@@ -278,9 +257,6 @@ public class RoomDetailForm extends ActionForm {
 	public void setNonUniv(boolean nonUniv) {
 		this.nonUniv = nonUniv;
 	}
-	
-	public boolean isEditable() { return editable; }
-	public void setEditable(boolean editable) { this.editable = editable; }
 	
 	public Integer getExamCapacity() {
 	    return examCapacity;
@@ -337,14 +313,5 @@ public class RoomDetailForm extends ActionForm {
     public void setPrevious(Long previous) {
     	this.previos = previous;
     }
-    
-	public boolean isUsed() {
-	    return used;
-	}
-	
-	public void setUsed(boolean used) {
-	    this.used = used;
-	}
-
 }
 
