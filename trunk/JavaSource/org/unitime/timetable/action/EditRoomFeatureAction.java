@@ -19,15 +19,12 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,14 +33,10 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
-import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EditRoomFeatureForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -51,15 +44,13 @@ import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
-import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -72,6 +63,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/editRoomFeature")
 public class EditRoomFeatureAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -92,11 +85,7 @@ public class EditRoomFeatureAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		EditRoomFeatureForm editRoomFeatureForm = (EditRoomFeatureForm) form;
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
-
+		
 		MessageResources rsc = getResources(request);
 		String doit = editRoomFeatureForm.getDoit();
 		
@@ -113,91 +102,43 @@ public class EditRoomFeatureAction extends Action {
 			return mapping.findForward("showRoomDetail");
 		}
 		
-		User user = Web.getUser(webSession);
-		Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getSessionId();
-		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager owner = tdao.get(new Long(mgrId));
-
         //get location information
         Long id = Long.valueOf(request.getParameter("id"));
 		LocationDAO ldao = new LocationDAO();
 		Location location = ldao.get(id);
+		
 		if (location instanceof Room) {
 			Room r = (Room) location;
 			editRoomFeatureForm.setRoomLabel(r.getLabel());
 		} else if (location instanceof NonUniversityLocation) {
-				NonUniversityLocation nonUnivLocation = (NonUniversityLocation) location;
-				editRoomFeatureForm.setRoomLabel(nonUnivLocation.getName());
+			NonUniversityLocation nonUnivLocation = (NonUniversityLocation) location;
+			editRoomFeatureForm.setRoomLabel(nonUnivLocation.getName());
 		} else {
 			ActionMessages errors = new ActionMessages();
-			errors.add("editRoomGroup", 
-	                   new ActionMessage("errors.lookup.notFound", "Room Group") );
+			errors.add("editRoomGroup", new ActionMessage("errors.lookup.notFound", "Room Group") );
 			saveErrors(request, errors);
 		}
 		
-		//get features
-		ArrayList globalRoomFeatures = new ArrayList();
-		ArrayList deptRoomFeatures = new ArrayList();
+		sessionContext.checkPermission(location, Right.RoomEditFeatures);
 		
-		org.hibernate.Session hibSession = null;
-		try {
-			RoomFeatureDAO d = new RoomFeatureDAO();
-			hibSession = d.getSession();
-			
-			List list = hibSession
-						.createCriteria(GlobalRoomFeature.class)
-						.add(Restrictions.eq("session.uniqueId", sessionId))
-						.addOrder(Order.asc("label"))
-						.list();
-			
-			for (Iterator iter = list.iterator();iter.hasNext();) {
-				GlobalRoomFeature rf = (GlobalRoomFeature) iter.next();
-				globalRoomFeatures.add(rf);
-			}
-			
-			list = hibSession
-			.createQuery("select distinct f from DepartmentRoomFeature f where f.department.session=:sessionId order by label")
-			.setLong("sessionId", sessionId.longValue())
-			.list();
-				
-			for (Iterator i1 = list.iterator();i1.hasNext();) {
-				DepartmentRoomFeature rf = (DepartmentRoomFeature) i1.next();
-				if (rf.getDeptCode()==null) continue;
-				Department dept = Department.findByDeptCode(rf.getDeptCode(), sessionId);				
-				for (Iterator i2=location.getRoomDepts().iterator();i2.hasNext();) {
-					RoomDept rd = (RoomDept)i2.next();
-					if (dept.getUniqueId().equals(rd.getDepartment().getUniqueId())) {
-						deptRoomFeatures.add(rf); break;
-					}
-				}
-			}
-
-			
-		} catch (Exception e) {
-			Debug.error(e);
-		}
-		
-		for (Iterator iter = globalRoomFeatures.iterator(); iter.hasNext();) {
-			GlobalRoomFeature grf = (GlobalRoomFeature) iter.next();
+		boolean editGlobalFeatures = sessionContext.hasPermission(location, Right.RoomEditGlobalFeatures);
+		for (GlobalRoomFeature grf: RoomFeature.getAllGlobalRoomFeatures(location.getSession())) {
 			if (!editRoomFeatureForm.getGlobalRoomFeatureIds().contains(grf.getUniqueId().toString())) {
-				if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-					editRoomFeatureForm.addToGlobalRoomFeatures(grf,Boolean.TRUE, Boolean.valueOf(location.hasFeature(grf)));
-				} else {
-					editRoomFeatureForm.addToGlobalRoomFeatures(grf,Boolean.FALSE,Boolean.valueOf(location.hasFeature(grf)));
-				}
+				editRoomFeatureForm.addToGlobalRoomFeatures(grf, editGlobalFeatures, location.hasFeature(grf));
 			}
 		}
 		
-		for (Iterator iter = deptRoomFeatures.iterator();iter.hasNext();) {
-			DepartmentRoomFeature drf = (DepartmentRoomFeature) iter.next();
-			if (!editRoomFeatureForm.getDepartmentRoomFeatureIds().contains(drf.getUniqueId().toString())){
-				if (user.getRole().equals(Roles.ADMIN_ROLE) || (drf.getDeptCode() != null && owner.getDepartments().contains(Department.findByDeptCode(drf.getDeptCode(), sessionId)))) {
-					editRoomFeatureForm.addToDepartmentRoomFeatures(drf, Boolean.TRUE, Boolean.valueOf(location.hasFeature(drf)));
-				} else {
-					editRoomFeatureForm.addToDepartmentRoomFeatures(drf, Boolean.FALSE, Boolean.valueOf(location.hasFeature(drf)));
-				}
+		Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+		for (Department department: departments) {
+			for (DepartmentRoomFeature drf: RoomFeature.getAllDepartmentRoomFeatures(department)) {
+				editRoomFeatureForm.addToDepartmentRoomFeatures(drf, true, location.hasFeature(drf));
+			}
+		}
+		
+		for (Department department: Department.findAllExternal(location.getSession().getUniqueId())) {
+			if (departments.contains(department)) continue;
+			for (DepartmentRoomFeature drf: RoomFeature.getAllDepartmentRoomFeatures(department)) {
+				editRoomFeatureForm.addToDepartmentRoomFeatures(drf, false, location.hasFeature(drf));
 			}
 		}
 
@@ -214,103 +155,108 @@ public class EditRoomFeatureAction extends Action {
 			EditRoomFeatureForm editRoomFeatureForm, 
 			HttpServletRequest request) throws Exception {
 
-		//get location information
-		Long id = Long.valueOf(request.getParameter("id"));
-		LocationDAO ldao = new LocationDAO();
-		Location location = ldao.get(id);
-		RoomFeatureDAO rfdao = new RoomFeatureDAO();
-		Set rfs = new HashSet();
+		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
 		
-		//update room features
-		Session hibSession = ldao.getSession();
 		Transaction tx = null;
 		try{
 			tx = hibSession.beginTransaction();
 			
-		if (editRoomFeatureForm.getGlobalRoomFeaturesAssigned() != null) {
-			List globalSelected = editRoomFeatureForm.getGlobalRoomFeaturesAssigned();
-			List globalRf = editRoomFeatureForm.getGlobalRoomFeatureIds();
-	
-			if (globalSelected.size() == 0) {
-				for (Iterator iter = globalRf.iterator(); iter.hasNext();) {
-					String rfId = (String)iter.next();
-					RoomFeature rf = rfdao.get(Long.valueOf(rfId));
-					rf.getRooms().remove(location);
-					hibSession.saveOrUpdate(rf);
-				}
-			} else {	
-				int i = 0;
-				for (Iterator iter = globalRf.iterator(); iter.hasNext();){
-					String rfId = (String) iter.next();	
-					String selected = (String)globalSelected.get(i);
-					RoomFeature rf = rfdao.get(Long.valueOf(rfId));
-					if (selected==null) continue;
-					
-					if (selected.equalsIgnoreCase("on") || selected.equalsIgnoreCase("true")) {
-						rfs.add(rf);
-						if (!rf.hasLocation(location)) {
-							rf.getRooms().add(location);
-						}
-					} else {
-						if (rf.hasLocation(location)) {
-							rf.getRooms().remove(location);
-						}
-					}
-					hibSession.saveOrUpdate(rf);
-					i++;
-				}
-			}
-		}
-		
-		if (editRoomFeatureForm.getDepartmentRoomFeaturesAssigned() != null){
-			List managerSelected = editRoomFeatureForm.getDepartmentRoomFeaturesAssigned();
-			List managerRf = editRoomFeatureForm.getDepartmentRoomFeatureIds();
+			Location location = LocationDAO.getInstance().get(Long.valueOf(request.getParameter("id")), hibSession);
 			
-			if (managerSelected.size() == 0) {
-				for (Iterator iter = managerRf.iterator(); iter.hasNext();) {
-					String rfId = (String)iter.next();
-					RoomFeature rf = rfdao.get(Long.valueOf(rfId));
-					rf.getRooms().remove(location);
-					hibSession.saveOrUpdate(rf);
-				}
-			} else {	
-				int i = 0;
-				for (Iterator iter = managerRf.iterator(); iter.hasNext();){
-					String rfId = (String) iter.next();	
-					String selected = (String)managerSelected.get(i);
-					RoomFeature rf = rfdao.get(Long.valueOf(rfId));
-					if (selected==null) continue;
-					
-					if (selected.equalsIgnoreCase("on") || selected.equalsIgnoreCase("true")) {
-						rfs.add(rf);
-						if (!rf.hasLocation(location)) {
-							rf.getRooms().add(location);
-						}
-					} else {
-						if (rf.hasLocation(location)) {
-							rf.getRooms().remove(location);
-						}
+			sessionContext.checkPermission(location, Right.RoomEditFeatures);
+
+			boolean editGlobalFeatures = sessionContext.hasPermission(location, Right.RoomEditGlobalFeatures);
+			
+			if (editGlobalFeatures && editRoomFeatureForm.getGlobalRoomFeaturesAssigned() != null) {
+				List globalSelected = editRoomFeatureForm.getGlobalRoomFeaturesAssigned();
+				List globalRf = editRoomFeatureForm.getGlobalRoomFeatureIds();
+				if (globalSelected.size() == 0) {
+					for (Iterator iter = globalRf.iterator(); iter.hasNext();) {
+						String rfId = (String)iter.next();
+						RoomFeature rf = RoomFeatureDAO.getInstance().get(Long.valueOf(rfId), hibSession);
+						location.getFeatures().remove(rf);
+						rf.getRooms().remove(location);
+						hibSession.saveOrUpdate(rf);
 					}
-					hibSession.saveOrUpdate(rf);
-					i++;
+				} else {	
+					int i = 0;
+					for (Iterator iter = globalRf.iterator(); iter.hasNext();){
+						String rfId = (String) iter.next();	
+						String selected = (String)globalSelected.get(i);
+						RoomFeature rf = RoomFeatureDAO.getInstance().get(Long.valueOf(rfId), hibSession);
+						if (selected==null) continue;
+						
+						if (selected.equalsIgnoreCase("on") || selected.equalsIgnoreCase("true")) {
+							if (!rf.hasLocation(location)) {
+								location.getFeatures().add(rf);
+								rf.getRooms().add(location);
+							}
+						} else {
+							if (rf.hasLocation(location)) {
+								location.getFeatures().remove(rf);
+								rf.getRooms().remove(location);
+							}
+						}
+						hibSession.saveOrUpdate(rf);
+						i++;
+					}
 				}
 			}
-		}
-		
-		location.setFeatures(rfs);
-		hibSession.saveOrUpdate(location);
-        
-        ChangeLog.addChange(
-                hibSession, 
-                request, 
-                location, 
-                ChangeLog.Source.ROOM_FEATURE_EDIT, 
-                ChangeLog.Operation.UPDATE, 
-                null, 
-                location.getControllingDepartment());
-        
-		tx.commit();
-		hibSession.refresh(location);
+
+			Set<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+			if (!departments.isEmpty() && editRoomFeatureForm.getDepartmentRoomFeaturesAssigned() != null) {
+				
+				List managerSelected = editRoomFeatureForm.getDepartmentRoomFeaturesAssigned();
+				List managerRf = editRoomFeatureForm.getDepartmentRoomFeatureIds();
+				
+				if (managerSelected.size() == 0) {
+					for (Iterator iter = managerRf.iterator(); iter.hasNext();) {
+						String rfId = (String)iter.next();
+						DepartmentRoomFeature rf = DepartmentRoomFeatureDAO.getInstance().get(Long.valueOf(rfId), hibSession);
+						if (!departments.contains(rf.getDepartment())) continue;
+						rf.getRooms().remove(location);
+						hibSession.saveOrUpdate(rf);
+					}
+				} else {	
+					int i = 0;
+					for (Iterator iter = managerRf.iterator(); iter.hasNext();){
+						String rfId = (String) iter.next();	
+						String selected = (String)managerSelected.get(i);
+						if (selected==null) continue;
+
+						DepartmentRoomFeature rf = DepartmentRoomFeatureDAO.getInstance().get(Long.valueOf(rfId), hibSession);
+						if (!departments.contains(rf.getDepartment())) continue;
+						
+						if (selected.equalsIgnoreCase("on") || selected.equalsIgnoreCase("true")) {
+							if (!rf.hasLocation(location)) {
+								rf.getRooms().add(location);
+								location.getFeatures().add(rf);
+							}
+						} else {
+							if (rf.hasLocation(location)) {
+								rf.getRooms().remove(location);
+								location.getFeatures().remove(rf);
+							}
+						}
+						hibSession.saveOrUpdate(rf);
+						i++;
+					}
+				}
+			}
+			
+			hibSession.saveOrUpdate(location);
+	        
+	        ChangeLog.addChange(
+	                hibSession, 
+	                sessionContext, 
+	                location, 
+	                ChangeLog.Source.ROOM_FEATURE_EDIT, 
+	                ChangeLog.Operation.UPDATE, 
+	                null, 
+	                location.getControllingDepartment());
+	        
+			tx.commit();
+			hibSession.refresh(location);
 			
 		} catch (Exception e) {
 			Debug.error(e);

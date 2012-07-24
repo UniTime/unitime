@@ -40,6 +40,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.SpecialUseRoomForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.ChangeLog;
@@ -57,7 +58,6 @@ import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LocationPermIdGenerator;
 
 
@@ -128,8 +128,8 @@ public class AddSpecialUseRoomAction extends Action {
         if (departments.size() == 1) {
         	Department d = departments.iterator().next();
         	specialUseRoomForm.setDeptCode(d.getDeptCode());
-        } else if (sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null) {
-        	specialUseRoomForm.setDeptCode(sessionContext.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+        } else if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
+        	specialUseRoomForm.setDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 
 		return mapping.findForward("showAdd");

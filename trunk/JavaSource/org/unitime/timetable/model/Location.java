@@ -35,11 +35,13 @@ import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -99,14 +101,14 @@ public abstract class Location extends BaseLocation implements Comparable {
 	
 	/** Room sharing table with all fields editable (for administrator) */
 	public RequiredTimeTable getRoomSharingTable() {
-		return new RequiredTimeTable(getRoomSharingModel(null)); //all editable
+		return new RequiredTimeTable(new RoomSharingModel(this, null, null)); //all editable
 	}
 
 	/** Room sharing table with all fields editable (for administrator)
 	 * @param departments list of departments (or depatment ids)
 	 */
 	public RequiredTimeTable getRoomSharingTable(Collection departments) {
-		return new RequiredTimeTable(getRoomSharingModel(null, departments)); //all editable
+		return new RequiredTimeTable(new RoomSharingModel(this, null, departments)); //all editable
 	}
 	
 	/** Room sharing table editable by the given manager 
@@ -114,21 +116,21 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @param editingManager current timetabling manager (the one whose departments should be editable)
 	 * @param departments list of departments (or depatment ids)
 	 * */
-    public RequiredTimeTable getRoomSharingTable(Session session, User editingUser, Collection departments) {
-    	return new RequiredTimeTable(getRoomSharingModel(session, editingUser, departments));
+    public RequiredTimeTable getRoomSharingTable(UserContext editingUser, Collection departments) {
+    	return new RequiredTimeTable(getRoomSharingModel(editingUser, departments));
     }
     
 	/** Room sharing table editable by the given manager 
 	 * @param session current academic session
 	 * @param editingManager current timetabling manager (the one whose departments should be editable)
 	 * */
-    public RequiredTimeTable getRoomSharingTable(Session session, User editingUser) {
-    	return new RequiredTimeTable(getRoomSharingModel(session, editingUser, null));
+    public RequiredTimeTable getRoomSharingTable(UserContext editingUser) {
+    	return new RequiredTimeTable(getRoomSharingModel(editingUser, null));
     }
 
     /** Room sharing model with all fields editable (for administrator) */
     public RoomSharingModel getRoomSharingModel() {
-    	return getRoomSharingModel(null);
+    	return new RoomSharingModel(this, null, null);
     }
     
     /** Room sharing model editable by the given manager
@@ -136,37 +138,34 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @param editingManager current timetabling manager (the one whose departments should be editable)
 	 * @param departments list of departments (or depatment ids)
 	 * */
-    public RoomSharingModel getRoomSharingModel(Session session, User editingUser) {
-    	return getRoomSharingModel(session, editingUser, null);
+    public RoomSharingModel getRoomSharingModel(UserContext editingUser) {
+    	return getRoomSharingModel(editingUser, null);
     }
     
     /** Room sharing model editable by the given manager
 	 * @param session current academic session
 	 * @param editingManager current timetabling manager (the one whose departments should be editable)
 	 * */
-    public RoomSharingModel getRoomSharingModel(Session session, User editingUser, Collection departments) {
-    	TimetableManager editingManager = TimetableManager.getManager(editingUser);
-    	if (session==null || editingUser==null || editingManager==null || editingUser.isAdmin())
-    		return getRoomSharingModel(null,departments);
-    	Set editingDepartments = editingManager.departmentsForSession(session.getUniqueId());
+    public RoomSharingModel getRoomSharingModel(UserContext editingUser, Collection departments) {
+    	if (editingUser == null || editingUser.getCurrentAuthority() == null || editingUser.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+    		return new RoomSharingModel(this, null, departments);
+    	
+    	Set<Long> editingDepartments = new HashSet<Long>();
+    	for (Qualifiable dept: editingUser.getCurrentAuthority().getQualifiers("Department"))
+    		editingDepartments.add((Long)dept.getQualifierId());
+    	
     	//check whether one of the editing departments has control over the room
     	for (Iterator i=getRoomDepts().iterator();i.hasNext();) {
     		RoomDept rd = (RoomDept)i.next();
     		if (!rd.isControl().booleanValue()) continue;
-    		if (editingDepartments.contains(rd.getDepartment()))
-    			return getRoomSharingModel(null,departments);
+    		if (editingDepartments.contains(rd.getDepartment().getUniqueId()))
+    			return new RoomSharingModel(this, null, departments);
     	}
-    	HashSet editingDepartmentIds = new HashSet();
-    	if (editingDepartments!=null) {
-        	for (Iterator i=editingDepartments.iterator();i.hasNext();) {
-        		Department d = (Department)i.next();
-        		editingDepartmentIds.add(d.getUniqueId());
-        	}
-    	}
-    	return getRoomSharingModel(editingDepartmentIds, departments);
+    	
+    	return new RoomSharingModel(this, editingDepartments, departments);
     }
     
-    
+
     /** Room sharing model editable by the given manager
      * @param editingDepartmentIds editable departments (null if all)
      */
