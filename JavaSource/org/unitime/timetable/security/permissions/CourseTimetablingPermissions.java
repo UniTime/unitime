@@ -26,6 +26,8 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -35,39 +37,57 @@ import org.unitime.timetable.solver.service.AssignmentService;
 public class CourseTimetablingPermissions {
 	
 	@PermissionForRight(Right.CourseTimetabling)
-	public static class CourseTimetabling implements Permission<Department> {
+	public static class CourseTimetabling implements Permission<SolverGroup> {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
-		public boolean check(UserContext user, Department source) {
-			return source != null && source.getSolverGroup() != null &&
-				permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable) &&
-				(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || !user.getCurrentAuthority().getQualifiers("SolverGroup").isEmpty());
+		public boolean check(UserContext user, SolverGroup source) {
+			for (Department department: source.getDepartments())
+					if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable))
+						return false;
+			return true;
 		}
 
 		@Override
-		public Class<Department> type() { return Department.class; }
+		public Class<SolverGroup> type() { return SolverGroup.class; }
 		
 	}
 	
 	
 	@PermissionForRight(Right.CourseTimetablingAudit)
-	public static class CourseTimetablingAudit implements Permission<Department> {
+	public static class CourseTimetablingAudit extends CourseTimetabling {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
-		public boolean check(UserContext user, Department source) {
-			return source != null && source.getSolverGroup() != null &&
-				permissionDepartment.check(user, source, DepartmentStatusType.Status.Audit) &&
-				!permissionDepartment.check(user, source, DepartmentStatusType.Status.Timetable) &&
-				(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || !user.getCurrentAuthority().getQualifiers("SolverGroup").isEmpty());
+		public boolean check(UserContext user, SolverGroup source) {
+			if (super.check(user, source)) return false;
+			for (Department department: source.getDepartments())
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Audit, DepartmentStatusType.Status.Timetable))
+					return false;
+			return true;
 		}
-
-		@Override
-		public Class<Department> type() { return Department.class; }
 		
 	}
 	
+	public static class CourseTimetablingOrAudit extends CourseTimetabling {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, SolverGroup source) {
+			for (Department department: source.getDepartments())
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Audit, DepartmentStatusType.Status.Timetable))
+					return false;
+			return true;
+		}
+		
+	}
+	
+	@PermissionForRight(Right.Timetables)
+	public static class Timetables extends CourseTimetabling {}
+
+	@PermissionForRight(Right.Solver)
+	public static class Solver extends CourseTimetablingOrAudit {}
+
 	@PermissionForRight(Right.AssignedClasses)
 	public static class AssignedClasses extends CourseTimetabling {}
 	
@@ -81,7 +101,7 @@ public class CourseTimetablingPermissions {
 	public static class SolutionChanges extends CourseTimetabling {}
 
 	@PermissionForRight(Right.ConflictStatistics)
-	public static class ConflictStatistics extends CourseTimetabling {}
+	public static class ConflictStatistics extends CourseTimetablingOrAudit {}
 
 	@PermissionForRight(Right.ClassAssignments)
 	public static class ClassAssignments implements Permission<Session> {
@@ -110,11 +130,11 @@ public class CourseTimetablingPermissions {
 		
 	}
 	
-	@PermissionForRight(Right.ClassAssignmentsExportCSV)
-	public static class ClassAssignmentsExportCSV extends ClassAssignments {}
+	@PermissionForRight(Right.ClassAssignmentsExportCsv)
+	public static class ClassAssignmentsExportCsv extends ClassAssignments {}
 	
-	@PermissionForRight(Right.ClassAssignmentsExportPDF)
-	public static class ClassAssignmentsExportPDF extends ClassAssignments {}
+	@PermissionForRight(Right.ClassAssignmentsExportPdf)
+	public static class ClassAssignmentsExportPdf extends ClassAssignments {}
 
 	@PermissionForRight(Right.ClassAssignment)
 	public static class ClassAssignment implements Permission<Class_> {
@@ -155,6 +175,100 @@ public class CourseTimetablingPermissions {
 
 		@Override
 		public Class<Class_> type() { return Class_.class; }
+		
+	}
+	
+	@PermissionForRight(Right.TimetablesSolutionCommit)
+	public static class TimetablesSolutionCommit implements Permission<SolverGroup> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, SolverGroup source) {
+			for (Department department: source.getDepartments())
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Commit))
+					return false;
+			return true;
+		}
+
+		@Override
+		public Class<SolverGroup> type() { return SolverGroup.class;}
+	}
+	
+	@PermissionForRight(Right.TimetablesSolutionLoad)
+	public static class TimetablesSolutionLoad implements Permission<Solution> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Solution source) {
+			for (Department department: source.getOwner().getDepartments())
+				if (!permissionDepartment.check(user, department))
+					return false;
+			return true;
+		}
+
+		@Override
+		public Class<Solution> type() { return Solution.class;}
+	}
+	
+	@PermissionForRight(Right.TimetablesSolutionDelete)
+	public static class TimetablesSolutionDelete extends TimetablesSolutionLoad {}
+	
+	@PermissionForRight(Right.TimetablesSolutionLoadEmpty)
+	public static class TimetablesSolutionLoadEmpty implements Permission<SolverGroup> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, SolverGroup source) {
+			for (Department department: source.getDepartments())
+				if (!permissionDepartment.check(user, department))
+					return false;
+			return true;
+		}
+
+
+		@Override
+		public Class<SolverGroup> type() { return SolverGroup.class;}
+	}
+	
+	@PermissionForRight(Right.TimetablesSolutionChangeNote)
+	public static class TimetablesSolutionChangeNote extends TimetablesSolutionLoad {}
+
+	@PermissionForRight(Right.TimetablesSolutionExportCsv)
+	public static class TimetablesSolutionExportCsv extends TimetablesSolutionLoad {}
+	
+	@PermissionForRight(Right.SolverSolutionSave)
+	public static class SolverSolutionSave implements Permission<SolverGroup> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, SolverGroup source) {
+			for (Department department: source.getDepartments())
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable))
+					return false;
+			return true;
+		}
+
+		@Override
+		public Class<SolverGroup> type() { return SolverGroup.class;}
+	}
+	
+	@PermissionForRight(Right.SolverSolutionExportCsv)
+	public static class SolverSolutionExportCsv extends SolverSolutionSave {}
+
+	@PermissionForRight(Right.SolverSolutionExportXml)
+	public static class SolverSolutionExportXml extends SolverSolutionSave {}
+	
+	@PermissionForRight(Right.ManageSolvers)
+	public static class ManageSolvers implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
 		
 	}
 }

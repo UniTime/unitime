@@ -86,7 +86,7 @@ public class PdfClassListTableBuilder extends PdfInstructionalOfferingTableBuild
 			TreeSet classes = (TreeSet) form.getClasses();
 			if (isShowTimetable()) {
 				boolean hasTimetable = false;
-				if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+				if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
 	            	if (classAssignment instanceof CachedClassAssignmentProxy) {
 	            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
 	            	}

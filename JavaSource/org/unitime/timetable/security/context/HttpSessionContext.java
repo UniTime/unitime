@@ -64,17 +64,17 @@ public class HttpSessionContext implements SessionContext {
 	
 	@Override
 	public void removeAttribute(SessionAttribute attribute) {
-		removeAttribute(attribute.name());
+		removeAttribute(attribute.key());
 	}
 	
 	@Override
     public void setAttribute(SessionAttribute attribute, Object value) {
-		setAttribute(attribute.name(), value);
+		setAttribute(attribute.key(), value);
 	}
 	
 	@Override
     public Object getAttribute(SessionAttribute attribute) {
-    	Object value = getAttribute(attribute.name());
+    	Object value = getAttribute(attribute.key());
     	return (value != null ? value : attribute.defaultValue());
     }
 

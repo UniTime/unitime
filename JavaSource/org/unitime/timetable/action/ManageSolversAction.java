@@ -40,12 +40,11 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ManageSolversForm;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
@@ -53,6 +52,8 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
@@ -70,6 +71,8 @@ import org.unitime.timetable.util.Constants;
 public class ManageSolversAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
 	
+	@Autowired SessionContext sessionContext;
+	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
@@ -78,63 +81,60 @@ public class ManageSolversAction extends Action {
 		ManageSolversForm myForm = (ManageSolversForm) form;
 
         // Check Access.
-        if (!Web.isLoggedIn( request.getSession() )
-                || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-             throw new Exception ("Access Denied.");
-         }
+		sessionContext.checkPermission(Right.ManageSolvers);
 
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         if ("Select".equals(op) && request.getParameter("puid")!=null) {
         	String puid = request.getParameter("puid");
-        	request.getSession().setAttribute("ManageSolver.puid", puid);
-        	request.getSession().removeAttribute("SolverProxy");
+        	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
+        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
         	return mapping.findForward("showSolver");
         }
         
         if ("Unload".equals(op) && request.getParameter("puid")!=null) {
         	String puid = request.getParameter("puid");
-        	request.getSession().setAttribute("ManageSolver.puid", puid);
-        	request.getSession().removeAttribute("SolverProxy");
+        	sessionContext.setAttribute(SessionAttribute.CourseTimetablingUser, puid);
+        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
         	courseTimetablingSolverService.removeSolver();
         }
 
         if ("Select".equals(op) && request.getParameter("examPuid")!=null) {
             String puid = request.getParameter("examPuid");
-            request.getSession().setAttribute("ManageSolver.examPuid", puid);
-            request.getSession().removeAttribute("ExamSolverProxy");
+            sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
+            sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
             return mapping.findForward("showExamSolver");
         }
 
         if ("Unload".equals(op) && request.getParameter("examPuid")!=null) {
             String puid = request.getParameter("examPuid");
-            request.getSession().setAttribute("ManageSolver.examPuid", puid);
-            request.getSession().removeAttribute("ExamSolverProxy");
+            sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
+            sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
             examinationSolverService.removeSolver();
         }
 
         if ("Select".equals(op) && request.getParameter("sectionPuid")!=null) {
             String puid = request.getParameter("sectionPuid");
-            request.getSession().setAttribute("ManageSolver.sectionPuid", puid);
-            request.getSession().removeAttribute("StudentSolverProxy");
+            sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
+            sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
             return mapping.findForward("showStudentSolver");
         }
 
         if ("Unload".equals(op) && request.getParameter("sectionPuid")!=null) {
             String puid = request.getParameter("sectionPuid");
-            request.getSession().setAttribute("ManageSolver.sectionPuid", puid);
-            request.getSession().removeAttribute("StudentSolverProxy");
+            sessionContext.setAttribute(SessionAttribute.StudentSectioningUser, puid);
+            sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
             studentSectioningSolverService.removeSolver();
         }
         
         if ("Deselect".equals(op)) {
-        	request.getSession().removeAttribute("ManageSolver.puid");
-        	request.getSession().removeAttribute("SolverProxy");
-            request.getSession().removeAttribute("ManageSolver.examPuid");
-            request.getSession().removeAttribute("ExamSolverProxy");
-            request.getSession().removeAttribute("ManageSolver.sectionPuid");
-            request.getSession().removeAttribute("StudentSolverProxy");
+        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingUser);
+        	sessionContext.removeAttribute(SessionAttribute.CourseTimetablingSolver);
+            sessionContext.removeAttribute(SessionAttribute.ExaminationUser);
+            sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
+            sessionContext.removeAttribute(SessionAttribute.StudentSectioningUser);
+            sessionContext.removeAttribute(SessionAttribute.StudentSectioningSolver);
         }
         
         if ("Shutdown".equals(op)) {
@@ -226,12 +226,8 @@ public class ManageSolversAction extends Action {
 	}
 	
 	public static String getName(String puid) {
-	    return getName(TimetableManager.findByExternalId(puid));
-	}
-
-	public static String getName(TimetableManager mgr) {
-		if (mgr==null) return null;
-	    return mgr.getShortName();
+		TimetableManager mgr = TimetableManager.findByExternalId(puid);
+	    return (mgr == null ? puid : mgr.getShortName());
 	}
 
 	public static String getName(SolverGroup sg) {
@@ -241,7 +237,7 @@ public class ManageSolversAction extends Action {
 
 	private void getSolvers(HttpServletRequest request) throws Exception {
 		try {
-			WebTable.setOrder(request.getSession(),"manageSolvers.ord",request.getParameter("ord"),1);
+			WebTable.setOrder(sessionContext,"manageSolvers.ord",request.getParameter("ord"),1);
 			
 			WebTable webTable = new WebTable( 19,
 					"Manage Course Solvers", "manageSolvers.do?ord=%%",
@@ -251,7 +247,7 @@ public class ManageSolversAction extends Action {
 			webTable.setRowStyle("white-space:nowrap");
 			
 			int nrLines = 0;
-			Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+			Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 			
             SolverProxy x = courseTimetablingSolverService.getSolverNoSessionCheck();
             String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
@@ -388,7 +384,7 @@ public class ManageSolversAction extends Action {
 			}
 			if (nrLines==0)
 				webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-			request.setAttribute("ManageSolvers.table",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord")));
+			request.setAttribute("ManageSolvers.table",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord")));
 			
 	    } catch (Exception e) {
 	        throw new Exception(e);
@@ -397,7 +393,7 @@ public class ManageSolversAction extends Action {
 
 	private void getServers(HttpServletRequest request) throws Exception {
 		try {
-			WebTable.setOrder(request.getSession(),"manageSolvers.ord2",request.getParameter("ord2"),1);
+			WebTable.setOrder(sessionContext,"manageSolvers.ord2",request.getParameter("ord2"),1);
 			
 			WebTable webTable = new WebTable( 11,
 					"Available Servers", "manageSolvers.do?ord2=%%",
@@ -576,7 +572,7 @@ public class ManageSolversAction extends Action {
 			if (nrLines==0)
 				webTable.addLine(null, new String[] {"<i>No solver server is running.</i>"}, null, null );
 
-			request.setAttribute("ManageSolvers.table2",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord2")));
+			request.setAttribute("ManageSolvers.table2",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord2")));
 			
 	    } catch (Exception e) {
 	        throw new Exception(e);
@@ -585,7 +581,7 @@ public class ManageSolversAction extends Action {
 	
 	   private void getExamSolvers(HttpServletRequest request) throws Exception {
 	        try {
-	            WebTable.setOrder(request.getSession(),"manageSolvers.ord3",request.getParameter("ord3"),1);
+	            WebTable.setOrder(sessionContext,"manageSolvers.ord3",request.getParameter("ord3"),1);
 	            
 	            WebTable webTable = new WebTable( 20,
 	                    "Manage Examination Solvers", "manageSolvers.do?ord3=%%",
@@ -595,7 +591,7 @@ public class ManageSolversAction extends Action {
 	            webTable.setRowStyle("white-space:nowrap");
 	            
 	            int nrLines = 0;
-	            Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+	            Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 	            
 	            ExamSolverProxy x = examinationSolverService.getSolver();
 	            String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
@@ -702,7 +698,7 @@ public class ManageSolversAction extends Action {
 	            }
 	            if (nrLines==0)
 	                webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-	            request.setAttribute("ManageSolvers.xtable",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord3")));
+	            request.setAttribute("ManageSolvers.xtable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord3")));
 	            
 	        } catch (Exception e) {
 	            throw new Exception(e);
@@ -711,7 +707,7 @@ public class ManageSolversAction extends Action {
 
        private void getStudentSolvers(HttpServletRequest request) throws Exception {
            try {
-               WebTable.setOrder(request.getSession(),"manageSolvers.ord4",request.getParameter("ord4"),1);
+               WebTable.setOrder(sessionContext,"manageSolvers.ord4",request.getParameter("ord4"),1);
                
                WebTable webTable = new WebTable( 13,
                        "Manage Student Sectioning Solvers", "manageSolvers.do?ord4=%%",
@@ -721,7 +717,7 @@ public class ManageSolversAction extends Action {
                webTable.setRowStyle("white-space:nowrap");
                
                int nrLines = 0;
-               Long currentSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+               Long currentSessionId = sessionContext.getUser().getCurrentAcademicSessionId();
                
                StudentSolverProxy x = studentSectioningSolverService.getSolver();
                String xId = (x==null?null:x.getProperties().getProperty("General.OwnerPuid"));
@@ -800,7 +796,7 @@ public class ManageSolversAction extends Action {
                }
                if (nrLines==0)
                    webTable.addLine(null, new String[] {"<i>No solver is running.</i>"}, null, null );
-               request.setAttribute("ManageSolvers.stable",webTable.printTable(WebTable.getOrder(request.getSession(),"manageSolvers.ord4")));
+               request.setAttribute("ManageSolvers.stable",webTable.printTable(WebTable.getOrder(sessionContext,"manageSolvers.ord4")));
                
            } catch (Exception e) {
                throw new Exception(e);

@@ -100,7 +100,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-	    	sessionContext.checkPermission(null, "Department", Right.InstructionalOfferings);
+	    	sessionContext.checkPermission(Right.InstructionalOfferings);
 	        
 	        // Check that a valid subject area is selected
 		    InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;

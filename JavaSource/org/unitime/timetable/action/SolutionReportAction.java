@@ -42,7 +42,6 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionReportForm;
@@ -50,6 +49,9 @@ import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.service.SolverService;
@@ -82,18 +84,17 @@ public class SolutionReportAction extends Action {
 	private static java.text.DecimalFormat sDoubleFormat = new java.text.DecimalFormat("0.00",new java.text.DecimalFormatSymbols(Locale.US));
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolutionReportForm myForm = (SolutionReportForm) form;
 		
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.SolutionReports);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-		Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+		Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 		BitSet sessionDays = session.getDefaultDatePattern().getPatternBitSet();
 		int startDayDayOfWeek = Constants.getDayOfWeek(session.getDefaultDatePattern().getStartDate());
 		
@@ -107,33 +108,33 @@ public class SolutionReportAction extends Action {
                     if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                         WebTable t = getRoomReportTable(request, roomReport, false, type.getUniqueId());
                         if (t!=null)
-                            request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
+                            request.setAttribute("SolutionReport.roomReportTable."+type.getReference(), t.printTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord")));
                     }
                 }
                 RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     WebTable t = getRoomReportTable(request, roomReport, false, null);
                     if (t!=null)
-                        request.setAttribute("SolutionReport.roomReportTable.nonUniv", t.printTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord")));
+                        request.setAttribute("SolutionReport.roomReportTable.nonUniv", t.printTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord")));
                 }
         		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
         		if (deptBalancingReport!=null && !deptBalancingReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.deptBalancingReportTable", getDeptBalancingReportTable(request, deptBalancingReport, false).printTable(WebTable.getOrder(request.getSession(),"solutionReports.deptBalancingReport.ord")));
+        			request.setAttribute("SolutionReport.deptBalancingReportTable", getDeptBalancingReportTable(request, deptBalancingReport, false).printTable(WebTable.getOrder(sessionContext,"solutionReports.deptBalancingReport.ord")));
         		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
         		if (violatedDistrPreferencesReport!=null && !violatedDistrPreferencesReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.violatedDistrPreferencesReportTable", getViolatedDistrPreferencesReportTable(request, violatedDistrPreferencesReport, false).printTable(WebTable.getOrder(request.getSession(),"solutionReports.violDistPrefReport.ord")));
+        			request.setAttribute("SolutionReport.violatedDistrPreferencesReportTable", getViolatedDistrPreferencesReportTable(request, violatedDistrPreferencesReport, false).printTable(WebTable.getOrder(sessionContext,"solutionReports.violDistPrefReport.ord")));
         		DiscouragedInstructorBtbReport discouragedInstructorBtbReportReport = solver.getDiscouragedInstructorBtbReport();
         		if (discouragedInstructorBtbReportReport!=null && !discouragedInstructorBtbReportReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.discouragedInstructorBtbReportReportTable", getDiscouragedInstructorBtbReportReportTable(request, discouragedInstructorBtbReportReport, false).printTable(WebTable.getOrder(request.getSession(),"solutionReports.violInstBtb.ord")));
+        			request.setAttribute("SolutionReport.discouragedInstructorBtbReportReportTable", getDiscouragedInstructorBtbReportReportTable(request, discouragedInstructorBtbReportReport, false).printTable(WebTable.getOrder(sessionContext,"solutionReports.violInstBtb.ord")));
         		StudentConflictsReport studentConflictsReport = solver.getStudentConflictsReport();
         		if (studentConflictsReport!=null && !studentConflictsReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.studentConflictsReportTable", getStudentConflictsReportTable(request, studentConflictsReport, false).printTable(WebTable.getOrder(request.getSession(),"solutionReports.studConf.ord")));
+        			request.setAttribute("SolutionReport.studentConflictsReportTable", getStudentConflictsReportTable(request, studentConflictsReport, false).printTable(WebTable.getOrder(sessionContext,"solutionReports.studConf.ord")));
         		SameSubpartBalancingReport sameSubpartBalancingReport = solver.getSameSubpartBalancingReport();
         		if (sameSubpartBalancingReport!=null && !sameSubpartBalancingReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.sameSubpartBalancingReportTable", getSameSubpartBalancingReportTable(request, sameSubpartBalancingReport, false).printTable(PdfWebTable.getOrder(request.getSession(),"solutionReports.sectBalancingReport.ord")));
+        			request.setAttribute("SolutionReport.sameSubpartBalancingReportTable", getSameSubpartBalancingReportTable(request, sameSubpartBalancingReport, false).printTable(PdfWebTable.getOrder(sessionContext,"solutionReports.sectBalancingReport.ord")));
         		PerturbationReport perturbationReport = solver.getPerturbationReport();
         		if (perturbationReport!=null && !perturbationReport.getGroups().isEmpty())
-        			request.setAttribute("SolutionReport.perturbationReportTable", getPerturbationReportTable(request, perturbationReport, false).printTable(WebTable.getOrder(request.getSession(),"solutionReports.pert.ord")));
+        			request.setAttribute("SolutionReport.perturbationReportTable", getPerturbationReportTable(request, perturbationReport, false).printTable(WebTable.getOrder(sessionContext,"solutionReports.pert.ord")));
         	} catch (Exception e) {
         		e.printStackTrace();
         	}
@@ -157,7 +158,7 @@ public class SolutionReportAction extends Action {
                     if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
                     if (table==null) continue;
-                    PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord"));
+                    PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord"));
                     if (!atLeastOneRoomReport) {
                         doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
                         doc.newPage();
@@ -170,7 +171,7 @@ public class SolutionReportAction extends Action {
                 if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
                     PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
                     if (table!=null) {
-                        PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.roomReport.ord"));
+                        PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord"));
                         if (!atLeastOneRoomReport) {
                             doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
                             doc.newPage();
@@ -213,7 +214,7 @@ public class SolutionReportAction extends Action {
         		DiscouragedInstructorBtbReport discouragedInstructorBtbReportReport = solver.getDiscouragedInstructorBtbReport();
         		if (discouragedInstructorBtbReportReport!=null && !discouragedInstructorBtbReportReport.getGroups().isEmpty()) {
         			PdfWebTable table = getDiscouragedInstructorBtbReportReportTable(request, discouragedInstructorBtbReportReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.violInstBtb.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violInstBtb.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -223,7 +224,7 @@ public class SolutionReportAction extends Action {
         		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
         		if (violatedDistrPreferencesReport!=null && !violatedDistrPreferencesReport.getGroups().isEmpty()) {
         			PdfWebTable table = getViolatedDistrPreferencesReportTable(request, violatedDistrPreferencesReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.violDistPrefReport.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violDistPrefReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -233,7 +234,7 @@ public class SolutionReportAction extends Action {
         		StudentConflictsReport studentConflictsReport = solver.getStudentConflictsReport();
         		if (studentConflictsReport!=null && !studentConflictsReport.getGroups().isEmpty()) {
         			PdfWebTable table = getStudentConflictsReportTable(request, studentConflictsReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.studConf.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.studConf.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -243,7 +244,7 @@ public class SolutionReportAction extends Action {
         		SameSubpartBalancingReport sameSubpartBalancingReport = solver.getSameSubpartBalancingReport();
         		if (sameSubpartBalancingReport!=null && !sameSubpartBalancingReport.getGroups().isEmpty()) {
         			PdfWebTable table = getSameSubpartBalancingReportTable(request, sameSubpartBalancingReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.sectBalancingReport.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.sectBalancingReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -253,7 +254,7 @@ public class SolutionReportAction extends Action {
         		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
         		if (deptBalancingReport!=null && !deptBalancingReport.getGroups().isEmpty()) {
         			PdfWebTable table = getDeptBalancingReportTable(request, deptBalancingReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.deptBalancingReport.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.deptBalancingReport.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -263,7 +264,7 @@ public class SolutionReportAction extends Action {
         		PerturbationReport perturbationReport = solver.getPerturbationReport();
         		if (perturbationReport!=null && !perturbationReport.getGroups().isEmpty()) {
         			PdfWebTable table = getPerturbationReportTable(request, perturbationReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"solutionReports.pert.ord"));
+        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.pert.ord"));
         			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
         			doc.newPage();
         			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
@@ -341,7 +342,7 @@ public class SolutionReportAction extends Action {
 	}
 	
 	public PdfWebTable getRoomReportTable(HttpServletRequest request, RoomReport report, boolean noHtml, Long type) {
-		WebTable.setOrder(request.getSession(),"solutionReports.roomReport.ord",request.getParameter("room_ord"),-1);
+		WebTable.setOrder(sessionContext,"solutionReports.roomReport.ord",request.getParameter("room_ord"),-1);
 		String name = "Room Allocation - "+(type==null?"Non University Locations":RoomTypeDAO.getInstance().get(type).getLabel());
         PdfWebTable webTable = new PdfWebTable( 9,
    	        	name, "solutionReport.do?room_ord=%%",
@@ -416,7 +417,7 @@ public class SolutionReportAction extends Action {
 	}
 	
 	public PdfWebTable getDeptBalancingReportTable(HttpServletRequest request, DeptBalancingReport deptBalancingReport, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.deptBalancingReport.ord",request.getParameter("dept_ord"),1);
+		WebTable.setOrder(sessionContext,"solutionReports.deptBalancingReport.ord",request.getParameter("dept_ord"),1);
 		String[] header = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
 		String[] pos = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
 		header[0]="Department";
@@ -491,7 +492,7 @@ public class SolutionReportAction extends Action {
 	}
 
 	public PdfWebTable getViolatedDistrPreferencesReportTable(HttpServletRequest request, ViolatedDistrPreferencesReport report, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.violDistPrefReport.ord",request.getParameter("vdist_ord"),1);
+		WebTable.setOrder(sessionContext,"solutionReports.violDistPrefReport.ord",request.getParameter("vdist_ord"),1);
 		PdfWebTable webTable = new PdfWebTable( 5,
    	        	"Violated Distribution Preferences", "solutionReport.do?vdist_ord=%%",
    				new String[] {"Type", "Preference", "Class", "Time", "Room"},
@@ -552,7 +553,7 @@ public class SolutionReportAction extends Action {
 	}
 
 	public PdfWebTable getDiscouragedInstructorBtbReportReportTable(HttpServletRequest request, DiscouragedInstructorBtbReport report, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.violInstBtb.ord",request.getParameter("vinbtb_ord"),1);
+		WebTable.setOrder(sessionContext,"solutionReports.violInstBtb.ord",request.getParameter("vinbtb_ord"),1);
 		PdfWebTable webTable = new PdfWebTable( 6,
    	        	"Instructor Back-to-Back Preferences", "solutionReport.do?vinbtb_ord=%%",
    				new String[] {"Instructor", "Preference", "Distance", "Class", "Time", "Room"},
@@ -599,7 +600,7 @@ public class SolutionReportAction extends Action {
 	}
 
 	public PdfWebTable getStudentConflictsReportTable(HttpServletRequest request, StudentConflictsReport report, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.studConf.ord",request.getParameter("studconf_ord"),-1);
+		WebTable.setOrder(sessionContext,"solutionReports.studConf.ord",request.getParameter("studconf_ord"),-1);
 		boolean hasImportant = false;
 		for (JenrlInfo g: (Set<JenrlInfo>)report.getGroups()) {
 			if (g.isImportant()) { hasImportant = true; break; }
@@ -753,7 +754,7 @@ public class SolutionReportAction extends Action {
 	}
 	
 	public PdfWebTable getSameSubpartBalancingReportTable(HttpServletRequest request, SameSubpartBalancingReport report, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.sectBalancingReport.ord",request.getParameter("sect_ord"),1);
+		WebTable.setOrder(sessionContext,"solutionReports.sectBalancingReport.ord",request.getParameter("sect_ord"),1);
 		String[] header = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
 		String[] pos = new String[2+Constants.SLOTS_PER_DAY_NO_EVENINGS/6];
 		header[0]="Department";
@@ -834,7 +835,7 @@ public class SolutionReportAction extends Action {
 	}
 	
 	public PdfWebTable getPerturbationReportTable(HttpServletRequest request, PerturbationReport report, boolean noHtml) {
-		WebTable.setOrder(request.getSession(),"solutionReports.pert.ord",request.getParameter("pert_ord"),1);
+		WebTable.setOrder(sessionContext,"solutionReports.pert.ord",request.getParameter("pert_ord"),1);
 		PdfWebTable webTable = new PdfWebTable( 24,
    	        	"Perturbations", "solutionReport.do?pert_ord=%%",
    				new String[] {"Class", "Time", "Room", "Dist", "St", "StT", "StR", "StB", "Ins", "InsT", "InsR", "InsB", "Rm", "Bld", "Tm", "Day", "Hr", "TFSt", "TFIns", "DStC", "NStC", "DTPr", "DRPr", "DInsB"},
