@@ -174,14 +174,6 @@ public class RollForwardSessionAction extends Action {
 				saveErrors(request, ((RollForwardQueueItem)item).getErrors());
 				line.setBgColor("rgb(168,187,225)");
 			}
-			if (log == null && item.started() != null && item.finished() == null && sessionContext.getUser().getExternalUserId().equals(item.getOwnerId())) {
-				request.setAttribute("logname", name);
-				request.setAttribute("logid", item.getId().toString());
-				request.setAttribute("log", item.log());
-				((RollForwardQueueItem)item).getForm().copyTo(form);
-				saveErrors(request, ((RollForwardQueueItem)item).getErrors());
-				line.setBgColor("rgb(168,187,225)");
-			}
 		}
 		return table;
 	}
