@@ -22,43 +22,32 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.RoomGroupDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
@@ -105,12 +94,8 @@ public class RoomGroupListAction extends Action {
 		HttpServletResponse response) throws Exception {
 		RoomGroupListForm roomGroupListForm = (RoomGroupListForm) form;
 		
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
+		sessionContext.checkPermission(Right.RoomGroups);
 		
-		User user = Web.getUser(webSession);
 		ActionMessages errors = new ActionMessages();
 		
 		//get deptCode from request - for user with only one department
@@ -118,18 +103,16 @@ public class RoomGroupListAction extends Action {
 		if (deptCode != null) {
 			roomGroupListForm.setDeptCodeX(deptCode);
 		}
-
-		if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null
-				&& (roomGroupListForm.getDeptCodeX() == null)) {
-			roomGroupListForm.setDeptCodeX(webSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+		
+		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null && roomGroupListForm.getDeptCodeX() == null) {
+			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+			if ("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))
+				roomGroupListForm.setDeptCodeX((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 
 		// Set Session Variable
-		if (!roomGroupListForm.getDeptCodeX().equalsIgnoreCase("")) {
-			webSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME,
-					roomGroupListForm.getDeptCodeX());
-		}
+		if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty())
+			sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, roomGroupListForm.getDeptCodeX());
 
 		// Validate input
 		errors = roomGroupListForm.validate(mapping, request);
@@ -139,120 +122,26 @@ public class RoomGroupListAction extends Action {
 			saveErrors(request, errors);
 			return mapping.findForward("showRoomGroupSearch");
 		}
-		
+
 		buildGroupTable(request, roomGroupListForm);
 		
 		//set request attribute for department
-		Session session = Session.getCurrentAcadSession(user);
-		Long sessionId = session.getSessionId();
 		LookupTables.setupDepartments(request, sessionContext, true);
 		
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || (user.getRole().equals(Roles.EXAM_MGR_ROLE)
-		        && session.getStatusType().canExamTimetable()))
-			roomGroupListForm.setCanAdd(true);
-		else if (Constants.ALL_OPTION_VALUE.equals(roomGroupListForm.getDeptCodeX())) {
-			roomGroupListForm.setCanAdd(false);
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManager owner = (new TimetableManagerDAO()).get(new Long(mgrId));
-	        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
-	        	Department d = (Department)i.next();
-	        	if (d.isEditableBy(user)) {
-	        		roomGroupListForm.setCanAdd(true);
-	        		break;
-	        	}
-	        }
-		} else {
-			roomGroupListForm.setCanAdd(false);
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManager owner = (new TimetableManagerDAO()).get(new Long(mgrId));
-	        for (Iterator i=owner.departmentsForSession(sessionId).iterator();i.hasNext();) {
-	        	Department d = (Department)i.next();
-	        	if (d.getDeptCode().equals(roomGroupListForm.getDeptCodeX()) && d.isEditableBy(user)) {
-	        		roomGroupListForm.setCanAdd(true);
-	        		break;
-	        	}
-	        }
-		}
-		
 		if ("Export PDF".equals(request.getParameter("op"))) {
-			buildPdfGroupTable(request, roomGroupListForm);
+			sessionContext.checkPermission(Right.RoomGroupsExportPdf);
+			File file = buildPdfGroupTable(sessionContext, roomGroupListForm);
+			if (file != null && file.exists())
+				request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
 		}
 
 		return mapping.findForward("showRoomGroupList");
 	}
 
-	private void buildGroupTable(
-			HttpServletRequest request, 
-			RoomGroupListForm roomGroupListForm) throws Exception{
+	private void buildGroupTable(HttpServletRequest request, RoomGroupListForm roomGroupListForm) throws Exception{
 
-		HttpSession webSession = request.getSession();
-		
-		ArrayList globalRoomGroups = new ArrayList();
-		Set departmentRoomGroups = new HashSet();
-		
-		User user = Web.getUser(webSession);
-		Session session = org.unitime.timetable.model.Session.getCurrentAcadSession(user);
-		Long sessionId = session.getSessionId();
-
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || 
-		    (user.getRole().equals(Roles.EXAM_MGR_ROLE) && session.getStatusType().canExamTimetable());
-		boolean showAll = false;
-		Set depts = null;
-		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-			if (isAdmin) {
-				showAll = true;
-				depts = Department.findAll(sessionId);
-			} else {
-				depts = Department.findAllOwned(sessionId, manager, false);
-			}
-		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-		    depts = new HashSet(0);
-        } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-            depts = new HashSet(0);
-		} else {
-			depts = new HashSet(1);
-			depts.add(Department.findByDeptCode(roomGroupListForm.getDeptCodeX(),sessionId));
-		}
-           		
-		org.hibernate.Session hibSession = null;
-		try {
-			RoomGroupDAO d = new RoomGroupDAO();
-			hibSession = d.getSession();
-			
-			List list = hibSession
-						.createCriteria(RoomGroup.class)
-						.addOrder(Order.asc("name"))
-						.list();
-			
-			for (Iterator iter = list.iterator();iter.hasNext();) {
-				RoomGroup rg = (RoomGroup) iter.next();
-				if (rg.isGlobal()!=null && rg.isGlobal().booleanValue()) {
-					if (session.equals(rg.getSession()))
-						globalRoomGroups.add(rg);
-				} else {
-					if (rg.getDepartment()==null) continue;
-					if (!rg.getDepartment().getSessionId().equals(sessionId)) continue;
-					if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-						if (depts.contains(rg.getDepartment()) || isAdmin) {
-							departmentRoomGroups.add(rg);
-						}
-                    } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
-						departmentRoomGroups.add(rg);
-					}					
-				}
-			}
-
-		} catch (Exception e) {
-			Debug.error(e);
-		}
-
-        WebTable.setOrder(request.getSession(),"roomGroupList.gord",request.getParameter("gord"),1);
-        WebTable.setOrder(request.getSession(),"roomGroupList.mord",request.getParameter("mord"),1);
+        WebTable.setOrder(sessionContext,"roomGroupList.gord",request.getParameter("gord"),1);
+        WebTable.setOrder(sessionContext,"roomGroupList.mord",request.getParameter("mord"),1);
         
 		WebTable globalWebTable = new WebTable(5, "Global Room Groups", "roomGroupList.do?gord=%%", new String[] {
 				"Name", "Abbreviation", "Default", "Rooms", "Description" },
@@ -264,13 +153,21 @@ public class RoomGroupListAction extends Action {
 				new String[] { "left", "left", "left", "left", "left" }, 
 				new boolean[] { true, true, true, true, true} );
 
+		
+		Set<Department> depts = Department.getUserDepartments(sessionContext.getUser());
         int examType = -1;
-        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-        if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
+        Department department = null;
+        if ("Exam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
+        else if ("EExam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+        else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
+        	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
+        boolean deptCheck = examType < 0 && !sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+        if (department != null) {
+        	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
+        }
 
-        boolean haveGlobalRoomGroup = false;
-		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
-			RoomGroup rg = (RoomGroup) it.next();
+		boolean haveGlobalRoomGroup = false;
+		for (RoomGroup rg: RoomGroup.getAllGlobalRoomGroups(sessionContext.getUser().getCurrentAcademicSessionId())) {
 			Collection rs = new TreeSet(rg.getRooms());
 
 			StringBuffer assignedRoom = new StringBuffer();
@@ -278,37 +175,31 @@ public class RoomGroupListAction extends Action {
 			boolean haveRooms = false;
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-				if (examType>=0) {
-				    if (!r.isExamEnabled(examType)) continue;
-				} else {
-	                if (!showAll) {
-	                    boolean skip = true;
-	                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-	                        RoomDept rd = (RoomDept)j.next();
-	                        if (depts.contains(rd.getDepartment())) { skip=false; break; }
-	                        
-	                    }
-	                    if (skip) continue;
-	                }
+				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+				if (deptCheck) {
+					boolean skip = true;
+					for (RoomDept rd: r.getRoomDepts())
+						if (depts.contains(rd.getDepartment())) { skip = false; break; }
+					if (skip) continue;
 				}
-				if (assignedRoom.length() > 0) 
-					assignedRoom.append(", ");
+				if (assignedRoom.length() > 0) assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
 				haveRooms = true;
 			}
-
-			if (!isAdmin && !haveRooms) continue;
+			
+			boolean editable = sessionContext.hasPermission(rg, Right.GlobalRoomGroupEdit);
+			
+			if (!haveRooms && !editable) continue;
 			
 			globalWebTable.addLine(
-					(isAdmin?"onClick=\"document.location='roomGroupEdit.do?doit=editRoomGroup&id="+rg.getUniqueId()+ "';\"":null), 
+					(editable?"onClick=\"document.location='roomGroupEdit.do?doit=editRoomGroup&id="+rg.getUniqueId()+ "';\"":null), 
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
-							(isAdmin?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
-                            (isAdmin?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(isAdmin?"":"</font>"),
+							(editable?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
+                            (editable?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
 							(rg.isDefaultGroup().booleanValue()?"<IMG border='0' title='This group is default group.' alt='Default' align='absmiddle' src='images/tick.gif'>":""),
-							(isAdmin?"":"<font color=gray>")+assignedRoom+(isAdmin?"":"</font>"), 
-							(isAdmin?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isAdmin?"":"</font>") }, 
+							(editable?"":"<font color=gray>")+assignedRoom+(editable?"":"</font>"), 
+							(editable?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(editable?"":"</font>") }, 
 					new Comparable[] {
 							rg.getName(),
                             rg.getAbbv(),
@@ -320,50 +211,49 @@ public class RoomGroupListAction extends Action {
 			haveGlobalRoomGroup = true;
 		}
 		
-		for (Iterator it = departmentRoomGroups.iterator(); it.hasNext();) {
-			RoomGroup rg = (RoomGroup) it.next();
-			Collection rs = new TreeSet(rg.getRooms());
+		Set<RoomGroup> departmentRoomGroups = new TreeSet<RoomGroup>();
+		for (Department d: Department.getUserDepartments(sessionContext.getUser())) {
+			if ("All".equals(roomGroupListForm.getDeptCodeX()) || d.getDeptCode().equals(roomGroupListForm.getDeptCodeX()))
+				departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(d));
+		}
+		if (department != null && department.isExternalManager()) {
+			departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(department));
+		}
+		
+		for (RoomGroup rg: departmentRoomGroups) {
+			boolean editable = sessionContext.hasPermission(rg, Right.DepartmenalRoomGroupEdit);
 			
-			Department rgOwningDept = rg.getDepartment();
+			String ownerName = "<span title='"+rg.getDepartment().getHtmlTitle()+"'>" + rg.getDepartment().getShortLabel() + "</span>";
 
-			//boolean isOwner = isAdmin || rgOwningDept.equals(manager);
-			boolean isOwner = isAdmin || manager.getDepartments().contains(rgOwningDept);
-			boolean isEditable = rgOwningDept.isEditableBy(user);
-			String ownerName = "<i>Not defined</i>";
-			if (rgOwningDept != null) {
-				ownerName = "<span title='"+rgOwningDept.getHtmlTitle()+"'>"+
-				rgOwningDept.getShortLabel()+
-				"</span>";
-			}
+			Collection rs = new TreeSet(rg.getRooms());
 
 			StringBuffer assignedRoom = new StringBuffer();
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-                boolean skip = true;
                 if (examType>=0) {
                     if (!r.isExamEnabled(examType)) continue;
                 } else {
+                    boolean skip = true;
                     for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
                         RoomDept rd = (RoomDept)j.next();
                         if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
                     }
+                    if (skip) continue;
                 }
-                if (skip) continue;
-				if (assignedRoom.length() > 0) 
-					assignedRoom.append(", ");
+				if (assignedRoom.length() > 0) assignedRoom.append(", ");
 				assignedRoom.append(r.getLabel().replaceAll(" ","&nbsp;"));
 			}
 
 			departmentWebTable.addLine(
-					(isEditable?"onClick=\"document.location='roomGroupEdit.do?doit=editRoomGroup&id="+rg.getUniqueId()+ "';\"":null), 
+					(editable?"onClick=\"document.location='roomGroupEdit.do?doit=editRoomGroup&id="+rg.getUniqueId()+ "';\"":null), 
 					new String[] {
 							"<A name=\"A"+rg.getUniqueId()+"\"></A>"+
-							(isOwner?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
-                            (isOwner?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(isOwner?"":"</font>"),
-							(isOwner?"":"<font color=gray>")+ownerName+(isOwner?"":"</font>"),
-							(isOwner?"":"<font color=gray>")+assignedRoom+(isOwner?"":"</font>"), 
-							(isOwner?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(isOwner?"":"</font>") }, 
+							(editable?"":"<font color=gray>")+rg.getName().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
+                            (editable?"":"<font color=gray>")+rg.getAbbv().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
+							(editable?"":"<font color=gray>")+ownerName+(editable?"":"</font>"),
+							(editable?"":"<font color=gray>")+assignedRoom+(editable?"":"</font>"), 
+							(editable?"":"<font color=gray>")+(rg.getDescription() == null ? "" : rg.getDescription()).replaceAll(" ","&nbsp;").replaceAll("\\\n","<BR>")+(editable?"":"</font>") }, 
 					new Comparable[] {
 							rg.getName(),
                             rg.getAbbv(),
@@ -374,86 +264,22 @@ public class RoomGroupListAction extends Action {
 			}
 		
 		if (haveGlobalRoomGroup)
-			request.setAttribute("roomGroupsGlobal", globalWebTable.printTable(WebTable.getOrder(request.getSession(),"roomGroupList.gord")));
+			request.setAttribute("roomGroupsGlobal", globalWebTable.printTable(WebTable.getOrder(sessionContext,"roomGroupList.gord")));
 		else
 			request.removeAttribute("roomGroupsGlobal");
 		if (!departmentRoomGroups.isEmpty())
-			request.setAttribute("roomGroupsDepartment", departmentWebTable.printTable(WebTable.getOrder(request.getSession(),"roomGroupList.mord")));
+			request.setAttribute("roomGroupsDepartment", departmentWebTable.printTable(WebTable.getOrder(sessionContext,"roomGroupList.mord")));
 		else
 			request.removeAttribute("roomGroupsDepartment");
 	}
 
-	public static void buildPdfGroupTable(HttpServletRequest request, RoomGroupListForm roomGroupListForm) throws Exception{
+	public static File buildPdfGroupTable(SessionContext context, RoomGroupListForm roomGroupListForm) throws Exception{
     	FileOutputStream out = null;
     	try {
     		File file = ApplicationProperties.getTempFile("room_groups", "pdf");
     		
     		out = new FileOutputStream(file);
-
-    		HttpSession webSession = request.getSession();
     		
-    		ArrayList globalRoomGroups = new ArrayList();
-    		Set departmentRoomGroups = new HashSet();
-    		
-    		User user = Web.getUser(webSession);
-    		Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getSessionId();
-
-    		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-    		TimetableManagerDAO tdao = new TimetableManagerDAO();
-            TimetableManager manager = tdao.get(new Long(mgrId));
-    		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-    		boolean showAll = false;
-    		Set depts = null;
-    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-    			if (isAdmin) {
-    				showAll = true;
-    				depts = Department.findAll(sessionId);
-    			} else {
-    				depts = Department.findAllOwned(sessionId, manager, false);
-    			}
-            } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) {
-                depts = new HashSet(0);
-    		} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) {
-    		    depts = new HashSet(0);
-    		} else {
-    			depts = new HashSet(1);
-    			depts.add(Department.findByDeptCode(roomGroupListForm.getDeptCodeX(),sessionId));
-    		}
-               		
-    		org.hibernate.Session hibSession = null;
-    		boolean splitRows = false;
-    		try {
-    			RoomGroupDAO d = new RoomGroupDAO();
-    			hibSession = d.getSession();
-    			
-    			List list = hibSession
-    						.createCriteria(RoomGroup.class)
-    						.addOrder(Order.asc("name"))
-    						.list();
-    			
-    			for (Iterator iter = list.iterator();iter.hasNext();) {
-    				RoomGroup rg = (RoomGroup) iter.next();
-    				if (rg.isGlobal()!=null && rg.isGlobal().booleanValue()) {
-    					globalRoomGroups.add(rg);
-    				} else {
-    					if (rg.getDepartment()==null) continue;
-    					if (!rg.getDepartment().getSessionId().equals(sessionId)) continue;
-    					if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-    						if (depts.contains(rg.getDepartment()) || isAdmin) {
-    							departmentRoomGroups.add(rg);
-    						}
-                        } else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-    					} else if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-    					} else if (rg.getDepartment().getDeptCode().equalsIgnoreCase(roomGroupListForm.getDeptCodeX())) {
-    						departmentRoomGroups.add(rg);
-    					}					
-    				}
-    			}
-
-    		} catch (Exception e) {
-    			Debug.error(e);
-    		}
-            
     		PdfWebTable globalWebTable = new PdfWebTable(5, "Global Room Groups", null, new String[] {
     				"Name", "Abbreviation", "Default ", "Rooms", "Description" },
     				new String[] { "left", "left", "middle", "left", "left" }, 
@@ -464,37 +290,39 @@ public class RoomGroupListAction extends Action {
     				new String[] { "left", "left", "left", "left", "left" }, 
     				new boolean[] { true, true, true, true, true} );
     		
-    		int examType = -1;
-    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("exam")) examType = Exam.sExamTypeFinal;
-    		if (roomGroupListForm.getDeptCodeX().equalsIgnoreCase("eexam")) examType = Exam.sExamTypeMidterm;
+    		Set<Department> depts = Department.getUserDepartments(context.getUser());
+            int examType = -1;
+            Department department = null;
+            if ("Exam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
+            if ("EExam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+            else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
+            	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), context.getUser().getCurrentAcademicSessionId());
+            boolean deptCheck = examType < 0 && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+            if (department != null) {
+            	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
+            }
 
+            boolean splitRows = false;
+            
     		boolean haveGlobalRoomGroup = false;
-    		for (Iterator it = globalRoomGroups.iterator(); it.hasNext();) {
-    			RoomGroup rg = (RoomGroup) it.next();
+    		for (RoomGroup rg: RoomGroup.getAllGlobalRoomGroups(context.getUser().getCurrentAcademicSessionId())) {
     			Collection rs = new TreeSet(rg.getRooms());
 
     			StringBuffer assignedRoom = new StringBuffer();
+    			int nrRows = 0;
     			
     			boolean haveRooms = false;
-    			int nrRows = 0;
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-    				if (!sessionId.equals(r.getSession().getUniqueId())) continue;
-    				if (examType>=0) {
-    				    if (!r.isExamEnabled(examType)) continue;
-    				} else {
-                        if (!showAll) {
-                            boolean skip = true;
-                            for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                                RoomDept rd = (RoomDept)j.next();
-                                if (depts.contains(rd.getDepartment())) { skip=false; break; }
-                                
-                            }
-                            if (skip) continue;
-                        }
+    				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+    				if (deptCheck) {
+    					boolean skip = true;
+    					for (RoomDept rd: r.getRoomDepts())
+    						if (depts.contains(rd.getDepartment())) { skip = false; break; }
+    					if (skip) continue;
     				}
-    				if (assignedRoom.length() > 0) assignedRoom.append(", ");
-    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>500) {
+    				if (assignedRoom.length()>0) assignedRoom.append(", ");
+    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750) {
     					assignedRoom.append("\n");
     					nrRows++;
     				}
@@ -502,10 +330,9 @@ public class RoomGroupListAction extends Action {
     				haveRooms = true;
     			}
     			
-    			if (nrRows>40)
-    				splitRows = true;
-
-    			if (!isAdmin && !haveRooms) continue;
+    			if (nrRows>40) splitRows=true;
+    			
+    			if (!haveRooms && !context.hasPermission(rg, Right.GlobalRoomGroupEdit)) continue;
     			
     			globalWebTable.addLine(
     					null, 
@@ -526,25 +353,29 @@ public class RoomGroupListAction extends Action {
     			haveGlobalRoomGroup = true;
     		}
 
-    		for (Iterator it = departmentRoomGroups.iterator(); it.hasNext();) {
-    			RoomGroup rg = (RoomGroup) it.next();
+    		Set<RoomGroup> departmentRoomGroups = new TreeSet<RoomGroup>();
+    		for (Department d: Department.getUserDepartments(context.getUser())) {
+    			if ("All".equals(roomGroupListForm.getDeptCodeX()) || d.getDeptCode().equals(roomGroupListForm.getDeptCodeX()))
+    				departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(d));
+    		}
+    		if (department != null && department.isExternalManager()) {
+    			departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(department));
+    		}
+
+    		for (RoomGroup rg: departmentRoomGroups) {
+    			String ownerName = rg.getDepartment().getShortLabel();
+
     			Collection rs = new TreeSet(rg.getRooms());
-    			
-    			Department rgOwningDept = rg.getDepartment();
 
-    			String ownerName = "@@ITALIC Not defined";
-    			if (rgOwningDept != null) {
-    				ownerName = rgOwningDept.getShortLabel();
-    			}
-
+    			// get rooms
     			StringBuffer assignedRoom = new StringBuffer();
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-                    boolean skip = true;
                     if (examType>=0) {
                         if (!r.isExamEnabled(examType)) continue;
                     } else {
+                        boolean skip = true;
                         for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
                             RoomDept rd = (RoomDept)j.next();
                             if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
@@ -552,11 +383,11 @@ public class RoomGroupListAction extends Action {
                         if (skip) continue;
                     }
     				if (assignedRoom.length() > 0) assignedRoom.append(", ");
-    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>500)
+    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750)
     					assignedRoom.append("\n");
     				assignedRoom.append(r.getLabel());
     			}
-
+    			
     			departmentWebTable.addLine(
     					null, 
     					new String[] {
@@ -578,7 +409,7 @@ public class RoomGroupListAction extends Action {
     		
     		if (haveGlobalRoomGroup) {
 				PdfWebTable table = globalWebTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"roomGroupList.gord"));
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.gord"));
     			pdfTable.setSplitRows(splitRows);
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
@@ -592,7 +423,7 @@ public class RoomGroupListAction extends Action {
     		
     		if (!departmentRoomGroups.isEmpty()) {
 				PdfWebTable table = departmentWebTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(request.getSession(),"roomGroupList.mord"));
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.mord"));
     			if (doc==null) {
     				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
     				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
@@ -606,19 +437,17 @@ public class RoomGroupListAction extends Action {
     			doc.add(pdfTable);
     		}
     		
-    		if (doc==null) return;
+    		if (doc==null) return null;
     		
     		doc.close();
-
-    		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-    	} catch (Exception e) {
-    		e.printStackTrace();
+    		
+    		return file;
     	} finally {
     		try {
     			if (out!=null) out.close();
     		} catch (IOException e) {}
     	}
-   	}
+	}
 	
 }
 

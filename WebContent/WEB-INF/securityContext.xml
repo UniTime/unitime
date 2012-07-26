@@ -62,6 +62,7 @@
 		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
 	</beans:bean>
 
+	<!-- 
 	<beans:bean id="org.springframework.security.authenticationManager" class="org.springframework.security.authentication.ProviderManager">
 		<beans:property name="providers">
 			<beans:list>
@@ -69,6 +70,7 @@
 			</beans:list>
 		</beans:property>
 	</beans:bean>
+	-->
  	
 	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication -->

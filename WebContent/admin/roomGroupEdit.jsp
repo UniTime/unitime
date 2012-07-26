@@ -29,12 +29,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
-	boolean flag = true;
-	if(Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE})) 
-		flag = false;
-		
 	// Get Form 
 	String frmName = "roomGroupEditForm";	
 	RoomGroupEditForm frm = (RoomGroupEditForm) request.getAttribute(frmName);
@@ -43,6 +40,8 @@
 <tiles:importAttribute />
 <html:form action="/roomGroupEdit" focus="name">
 	<html:hidden property="id"/>
+	<html:hidden property="sessionId"/>
+	<html:hidden property="deptCode" />
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -59,11 +58,24 @@
 							title="Update Room Group (Alt+U)">
 							<bean:message key="button.update" />
 						</html:submit>
-						&nbsp;
-						<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
-								title="Deletes Room Group (Alt+D)">
-							<bean:message key="button.delete" />
-						</html:submit>
+						<logic:equal name="roomGroupEditForm" property="global" value="true">
+							<sec:authorize access="hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'GlobalRoomGroupDelete')">
+								&nbsp;
+								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+										title="Deletes Room Group (Alt+D)">
+									<bean:message key="button.delete" />
+								</html:submit>
+							</sec:authorize>
+						</logic:equal>
+						<logic:notEqual name="roomGroupEditForm" property="global" value="true">
+							<sec:authorize access="hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'DepartmenalRoomGroupDelete')">
+								&nbsp;
+								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+										title="Deletes Room Group (Alt+D)">
+									<bean:message key="button.delete" />
+								</html:submit>
+							</sec:authorize>
+						</logic:notEqual>
 					</logic:notEmpty>
 					&nbsp;
 					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="B" 
@@ -112,15 +124,26 @@
 				<html:hidden property="global"/>
 			</TD>
 		</TR>
-			
-		<% if (!flag) {%>		
-		<TR>
-			<TD>Default:</TD>
-			<TD>
-				<html:checkbox property="deft" disabled="<%=flag || !frm.isGlobal()%>"/>
-			</TD>
-		</TR>
-		<%}%>
+		
+		<logic:equal name="<%=frmName%>" property="global" value="true">
+			<sec:authorize access="hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'GlobalRoomGroupEditSetDefault')">
+				<TR>
+					<TD>Default:</TD>
+					<TD>
+						<html:checkbox property="deft"/>
+					</TD>
+				</TR>
+			</sec:authorize>
+			<sec:authorize access="!hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'GlobalRoomGroupEditSetDefault')">
+				<TR>
+					<TD>Default:</TD>
+					<TD>
+						<html:checkbox property="deft" disabled="true"/>
+						<html:hidden property="deft"/>
+					</TD>
+				</TR>
+			</sec:authorize>
+		</logic:equal>
 			
 		<TR>
 			<TD>Description:</TD>
@@ -132,9 +155,16 @@
 		<logic:equal name="<%=frmName%>" property="global" value="false">
 			<TR>
 				<TD>Department:</TD>
-				<TD><%=frm.getDeptName(frm.getDeptCode(), request)%><html:hidden property="deptCode" />
-				</TD>
+				<TD><bean:write name="<%=frmName%>" property="deptName" /></TD>
 			</TR>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="global" value="true">
+			<logic:notEmpty name="<%=frmName%>" property="deptName">
+				<TR>
+					<TD>Rooms:</TD>
+					<TD><bean:write name="<%=frmName%>" property="deptName" /></TD>
+				</TR>
+			</logic:notEmpty>
 		</logic:equal>
 		
 		<logic:notEmpty name="<%=frmName%>" property="assignedRooms">
@@ -307,11 +337,24 @@
 						title="Update Room Group (Alt+U)">
 						<bean:message key="button.update" />
 					</html:submit>
-					&nbsp;
-					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
-							title="Deletes Room Group (Alt+D)">
-						<bean:message key="button.delete" />
-					</html:submit>
+					<logic:equal name="roomGroupEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'GlobalRoomGroupDelete')">
+							&nbsp;
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Deletes Room Group (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:equal>
+					<logic:notEqual name="roomGroupEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomGroupEditForm.id, 'RoomGroup', 'DepartmenalRoomGroupDelete')">
+							&nbsp;
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Deletes Room Group (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:notEqual>
 				</logic:notEmpty>
 				&nbsp;
 				<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="B" 

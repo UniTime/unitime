@@ -44,10 +44,10 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.restlet.resource.ClientResource;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
@@ -73,7 +73,7 @@ public class Registration extends BodyTagSupport {
 	private static long sLastRefresh = -1;
 	
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 	
 	private synchronized void init() {

@@ -21,6 +21,7 @@ package org.unitime.timetable.security.context;
 
 import java.io.Serializable;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -156,5 +158,9 @@ public class HttpSessionContext implements SessionContext {
 		} catch (AccessDeniedException e) {
 			return false;
 		}
+	}
+	
+	public static SessionContext getSessionContext(ServletContext context) {
+		return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(context).getBean("sessionContext");
 	}
 }

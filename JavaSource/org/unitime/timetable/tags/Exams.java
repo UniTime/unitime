@@ -28,7 +28,6 @@ import java.util.TreeSet;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
@@ -51,6 +50,7 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -73,7 +73,7 @@ public class Exams extends BodyTagSupport {
     }
     
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 
     public void setType(String type) {

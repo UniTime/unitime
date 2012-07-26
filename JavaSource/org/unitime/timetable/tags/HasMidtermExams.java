@@ -21,9 +21,9 @@ package org.unitime.timetable.tags;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 
 
 /**
@@ -33,7 +33,7 @@ public class HasMidtermExams extends TagSupport {
 	private static final long serialVersionUID = 7288871888129560846L;
 
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 
     public boolean includeContent() {

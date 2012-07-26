@@ -28,12 +28,8 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
-	boolean flag = true;
-		if(Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE})) 
-			flag = false;
-			
 	// Get Form 
 	String frmName = "roomFeatureEditForm";		
 	RoomFeatureEditForm frm = (RoomFeatureEditForm) request.getAttribute(frmName);
@@ -42,6 +38,8 @@
 <tiles:importAttribute />
 <html:form action="/roomFeatureEdit" focus="name">
 	<html:hidden property="id"/>
+	<html:hidden property="sessionId"/>
+	<html:hidden property="deptCode"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -58,13 +56,26 @@
 							title="Update Room Feature (Alt+U)">
 						<bean:message key="button.update" />
 					</html:submit>
-					&nbsp;	
-					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
-							title="Delete Room Feature (Alt+D)">
-						<bean:message key="button.delete" />
-					</html:submit>
-					&nbsp;
+					<logic:equal name="roomFeatureEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'GlobalRoomFeature', 'GlobalRoomFeatureDelete')">
+							&nbsp;	
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Delete Room Feature (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:equal>
+					<logic:notEqual name="roomFeatureEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentalRoomFeature', 'DepartmenalRoomFeatureDelete')">
+							&nbsp;	
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Delete Room Feature (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:notEqual>
 				</logic:notEmpty>
+				&nbsp;
 				<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" 
 					title="Back to Room Features (Alt+B)">
 					<bean:message key="button.returnToRoomFeatureList"/>
@@ -115,9 +126,16 @@
 		<logic:equal name="<%=frmName%>" property="global" value="false">
 			<TR>
 				<TD>Department:</TD>
-				<TD><%=frm.getDeptName(frm.getDeptCode(), request)%><html:hidden property="deptCode" />
-				</TD>
+				<TD><bean:write name="<%=frmName%>" property="deptName" /></TD>
 			</TR>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="global" value="true">
+			<logic:notEmpty name="<%=frmName%>" property="deptName">
+				<TR>
+					<TD>Rooms:</TD>
+					<TD><bean:write name="<%=frmName%>" property="deptName" /></TD>
+				</TR>
+			</logic:notEmpty>
 		</logic:equal>
 		
 		<logic:notEmpty name="<%=frmName%>" property="assignedRooms">
@@ -262,12 +280,26 @@
 						<bean:message key="button.update" />
 					</html:submit>
 					&nbsp;	
-					<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
-							title="Delete Room Feature (Alt+D)">
-						<bean:message key="button.delete" />
-					</html:submit>
-					&nbsp;
+					<logic:equal name="roomFeatureEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'GlobalRoomFeature', 'GlobalRoomFeatureDelete')">
+							&nbsp;	
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Delete Room Feature (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:equal>
+					<logic:notEqual name="roomFeatureEditForm" property="global" value="true">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentalRoomFeature', 'DepartmenalRoomFeatureDelete')">
+							&nbsp;	
+							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
+									title="Delete Room Feature (Alt+D)">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>
+					</logic:notEqual>
 				</logic:notEmpty>
+				&nbsp;
 				<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" 
 					title="Back to Room Features (Alt+B)">
 					<bean:message key="button.returnToRoomFeatureList"/>

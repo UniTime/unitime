@@ -21,32 +21,25 @@ package org.unitime.timetable.action;
 
 import java.util.Comparator;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.RoomDeptListForm;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -59,6 +52,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/roomDeptList")
 public class RoomDeptListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -78,11 +73,8 @@ public class RoomDeptListAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		RoomDeptListForm roomDeptListForm = (RoomDeptListForm) form;
-		HttpSession webSession = request.getSession();
 		
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
+		sessionContext.checkPermission(Right.RoomDepartments);
 		
 		buildDeptTable(request, roomDeptListForm);
 		return mapping.findForward("showRoomDeptList");
@@ -95,10 +87,7 @@ public class RoomDeptListAction extends Action {
 	 * @throws Exception
 	 */
 	private void buildDeptTable(HttpServletRequest request, RoomDeptListForm roomDeptListForm) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		
-		WebTable.setOrder(request.getSession(),"roomDeptList.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"roomDeptList.ord",request.getParameter("ord"),1);
 		
 		WebTable webTable = new WebTable(5, "Room Departments", "roomDeptList.do?ord=%%", new String[] {
 				"Dept", "Department Abbreviation", "Room", "Capacity", "Room Availability &amp; Sharing"},
@@ -106,7 +95,7 @@ public class RoomDeptListAction extends Action {
 		webTable.setRowStyle("white-space:nowrap");
 		
 		//get depts owned by user
-		Set depts = getDepts(user);
+		Set<Department> depts = Department.getUserDepartments(sessionContext.getUser());
 		
 		for (Iterator iter = depts.iterator(); iter.hasNext(); ) {
 			Department d = (Department)iter.next();
@@ -199,35 +188,8 @@ public class RoomDeptListAction extends Action {
 							null, null, null}
 						);					
 			}
-			request.setAttribute("roomDepts", webTable.printTable(WebTable.getOrder(request.getSession(),"roomDeptList.ord")));
+			request.setAttribute("roomDepts", webTable.printTable(WebTable.getOrder(sessionContext,"roomDeptList.ord")));
 		}
-	}
-
-	/**
-	 * 
-	 * @param user
-	 * @return
-	 */
-	private Set getDepts(User user) throws Exception {
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));
-		
-		Set depts = new TreeSet();
-		if (isAdmin) {
-			List list = tdao.getSession().createCriteria(Department.class).add(Restrictions.eq("sessionId", sessionId)).list();
-			if (list!=null)
-				depts.addAll(list);
-		} else {
-			Set departments = manager.departmentsForSession(sessionId);
-			if (departments!=null)
-				depts.addAll(departments);
-		}
-		
-		return depts;
 	}
 	
 }

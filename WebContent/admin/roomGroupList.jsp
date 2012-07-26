@@ -22,6 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
@@ -40,16 +41,7 @@
 				</tt:section-title>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
-					<logic:equal name="roomGroupListForm" property="deptSize" value="false">
-						<TD>
-							<html:form action="roomGroupList" styleClass="FormWithNoPadding">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-					<logic:equal name="roomGroupListForm" property="canAdd" value="true">
+					<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomGroupAdd') or hasPermission(#roomGroupListForm.deptCodeX, 'Department', 'DepartmentRoomGroupAdd')">
 						<TD nowrap>
 							<html:form action="roomGroupAdd" styleClass="FormWithNoPadding">			
 								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="G" title="Add New Room Group">
@@ -57,16 +49,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
-					<%--
-					<TD nowrap>
-						<html:form action="roomList">
-							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" title="Return to Room List">
-								<bean:message key="button.returnToRoomList" />
-							</html:submit>
-						</html:form>
-					</TD>
-					--%>
+					</sec:authorize>
 				</TR>
 			</TABLE>
 			</tt:section-header>
@@ -139,16 +122,7 @@
 		<TD align="right" colspan='5'>
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR>
-					<logic:equal name="roomGroupListForm" property="deptSize" value="false">
-						<TD nowrap>
-							<html:form action="roomGroupList">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-					<logic:equal name="roomGroupListForm" property="canAdd" value="true">
+					<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomGroupAdd') or hasPermission(#roomGroupListForm.deptCodeX, 'Department', 'DepartmentRoomGroupAdd')">
 						<TD nowrap>
 							<html:form action="roomGroupAdd">			
 								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="G" title="Add New Room Group">
@@ -156,16 +130,7 @@
 								</html:submit>
 							</html:form>
 						</TD>
-					</logic:equal>
-					<%--
-					<TD nowrap>
-						<html:form action="roomList">
-							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" title="Return to Room List">
-								<bean:message key="button.returnToRoomList" />
-							</html:submit>
-						</html:form>
-					</TD>
-					--%>
+					</sec:authorize>
 				</TR>
 			</TABLE>
 		</TD>	

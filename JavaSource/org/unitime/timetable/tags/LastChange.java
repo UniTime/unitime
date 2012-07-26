@@ -27,7 +27,6 @@ import java.util.List;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.defaults.CommonValues;
@@ -49,6 +48,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 
 
 /**
@@ -98,7 +98,7 @@ public class LastChange extends BodyTagSupport {
     }
     
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 
     private int printLastChangeTableRow(WebTable webTable, ChangeLog lastChange) {

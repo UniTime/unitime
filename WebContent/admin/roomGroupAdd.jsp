@@ -27,12 +27,9 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
-	boolean flag = true;
-		if(Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE})) 
-			flag = false;
-			
 	// Get Form 
 	String frmName = "roomGroupEditForm";		
 	RoomGroupEditForm frm = (RoomGroupEditForm) request.getAttribute(frmName);
@@ -41,6 +38,7 @@
 <tiles:importAttribute />
 <html:form action="/roomGroupAdd" focus="name">
 	<html:hidden property="id"/>
+	<html:hidden property="sessionId"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -89,32 +87,47 @@
 			</TD>
 		</TR>
 
-		<TR>
-			<TD>Global:</TD>
-			<TD>
-				<html:checkbox property="global" disabled="true"/>
-				<html:hidden property="global" />
-			</TD>
-		</TR>
-		
-		<logic:equal name="<%=frmName%>" property="global" value="false">
+		<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomGroupAdd') and hasPermission(null, 'Department', 'DepartmentRoomGroupAdd')">
 			<TR>
+				<TD>Global:</TD>
+				<TD>
+					<html:checkbox property="global" onclick="document.getElementById('department').style.display = (this.checked ? 'none' : 'table-row');"/>
+				</TD>
+			</TR>
+			<TR id="department" <%=(frm.isGlobal() ? "style='display:none;'" : "")%>>
 				<TD>Department:</TD>
 				<TD>
-				<% if (frm.getDeptSize() == 1) {%>
-					<%=frm.getDeptName(frm.getDeptCode(), request)%>
-					<html:hidden property="deptCode" />
-				<% } else { %>
 					<html:select property="deptCode">
 						<logic:empty name="<%=frmName%>" property="deptCode">
 							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						</logic:empty>
 						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
 					</html:select>
-				<%}%>
 				</TD>
 			</TR>
-		</logic:equal>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(null, 'Session', 'GlobalRoomGroupAdd') or !hasPermission(null, 'Department', 'DepartmentRoomGroupAdd')">
+			<TR>
+				<TD>Global:</TD>
+				<TD>
+					<html:checkbox property="global" disabled="true"/>
+					<html:hidden property="global" />
+				</TD>
+			</TR>
+			<logic:equal name="<%=frmName%>" property="global" value="false">
+				<TR>
+					<TD>Department:</TD>
+					<TD>
+						<html:select property="deptCode">
+							<logic:empty name="<%=frmName%>" property="deptCode">
+								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+							</logic:empty>
+							<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
+						</html:select>
+					</TD>
+				</TR>
+			</logic:equal>
+		</sec:authorize>
 		
 		<TR>
 			<TD>Description:</TD>

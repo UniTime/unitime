@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
@@ -36,6 +35,7 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 
 
@@ -47,7 +47,7 @@ public class OfferingLocks extends TagSupport {
 	private static final long serialVersionUID = 7947787141769725429L;
 	
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 
 	public String getOfferingLocksWarning(SessionContext context, Session session) {

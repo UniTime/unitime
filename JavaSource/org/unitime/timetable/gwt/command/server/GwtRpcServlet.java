@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -52,8 +53,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 	private static Map<Long, Execution> sExecutions = new Hashtable<Long, Execution>();
 	
 	protected SessionContext getSessionContext() {
-		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-		return (SessionContext)applicationContext.getBean("sessionContext");
+		return HttpSessionContext.getSessionContext(getServletContext());
 	}
 	
 	protected PermissionCheck getPermissionCheck() {
