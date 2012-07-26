@@ -24,15 +24,18 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Room;
+import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -178,6 +181,7 @@ public enum Right {
 	RoomEdit(Location.class),
 	RoomEditChangeControll(Location.class),
 	RoomAvailability(Session.class),
+	RoomDepartments(Department.class),
 	EditRoomDepartments(Department.class),
 	EditRoomDepartmentsFinalExams(Session.class),
 	EditRoomDepartmentsMidtermExams(Session.class),
@@ -190,6 +194,24 @@ public enum Right {
 	RoomEditGlobalGroups(Location.class),
 	RoomEditFeatures(Location.class),
 	RoomEditGlobalFeatures(Location.class),
+	RoomFeatures(Department.class),
+	RoomFeaturesExportPdf(Department.class),
+	GlobalRoomFeatureAdd(Session.class),
+	DepartmentRoomFeatureAdd(Department.class),
+	DepartmenalRoomFeatureEdit(DepartmentRoomFeature.class),
+	GlobalRoomFeatureEdit(GlobalRoomFeature.class),
+	DepartmenalRoomFeatureDelete(DepartmentRoomFeature.class),
+	GlobalRoomFeatureDelete(GlobalRoomFeature.class),
+	RoomGroups(Department.class),
+	RoomGroupsExportPdf(Department.class),
+	GlobalRoomGroupAdd(Session.class),
+	DepartmentRoomGroupAdd(Department.class),
+	DepartmenalRoomGroupEdit(RoomGroup.class),
+	GlobalRoomGroupEdit(RoomGroup.class),
+	GlobalRoomGroupEditSetDefault(RoomGroup.class),
+	DepartmenalRoomGroupDelete(RoomGroup.class),
+	GlobalRoomGroupDelete(RoomGroup.class),
+
     
     CanUseHardTimePrefs(PreferenceGroup.class),
     CanUseHardRoomPrefs(PreferenceGroup.class),

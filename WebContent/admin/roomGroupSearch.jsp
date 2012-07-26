@@ -25,6 +25,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <%
 	// Get Form 
 	String frmName = "roomGroupListForm";	
@@ -34,7 +35,6 @@
 <tiles:importAttribute />
 <html:form action="roomGroupList">
 	<TABLE border="0" cellspacing="0" cellpadding="3">
-		<% if (frm.isDeptSize()) {%>
 		<TR>
 			<TD>
 				<B>Department: </B>
@@ -61,11 +61,12 @@
 			<TD align="right">			
 				&nbsp;&nbsp;&nbsp;
 				<html:submit property="op" value="Search" onclick="displayLoading();" accesskey="S" styleClass="btn"/>
-				&nbsp;&nbsp;
-				<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" styleClass="btn"/>
+				<sec:authorize access="hasPermission(null, 'Department', 'RoomGroupsExportPdf')">
+					&nbsp;&nbsp;
+					<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" styleClass="btn"/>
+				</sec:authorize>
 			</TD>
 		</TR>
-		<%}%>
 		
 		<TR>
 			<TD colspan="2" valign="top" align="center">

@@ -21,16 +21,17 @@ package org.unitime.timetable.action;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -40,23 +41,26 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 
@@ -73,6 +77,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/roomGroupEdit")
 public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -108,8 +114,6 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletResponse response) throws HibernateException, Exception {	
 
 		RoomGroupEditForm roomGroupEditForm = (RoomGroupEditForm) form;
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);		
 			
 		//get roomGroup from request
 		Long id =  new Long(Long.parseLong(request.getParameter("id")));	
@@ -117,20 +121,41 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		RoomGroupDAO rdao = new RoomGroupDAO();
 		RoomGroup rg = rdao.get(id);
 		
+		sessionContext.checkPermission(rg, rg.isGlobal() ? Right.GlobalRoomGroupEdit : Right.DepartmenalRoomGroupEdit);
+		
+		roomGroupEditForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+		
 		//get depts owned by user
-		if (roomGroupEditForm.getName()==null || roomGroupEditForm.getName().length()==0)
+		if (roomGroupEditForm.getName()==null || roomGroupEditForm.getName().isEmpty())
 			roomGroupEditForm.setName(rg.getName());
-        if (roomGroupEditForm.getAbbv()==null || roomGroupEditForm.getAbbv().length()==0)
+        if (roomGroupEditForm.getAbbv()==null || roomGroupEditForm.getAbbv().isEmpty())
             roomGroupEditForm.setAbbv(rg.getAbbv());
 		roomGroupEditForm.setGlobal(rg.isGlobal().booleanValue());
-		roomGroupEditForm.setDeptCode(rg.isGlobal().booleanValue()?null:rg.getDepartment().getDeptCode());
+		if (rg.isGlobal()) {
+			roomGroupEditForm.setDeptCode(null);
+			roomGroupEditForm.setDeptName(null);
+			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+			if ("Exam".equals(dept)) {
+				roomGroupEditForm.setDeptName("Final Examination Rooms");
+			} else if ("EExam".equals(dept)) {
+				roomGroupEditForm.setDeptName("Midterm Examination Rooms");
+			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+				Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());
+				if (department != null)
+					roomGroupEditForm.setDeptName(department.getDeptCode() + " - " + department.getName());
+			}
+		} else {
+			roomGroupEditForm.setDeptCode(rg.getDepartment().getDeptCode());
+			roomGroupEditForm.setDeptName(rg.getDepartment().getDeptCode() + " - " + rg.getDepartment().getName());
+		}
+		
 		roomGroupEditForm.setDeft(rg.isDefaultGroup().booleanValue());
-		if (roomGroupEditForm.getDesc()==null || roomGroupEditForm.getDesc().length()==0)
+		if (roomGroupEditForm.getDesc()==null || roomGroupEditForm.getDesc().isEmpty())
 			roomGroupEditForm.setDesc(rg.getDescription());
 
 		//get rooms owned by user
-		Collection assigned = getAssignedRooms(user, rg);
-		Collection available = getAvailableRooms(user, rg);
+		Collection assigned = getAssignedRooms(rg);
+		Collection available = getAvailableRooms(rg);
 
 		TreeSet sortedAssignedRooms = new TreeSet(assigned);
 		roomGroupEditForm.setAssignedRooms(sortedAssignedRooms);
@@ -138,7 +163,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		TreeSet sortedAvailableRooms = new TreeSet(available);
 		roomGroupEditForm.setNotAssignedRooms(sortedAvailableRooms);
 
-		Collection roomFeatures = getRoomFeatures(user, rg);
+		Collection roomFeatures = getRoomFeatures(rg);
 		roomGroupEditForm.setHeading(getHeading(roomFeatures));
 		roomGroupEditForm.setRoomFeatures(roomFeatures);
 		
@@ -151,7 +176,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 	 * 
 	 * @return
 	 */
-	private Collection getRoomFeatures(User user, RoomGroup rg) throws Exception {
+	private Collection getRoomFeatures(RoomGroup rg) throws Exception {
 		
 		ArrayList roomFeatures = new ArrayList();
 
@@ -259,9 +284,12 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 			RoomGroup rg = rgdao.get(id, hibSession);
 			
 			if (rg != null) {
+				
+				sessionContext.checkPermission(rg, rg.isGlobal() ? Right.GlobalRoomGroupDelete : Right.DepartmenalRoomGroupDelete);
+				
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         rg, 
                         ChangeLog.Source.ROOM_GROUP_EDIT, 
                         ChangeLog.Operation.DELETE, 
@@ -341,13 +369,12 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception {
 			
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 		Long id = new Long(roomGroupEditForm.getId()); 
 		LocationDAO rdao = new LocationDAO();
 		RoomGroupDAO rgdao = new RoomGroupDAO();
 		RoomGroup rg = rgdao.get(id);
+		
+		sessionContext.checkPermission(rg, rg.isGlobal() ? Right.GlobalRoomGroupEdit : Right.DepartmenalRoomGroupEdit);
 		
 		//update name, defaultGroup, and desc 
 		if (roomGroupEditForm.getName() != null && !roomGroupEditForm.getName().trim().equalsIgnoreCase("")) {
@@ -359,7 +386,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		if (roomGroupEditForm.getDesc() != null) {
 			rg.setDescription(roomGroupEditForm.getDesc());
 		}
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
+		if (sessionContext.hasPermission(rg, Right.GlobalRoomGroupEditSetDefault)) {
 			if (roomGroupEditForm.isDeft()) {
 				rg.setDefaultGroup(Boolean.TRUE);
 			} else {
@@ -371,7 +398,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		//update rooms	
 		String[] selectedAssigned = roomGroupEditForm.getAssignedSelected();
 		String[] selectedNotAssigned = roomGroupEditForm.getNotAssignedSelected();
-		Collection assignedRooms = getAssignedRooms(user, rg);
+		Collection assignedRooms = getAssignedRooms(rg);
 		String s1 = null;
 		if (selectedAssigned.length != 0)
 			s1 = Constants.arrayToStr(selectedAssigned,"",",");
@@ -397,7 +424,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 				//remove roomGroup from room
 				for (Iterator iter = rooms.iterator(); iter.hasNext();) {
 					Location r = (Location) iter.next();
-					if (r.getSession().getUniqueId().equals(sessionId) && s1.indexOf(r.getUniqueId().toString()) == -1) {
+					if (assignedRooms.contains(r) && s1.indexOf(r.getUniqueId().toString()) == -1) {
 						Collection roomGroups = r.getRoomGroups();
 						roomGroups.remove(rg);
 						hibSession.saveOrUpdate(r);
@@ -430,7 +457,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
             
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     rg, 
                     ChangeLog.Source.ROOM_GROUP_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -475,27 +502,31 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Collection getAssignedRooms(User user, RoomGroup rg) throws Exception {
-		//get depts owned by user
-		String depts[] = null;
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
+	private Collection getAssignedRooms(RoomGroup rg) throws Exception {
+		List<Location> rooms = new ArrayList<Location>(rg.getRooms());
 		
-		if (!rg.isGlobal().booleanValue()) {
-			Department dept = rg.getDepartment();
-			depts = new String[] { dept.getDeptCode() };
+		String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+		if ("Exam".equals(dept)) {
+			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+				if (!i.next().isExamEnabled(Exam.sExamTypeFinal)) i.remove();
+			}
+		} else if ("EExam".equals(dept)) {
+			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+				if (!i.next().isExamEnabled(Exam.sExamTypeMidterm)) i.remove();
+			}
+		} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+			Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());
+			if (department != null) {
+				rooms: for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+					Location location = i.next();
+					for (RoomDept rd: location.getRoomDepts())
+						if (rd.getDepartment().equals(department)) continue rooms;
+					i.remove();
+				}
+			}
 		}
 
-		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
-		if (rg.isGlobal().booleanValue() && user.getRole().equals(Roles.EXAM_MGR_ROLE))
-		    rooms = Location.findAllExamLocations(sessionId, -1);
-		Collection assigned = new HashSet();
-		
-		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
-			Location r = (Location) iter.next();
-			if (r.hasGroup(rg))  assigned.add(r);
-		}
-		return assigned;
+		return rooms;
 	}
 	
 	/**
@@ -505,27 +536,40 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Collection getAvailableRooms(User user, RoomGroup rg) throws Exception {
-		//get depts owned by user
-		String depts[] = null;
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
+	private Collection getAvailableRooms(RoomGroup rg) throws Exception {
+		List<Location> rooms = null;
 		
-		if (!rg.isGlobal().booleanValue()) {
+		if (!rg.isGlobal() && rg.getDepartment() != null) {
 			Department dept = rg.getDepartment();
-			depts = new String[] { dept.getDeptCode() };
+			rooms = new ArrayList<Location>();
+			for (RoomDept rd: dept.getRoomDepts())
+				rooms.add(rd.getRoom());
+		} else {
+			Session session = rg.getSession();
+			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+			if ("Exam".equals(dept)) {
+				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeFinal));
+			} else if ("EExam".equals(dept)) {
+				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeMidterm));
+			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+				Department department = Department.findByDeptCode(dept, session.getUniqueId());
+				if (department != null) {
+					rooms = new ArrayList<Location>();
+					for (RoomDept rd: department.getRoomDepts())
+						rooms.add(rd.getRoom());
+				} else {
+					rooms = new ArrayList<Location>(Location.findAll(session.getUniqueId()));	
+				}
+			} else {
+				rooms = new ArrayList<Location>(Location.findAll(session.getUniqueId()));
+			}
 		}
-
-		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);	
-        if (rg.isGlobal().booleanValue() && user.getRole().equals(Roles.EXAM_MGR_ROLE))
-            rooms = Location.findAllExamLocations(sessionId, -1);
-		Collection available = new HashSet();
 		
-		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
-			Location r = (Location) iter.next();
-			if (!r.hasGroup(rg))  available.add(r);
-		}
-		return available;
+		Collections.sort(rooms);
+		
+		rooms.removeAll(rg.getRooms());
+		
+		return rooms;
 	}
 
 }

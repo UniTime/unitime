@@ -22,6 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
@@ -41,16 +42,7 @@
 				</tt:section-title>
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 					<TR>
-						<logic:equal name="roomFeatureListForm" property="deptSize" value="false">
-							<TD>
-								<html:form action="roomFeatureList" styleClass="FormWithNoPadding">			
-									<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-										<bean:message key="button.exportPDF" />
-									</html:submit>
-								</html:form>
-							</TD>
-						</logic:equal>
-						<logic:equal name="roomFeatureListForm" property="canAdd" value="true">
+						<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomFeatureAdd') or hasPermission(#roomFeatureListForm.deptCodeX, 'Department', 'DepartmentRoomFeatureAdd')">
 							<TD align="right">
 								<html:form action="roomFeatureAdd" styleClass="FormWithNoPadding">			
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="F" titleKey="title.addRoomFeature">
@@ -58,16 +50,7 @@
 									</html:submit>
 								</html:form>
 							</TD>
-						</logic:equal>
-						<%--
-						<TD align="right">
-							<html:form action="roomList" styleClass="FormWithNoPadding">
-								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" titleKey="title.returnToRoomList">
-									<bean:message key="button.returnToRoomList" />
-								</html:submit>
-							</html:form>
-						</TD>
-						--%>
+						</sec:authorize>
 					</TR>
 				</TABLE>
 			</tt:section-header>
@@ -141,37 +124,18 @@
 	<TR>
 		<TD valign="middle" colspan="4">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
-				<TR>
-					<logic:equal name="roomFeatureListForm" property="deptSize" value="false">
-						<TD>
-							<html:form action="roomFeatureList" styleClass="FormWithNoPadding">			
-								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="P" titleKey="title.exportPDF">
-									<bean:message key="button.exportPDF" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-					<logic:equal name="roomFeatureListForm" property="canAdd" value="true">
-						<TD align="right">
-							<html:form action="roomFeatureAdd" styleClass="FormWithNoPadding">			
-								<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="F" titleKey="title.addRoomFeature">
-									<bean:message key="button.addRoomFeature" />
-								</html:submit>
-							</html:form>
-						</TD>
-					</logic:equal>
-				
-					<%--
-					<TD align="right">
-						<html:form action="roomList" styleClass="FormWithNoPadding">
-							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="R" titleKey="title.returnToRoomList">
-								<bean:message key="button.returnToRoomList" />
-							</html:submit>
-						</html:form>
-					</TD>
-					--%>
-				</TR>
-			</TABLE>
+					<TR>
+						<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomFeatureAdd') or hasPermission(#roomFeatureListForm.deptCodeX, 'Department', 'DepartmentRoomFeatureAdd')">
+							<TD align="right">
+								<html:form action="roomFeatureAdd" styleClass="FormWithNoPadding">			
+									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="F" titleKey="title.addRoomFeature">
+										<bean:message key="button.addRoomFeature" />
+									</html:submit>
+								</html:form>
+							</TD>
+						</sec:authorize>
+					</TR>
+				</TABLE>
 		</TD>
 	</TR>
 </TABLE>

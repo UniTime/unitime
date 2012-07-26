@@ -19,16 +19,18 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -36,20 +38,23 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomFeatureEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 
@@ -66,6 +71,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/roomFeatureEdit")
 public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Methods
 
@@ -99,36 +106,50 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		HttpServletResponse response) throws HibernateException, Exception {	
 		
 		RoomFeatureEditForm roomFeatureEditForm = (RoomFeatureEditForm) form;
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-				
+		
 		//get roomFeature from request
-		Long id =  new Long(Long.parseLong(request.getParameter("id")));	
+		Long id =  new Long(Long.parseLong(request.getParameter("id")));
 		roomFeatureEditForm.setId(id.toString());
 		RoomFeatureDAO rdao = new RoomFeatureDAO();
 		RoomFeature rf = rdao.get(id);
+		
+		sessionContext.checkPermission(rf, rf instanceof GlobalRoomFeature ? Right.GlobalRoomFeatureEdit : Right.DepartmenalRoomFeatureEdit);
+		
+		roomFeatureEditForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		//set global
 		if (rf instanceof GlobalRoomFeature) {
 			roomFeatureEditForm.setGlobal(true);
 			roomFeatureEditForm.setDeptCode(null);
+			roomFeatureEditForm.setDeptName(null);
+			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+			if ("Exam".equals(dept)) {
+				roomFeatureEditForm.setDeptName("Final Examination Rooms");
+			} else if ("EExam".equals(dept)) {
+				roomFeatureEditForm.setDeptName("Midterm Examination Rooms");
+			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+				Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());
+				if (department != null)
+					roomFeatureEditForm.setDeptName(department.getDeptCode() + " - " + department.getName());
+			}
 		}
 		
 		if (rf instanceof DepartmentRoomFeature){
 			roomFeatureEditForm.setGlobal(false);
 			Department dept = ((DepartmentRoomFeature)rf).getDepartment();
 			roomFeatureEditForm.setDeptCode(dept.getDeptCode());
+			roomFeatureEditForm.setDeptName(dept.getDeptCode() + " - " + dept.getName());
 		}
 		
-		if (roomFeatureEditForm.getName()==null || roomFeatureEditForm.getName().length()==0)
+		if (roomFeatureEditForm.getName()==null || roomFeatureEditForm.getName().isEmpty())
 			roomFeatureEditForm.setName(rf.getLabel());
         
-        if (roomFeatureEditForm.getAbbv()==null || roomFeatureEditForm.getAbbv().length()==0)
+        if (roomFeatureEditForm.getAbbv()==null || roomFeatureEditForm.getAbbv().isEmpty())
             roomFeatureEditForm.setAbbv(rf.getAbbv());
 		
         //get rooms		
-		Collection assigned = getAssignedRooms(user, rf, roomFeatureEditForm);
-		Collection available = getAvailableRooms(user, rf, roomFeatureEditForm);
+		Collection assigned = getAssignedRooms(rf);
+		Collection available = getAvailableRooms(rf);
 
 		TreeSet sortedAssignedRooms = new TreeSet(assigned);
 		roomFeatureEditForm.setAssignedRooms(sortedAssignedRooms);
@@ -164,11 +185,14 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			tx = hibSession.beginTransaction();
 			
 			RoomFeature rf = rdao.get(id, hibSession);
+			
 			if (rf != null) {
+				
+				sessionContext.checkPermission(rf, rf instanceof GlobalRoomFeature ? Right.GlobalRoomFeatureDelete : Right.DepartmenalRoomFeatureDelete);
                 
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         rf, 
                         ChangeLog.Source.ROOM_FEATURE_EDIT, 
                         ChangeLog.Operation.DELETE, 
@@ -189,7 +213,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			throw e;
 		}
 			
-		roomFeatureEditForm.setDeptCode((String)request.getSession().getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+		roomFeatureEditForm.setDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		return mapping.findForward("showRoomFeatureList");
 	}
 	
@@ -220,7 +244,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
         	return mapping.findForward("showEdit");
         }
 				
-        roomFeatureEditForm.setDeptCode((String)request.getSession().getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+        roomFeatureEditForm.setDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		if (roomFeatureEditForm.getId()!=null)
 			request.setAttribute("hash", "A"+roomFeatureEditForm.getId());
 		return mapping.findForward("showRoomFeatureList");
@@ -240,9 +264,6 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception {
 		
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
 		Long id = new Long(roomFeatureEditForm.getId());
 		
 		org.hibernate.Session hibSession = (new RoomFeatureDAO()).getSession();
@@ -252,14 +273,16 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			tx = hibSession.beginTransaction();
 			
 			RoomFeature roomFeature = (new RoomFeatureDAO()).get(id, hibSession);
+			
+			sessionContext.checkPermission(roomFeature, roomFeature instanceof GlobalRoomFeature ? Right.GlobalRoomFeatureEdit : Right.DepartmenalRoomFeatureEdit);
 		
 			roomFeature.setLabel(roomFeatureEditForm.getName());
             roomFeature.setAbbv(roomFeatureEditForm.getAbbv());
 			
 			String[] selectedAssigned = roomFeatureEditForm.getAssignedSelected();
 			String[] selectedNotAssigned = roomFeatureEditForm.getNotAssignedSelected();
-			Collection assignedRooms = getAssignedRooms(user, roomFeature, roomFeatureEditForm);
-			Collection notAssignedRooms = getAvailableRooms(user, roomFeature, roomFeatureEditForm);
+			Collection assignedRooms = getAssignedRooms(roomFeature);
+			Collection notAssignedRooms = getAvailableRooms(roomFeature);
 		
 			
 			String s1 = null;
@@ -283,11 +306,9 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 				//remove room from feature
 				for (Iterator iter = rooms.iterator();iter.hasNext();) {
 					Location r = (Location) iter.next();
-					if (r.getSession().getUniqueId().equals(sessionId)) {
-						if (s1.indexOf(r.getUniqueId().toString()) == -1) {
-							iter.remove();
-							m.add(r);
-						}
+					if (assignedRooms.contains(r) && s1.indexOf(r.getUniqueId().toString()) == -1) {
+						iter.remove();
+						m.add(r);
 					}
 				}
 					
@@ -331,7 +352,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     (RoomFeature)roomFeature, 
                     ChangeLog.Source.ROOM_FEATURE_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -364,7 +385,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) {
 		RoomFeatureEditForm roomFeatureEditForm = (RoomFeatureEditForm) form;
-		roomFeatureEditForm.setDeptCode((String)request.getSession().getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
+		roomFeatureEditForm.setDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		if (roomFeatureEditForm.getId()!=null)
 			request.setAttribute("hash", "A"+roomFeatureEditForm.getId());
 		return mapping.findForward("showRoomFeatureList");
@@ -378,27 +399,40 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Collection getAvailableRooms(User user, RoomFeature rf, RoomFeatureEditForm roomFeatureEditForm) throws Exception {		
-		//get depts owned by user
-		String depts[] = null;
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
+	private Collection getAvailableRooms(RoomFeature rf) throws Exception {		
+		List<Location> rooms = null;
 		
 		if (rf instanceof DepartmentRoomFeature) {
 			Department dept = ((DepartmentRoomFeature)rf).getDepartment();
-			depts = new String[] { dept.getDeptCode() };
+			rooms = new ArrayList<Location>();
+			for (RoomDept rd: dept.getRoomDepts())
+				rooms.add(rd.getRoom());
+		} else {
+			Session session = ((GlobalRoomFeature)rf).getSession();
+			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+			if ("Exam".equals(dept)) {
+				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeFinal));
+			} else if ("EExam".equals(dept)) {
+				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeMidterm));
+			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+				Department department = Department.findByDeptCode(dept, session.getUniqueId());
+				if (department != null) {
+					rooms = new ArrayList<Location>();
+					for (RoomDept rd: department.getRoomDepts())
+						rooms.add(rd.getRoom());
+				} else {
+					rooms = new ArrayList<Location>(Location.findAll(session.getUniqueId()));	
+				}
+			} else {
+				rooms = new ArrayList<Location>(Location.findAll(session.getUniqueId()));
+			}
 		}
-
-		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
-        if (rf instanceof GlobalRoomFeature && user.getRole().equals(Roles.EXAM_MGR_ROLE))
-            rooms = Location.findAllExamLocations(sessionId, -1);
-		Collection available = new HashSet();
 		
-        for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
-			Location r = (Location) iter.next();
-			if (!r.hasFeature(rf))  available.add(r);
-		}
-		return available;
+		Collections.sort(rooms);
+		
+		rooms.removeAll(rf.getRooms());
+		
+		return rooms;
 	}
 
 	/**
@@ -410,28 +444,31 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 	 * @return
 	 * @throws Exception 
 	 */
-	private Collection getAssignedRooms(User user, RoomFeature rf, RoomFeatureEditForm roomFeatureEditForm) throws Exception {
-		//get depts owned by user
-		String depts[] = null;
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
+	private Collection getAssignedRooms(RoomFeature rf) throws Exception {
+		List<Location> rooms = new ArrayList<Location>(rf.getRooms());
 		
-		if (rf instanceof DepartmentRoomFeature) {
-			Department dept = ((DepartmentRoomFeature)rf).getDepartment();
-			depts = new String[] { dept.getDeptCode() };
+		String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+		if ("Exam".equals(dept)) {
+			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+				if (!i.next().isExamEnabled(Exam.sExamTypeFinal)) i.remove();
+			}
+		} else if ("EExam".equals(dept)) {
+			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+				if (!i.next().isExamEnabled(Exam.sExamTypeMidterm)) i.remove();
+			}
+		} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
+			Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());
+			if (department != null) {
+				rooms: for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
+					Location location = i.next();
+					for (RoomDept rd: location.getRoomDepts())
+						if (rd.getDepartment().equals(department)) continue rooms;
+					i.remove();
+				}
+			}
 		}
 
-		//get rooms owned by user
-		Collection rooms = Session.getCurrentAcadSession(user).getRoomsFast(depts);
-        if (rf instanceof GlobalRoomFeature && user.getRole().equals(Roles.EXAM_MGR_ROLE))
-            rooms = Location.findAllExamLocations(sessionId, -1);
-
-		Collection assigned = new HashSet();
-		
-		for (Iterator iter = rooms.iterator(); iter.hasNext();)  {
-			Location r = (Location) iter.next();
-			if (r.hasFeature(rf))  assigned.add(r);
-		}
-		return assigned;
+		return rooms;
 	}
 
 }

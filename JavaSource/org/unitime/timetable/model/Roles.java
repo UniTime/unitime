@@ -306,6 +306,10 @@ public class Roles extends BaseRoles implements HasRights {
 		case Rooms:
 		case RoomsExportCsv:
 		case RoomsExportPdf:
+		case RoomFeatures:
+		case RoomFeaturesExportPdf:
+		case RoomGroups:
+		case RoomGroupsExportPdf:
 		case RoomDetail:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
 			
@@ -315,6 +319,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case RoomDetailPeriodPreferences:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 
+		case RoomDepartments:
 		case EditRoomDepartments:
 		case RoomEditAvailability:
 		case RoomEditPreference:
@@ -325,13 +330,27 @@ public class Roles extends BaseRoles implements HasRights {
 		case RoomEditFeatures:
 		case RoomEditGroups:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+		case DepartmentRoomFeatureAdd:
+		case DepartmenalRoomFeatureEdit:
+		case DepartmenalRoomFeatureDelete:
+		case DepartmentRoomGroupAdd:
+		case DepartmenalRoomGroupEdit:
+		case DepartmenalRoomGroupDelete:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 		case RoomEditGlobalFeatures:
 		case RoomEditGlobalGroups:
+		case GlobalRoomFeatureAdd:
+		case GlobalRoomFeatureEdit:
+		case GlobalRoomFeatureDelete:
+		case GlobalRoomGroupAdd:
+		case GlobalRoomGroupEdit:
+		case GlobalRoomGroupDelete:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
 			
 		case AddRoom:
 		case RoomEdit:
 		case RoomEditChangeControll:
+		case GlobalRoomGroupEditSetDefault:
 		case BuildingList:
 		case BuildingAdd:
 		case BuildingEdit:

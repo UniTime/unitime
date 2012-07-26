@@ -22,14 +22,17 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.security.UserAuthority;
@@ -135,6 +138,9 @@ public class LocationPermissions {
 		@Override
 		public Class<Department> type() { return Department.class; }
 	}
+	
+	@PermissionForRight(Right.RoomDepartments)
+	public static class RoomDepartments extends EditRoomDepartments {}
 	
 	@PermissionForRight(Right.EditRoomDepartmentsFinalExams)
 	public static class EditRoomDepartmentsFinalExams implements Permission<Session> {
@@ -402,4 +408,137 @@ public class LocationPermissions {
 
 	@PermissionForRight(Right.RoomEditGlobalGroups)
 	public static class RoomEditGlobalGroups extends RoomEditAvailability{}
+	
+	@PermissionForRight(Right.RoomFeatures)
+	public static class RoomFeatures extends Rooms{}
+
+	@PermissionForRight(Right.RoomFeaturesExportPdf)
+	public static class RoomFeaturesExportPdf extends RoomsExportPdf{}
+
+	@PermissionForRight(Right.DepartmenalRoomFeatureEdit)
+	public static class DepartmenalRoomFeatureEdit implements Permission<DepartmentRoomFeature> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, DepartmentRoomFeature source) {
+			return permissionDepartment.check(user, source.getDepartment());
+		}
+
+		@Override
+		public Class<DepartmentRoomFeature> type() { return DepartmentRoomFeature.class; }
+	}
+
+	@PermissionForRight(Right.DepartmenalRoomFeatureDelete)
+	public static class DepartmenalRoomFeatureDelete extends DepartmenalRoomFeatureEdit {}
+
+	@PermissionForRight(Right.GlobalRoomFeatureEdit)
+	public static class GlobalRoomFeatureEdit implements Permission<GlobalRoomFeature> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, GlobalRoomFeature source) {
+			return permissionSession.check(user, source.getSession());
+		}
+
+		@Override
+		public Class<GlobalRoomFeature> type() { return GlobalRoomFeature.class; }
+	}
+	
+	@PermissionForRight(Right.GlobalRoomFeatureDelete)
+	public static class GlobalRoomFeatureDelete extends GlobalRoomFeatureEdit {}
+
+	
+	@PermissionForRight(Right.GlobalRoomFeatureAdd)
+	public static class GlobalRoomFeatureAdd implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.DepartmentRoomFeatureAdd)
+	public static class DepartmentRoomFeatureAdd implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
+	
+	@PermissionForRight(Right.RoomGroups)
+	public static class RoomGroups extends Rooms{}
+
+	@PermissionForRight(Right.RoomGroupsExportPdf)
+	public static class RoomGroupsExportPdf extends RoomsExportPdf{}
+
+	@PermissionForRight(Right.DepartmenalRoomGroupEdit)
+	public static class DepartmenalRoomGroupEdit implements Permission<RoomGroup> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, RoomGroup source) {
+			return !source.isGlobal() && permissionDepartment.check(user, source.getDepartment());
+		}
+
+		@Override
+		public Class<RoomGroup> type() { return RoomGroup.class; }
+	}
+
+	@PermissionForRight(Right.DepartmenalRoomGroupDelete)
+	public static class DepartmenalRoomGroupDelete extends DepartmenalRoomGroupEdit {}
+
+	@PermissionForRight(Right.GlobalRoomGroupEdit)
+	public static class GlobalRoomGroupEdit implements Permission<RoomGroup> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, RoomGroup source) {
+			return source.isGlobal() && permissionSession.check(user, source.getSession());
+		}
+
+		@Override
+		public Class<RoomGroup> type() { return RoomGroup.class; }
+	}
+	
+	@PermissionForRight(Right.GlobalRoomGroupEditSetDefault)
+	public static class GlobalRoomGroupEditSetDefault extends GlobalRoomGroupEdit {}
+	
+	@PermissionForRight(Right.GlobalRoomGroupDelete)
+	public static class GlobalRoomGroupDelete extends GlobalRoomGroupEdit {}
+
+	
+	@PermissionForRight(Right.GlobalRoomGroupAdd)
+	public static class GlobalRoomGroupAdd implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return permissionSession.check(user, source);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.DepartmentRoomGroupAdd)
+	public static class DepartmentRoomGroupAdd implements Permission<Department> {
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
 }

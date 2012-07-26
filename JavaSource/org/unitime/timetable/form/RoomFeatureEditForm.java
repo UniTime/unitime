@@ -21,25 +21,17 @@ package org.unitime.timetable.form;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
 
 
 public class RoomFeatureEditForm extends ActionForm {
@@ -53,9 +45,9 @@ public class RoomFeatureEditForm extends ActionForm {
 	// Variables
 	private String doit;
 	
-	private int deptSize;
-	
 	private String deptCode;
+	
+	private String deptName;
 	
 	private String name;
     
@@ -76,6 +68,8 @@ public class RoomFeatureEditForm extends ActionForm {
 	private String[] assignedSelected = {};
 
 	private String[] notAssignedSelected = {};
+	
+	private Long iSessionId;
 
 	public Collection getAssignedRooms() {
 		return assignedRooms;
@@ -204,14 +198,13 @@ public class RoomFeatureEditForm extends ActionForm {
         }
 
         try {
-			Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-			for (Iterator i=RoomFeature.getAllGlobalRoomFeatures(session).iterator();i.hasNext();) {
+			for (Iterator i=RoomFeature.getAllGlobalRoomFeatures(getSessionId()).iterator();i.hasNext();) {
 				RoomFeature rf = (RoomFeature)i.next();
 				if (rf.getLabel().equalsIgnoreCase(name) && !rf.getUniqueId().toString().equals(id))
 					errors.add("name", new ActionMessage("errors.exists", name));
 			}
 			
-			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, session.getSessionId()));
+			Department dept = (deptCode==null?null:Department.findByDeptCode(deptCode, getSessionId()));
 			if (dept!=null) {
 				for (Iterator i=RoomFeature.getAllDepartmentRoomFeatures(dept).iterator();i.hasNext();) {
 					RoomFeature rf = (RoomFeature)i.next();
@@ -227,11 +220,8 @@ public class RoomFeatureEditForm extends ActionForm {
 		
         
         
-        if (!global && deptSize != 1) {
-	        if(deptCode==null || deptCode.equalsIgnoreCase("")) {
-	        	errors.add("Department", 
-	                    new ActionMessage("errors.required", "Department") );
-	        }
+        if (!global && (deptCode==null || deptCode.equalsIgnoreCase(""))) {
+        	errors.add("Department", new ActionMessage("errors.required", "Department") );
         }
         
         return errors;
@@ -245,12 +235,12 @@ public class RoomFeatureEditForm extends ActionForm {
 		this.deptCode = deptCode;
 	}
 
-	public int getDeptSize() {
-		return deptSize;
+	public String getDeptName() {
+		return deptName;
 	}
 
-	public void setDeptSize(int deptSize) {
-		this.deptSize = deptSize;
+	public void setDeptName(String deptName) {
+		this.deptName = deptName;
 	}
 
 	public String getDoit() {
@@ -276,42 +266,10 @@ public class RoomFeatureEditForm extends ActionForm {
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		name = ""; abbv = "";
-		setDeptSize(request);
+		iSessionId = null;
 	}
 	
-	/**
-	 * 
-	 * @param request
-	 */
-	private void setDeptSize(HttpServletRequest request) {
-		HttpSession httpSession = request.getSession();
-		User user = Web.getUser(httpSession);
-		Long sessionId;
-		try {
-			sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-			String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-			TimetableManagerDAO tdao = new TimetableManagerDAO();
-	        TimetableManager manager = tdao.get(new Long(mgrId));
-	        Set departments = manager.departmentsForSession(sessionId);
-	        setDeptSize(departments.size());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}			
-	}
-
-	/**
-	 * 
-	 * @param deptCode
-	 * @param request
-	 * @return
-	 * @throws Exception
-	 */
-	public String getDeptName(String deptCode, HttpServletRequest request) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		Department dept = Department.findByDeptCode(deptCode, sessionId);
-		return (dept==null?"":dept.getDeptCode() + " - " + dept.getName());	
-	}
+	public Long getSessionId() { return iSessionId; }
+	
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 }
