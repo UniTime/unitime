@@ -40,6 +40,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.AssignedClassesForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Solution;
@@ -70,7 +71,7 @@ public class AssignedClassesAction extends Action {
 		AssignedClassesForm myForm = (AssignedClassesForm) form;
 
         // Check Access
-		sessionContext.checkPermission(null, "Department", Right.AssignedClasses);
+		sessionContext.checkPermission(Right.AssignedClasses);
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
@@ -121,7 +122,7 @@ public class AssignedClassesAction extends Action {
             if (solver!=null) {
             	assignedClasses = solver.getAssignedClasses(prefix);
             } else {
-            	String instructorNameFormat = sessionContext.getUser().getProperty(Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+            	String instructorNameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
             	String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
             	assignedClasses = new Vector();
     			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {

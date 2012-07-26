@@ -22,7 +22,6 @@ package org.unitime.timetable.form;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
@@ -74,50 +73,6 @@ public class TimetableForm extends ActionForm {
 		iShowInstructors = false;
 		iShowEvents = false;
 		iShowComments = false;
-	}
-	
-	public void load(HttpSession session) throws Exception {
-		TimetableGridTable table = (TimetableGridTable)session.getAttribute("Timetable.table");
-		if (table==null) {
-			table = new TimetableGridTable();
-			table.load(session);
-			session.setAttribute("Timetable.table",table);
-		}
-		iResource = TimetableGridModel.sResourceTypes[table.getResourceType()];
-		iDay = TimetableGridTable.sDays[table.getDays()];
-		iDayMode = TimetableGridTable.sDayMode[table.getDayMode()];
-		iFind = table.getFindString();
-		iOrderBy = TimetableGridTable.sOrderBy[table.getOrderBy()];
-		iDispMode = TimetableGridTable.sDispModes[table.getDispMode()];
-		iBgColor = TimetableGridModel.sBgModes[table.getBgMode()];
-		iWeeks = table.getWeeks(session);
-		iWeek = new Integer(table.getWeek());
-		iShowUselessTimes = table.getShowUselessTimes();
-		iShowInstructors = table.getShowInstructors();
-		iShowEvents = table.getShowEvents();
-		iShowComments = table.getShowComments();
-	}
-	
-	public void save(HttpSession session) throws Exception {
-		TimetableGridTable table = (TimetableGridTable)session.getAttribute("Timetable.table");
-		if (table==null) {
-			table = new TimetableGridTable();
-			session.setAttribute("Timetable.table",table);
-		}
-		table.setResourceType(getResourceInt());
-		table.setDays(getDayInt());
-		table.setDayMode(getDayModeInt());
-		table.setFindString(getFind());
-		table.setOrderBy(getOrderByInt());
-		table.setDispMode(getDispModeInt());
-		table.setBgMode(getBgColorInt());
-		table.setShowUselessTimes(iShowUselessTimes);
-		table.setShowInstructors(iShowInstructors);
-		table.setShowComments(iShowComments);
-		table.setShowEvents(iShowEvents);
-		if (iWeek!=null)
-			table.setWeek(iWeek.intValue());
-		table.save(session);
 	}
 	
 	public String getResource() { return iResource; }
@@ -197,6 +152,8 @@ public class TimetableForm extends ActionForm {
 	
 	public Integer getWeek() { return iWeek; }
 	public void setWeek(Integer week) { iWeek = week; }
+	
 	public Vector getWeeks() { return iWeeks; }
+	public void setWeeks(Vector weeks) { iWeeks = weeks; }
 }
 

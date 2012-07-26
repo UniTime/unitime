@@ -19,14 +19,13 @@
 */
 package org.unitime.timetable.form;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -38,22 +37,11 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.form.SolverForm.LongIdValue;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 
@@ -68,19 +56,13 @@ public class ListSolutionsForm extends ActionForm {
 	private Long iEmptySetting = null;
 	private Vector iSettings = null;
 	private SolverProxy iSolver = null;
-	private Vector iHosts = new Vector();
 	private String iHost = null;
 	private String iHostEmpty = null;
-	private boolean iCanDo = true;
-	private Vector iOwners = null;
-	private boolean iSelectOwner = false;
 	private Long iOwnerId = null;
 	private Vector iSolutionBeans = new Vector();
 	private int iSelectedSolutionBean = -1;
 	private Long iSetting = null;
 	private String iNote = null;
-	private boolean iChangeTab = false;
-	private boolean iViewOnly = false;
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -93,8 +75,6 @@ public class ListSolutionsForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iCanDo = false;
-		iChangeTab = false;
 		iOp = null; iNote = null;
 		iSolutionBeans.clear(); iSelectedSolutionBean = -1;
 		iSettings = SolverPredefinedSetting.getIdValueList(SolverPredefinedSetting.APPEARANCE_TIMETABLES);
@@ -109,57 +89,6 @@ public class ListSolutionsForm extends ActionForm {
 		SolverProxy solver = WebSolver.getSolver(request.getSession());
 		iHost = (solver==null?"auto":solver.getHost());
 		iHostEmpty = iHost;
-		iHosts.clear();
-		User user = Web.getUser(request.getSession());
-		iViewOnly = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
-		if (user.isAdmin()) {
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (server.isActive())
-                        iHosts.addElement(server.getAddress().getHostName()+":"+server.getPort());
-                }
-            }
-			Collections.sort(iHosts);
-			if (ApplicationProperties.isLocalSolverEnabled())
-				iHosts.insertElementAt("local",0);
-			iHosts.insertElementAt("auto",0);
-		}
-		
-		iSelectOwner = true;
-		iOwnerId = null; iOwners = null;
-		try {
-			TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-			Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
-			iCanDo = manager.canDoTimetable(acadSession, user);
-
-			iOwners = new Vector();
-			if (Web.hasRole(request.getSession(), Roles.getAdminRoles())) {
-				for (Iterator i=SolverGroup.findBySessionId(acadSession.getUniqueId()).iterator();i.hasNext();) {
-					SolverGroup owner = (SolverGroup)i.next();
-					iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-				}
-			} else {
-				if (manager.canDoTimetable(acadSession, user)) {
-					for (Iterator i=manager.getSolverGroups(acadSession).iterator();i.hasNext();) {
-						SolverGroup owner = (SolverGroup)i.next();
-						if (owner.canTimetable())
-							iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-					}
-				} else {
-					for (Iterator i=manager.getSolverGroups(acadSession).iterator();i.hasNext();) {
-						SolverGroup owner = (SolverGroup)i.next();
-						if (owner.canAudit())
-							iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-					}
-				}
-			}
-			Collections.sort(iOwners);
-		} catch (Exception e) {
-			Debug.error(e);
-		}
-		iSelectOwner = (iOwners!=null && iOwners.size()>1);
 	}
 	
 	public void setOp(String op) { iOp = op; }
@@ -238,9 +167,6 @@ public class ListSolutionsForm extends ActionForm {
 		}
 	}
 	public Vector getMessages() { return iMessages; }
-	public Collection getHosts() {
-		return iHosts;
-	}
 	public String getHost() {
 		return iHost;
 	}
@@ -253,12 +179,9 @@ public class ListSolutionsForm extends ActionForm {
 	public void setHostEmpty(String hostEmpty) {
 		iHostEmpty = hostEmpty;
 	}
-	public boolean getCanDo() { return iCanDo; }
 	
 	public Long getOwnerId() { return iOwnerId; }
 	public void setOwnerId(Long ownerId) { iOwnerId = ownerId; }
-	public boolean getSelectOwner() { return iSelectOwner; }
-	public Vector getOwners() { return iOwners; }
 	public Long getSetting() { return iSetting; }
 	public void setSetting(Long setting) { iSetting = setting; }
 	
@@ -266,7 +189,7 @@ public class ListSolutionsForm extends ActionForm {
 	public void setSolutionBeans(Vector solutionBeans) { iSolutionBeans = solutionBeans; }
 	public int getSelectedSolutionBean() { return iSelectedSolutionBean; }
 	public void setSelectedSolutionBean(int selectedSolutionBean) { iSelectedSolutionBean = selectedSolutionBean; }
-	public void addSolution(Solution solution, User user) throws Exception {
+	public void addSolution(Solution solution) throws Exception {
 		SolutionBean solutionBean = null;
 		for (Enumeration e=iSolutionBeans.elements();e.hasMoreElements();) {
 			SolutionBean sb = (SolutionBean)e.nextElement();
@@ -275,7 +198,7 @@ public class ListSolutionsForm extends ActionForm {
 			}
 		}
 		if (solutionBean!=null) iSolutionBeans.remove(solutionBean);
-		iSolutionBeans.addElement(new SolutionBean(solution, user));
+		iSolutionBeans.addElement(new SolutionBean(solution));
 	}
 	public String getSolutionId() {
 		String solutionId = "";
@@ -286,14 +209,14 @@ public class ListSolutionsForm extends ActionForm {
 		}
 		return solutionId;
 	}
-	public void setSolutionId(String solutionId, User user) throws Exception {
+	public void setSolutionId(String solutionId) throws Exception {
 		iSolutionBeans.clear();
 		if (solutionId==null || solutionId.length()==0) return;
 		for (StringTokenizer s=new StringTokenizer(solutionId,",");s.hasMoreTokens();) {
 			Long id = Long.valueOf(s.nextToken());
 			Solution solution = (new SolutionDAO()).get(id);
 			if (solution!=null)
-				iSolutionBeans.addElement(new SolutionBean(solution, user));
+				iSolutionBeans.addElement(new SolutionBean(solution));
 		}
 	}
 	public void removeSolution(Long solutionId) {
@@ -328,7 +251,8 @@ public class ListSolutionsForm extends ActionForm {
 		return ret;
 	}
 	
-	public static class SolutionBean {
+	public static class SolutionBean implements Serializable {
+		private static final long serialVersionUID = 1L;
 		private Long iUniqueId = null;
 		private String iCreated = null;
 		private String iCommited = null;
@@ -338,15 +262,14 @@ public class ListSolutionsForm extends ActionForm {
 		private String iLog = null;
 		private Properties iGlobalInfo = null;
 		private Long iOwnerId = null;
-		private boolean iCanCommit = true;
 		
 		public SolutionBean()  {}
-		public SolutionBean(Solution solution, User user) throws Exception {
+		public SolutionBean(Solution solution) throws Exception {
 			this();
-			setSolution(solution, user);
+			setSolution(solution);
 		}
 		
-		public void setSolution(Solution solution, User user) throws Exception {
+		public void setSolution(Solution solution) throws Exception {
 			iUniqueId = solution.getUniqueId();
 			iGlobalInfo = (PropertiesInfo)solution.getInfo("GlobalInfo");
 			LogInfo logInfo = (LogInfo)solution.getInfo("LogInfo");
@@ -357,7 +280,6 @@ public class ListSolutionsForm extends ActionForm {
 			iOwner = solution.getOwner().getName();
 			iOwnerId = solution.getOwner().getUniqueId();
 			iValid = solution.isValid().booleanValue();
-			iCanCommit = solution.getOwner().canCommit(user);
 		}
 		
 		public void setUniqueId(Long uniqueId) { iUniqueId = uniqueId; }
@@ -395,16 +317,11 @@ public class ListSolutionsForm extends ActionForm {
 			Collections.sort(infos, new InfoComparator());
 			return infos;
 		}
-		public boolean getCanCommit() { return iCanCommit; }
-		public void setCanCommit(boolean canCommit) { iCanCommit = canCommit; }
 		public int hashCode() { return iUniqueId.hashCode(); }
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof SolutionBean)) return false;
 			return getUniqueId().equals(((SolutionBean)o).getUniqueId());
 		}
 	}
-	public boolean isChangeTab() { return iChangeTab;}
-	public void setChangeTab(boolean changeTab) { iChangeTab = changeTab; }
-	public boolean isViewOnly() { return iViewOnly; }
 }
 

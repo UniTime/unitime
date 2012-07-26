@@ -49,16 +49,12 @@
 			</TD>
 		</TR>
 	</TABLE>
-<%
-	SolverProxy solver = WebSolver.getSolver(session);
-	if (solver!=null) {
-%>
-	<font size='2'>
-<%=solver.getLog()%>
-	</font>
-<%		
-	} else {
-%>
+	<logic:notEmpty name="log" scope="request">
+		<font size='2'>
+			<bean:write name="log" scope="request" filter="false"/>
+		</font>
+	</logic:notEmpty>
+	<logic:empty name="log" scope="request">
 	<logic:notEqual name="solverLogForm" property="nrLogs" value="0">
 		<logic:iterate name="solverLogForm" property="ownerNames" id="ownerName" indexId="idx">
 			<BR>
@@ -86,7 +82,5 @@
 			</TR>
 		</TABLE>
 	</logic:equal>
-<%
-	}
-%>
+	</logic:empty>
 </html:form>

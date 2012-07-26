@@ -992,6 +992,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     			list();
     }
 
+    @Deprecated
     public static Collection findBySessionIdAndManagerId(Long sessionId, Long managerId) {
     	return (new SolutionDAO()).
     			getSession().

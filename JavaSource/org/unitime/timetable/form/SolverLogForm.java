@@ -19,17 +19,12 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.StringTokenizer;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.solver.ui.LogInfo;
 
 
@@ -63,26 +58,10 @@ public class SolverLogForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iLevel = UserData.getProperty(request.getSession(), "SolverLog.level", null); 
+		iLevel = null; 
 		iOp = null;
 		iLogInfo = null;
 		iOwnerName = null;
-		try {
-			String solutionIdsStr = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
-			if (solutionIdsStr!=null && solutionIdsStr.length()>0) {
-				StringTokenizer s = new StringTokenizer(solutionIdsStr,",");
-				iLogInfo = new LogInfo[s.countTokens()];
-				iOwnerName = new String[s.countTokens()];
-				for (int i=0;i<iLogInfo.length;i++) {
-					Solution solution = (new SolutionDAO()).get(Long.valueOf(s.nextToken()));
-					if (solution!=null) {
-						iLogInfo[i] = (LogInfo)solution.getInfo("LogInfo");
-						iOwnerName[i] = solution.getOwner().getName();
-					}
-				}
-				
-			}
-		} catch (Exception e) {}
 	}
 
 	public String getLevel() { return (iLevel==null?"Info":iLevel); }
@@ -103,8 +82,14 @@ public class SolverLogForm extends ActionForm {
 	public String[] getOwnerNames() {
 		return iOwnerName;
 	}
+	public void setOwnerNames(String[] ownerName) {
+		iOwnerName = ownerName;
+	}
 	public int getNrLogs() {
 		return (iLogInfo==null?0:iLogInfo.length);
+	}
+	public void setLogs(LogInfo[] logs) {
+		iLogInfo = logs;
 	}
 
 }

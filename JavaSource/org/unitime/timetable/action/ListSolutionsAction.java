@@ -21,12 +21,15 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,24 +46,27 @@ import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.form.SolverForm;
 import org.unitime.timetable.form.ListSolutionsForm.SolutionBean;
+import org.unitime.timetable.form.SolverForm.LongIdValue;
 import org.unitime.timetable.interfaces.ExternalSolutionCommitAction;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
+import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
@@ -81,12 +87,8 @@ public class ListSolutionsAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ListSolutionsForm myForm = (ListSolutionsForm) form;
-        // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-        User user = Web.getUser(request.getSession());
+		
+		sessionContext.checkPermission(Right.Timetables);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -104,11 +106,37 @@ public class ListSolutionsAction extends Action {
         	for (StringTokenizer s = new StringTokenizer((String)request.getSession().getAttribute("Solver.selectedSolutionId"),",");s.hasMoreTokens();) {
         		Long solutionId = Long.valueOf(s.nextToken());
         		Solution solution = (new SolutionDAO()).get(solutionId);
-        		if (solution!=null) myForm.addSolution(solution, user);
+        		if (solution!=null) myForm.addSolution(solution);
         	}
         }
         
-        
+		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.CanSelectSolverServer)) {
+			List<String> hosts = new ArrayList<String>();
+            Set servers = SolverRegisterService.getInstance().getServers();
+            synchronized (servers) {
+                for (Iterator i=servers.iterator();i.hasNext();) {
+                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                    if (server.isActive())
+                        hosts.add(server.getAddress().getHostName()+":"+server.getPort());
+                }
+			}
+			Collections.sort(hosts);
+			if (ApplicationProperties.isLocalSolverEnabled())
+				hosts.add(0, "local");
+			hosts.add(0, "auto");
+			request.setAttribute("hosts", hosts);
+		}
+		
+		List<SolverForm.LongIdValue> owners = new ArrayList<SolverForm.LongIdValue>();
+		for (SolverGroup owner: SolverGroup.getUserSolverGroups(sessionContext.getUser())) {
+			if (sessionContext.hasPermission(owner, Right.TimetablesSolutionLoadEmpty))
+				owners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
+		}
+		if (owners.size() == 1)
+			myForm.setOwnerId(owners.get(0).getId());
+		else if (!owners.isEmpty())
+			request.setAttribute("owners", owners);
+		
         // Update Note
         if ("Update Note".equals(op)) {
             ActionMessages errors = myForm.validate(mapping, request);
@@ -126,6 +154,8 @@ public class ListSolutionsAction extends Action {
             				tx = hibSession.beginTransaction();
             		
             			Solution solution = dao.get(solutionBean.getUniqueId(), hibSession);
+            			
+            			sessionContext.checkPermission(solution, Right.TimetablesSolutionChangeNote);
             		
            				String note = myForm.getNote();
            				if (note!=null && note.length()>1000)
@@ -162,6 +192,8 @@ public class ListSolutionsAction extends Action {
                 		
                 		Solution solution = dao.get(solutionBean.getUniqueId(), hibSession);
                 		
+                		sessionContext.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
+                		
                 		if ("Commit".equals(op)) {
                 			List solutions = hibSession.createCriteria(Solution.class).add(Restrictions.eq("owner",solution.getOwner())).list();
                    			HashSet<Solution> touchedSolutionSet = new HashSet<Solution>();
@@ -173,7 +205,7 @@ public class ListSolutionsAction extends Action {
                 				}
                 			}
                 			touchedSolutionSet.add(solution);
-                			boolean committed = solution.commitSolution(myForm.getMessages(),hibSession,user.getId());
+                			boolean committed = solution.commitSolution(myForm.getMessages(),hibSession,sessionContext.getUser().getExternalUserId());
                 			hibSession.update(solution);
                 	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
                 	    	if (className != null && className.trim().length() > 0){
@@ -183,7 +215,7 @@ public class ListSolutionsAction extends Action {
                 			solutionBean.setCommited(committed?sDF.format(solution.getCommitDate()):null);
                 			
                 		} else {
-                			solution.uncommitSolution(hibSession, user.getId());
+                			solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
                 	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
                 	    	if (className != null && className.trim().length() > 0){
                 	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
@@ -228,7 +260,8 @@ public class ListSolutionsAction extends Action {
                 		Solution solution = dao.get(solutionBean.getUniqueId());
                 		if (solution!=null) {
                 			if (solution.isCommited().booleanValue()) {
-                				solution.uncommitSolution(hibSession, user.getId());
+                				sessionContext.checkPermission(solution.getOwner(), Right.TimetablesSolutionCommit);
+                				solution.uncommitSolution(hibSession, sessionContext.getUser().getExternalUserId());
                     	    	String className = ApplicationProperties.getProperty("tmtbl.external.solution.commit_action.class");
                     	    	if (className != null && className.trim().length() > 0){
                     	    		ExternalSolutionCommitAction commitAction = (ExternalSolutionCommitAction) (Class.forName(className).newInstance());
@@ -237,6 +270,7 @@ public class ListSolutionsAction extends Action {
                     	    		commitAction.performExternalSolutionCommitAction(solutions, hibSession);
                     	    	}
                 			}
+                			sessionContext.checkPermission(solution, Right.TimetablesSolutionDelete);
                 			solution.delete(hibSession);
                 		}
                     	if (tx!=null) tx.commit();
@@ -255,44 +289,23 @@ public class ListSolutionsAction extends Action {
         if ("Load".equals(op) || "Load Empty Solution".equals(op)) {
         	SolverProxy solver = courseTimetablingSolverService.getSolver();
         	if (solver!=null && solver.isWorking()) throw new Exception("Solver is working, stop it first.");
-        	Long settingsId = null;
-        	Long[] ownerId = null;
-        	Transaction tx = null;
-        	try {
-        		SolutionDAO dao = new SolutionDAO();
-        		org.hibernate.Session hibSession = dao.getSession();
-        		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
-        			tx = hibSession.beginTransaction();
-        		
-            	if ("Load".equals(op)) {
-        			ownerId = myForm.getOwnerIds();
-        		} else {
-        			if (myForm.getSelectOwner())
-        				ownerId = new Long[] {myForm.getOwnerId()};
-        			else if (myForm.getOwners()!=null && !myForm.getOwners().isEmpty()) {
-        				ownerId = new Long[myForm.getOwners().size()];
-        				for (int i=0;i<myForm.getOwners().size();i++)
-        					ownerId[i] = ((SolverForm.LongIdValue)myForm.getOwners().elementAt(i)).getId();
-        			}
-        		}
-            	
-            	List list = null;
-            	if ("Load".equals(op)) {
-            		list = hibSession.createCriteria(SolverPredefinedSetting.class).add(Restrictions.eq("uniqueId", myForm.getSetting())).list();
-            	} else {
-            		list = hibSession.createCriteria(SolverPredefinedSetting.class).add(Restrictions.eq("uniqueId", myForm.getEmptySetting())).list();
-            	}
-            	SolverPredefinedSetting settings = (SolverPredefinedSetting)list.get(0);
-            	settingsId = settings.getUniqueId();
 
-            	if (tx!=null) tx.commit();
-    	    } catch (Exception e) {
-    	    	if (tx!=null) tx.rollback();
-    			Debug.error(e);
-    	    }
-    	    String host = myForm.getHost();
-    	    if ("Load Empty Solution".equals(op))
+        	Long[] ownerId = null;
+        	if ("Load".equals(op)) {
+        		sessionContext.checkPermission(myForm.getSolutionId().split(","), "Solution", Right.TimetablesSolutionLoad);
+    			ownerId = myForm.getOwnerIds();
+    		} else {
+    			sessionContext.checkPermission(myForm.getOwnerId(), "SolverGroup", Right.TimetablesSolutionLoadEmpty);
+    			ownerId = new Long[] {myForm.getOwnerId()};
+    		}
+
+        	String host = myForm.getHost();
+        	Long settingsId = myForm.getSetting();
+        	
+    	    if ("Load Empty Solution".equals(op)) {
     	    	host = myForm.getHostEmpty();
+    	    	settingsId = myForm.getEmptySetting();
+    	    }
     	    
     	    DataProperties config = courseTimetablingSolverService.createConfig(settingsId, null);
     	    if ("Load".equals(op))
@@ -301,8 +314,6 @@ public class ListSolutionsAction extends Action {
     	    	config.setProperty("General.Host", host);
     	    config.setProperty("General.SolverGroupId", ownerId);
     	    courseTimetablingSolverService.createSolver(config);
-    	    
-    	    myForm.setChangeTab(true);
         }
         
         // Edit
@@ -326,7 +337,7 @@ public class ListSolutionsAction extends Action {
             			saveErrors(request, errors);
             			mapping.findForward("showSolutions");
             		} else {
-            			myForm.addSolution(solution, user);
+            			myForm.addSolution(solution);
             		}
                 	if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -361,7 +372,6 @@ public class ListSolutionsAction extends Action {
         	courseTimetablingSolverService.reload(
         			courseTimetablingSolverService.createConfig(solver.getProperties().getPropertyLong("General.SettingsId", null), null));
         	// WebSolver.reload(request.getSession(), null, null);
-        	myForm.setChangeTab(true);
         }
 
         // Save, Save As New, Save & Commit, Save As New & Commit
@@ -371,7 +381,6 @@ public class ListSolutionsAction extends Action {
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.setNote(myForm.getSolverNote());
         	courseTimetablingSolverService.getSolver().save(op.indexOf("As New")>=0, op.indexOf("Commit")>=0);
-        	myForm.setChangeTab(true);
         }
         
         if ("Export Solution".equals(op)) {
@@ -381,6 +390,8 @@ public class ListSolutionsAction extends Action {
         		SolutionBean sb = (SolutionBean)e.nextElement();
         		Solution solution = (new SolutionDAO()).get(sb.getUniqueId());
         		if (solution!=null) {
+        			sessionContext.checkPermission(solution, Right.TimetablesSolutionExportCsv);
+        			
         			solution.export(csvFile, UserProperty.NameFormat.get(sessionContext.getUser()));
         			if (solutionIds.length()>0) solutionIds+="-";
         			solutionIds+=solution.getUniqueId().toString();
@@ -395,14 +406,17 @@ public class ListSolutionsAction extends Action {
        		*/
         }
 
-        getSolutions(request, Web.hasRole(request.getSession(), Roles.getAdminRoles()) || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE), myForm);
+        getSolutions(request, myForm);
         myForm.setSolver(courseTimetablingSolverService.getSolver());
         return mapping.findForward("showSolutions");
 	}
 	
-    private void getSolutions(HttpServletRequest request, boolean listAll, boolean committedOnly, ListSolutionsForm myForm) throws Exception {
+    private void getSolutions(HttpServletRequest request, ListSolutionsForm myForm) throws Exception {
     	try {
-			WebTable.setOrder(request.getSession(),"listSolutions.ord",request.getParameter("ord"),1);
+			WebTable.setOrder(sessionContext,"listSolutions.ord",request.getParameter("ord"),1);
+			
+			boolean committedOnly = !sessionContext.hasPermission(Right.Solver);
+			boolean listAll = sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
 			
 			WebTable webTable = new WebTable( 16,
 					(committedOnly?"Committed Timetables":"Saved Timetables"), "listSolutions.do?ord=%%",
@@ -416,11 +430,14 @@ public class ListSolutionsAction extends Action {
 			
 			Collection solutions = null;
 			if (listAll)
-				solutions = Solution.findBySessionId(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
-			else
-				solutions = Solution.findBySessionIdAndManagerId(
-						Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId(),
-						Long.valueOf((String)Web.getUser(request.getSession()).getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
+				solutions = Solution.findBySessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+			else {
+				solutions = new ArrayList();
+				for (Qualifiable owner: sessionContext.getUser().getCurrentAuthority().getQualifiers("SolverGroup")) {
+					SolverGroup sg = SolverGroupDAO.getInstance().get((Long)owner.getQualifierId());
+					solutions.addAll(sg.getSolutions());
+				}
+			}
 			int nrLines = 0;
 			
 			if (solutions==null || solutions.isEmpty()) {
@@ -511,9 +528,9 @@ public class ListSolutionsAction extends Action {
 					nrLines++;
 		        }
 				if (nrLines==0)
-					webTable.addLine(null, new String[] {"<i>No solution saved by "+Web.getUser(request.getSession()).getName()+" so far.</i>"}, null, null );
+					webTable.addLine(null, new String[] {"<i>No solution saved by "+sessionContext.getUser().getName()+" so far.</i>"}, null, null );
 			}
-			request.setAttribute("ListSolutions.table",webTable.printTable(WebTable.getOrder(request.getSession(),"listSolutions.ord")));
+			request.setAttribute("ListSolutions.table",webTable.printTable(WebTable.getOrder(sessionContext,"listSolutions.ord")));
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.StringTokenizer;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,11 +30,15 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.SolverLogForm;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.solver.ui.LogInfo;
 
 
 /** 
@@ -41,6 +47,8 @@ import org.unitime.timetable.solver.service.SolverService;
 @Service("/solverLog")
 public class SolverLogAction extends Action {
 	
+	@Autowired SessionContext sessionContext;
+	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	// --------------------------------------------------------- Instance Variables
@@ -48,25 +56,43 @@ public class SolverLogAction extends Action {
 	// --------------------------------------------------------- Methods
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception{
 		SolverLogForm myForm = (SolverLogForm) form;
+		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.SolverLog);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         // Change log level
-        if (op==null || "Change".equals(op)) {
+        if ("Change".equals(op)) {
         	if (myForm.getLevelNoDefault()!=null)
-        		UserData.setProperty(request.getSession(), "SolverLog.level", myForm.getLevelNoDefault());
-        	SolverProxy solver = courseTimetablingSolverService.getSolver();
-        	if (solver!=null)
-        		solver.setDebugLevel(myForm.getLevelInt());
+        		sessionContext.getUser().setProperty("SolverLog.level", myForm.getLevelNoDefault());
+        } else {
+        	myForm.setLevel(sessionContext.getUser().getProperty("SolverLog.level"));
         }
-        
-        myForm.reset(mapping, request);
-        
+
+        SolverProxy solver = courseTimetablingSolverService.getSolver();
+        if (solver!=null) {
+        	solver.setDebugLevel(myForm.getLevelInt());
+        	request.setAttribute("log", solver.getLog());
+        } else {
+			String solutionIdsStr = (String)sessionContext.getAttribute(SessionAttribute.SelectedSolution);
+			if (solutionIdsStr!=null && !solutionIdsStr.isEmpty()) {
+				StringTokenizer s = new StringTokenizer(solutionIdsStr,",");
+				LogInfo[] logInfo = new LogInfo[s.countTokens()];
+				String[] ownerName = new String[s.countTokens()];
+				for (int i=0;i<logInfo.length;i++) {
+					Solution solution = (new SolutionDAO()).get(Long.valueOf(s.nextToken()));
+					if (solution!=null) {
+						logInfo[i] = (LogInfo)solution.getInfo("LogInfo");
+						ownerName[i] = solution.getOwner().getName();
+					}
+				}
+				myForm.setLogs(logInfo);
+				myForm.setOwnerNames(ownerName);
+			}
+        }
+                
         return mapping.findForward("showLog");
 	}
 

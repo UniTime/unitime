@@ -1741,7 +1741,7 @@ public class WebInstructionalOfferingTableBuilder {
         
     	if (isShowTimetable()) {
             boolean hasTimetable = false;
-            if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+            if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
             	try {
                 	if (classAssignment instanceof CachedClassAssignmentProxy) {
                 		Vector allClasses = new Vector();
