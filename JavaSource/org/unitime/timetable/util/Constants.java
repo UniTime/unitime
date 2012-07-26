@@ -537,6 +537,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 		return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.SchedulePrintNoteDisplay));
     }
 	
+	@Deprecated
     public static boolean showPrintNoteAsShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
     }
@@ -549,12 +550,15 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.CourseOfferingNoteDisplay));
     }
     
+    @Deprecated
     public static boolean showCrsOffrAsShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
     }
+    @Deprecated
     public static boolean showMgrNoteFullText(User user) {
     	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
     }
+    @Deprecated
     public static boolean showMgrNoteShortenedText(User user) {
     	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
     }

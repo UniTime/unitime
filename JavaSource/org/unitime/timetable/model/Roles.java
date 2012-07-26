@@ -218,7 +218,6 @@ public class Roles extends BaseRoles implements HasRights {
 		case InstructorDelete:
 		case InstructorEdit:
 		case InstructorAdd:
-		case InstructorAddDesignator:
 		case ManageInstructors:
 		case InstructorEditClearPreferences: 
 		case SolutionChanges:

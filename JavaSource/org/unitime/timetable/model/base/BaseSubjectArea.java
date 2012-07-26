@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -45,7 +44,6 @@ public abstract class BaseSubjectArea implements Serializable {
 	private Department iDepartment;
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstructionalOffering> iInstructionalOfferings;
-	private Set<Designator> iDesignatorInstructors;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
@@ -107,13 +105,6 @@ public abstract class BaseSubjectArea implements Serializable {
 	public void addToinstructionalOfferings(InstructionalOffering instructionalOffering) {
 		if (iInstructionalOfferings == null) iInstructionalOfferings = new HashSet<InstructionalOffering>();
 		iInstructionalOfferings.add(instructionalOffering);
-	}
-
-	public Set<Designator> getDesignatorInstructors() { return iDesignatorInstructors; }
-	public void setDesignatorInstructors(Set<Designator> designatorInstructors) { iDesignatorInstructors = designatorInstructors; }
-	public void addTodesignatorInstructors(Designator designator) {
-		if (iDesignatorInstructors == null) iDesignatorInstructors = new HashSet<Designator>();
-		iDesignatorInstructors.add(designator);
 	}
 
 	public boolean equals(Object o) {

@@ -153,7 +153,6 @@ public enum Right {
     InstructorEditClearPreferences(DepartmentalInstructor.class),
     InstructorDelete(DepartmentalInstructor.class),
     InstructorPreferences(DepartmentalInstructor.class),
-    InstructorAddDesignator(DepartmentalInstructor.class),
     
     ExaminationDetail(Exam.class),
     ExaminationEdit(Exam.class),

@@ -49,9 +49,7 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.Staff;
-import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.StaffComparator;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -246,14 +244,6 @@ public class InstructorListUpdateAction extends Action {
 				        	hibSession.saveOrUpdate(a);
 				        }
 				        
-				        for (Iterator i=inst.getDesignatorSubjectAreas().iterator();i.hasNext();) {
-				            Designator d = (Designator) i.next();
-				            SubjectArea sa = d.getSubjectArea();
-				            sa.getDesignatorInstructors().remove(d);
-				        	hibSession.saveOrUpdate(sa);
-				        	hibSession.delete(d);
-				        }
-                        
 						hibSession.delete(inst);
 					}
 				}

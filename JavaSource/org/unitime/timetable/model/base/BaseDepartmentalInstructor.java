@@ -27,7 +27,6 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PositionType;
@@ -49,7 +48,6 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	private Department iDepartment;
 	private Set<ClassInstructor> iClasses;
 	private Set<Exam> iExams;
-	private Set<Designator> iDesignatorSubjectAreas;
 	private Set<Assignment> iAssignments;
 	private Set<InstructionalOffering> iOfferings;
 
@@ -116,13 +114,6 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public void addToexams(Exam exam) {
 		if (iExams == null) iExams = new HashSet<Exam>();
 		iExams.add(exam);
-	}
-
-	public Set<Designator> getDesignatorSubjectAreas() { return iDesignatorSubjectAreas; }
-	public void setDesignatorSubjectAreas(Set<Designator> designatorSubjectAreas) { iDesignatorSubjectAreas = designatorSubjectAreas; }
-	public void addTodesignatorSubjectAreas(Designator designator) {
-		if (iDesignatorSubjectAreas == null) iDesignatorSubjectAreas = new HashSet<Designator>();
-		iDesignatorSubjectAreas.add(designator);
 	}
 
 	public Set<Assignment> getAssignments() { return iAssignments; }

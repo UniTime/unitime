@@ -45,9 +45,7 @@
 				<item name="Projection Rules" page="curprojrules" type="gwt"/>
 			</menu>
 			<separator/>
-			<menu name="Instructors" page="instructorSearch.do">
-				<item name="Designator List" page="designatorList.do"/>
-			</menu>
+			<item name="Instructors" page="instructorSearch.do"/>
 			<separator/>
 			<menu name="Rooms" page="roomSearch.do">
 				<item name="Room Features" page="roomFeatureSearch.do"/>

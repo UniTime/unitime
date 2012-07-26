@@ -86,8 +86,6 @@
       <form-bean name="editRoomForm" type="org.unitime.timetable.form.EditRoomForm" />
       <form-bean name="instructorListUpdateForm" type="org.unitime.timetable.form.InstructorListUpdateForm" />
       <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
-      <form-bean name="designatorListForm" type="org.unitime.timetable.form.DesignatorListForm" />
-      <form-bean name="designatorEditForm" type="org.unitime.timetable.form.DesignatorEditForm" />
       <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
@@ -1408,9 +1406,6 @@
       type="org.springframework.web.struts.DelegatingActionProxy"
       validate="false" >
       <forward name="showInstructorDetail" path="instructorDetailTile" />
-      <forward 
-      	name="addDesignator" 
-      	path="/designatorAdd.do" />
     </action>
     <action
       attribute="instructorEditForm"
@@ -1460,54 +1455,6 @@
        <forward 
        		name="instructionalOfferingDetail" 
        		path="/instructionalOfferingDetail.do" />
-    </action>
-    
-    <action
-       path="/designatorList"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="designatorListForm"
-       input="designatorListTile"
-       name="designatorListForm"
-       scope="request"
-       validate="false">
-       <forward 
-       		name="displayDesignatorList" 
-       		path="designatorListTile" />
-       <forward 
-       		name="addDesignator" 
-       		path="/designatorAdd.do" />
-    </action>
-    
-    <action
-       path="/designatorAdd"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="designatorEditForm"
-       input="designatorAddTile"
-       name="designatorEditForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="displayDesignatorDetail" 
-       		path="designatorAddTile" />
-       <forward 
-       		name="displayDesignatorList" 
-       		path="/designatorList.do" />
-    </action>
-    
-    <action
-       path="/designatorEdit"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="designatorEditForm"
-       input="designatorEditTile"
-       name="designatorEditForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="displayDesignatorDetail" 
-       		path="designatorEditTile" />
-       <forward 
-       		name="displayDesignatorList" 
-       		path="/designatorList.do" />
     </action>
     
     <action

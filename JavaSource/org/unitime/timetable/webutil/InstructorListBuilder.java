@@ -35,7 +35,6 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -69,7 +68,6 @@ public class InstructorListBuilder {
 				new String[] { 	MSG.columnExternalId(),
 								MSG.columnInstructorName(),
 								MSG.columnInstructorPosition(),
-								MSG.columnInstructorDesignatorNr(),
 								MSG.columnInstructorNote(),
 								MSG.columnPreferences()+"<BR>"+MSG.columnTimePref(),
 								"<BR>"+MSG.columnRoomPref(),
@@ -77,8 +75,8 @@ public class InstructorListBuilder {
 								MSG.columnInstructorClassAssignments(),
 								MSG.columnInstructorExamAssignments(),
 								MSG.columnInstructorIgnoreTooFar()}, 
-				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left"},
-				new boolean[] { true, true, true, true, true, true, true, true, true, true, true});
+				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left"},
+				new boolean[] { true, true, true, true, true, true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap;");
 		webTable.enableHR("#9CB0CE");
 
@@ -116,28 +114,6 @@ public class InstructorListBuilder {
 				String posType = MSG.instructorPositionNotSpecified();
 				if (di.getPositionType()!=null)
 				    posType = di.getPositionType().getLabel();
-				
-				StringBuffer designator = new StringBuffer();
-				if (!di.getDesignatorSubjectAreas().isEmpty()) {
-					if (di.getDepartment().getSubjectAreas().size()==1) {
-						Designator des = (Designator)di.getDesignatorSubjectAreas().iterator().next();
-						designator.append(des.getCode());
-					} else {
-						String lastCode = null;
-						for (Iterator i=(new TreeSet(di.getDesignatorSubjectAreas())).iterator();i.hasNext();) {
-							Designator des = (Designator)i.next();
-							if (lastCode==null) {
-								designator.append(des.getCode()+" ("+des.getSubjectArea().getSubjectAreaAbbreviation());
-							} else if (lastCode.equals(des.getCode())) {
-								designator.append(", "+des.getSubjectArea().getSubjectAreaAbbreviation());
-							} else {
-								designator.append(")<br>"+des.getCode()+" ("+des.getSubjectArea().getSubjectAreaAbbreviation());
-							}
-							lastCode = des.getCode();
-						}
-						designator.append(")");
-					}
-				}
 				
 				/*
 				//get departments
@@ -267,7 +243,6 @@ public class InstructorListBuilder {
 							puid, 	        
 							name, 
 							putSpace(posType),
-							putSpace(designator.toString()),
 							putSpace(note),
 							putSpace(timePref.toString()), 
 					        putSpace(rmPref),
@@ -275,7 +250,7 @@ public class InstructorListBuilder {
 					        putSpace(classesStr),
 					        putSpace(examsStr),
                             (itf?"<IMG border='0' title='"+MSG.titleIgnoreTooFarDistances()+"' alt='true' align='absmiddle' src='images/tick.gif'>":"&nbsp;")}, 
-						new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, null, new Integer(itf?0:1) });
+						new Comparable[] { puid, nameOrd, posType, null, null, null, null, null, null, new Integer(itf?0:1) });
 
 			}
 			
@@ -297,15 +272,14 @@ public class InstructorListBuilder {
 				new String[] { 	MSG.columnExternalId(),
 						MSG.columnInstructorName(),
 						MSG.columnInstructorPosition(),
-						MSG.columnInstructorDesignatorNr(),
 						MSG.columnInstructorNote(),
 						MSG.columnPreferences()+"\n"+MSG.columnTimePref(),
 						"\n"+MSG.columnRoomPref(),
 						"\n"+MSG.columnDistributionPref(),
 						MSG.columnInstructorClassAssignmentsPDF(),
 						MSG.columnInstructorExamAssignmentsPDF()},
-				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left" },
-				new boolean[] { true, true, true, true, true, true, true, true, true, true });
+				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+				new boolean[] { true, true, true, true, true, true, true, true, true});
 
 		// Loop through Instructor class
 		List list = null;
@@ -340,29 +314,6 @@ public class InstructorListBuilder {
 			String posType = "@@ITALIC "+MSG.instructorPositionNotSpecified();
 			if (di.getPositionType()!=null)
 			    posType = di.getPositionType().getLabel();
-			
-			StringBuffer designator = new StringBuffer();
-			if (!di.getDesignatorSubjectAreas().isEmpty()) {
-				if (di.getDepartment().getSubjectAreas().size()==1) {
-					Designator des = (Designator)di.getDesignatorSubjectAreas().iterator().next();
-					designator.append(des.getCode());
-				} else {
-					String lastCode = null;
-					for (Iterator i=(new TreeSet(di.getDesignatorSubjectAreas())).iterator();i.hasNext();) {
-						Designator des = (Designator)i.next();
-						if (lastCode==null) {
-							designator.append(des.getCode()+" ("+des.getSubjectArea().getSubjectAreaAbbreviation());
-						} else if (lastCode.equals(des.getCode())) {
-							designator.append(", "+des.getSubjectArea().getSubjectAreaAbbreviation());
-						} else {
-							designator.append(")<br>"+des.getCode()+" ("+des.getSubjectArea().getSubjectAreaAbbreviation());
-						}
-						lastCode = des.getCode();
-					}
-					designator.append(")");
-				}
-			}
-			
 			
 			/*
 			//get departments
@@ -471,14 +422,13 @@ public class InstructorListBuilder {
 						puid, 	        
 						name, 
 						posType,
-						designator.toString(),
 						note,
 						timePref.toString(), 
 				        rmPref,
 				        distPref,
 				        classesStr,
 				        examsStr}, 
-					new Comparable[] { puid, nameOrd, posType, designator.toString(), null, null, null, null, null, null });
+					new Comparable[] { puid, nameOrd, posType, null, null, null, null, null, null });
 
 		}
 		
