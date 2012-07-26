@@ -617,21 +617,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
-  	<definition name="designatorListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Designator List"/>
-		<put name="body" value="/user/designatorList.jsp" />
-  	</definition>
-  	
-  	<definition name="designatorAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Designator"/>
-		<put name="body" value="/user/designatorEdit.jsp" />
-  	</definition>
-  	
-  	<definition name="designatorEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Designator"/>
-		<put name="body" value="/user/designatorEdit.jsp" />
-  	</definition>
-  	
   	<definition name="applicationConfigTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Application Configuration"/>
 		<put name="body" value="/admin/applicationConfig.jsp" />

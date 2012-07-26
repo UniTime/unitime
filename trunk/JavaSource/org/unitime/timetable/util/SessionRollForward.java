@@ -49,7 +49,6 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Designator;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
@@ -1649,21 +1648,6 @@ public class SessionRollForward {
 								rollForwardRoomGroupPrefs(fromInstructor, toInstructor, toSession);
 								rollForwardTimePrefs(fromInstructor, toInstructor, toSession);
 								rollInstructorDistributionPrefs(fromInstructor, toInstructor);
-								if (fromInstructor.getDesignatorSubjectAreas() != null && !fromInstructor.getDesignatorSubjectAreas().isEmpty()){
-									Designator fromDesignator = null;
-									Designator toDesignator = null;
-									for (Iterator dsIt = fromInstructor.getDesignatorSubjectAreas().iterator(); dsIt.hasNext();){
-										fromDesignator = (Designator) dsIt.next();
-										toDesignator = new Designator();
-										toDesignator.setCode(fromDesignator.getCode());
-										toDesignator.setInstructor(toInstructor);
-										toDesignator.setSubjectArea(SubjectArea.findByAbbv(toSession.getUniqueId(), fromDesignator.getSubjectArea().getSubjectAreaAbbreviation()));
-										if (toDesignator.getSubjectArea() != null){
-											toDesignator.getSubjectArea().addTodesignatorInstructors(toDesignator);
-											toInstructor.addTodesignatorSubjectAreas(toDesignator);
-										}
-									}
-								}
 								iDao.saveOrUpdate(toInstructor);
 								iDao.getSession().flush();
 								iDao.getSession().evict(toInstructor);

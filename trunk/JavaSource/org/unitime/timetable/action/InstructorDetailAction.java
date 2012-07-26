@@ -60,7 +60,6 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
-import org.unitime.timetable.webutil.DesignatorListBuilder;
 import org.unitime.timetable.webutil.Navigation;
 
 
@@ -181,17 +180,7 @@ public class InstructorDetailAction extends PreferencesAction {
 	        	response.sendRedirect( response.encodeURL("instructorPrefEdit.do?instructorId="+instructorId) );
 	        	return null;
 	        }
-	        
-	        // Add Designator
-	        if(op.equals(rsc.getMessage("button.addDesignator2")) 
-	                && instructorId!=null && instructorId.trim()!="") {
-	        	
-			    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorAddDesignator);
-
-	            request.setAttribute("instructorId", instructorId);
-	        	return mapping.findForward("addDesignator");
-	        }
-	        
+	        	        
             if (op.equals(rsc.getMessage("button.nextInstructor"))) {
             	response.sendRedirect(response.encodeURL("instructorDetail.do?instructorId="+frm.getNextId()));
             	return null;
@@ -452,9 +441,6 @@ public class InstructorDetailAction extends PreferencesAction {
 		}
         
         frm.setIgnoreDist(inst.isIgnoreToFar()==null?false:inst.isIgnoreToFar().booleanValue());
-		
-		String designatorTable = new DesignatorListBuilder().htmlTableForInstructor(request, instructorId, order);
-		request.setAttribute("designatorList", designatorTable);
 	}
 	
 	

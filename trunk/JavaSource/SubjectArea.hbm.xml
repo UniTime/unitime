@@ -109,17 +109,5 @@
 
         </set>
 
-        <set
-            name="designatorInstructors"
-            cascade="all"
-            lazy="true"
-            inverse="true"
-            table="designator">
-
-            <cache include="non-lazy" usage="read-write"/>
-            <key column="subject_area_id"/>
-            <one-to-many class="Designator"/>
-        </set>
-
     </class>
 </hibernate-mapping>
