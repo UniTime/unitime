@@ -21,8 +21,8 @@ package org.unitime.timetable.tags;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 
 
@@ -33,7 +33,7 @@ public class CanSeeExams extends TagSupport {
 	private static final long serialVersionUID = -660964063270276723L;
 
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 
     public int doStartTag() {

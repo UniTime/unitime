@@ -118,7 +118,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 	public static Department findByDeptCode(String deptCode, Long sessionId, org.hibernate.Session hibSession) {
 		return (Department)hibSession.
 			createQuery("select distinct d from Department as d where d.deptCode=:deptCode and d.session.uniqueId=:sessionId").
-			setLong("sessionId", sessionId.longValue()).
+			setLong("sessionId", sessionId).
 			setString("deptCode", deptCode).
 			setCacheable(true).
 			setFlushMode(FlushMode.MANUAL).

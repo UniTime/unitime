@@ -19,37 +19,31 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomGroup;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.LookupTables;
 
 
 /** 
@@ -64,6 +58,8 @@ import org.unitime.timetable.util.Constants;
 @Service("/roomGroupAdd")
 public class RoomGroupAddAction extends Action {
 
+	@Autowired SessionContext sessionContext;
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -82,11 +78,6 @@ public class RoomGroupAddAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception{
 		RoomGroupEditForm roomGroupEditForm = (RoomGroupEditForm) form;
-		
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
 		
 		MessageResources rsc = getResources(request);
 		String doit = roomGroupEditForm.getDoit();
@@ -111,17 +102,28 @@ public class RoomGroupAddAction extends Action {
 		}
 		
 		//get depts owned by user
-		setDeptList(request, roomGroupEditForm);
+		LookupTables.setupDepartments(request, sessionContext, false);
 		
-		User user = Web.getUser(webSession);
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-			roomGroupEditForm.setGlobal(roomGroupEditForm.getDeptCode()==null 
-			        || roomGroupEditForm.getDeptCode().trim().length()==0
-			        || roomGroupEditForm.getDeptCode().equalsIgnoreCase("exam")
-                    || roomGroupEditForm.getDeptCode().equalsIgnoreCase("eexam"));
+        //set default department
+		TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+        if (departments.size() == 1) {
+        	roomGroupEditForm.setDeptCode(departments.first().getDeptCode());
+        } else {
+        	String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.equals("Exam") && !deptCode.equals("EExam"))
+        		roomGroupEditForm.setDeptCode(deptCode);
+		}
+		
+		if (roomGroupEditForm.getDeptCode() == null || roomGroupEditForm.getDeptCode().isEmpty() || roomGroupEditForm.getDeptCode().equals("Exam") || roomGroupEditForm.getDeptCode().equals("EExam") ||
+			!sessionContext.hasPermission(roomGroupEditForm.getDeptCode(), "Department", Right.DepartmentRoomGroupAdd)) {
+			sessionContext.checkPermission(Right.GlobalRoomGroupAdd);
+			roomGroupEditForm.setGlobal(true);
 		} else {
+			sessionContext.checkPermission(roomGroupEditForm.getDeptCode(), "Department", Right.DepartmentRoomGroupAdd);
 			roomGroupEditForm.setGlobal(false);
 		}
+		
+		roomGroupEditForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		return mapping.findForward("showAdd");
 	}
@@ -131,9 +133,13 @@ public class RoomGroupAddAction extends Action {
 			RoomGroupEditForm roomGroupEditForm, 
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception{
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+		
+		Department d = (roomGroupEditForm.isGlobal() ? null : Department.findByDeptCode(roomGroupEditForm.getDeptCode(), sessionContext.getUser().getCurrentAcademicSessionId()));
+		
+		if (d == null)
+			sessionContext.checkPermission(Right.GlobalRoomGroupAdd);
+		else
+			sessionContext.checkPermission(d, Right.DepartmentRoomFeatureAdd);
 		
 		//create new roomGroup
 		RoomGroupDAO rgdao = new RoomGroupDAO();
@@ -141,17 +147,13 @@ public class RoomGroupAddAction extends Action {
 		
 		rg.setName(roomGroupEditForm.getName());
         rg.setAbbv(roomGroupEditForm.getAbbv());
-		rg.setSession(Session.getCurrentAcadSession(user));
+		rg.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
 		rg.setDescription(roomGroupEditForm.getDesc());
 		
-		rg.setGlobal(Boolean.valueOf(roomGroupEditForm.isGlobal()));
+		rg.setGlobal(d == null);
+		rg.setDepartment(d);
 		
-		rg.setDefaultGroup(Boolean.valueOf(roomGroupEditForm.isDeft()));
-
-        if (!roomGroupEditForm.isGlobal()) {
-            Department d = Department.findByDeptCode(roomGroupEditForm.getDeptCode(), sessionId);
-            rg.setDepartment(d);
-        }
+		rg.setDefaultGroup(roomGroupEditForm.isDeft());
 
 		org.hibernate.Session hibSession = rgdao.getSession();
 		Transaction tx = null;
@@ -162,7 +164,7 @@ public class RoomGroupAddAction extends Action {
             
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     rg, 
                     ChangeLog.Source.ROOM_GROUP_EDIT, 
                     ChangeLog.Operation.CREATE, 
@@ -183,50 +185,6 @@ public class RoomGroupAddAction extends Action {
 		}
 	}
 
-	/**
-	 * 
-	 * @param request
-	 * @param roomFeatureEditForm
-	 * @throws Exception 
-	 */
-	private void setDeptList(HttpServletRequest request, RoomGroupEditForm roomGroupEditForm) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId)); 
-        Set departments = new TreeSet();
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-			departments = Department.findAllBeingUsed(sessionId);
-		} else {
-			departments = new TreeSet(manager.departmentsForSession(sessionId));
-		}
-		//Set departments = new TreeSet(manager.departmentsForSession(sessionId));
-		roomGroupEditForm.setDeptSize(departments.size());
-		
-        ArrayList list = new ArrayList();
-        roomGroupEditForm.setDeptCode(null);
-        for (Iterator iter = departments.iterator(); iter.hasNext();) {
-        	Department dept = (Department) iter.next();
-        	if (!dept.isEditableBy(user)) continue;
-        	list.add(new LabelValueBean( dept.getDeptCode()+" - "+dept.getName(), dept.getDeptCode())); 
-        }
-        
-        request.setAttribute(Department.DEPT_ATTR_NAME, list);
-        
-        //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	roomGroupEditForm.setDeptCode(d.getDeptCode());
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null && !"All".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))
-                && !"Exam".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))) {
-        	roomGroupEditForm.setDeptCode(webSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-		}
-	}
-	
 	/**
 	 * 
 	 * @param hibSession

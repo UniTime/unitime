@@ -23,8 +23,8 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 import javax.servlet.jsp.tagext.BodyTagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.webutil.JavascriptFunctions;
 
 /**
@@ -43,7 +43,7 @@ public class Confirm extends BodyTagSupport {
     }
     
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
     
     public int doEndTag() throws JspException {

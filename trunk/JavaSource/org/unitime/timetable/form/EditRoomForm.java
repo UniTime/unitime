@@ -30,14 +30,13 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.webutil.WebTextValidation;
 
 /** 
@@ -191,8 +190,7 @@ public class EditRoomForm extends ActionForm {
     }
     
     private static SessionContext getSessionContext(HttpSession session) {
-		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(session.getServletContext());
-		return (SessionContext)applicationContext.getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(session.getServletContext());
 	}
 
 	/** 

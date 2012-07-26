@@ -23,7 +23,6 @@ import java.util.Set;
 
 import javax.servlet.jsp.tagext.TagSupport;
 
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Solution;
@@ -32,6 +31,7 @@ import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
@@ -45,7 +45,7 @@ public class SolverWarnings extends TagSupport {
 	private static final long serialVersionUID = 7947787141769725429L;
 
     public SessionContext getSessionContext() {
-    	return (SessionContext) WebApplicationContextUtils.getWebApplicationContext(pageContext.getServletContext()).getBean("sessionContext");
+    	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
 	
 	public String getSolverWarningCheckSolution() {

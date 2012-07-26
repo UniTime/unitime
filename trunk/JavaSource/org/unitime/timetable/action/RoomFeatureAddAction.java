@@ -19,40 +19,34 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
-import org.apache.struts.util.LabelValueBean;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomFeatureEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.GlobalRoomFeature;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeature;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.LookupTables;
 
 
 /** 
@@ -66,6 +60,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/roomFeatureAdd")
 public class RoomFeatureAddAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -85,11 +81,6 @@ public class RoomFeatureAddAction extends Action {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		RoomFeatureEditForm roomFeatureEditForm = (RoomFeatureEditForm) form;
-		
-		HttpSession webSession = request.getSession();
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}
 		
 		MessageResources rsc = getResources(request);
 		String doit = roomFeatureEditForm.getDoit();
@@ -114,17 +105,28 @@ public class RoomFeatureAddAction extends Action {
 		}
 		
 		//get depts owned by user
-		setDeptList(request, roomFeatureEditForm);
+		LookupTables.setupDepartments(request, sessionContext, false);
 		
-		User user = Web.getUser(webSession);
-		if (user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE)) {
-			roomFeatureEditForm.setGlobal(roomFeatureEditForm.getDeptCode()==null
-			        || roomFeatureEditForm.getDeptCode().trim().length()==0
-			        || roomFeatureEditForm.getDeptCode().equalsIgnoreCase("exam")
-			        || roomFeatureEditForm.getDeptCode().equalsIgnoreCase("eexam"));
+        //set default department
+		TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
+        if (departments.size() == 1) {
+        	roomFeatureEditForm.setDeptCode(departments.first().getDeptCode());
+        } else {
+        	String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
+        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.equals("Exam") && !deptCode.equals("EExam"))
+        		roomFeatureEditForm.setDeptCode(deptCode);
+		}
+		
+		if (roomFeatureEditForm.getDeptCode() == null || roomFeatureEditForm.getDeptCode().isEmpty() || roomFeatureEditForm.getDeptCode().equals("Exam") || roomFeatureEditForm.getDeptCode().equals("EExam") ||
+				!sessionContext.hasPermission(roomFeatureEditForm.getDeptCode(), "Department", Right.DepartmentRoomFeatureAdd)) {
+			sessionContext.checkPermission(Right.GlobalRoomFeatureAdd);
+			roomFeatureEditForm.setGlobal(true);
 		} else {
+			sessionContext.checkPermission(roomFeatureEditForm.getDeptCode(), "Department", Right.DepartmentRoomFeatureAdd);
 			roomFeatureEditForm.setGlobal(false);
 		}
+		
+		roomFeatureEditForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		return mapping.findForward("showAdd");
 	}
@@ -141,12 +143,11 @@ public class RoomFeatureAddAction extends Action {
 			RoomFeatureEditForm roomFeatureEditForm, 
 			HttpServletRequest request, 
 			HttpServletResponse response) throws Exception{
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		Session session = Session.getCurrentAcadSession(user);
 				
 		//if roomFeature is global
 		if (roomFeatureEditForm.isGlobal()) {
+			sessionContext.checkPermission(Right.GlobalRoomFeatureAdd);
+			
 			GlobalRoomFeatureDAO gdao = new GlobalRoomFeatureDAO();
 			org.hibernate.Session hibSession = gdao.getSession();
 			Transaction tx = null;
@@ -154,7 +155,7 @@ public class RoomFeatureAddAction extends Action {
 			GlobalRoomFeature rf = new GlobalRoomFeature();
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
-            rf.setSession(session);
+            rf.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
 
 			try {
 				tx = hibSession.beginTransaction();				
@@ -162,7 +163,7 @@ public class RoomFeatureAddAction extends Action {
                 
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         rf, 
                         ChangeLog.Source.ROOM_FEATURE_EDIT, 
                         ChangeLog.Operation.CREATE, 
@@ -179,6 +180,9 @@ public class RoomFeatureAddAction extends Action {
 		        throw e;
 		    }
 		} else {
+			Department department = Department.findByDeptCode(roomFeatureEditForm.getDeptCode(), sessionContext.getUser().getCurrentAcademicSessionId());
+			sessionContext.checkPermission(department, Right.DepartmentRoomFeatureAdd);
+			
 			DepartmentRoomFeatureDAO ddao = new DepartmentRoomFeatureDAO();
 			org.hibernate.Session hibSession = ddao.getSession();
 			Transaction tx = null;
@@ -187,7 +191,7 @@ public class RoomFeatureAddAction extends Action {
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
-	        rf.setDepartment(Department.findByDeptCode(roomFeatureEditForm.getDeptCode(),session.getUniqueId()));	
+	        rf.setDepartment(department);	
 
 			try {
 				tx = hibSession.beginTransaction();				
@@ -195,7 +199,7 @@ public class RoomFeatureAddAction extends Action {
                 
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         (RoomFeature)rf, 
                         ChangeLog.Source.ROOM_FEATURE_EDIT, 
                         ChangeLog.Operation.CREATE, 
@@ -212,51 +216,6 @@ public class RoomFeatureAddAction extends Action {
 		    }
 		}
 		
-	}
-
-	/**
-	 * 
-	 * @param request
-	 * @param roomFeatureEditForm
-	 * @throws Exception 
-	 */
-	private void setDeptList(HttpServletRequest request, RoomFeatureEditForm roomFeatureEditForm) throws Exception {
-		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE) || user.getRole().equals(Roles.EXAM_MGR_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId)); 
-        Set departments = new TreeSet();
-		if (user.getRole().equals(Roles.ADMIN_ROLE)) {
-			departments = Department.findAllBeingUsed(sessionId);
-		} else {
-			departments = new TreeSet(manager.departmentsForSession(sessionId));
-		}
-        //Set departments = new TreeSet(manager.departmentsForSession(sessionId));
-		roomFeatureEditForm.setDeptSize(departments.size());
-		
-		roomFeatureEditForm.setDeptCode(null);
-		
-        ArrayList list = new ArrayList();
-        for (Iterator iter = departments.iterator(); iter.hasNext();) {
-        	Department dept = (Department) iter.next();
-        	if (!dept.isEditableBy(user)) continue;
-        	list.add(new LabelValueBean( dept.getDeptCode()+" - "+dept.getName(), dept.getDeptCode())); 
-        }
-        
-        request.setAttribute(Department.DEPT_ATTR_NAME, list);
-        
-        //set default department
-        if (!isAdmin && (departments.size() == 1)) {
-        	Department d = (Department) departments.iterator().next();
-        	roomFeatureEditForm.setDeptCode(d.getDeptCode());
-        } else if (webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME) != null && !"All".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))
-                && !"Exam".equalsIgnoreCase((String)webSession.getAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME))) {
-        	roomFeatureEditForm.setDeptCode(webSession.getAttribute(
-					Constants.DEPT_CODE_ATTR_ROOM_NAME).toString());
-		}
 	}
 
 }

@@ -116,6 +116,7 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static String CRS_NBR_ATTR_NAME = "courseNbr";
     public static String DEPT_ID_ATTR_NAME = "deptUniqueId";
     public static String DEPT_CODE_ATTR_NAME = "deptCode";
+    @Deprecated
     public static String DEPT_CODE_ATTR_ROOM_NAME = "deptCodeRoom";
     @Deprecated
     public static String CRS_LST_SUBJ_AREA_IDS_ATTR_NAME = "crsLstSubjectAreaIds";
