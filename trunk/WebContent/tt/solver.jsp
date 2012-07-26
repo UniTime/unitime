@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.security.SessionContext"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
@@ -28,7 +29,6 @@
 <%@ page import="org.unitime.timetable.solver.ui.PropertiesInfo" %>
 <%@ page import="net.sf.cpsolver.ifs.util.Progress" %>
 <%@ page import="org.unitime.timetable.solver.ui.LogInfo" %>
-<%@ page import="org.unitime.commons.User" %>
 <%@ page import="org.unitime.timetable.form.SolverForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -36,11 +36,13 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tt:back-mark back="true" clear="true" title="Solver" uri="solver.do"/>
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmUnload() {
 			if (jsConfirm!=null && !jsConfirm) return;
@@ -92,7 +94,6 @@ try {
 %>
 <%
 	SolverForm frm = (SolverForm)request.getAttribute("solverForm");
-	User user = Web.getUser(session); 
 
 	SolverProxy solver = WebSolver.getSolver(session);
 	String status = null;
@@ -174,30 +175,30 @@ try {
 			</TD>		
 		</TR>
 	</logic:iterate>
-	<TR>
-		<TD valign="top">Owner:</TD>
-		<TD>
-		<logic:equal name="solverForm" property="selectOwner" value="true">
-			<html:select property="owner" disabled="<%=disabled%>" multiple="true" size='<%=""+Math.min(5,frm.getOwners()==null?1:frm.getOwners().size())%>'>
-				<html:optionsCollection name="solverForm" property="owners" label="value" value="id"/>
-			</html:select>
-		</logic:equal>
-		<logic:equal name="solverForm" property="selectOwner" value="false">
-			<html:select property="owner" disabled="true" multiple="true" size='<%=""+(frm.getOwner()==null?1:frm.getOwner().length)%>'>
-				<html:optionsCollection name="solverForm" property="owners" label="value" value="id"/>
-			</html:select>
-		</logic:equal>
-		&nbsp;<html:errors property="owner"/>
-		</TD>
-	</TR>
-	<logic:empty name="solverForm" property="hosts">
+	<logic:notEmpty name="owners" scope="request">
+		<bean:define id="owners" name="owners" scope="request" type="java.util.Collection"/>
+		<TR>
+			<TD valign="top">Owner:</TD>
+			<TD>
+				<html:select property="owner" disabled="<%=disabled%>" multiple="true" size='<%=""+Math.min(5,owners.size())%>'>
+					<html:optionsCollection name="owners" label="value" value="id"/>
+				</html:select>
+				&nbsp;<html:errors property="owner"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	<logic:empty name="owners" scope="request">
+		<html:hidden property="owner"/>
+	</logic:empty>
+	<logic:empty name="hosts" scope="request">
 		<html:hidden property="host"/>
 	</logic:empty>
-	<logic:notEmpty name="solverForm" property="hosts">
+	<logic:notEmpty name="hosts" scope="request">
+	<bean:define id="hosts" name="hosts" scope="request"/>
 	   	<TR><TD>Host:</TD>
 			<TD>
 				<html:select property="host" disabled="<%=(solver!=null)%>">
-					<html:options name="solverForm" property="hosts"/>
+					<html:options name="hosts"/>
 				</html:select>
 				&nbsp;<html:errors property="host"/>
 			</TD>
@@ -218,9 +219,9 @@ try {
 			<html:submit onclick="displayLoading();" property="op" value="Student Sectioning"/>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
 			<html:submit onclick="confirmUnload();displayLoading();" property="op" value="Unload"/>
-			<logic:equal name="solverForm" property="canDo" value="true">
+			<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'SolverSolutionExportCsv')">
 				<html:submit onclick="displayLoading();" property="op" value="Export Solution"/>
-			</logic:equal>
+			</sec:authorize>
 <% } %>
 			<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
 		</TD>
@@ -330,7 +331,7 @@ try {
 			}
 			if (!solver.isWorking())  {
 %>
-			<logic:equal name="solverForm" property="canDo" value="true">
+			<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'SolverSolutionSave')">
 				<TR>
 					<TD align="right" colspan="2">
 <%
@@ -341,7 +342,7 @@ try {
 				}
 %>
 						<html:submit onclick="confirmSaveAsNew();displayLoading();" property="op" value="Save As New"/>
-					<logic:equal name="solverForm" property="canCommit" value="true">
+					<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'TimetablesSolutionCommit')">
 <%
 					if (hasSolution) {
 %>
@@ -350,14 +351,14 @@ try {
 					}
 %>
 						<html:submit onclick="confirmSaveAsNewAndCommit();displayLoading();" property="op" value="Save As New & Commit"/>
-					</logic:equal>
+					</sec:authorize>
 
-					<tt:propertyEquals name="tmtbl.solver.export" value="true">
+					<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'SolverSolutionExportXml')">
 						<html:submit property="op" value="Export XML"/>
-					</tt:propertyEquals>
+					</sec:authorize>
 					</TD>
 				</TR>
-			</logic:equal>
+			</sec:authorize>
 <%
 			}
 %>

@@ -34,8 +34,10 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
@@ -129,8 +131,34 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 				throw new AccessDeniedException(MSG.noSubject(right.toString()));
 			}
 			
-			if (targetId == null)
+			if (targetId == null && SolverGroup.class.getName().equals(className)) {
+				AccessDeniedException firstDenial = null;
+				for (SolverGroup g: SolverGroup.getUserSolverGroups(user)) {
+					try {
+						checkPermission(user, g, right);
+						return;
+					} catch (AccessDeniedException e) {
+						if (firstDenial == null) firstDenial = e;
+					}
+				}
+				
+				if (firstDenial != null) throw firstDenial;
+				throw new AccessDeniedException(MSG.noSolverGroup(right.toString()));
+			}
+			
+			if (targetId == null) {
 				throw new AccessDeniedException(MSG.noDomainObject(right.toString(), targetType));
+			}
+			
+			if (targetId instanceof Qualifiable) {
+				Qualifiable q = (Qualifiable)targetId;
+				if (targetType == null || targetType.equals(q.getQualifierType())) {
+					checkPermission(user, q.getQualifierId(), q.getQualifierType(), right);
+					return;
+				} else {
+					throw new AccessDeniedException(MSG.wrongDomainObject(right.toString(), q.getQualifierType(), targetType));
+				}
+			}
 			
 			if (targetId instanceof String && Department.class.getName().equals(className)) {
 				Department dept = Department.findByDeptCode((String)targetId, user.getCurrentAcademicSessionId());

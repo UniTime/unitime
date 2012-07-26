@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.security.rights.Right"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
@@ -29,17 +30,18 @@
 <%@ page import="org.unitime.timetable.model.SolverGroup" %>
 <%@ page import="org.unitime.timetable.model.dao.SolverGroupDAO" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.commons.User" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tt:back-mark back="true" clear="true" title="Timetables" uri="listSolutions.do"/>
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm) return;
@@ -137,7 +139,7 @@
 			solution = new Solution[iSolutionId.length];
 			for (int i=0;i<iSolutionId.length;i++) {
 				solution[i] = dao.get(iSolutionId[i],hibSession);
-				if (solution[i]==null || !solution[i].getOwner().canCommit(Web.getUser(session)))
+				if (solution[i]==null || !sessionContext.hasPermission(solution[i].getOwner(), Right.TimetablesSolutionCommit))
 					canCommit = false;
 			}
 		}
@@ -147,7 +149,7 @@
 			owner = new SolverGroup[ownerId.length];
 			for (int i=0;i<ownerId.length;i++) {
 				owner[i] = (new SolverGroupDAO()).get(ownerId[i],hibSession);
-				if (owner[i]==null || !owner[i].canCommit(Web.getUser(session)))
+				if (owner[i]==null || !sessionContext.hasPermission(owner[i], Right.TimetablesSolutionCommit))
 					canCommit = false;
 			}
 		}
@@ -305,9 +307,22 @@
 				</logic:equal>
 			</TD>
 		</TR>
-		<TR>
-			<TD valign="top">Note:</TD><TD>
-			<textarea id="note<%=idx%>" name="note<%=idx%>" cols="80" rows="4"><bean:write name="sb" property="note" /></textarea>
+		<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionChangeNote')">
+			<TR>
+				<TD valign="top">Note:</TD><TD>
+					<textarea id="note<%=idx%>" name="note<%=idx%>" cols="80" rows="4"><bean:write name="sb" property="note" /></textarea>
+				</TD>
+			</TR>
+		</sec:authorize>
+		<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionChangeNote')">
+			<logic:notEmpty name="sb" property="note">
+				<TR>
+					<TD valign="top">Note:</TD><TD>
+						<bean:write name="sb" property="note" />
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			</sec:authorize>
 		</TR>
 		<logic:iterate name="sb" property="infos" id="info">
 			<TR>
@@ -322,28 +337,30 @@
 		<TR>
 			<TD align="right" colspan="2">
 				<html:submit onclick="<%=\"selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Deselect"/>
-				<logic:equal name="listSolutionsForm" property="viewOnly" value="false">
-					<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';note.value=document.getElementById('note\"+idx+\"').value;\"%>" property="op" value="Update Note"/>
-					<logic:equal name="sb" property="canCommit" value="true">
+					<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionChangeNote')">
+						<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';note.value=document.getElementById('note\"+idx+\"').value;\"%>" property="op" value="Update Note"/>
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#sb.ownerId, 'SolverGroup', 'TimetablesSolutionCommit')">
 						<logic:equal name="sb" property="commited" value="">
 							<html:submit onclick="<%=\"confirmCommit();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Commit"/>
 						</logic:equal>
 						<logic:notEqual name="sb" property="commited" value="">
 							<html:submit onclick="<%=\"confirmUncommit();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Uncommit"/>
 						</logic:notEqual>
-					</logic:equal>
-					<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Export Solution"/>
-					<logic:equal name="listSolutionsForm" property="canDo" value="true">
-						<logic:equal name="sb" property="commited" value="">
+					</sec:authorize>
+					<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionExportCsv')">
+						<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Export Solution"/>
+					</sec:authorize>
+					<logic:equal name="sb" property="commited" value="">
+						<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionDelete')">
 							<html:submit onclick="<%=\"confirmDelete();displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Delete"/> 
-						</logic:equal>
+						</sec:authorize>
 					</logic:equal>
-				</logic:equal>
 			</TD>
 		</TR>
 	</logic:iterate>
 <% if (solver==null || !solver.isWorking()) { %>
-		<logic:equal name="listSolutionsForm" property="canDo" value="true">
+		<sec:authorize access="hasPermission(#listSolutionsForm.solutionBeans, 'Solution', 'TimetablesSolutionLoad')">
 		<logic:notEmpty name="listSolutionsForm" property="settings">
 			<TR>
 				<TD nowrap>Load into interactive solver:</TD>
@@ -352,13 +369,14 @@
 					<html:select property="setting">
 						<html:optionsCollection name="listSolutionsForm" property="settings" label="value" value="id"/>
 					</html:select>
-					<logic:empty name="listSolutionsForm" property="hosts">
+					<logic:empty name="hosts" scope="request">
 						<html:hidden property="host"/>
 					</logic:empty>
-					<logic:notEmpty name="listSolutionsForm" property="hosts"> 
+					<logic:notEmpty name="hosts" scope="request">
+						<bean:define id="hosts" name="hosts" scope="request"/> 
 						&nbsp;&nbsp;&nbsp;&nbsp;Host:
 						<html:select property="host">
-							<html:options name="listSolutionsForm" property="hosts"/>
+							<html:options name="hosts"/>
 						</html:select>
 					</logic:notEmpty>
 					&nbsp;&nbsp;&nbsp;&nbsp;
@@ -366,7 +384,7 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
-		</logic:equal>
+		</sec:authorize>
 <% } %>
 	</TABLE>
 </logic:notEmpty>
@@ -374,8 +392,7 @@
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<%= request.getAttribute("ListSolutions.table") %> 
 </TABLE>
-<logic:equal name="listSolutionsForm" property="canDo" value="true">
-<logic:notEmpty name="listSolutionsForm" property="owners">
+<sec:authorize access="hasPermission(null, 'SolverGroup', 'TimetablesSolutionLoadEmpty')">
 <% if (solver==null) { %>
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -383,24 +400,29 @@
 			Load into interactive solver:
 			</TD>
 			<TD align="right" nowrap>
-				<logic:equal name="listSolutionsForm" property="selectOwner" value="true">
+				<logic:notEmpty name="owners" scope="request">
+					<bean:define id="owners" name="owners" scope="request"/>
 					Owner:
 					<html:select property="ownerId">
-						<html:optionsCollection name="listSolutionsForm" property="owners" label="value" value="id"/>
+						<html:optionsCollection name="owners" label="value" value="id"/>
 					</html:select>
 					&nbsp;&nbsp;&nbsp;&nbsp;
-				</logic:equal>
+				</logic:notEmpty>
+				<logic:empty name="owners" scope="request">
+					<html:hidden property="ownerId"/>
+				</logic:empty>
 				Configuration:
 				<html:select property="emptySetting">
 					<html:optionsCollection name="listSolutionsForm" property="settings" label="value" value="id"/>
 				</html:select>
-				<logic:empty name="listSolutionsForm" property="hosts">
+				<logic:empty name="hosts" scope="request">
 					<html:hidden property="hostEmpty"/>
 				</logic:empty>
-				<logic:notEmpty name="listSolutionsForm" property="hosts"> 
+				<logic:notEmpty name="hosts" scope="request">
+					<bean:define id="hosts" name="hosts" scope="request"/> 
 					&nbsp;&nbsp;&nbsp;&nbsp;Host:
 					<html:select property="hostEmpty">
-						<html:options name="listSolutionsForm" property="hosts"/>
+						<html:options name="hosts"/>
 					</html:select>
 				</logic:notEmpty>
 				&nbsp;&nbsp;&nbsp;&nbsp;
@@ -409,6 +431,5 @@
 		</TR>
 	</TABLE>
 <% } %>
-</logic:notEmpty>
-</logic:equal>
+</sec:authorize>
 </html:form>

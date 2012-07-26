@@ -33,14 +33,14 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
@@ -49,12 +49,12 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.SolverPredefinedSetting.IdValue;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.RoomAvailability;
@@ -174,10 +174,10 @@ public class TimetableGridTable {
 	public void setShowEvents(boolean showEvents) { iShowEvents = showEvents; }
 	protected Date iFirstDate = null;
 	protected int iFirstDay = 0;
-	public Vector getWeeks(HttpSession httpSession) throws Exception {
+	public Vector getWeeks(SessionContext context) throws Exception {
 		Vector weeks = new Vector();
 		weeks.addElement(new IdValue(new Long(-100),"All weeks"));
-        Session session = Session.getCurrentAcadSession(Web.getUser(httpSession));
+        Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		int startWeek = DateUtils.getWeek(session.getSessionBeginDateTime()) - (Integer.parseInt(ApplicationProperties.getProperty("unitime.session.nrExcessDays", "0"))/7);
 		Calendar endCal = Calendar.getInstance(Locale.US);
 		endCal.setTime(session.getSessionEndDateTime());
@@ -196,29 +196,28 @@ public class TimetableGridTable {
 	public TimetableGridTable() {
 	}
 	
-	public void load(HttpSession httpSession) {
-		setDays(UserData.getPropertyInt(httpSession,"TimetableGridTable.days",getDays()));
-		setDayMode(UserData.getPropertyInt(httpSession,"TimetableGridTable.dayMode",getDayMode()));
-		setBgMode(UserData.getPropertyInt(httpSession,"TimetableGridTable.bgMode",getBgMode()));
-		setFindString(UserData.getProperty(httpSession,"TimetableGridTable.findString",getFindString()));
-		setOrderBy(UserData.getPropertyInt(httpSession,"TimetableGridTable.orderBy",getOrderBy()));
-		setDispMode(UserData.getPropertyInt(httpSession,"TimetableGridTable.dispMode",getDispMode()));
-		setResourceType(UserData.getPropertyInt(httpSession,"TimetableGridTable.resourceType",getResourceType()));
-		setShowUselessTimes(UserData.getPropertyBoolean(httpSession,"TimetableGridTable.showUselessTimes",getShowUselessTimes()));
-		setWeek(UserData.getPropertyInt(httpSession,"TimetableGridTable.week",getWeek()));
+	public void load(UserContext user) {
+		setDays(Integer.parseInt(user.getProperty("TimetableGridTable.days",String.valueOf(getDays()))));
+		setDayMode(Integer.parseInt(user.getProperty("TimetableGridTable.dayMode",String.valueOf(getDayMode()))));
+		setBgMode(Integer.parseInt(user.getProperty("TimetableGridTable.bgMode",String.valueOf(getBgMode()))));
+		setFindString(user.getProperty("TimetableGridTable.findString",getFindString()));
+		setOrderBy(Integer.parseInt(user.getProperty("TimetableGridTable.orderBy",String.valueOf(getOrderBy()))));
+		setDispMode(Integer.parseInt(user.getProperty("TimetableGridTable.dispMode",String.valueOf(getDispMode()))));
+		setResourceType(Integer.parseInt(user.getProperty("TimetableGridTable.resourceType",String.valueOf(getResourceType()))));
+		setShowUselessTimes("1".equals(user.getProperty("TimetableGridTable.showUselessTimes",getShowUselessTimes() ? "1" : "0")));
+		setWeek(Integer.parseInt(user.getProperty("TimetableGridTable.week",String.valueOf(getWeek()))));
 	}
 	
-	public void save(HttpSession httpSession) {
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.days",getDays());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.dayMode",getDayMode());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.bgMode",getBgMode());
-		UserData.setProperty(httpSession,"TimetableGridTable.findString",getFindString());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.orderBy",getOrderBy());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.dispMode",getDispMode());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.resourceType",getResourceType());
-		UserData.setPropertyBoolean(httpSession,"TimetableGridTable.showUselessTimes",getShowUselessTimes());
-		UserData.setPropertyInt(httpSession,"TimetableGridTable.week",getWeek());
-		
+	public void save(UserContext user) {
+		user.setProperty("TimetableGridTable.days",String.valueOf(getDays()));
+		user.setProperty("TimetableGridTable.dayMode",String.valueOf(getDayMode()));
+		user.setProperty("TimetableGridTable.bgMode",String.valueOf(getBgMode()));
+		user.setProperty("TimetableGridTable.findString",getFindString());
+		user.setProperty("TimetableGridTable.orderBy",String.valueOf(getOrderBy()));
+		user.setProperty("TimetableGridTable.dispMode",String.valueOf(getDispMode()));
+		user.setProperty("TimetableGridTable.resourceType",String.valueOf(getResourceType()));
+		user.setProperty("TimetableGridTable.showUselessTimes",getShowUselessTimes() ? "1" : "0");
+		user.setProperty("TimetableGridTable.week",String.valueOf(getWeek()));
 	}
 
 	public void printToHtml(JspWriter jsp) {
@@ -724,13 +723,11 @@ public class TimetableGridTable {
 		return iDefaultDatePatternName;
 	}
 	
-	public boolean reload(HttpServletRequest request) throws Exception {
+	public boolean reload(HttpServletRequest request, SessionContext context, SolverProxy solver) throws Exception {
 		if (iModels!=null) iModels.clear();
-		HttpSession session = request.getSession();
-		Session acadSession = Session.getCurrentAcadSession(Web.getUser(session));
+		Session acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		DatePattern defaultDatePattern = acadSession.getDefaultDatePatternNotNull();
     	iDefaultDatePatternName = (defaultDatePattern==null?null:defaultDatePattern.getName());
-		SolverProxy solver = WebSolver.getSolver(session);
 		int startDay = (getWeek()==-100?-1:DateUtils.getFirstDayOfWeek(acadSession.getSessionStartYear(),getWeek())-acadSession.getDayOfYear(1,acadSession.getPatternStartMonth())-1);
 		if (solver!=null) {
 			iModels = solver.getTimetableGridTables(getFindString(), getResourceType(), startDay, getBgMode(), getShowEvents());
@@ -738,7 +735,7 @@ public class TimetableGridTable {
 			showUselessTimesIfDesired();
 			return true;
 		}
-		String solutionIdsStr = (String)session.getAttribute("Solver.selectedSolutionId");
+		String solutionIdsStr = (String)context.getAttribute(SessionAttribute.SelectedSolution);
 		if (solutionIdsStr==null || solutionIdsStr.length()==0) return false;
 		Transaction tx = null;
 		try {
@@ -774,7 +771,7 @@ public class TimetableGridTable {
 					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
-                String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+                String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 				Query q = hibSession.createQuery(
 						"select distinct i from "+
 						"DepartmentalInstructor as i inner join i.assignments as a where "+

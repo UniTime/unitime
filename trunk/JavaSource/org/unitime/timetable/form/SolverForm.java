@@ -21,13 +21,11 @@ package org.unitime.timetable.form;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -40,26 +38,14 @@ import org.apache.struts.action.ActionMessage;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
-import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SolutionDAO;
-import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
-import org.unitime.timetable.util.Constants;
 
 
 /** 
@@ -76,15 +62,9 @@ public class SolverForm extends ActionForm {
 	private static Long sDefault = new Long(-2);
 	private static Long sSolver = new Long(-3);
 	private Vector iParams = new Vector();
-	private boolean iSelectOwner = false;
 	private Long[] iOwner = null;
-	private Vector iOwners = null;
 	private String iOwnerName = null;
-	private Vector iHosts = new Vector();
 	private String iHost = null;
-	private boolean iCanDo = true;
-	private boolean iCanCommit = true;
-	private boolean iChangeTab = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -100,40 +80,26 @@ public class SolverForm extends ActionForm {
         		errors.add("parameterValue["+parm+"]", new ActionMessage("errors.required", ""));
         }
         
-        if (iSelectOwner && (iOwner==null || iOwner.length==0)) 
+        if (iOwner==null || iOwner.length==0) 
         	errors.add("owner", new ActionMessage("errors.required", ""));
 
         return errors;
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		iChangeTab = false;
 		iOp = null; 
 		iSettings.clear();
 		iSetting = sEmpty;
-		iSelectOwner = true;
-		iCanDo = false;
 		iOwner = null;
-		User user = Web.getUser(request.getSession());
-		try {
-			TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-			Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
-			iCanDo = manager.canDoTimetable(acadSession, user);
-			iCanCommit = iCanDo;
-		} catch (Exception e){}
-		Long managerId = (user==null?null:Long.valueOf((String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME)));
 		SolverProxy solver = WebSolver.getSolver(request.getSession());
 		Transaction tx = null;
-		iParams.clear(); iDefaults.clear(); iParamValues.clear(); iOwners = null;
+		iParams.clear(); iDefaults.clear(); iParamValues.clear();
 		try {
 			SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
 			org.hibernate.Session hibSession = dao.getSession();
     		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
     			tx = hibSession.beginTransaction();
     		
-    		Session session = Session.getCurrentAcadSession(user);
-    		Long sessionId = session.getUniqueId();
-			
 			List defaultsList = hibSession.createCriteria(SolverParameterDef.class).setCacheable(true).list();
 			
 			Hashtable defaults = new Hashtable();
@@ -142,7 +108,6 @@ public class SolverForm extends ActionForm {
 				SolverParameterDef def = (SolverParameterDef)i.next();
 				if (!"Basic".equals(def.getGroup().getName())) continue;
 				if (!def.isVisible().booleanValue()) continue;
-				if (!iCanDo) continue;
 				if ("boolean".equals(def.getType())) {
 					iParamValues.put(def.getUniqueId(),"false");
 					empty.put(def.getUniqueId(),"false");
@@ -171,7 +136,7 @@ public class SolverForm extends ActionForm {
 						skip |= "true".equals(param.getValue()==null?param.getDefinition().getDefault():param.getValue());
 					settings.put(param.getDefinition().getUniqueId(),param.getValue());
 				}
-				if (iCanDo || !skip) {
+				if (!skip) {
 					iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
 					iDefaults.put(setting.getUniqueId(),settings);
 				}
@@ -214,7 +179,7 @@ public class SolverForm extends ActionForm {
 				}
 			}
 			
-			if (solver==null && Web.hasRole(request.getSession(), Roles.getAdminRoles())) {
+			if (solver==null) {
 				String solutionId = (String)request.getSession().getAttribute("Solver.selectedSolutionId");
 				Vector solutions = new Vector();
 				if (solutionId!=null) {
@@ -227,50 +192,11 @@ public class SolverForm extends ActionForm {
 					iOwner = new Long[solutions.size()];
 					for (int i=0;i<solutions.size();i++) {
 						Solution s = (Solution)solutions.elementAt(i);
-						if (!s.getOwner().canCommit(user)) iCanCommit = false;
 						iOwner[i] = s.getOwner().getUniqueId();
 					}
 				}
-				iOwners = new Vector();
-				for (Iterator i=SolverGroup.findBySessionId(sessionId).iterator();i.hasNext();) {
-					SolverGroup owner = (SolverGroup)i.next();
-					iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-				}
-				Collections.sort(iOwners);
 			}
 			
-			TimetableManager mgr = (new TimetableManagerDAO()).get(managerId, hibSession);
-			if (iOwners==null) {
-				iOwners = new Vector();
-				if (mgr.canDoTimetable(session, user)) {
-					for (Iterator i=mgr.getSolverGroups(session).iterator();i.hasNext();) {
-						SolverGroup owner = (SolverGroup)i.next();
-						if (owner.canTimetable())
-							iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-					}
-				} else {
-					for (Iterator i=mgr.getSolverGroups(session).iterator();i.hasNext();) {
-						SolverGroup owner = (SolverGroup)i.next();
-						if (owner.canAudit())
-							iOwners.add(new LongIdValue(owner.getUniqueId(),owner.getName()));
-					}
-				}
-			}
-			
-			if ((iOwners==null || iOwners.isEmpty()) && iOwner!=null) {
-				iOwners = new Vector(iOwner.length);
-				for (int i=0;i<iOwner.length;i++) {
-					SolverGroup sg = (new SolverGroupDAO()).get(iOwner[i]);
-					if (!sg.canCommit(user)) iCanCommit=false;
-					iOwners.add(new LongIdValue(iOwner[i],sg.getName()));
-				}
-			} else if (iOwner!=null) {
-				for (int i=0;i<iOwner.length;i++) {
-					SolverGroup sg = (new SolverGroupDAO()).get(iOwner[i]);
-					if (!sg.canCommit(user)) iCanCommit=false;
-				}
-			}
-				
 			if (tx!=null) tx.commit();
 		} catch (Exception e) {
 			if (tx!=null) tx.rollback();
@@ -278,22 +204,6 @@ public class SolverForm extends ActionForm {
 		}
 		
 		iHost = (solver==null?"auto":solver.getHost());
-		iHosts.clear();
-		if (user.isAdmin()) {
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (server.isActive())
-                        iHosts.addElement(server.getAddress().getHostName()+":"+server.getPort());
-                }
-			}
-			Collections.sort(iHosts);
-			if (ApplicationProperties.isLocalSolverEnabled())
-				iHosts.insertElementAt("local",0);
-			iHosts.insertElementAt("auto",0);
-		}		
-		iSelectOwner = iOwners.size()>1; 
 	}
 	
 	public void init() {
@@ -367,8 +277,6 @@ public class SolverForm extends ActionForm {
 	public Long[] getOwner() { return iOwner; }
 	public String getOwnerName() { return iOwnerName; }
 	public void setOwner(Long[] owner) { iOwner = owner; }
-	public boolean getSelectOwner() { return iSelectOwner; }
-	public Vector getOwners() { return iOwners; }
 
 	public static class LongIdValue implements Serializable, Comparable {
 		private static final long serialVersionUID = -3711635295687957578L;
@@ -389,21 +297,11 @@ public class SolverForm extends ActionForm {
 		}
 	}
 
-	public Collection getHosts() {
-		return iHosts;
-	}
 	public String getHost() {
 		return iHost;
 	}
 	public void setHost(String host) {
 		iHost = host;
 	}
-	
-	public boolean getCanDo() { return iCanDo; }
-	public boolean getCanCommit() { return iCanCommit; }
-	public void setCanCommit(boolean canCommit) { iCanCommit = canCommit; }
-	
-	public boolean isChangeTab() { return iChangeTab;}
-	public void setChangeTab(boolean changeTab) { iChangeTab = changeTab; }
 }
 

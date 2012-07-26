@@ -38,7 +38,10 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.webutil.timegrid.TimetableGridCell;
 
 public enum Right {
 	/** Session default: current session */
@@ -103,8 +106,8 @@ public enum Right {
 	CourseTimetabling(Department.class),
 	CourseTimetablingAudit(Department.class),
 	ClassAssignments(Session.class),
-	ClassAssignmentsExportPDF(Session.class),
-	ClassAssignmentsExportCSV(Session.class),
+	ClassAssignmentsExportPdf(Session.class),
+	ClassAssignmentsExportCsv(Session.class),
 	
 	Examinations(Session.class),
 	ExaminationSchedule(Session.class),
@@ -114,11 +117,29 @@ public enum Right {
 	AddSpecialUseRoom(Department.class),
 	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
 	ApplicationConfig,
-	AssignedClasses(Department.class),
-	AssignmentHistory(Department.class),
-	SolutionChanges(Department.class),
-	Suggestions(Department.class),
-	ConflictStatistics(Department.class),
+	
+	
+	Timetables(SolverGroup.class),
+	TimetablesSolutionExportCsv(Solution.class),
+	TimetablesSolutionChangeNote(Solution.class),
+	TimetablesSolutionCommit(SolverGroup.class),
+	TimetablesSolutionLoad(Solution.class),
+	TimetablesSolutionLoadEmpty(SolverGroup.class),
+	TimetablesSolutionDelete(Solution.class),
+	Solver(SolverGroup.class),
+	SolverSolutionSave(SolverGroup.class),
+	SolverSolutionExportCsv(SolverGroup.class),
+	SolverSolutionExportXml(SolverGroup.class),
+	TimetableGrid(SolverGroup.class),
+	AssignedClasses(SolverGroup.class),
+	NotAssignedClasses(SolverGroup.class),
+	SolutionChanges(SolverGroup.class),
+	AssignmentHistory(SolverGroup.class),
+	Suggestions(SolverGroup.class),
+	ConflictStatistics(SolverGroup.class),
+	SolverLog(SolverGroup.class),
+	SolutionReports(SolverGroup.class),
+	ManageSolvers(Session.class),
 	
 	/** Class level rights */
 	ClassDetail(Class_.class),

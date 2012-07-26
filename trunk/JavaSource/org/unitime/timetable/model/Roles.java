@@ -187,6 +187,18 @@ public class Roles extends BaseRoles implements HasRights {
 			
 		case CourseTimetabling:
 		case CourseTimetablingAudit:
+		case Timetables:
+		case TimetablesSolutionCommit:
+		case TimetablesSolutionDelete:
+		case TimetablesSolutionLoad:
+		case TimetablesSolutionLoadEmpty:
+		case TimetablesSolutionChangeNote:
+		case TimetablesSolutionExportCsv:
+		case Solver:
+		case SolverSolutionSave:
+		case SolverSolutionExportCsv:
+		case SolverLog:
+		case TimetableGrid:
 		case AssignedClasses:
 		case AssignmentHistory:
 		case ConflictStatistics:
@@ -226,6 +238,10 @@ public class Roles extends BaseRoles implements HasRights {
 		case DistributionPreferenceSubpart:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
+		case SolverSolutionExportXml:
+		case ManageSolvers:
+			return ADMIN_ROLE.equals(getReference());
+			
 		case ExaminationTimetabling:
 		case ExaminationSolver:
 		case ExaminationTimetable:
@@ -252,8 +268,8 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 		
 		case ClassAssignments:
-		case ClassAssignmentsExportCSV:
-		case ClassAssignmentsExportPDF:
+		case ClassAssignmentsExportCsv:
+		case ClassAssignmentsExportPdf:
 		case Examinations:
 		case ExaminationDetail:
 		case InstructorDetail:

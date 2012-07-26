@@ -333,7 +333,7 @@ public class ExamEditAction extends PreferencesAction {
                 frm.addExamOwner((ExamOwner)i.next());
         } else {
             try {
-                TreeSet periods = ExamPeriod.findAll(request, (frm.getExamType()==null?Exam.sExamTypeFinal:frm.getExamType()));
+                TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), (frm.getExamType()==null?Exam.sExamTypeFinal:frm.getExamType()));
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
                 SolverParameterDef maxRoomsParam = SolverParameterDef.findByName("Exams.MaxRooms");

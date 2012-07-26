@@ -52,11 +52,11 @@ public class CbsAction extends Action {
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		CbsForm myForm = (CbsForm) form;
         // Check Access
-        sessionContext.checkPermission(null, "Department", Right.ConflictStatistics);
+        sessionContext.checkPermission(Right.ConflictStatistics);
 		
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if (op==null) op="Change";
+        if (op==null) op="Refresh";
         
         if ("Refresh".equals(op)) {
         	myForm.reset(mapping,request);

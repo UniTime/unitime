@@ -23,7 +23,6 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,16 +34,17 @@ import org.apache.struts.action.ActionMapping;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.UnassignedForm;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.SolutionUnassignedClassesModel;
@@ -60,33 +60,33 @@ import org.unitime.timetable.webutil.PdfWebTable;
 @Service("/unassigned")
 public class UnassignedAction extends Action {
 	
+	@Autowired SessionContext sessionContext;
+	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		UnassignedForm myForm = (UnassignedForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.NotAssignedClasses);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         try {
-        	myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId())));
+        	myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         } catch (Exception e) {}
         
         if ("Apply".equals(op) || "Export PDF".equals(op)) {
         	if (myForm.getSubjectArea() == null)
-        		request.getSession().removeAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	else if (myForm.getSubjectArea() < 0)
-        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, Constants.ALL_OPTION_VALUE);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, Constants.ALL_OPTION_VALUE);
         	else
-        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, myForm.getSubjectArea().toString());
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, myForm.getSubjectArea().toString());
         } else {
         	try {
-        		Object sa = request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		Object sa = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         		if (Constants.ALL_OPTION_VALUE.equals(sa))
         			myForm.setSubjectArea(-1l);
         		else if (sa != null)
@@ -112,7 +112,7 @@ public class UnassignedAction extends Action {
 		Transaction tx = null;
 		
 		try {
-			WebTable.setOrder(request.getSession(),"unassigned.ord",request.getParameter("ord"),1);
+			WebTable.setOrder(sessionContext,"unassigned.ord",request.getParameter("ord"),1);
 			
 			UnassignedClassesModel model = null;
 			boolean noSubject = false;
@@ -139,7 +139,7 @@ public class UnassignedAction extends Action {
 								solutions.add(solution);
 						}
 						if (!solutions.isEmpty())
-							model = new SolutionUnassignedClassesModel(solutions, hibSession, Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT), prefix);
+							model = new SolutionUnassignedClassesModel(solutions, hibSession, UserProperty.NameFormat.get(sessionContext.getUser()), prefix);
 					}
 					if (tx!=null) tx.commit();
 				}
@@ -175,7 +175,7 @@ public class UnassignedAction extends Action {
 				}
 			}
 			
-			request.setAttribute("Unassigned.table",webTable.printTable(WebTable.getOrder(request.getSession(),"unassigned.ord")));
+			request.setAttribute("Unassigned.table",webTable.printTable(WebTable.getOrder(sessionContext,"unassigned.ord")));
 	    } catch (Exception e) {
 	    	if (tx!=null) tx.rollback();
 	    	throw e;
@@ -207,7 +207,7 @@ public class UnassignedAction extends Action {
     						solutions.add(solution);
     				}
     				if (!solutions.isEmpty())
-    					model = new SolutionUnassignedClassesModel(solutions, hibSession, Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT), prefix);
+    					model = new SolutionUnassignedClassesModel(solutions, hibSession, UserProperty.NameFormat.get(sessionContext.getUser()), prefix);
     			}
     		}
         } else {
@@ -242,7 +242,7 @@ public class UnassignedAction extends Action {
 		}
 		
 		File file = ApplicationProperties.getTempFile("unassigned", "pdf");
-    	webTable.exportPdf(file, WebTable.getOrder(request.getSession(),"unassigned.ord"));
+    	webTable.exportPdf(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
     	return file;
 	}	
 

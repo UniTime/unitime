@@ -178,13 +178,13 @@
 				<html:submit property="doit" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchClassAssignments">
 					<bean:message key="button.searchClasses" />
 				</html:submit>
-				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportPDF')">
+				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportPdf')">
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="doit" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 						<bean:message key="button.exportPDF" />
 					</html:submit>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportCSV')">
+				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportCsv')">
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="doit" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
 						<bean:message key="button.exportCSV" />

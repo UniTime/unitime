@@ -89,7 +89,7 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
             
             if (isShowTimetable()) {
             	boolean hasTimetable = false;
-            	if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+            	if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
 	            	if (classAssignment instanceof CachedClassAssignmentProxy) {
 	            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
 	            	}

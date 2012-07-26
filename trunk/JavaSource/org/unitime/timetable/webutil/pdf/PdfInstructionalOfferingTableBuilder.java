@@ -1546,7 +1546,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
     	if (isShowTimetable()) {
     		boolean hasTimetable = false;
-    		if (context.hasPermission(null, "Department", Right.ClassAssignments) && classAssignment != null) {
+    		if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
             	if (classAssignment instanceof CachedClassAssignmentProxy) {
             		Vector allClasses = new Vector();
     				for (Iterator i=insructionalOfferings.iterator();!hasTimetable && i.hasNext();) {
