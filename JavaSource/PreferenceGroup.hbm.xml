@@ -876,18 +876,6 @@
                 foreign-key="fk_instructor_dept"/>
 
             <set
-                name="designatorSubjectAreas"
-                cascade="all"
-                lazy="true"
-                inverse="true"
-                table="designator">
-
-                <cache include="non-lazy" usage="read-write"/>
-                <key column="instructor_id"/>
-                <one-to-many class="Designator"/>
-            </set>
-
-            <set
                 name="assignments"
                 inverse="true"
                 table="assigned_instructors">

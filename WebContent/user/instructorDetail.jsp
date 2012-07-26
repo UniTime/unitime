@@ -127,34 +127,6 @@
 			</TR>
 		</logic:equal>
 
-<!-- Designator -->
-		<TR>
-			<TD colspan="2">
-				&nbsp;<BR>
-				<tt:section-header>
-					<tt:section-title>
-						Designator List
-					</tt:section-title>
-					
-				<sec:authorize access="hasPermission(#instructorId, 'DepartmentalInstructor', 'InstructorAddDesignator')">
-					<html:submit property="op" 
-						styleClass="btn" accesskey="A" titleKey="title.addDesignator2" >
-						<bean:message key="button.addDesignator2" />
-					</html:submit>
-				</sec:authorize> 
-					
-				</tt:section-header>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD colspan="2" align="left">
-				<TABLE width="50%" border="0" cellspacing="0" cellpadding="3">
-					<%= request.getAttribute("designatorList") %>
-				</TABLE>
-			</TD>
-		</TR>
-		
 <!-- Class Assignments -->
 		<TR>
 			<TD colspan="2">

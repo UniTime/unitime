@@ -127,9 +127,6 @@ public class InstructorPermissions {
 	@PermissionForRight(Right.InstructorPreferences)
 	public static class InstructorPreferences extends EditInstructor {}
 	
-	@PermissionForRight(Right.InstructorAddDesignator)
-	public static class InstructorAddDesignator extends EditInstructor {}
-	
 	@PermissionForRight(Right.InstructorEditClearPreferences)
 	public static class InstructorEditClearPreferences extends EditInstructor {}
 	
