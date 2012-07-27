@@ -300,7 +300,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	        Session session = Session.getCurrentAcadSession(user);
 			iDate = new SimpleDateFormat("MM/dd/yyyy").format(session.getExamBeginDate());
 			iLength = 120;
-			TreeSet periods = ExamPeriod.findAll(request, null);
+			TreeSet periods = ExamPeriod.findAll(session.getUniqueId(), null);
 			int maxType = 0;
 			if (!periods.isEmpty()) {
 			    TreeSet times = new TreeSet();
@@ -383,7 +383,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		if (iSession==null) iSession = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
 		if (getAutoSetup()) {
 			setDays(request);
-			TreeSet periods = ExamPeriod.findAll(request, Exam.sExamTypeMidterm);
+			TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(), Exam.sExamTypeMidterm);
 			TreeSet<Integer> slots = new TreeSet();
 			TreeSet oldDays = new TreeSet();
 			for (Iterator i=periods.iterator();i.hasNext();) {

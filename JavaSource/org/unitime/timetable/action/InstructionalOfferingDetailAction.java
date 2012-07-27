@@ -424,7 +424,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setPreviousId(previous==null?null:previous.getUniqueId().toString());
 	    
 		DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-        String html = tbl.getDistPrefsTableForInstructionalOffering(request, io, true);
+        String html = tbl.getDistPrefsTableForInstructionalOffering(request, sessionContext, io);
         if (html!=null && html.indexOf(MSG.noPreferencesFound())<0)
         	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);	    
         

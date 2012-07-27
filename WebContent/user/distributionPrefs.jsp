@@ -21,8 +21,6 @@
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
 <%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
@@ -30,6 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 <%
@@ -68,10 +67,12 @@
 							<bean:message key="button.update" />
 						</html:submit>
 						
-						&nbsp;
-						<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
-							<bean:message key="button.delete" />
-						</html:submit>					
+						<sec:authorize access="hasPermission(#distributionPrefsForm.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
+							&nbsp;
+							<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>				
 					</logic:notEmpty>
 				
 					<logic:empty name="distributionPrefsForm" property="distPrefId">
@@ -236,10 +237,12 @@
 				</logic:equal>
 
 				<!-- Delete button -->
-				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-					<bean:message key="button.delete" />
-				</html:submit> 			
+				<sec:authorize access="hasPermission(#distributionPrefsForm.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
+					&nbsp;&nbsp;				
+					<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
+						<bean:message key="button.delete" />
+					</html:submit>
+				</sec:authorize> 			
 				<!--
 				<IMG src="images/Delete16.gif" border="0" align="middle">	
 				-->
@@ -352,17 +355,13 @@
 				</TD>
 			</TR>
 			<TR>
-				<% 
-					if (!Web.getUser(request.getSession()).getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) {
-				 %>
+				<sec:authorize access="hasPermission(null, 'Department', 'DistributionPreferenceAdd')">
 					<TD colspan="2" align="right">
 						<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
 							<bean:message key="button.addDistPref" />
 						</html:submit>
 					</TD>
-				<%
-					}
-				 %>
+				</sec:authorize>
 			</TR>
 		<% } %>
 

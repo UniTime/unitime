@@ -103,6 +103,18 @@ public class CourseTimetablingPermissions {
 	@PermissionForRight(Right.ConflictStatistics)
 	public static class ConflictStatistics extends CourseTimetablingOrAudit {}
 
+	@PermissionForRight(Right.SolverLog)
+	public static class SolverLog extends CourseTimetablingOrAudit {}
+
+	@PermissionForRight(Right.NotAssignedClasses)
+	public static class NotAssignedClasses extends CourseTimetabling {}
+
+	@PermissionForRight(Right.SolutionReports)
+	public static class SolutionReports extends CourseTimetabling {}
+
+	@PermissionForRight(Right.TimetableGrid)
+	public static class TimetableGrid extends CourseTimetabling {}
+
 	@PermissionForRight(Right.ClassAssignments)
 	public static class ClassAssignments implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
