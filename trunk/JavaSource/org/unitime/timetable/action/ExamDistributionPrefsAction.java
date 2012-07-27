@@ -39,6 +39,7 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.User;
@@ -62,6 +63,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -69,6 +71,8 @@ import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
 
 @Service("/examDistributionPrefs")
 public class ExamDistributionPrefsAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
     public ActionForward execute(
         ActionMapping mapping,
@@ -108,7 +112,7 @@ public class ExamDistributionPrefsAction extends Action {
         
 		// Set lookup tables lists
         //LookupTables.setupPrefLevels(request);	 // Preference Levels
-        LookupTables.setupExamDistribTypes(request); // Distribution Types
+        LookupTables.setupExamDistribTypes(request, sessionContext); // Distribution Types
 
         // Add / Update distribution pref
         if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {

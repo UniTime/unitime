@@ -193,24 +193,20 @@ public class LookupTables {
      * @param request
      * @throws Exception
      */
-    @Deprecated
-    public static void setupDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, false));
+    public static void setupDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, false));
     }
     
-    @Deprecated
-    public static void setupExamDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, false, true));
+    public static void setupExamDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, false, true));
     }
 
-    @Deprecated
-    public static void setupInstructorDistribTypes(HttpServletRequest request) throws Exception {
-        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(request, true, false));
+    public static void setupInstructorDistribTypes(HttpServletRequest request, SessionContext context) throws Exception {
+        request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, true, false));
     }
 
-    @Deprecated
-    public static void setupExaminationPeriods(HttpServletRequest request, Integer examType) throws Exception {
-        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(request, examType));
+    public static void setupExaminationPeriods(HttpServletRequest request, Long sessionId, Integer examType) throws Exception {
+        request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(sessionId, examType));
     }
 
     public static void setupRoomGroups(HttpServletRequest request, PreferenceGroup pg) throws Exception {

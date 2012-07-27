@@ -34,7 +34,6 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -250,8 +249,8 @@ public class DistributionPrefsForm extends ActionForm {
         itype = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
         classNumber = DynamicList.getInstance(new ArrayList(), factoryDistObj);    
         grouping = Preference.BLANK_PREF_VALUE;
-        filterSubjectAreaId = (String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
-        filterCourseNbr = (String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME); 
+        filterSubjectAreaId = null;
+        filterCourseNbr = null; 
         filterSubjectAreas = new ArrayList();
     }
 

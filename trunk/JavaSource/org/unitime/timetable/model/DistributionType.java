@@ -23,13 +23,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.HibernateException;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseDistributionType;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 
@@ -55,34 +54,28 @@ public class DistributionType extends BaseDistributionType implements Comparable
 		return findAll(false,false);
 	}
 
-	public static Set findAll(boolean instructorPrefOnly, boolean examPref) throws HibernateException {
-    	return new TreeSet((new DistributionTypeDAO()).
+	public static Set<DistributionType> findAll(boolean instructorPrefOnly, boolean examPref) throws HibernateException {
+    	return new TreeSet<DistributionType>((new DistributionTypeDAO()).
 			getSession().
 			createQuery("select t from DistributionType t where t.examPref="+examPref+(instructorPrefOnly?" and t.instructorPref=true":"")).
 			setCacheable(true).
 			list());
 	}
 	
-	@Deprecated
-	public static Set findApplicable(HttpServletRequest request, boolean instructorPrefOnly, boolean examPref) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-    	TimetableManager mgr = TimetableManager.getManager(user);
-    	if (user.isAdmin()) return findAll(instructorPrefOnly, examPref);
-    	TreeSet ret = new TreeSet();
-    	for (Iterator i=findAll(instructorPrefOnly,examPref).iterator();i.hasNext();) {
-    		DistributionType dt = (DistributionType)i.next();
-    		Set depts = dt.getDepartments(session==null?null:session.getUniqueId());
+	public static Set<DistributionType> findApplicable(SessionContext context, boolean instructorPrefOnly, boolean examPref) throws Exception {
+		if (context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+			return findAll(instructorPrefOnly, examPref);
+    	TreeSet<DistributionType> ret = new TreeSet<DistributionType>();
+    	Set<Department> userDepartments = Department.getUserDepartments(context.getUser()); 
+    	types: for (DistributionType dt: findAll(instructorPrefOnly,examPref)) {
+    		Set<Department> depts = dt.getDepartments(context.getUser().getCurrentAcademicSessionId());
     		if (depts.isEmpty()) {
     			ret.add(dt);
     		} else {
-    			boolean contains = false;
-    			for (Iterator j=mgr.getDepartments().iterator();!contains && j.hasNext();) {
-    				Department d = (Department)j.next();
-    				if (depts.contains(d)) contains = true; 
-    			}
-    			if (contains)
-    				ret.add(dt);
+    			for (Department d: depts)
+    				if (userDepartments.contains(d)) {
+    					ret.add(dt); continue types;
+    				}
     		}
     	}
     	return ret;
@@ -113,11 +106,10 @@ public class DistributionType extends BaseDistributionType implements Comparable
     	return (getAllowedPref()==null || getAllowedPref().indexOf(PreferenceLevel.prolog2char(pref.getPrefProlog()))>=0); 
     }
     
-    public Set getDepartments(Long sessionId) {
-    	TreeSet ret = new TreeSet();
-    	for (Iterator i=getDepartments().iterator();i.hasNext();) {
-    		Department d = (Department)i.next();
-    		if (sessionId==null || d.getSession().getUniqueId().equals(sessionId))
+    public Set<Department> getDepartments(Long sessionId) {
+    	TreeSet<Department> ret = new TreeSet<Department>();
+    	for (Department d: getDepartments()) {
+    		if (sessionId == null || d.getSession().getUniqueId().equals(sessionId))
     			ret.add(d);
     	}
     	return ret;

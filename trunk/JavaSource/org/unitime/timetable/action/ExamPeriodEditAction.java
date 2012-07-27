@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.Web;
@@ -44,6 +45,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
 /** 
@@ -51,6 +53,9 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/examPeriodEdit")
 public class ExamPeriodEditAction extends Action {
+	
+	
+	@Autowired SessionContext sessionContext;
 	
 	// --------------------------------------------------------- Instance Variables
 	
@@ -218,7 +223,7 @@ public class ExamPeriodEditAction extends Action {
 			    new String[] {"left","left", "left", "left", "right", "right", "right", "left"},
 			    null );
         
-        TreeSet periods = ExamPeriod.findAll(request, null);
+        TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), null);
 		if(periods.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No examination periods defined for this session."}, null, null );			    
 		}
