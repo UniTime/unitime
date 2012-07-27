@@ -183,7 +183,7 @@ public class ClassDetailAction extends PreferencesAction {
 
 		    // Display distribution Prefs
 	        DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-	        String html = tbl.getDistPrefsTableForClass(request, c, true);
+	        String html = tbl.getDistPrefsTableForClass(request, sessionContext, c);
 	        if (html!=null)
 	        	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
 

@@ -26,6 +26,7 @@ import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -41,7 +42,6 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.webutil.timegrid.TimetableGridCell;
 
 public enum Right {
 	/** Session default: current session */
@@ -103,8 +103,8 @@ public enum Right {
 	AssignInstructors(InstrOfferingConfig.class),
 	AssignInstructorsClass(Class_.class),
 	
-	CourseTimetabling(Department.class),
-	CourseTimetablingAudit(Department.class),
+	CourseTimetabling(SolverGroup.class),
+	CourseTimetablingAudit(SolverGroup.class),
 	ClassAssignments(Session.class),
 	ClassAssignmentsExportPdf(Session.class),
 	ClassAssignmentsExportCsv(Session.class),
@@ -152,6 +152,11 @@ public enum Right {
 	SchedulingSubpartEdit(SchedulingSubpart.class),
 	SchedulingSubpartEditClearPreferences(SchedulingSubpart.class),
 	
+	DistributionPreferences(Department.class),
+	DistributionPreferenceAdd(Department.class),
+	DistributionPreferenceDetail(DistributionPref.class),
+	DistributionPreferenceEdit(DistributionPref.class),
+	DistributionPreferenceDelete(DistributionPref.class),
 	DistributionPreferenceClass(Class_.class),
 	DistributionPreferenceSubpart(SchedulingSubpart.class),
 	DistributionPreferenceExam(Exam.class),

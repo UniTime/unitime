@@ -28,17 +28,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
@@ -50,16 +48,15 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -80,19 +77,11 @@ public class DistributionPrefsTableBuilder {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
-	public String getAllDistPrefsTableForCurrentUser(HttpServletRequest request, String subjectAreaId, String courseNbr) throws Exception {
-        User user = Web.getUser(request.getSession());
-		Session session = Session.getCurrentAcadSession(user);
-		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
-		
+	public String getAllDistPrefsTableForCurrentUser(HttpServletRequest request, SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
 		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
 		    return "";
 		if (subjectAreaId.equals(Constants.ALL_OPTION_VALUE))
 		    subjectAreaId = null;
-		
-		String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
 		
 		Long subjAreaId = null;
 		if (subjectAreaId!=null && subjectAreaId.length()>0) {
@@ -100,34 +89,21 @@ public class DistributionPrefsTableBuilder {
 		}
 		
         Collection prefs = new HashSet();
-		if (isAdmin || isViewAll) {
-			prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), null, true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-		} else {
-			for (Iterator i=manager.departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
-				Department d = (Department)i.next();
-				prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-			}
+        for (Department d: Department.getUserDepartments(context.getUser())) {
+			prefs.addAll(DistributionPref.getPreferences(context.getUser().getCurrentAcademicSessionId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+            prefs.addAll(DistributionPref.getInstructorPreferences(context.getUser().getCurrentAcademicSessionId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
 		}
 		
-		return toHtmlTable(request, session, (isAdmin || isViewAll?null:manager), (isAdmin || isViewAll?null:manager.departmentsForSession(session.getUniqueId())), prefs, !isViewAll, !isViewAll); 
+		return toHtmlTable(request, context, prefs); 
 	}
 
-	public File getAllDistPrefsTableForCurrentUserAsPdf(HttpServletRequest request, String subjectAreaId, String courseNbr) throws Exception {
-        User user = Web.getUser(request.getSession());
-		Session session = Session.getCurrentAcadSession(user);
-		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
-		
-        if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
+	public File getAllDistPrefsTableForCurrentUserAsPdf(SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
+
+		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
             subjectAreaId = null;
         else if (subjectAreaId.equals(Constants.ALL_OPTION_VALUE))
             subjectAreaId = null;
 
-		String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-		
 		String title = null;
 		
 		Long subjAreaId = null;
@@ -138,26 +114,21 @@ public class DistributionPrefsTableBuilder {
 		}
 		
         Collection prefs = new HashSet();
-        if (isAdmin || isViewAll) {
-            prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), null, true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-            prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),null,subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-        } else {
-            for (Iterator i=manager.departmentsForSession(session.getUniqueId()).iterator();i.hasNext();) {
-                Department d = (Department)i.next();
-                prefs.addAll(DistributionPref.getPreferences(session.getUniqueId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-                prefs.addAll(DistributionPref.getInstructorPreferences(session.getUniqueId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
-            }
+		for (Department d: Department.getUserDepartments(context.getUser())) {
+            prefs.addAll(DistributionPref.getPreferences(context.getUser().getCurrentAcademicSessionId(), d.getUniqueId(), true, null, subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
+            prefs.addAll(DistributionPref.getInstructorPreferences(context.getUser().getCurrentAcademicSessionId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
         }
 		
+		Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 		if (title==null)
 			title = session.getLabel()+" Distribution Preferences";
 		else
 			title += " - "+session.getLabel()+" Distribution Preferences";
 		
-		return toPdfTable(request, session, (isAdmin || isViewAll?null:manager), (isAdmin || isViewAll?null:manager.departmentsForSession(session.getUniqueId())), prefs, title); 
+		return toPdfTable(context, prefs, title); 
 	}
 
-	public String getDistPrefsTableForClass(HttpServletRequest request, Class_ clazz, boolean editable) {
+	public String getDistPrefsTableForClass(HttpServletRequest request, SessionContext context, Class_ clazz) {
 		if (clazz.getManagingDept()==null) return null;
 		
 		Set prefs = clazz.effectiveDistributionPreferences(null); 
@@ -170,28 +141,16 @@ public class DistributionPrefsTableBuilder {
 			}
 		}
 		
-		Vector depts = new Vector(1); depts.addElement(clazz.getManagingDept());
-
-        User user = Web.getUser(request.getSession());
-		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-
-		return toHtmlTable(request, clazz.getSession(), (isAdmin?null:manager), depts, prefs, editable, false); 
+		return toHtmlTable(request, context, prefs); 
 	}
 
-    public String getDistPrefsTableForExam(HttpServletRequest request, Exam exam, boolean editable) {
+    public String getDistPrefsTableForExam(HttpServletRequest request, SessionContext context, Exam exam, boolean editable) {
         Set prefs = exam.effectivePreferences(DistributionPref.class); 
 
-        User user = Web.getUser(request.getSession());
-        boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-        String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-
-        return toHtmlTable(request, exam.getSession(), (isAdmin?null:manager), null, prefs, editable, editable); 
+        return toHtmlTable(request, context, prefs); 
     }
 
-    public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SchedulingSubpart subpart, boolean editable) {
+    public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SessionContext context, SchedulingSubpart subpart) {
 		if (subpart.getManagingDept()==null) return null;
 		
 		
@@ -210,24 +169,11 @@ public class DistributionPrefsTableBuilder {
 			prefs.addAll(instructor.getDistributionPreferences());
 		}
 		
-        User user = Web.getUser(request.getSession());
-		boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-		String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-
-		Vector depts = new Vector(1); depts.addElement(subpart.getManagingDept());
-		return toHtmlTable(request, subpart.getSession(), (isAdmin?null:manager), depts, prefs, editable, false); 
+		return toHtmlTable(request, context, prefs); 
 	}
 	
-	public String getDistPrefsTableForInstructionalOffering(HttpServletRequest request, InstructionalOffering instructionalOffering, boolean editable) throws Exception {
+	public String getDistPrefsTableForInstructionalOffering(HttpServletRequest request, SessionContext context, InstructionalOffering instructionalOffering) throws Exception {
 		//Collection prefs = DistributionPref.getPreferences(instructionalOffering.getSessionId(), null, false, new Long(instructionalOffering.getUniqueId().intValue()));
-		
-        User user = Web.getUser(request.getSession());
-        boolean isAdmin = user.getCurrentRole().equals(Roles.ADMIN_ROLE);
-
-		String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = new TimetableManagerDAO().get(new Long(ownerId));
-		Session session = Session.getCurrentAcadSession(user);
 		
 		Set leadInstructors = new HashSet();
 		Set prefs = new TreeSet();
@@ -249,7 +195,7 @@ public class DistributionPrefsTableBuilder {
 			prefs.addAll(instructor.getDistributionPreferences());
 		}
 		
-		return toHtmlTable(request, instructionalOffering.getSession(), (isAdmin?null:manager), (isAdmin?null:manager.departmentsForSession(session.getUniqueId())), prefs, editable, false); 
+		return toHtmlTable(request, context, prefs); 
 	}
 
 
@@ -260,16 +206,15 @@ public class DistributionPrefsTableBuilder {
      * @param editable
      * @return
      */
-    public String toHtmlTable(HttpServletRequest request, Session session, TimetableManager manager, Collection departments, Collection distPrefs, boolean editable, boolean showAddButton) {
+    public String toHtmlTable(HttpServletRequest request, SessionContext context, Collection distPrefs) {
     	String title = MSG.sectionTitleDistributionPreferences();
  
     	String backType = request.getParameter("backType");
     	String backId = request.getParameter("backId");
     	
-    	User user = Web.getUser(request.getSession());
-    	String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+    	String instructorFormat = UserProperty.NameFormat.get(context.getUser());
         
-        if (showAddButton) {
+        if (context.hasPermission(Right.DistributionPreferenceAdd)) {
         	title = "<table width='100%'><tr><td width='100%'>" + 
         		 	"<DIV class=\"WelcomeRowHeadNoLine\">" + MSG.sectionTitleDistributionPreferences() +"</DIV>"+
         		 	"</td><td style='padding-bottom: 2px'>"+
@@ -277,7 +222,7 @@ public class DistributionPrefsTableBuilder {
         		 	"</td></tr></table>";
         }
         
-        WebTable.setOrder(request.getSession(),"distPrefsTable.ord",request.getParameter("order"),4);
+        WebTable.setOrder(context,"distPrefsTable.ord",request.getParameter("order"),4);
         
         WebTable tbl = new WebTable(4, 
         		title,  
@@ -290,21 +235,9 @@ public class DistributionPrefsTableBuilder {
 
         for (Iterator i1=distPrefs.iterator();i1.hasNext();) {
         	DistributionPref dp = (DistributionPref)i1.next();
-            boolean prefEditable = editable;
         	
-        	if (departments!=null) {
-        		boolean visible = false;
-        		
-        		for (Iterator i2=departments.iterator();i2.hasNext();) {
-        			Department department = (Department)i2.next();
-        			if (dp.isVisible(session, department)) {
-        				visible = true; break;
-        			}
-        		}
-        	
-        		if (!visible) continue;
-        	}
-        	
+        	if (!context.hasPermission(dp, Right.DistributionPreferenceDetail)) continue;
+
         	nrPrefs++;
         	
         	String objStr = "";
@@ -355,18 +288,16 @@ public class DistributionPrefsTableBuilder {
             
             boolean gray = false;
             
-            if (prefEditable) {
-            	if (manager==null || dp.isEditable(session,manager)) {
-                    if (pg instanceof DepartmentalInstructor) {
-                        onClick = "onClick=\"document.location='instructorDetail.do"
-                            + "?instructorId=" + dp.getOwner().getUniqueId().toString() 
-                            + "&op=Show%20Instructor%20Preferences'\"";
-                    } else {
-                        onClick = "onClick=\"document.location='distributionPrefs.do"
-                            + "?dp=" + dp.getUniqueId().toString() 
-                            + "&op=view'\"";
-                    }
-            	} //else gray = true;
+            if (pg instanceof DepartmentalInstructor) {
+            	if (context.hasPermission(pg, Right.InstructorDetail))
+            		onClick = "onClick=\"document.location='instructorDetail.do"
+            				+ "?instructorId=" + dp.getOwner().getUniqueId().toString() 
+            				+ "&op=Show%20Instructor%20Preferences'\"";
+            } else {
+            	if (context.hasPermission(dp, Right.DistributionPreferenceEdit))
+            		onClick = "onClick=\"document.location='distributionPrefs.do"
+            				+ "?dp=" + dp.getUniqueId().toString() 
+            				+ "&op=view'\"";
             }
             
             boolean back = "PreferenceGroup".equals(backType) && dp.getUniqueId().toString().equals(backId);
@@ -387,12 +318,11 @@ public class DistributionPrefsTableBuilder {
         if (nrPrefs==0)
             tbl.addLine(null,  new String[] { MSG.noPreferencesFound(), "", "", "" }, null);
         
-        return tbl.printTable(WebTable.getOrder(request.getSession(),"distPrefsTable.ord"));
+        return tbl.printTable(WebTable.getOrder(context,"distPrefsTable.ord"));
     }
 
-    public File toPdfTable(HttpServletRequest request, Session session, TimetableManager manager, Collection departments, Collection distPrefs, String title) {
-    	User user = Web.getUser(request.getSession());
-    	String instructorFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+    public File toPdfTable(SessionContext context, Collection distPrefs, String title) {
+    	String instructorFormat = UserProperty.NameFormat.get(context.getUser());
         
         PdfWebTable tbl = new PdfWebTable(5, 
         		title,  
@@ -406,18 +336,7 @@ public class DistributionPrefsTableBuilder {
         for (Iterator i1=distPrefs.iterator();i1.hasNext();) {
         	DistributionPref dp = (DistributionPref)i1.next();
         	
-        	if (departments!=null) {
-        		boolean visible = false;
-        		
-        		for (Iterator i2=departments.iterator();i2.hasNext();) {
-        			Department department = (Department)i2.next();
-        			if (dp.isVisible(session, department)) {
-        				visible = true; break;
-        			}
-        		}
-        	
-        		if (!visible) continue;
-        	}
+        	if (!context.hasPermission(dp, Right.DistributionPreferenceDetail)) continue;
         	
         	nrPrefs++;
         	
@@ -485,7 +404,7 @@ public class DistributionPrefsTableBuilder {
         FileOutputStream out = null;
         try {
         	File file = ApplicationProperties.getTempFile("distpref", "pdf");
-            int ord = WebTable.getOrder(request.getSession(),"distPrefsTable.ord");
+            int ord = WebTable.getOrder(context, "distPrefsTable.ord");
             ord = (ord>0?1:-1)*(1+Math.abs(ord));
         	
         	PdfPTable table = tbl.printPdfTable(ord);

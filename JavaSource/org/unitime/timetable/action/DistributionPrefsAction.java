@@ -31,7 +31,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -42,12 +41,12 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Query;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
@@ -60,9 +59,7 @@ import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -70,7 +67,8 @@ import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -88,6 +86,8 @@ import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
 @Service("/distributionPrefs")
 public class DistributionPrefsAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -106,11 +106,8 @@ public class DistributionPrefsAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-        
-        HttpSession httpSession = request.getSession();
-		if(!Web.isLoggedIn( httpSession )) {
-            throw new Exception ("Access Denied.");
-        }
+    	
+    	sessionContext.checkPermission(Right.DistributionPreferences);
 
 		MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
@@ -128,8 +125,7 @@ public class DistributionPrefsAction extends Action {
 		    frm.setOp(op);
 		}
 		
-		User user = Web.getUser(request.getSession());
-		frm.setFilterSubjectAreas(TimetableManager.getSubjectAreas(user));
+		frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
 		
 		if ("DistTypeChange".equals(request.getParameter("op2")) || "GroupingChange".equals(request.getParameter("op2")))
 			op = "reload pref";
@@ -152,12 +148,11 @@ public class DistributionPrefsAction extends Action {
         
 		// Set lookup tables lists
         //LookupTables.setupPrefLevels(request);	 // Preference Levels
-        LookupTables.setupDistribTypes(request); // Distribution Types
+        LookupTables.setupDistribTypes(request, sessionContext); // Distribution Types
         Vector subjectAreaList = setupSubjectAreas(request); // Subject Areas
 
         // Add / Update distribution pref
-        if(op.equals(rsc.getMessage("button.save"))
-                || op.equals(rsc.getMessage("button.update")) ) {
+        if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {
             Debug.debug("Saving distribution pref ...");
             errors = frm.validate(mapping, request);
             if(errors.size()==0) {
@@ -223,13 +218,14 @@ public class DistributionPrefsAction extends Action {
         	String subjectAreaId = frm.getFilterSubjectAreaId();
         	String courseNbr = frm.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
-        		httpSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, subjectAreaId);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId);
         	else
-        		httpSession.removeAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	if (courseNbr!=null && courseNbr.length()>0)
-        		httpSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, courseNbr);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);
         	else
-        		httpSession.removeAttribute(Constants.CRS_NBR_ATTR_NAME);
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
+        	
         	if (op.equals(rsc.getMessage("button.exportPDF")))
         		op="export"; 
         	else 
@@ -304,7 +300,7 @@ public class DistributionPrefsAction extends Action {
 
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-            File file = tbl.getAllDistPrefsTableForCurrentUserAsPdf(request, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            File file = tbl.getAllDistPrefsTableForCurrentUserAsPdf(sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
             if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
             op = "view";
         }
@@ -312,15 +308,18 @@ public class DistributionPrefsAction extends Action {
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
 
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+        	frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+        	frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+        	
         	DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
         	if (frm.getFilterSubjectAreaId()==null) {
-        	    if (Web.getUser(httpSession).isAdmin())
+        	    if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
         	        frm.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
         	    else
         	        frm.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
         	}        	
         	
-        	String html = tbl.getAllDistPrefsTableForCurrentUser(request, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+        	String html = tbl.getAllDistPrefsTableForCurrentUser(request, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
         	if (html!=null)
         		request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             BackTracker.markForBack(
@@ -343,9 +342,7 @@ public class DistributionPrefsAction extends Action {
     public Vector setupSubjectAreas(
             HttpServletRequest request) throws Exception {
 
-        User user = Web.getUser(request.getSession());
-		
-        Set subjectAreas = TimetableManager.getSubjectAreas(user);
+        Set subjectAreas = SubjectArea.getUserSubjectAreas(sessionContext.getUser());
         
         if (subjectAreas==null) return null;
         
@@ -638,7 +635,6 @@ public class DistributionPrefsAction extends Action {
             HttpServletRequest request, 
             DistributionPrefsForm frm ) throws Exception {
 
-        HttpSession httpSession = request.getSession();
         String distPrefId = frm.getDistPrefId();
         List saList = frm.getSubjectArea();
         List suList = frm.getItype();
@@ -678,10 +674,6 @@ public class DistributionPrefsAction extends Action {
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
         	Department owningDept = null;
-        	User user = Web.getUser(httpSession);
-        	Session session = Session.getCurrentAcadSession(user);
-        	String ownerId = (String) user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-        	TimetableManager currentMgr = new TimetableManagerDAO().get(new Long(ownerId), hibSession);
         
 	        // Create distribution objects
      	    for (int i=0; i<saList.size(); i++) {
@@ -698,7 +690,7 @@ public class DistributionPrefsAction extends Action {
     	        		if (owningDept.getDistributionPrefPriority().intValue()<subpart.getManagingDept().getDistributionPrefPriority().intValue())
     	        			owningDept = subpart.getManagingDept();
     	        		else if (owningDept.getDistributionPrefPriority().intValue()==subpart.getManagingDept().getDistributionPrefPriority().intValue()) {
-    	        			if (!currentMgr.getDepartments().contains(owningDept) && currentMgr.getDepartments().contains(subpart.getManagingDept()))
+    	        			if (!sessionContext.getUser().getCurrentAuthority().hasQualifier(owningDept) && sessionContext.getUser().getCurrentAuthority().hasQualifier(subpart.getManagingDept()))
     	        				owningDept = subpart.getManagingDept();
     	        		}
     	        	}
@@ -715,7 +707,7 @@ public class DistributionPrefsAction extends Action {
     	        		if (owningDept.getDistributionPrefPriority().intValue()<clazz.getManagingDept().getDistributionPrefPriority().intValue())
     	        			owningDept = clazz.getManagingDept();
     	        		else if (owningDept.getDistributionPrefPriority().intValue()==clazz.getManagingDept().getDistributionPrefPriority().intValue()) {
-    	        			if (!currentMgr.getDepartments().contains(owningDept) && currentMgr.getDepartments().contains(clazz.getManagingDept()))
+    	        			if (!sessionContext.getUser().getCurrentAuthority().hasQualifier(owningDept) && sessionContext.getUser().getCurrentAuthority().hasQualifier(clazz.getManagingDept()))
     	        				owningDept = clazz.getManagingDept();
     	        		}
     	        	}
@@ -732,26 +724,27 @@ public class DistributionPrefsAction extends Action {
         	}
         
      	    dp.setOwner(owningDept);
+     	    
+     	    /*
      	   
         	if (dp.getOwner()==null)
         		throw new Exception("Creation of such constraint denied: no owner specified.");
 
-	        if (!user.isAdmin()) {
-        		if (!dp.getDistributionType().isApplicable(owningDept)) {
-        			throw new Exception("Creation of such constraint denied: distribution preference "+dp.getDistributionType().getLabel()+" not allowed for "+dp.getOwner()+".");
-        		}
+    		if (sessionContext.hasPermission(Right.) && !dp.getDistributionType().isApplicable(owningDept)) {
+    			throw new Exception("Creation of such constraint denied: distribution preference "+dp.getDistributionType().getLabel()+" not allowed for "+dp.getOwner()+".");
+    		}
 
-        		if (!dp.isEditable(session, currentMgr))
+        		if (!sessionContext.hasPermission(dp.getOwner(), Right.DistributionPreferenceAdd))
 	        		throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
 
-	        	if (!currentMgr.getDepartments().contains(dp.getOwner()) && !((Department)dp.getOwner()).effectiveStatusType().canOwnerEdit())
+	        	if (!sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner()) && !((Department)dp.getOwner()).effectiveStatusType().canOwnerEdit())
         			throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
         	
-        		if (currentMgr.isExternalManager() && !currentMgr.getDepartments().contains(dp.getOwner()))
+        		if (currentMgr.isExternalManager() && !sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner()))
         			throw new Exception("Creation of such constraint denied: unable to create constraint owned by "+dp.getOwner()+".");
         	
         		Department dept = (Department)dp.getOwner();
-        		if (dept.isExternalManager() && !dept.isAllowReqDistribution() && !currentMgr.getDepartments().contains(dp.getOwner())) {
+        		if (dept.isExternalManager() && !dept.isAllowReqDistribution() && !sessionContext.getUser().getCurrentAuthority().hasQualifier((Department)dp.getOwner())) {
         			if (dp.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) {
         				if (dp.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyPreferred)>=0)
         					dp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
@@ -765,7 +758,9 @@ public class DistributionPrefsAction extends Action {
             				throw new Exception("Creation of such constraint denied: unable to create "+dp.getPrefLevel().getPrefName()+" constraint owned by "+dp.getOwner()+".");
             		}
         		}
-        	}
+        	}*/
+     	    
+     	    sessionContext.checkPermission(dp, Right.DistributionPreferenceEdit);
         
 	        // Save
     	    hibSession.saveOrUpdate(dp);
@@ -774,7 +769,7 @@ public class DistributionPrefsAction extends Action {
                 InstructionalOffering io = (InstructionalOffering)i.next();
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         io, 
                         ChangeLog.Source.DIST_PREF_EDIT,
                         (distPrefId!=null && distPrefId.trim().length()>0?ChangeLog.Operation.UPDATE:ChangeLog.Operation.CREATE),
@@ -823,6 +818,9 @@ public class DistributionPrefsAction extends Action {
 	        
             HashSet relatedInstructionalOfferings = new HashSet();
 	        DistributionPref dp = dpDao.get(new Long(distPrefId));
+	        
+	        sessionContext.checkPermission(dp, Right.DistributionPreferenceDelete);
+	        
 	        Department dept = (Department) dp.getOwner();
 	        dept.getPreferences().remove(dp);
 			for (Iterator i=dp.getDistributionObjects().iterator();i.hasNext();) {
@@ -840,7 +838,7 @@ public class DistributionPrefsAction extends Action {
                 InstructionalOffering io = (InstructionalOffering)i.next();
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         io, 
                         ChangeLog.Source.DIST_PREF_EDIT,
                         ChangeLog.Operation.DELETE,

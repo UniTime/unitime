@@ -28,9 +28,13 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -605,4 +609,184 @@ public class CoursePermissions {
 	@PermissionForRight(Right.SchedulingSubpartEditClearPreferences)
 	public static class SchedulingSubpartEditClearPreferences extends SchedulingSubpartEdit {}
 	
+	@PermissionForRight(Right.DistributionPreferences)
+	public static class DistributionPreferences implements Permission<Department> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.DistributionPreferenceAdd)
+	public static class DistributionPreferenceAdd implements Permission<Department> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+		
+	}
+	
+	@PermissionForRight(Right.DistributionPreferenceEdit)
+	public static class DistributionPreferenceEdit implements Permission<DistributionPref> {
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Autowired Permission<Class_> permissionClassEdit;
+		
+		@Autowired Permission<SchedulingSubpart> permissionSchedulingSubpartEdit;
+
+		@Override
+		public boolean check(UserContext user, DistributionPref source) {
+			// Get owning department
+			Department owner = null;
+	    	if (source.getOwner() instanceof DepartmentalInstructor) {
+	    		owner = ((DepartmentalInstructor)source.getOwner()).getDepartment();
+	    	} else {
+	    		owner = (Department) source.getOwner();
+	    	}
+	    	
+	    	// No owning department
+	    	if (owner == null) return false;
+
+	    	// If departmental dependent role, check distribution type applicability 
+	    	if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && 
+	    		!source.getDistributionType().isApplicable(owner))
+	    		return false;
+	    		    	
+	    	// If my department -> check status
+	    	if (permissionDepartment.check(user, owner)) {
+	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+	    	}
+	    	
+	    	// Not my department -- check if it is allowed to require
+	    	if (!owner.isAllowReqDistribution()) {
+	    		if (source.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) {
+	    			if (source.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyPreferred) >= 0)
+	    				source.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyPreferred));
+	    			else
+	    				return false;
+    			}
+        		if (source.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sProhibited)) {
+        			if (source.getDistributionType().getAllowedPref().indexOf(PreferenceLevel.sCharLevelStronglyDiscouraged) >= 0)
+        				source.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sStronglyDiscouraged));
+        			else
+        				return false;
+        		}
+	    	}
+	    	
+	    	// Not my department -- must be able to edit all classes and subparts
+       		for (DistributionObject distrObj: source.getDistributionObjects()) {
+       			if (distrObj.getPrefGroup() instanceof Class_) {
+       				if (!permissionClassEdit.check(user,  (Class_)distrObj.getPrefGroup()))
+       					return false;
+       			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
+       				if (!permissionSchedulingSubpartEdit.check(user,  (SchedulingSubpart)distrObj.getPrefGroup()))
+       					return false;
+       			}
+       		}
+       		
+       		return true;
+		}
+
+		@Override
+		public Class<DistributionPref> type() { return DistributionPref.class;}
+	}
+	
+	@PermissionForRight(Right.DistributionPreferenceDelete)
+	public static class DistributionPreferenceDelete implements Permission<DistributionPref> {
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Autowired Permission<Class_> permissionClassEdit;
+		
+		@Autowired Permission<SchedulingSubpart> permissionSchedulingSubpartEdit;
+
+		@Override
+		public boolean check(UserContext user, DistributionPref source) {
+			// Get owning department
+			Department owner = null;
+	    	if (source.getOwner() instanceof DepartmentalInstructor) {
+	    		owner = ((DepartmentalInstructor)source.getOwner()).getDepartment();
+	    	} else {
+	    		owner = (Department) source.getOwner();
+	    	}
+	    	
+	    	// No owning department
+	    	if (owner == null) return true;
+
+	    	// If my department -> check status
+	    	if (permissionDepartment.check(user, owner)) {
+	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+	    	}
+	    	
+	    	// Not my department -- must be able to edit all classes and subparts
+       		for (DistributionObject distrObj: source.getDistributionObjects()) {
+       			if (distrObj.getPrefGroup() instanceof Class_) {
+       				if (!permissionClassEdit.check(user,  (Class_)distrObj.getPrefGroup()))
+       					return false;
+       			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
+       				if (!permissionSchedulingSubpartEdit.check(user,  (SchedulingSubpart)distrObj.getPrefGroup()))
+       					return false;
+       			}
+       		}
+       		
+       		return true;
+		}
+
+		@Override
+		public Class<DistributionPref> type() { return DistributionPref.class;}
+	}
+	
+	@PermissionForRight(Right.DistributionPreferenceDetail)
+	public static class DistributionPreferenceDetail implements Permission<DistributionPref> {
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Autowired Permission<Class_> permissionClassDetail;
+		
+		@Autowired Permission<SchedulingSubpart> permissionSchedulingSubpartDetail;
+
+		@Override
+		public boolean check(UserContext user, DistributionPref source) {
+			// Get owning department
+			Department owner = null;
+	    	if (source.getOwner() instanceof DepartmentalInstructor) {
+	    		owner = ((DepartmentalInstructor)source.getOwner()).getDepartment();
+	    	} else {
+	    		owner = (Department) source.getOwner();
+	    	}
+	    	
+	    	// No owning department
+	    	if (owner == null) return false;
+	    	
+	    	// If my department -> check status
+	    	if (permissionDepartment.check(user, owner)) {
+	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+	    	}
+	    	
+	    	// Not my department -- must be able to view at least one class or subpart
+       		for (DistributionObject distrObj: source.getDistributionObjects()) {
+       			if (distrObj.getPrefGroup() instanceof Class_) {
+       				if (permissionClassDetail.check(user,  (Class_)distrObj.getPrefGroup())) return true;
+       			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
+       				if (permissionSchedulingSubpartDetail.check(user,  (SchedulingSubpart)distrObj.getPrefGroup())) return true;
+       			}
+       		}
+       		
+       		return false;
+		}
+
+		@Override
+		public Class<DistributionPref> type() { return DistributionPref.class;}
+	}
 }

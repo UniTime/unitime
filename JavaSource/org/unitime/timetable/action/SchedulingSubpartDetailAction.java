@@ -199,7 +199,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 
 		    // Display distribution Prefs
 	        DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-	        String html = tbl.getDistPrefsTableForSchedulingSubpart(request, ss, true);
+	        String html = tbl.getDistPrefsTableForSchedulingSubpart(request, sessionContext, ss);
 	        if (html!=null)
 	        	request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
 

@@ -374,6 +374,7 @@ public class DistributionPref extends BaseDistributionPref {
         return q.list();
     }
     
+    @Deprecated
     public boolean isEditable(Session session, TimetableManager manager) {
         if (manager == null) return false;
         
@@ -430,6 +431,7 @@ public class DistributionPref extends BaseDistributionPref {
     	
     }
     
+    @Deprecated
     public boolean isVisible(Session session, Department department) {
     	if (department == null) return false;
     	
