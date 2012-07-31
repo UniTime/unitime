@@ -133,7 +133,7 @@ public class EnrollmentsViolatingCourseStructureAuditReport extends PdfEnrollmen
 		  .append(" sce.clazz.schedulingSubpart.schedulingSubpartSuffixCache, c.schedulingSubpart.itype.abbv,")
 		  .append(" c.sectionNumberCache, c.schedulingSubpart.schedulingSubpartSuffixCache,")
 		  .append(" ( select count(sce1) from StudentClassEnrollment sce1 where sce1.clazz.uniqueId = c.uniqueId and sce1.student.uniqueId = s.uniqueId ),")
-		  .append(" ( select sce2.clazz.schedulingSubpart.itype.abbv || ' ' || sce2.clazz.sectionNumberCache || ' ' ||  sce2.clazz.schedulingSubpart.schedulingSubpartSuffixCache")
+		  .append(" ( select distinct sce2.clazz.schedulingSubpart.itype.abbv || ' ' || sce2.clazz.sectionNumberCache || ' ' ||  sce2.clazz.schedulingSubpart.schedulingSubpartSuffixCache")
 		  .append(" from StudentClassEnrollment sce2 where sce2.clazz.schedulingSubpart.uniqueId = c.schedulingSubpart.uniqueId and sce2.student.uniqueId = s.uniqueId and sce2.courseOffering.uniqueId = sce.courseOffering.uniqueId )")
 		  .append(" from Student s inner join s.classEnrollments as sce, Class_ c")
 		  .append(" where s.session.uniqueId = :sessId")
