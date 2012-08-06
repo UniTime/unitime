@@ -187,6 +187,11 @@ public enum Right {
     ExaminationClone(Exam.class),
     ExaminationAdd(Session.class),
     ExaminationAssignment(Exam.class),
+    ExaminationDistributionPreferences(Session.class),
+    ExaminationDistributionPreferenceAdd(Session.class),
+    ExaminationDistributionPreferenceDetail(DistributionPref.class),
+    ExaminationDistributionPreferenceEdit(DistributionPref.class),
+    ExaminationDistributionPreferenceDelete(DistributionPref.class),
 	
 	ExaminationTimetabling(Session.class),
 	ExaminationSolver(Session.class),

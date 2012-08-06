@@ -34,13 +34,10 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -64,10 +61,6 @@ public class ExamDistributionPrefsForm extends ActionForm {
 	private Collection filterSubjectAreas;
 	private String filterCourseNbr;
 	
-	private boolean canAdd;
-	private boolean canSeeAll;
-    
-
     protected DynamicListObjectFactory factory = new DynamicListObjectFactory() {
         public Object create() { return new Long(-1); }
     };
@@ -116,16 +109,11 @@ public class ExamDistributionPrefsForm extends ActionForm {
         subjectArea = DynamicList.getInstance(new ArrayList(), factory);    
         courseNbr = DynamicList.getInstance(new ArrayList(), factory);    
         exam = DynamicList.getInstance(new ArrayList(), factory);    
-        filterSubjectAreaId = (String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
-        filterCourseNbr = (String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME); 
+        filterSubjectAreaId = null;
+        filterCourseNbr = null; 
         filterSubjectAreas = new ArrayList();
         iExamType = Exam.sExamTypeFinal;
-        if (request.getSession().getAttribute("Exam.Type")!=null)
-        	iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
-        canAdd = false; canSeeAll = false;
-        try {
-            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
-        } catch (Exception e) {}
+        iHasMidtermExams = false;
     }
 
     
@@ -154,12 +142,6 @@ public class ExamDistributionPrefsForm extends ActionForm {
     public void setExam(int key, Long value) { this.exam.set(key, value); }
     public void setExam(List itype) { this.exam = itype; }
     
-    public boolean getCanAdd() { return canAdd; }
-    public void setCanAdd(boolean canAdd) { this.canAdd = canAdd; }
-
-    public boolean getCanSeeAll() { return canSeeAll; }
-    public void setCanSeeAll(boolean canSeeAll) { this.canSeeAll = canSeeAll; }
-
     public void deleteExam(int key) {
         subjectArea.remove(key);
         courseNbr.remove(key);
@@ -241,5 +223,8 @@ public class ExamDistributionPrefsForm extends ActionForm {
     	}
     	return ret;
     }
+    
+    public boolean getHasMidtermExams() { return iHasMidtermExams; }
+    public void setHasMidtermExams(boolean hasMidtermExams) { iHasMidtermExams = hasMidtermExams; }
     
 }

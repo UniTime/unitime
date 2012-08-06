@@ -39,7 +39,9 @@ public enum SessionAttribute {
 	DepartmentId("deptUniqueId", "Last department (String containing department unique id)"),
 	DepartmentCodeRoom("deptCodeRoom", "Last department code (used by Rooms pages)"),
 	
-	TableOrder("OrderInfo", "WebTable order info");
+	TableOrder("OrderInfo", "WebTable order info"),
+	
+	ExamType("Exam.Type", "Examination type"),
 	;
 
 	String iKey, iDefault, iDescription;

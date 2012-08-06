@@ -29,7 +29,6 @@ import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -42,8 +41,7 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.ExamDistributionPrefsForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -55,15 +53,14 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
@@ -79,11 +76,8 @@ public class ExamDistributionPrefsAction extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-        
-        User user = Web.getUser(request.getSession()); 
-        TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-        Session session = (user==null?null:Session.getCurrentAcadSession(user));
-        if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
+    	
+    	sessionContext.checkPermission(Right.ExaminationDistributionPreferences);
         
         MessageResources rsc = getResources(request);
 		ActionMessages errors = new ActionMessages();
@@ -109,7 +103,7 @@ public class ExamDistributionPrefsAction extends Action {
             if (BackTracker.doBack(request, response)) return null;
             op = "view"; //in case no back is available
         }
-        
+
 		// Set lookup tables lists
         //LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupExamDistribTypes(request, sessionContext); // Distribution Types
@@ -188,14 +182,14 @@ public class ExamDistributionPrefsAction extends Action {
         	String subjectAreaId = frm.getFilterSubjectAreaId();
         	String courseNbr = frm.getFilterCourseNbr();
         	if (subjectAreaId!=null && subjectAreaId.length()>0)
-        		request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, subjectAreaId);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId);
         	else
-        	    request.getSession().removeAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME);
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	if (courseNbr!=null && courseNbr.length()>0)
-        	    request.getSession().setAttribute(Constants.CRS_NBR_ATTR_NAME, courseNbr);
+        		sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);
         	else
-        	    request.getSession().removeAttribute(Constants.CRS_NBR_ATTR_NAME);
-        	request.getSession().setAttribute("Exam.Type", frm.getExamType());
+        		sessionContext.removeAttribute(SessionAttribute.OfferingsCourseNumber);
+        	sessionContext.setAttribute(SessionAttribute.ExamType, frm.getExamType());
         	if (op.equals(rsc.getMessage("button.exportPDF")))
         		op="export"; 
         	else 
@@ -208,6 +202,10 @@ public class ExamDistributionPrefsAction extends Action {
             Debug.debug("Loading dist pref - " + distPrefId);
             
             frm.reset(mapping, request);
+            
+            frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+            frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+            
             doLoad(frm, distPrefId);
         }
         
@@ -252,33 +250,34 @@ public class ExamDistributionPrefsAction extends Action {
         
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
-            File file = tbl.getDistPrefsTableAsPdf(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+            File file = tbl.getDistPrefsTableAsPdf(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
             if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
             op = "view";
         }
         
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
         
-        frm.setFilterSubjectAreas(TimetableManager.getSubjectAreas(user));
+        frm.setHasMidtermExams(Exam.hasMidtermExams(sessionContext.getUser().getCurrentAcademicSessionId()));
+        if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
+        	frm.setExamType((Integer)sessionContext.getAttribute(SessionAttribute.ExamType));
+        
+        frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         if (frm.getFilterSubjectAreas().size()==1) {
             SubjectArea firstSubjectArea = (SubjectArea)frm.getFilterSubjectAreas().iterator().next();
             frm.setFilterSubjectAreaId(firstSubjectArea.getUniqueId().toString());
         }
         
-        frm.setCanAdd(manager.canEditExams(session, user));
-        frm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
-
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
         	if (frm.getFilterSubjectAreaId()==null) {
-        	    if (Web.getUser(request.getSession()).isAdmin())
+        	    if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
         	        frm.setFilterSubjectAreaId(Constants.BLANK_OPTION_VALUE);
         	    else
         	        frm.setFilterSubjectAreaId(Constants.ALL_OPTION_VALUE);        	        
         	}
         	
         	if (frm.getFilterSubjectAreaId()!=null && frm.getFilterSubjectAreaId().length()>0) {
-        	    String html = tbl.getDistPrefsTable(request, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+        	    String html = tbl.getDistPrefsTable(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
         	    if (html!=null)
         	        request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
         	} else {
@@ -304,6 +303,8 @@ public class ExamDistributionPrefsAction extends Action {
             ExamDistributionPrefsForm frm, 
             String distPrefId ) {
  
+    	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDetail);
+    	
         // Get distribution pref info
         DistributionPref dp = new DistributionPrefDAO().get(new Long(distPrefId));
         frm.setDistType(dp.getDistributionType().getUniqueId().toString());
@@ -330,8 +331,13 @@ public class ExamDistributionPrefsAction extends Action {
             HttpServletRequest request, 
             ExamDistributionPrefsForm frm ) throws Exception {
 
-        HttpSession httpSession = request.getSession();
         String distPrefId = frm.getDistPrefId();
+        
+        if (distPrefId != null && !distPrefId.isEmpty()) {
+        	sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceEdit);
+        } else {
+        	sessionContext.checkPermission(Right.ExaminationDistributionPreferenceAdd);
+        }
         
         // Create distribution preference
         DistributionPref dp = null;
@@ -343,31 +349,25 @@ public class ExamDistributionPrefsAction extends Action {
         try {
         	tx = hibSession.beginTransaction();
         	
-        	if(distPrefId!=null && distPrefId.trim().length()>0) {
-        		Long distPrefUid = new Long(distPrefId);
-        		if(distPrefUid.longValue()>0) {
-        			dp = dpDao.get(distPrefUid, hibSession);
-        			Set s = dp.getDistributionObjects();
-        			for (Iterator i=s.iterator();i.hasNext();) {
-        				DistributionObject dObj = (DistributionObject)i.next();
-        				PreferenceGroup pg = dObj.getPrefGroup();
-                        relatedExams.add(pg);
-        				pg.getDistributionObjects().remove(dObj);
-        				hibSession.saveOrUpdate(pg);
-        			}
-        			s.clear();
-        			dp.setDistributionObjects(s);
-            	}
+        	if (distPrefId != null && !distPrefId.isEmpty()) {
+    			dp = dpDao.get(Long.valueOf(distPrefId), hibSession);
+    			Set s = dp.getDistributionObjects();
+    			for (Iterator i=s.iterator();i.hasNext();) {
+    				DistributionObject dObj = (DistributionObject)i.next();
+    				PreferenceGroup pg = dObj.getPrefGroup();
+                    relatedExams.add(pg);
+    				pg.getDistributionObjects().remove(dObj);
+    				hibSession.saveOrUpdate(pg);
+    			}
+    			s.clear();
+    			dp.setDistributionObjects(s);
             } else dp = new DistributionPref();
             
             dp.setDistributionType(new DistributionTypeDAO().get( new Long(frm.getDistType()), hibSession));
             dp.setGrouping(-1);
         	dp.setPrefLevel(PreferenceLevel.getPreferenceLevel( Integer.parseInt(frm.getPrefLevel()) ));
         
-        	User user = Web.getUser(httpSession);
-        	Session session = Session.getCurrentAcadSession(user);
-        	
-        	dp.setOwner(session);
+        	dp.setOwner(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
         
         	HashSet addedExams = new HashSet();
         	int idx = 0;
@@ -395,7 +395,7 @@ public class ExamDistributionPrefsAction extends Action {
                 Exam exam = (Exam)i.next();
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         exam, 
                         ChangeLog.Source.DIST_PREF_EDIT,
                         (distPrefId!=null && distPrefId.trim().length()>0?ChangeLog.Operation.UPDATE:ChangeLog.Operation.CREATE),
@@ -420,6 +420,8 @@ public class ExamDistributionPrefsAction extends Action {
      */
     private void doDelete(HttpServletRequest request, String distPrefId) {
         Transaction tx = null;
+        
+        sessionContext.checkPermission(distPrefId, "DistributionPref", Right.ExaminationDistributionPreferenceDelete);
 
         try {
             
@@ -450,7 +452,7 @@ public class ExamDistributionPrefsAction extends Action {
                 Exam exam = (Exam)i.next();
                 ChangeLog.addChange(
                         hibSession, 
-                        request, 
+                        sessionContext, 
                         exam, 
                         ChangeLog.Source.DIST_PREF_EDIT,
                         ChangeLog.Operation.DELETE,
