@@ -35,11 +35,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -51,18 +52,17 @@ import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -71,42 +71,43 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 
 @Service("/examList")
 public class ExamListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         ExamListForm myForm = (ExamListForm) form;
         
-        User user = Web.getUser(request.getSession()); 
-        TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-        Session session = (user==null?null:Session.getCurrentAcadSession(user));
-        if (user==null || session==null || !manager.canSeeExams(session, user)) throw new Exception ("Access Denied.");
-        myForm.setCanAddExam(manager!=null && manager.canEditExams(session, user));
-        myForm.setCanSeeAll(Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()));
+        sessionContext.checkPermission(Right.Examinations);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
-        if (op==null && request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME)!=null) {
-            myForm.setSubjectAreaId((String)request.getSession().getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME));
-            myForm.setCourseNbr((String)request.getSession().getAttribute(Constants.CRS_NBR_ATTR_NAME));
+        if (op==null && sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea)!=null) {
+            myForm.setSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+            myForm.setCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
         }
-        if (op==null && request.getSession().getAttribute("Exam.Type")!=null) {
-        	myForm.setExamType((Integer)request.getSession().getAttribute("Exam.Type"));
+        if (op==null && sessionContext.getAttribute(SessionAttribute.ExamType)!=null) {
+        	myForm.setExamType((Integer)sessionContext.getAttribute(SessionAttribute.ExamType));
         }
         
-        WebTable.setOrder(request.getSession(), "ExamList.ord", request.getParameter("ord"), 1);
+        myForm.setHasMidtermExams(Exam.hasMidtermExams(sessionContext.getUser().getCurrentAcademicSessionId()));
+        
+        WebTable.setOrder(sessionContext, "ExamList.ord", request.getParameter("ord"), 1);
 
         if ("Search".equals(op) || "Export PDF".equals(op)) {
             if (myForm.getSubjectAreaId()!=null) {
-                request.getSession().setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, myForm.getSubjectAreaId());
-                request.getSession().setAttribute(Constants.CRS_NBR_ATTR_NAME, myForm.getCourseNbr());
-                request.getSession().setAttribute("Exam.Type", myForm.getExamType());
+            	sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, myForm.getSubjectAreaId());
+                sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, myForm.getCourseNbr());
+                sessionContext.setAttribute(SessionAttribute.ExamType, myForm.getExamType());
             }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getExamTable(WebSolver.getExamSolver(request.getSession()), user, manager, session, myForm, false);
+                PdfWebTable table = getExamTable(myForm, false);
                 if (table!=null) {
                     File file = ApplicationProperties.getTempFile("exams", "pdf");
-                    table.exportPdf(file, WebTable.getOrder(request.getSession(), "ExamList.ord"));
+                    table.exportPdf(file, WebTable.getOrder(sessionContext, "ExamList.ord"));
                     request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
                 }
 
@@ -117,22 +118,22 @@ public class ExamListAction extends Action {
             return mapping.findForward("addExam");
         }
         
-        myForm.setSubjectAreas(TimetableManager.getSubjectAreas(user));
+        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         if (myForm.getSubjectAreas().size()==1) {
             SubjectArea firstSubjectArea = (SubjectArea)myForm.getSubjectAreas().iterator().next();
             myForm.setSubjectAreaId(firstSubjectArea.getUniqueId().toString());
         }
         
         if (myForm.getSubjectAreaId()!=null && myForm.getSubjectAreaId().length()!=0) {
-            PdfWebTable table = getExamTable(WebSolver.getExamSolver(request.getSession()), user, manager, session, myForm, true);
+            PdfWebTable table = getExamTable(myForm, true);
             if (table!=null) {
-                request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(request.getSession(), "ExamList.ord")));
+                request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(sessionContext, "ExamList.ord")));
                 Vector ids = new Vector();
                 for (Enumeration e=table.getLines().elements();e.hasMoreElements();) {
                     WebTable.WebTableLine line = (WebTable.WebTableLine)e.nextElement();
                     ids.add(Long.parseLong(line.getUniqueId()));
                 }
-                Navigation.set(request.getSession(), Navigation.sInstructionalOfferingLevel, ids);
+                Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
             } else {
                 ActionMessages errors = new ActionMessages();
                 errors.add("exams", new ActionMessage("errors.generic", "No examination matching the above criteria was found."));
@@ -159,8 +160,12 @@ public class ExamListAction extends Action {
         return mapping.findForward("list");
     }
     
-    public PdfWebTable getExamTable(ExamAssignmentProxy examAssignment, User user, TimetableManager manager, Session session, ExamListForm form, boolean html) {
-        Collection exams = (form.getSubjectAreaId()==null || form.getSubjectAreaId().trim().length()==0 || "null".equals(form.getSubjectAreaId())?null:Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())?Exam.findAll(session.getUniqueId(),form.getExamType()):Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr(),form.getExamType()));
+    public PdfWebTable getExamTable(ExamListForm form, boolean html) {
+    	ExamAssignmentProxy examAssignment = examinationSolverService.getSolver();
+    	
+        Collection exams = (form.getSubjectAreaId()==null || form.getSubjectAreaId().trim().length()==0 || "null".equals(form.getSubjectAreaId())
+        		? null : Constants.ALL_OPTION_VALUE.equals(form.getSubjectAreaId())
+        		? Exam.findAll(sessionContext.getUser().getCurrentAcademicSessionId(),form.getExamType()) : Exam.findExamsOfCourse(Long.valueOf(form.getSubjectAreaId()), form.getCourseNbr(),form.getExamType()));
         
         if (exams==null || exams.isEmpty()) return null;
         
@@ -168,9 +173,9 @@ public class ExamListAction extends Action {
         
         String nl = (html?"<br>":"\n");
         
-        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(user);
-        boolean timeText = RequiredTimeTable.getTimeGridAsText(user);
-        String instructorNameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+        boolean timeVertical = RequiredTimeTable.getTimeGridVertical(sessionContext.getUser());
+        boolean timeText = RequiredTimeTable.getTimeGridAsText(sessionContext.getUser());
+        String instructorNameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
         
         PdfWebTable table = new PdfWebTable(
                 11,

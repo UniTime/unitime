@@ -392,6 +392,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case CanSelectSolverServer:
 		case ExtendedDatePatterns:
 		case ExtendedTimePatterns: 
+		case ExaminationPeriods:
 			return ADMIN_ROLE.equals(getReference());
 			
 		case HasRole:

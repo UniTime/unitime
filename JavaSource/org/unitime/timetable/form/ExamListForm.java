@@ -27,9 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.util.ComboBoxLookup;
 
 public class ExamListForm extends ActionForm {
@@ -40,8 +38,6 @@ public class ExamListForm extends ActionForm {
     private Collection iSubjectAreas = null;
     private int iExamType = 0;
     private boolean iHasMidtermExams = false;
-    private boolean iCanAddExam = false;
-    private boolean iCanSeeAll = false;
     
     public String getSubjectAreaId() { return iSubjectAreaId; }
     public void setSubjectAreaId(String subjectAreaId) { iSubjectAreaId = subjectAreaId; }
@@ -57,10 +53,8 @@ public class ExamListForm extends ActionForm {
     
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         iSubjectAreaId = null; iCourseNbr = null; iOp = null;
-        iExamType = Exam.sExamTypeFinal; iCanAddExam = false; iCanSeeAll=false;
-        try {
-            iHasMidtermExams = Exam.hasMidtermExams(Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId());
-        } catch (Exception e) {}
+        iExamType = Exam.sExamTypeFinal;
+        iHasMidtermExams = false;
     }
     
     public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -79,8 +73,6 @@ public class ExamListForm extends ActionForm {
     	return ret;
     }
     
-    public boolean getCanAddExam() { return iCanAddExam; }
-    public void setCanAddExam(boolean exam) { iCanAddExam = exam; }
-    public boolean getCanSeeAll() { return iCanSeeAll; }
-    public void setCanSeeAll(boolean seeAll) { iCanSeeAll = seeAll; }
+    public boolean isHasMidtermExams() { return iHasMidtermExams; }
+    public void setHasMidtermExams(boolean hasMidtermExams) { iHasMidtermExams = hasMidtermExams; }
 }
