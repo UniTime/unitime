@@ -194,7 +194,7 @@ public class ExamDetailAction extends PreferencesAction {
             
             // Display distribution Prefs
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
-            String html = tbl.getDistPrefsTable(request, exam);
+            String html = tbl.getDistPrefsTable(request, sessionContext, exam);
             if (html!=null)
                 request.setAttribute(DistributionPref.DIST_PREF_REQUEST_ATTR, html);
             

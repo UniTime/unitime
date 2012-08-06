@@ -290,9 +290,14 @@ public class Roles extends BaseRoles implements HasRights {
 		case ExaminationDelete:
 		case ExaminationClone:
 		case DistributionPreferenceExam:
+		case ExaminationDistributionPreferenceAdd:
+		case ExaminationDistributionPreferenceEdit:
+		case ExaminationDistributionPreferenceDelete:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case RoomAvailability:
+		case ExaminationDistributionPreferences:
+		case ExaminationDistributionPreferenceDetail:
 			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 			
 		case OfferingDelete:
