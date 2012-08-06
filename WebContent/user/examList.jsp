@@ -23,6 +23,8 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout"%>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <tiles:importAttribute />
 <html:form action="/examList">
 	<TABLE border='0'>
@@ -40,9 +42,9 @@
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);" >
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<logic:equal name="examListForm" property="canSeeAll" value="true">
+					<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
 						<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
-					</logic:equal>
+					</sec:authorize>
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
@@ -71,7 +73,7 @@
 					<bean:message key="button.exportPDF" />
 				</html:submit> 
 			</TD>
-			<logic:equal name="examListForm" property="canAddExam" value="true">
+			<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
 			<TD valign="top">
 				&nbsp;
 				<html:submit
@@ -80,7 +82,7 @@
 					<bean:message key="button.addExam" />
 				</html:submit> 
 			</TD>
-			</logic:equal>
+			</sec:authorize>
 		</TR>
 		<TR>
 			<TD colspan="5" align="center">

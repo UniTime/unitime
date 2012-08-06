@@ -35,14 +35,15 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -82,11 +83,11 @@ public class ExamPeriodEditForm extends ActionForm {
     private String iType;
     private Long iPrefLevel;
     private boolean iAutoSetup;
-    private Session iSession;
     private Integer iDefaultMidtermStartOffset;
     private Integer iDefaultMidtermStopOffset;
     private Integer iDefaultFinalStartOffset;
     private Integer iDefaultFinalStopOffset;
+    private Session iSession;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	    ActionErrors errors = new ActionErrors();
@@ -256,8 +257,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	    
 	    try {
 	        if (errors.isEmpty()) {
-	            User user = Web.getUser(request.getSession());
-	            Session session = Session.getCurrentAcadSession(user);
+	            Session session = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
 	            Date startDate = new SimpleDateFormat("MM/dd/yyyy").parse(iDate);
 	            long diff = startDate.getTime()-session.getExamBeginDate().getTime();
 	            int dateOffset = (int)Math.round(diff/(1000.0 * 60 * 60 * 24)); 
@@ -288,19 +288,16 @@ public class ExamPeriodEditForm extends ActionForm {
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
 		iAutoSetup = false;
-		try {
-			iSession = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-		} catch (Exception e) {}
+		iSession = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
 	}
 	
-	public void load(ExamPeriod ep, HttpServletRequest request) throws Exception {
+	public void load(ExamPeriod ep, SessionContext context) throws Exception {
 		if (ep==null) {
 			reset(null, null);
-	        User user = Web.getUser(request.getSession());
-	        Session session = Session.getCurrentAcadSession(user);
+			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			iDate = new SimpleDateFormat("MM/dd/yyyy").format(session.getExamBeginDate());
 			iLength = 120;
-			TreeSet periods = ExamPeriod.findAll(session.getUniqueId(), null);
+			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), null);
 			int maxType = 0;
 			if (!periods.isEmpty()) {
 			    TreeSet times = new TreeSet();
@@ -345,7 +342,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		}
 	}
 	
-	public void update(ExamPeriod ep, HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
+	public void update(ExamPeriod ep, SessionContext context, org.hibernate.Session hibSession) throws Exception {
 	    ep.setStartDate(new SimpleDateFormat("MM/dd/yyyy").parse(iDate));
 	    int hour = iStart / 100;
 	    int min = iStart % 100;
@@ -359,10 +356,9 @@ public class ExamPeriodEditForm extends ActionForm {
 		hibSession.saveOrUpdate(ep);
 	}
 	
-	public ExamPeriod create(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
+	public ExamPeriod create(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 	    ExamPeriod ep = new ExamPeriod();
-        User user = Web.getUser(request.getSession());
-        Session session = Session.getCurrentAcadSession(user);
+        Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
         ep.setSession(session);
         ep.setStartDate(new SimpleDateFormat("MM/dd/yyyy").parse(iDate));
         int hour = iStart / 100;
@@ -379,11 +375,10 @@ public class ExamPeriodEditForm extends ActionForm {
 		return ep;
 	}
 	
-	public ExamPeriod saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
-		if (iSession==null) iSession = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+	public ExamPeriod saveOrUpdate(HttpServletRequest request, SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getAutoSetup()) {
 			setDays(request);
-			TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(), Exam.sExamTypeMidterm);
+			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), Exam.sExamTypeMidterm);
 			TreeSet<Integer> slots = new TreeSet();
 			TreeSet oldDays = new TreeSet();
 			for (Iterator i=periods.iterator();i.hasNext();) {
@@ -395,7 +390,7 @@ public class ExamPeriodEditForm extends ActionForm {
                     .setLong("periodId", period.getUniqueId())
                     .iterate();j.hasNext();) {
 				        Exam exam = (Exam)j.next();
-				        exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
 					hibSession.delete(period);
 					i.remove();
@@ -454,7 +449,7 @@ public class ExamPeriodEditForm extends ActionForm {
 				            .setLong("periodId", period.getUniqueId())
 				            .iterate();j.hasNext();) {
 				        Exam exam = (Exam)j.next();
-				        exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+				        exam.unassign(context.getUser().getExternalUserId(), hibSession);
 				    }
 				    hibSession.delete(period);
 				    i.remove();
@@ -488,14 +483,14 @@ public class ExamPeriodEditForm extends ActionForm {
 			if (getUniqueId().longValue()>=0)
 				ep = (new ExamPeriodDAO()).get(getUniqueId());
 			if (ep==null)
-				ep = create(request, hibSession);
+				ep = create(context, hibSession);
 			else 
-				update(ep, request, hibSession);
+				update(ep, context, hibSession);
 			return ep;
 		}
 	}
 	
-	public void delete(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
+	public void delete(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().longValue()<0) return;
 		ExamPeriod ep = (new ExamPeriodDAO()).get(getUniqueId(), hibSession);
 		for (Iterator j=hibSession.createQuery(
@@ -503,7 +498,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		        .setLong("periodId", ep.getUniqueId())
 		        .iterate();j.hasNext();) {
 		    Exam exam = (Exam)j.next();
-            exam.unassign(Web.getUser(request.getSession()).getId(), hibSession);
+            exam.unassign(context.getUser().getExternalUserId(), hibSession);
 		}
 		hibSession.delete(ep);
 	}

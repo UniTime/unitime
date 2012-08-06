@@ -29,6 +29,9 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.DatePatterns)
 	public static class DatePatterns extends SimpleSessionPermission {}
 	
+	@PermissionForRight(Right.ExaminationPeriods)
+	public static class ExaminationPeriods extends SimpleSessionPermission {}
+
 	@PermissionForRight(Right.DataExchange)
 	public static class DataExchange extends SimpleSessionPermission {}
 
