@@ -123,13 +123,10 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
             }
             */
             hibSession.flush();
-		    String[] a = { "DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref" };
-		    for (String str : a) {       
-	            hibSession.createQuery(
-	                    "delete " + str + " p where p.owner in (select s from Session s where s.uniqueId=:sessionId)").
+            hibSession.createQuery(
+	                    "delete DistributionPref p where p.owner in (select s from Session s where s.uniqueId=:sessionId)").
 	                    setLong("sessionId", id).
 	                    executeUpdate();
-			}
 		    hibSession.createQuery(
                 "delete InstructionalOffering o where o.session.uniqueId=:sessionId").
                 setLong("sessionId", id).
@@ -142,6 +139,12 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		            "delete Session s where s.uniqueId=:sessionId").
 		            setLong("sessionId", id).
                     executeUpdate();
+		    String[] a = { "DistributionPref", "RoomPref", "RoomGroupPref", "RoomFeaturePref", "BuildingPref", "TimePref", "DatePatternPref", "ExamPeriodPref" };
+		    for (String str : a) {       
+	            hibSession.createQuery(
+	                    "delete " + str + " p where owner not in (from PreferenceGroup)").
+	                    executeUpdate();
+			}
 		    hibSession.createQuery("delete ExamConflict x where x.exams is empty").executeUpdate();
 		    tx.commit();
 		} catch (HibernateException e) {
