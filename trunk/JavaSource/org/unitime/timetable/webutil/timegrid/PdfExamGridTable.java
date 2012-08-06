@@ -26,11 +26,11 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpSession;
-
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
@@ -48,8 +48,8 @@ public class PdfExamGridTable extends ExamGridTable {
     private Document iDocument = null;
     private PdfPTable iPdfTable = null;
 
-    public PdfExamGridTable(ExamGridForm form, HttpSession session) throws Exception {
-        super(form, session);
+    public PdfExamGridTable(ExamGridForm form, SessionContext context, ExamSolverProxy solver) throws Exception {
+        super(form, context, solver);
     }
     
     public void export(File file) throws Exception {

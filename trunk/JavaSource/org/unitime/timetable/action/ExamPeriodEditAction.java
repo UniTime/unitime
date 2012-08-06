@@ -36,16 +36,15 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 /** 
@@ -74,15 +73,13 @@ public class ExamPeriodEditAction extends Action {
 			ExamPeriodEditForm myForm = (ExamPeriodEditForm) form;
 			
 	        // Check Access
-	        if (!Web.isLoggedIn(request.getSession()) || !Web.hasRole(request.getSession(),Roles.getAdminRoles())) {
-	            throw new Exception ("Access Denied.");
-	        }
+			sessionContext.checkPermission(Right.ExaminationPeriods);
 	        
 	        // Read operation to be performed
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 	        
 	        if (op==null) {
-	            myForm.load(null, request);
+	            myForm.load(null, sessionContext);
 	            myForm.setOp("List");
 	        }
 
@@ -90,12 +87,12 @@ public class ExamPeriodEditAction extends Action {
 	        if ("Back".equals(op)) {
 	            if (myForm.getUniqueId()!=null)
 	                request.setAttribute("hash", myForm.getUniqueId());
-	            myForm.load(null, request);
+	            myForm.load(null, sessionContext);
 	            myForm.setOp("List");
 	        }
 	        
             if ("Add Period".equals(op)) {
-                myForm.load(null, request);
+                myForm.load(null, sessionContext);
                 myForm.setOp("Save");
             }
 
@@ -121,12 +118,12 @@ public class ExamPeriodEditAction extends Action {
 	                	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 	                		tx = hibSession.beginTransaction();
 	                	
-	                	ExamPeriod ep = myForm.saveOrUpdate(request, hibSession);
+	                	ExamPeriod ep = myForm.saveOrUpdate(request, sessionContext, hibSession);
 	                	
 	                	if (ep!=null) {
 	                		ChangeLog.addChange(
                                 hibSession, 
-                                request, 
+                                sessionContext, 
                                 ep, 
                                 ChangeLog.Source.EXAM_PERIOD_EDIT, 
                                 ("Save".equals(op)?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
@@ -163,7 +160,7 @@ public class ExamPeriodEditAction extends Action {
 	                    saveErrors(request, errors);
 	                    return mapping.findForward("list");
 	                } else {
-	                	myForm.load(ep, request);
+	                	myForm.load(ep, sessionContext);
 	                }
 	            }
 	        }
@@ -180,14 +177,14 @@ public class ExamPeriodEditAction extends Action {
                     ExamPeriod ep = (new ExamPeriodDAO()).get(myForm.getUniqueId(), hibSession);
                     ChangeLog.addChange(
                             hibSession, 
-                            request, 
+                            sessionContext, 
                             ep, 
                             ChangeLog.Source.EXAM_PERIOD_EDIT, 
                             ChangeLog.Operation.DELETE, 
                             null, 
                             null);
 
-                    myForm.delete(request, hibSession);
+                    myForm.delete(sessionContext, hibSession);
 	            	
 	    			tx.commit();
 	    	    } catch (Exception e) {
@@ -196,7 +193,7 @@ public class ExamPeriodEditAction extends Action {
 	    	    	throw e;
 	    	    }
 
-	    	    myForm.load(null, request);
+	    	    myForm.load(null, sessionContext);
 	            myForm.setOp("List");
 	        }
 	        
@@ -215,7 +212,7 @@ public class ExamPeriodEditAction extends Action {
 	}
 
     private void getExamPeriods(HttpServletRequest request) throws Exception {
-		WebTable.setOrder(request.getSession(),"examPeriods.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"examPeriods.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 8,
 			    null, "examPeriodEdit.do?ord=%%",
@@ -248,7 +245,7 @@ public class ExamPeriodEditAction extends Action {
         			ep.getExamType(),ep.getStartDate(), ep.getStartSlot(), ep.getStartSlot()+ep.getLength(), ep.getLength(), ep.getEventStartOffset(), ep.getEventStopOffset(), ep.getPrefLevel().getPrefId()});
         }
         
-	    request.setAttribute("ExamPeriods.table", webTable.printTable(WebTable.getOrder(request.getSession(),"examPeriods.ord")));
+	    request.setAttribute("ExamPeriods.table", webTable.printTable(WebTable.getOrder(sessionContext,"examPeriods.ord")));
     }	
 }
 

@@ -39,6 +39,8 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.exam.ExamSolverProxy;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
@@ -51,6 +53,8 @@ import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 public class ExamGridAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ExamGridForm myForm = (ExamGridForm) form;
@@ -84,7 +88,7 @@ public class ExamGridAction extends Action {
             }
         }
         
-        PdfExamGridTable table = new PdfExamGridTable(myForm, request.getSession());
+        PdfExamGridTable table = new PdfExamGridTable(myForm, sessionContext, examinationSolverService.getSolver());
         
         request.setAttribute("table", table);
 

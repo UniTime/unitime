@@ -33,10 +33,9 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -45,9 +44,8 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
@@ -131,7 +129,7 @@ public class ExamGridTable {
     TreeSet<Integer> iStartsSlots = new TreeSet();
     Hashtable<Integer,Hashtable<Integer,ExamPeriod>> iPeriods = new Hashtable();
 
-	public ExamGridTable(ExamGridForm form, HttpSession session) throws Exception {
+	public ExamGridTable(ExamGridForm form, SessionContext context, ExamSolverProxy solver) throws Exception {
 	    iForm = form;
 	    for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
 	        ExamPeriod period = (ExamPeriod)i.next();
@@ -144,7 +142,6 @@ public class ExamGridTable {
 	        }
 	        periodsThisDay.put(period.getStartSlot(), period);
 	    }
-	    ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	    if (iForm.getResource()==sResourceRoom) {
 	        Date[] bounds = ExamPeriod.getBounds(form.getSessionId(),form.getExamBeginDate(), form.getExamType());
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
@@ -159,7 +156,7 @@ public class ExamGridTable {
 	            }
 	        }
 	    } else if (iForm.getResource()==sResourceInstructor) {
-	        String instructorNameFormat = Settings.getSettingValue(Web.getUser(session), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+	        String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
 	        Hashtable<String,ExamGridModel> models = new Hashtable<String,ExamGridModel> ();
             for (Iterator i=DepartmentalInstructor.findAllExamInstructors(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
                 DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();

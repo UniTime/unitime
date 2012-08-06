@@ -263,6 +263,7 @@ public enum Right {
     
     DatePatterns(Session.class),
     DataExchange(Session.class),
+    ExaminationPeriods(Session.class),
     
     Registration,
     ExtendedTimePatterns,
