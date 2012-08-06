@@ -21,6 +21,8 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.DistributionObject;
+import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.UserContext;
@@ -136,5 +138,57 @@ public class ExaminationPermissions {
 		@Override
 		public Class<Session> type() { return Session.class; }
 		
+	}
+	
+	@PermissionForRight(Right.ExaminationDistributionPreferences)
+	public static class ExaminationDistributionPreferences extends Examinations {}
+	
+	@PermissionForRight(Right.ExaminationDistributionPreferenceAdd)
+	public static class ExaminationDistributionPreferenceAdd extends AddExamination {}
+	
+	@PermissionForRight(Right.ExaminationDistributionPreferenceEdit)
+	public static class ExaminationDistributionPreferenceEdit implements Permission<DistributionPref> {
+		
+		@Autowired Permission<Exam> permissionExaminationEdit;
+
+		@Override
+		public boolean check(UserContext user, DistributionPref source) {
+			for (DistributionObject distrObj: source.getDistributionObjects()) {
+       			if (distrObj.getPrefGroup() instanceof Exam) {
+       				if (!permissionExaminationEdit.check(user,  (Exam)distrObj.getPrefGroup()))
+       					return false;
+       			} else {
+       				return false;
+       			}
+       		}
+       		
+       		return true;
+		}
+
+		@Override
+		public Class<DistributionPref> type() { return DistributionPref.class;}
+	}
+	
+	@PermissionForRight(Right.ExaminationDistributionPreferenceDelete)
+	public static class ExaminationDistributionPreferenceDelete extends ExaminationDistributionPreferenceEdit {}
+	
+	@PermissionForRight(Right.ExaminationDistributionPreferenceDetail)
+	public static class ExaminationDistributionPreferenceDetail implements Permission<DistributionPref> {
+		@Autowired Permission<Exam> permissionExaminationDetail;
+
+		@Override
+		public boolean check(UserContext user, DistributionPref source) {
+			for (DistributionObject distrObj: source.getDistributionObjects()) {
+       			if (distrObj.getPrefGroup() instanceof Exam) {
+       				if (permissionExaminationDetail.check(user,  (Exam)distrObj.getPrefGroup()))
+       					return true;
+       			}
+       		}
+			
+       		return false;
+		}
+
+		@Override
+		public Class<DistributionPref> type() { return DistributionPref.class;}
 	}
 }

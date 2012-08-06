@@ -28,6 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/struts-layout.tld" prefix="layout" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 <html:form action="/examDistributionPrefs" >
@@ -58,10 +59,12 @@
 							<bean:message key="button.update" />
 						</html:submit>
 						
-						&nbsp;
-						<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
-							<bean:message key="button.delete" />
-						</html:submit>					
+						<sec:authorize access="hasPermission(#examDistributionPrefsForm.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
+							&nbsp;
+							<html:submit styleClass="btn" property="op" accesskey="D" titleKey="title.removeDistPref" onclick="javascript: doDel('distPref', '-1');">
+								<bean:message key="button.delete" />
+							</html:submit>
+						</sec:authorize>					
 					</logic:notEmpty>
 				
 					<logic:empty name="examDistributionPrefsForm" property="distPrefId">
@@ -213,10 +216,12 @@
 				</logic:equal>
 
 				<!-- Delete button -->
-				&nbsp;&nbsp;				
-				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-					<bean:message key="button.delete" />
-				</html:submit> 			
+				<sec:authorize access="hasPermission(#examDistributionPrefsForm.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
+					&nbsp;&nbsp;				
+					<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
+						<bean:message key="button.delete" />
+					</html:submit>
+				</sec:authorize> 			
 				<!--
 				<IMG src="images/Delete16.gif" border="0" align="middle">	
 				-->
@@ -290,9 +295,9 @@
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" >
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-						<logic:equal name="examDistributionPrefsForm" property="canSeeAll" value="true">
+						<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
 							<html:option value="<%=Constants.ALL_OPTION_VALUE%>"><%=Constants.ALL_OPTION_LABEL%></html:option>
-						</logic:equal>
+						</sec:authorize>
 						<html:optionsCollection property="filterSubjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 					</html:select>
 					<B>Course Number: </B>
@@ -334,13 +339,13 @@
 							</logic:iterate>
 							Examination Distribution Preferences
 						</tt:section-title>
-						<logic:equal name="examDistributionPrefsForm" property="canAdd" value="true">
+						<sec:authorize access="hasPermission(null, 'Session', 'ExaminationDistributionPreferenceAdd')">
 							<TD colspan="2" align="right">
 								<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
 									<bean:message key="button.addDistPref" />
 								</html:submit>
 							</TD>
-						</logic:equal>
+						</sec:authorize>
 					</tt:section-header>
 				</TD>
 			</TR>		
@@ -362,11 +367,11 @@
 			</TR>
 			<TR>
 				<TD colspan="2" align="right">
-					<logic:equal name="examDistributionPrefsForm" property="canAdd" value="true">
+					<sec:authorize access="hasPermission(null, 'Session', 'ExaminationDistributionPreferenceAdd')">
 						<html:submit property="op" styleClass="btn" accesskey="A" title="Add New Distribution Preference (Alt+A)" >
 							<bean:message key="button.addDistPref" />
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 				</TD>
 			</TR>
 		<% } %>

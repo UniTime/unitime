@@ -694,6 +694,8 @@ public class CoursePermissions {
        			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
        				if (!permissionSchedulingSubpartEdit.check(user,  (SchedulingSubpart)distrObj.getPrefGroup()))
        					return false;
+       			} else {
+       				return false;
        			}
        		}
        		
@@ -738,6 +740,8 @@ public class CoursePermissions {
        			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
        				if (!permissionSchedulingSubpartEdit.check(user,  (SchedulingSubpart)distrObj.getPrefGroup()))
        					return false;
+       			} else {
+       				return false;
        			}
        		}
        		
@@ -780,6 +784,8 @@ public class CoursePermissions {
        				if (permissionClassDetail.check(user,  (Class_)distrObj.getPrefGroup())) return true;
        			} else if (distrObj.getPrefGroup() instanceof SchedulingSubpart) {
        				if (permissionSchedulingSubpartDetail.check(user,  (SchedulingSubpart)distrObj.getPrefGroup())) return true;
+       			} else {
+       				return false;
        			}
        		}
        		
