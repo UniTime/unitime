@@ -24,9 +24,12 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -47,12 +50,16 @@
 			var se = document.forms[0].sessionEnd.value;
 			var ce = document.forms[0].classesEnd.value;
 			var es = document.forms[0].examStart.value;
+			var evs = document.forms[0].eventStart.value;
+			var eve = document.forms[0].eventEnd.value;
 			var year = document.forms[0].academicYear.value;
 			
 			if (ss!=null && trim(ss)!=''
 				 && se!=null && trim(se)!=''
 				 && ce!=null && trim(ce)!=''
 				 && es!=null && trim(es)!=''
+				 && evs!=null && trim(evs)!=''
+				 && eve!=null && trim(eve)!=''
 				 && year!=null && trim(year)!='' && !isNaN(year)) {
 				document.forms[0].refresh.value='1';
 				var btn = document.getElementById('save');
@@ -85,9 +92,11 @@
 							<bean:message key="button.updateSession" />
 						</html:submit>
 
-						<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
-							<bean:message key="button.deleteSession" />
-						</html:submit>
+						<sec:authorize access="hasPermission(#sessionEditForm.sessionId, 'Session', 'AcademicSessionDelete')">
+							<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
+								<bean:message key="button.deleteSession" />
+							</html:submit>
+						</sec:authorize>
 					</logic:notEqual>
 				
 					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
@@ -298,9 +307,11 @@
 								<bean:message key="button.updateSession" />
 							</html:submit>
 	
-							<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
-								<bean:message key="button.deleteSession" />
-							</html:submit>
+							<sec:authorize access="hasPermission(#sessionEditForm.sessionId, 'Session', 'AcademicSessionDelete')">
+								<html:submit styleClass="btn" property="doit" accesskey="D" titleKey="title.deleteSession" onclick="return (confirmDelete());">
+									<bean:message key="button.deleteSession" />
+								</html:submit>
+							</sec:authorize>
 						</logic:notEqual>
 					
 					<html:submit styleClass="btn" property="doit" accesskey="B" titleKey="title.cancelSessionEdit" >
