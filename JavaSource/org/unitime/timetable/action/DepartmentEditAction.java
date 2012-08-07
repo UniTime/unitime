@@ -32,22 +32,24 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.DepartmentEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 @Service("/departmentEdit")
 public class DepartmentEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
@@ -56,8 +58,7 @@ public class DepartmentEditAction extends Action {
 			MessageResources rsc = getResources(request);
 		
 			// Check Access
-			if (!Web.isLoggedIn(request.getSession()) || !Web.hasRole(request.getSession(),Roles.getAdminRoles()))
-				throw new Exception ("Access Denied.");
+			sessionContext.checkPermission(Right.Departments);
 			
 			// Read operation to be performed
 			String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -67,6 +68,7 @@ public class DepartmentEditAction extends Action {
 	            String id = request.getParameter("id");
 	            Department department = (new DepartmentDAO()).get(Long.valueOf(id));
 	            if (department!=null) {
+	            	sessionContext.checkPermission(department, Right.DepartmentEdit);
 	            	myForm.load(department);
 	            	return mapping.findForward("edit");
 	            }
@@ -75,7 +77,8 @@ public class DepartmentEditAction extends Action {
 	        // Add
 	        if(rsc.getMessage("button.addDepartment").equalsIgnoreCase(op)) {
             	myForm.reset(mapping, request);
-        		myForm.setCanDelete(Boolean.FALSE);
+            	myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+        		sessionContext.checkPermission(Right.DepartmentAdd);
             	return mapping.findForward("add");
 	        }
 	        
@@ -91,14 +94,17 @@ public class DepartmentEditAction extends Action {
 	                else
 	                	return mapping.findForward("add");
 	            } else {
-	                User user = Web.getUser(request.getSession());  
-	            	myForm.save(user, request);
+	            	if (myForm.getId() == null || myForm.getId().equals(0l))
+	            		sessionContext.checkPermission(Right.DepartmentAdd);
+	            	else
+	            		sessionContext.checkPermission(myForm.getId(), "Department", Right.DepartmentEdit);
+	            	myForm.save(sessionContext);
 	            }
 	        }
 	        
 	        // Delete
 	        if(rsc.getMessage("button.deleteDepartment").equalsIgnoreCase(op)) {
-	        	doDelete(request, myForm);
+	        	doDelete(myForm);
 	        }
 	        
         	if (myForm.getId()!=null)
@@ -116,9 +122,10 @@ public class DepartmentEditAction extends Action {
 	 * @param request
 	 * @param myForm
 	 */
-	private void doDelete(
-			HttpServletRequest request, 
-			DepartmentEditForm frm) throws Exception{
+	private void doDelete(DepartmentEditForm frm) throws Exception{
+		
+		sessionContext.checkPermission(frm.getId(), "Department", Right.DepartmentDelete);
+		
         org.hibernate.Session hibSession = new DepartmentDAO().getSession();
         Transaction tx = null;
         try {
@@ -159,7 +166,7 @@ public class DepartmentEditAction extends Action {
             }
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     department, 
                     ChangeLog.Source.DEPARTMENT_EDIT, 
                     ChangeLog.Operation.DELETE, 

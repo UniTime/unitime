@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.security.permissions;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class AdministrationPermissions {
@@ -37,5 +41,63 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.SessionRollForward)
 	public static class SessionRollForward extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.Departments)
+	public static class Departments extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.DepartmentAdd)
+	public static class DepartmentAdd extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.DepartmentEdit)
+	public static class DepartmentEdit extends SimpleDepartmentPermission {}
+	
+	@PermissionForRight(Right.DepartmentDelete)
+	public static class DepartmentDelete implements Permission<Department> {
+		@Autowired Permission<Department> permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			if (!permissionDepartment.check(user, source))
+				return false;
+			
+			if (source.getSolverGroup() != null)
+				return false;
+			
+			int nrOffered = ((Number)DepartmentDAO.getInstance().getSession().
+                    createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
+                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = 0").
+                    setLong("deptId", source.getUniqueId()).uniqueResult()).intValue();
+            
+			return nrOffered == 0;
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
+	
+	@PermissionForRight(Right.DepartmentEditChangeExternalManager)
+	public static class DepartmentEditChangeExternalManager implements Permission<Department> {
+		@Autowired Permission<Department> permissionDepartmentEdit;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			if (!permissionDepartmentEdit.check(user, source))
+				return false;
+			
+			if (source.isExternalManager()) {
+	            int nrExtManaged = ((Number)DepartmentDAO.getInstance().getSession().
+	                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId").
+	                    setLong("deptId", source.getUniqueId()).uniqueResult()).intValue();
+	            
+	            return nrExtManaged == 0;
+			} else {
+				return source.getSubjectAreas().isEmpty();
+			}
+
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class; }
+	}
 
 }
