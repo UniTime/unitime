@@ -90,7 +90,6 @@
       <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
       <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
       <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
-      <form-bean name="sectioningDemoForm" type="org.unitime.timetable.form.SectioningDemoForm" />
       <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
       <form-bean name="dataImportForm" type="org.unitime.timetable.form.DataImportForm" />
       <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
@@ -1522,19 +1521,6 @@
     </action>
     
     <action
-       path="/sectioningDemo"
-       type="org.springframework.web.struts.DelegatingActionProxy"
-       attribute="sectioningDemoForm"
-       input="sectioningDemoTile"
-       name="sectioningDemoForm"
-       scope="request"
-       validate="false" >
-       <forward 
-       		name="displayForm" 
-       		path="sectioningDemoTile" />
-    </action>
-
-    <action
        path="/inquiry"
        type="org.springframework.web.struts.DelegatingActionProxy"
        attribute="inquiryForm"
@@ -1658,12 +1644,6 @@
        		path="/itypeDescList.do" />
     </action>
 
-	  <action
-         path="/sectioningDemoAjax"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" />
-         
 	  <action
          path="/distributionPrefsAjax"
          type="org.springframework.web.struts.DelegatingActionProxy"
