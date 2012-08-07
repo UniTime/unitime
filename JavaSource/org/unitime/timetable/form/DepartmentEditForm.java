@@ -25,28 +25,27 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.hibernate.Session;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.ReferenceList;
 
 
 public class DepartmentEditForm extends ActionForm {
 	private static final long serialVersionUID = -6614766002463228171L;
 	public Long iId = null;
+	public Long iSessionId = null;
 	public String iName = null;
 	public String iDeptCode = null;
 	public String iStatusType = null;
 	public String iOp = null;
 	public String iAbbv = null;
 	public String iExternalId = null;
-	public Boolean canDelete = Boolean.TRUE;
-	public Boolean canChangeExternalManagement = Boolean.TRUE;
 	public int iDistPrefPriority = 0;
 	public boolean iIsExternal = false;
 	public String iExtAbbv = null;
@@ -107,7 +106,7 @@ public class DepartmentEditForm extends ActionForm {
         }
 
         try {
-			Department dept = Department.findByDeptCode(iDeptCode, org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(request.getSession())).getSessionId());
+			Department dept = Department.findByDeptCode(iDeptCode, iSessionId);
 			if (dept!=null && !dept.getUniqueId().equals(iId)) {
 				errors.add("deptCode", new ActionMessage("errors.exists", iDeptCode));
 			}
@@ -121,15 +120,16 @@ public class DepartmentEditForm extends ActionForm {
 	}
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-		setCanDelete(Boolean.TRUE);
-		canChangeExternalManagement=Boolean.TRUE;
-		iId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
+		iId = null; iSessionId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
         iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false;
 	}
 
 	public Long getId() { return iId; }
 	public void setId(Long id) { iId = id; }
+
+	public Long getSessionId() { return iSessionId; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
 
 	public String getExternalId() {
 		return iExternalId;
@@ -152,22 +152,6 @@ public class DepartmentEditForm extends ActionForm {
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
 
-	public Boolean getCanDelete() {
-		return canDelete;
-	}
-
-	public void setCanDelete(Boolean canDelete) {
-		this.canDelete = canDelete;
-	}
-
-    public Boolean getCanChangeExternalManagement() {
-        return canChangeExternalManagement;
-    }
-
-    public void setCanChangeExternalManagement(Boolean canChangeExternalManagement) {
-        this.canChangeExternalManagement = canChangeExternalManagement;
-    }
-
     public boolean getIsExternal() { return iIsExternal; }
 	public void setIsExternal(boolean isExternal) { iIsExternal = isExternal; }
     public boolean getAllowReqTime() { return iAllowReqTime; }
@@ -189,6 +173,7 @@ public class DepartmentEditForm extends ActionForm {
 	
 	public void load(Department department) {
 		setId(department.getUniqueId());
+		setSessionId(department.getSessionId());
 		setName(department.getName());
 		setAbbv(department.getAbbreviation());
 		setDistPrefPriority(department.getDistributionPrefPriority()==null?0:department.getDistributionPrefPriority().intValue());
@@ -198,39 +183,20 @@ public class DepartmentEditForm extends ActionForm {
 		setIsExternal(department.isExternalManager().booleanValue());
 		setExtAbbv(department.getExternalMgrAbbv());
 		setExtName(department.getExternalMgrLabel());
-		setCanDelete(Boolean.TRUE);
-		if (department.getSolverGroup()!=null) 
-		    setCanDelete(Boolean.FALSE);
-		if (getCanDelete()) {
-		    int nrOffered = ((Number)new DepartmentDAO().getSession().
-                    createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
-                    		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = 0").
-                    setLong("deptId", department.getUniqueId()).uniqueResult()).intValue();
-            if (nrOffered>0) setCanDelete(Boolean.FALSE);
-		}
-		setCanChangeExternalManagement(Boolean.TRUE);
-		if (!department.getSubjectAreas().isEmpty()) {
-		    setCanChangeExternalManagement(Boolean.FALSE);
-		} else if (department.isExternalManager()) {
-            int nrExtManaged = ((Number)new DepartmentDAO().getSession().
-                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId").
-                    setLong("deptId", department.getUniqueId()).uniqueResult()).intValue();
-            if (nrExtManaged>0) setCanChangeExternalManagement(Boolean.FALSE);
-		}
         setAllowReqRoom(department.isAllowReqRoom()!=null && department.isAllowReqRoom().booleanValue());
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
         setAllowReqDist(department.isAllowReqDistribution()!=null && department.isAllowReqDistribution().booleanValue());
 	}
 
-	public void save(User user, HttpServletRequest request) throws Exception {
+	public void save(SessionContext context) throws Exception {
 		DepartmentDAO dao = new DepartmentDAO();
-		Session session = dao.getSession();
+		org.hibernate.Session session = dao.getSession();
 		Department department;
-		org.unitime.timetable.model.Session acadSession = null;
+		Session acadSession = null;
 		
 		if( getId().equals(new Long(0))) {
 			department = new Department();
-			acadSession = org.unitime.timetable.model.Session.getCurrentAcadSession(user); 
+			acadSession = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()); 
 			department.setSession(acadSession);
 			department.setDistributionPrefPriority(new Integer(0));
 			acadSession.addTodepartments(department);
@@ -258,7 +224,7 @@ public class DepartmentEditForm extends ActionForm {
 //			}
             ChangeLog.addChange(
                     session, 
-                    request, 
+                    context, 
                     department, 
                     ChangeLog.Source.DEPARTMENT_EDIT, 
                     (getId().equals(new Long(0))?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 

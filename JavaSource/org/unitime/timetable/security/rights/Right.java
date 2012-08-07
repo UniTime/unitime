@@ -264,6 +264,11 @@ public enum Right {
     DatePatterns(Session.class),
     DataExchange(Session.class),
     ExaminationPeriods(Session.class),
+    Departments(Session.class),
+    DepartmentAdd(Session.class),
+    DepartmentEdit(Department.class),
+    DepartmentEditChangeExternalManager(Department.class),
+    DepartmentDelete(Department.class),
     
     Registration,
     ExtendedTimePatterns,

@@ -17,16 +17,17 @@
  * 
  --%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -43,8 +44,7 @@
 
 <html:form action="/departmentEdit">
 	<html:hidden property="id"/>
-	<html:hidden property="canDelete"/>
-	<html:hidden property="canChangeExternalManagement"/>
+	<html:hidden property="sessionId"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
@@ -70,11 +70,11 @@
 						<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateDepartment">
 							<bean:message key="button.updateDepartment"/>
 						</html:submit>
-						<logic:equal name="departmentEditForm" property="canDelete" value="true">
+						<sec:authorize access="hasPermission(#departmentEditForm.id, 'Department', 'DepartmentDelete')">
 							<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
 								<bean:message key="button.deleteDepartment"/>
 							</html:submit>
-						</logic:equal>
+						</sec:authorize>
 					</logic:notEmpty>
 
 					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
@@ -103,7 +103,7 @@
 
 		<TR>
 			<TD>Academic Session: </TD>
-			<TD><%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %></TD>
+			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
 		</TR>
 
 		<TR>
@@ -146,13 +146,18 @@
 		<TR>
 			<TD nowrap>External Manager:</TD>
 			<TD>
-				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="true">
+				<logic:empty name="departmentEditForm" property="id">
 					<html:checkbox property="isExternal"/>
-				</logic:equal>
-				<logic:equal name="departmentEditForm" property="canChangeExternalManagement" value="false">
-					<html:checkbox property="isExternal" disabled="true"/>
-					<html:hidden property="isExternal"/>
-				</logic:equal>
+				</logic:empty>
+				<logic:notEmpty name="departmentEditForm" property="id">
+					<sec:authorize access="hasPermission(#departmentEditForm.id, 'Department', 'DepartmentEditChangeExternalManager')">
+						<html:checkbox property="isExternal"/>
+					</sec:authorize>
+					<sec:authorize access="!hasPermission(#departmentEditForm.id, 'Department', 'DepartmentEditChangeExternalManager')">
+						<html:checkbox property="isExternal" disabled="true"/>
+						<html:hidden property="isExternal"/>
+					</sec:authorize>
+				</logic:notEmpty>
 			</TD>
 		</TR>
 
@@ -216,11 +221,11 @@
 					<html:submit property="op" styleClass="btn" accesskey="U" titleKey="title.updateDepartment">
 						<bean:message key="button.updateDepartment"/>
 					</html:submit>
-					<logic:equal name="departmentEditForm" property="canDelete" value="true">
+					<sec:authorize access="hasPermission(#departmentEditForm.id, 'Department', 'DepartmentDelete')">
 						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteDepartment">
 							<bean:message key="button.deleteDepartment"/>
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 				</logic:notEmpty>	
 					
 				<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
