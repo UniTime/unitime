@@ -19,15 +19,23 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.HibernateException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.form.SessionListForm;
-import org.unitime.timetable.model.Roles;
+import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -44,6 +52,8 @@ import org.apache.struts.action.ActionMapping;
  */
 @Service("/sessionList")
 public class SessionListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -65,13 +75,92 @@ public class SessionListAction extends Action {
 		HttpServletResponse response) throws Exception {
 
         // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
+		sessionContext.checkPermission(Right.AcademicSessions);
 
-		SessionListForm sessionListForm = (SessionListForm) form;
-		sessionListForm.setSessions(SessionDAO.getInstance().findAll());
+		WebTable webTable = new WebTable(
+				12, "", "sessionList.do?order=%%",					
+				new String[] {
+					"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
+					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", 
+					"Events<br>Begins", "Events<br>Ends", "Event<br>Management", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
+				new String[] { "center", "left", "left", "left", "left",
+					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
+		
+		DecimalFormat df5 = new DecimalFormat("####0");
+		DateFormat df = DateFormat.getDateInstance();
+
+		for (Session s: SessionDAO.getInstance().findAll()) {
+			String roomTypes = ""; boolean all = true;
+			for (RoomType t : RoomType.findAll()) {
+				if (t.getOption(s).canScheduleEvents()) {
+					if (roomTypes.length()>0) roomTypes+=", ";
+					roomTypes+=t.getLabel();
+				} else all = false;
+			}
+			if (all) roomTypes = "<i>All</i>";
+			if (roomTypes.length()==0) roomTypes = "<i>N/A</i>";
+			
+			Calendar ce = Calendar.getInstance(Locale.US); ce.setTime(s.getSessionBeginDateTime());
+			ce.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToEnroll()); ce.add(Calendar.DAY_OF_YEAR, -1);
+
+			Calendar cc = Calendar.getInstance(Locale.US); cc.setTime(s.getSessionBeginDateTime());
+			cc.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToChange()); cc.add(Calendar.DAY_OF_YEAR, -1);
+
+			Calendar cd = Calendar.getInstance(Locale.US); cd.setTime(s.getSessionBeginDateTime());
+			cd.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToDrop()); cd.add(Calendar.DAY_OF_YEAR, -1);
+			
+			webTable.addLine(
+					sessionContext.hasPermission(s, Right.AcademicSessionEdit) ?  "onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"" : null,
+					new String[] {
+						s.getIsDefault() ? "<img src='images/tick.gif'> " : "&nbsp; ", 
+						s.getAcademicTerm() + " " + s.getSessionStartYear(),
+						s.academicInitiativeDisplayString(),
+						df.format(s.getSessionBeginDateTime()).replace(" ", "&nbsp;"),
+						df.format(s.getClassesEndDateTime()).replace(" ", "&nbsp;"),
+						df.format(s.getSessionEndDateTime()).replace(" ", "&nbsp;"),
+						(s.getExamBeginDate()==null?"N/A":df.format(s.getExamBeginDate()).replace(" ", "&nbsp;")),
+						s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
+						s.statusDisplayString(),
+						df5.format(s.getSubjectAreas().size()),
+						(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate()).replace(" ", "&nbsp;")),
+						(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate()).replace(" ", "&nbsp;")),
+						roomTypes,
+						df.format(ce.getTime()).replace(" ", "&nbsp;"),
+						df.format(cc.getTime()).replace(" ", "&nbsp;"),
+						df.format(cd.getTime()).replace(" ", "&nbsp;"),
+						(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
+						 },
+					new Comparable[] {
+						s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
+						s.getLabel(),
+						s.academicInitiativeDisplayString(),
+						s.getSessionBeginDateTime(),
+						s.getClassesEndDateTime(),
+						s.getSessionEndDateTime(),
+						s.getExamBeginDate(),
+						s.getDefaultDatePattern()!=null ? s.getDefaultDatePattern().getName() : "-", 
+						s.statusDisplayString(),
+						df5.format(s.getSubjectAreas().size()),
+						s.getEventBeginDate(),
+						s.getEventEndDate(),
+						roomTypes,
+						ce.getTime(), cc.getTime(), cd.getTime(),
+						(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()) } );
+		}
+				
+		webTable.enableHR("#9CB0CE");
+		
+		int orderCol = 4;
+		if (request.getParameter("order")!=null) {
+			try {
+				orderCol = Integer.parseInt(request.getParameter("order"));
+			} catch (Exception e){
+				orderCol = 4;
+			}
+		}
+		request.setAttribute("table", webTable.printTable(orderCol));
+		
 		return mapping.findForward("showSessionList");
 		
 	}

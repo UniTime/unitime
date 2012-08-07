@@ -269,6 +269,10 @@ public enum Right {
     DepartmentEdit(Department.class),
     DepartmentEditChangeExternalManager(Department.class),
     DepartmentDelete(Department.class),
+    AcademicSessions,
+    AcademicSessionAdd,
+    AcademicSessionEdit(Session.class),
+    AcademicSessionDelete(Session.class),
     
     Registration,
     ExtendedTimePatterns,

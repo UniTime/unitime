@@ -127,6 +127,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		hibSession.save(q);
 	}
 	
+	@Deprecated
 	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Long... ids) {
 		StudentSectioningQueue q = new StudentSectioningQueue();
 		q.setTimeStamp(new Date());
@@ -192,7 +193,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 				.setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build();
 	}
 	
-	public static void sessionStatusChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, boolean reload) {
+	public static void sessionStatusChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, boolean reload) {
 		addItem(hibSession, user, sessionId, (reload ? Type.SESSION_RELOAD : Type.SESSION_STATUS_CHANGE));
 	}
 	
@@ -210,6 +211,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, (User)null, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
 	
+	@Deprecated
 	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... studentIds) {
 		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
 	}
@@ -222,6 +224,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 
+	@Deprecated
 	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... classIds) {
 		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
@@ -234,6 +237,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 
+	@Deprecated
 	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... offeringId) {
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
