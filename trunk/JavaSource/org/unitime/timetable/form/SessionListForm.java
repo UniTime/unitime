@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForm;
@@ -41,7 +38,6 @@ public class SessionListForm extends ActionForm {
 	 */
 	private static final long serialVersionUID = 3978708393714463539L;
 	// --------------------------------------------------------- Instance Variables
-	private Collection sessions;
 	
 	// --------------------------------------------------------- Methods
 
@@ -51,20 +47,7 @@ public class SessionListForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-
-		sessions = new ArrayList();
 	}
 
-	/**
-	 * @return Returns the sessions.
-	 */
-	public Collection getSessions() {
-		return sessions;
-	}
-	/**
-	 * @param sessions The sessions to set.
-	 */
-	public void setSessions(Collection sessions) {
-		this.sessions = sessions;
-	}
+
 }

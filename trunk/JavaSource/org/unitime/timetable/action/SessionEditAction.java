@@ -36,8 +36,8 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SessionEditForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
@@ -46,7 +46,6 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
@@ -55,6 +54,8 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
@@ -72,6 +73,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/sessionEdit")
 public class SessionEditAction extends SpringAwareLookupDispatchAction {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -107,15 +110,12 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		HttpServletRequest request,
 		HttpServletResponse response) throws Exception {
 		
-        // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
-		
 		SessionEditForm sessionEditForm = (SessionEditForm) form;		
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
 		Session acadSession = Session.getSessionById(id);
+		
+		sessionContext.checkPermission(acadSession, Right.AcademicSessionEdit);
+		
 		sessionEditForm.setSession(acadSession);
 		DatePattern d = acadSession.getDefaultDatePattern();
 		
@@ -162,13 +162,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-				
-        // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
-        
+
         if (Session.getAllSessions().size()==1) {
             ActionMessages errors = new ActionMessages();
             errors.add("sessionId", new ActionMessage("errors.generic", "Last academic session cannot be deleted -- there needs to be at least one academic session present."));
@@ -177,18 +171,19 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             
         }
         
-        Session current = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-        
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
 		
-        if (current!=null && id.equals(current.getUniqueId())) {
+        if (id.equals(sessionContext.getUser().getCurrentAcademicSessionId())) {
             ActionMessages errors = new ActionMessages();
             errors.add("sessionId", new ActionMessage("errors.generic", "Current academic session cannot be deleted -- please change your session first."));
             saveErrors(request, errors);
             return mapping.findForward("showEdit");
         }
-
+        
+		sessionContext.checkPermission(id, "Session", Right.AcademicSessionDelete);
+		
 		Session.deleteSessionById(id);
+		
 		return mapping.findForward("showSessionList");
 	}
 	
@@ -198,11 +193,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		
-        // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
+		sessionContext.checkPermission(Right.AcademicSessionAdd);
 
 		return mapping.findForward("showAdd");
 	}
@@ -213,13 +204,13 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 				
-        // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
-        
         SessionEditForm sessionEditForm = (SessionEditForm) form;
+        
+        if (sessionEditForm.getSessionId() == null || sessionEditForm.getSessionId().equals(0l)) {
+        	sessionContext.checkPermission(Right.AcademicSessionAdd);
+        } else {
+        	sessionContext.checkPermission(sessionEditForm.getSessionId(), "Session", Right.AcademicSessionEdit);
+        }
 
         Transaction tx = null;
         org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -229,7 +220,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 
             Session sessn = sessionEditForm.getSession();
             
-            if (sessionEditForm.getSessionId()!=null && sessn.getSessionId().intValue()!=0) 
+            if (sessionEditForm.getSessionId()!=null && !sessn.getSessionId().equals(0l)) 
                 sessn = (new SessionDAO()).get(sessionEditForm.getSessionId(),hibSession);
             else 
                 sessn.setSessionId(null);
@@ -285,7 +276,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     sessn, 
                     ChangeLog.Source.SESSION_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -293,17 +284,39 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
                     null);
             
             if (sessionEditForm.getSessionId() != null)
-            	StudentSectioningQueue.sessionStatusChanged(hibSession, Web.getUser(request.getSession()), sessionEditForm.getSessionId(), false);
+            	StudentSectioningQueue.sessionStatusChanged(hibSession, sessionContext.getUser(), sessionEditForm.getSessionId(), false);
             
-            TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
-            EventContact contact = EventContact.findByExternalUniqueId(manager.getExternalUniqueId());
+            EventContact contact = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
             if (contact==null) {
                 contact = new EventContact();
-                contact.setFirstName(manager.getFirstName());
-                contact.setMiddleName(manager.getMiddleName());
-                contact.setLastName(manager.getLastName());
-                contact.setExternalUniqueId(manager.getExternalUniqueId());
-                contact.setEmailAddress(manager.getEmailAddress());
+                TimetableManager manager = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
+                if (manager != null) {
+                	contact.setFirstName(manager.getFirstName());
+                	contact.setMiddleName(manager.getMiddleName());
+                	contact.setLastName(manager.getLastName());
+                	contact.setExternalUniqueId(manager.getExternalUniqueId());
+                	contact.setEmailAddress(manager.getEmailAddress());
+                } else {
+                	String[] name = sessionContext.getUser().getName().split(" ");
+                	String fname = name.length >= 2 ? name[0] : "";
+                	String lname = name.length >= 1 ? name[name.length - 1] : sessionContext.getUser().getName();
+                	String mname = null;
+                	if (name.length >= 3) {
+                		for (int i = 1; i < name.length - 1; i++) {
+                			if (fname == null)
+                				fname = "";
+                			else
+                				fname += " ";
+                			fname += name[i];
+                		}
+                	}
+                	contact.setFirstName(fname);
+                	contact.setMiddleName(mname);
+                	contact.setLastName(lname);
+                	contact.setExternalUniqueId(sessionContext.getUser().getExternalUserId());
+                	contact.setEmailAddress(sessionContext.getUser().getEmail());
+                	
+                }
                 hibSession.save(contact);
             }
 
