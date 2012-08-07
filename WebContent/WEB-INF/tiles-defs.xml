@@ -651,11 +651,6 @@
 		<put name="body" value="/admin/chameleon.jsp" />
   	</definition>
  
-   	<definition	name="sectioningDemoTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Student Sectioning Demo"/>
-		<put name="body" value="/admin/sectioningDemo.jsp" />
-  	</definition>
- 
    	<definition	name="inquiryTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Contact Us"/>
 		<put name="body" value="/user/inquiry.jsp" />
