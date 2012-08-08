@@ -28,11 +28,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.TimetableManagerBuilder;
@@ -49,6 +50,8 @@ import org.unitime.timetable.webutil.TimetableManagerBuilder;
  */
 @Service("/timetableManagerList")
 public class TimetableManagerListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -72,19 +75,16 @@ public class TimetableManagerListAction extends Action {
         String errM = "";
         
         // Check permissions
-        if(!Web.hasRole( request.getSession(),
-       		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		   throw new Exception ("Access Denied.");
-		}
+        sessionContext.checkPermission(Right.TimetableManagers);
 
-		WebTable.setOrder(request.getSession(),"timetableManagerList.ord",request.getParameter("order"),1);
+		WebTable.setOrder(sessionContext,"timetableManagerList.ord",request.getParameter("order"),1);
         
-        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(request,false,true);
-        int order = WebTable.getOrder(request.getSession(),"timetableManagerList.ord");
+        PdfWebTable table =  new TimetableManagerBuilder().getManagersTable(sessionContext,true);
+        int order = WebTable.getOrder(sessionContext,"timetableManagerList.ord");
         String tblData = (order>=1?table.printTable(order):table.printTable());
         
         if ("Export PDF".equals(request.getParameter("op"))) {
-            PdfWebTable pdfTable =  new TimetableManagerBuilder().getManagersTable(request,false,false);
+            PdfWebTable pdfTable =  new TimetableManagerBuilder().getManagersTable(sessionContext,false);
             File file = ApplicationProperties.getTempFile("managers", "pdf");
             pdfTable.exportPdf(file, order);
             request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());

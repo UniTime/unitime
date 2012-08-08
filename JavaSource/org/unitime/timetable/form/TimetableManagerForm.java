@@ -71,7 +71,6 @@ public class TimetableManagerForm extends ActionForm {
     private List roleReceiveEmailFlags;
     private List solverGrs;
     private List solverGrLabels;
-    private Boolean isExternalManager;
     private Boolean lookupEnabled;
     
     // --------------------------------------------------------- Classes
@@ -139,7 +138,6 @@ public class TimetableManagerForm extends ActionForm {
         role="";
         dept="";
         solverGr = "";
-        isExternalManager=null;
         lookupEnabled = null;
         
         depts = DynamicList.getInstance(new ArrayList(), factoryDepts);
@@ -358,13 +356,6 @@ public class TimetableManagerForm extends ActionForm {
     }
     public void setFirstName(String firstName) {
         this.firstName = firstName;
-    }
-    
-    public Boolean getIsExternalManager() {
-        return isExternalManager;
-    }
-    public void setIsExternalManager(Boolean isExternalManager) {
-        this.isExternalManager = isExternalManager;
     }
     
     public String getLastName() {

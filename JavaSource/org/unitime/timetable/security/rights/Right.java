@@ -42,6 +42,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.TimetableManager;
 
 public enum Right {
 	/** Session default: current session */
@@ -273,6 +274,14 @@ public enum Right {
     AcademicSessionAdd,
     AcademicSessionEdit(Session.class),
     AcademicSessionDelete(Session.class),
+    TimetableManagers,
+    TimetableManagerAdd,
+    TimetableManagerEdit(TimetableManager.class),
+    TimetableManagerDelete(TimetableManager.class),
+    ExactTimes,
+    StandardEventNotes,
+    TestHQL,
+    StatusTypes,
     
     Registration,
     ExtendedTimePatterns,

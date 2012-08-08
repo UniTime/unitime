@@ -17,7 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -27,10 +26,12 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -58,7 +59,6 @@
 <html:form method="post" action="timetableManagerEdit.do">
 	<html:hidden name="mgrForm" property="uniqueId" />
 	<html:hidden name="mgrForm" property="op1" />
-	<html:hidden name="mgrForm" property="isExternalManager" />
 	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
 	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
 	
@@ -84,11 +84,13 @@
 							styleClass="btn" accesskey="U" titleKey="title.updateTimetableManager">
 							<bean:message key="button.updateTimetableManager" />
 						</html:submit>
-						<html:submit property="op" 
-							styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
-							onclick="return (confirmDelete());" >
-							<bean:message key="button.deleteTimetableManager" />
-						</html:submit>
+						<sec:authorize access="hasPermission(#mgrForm.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
+							<html:submit property="op" 
+								styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
+								onclick="return (confirmDelete());" >
+								<bean:message key="button.deleteTimetableManager" />
+							</html:submit>
+						</sec:authorize>
 					</logic:equal>
 					
 					<html:submit property="op" 
@@ -119,7 +121,7 @@
 
 		<TR>
 			<TD>Academic Session: </TD>
-			<TD><%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %></TD>
+			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
 		</TR>
 		
 		<%-- <logic:equal name="mgrForm" property="lookupEnabled" value="false"> --%>
@@ -168,20 +170,6 @@
 				<html:text name="mgrForm" property="email" size="30" maxlength="100" styleId="email"/>
 			</TD>
 		</TR>
-
-		<%--
-		<TR>
-			<TD>External Manager: </TD>
-			<TD>
-				<logic:equal name="mgrForm" property="isExternalManager" value="true">
-					<img src="images/tick.gif" border="0" title="External Manager">
-				</logic:equal>
-				<logic:notEqual name="mgrForm" property="isExternalManager" value="true">
-					<img src="images/delete.gif" border="0" title="Not External Manager">
-				</logic:notEqual>
-			</TD>
-		</TR>
-		--%>
 
 <!-- Departments -->
 		<TR>
@@ -378,11 +366,13 @@
 						styleClass="btn" accesskey="U" titleKey="title.updateTimetableManager">
 						<bean:message key="button.updateTimetableManager" />
 					</html:submit>
-					<html:submit property="op" 
-						styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
-						onclick="return (confirmDelete());" >
-						<bean:message key="button.deleteTimetableManager" />
-					</html:submit>
+					<sec:authorize access="hasPermission(#mgrForm.uniqueId, 'TimetableManager', 'TimetableManagerDelete')">
+						<html:submit property="op" 
+							styleClass="btn" accesskey="D" titleKey="title.deleteTimetableManager"
+							onclick="return (confirmDelete());" >
+							<bean:message key="button.deleteTimetableManager" />
+						</html:submit>
+					</sec:authorize>
 				</logic:equal>
 				
 				<html:submit property="op" 

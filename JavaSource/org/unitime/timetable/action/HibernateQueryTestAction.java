@@ -26,7 +26,6 @@ import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -52,14 +51,16 @@ import org.hibernate.hql.QueryExecutionRequestException;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.commons.hibernate.util.PrettyFormatter;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.HibernateQueryTestForm;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -71,6 +72,8 @@ import org.unitime.timetable.model.dao._RootDAO;
  */
 @Service("/hibernateQueryTest")
 public class HibernateQueryTestAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -90,10 +93,7 @@ public class HibernateQueryTestAction extends Action {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        HttpSession httpSession = request.getSession();
-		if(!Web.isLoggedIn( httpSession ) || !Web.isAdmin(httpSession)) {
-            throw new Exception ("Access Denied.");
-        }
+    	sessionContext.checkPermission(Right.TestHQL);
 
 		String op = request.getParameter("op");
 		if(op==null || !op.equals("Submit")) {
