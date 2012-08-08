@@ -282,6 +282,12 @@ public enum Right {
     StandardEventNotes,
     TestHQL,
     StatusTypes,
+    SolverGroups(Session.class),
+    SubjectAreas(Session.class),
+    SubjectAreaAdd(Session.class),
+    SubjectAreaEdit(SubjectArea.class),
+    SubjectAreaDelete(SubjectArea.class),
+    SubjectAreaChangeDepartment(SubjectArea.class),
     
     Registration,
     ExtendedTimePatterns,

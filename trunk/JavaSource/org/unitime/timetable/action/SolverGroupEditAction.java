@@ -38,19 +38,20 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverGroupEditForm;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -62,19 +63,15 @@ import org.unitime.timetable.webutil.PdfWebTable;
 public class SolverGroupEditAction extends Action {
 	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
 	
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 			SolverGroupEditForm myForm = (SolverGroupEditForm) form;
 			
 	        // Check Access
-	        if (!Web.isLoggedIn( request.getSession() )
-	               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-	            throw new Exception ("Access Denied.");
-	        }
-	        
-	        User user = Web.getUser(request.getSession());
-	        Session session = Session.getCurrentAcadSession(user);
-	        
+			sessionContext.checkPermission(Right.SolverGroups);
+	        	        
 	        // Read operation to be performed
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
@@ -83,6 +80,8 @@ public class SolverGroupEditAction extends Action {
 	            if (myForm.getUniqueId()!=null)
                     request.setAttribute("hash", myForm.getUniqueId());
 	        }
+	        
+	        Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 	        
 	        // Add / Update
 	        if ("Update".equals(op) || "Save".equals(op)) {
@@ -98,7 +97,7 @@ public class SolverGroupEditAction extends Action {
 	                	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 	                		tx = hibSession.beginTransaction();
 	                	
-	                	myForm.saveOrUpdate(hibSession, session.getUniqueId(), request);
+	                	myForm.saveOrUpdate(hibSession, sessionContext);
 	                	
 	        			if (tx!=null) tx.commit();
 	        			
@@ -143,7 +142,7 @@ public class SolverGroupEditAction extends Action {
 	            	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 	            		tx = hibSession.beginTransaction();
 	            	
-	            	myForm.delete(hibSession, request);
+	            	myForm.delete(hibSession, sessionContext);
 	            	
 	    			tx.commit();
 	    	    } catch (Exception e) {
@@ -286,17 +285,17 @@ public class SolverGroupEditAction extends Action {
 	        }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getSolverGroups(request, session.getUniqueId(), false);
+                PdfWebTable table = getSolverGroups(request, session, false);
                 File file = ApplicationProperties.getTempFile("solverGroups", "pdf");
-                table.exportPdf(file, WebTable.getOrder(request.getSession(), "solverGroups.ord"));
+                table.exportPdf(file, WebTable.getOrder(sessionContext, "solverGroups.ord"));
                 request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
                 myForm.setOp("List");
             }
 
 	        // Read all existing settings and store in request
 	        if ("List".equals(myForm.getOp())) {
-                PdfWebTable table = getSolverGroups(request, session.getUniqueId(), true);
-                request.setAttribute("SolverGroups.table", table.printTable(WebTable.getOrder(request.getSession(),"solverGroups.ord")));
+                PdfWebTable table = getSolverGroups(request, session, true);
+                request.setAttribute("SolverGroups.table", table.printTable(WebTable.getOrder(sessionContext,"solverGroups.ord")));
                 return mapping.findForward("list");
             }
 	        
@@ -309,17 +308,17 @@ public class SolverGroupEditAction extends Action {
 		}
 	}
 	
-    private PdfWebTable getSolverGroups(HttpServletRequest request, Long sessionId, boolean html) throws Exception {
-		WebTable.setOrder(request.getSession(),"solverGroups.ord",request.getParameter("ord"),1);
+    private PdfWebTable getSolverGroups(HttpServletRequest request, Session session, boolean html) throws Exception {
+		WebTable.setOrder(sessionContext,"solverGroups.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         PdfWebTable webTable = new PdfWebTable( 5,
-			    (html?null:"Solver Groups - "+Web.getUser(request.getSession()).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME)),
+			    (html?null:"Solver Groups - " + session.getLabel()),
                 "solverGroupEdit.do?ord=%%",
 			    new String[] {"Abbv", "Name", "Departments", "Managers", "Committed"},
 			    new String[] {"left", "left", "left", "left", "left"},
 			    null );
         
-        Set solverGroups = SolverGroup.findBySessionId(sessionId);
+        Set solverGroups = SolverGroup.findBySessionId(session.getUniqueId());
 		if(solverGroups.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No time pattern defined for this academic initiative and term."}, null, null );			    
 		}

@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForm;
@@ -41,8 +38,7 @@ public class SubjectListForm extends ActionForm {
 	 */
 	private static final long serialVersionUID = 3618141147571302965L;
 	// --------------------------------------------------------- Instance Variables
-	private Collection subjects;
-	
+
 	// --------------------------------------------------------- Methods
 
 	/** 
@@ -51,20 +47,6 @@ public class SubjectListForm extends ActionForm {
 	 * @param request
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-
-		subjects = new ArrayList();
 	}
 
-	/**
-	 * @return Returns the subjects.
-	 */
-	public Collection getSubjects() {
-		return subjects;
-	}
-	/**
-	 * @param subjects The subjects to set.
-	 */
-	public void setSubjects(Collection subjects) {
-		this.subjects = subjects;
-	}
 }

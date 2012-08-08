@@ -27,10 +27,9 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.MessageResources;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.context.HttpSessionContext;
 
 
 /** 
@@ -52,9 +51,6 @@ public class SubjectAreaEditForm extends ActionForm {
 	private Long department ;
 	private Boolean scheduleBkOnly;
 	private Boolean pseudo;
-	
-	private boolean canDelete;
-	private boolean canChangeDepartment;
 	
 	/*
 	 * Generated Methods
@@ -100,7 +96,7 @@ public class SubjectAreaEditForm extends ActionForm {
 	        }
 			
 			if (errors.size()==0) {
-				Long sessionId = (Long) ((Web.getUser(request.getSession())).getAttribute(Constants.SESSION_ID_ATTR_NAME));
+				Long sessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
 				SubjectArea sa = SubjectArea.findByAbbv(sessionId, abbv);
 				if (uniqueId==null && sa!=null) 
 		        	errors.add("abbv", new ActionMessage("errors.generic", "A subject area with the abbreviation exists for the academic session") );
@@ -127,7 +123,6 @@ public class SubjectAreaEditForm extends ActionForm {
 		department=null;
 		scheduleBkOnly=null;
 		pseudo=null;
-		canDelete=true; canChangeDepartment=true;
 	}
 
 	/** 
@@ -221,11 +216,5 @@ public class SubjectAreaEditForm extends ActionForm {
 		else
 			this.uniqueId = uniqueId;
 	}
-	
-	public boolean isCanDelete() { return canDelete; }
-	public void setCanDelete(boolean canDelete) { this.canDelete = canDelete; }
-	public boolean isCanChangeDepartment() { return canChangeDepartment; }
-	public void setCanChangeDepartment(boolean canChangeDepartment) { this.canChangeDepartment = canChangeDepartment; }
-	
 	
 }
