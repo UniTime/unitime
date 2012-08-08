@@ -34,8 +34,8 @@ public class ImportMessages {
 		try {
 			PrintStream out = new PrintStream(System.out, true, "UTF-8");
 			
-			out.println("# UniTime 3.3 (University Timetabling Application)");
-			out.println("# Copyright (C) 2011, UniTime LLC, and individual contributors");
+			out.println("# UniTime 3.4 (University Timetabling Application)");
+			out.println("# Copyright (C) 2012, UniTime LLC, and individual contributors");
 			out.println("# as indicated by the @authors tag.");
 			out.println("# ");
 			out.println("# This program is free software; you can redistribute it and/or modify");
@@ -56,7 +56,7 @@ public class ImportMessages {
 			for (CSVLine line: csv.getLines()) {
 				if (line.getFields().size() >= 2) {
 					out.println();
-					if (line.getFields().size() >= 3) {
+					if (line.getFields().size() >= 3 && !line.getField(2).isEmpty()) {
 						out.println("# Default: " + unicodeEscape(line.getField(1).toString()));
 						out.println(line.getField(0).toString() + "=" + unicodeEscape(line.getField(2).toString()).replace(":", "\\:"));
 					} else {
