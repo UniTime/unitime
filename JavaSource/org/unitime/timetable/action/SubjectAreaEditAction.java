@@ -34,10 +34,9 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SubjectAreaEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
@@ -55,7 +54,6 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeaturePref;
@@ -65,7 +63,10 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -81,6 +82,9 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/subjectAreaEdit")
 public class SubjectAreaEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	/*
 	 * Generated Methods
 	 */
@@ -100,13 +104,10 @@ public class SubjectAreaEditAction extends Action {
 			HttpServletResponse response) throws Exception {
 		
 		// Check Access
-		if (!Web.isLoggedIn(request.getSession()) 
-				|| !Web.hasRole(request.getSession(),Roles.getAdminRoles()))
-			throw new Exception ("Access Denied.");
+		sessionContext.checkPermission(Right.SubjectAreas);
 		
 		SubjectAreaEditForm frm = (SubjectAreaEditForm) form;
 		MessageResources rsc = getResources(request);
-		User user = Web.getUser(request.getSession());
 		ActionMessages errors=null;
 		
 		// Read operation to be performed
@@ -116,14 +117,15 @@ public class SubjectAreaEditAction extends Action {
 		
         // Add
         if(op.equals(rsc.getMessage("button.addSubjectArea"))) {
-    		LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+        	sessionContext.checkPermission(Right.SubjectAreaAdd);
+    		LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
         	return mapping.findForward("addSubjectArea");
         }
         
         // Edit
         if(op.equals(rsc.getMessage("op.edit"))) {
             doLoad(request, frm);
-    		LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+    		LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
         	return mapping.findForward("editSubjectArea");
         }
         
@@ -150,7 +152,7 @@ public class SubjectAreaEditAction extends Action {
     	
     	if (errors!=null && errors.size()>0) {
 	        saveErrors(request, errors);
-			LookupTables.setupNonExternalDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
+			LookupTables.setupNonExternalDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
 	        if (frm.getUniqueId()!=null)
 	        	return mapping.findForward("editSubjectArea");
 	        else
@@ -175,6 +177,8 @@ public class SubjectAreaEditAction extends Action {
         	throw new Exception ("Invalid Subject Area IDencountered");
         }
         
+    	sessionContext.checkPermission(id, "SubjectArea", Right.SubjectAreaEdit);
+        
         SubjectArea sa = new SubjectAreaDAO().get(id);
         frm.setUniqueId(id);
         frm.setAbbv(sa.getSubjectAreaAbbreviation()!=null ? sa.getSubjectAreaAbbreviation() : "");        
@@ -184,8 +188,6 @@ public class SubjectAreaEditAction extends Action {
         frm.setLongTitle(sa.getLongTitle() !=null ? sa.getLongTitle() : "");
         frm.setPseudo(sa.isPseudoSubjectArea() !=null ? sa.isPseudoSubjectArea() : null);
         frm.setScheduleBkOnly(sa.isScheduleBookOnly() !=null ? sa.isScheduleBookOnly() : null);
-        frm.setCanDelete(!sa.hasOfferedCourses());
-        frm.setCanChangeDepartment(sa.getDepartment()==null || sa.getDepartment().getSolverGroup()==null || sa.getDepartment().getSolverGroup().getCommittedSolution()==null);
 	}
 	
 	/**
@@ -196,6 +198,8 @@ public class SubjectAreaEditAction extends Action {
 	private void doDelete(HttpServletRequest request, SubjectAreaEditForm frm) throws Exception {
 		Session hibSession = null;
 		Transaction tx = null;
+		
+		sessionContext.checkPermission(frm.getUniqueId(), "SubjectArea", Right.SubjectAreaDelete);
 		
 		try {
 			SubjectAreaDAO sdao = new SubjectAreaDAO();
@@ -229,7 +233,7 @@ public class SubjectAreaEditAction extends Action {
 	        
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     sa, 
                     ChangeLog.Source.SUBJECT_AREA_EDIT, 
                     ChangeLog.Operation.DELETE, 
@@ -260,6 +264,11 @@ public class SubjectAreaEditAction extends Action {
 		Session hibSession = null;
 		Transaction tx = null;
 		
+		if (frm.getUniqueId() == null)
+			sessionContext.checkPermission(Right.SubjectAreaAdd);
+		else
+			sessionContext.checkPermission(frm.getUniqueId(), "SubjectArea", Right.SubjectAreaEdit);
+		
 		try {
 			SubjectAreaDAO sdao = new SubjectAreaDAO();
 			DepartmentDAO ddao = new DepartmentDAO();
@@ -278,9 +287,7 @@ public class SubjectAreaEditAction extends Action {
 			Department dept = ddao.get(frm.getDepartment());
             HashSet<Class_> updatedClasses = new HashSet<Class_>();
 			
-			sa.setSession(
-					org.unitime.timetable.model.Session.getCurrentAcadSession(
-							Web.getUser( request.getSession() )));
+			sa.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession));
 	        sa.setSubjectAreaAbbreviation(frm.getAbbv());
 	        if (sa.getDepartment()!=null && !dept.equals(sa.getDepartment())) {
 	            HashSet availableRooms = new HashSet();
@@ -403,7 +410,7 @@ public class SubjectAreaEditAction extends Action {
 			
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    sessionContext, 
                     sa, 
                     ChangeLog.Source.SUBJECT_AREA_EDIT, 
                     (frm.getUniqueId()==null?ChangeLog.Operation.CREATE:ChangeLog.Operation.UPDATE), 
@@ -413,7 +420,7 @@ public class SubjectAreaEditAction extends Action {
             tx.commit();			
 			hibSession.refresh(sa);
 			hibSession.flush();
-			hibSession.refresh(org.unitime.timetable.model.Session.getCurrentAcadSession( Web.getUser(request.getSession()) ));
+			hibSession.refresh(sa.getSession());
 			if (oldDept!=null) {
 			    hibSession.refresh(oldDept); hibSession.refresh(sa.getDepartment());
 			}
