@@ -64,7 +64,11 @@ import org.unitime.timetable.util.Constants;
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, GwtRpcHelper helper, EventRights rights) {
-		if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
+		if (request.getEvent().getId() == null) { // new event
+			if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
+		} else { // existing event
+			if (!rights.canEdit(EventDAO.getInstance().get(request.getEvent().getId()))) throw rights.getException();
+		}
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();

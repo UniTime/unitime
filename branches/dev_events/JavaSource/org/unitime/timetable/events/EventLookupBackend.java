@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventLookupRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
@@ -52,6 +53,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.EventNote;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -634,6 +636,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							event.setSponsor(sponsor);
 						}
 						
+						String note = null;
+						for (EventNote n: m.getEvent().getNotes()) {
+							if (n.getTextNote() != null && !n.getTextNote().isEmpty())
+								note = (note == null ? "" : note + "n") + n.getTextNote();
+						}
+						
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
@@ -718,6 +726,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		if (clazz.getClassSuffix(co) != null)
 					    			event.addExternalId(clazz.getClassSuffix(co));
 			    			}
+				    		note = correctedOffering.getScheduleBookNote();
+				    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
+				    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setEnrollment(xe.getExam().countStudents());
@@ -846,6 +857,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    			}
 							event.setEnrollment(enrl);
 				    	}
+				    	
+			    		if (note != null && !note.isEmpty()) {
+			    			NoteInterface n = new NoteInterface();
+			    			n.setNote(note);
+			    			event.addNote(n);
+			    		}
 					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
@@ -1154,6 +1171,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
 									event.setSponsor(sponsor);
 								}
+								String note = null;
+								for (EventNote n: m.getEvent().getNotes()) {
+									if (n.getTextNote() != null && !n.getTextNote().isEmpty())
+										note = (note == null ? "" : note + "n") + n.getTextNote();
+								}
 						    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 						    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		Class_ clazz = ce.getClazz();
@@ -1237,6 +1259,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							    		if (clazz.getClassSuffix(co) != null)
 							    			event.addExternalId(clazz.getClassSuffix(co));
 					    			}
+						    		note = correctedOffering.getScheduleBookNote();
+						    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
+						    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 						    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 						    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setEnrollment(xe.getExam().countStudents());
@@ -1317,6 +1342,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									}
 									event.setEnrollment(enrl);
 						    	}
+					    		if (note != null && !note.isEmpty()) {
+					    			NoteInterface n = new NoteInterface();
+					    			n.setNote(note);
+					    			event.addNote(n);
+					    		}
 							}
 							MeetingInterface meeting = new MeetingInterface();
 							meeting.setId(m.getUniqueId());

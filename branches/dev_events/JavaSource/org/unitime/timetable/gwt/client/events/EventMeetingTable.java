@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -410,6 +411,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		UniTimeTableHeader hTitle = new UniTimeTableHeader(MESSAGES.colTitle());
 		header.add(hTitle);
 
+		UniTimeTableHeader hNote = new UniTimeTableHeader(MESSAGES.colNote());
+		header.add(hNote);
+
 		UniTimeTableHeader hDate = new UniTimeTableHeader(MESSAGES.colDate());
 		header.add(hDate);
 		
@@ -452,10 +456,16 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				return true;
 			}
 		});
-		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME, new Check() {
+		final Operation noteOp = addHideOperation(hNote, EventFlag.SHOW_NOTE, new Check() {
 			@Override
 			public boolean isChecked() {
 				return !titleOp.isApplicable();
+			}
+		});
+		addHideOperation(hTimePub, EventFlag.SHOW_PUBLISHED_TIME, new Check() {
+			@Override
+			public boolean isChecked() {
+				return !titleOp.isApplicable() && !noteOp.isApplicable();
 			}
 		});
 		addHideOperation(hTimeAll, EventFlag.SHOW_ALLOCATED_TIME);
@@ -472,6 +482,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		addSortByOperation(hSection, EventMeetingSortBy.SECTION);
 		addSortByOperation(hType, EventMeetingSortBy.TYPE);
 		addSortByOperation(hTitle, EventMeetingSortBy.TITLE);
+		addSortByOperation(hNote, EventMeetingSortBy.NOTE);
 		addSortByOperation(hDate, EventMeetingSortBy.DATE);
 		addSortByOperation(hTimePub, EventMeetingSortBy.PUBLISHED_TIME);
 		addSortByOperation(hTimeAll, EventMeetingSortBy.ALLOCATED_TIME);
@@ -586,21 +597,33 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
+				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
+				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
+				row.add(note);
 				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 				if (!title.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colTitle()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().isShowOptionalColumns()) 
 					setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), true);
+				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
+					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			} else {
 				row.add(new HTML(event.getName()));
 				row.add(new HTML("&nbsp;"));
 				row.add(new Label(event.getType().getAbbreviation(), false));
 				row.add(new HTML("&nbsp;"));
+				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
+				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
+				row.add(note);
+				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
+					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			}
 		} else if (conflict != null) {
 			row.add(new HTML(conflict.getName()));
 			row.add(new HTML("&nbsp;"));
 			row.add(new HTML(conflict.getType().getAbbreviation(), false));
 			row.add(new HTML("&nbsp;"));
+			row.add(new HTML("&nbsp;"));
 		} else {
+			row.add(new HTML());
 			row.add(new HTML());
 			row.add(new HTML());
 			row.add(new HTML());
@@ -782,6 +805,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(0, false);
 			setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), false);
+			setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().isMustShowApproval());
 		}
@@ -807,6 +831,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), false);
+			setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().isMustShowApproval());
 		}
 	}

@@ -53,16 +53,17 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 		switch (flag) {
 		case SHOW_SECTION: out.hideColumn(1); break;
 		case SHOW_TITLE: out.hideColumn(3); break;
-		case SHOW_PUBLISHED_TIME: out.hideColumn(5); break;
-		case SHOW_ALLOCATED_TIME: out.hideColumn(6); break;
-		case SHOW_SETUP_TIME: out.hideColumn(7); break;
-		case SHOW_TEARDOWN_TIME: out.hideColumn(8); break;
-		case SHOW_CAPACITY: out.hideColumn(10); break;
-		case SHOW_ENROLLMENT: out.hideColumn(11); break;
-		case SHOW_LIMIT: out.hideColumn(12); break;
-		case SHOW_SPONSOR: out.hideColumn(13); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(14); break;
-		case SHOW_APPROVAL: out.hideColumn(15); break;
+		case SHOW_NOTE: out.hideColumn(4); break;
+		case SHOW_PUBLISHED_TIME: out.hideColumn(6); break;
+		case SHOW_ALLOCATED_TIME: out.hideColumn(7); break;
+		case SHOW_SETUP_TIME: out.hideColumn(8); break;
+		case SHOW_TEARDOWN_TIME: out.hideColumn(9); break;
+		case SHOW_CAPACITY: out.hideColumn(11); break;
+		case SHOW_ENROLLMENT: out.hideColumn(12); break;
+		case SHOW_LIMIT: out.hideColumn(13); break;
+		case SHOW_SPONSOR: out.hideColumn(14); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(15); break;
+		case SHOW_APPROVAL: out.hideColumn(16); break;
 		}
 	}
 	
@@ -72,18 +73,19 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 				/*  1 */ MESSAGES.colSection(),
 				/*  2 */ MESSAGES.colType(),
 				/*  3 */ MESSAGES.colTitle(),
-				/*  4 */ MESSAGES.colDate(),
-				/*  5 */ MESSAGES.colPublishedTime(),
-				/*  6 */ MESSAGES.colAllocatedTime(),
-				/*  7 */ MESSAGES.colSetupTimeShort(),
-				/*  8 */ MESSAGES.colTeardownTimeShort(),
-				/*  9 */ MESSAGES.colLocation(),
-				/* 10 */ MESSAGES.colCapacity(),
-				/* 11 */ MESSAGES.colEnrollment(),
-				/* 12 */ MESSAGES.colLimit(),
-				/* 13 */ MESSAGES.colSponsorOrInstructor(),
-				/* 14 */ MESSAGES.colMainContact(),
-				/* 15 */ MESSAGES.colApproval());
+				/*  4 */ MESSAGES.colNote(),
+				/*  5 */ MESSAGES.colDate(),
+				/*  6 */ MESSAGES.colPublishedTime(),
+				/*  7 */ MESSAGES.colAllocatedTime(),
+				/*  8 */ MESSAGES.colSetupTimeShort(),
+				/*  9 */ MESSAGES.colTeardownTimeShort(),
+				/* 10 */ MESSAGES.colLocation(),
+				/* 11 */ MESSAGES.colCapacity(),
+				/* 12 */ MESSAGES.colEnrollment(),
+				/* 13 */ MESSAGES.colLimit(),
+				/* 14 */ MESSAGES.colSponsorOrInstructor(),
+				/* 15 */ MESSAGES.colMainContact(),
+				/* 16 */ MESSAGES.colApproval());
 		
 		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		DateFormat dfMeeting = new SimpleDateFormat(CONSTANTS.meetingDateFormat(), Localization.getJavaLocale());
@@ -103,6 +105,7 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
 					getTitle(event),
+					event.hasNotes() ? event.getNotes().first().getNote() : "",
 					meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : dfMeeting.format(meeting.getMeetingDate()),
 					meeting.getMeetingTime(CONSTANTS),
 					meeting.getAllocatedTime(CONSTANTS),

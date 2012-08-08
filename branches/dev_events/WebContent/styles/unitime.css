@@ -2188,6 +2188,13 @@ div.gwt-MenuBarPopup {
 	padding-left: 10px;
 }
 
+.unitime-EventMeetings .note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
 @media print {
 	.unitime-EventMeetings .conflict-row {
 		font-style: italic;
@@ -2246,6 +2253,13 @@ div.gwt-MenuBarPopup {
 	display: block;
 	color: gray;
 	padding-left: 10px;
+}
+
+.unitime-EventOwners .note {
+	max-width: 100px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .unitime-Enrollments {

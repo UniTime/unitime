@@ -90,11 +90,11 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			
 			// re-throw exception as GwtRpcException or IsSerializable runtime exception
 			if (t instanceof GwtRpcException) {
-				sLog.info("Seen server exception: " + t.getMessage());
+				sLog.info("Seen server exception: " + t.getMessage(), t);
 				throw (GwtRpcException)t;
 			}
 			if (t instanceof IsSerializable) {
-				sLog.warn("Seen server exception: " + t.getMessage());
+				sLog.warn("Seen server exception: " + t.getMessage(), t);
 				throw new GwtRpcException(t.getMessage(), t);
 			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
@@ -246,10 +246,10 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				
 				// re-throw exception as GwtRpcException or IsSerializable runtime exception
 				if (t instanceof GwtRpcException) {
-					sLog.info("Seen server exception: " + t.getMessage());
+					sLog.info("Seen server exception: " + t.getMessage(), t);
 					iException = (GwtRpcException)t;
 				} else  if (t instanceof IsSerializable) {
-					sLog.warn("Seen server exception: " + t.getMessage());
+					sLog.warn("Seen server exception: " + t.getMessage(), t);
 					iException = new GwtRpcException(t.getMessage(), t);
 				} else {
 					sLog.error("Seen exception: " + t.getMessage(), t);

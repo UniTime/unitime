@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -193,6 +194,7 @@ public class EventDetail extends Composite {
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colLocation()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
+		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colNote()));
 		iOwners.addRow(null, ownersHeader);
 		
 		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
@@ -425,6 +427,15 @@ public class EventDetail extends Composite {
 
 				if (obj.hasInstructors()) {
 					row.add(new HTML(obj.getInstructorNames("<br>"), false));
+				} else {
+					row.add(new HTML());
+				}
+				
+				if (obj.hasNote()) {
+					P note = new P("note");
+					note.setHTML(obj.getNote().replace("\n", "<br>"));
+					note.setTitle(obj.getNote());
+					row.add(note);
 				} else {
 					row.add(new HTML());
 				}

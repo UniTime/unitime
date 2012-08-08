@@ -909,6 +909,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private List<String> iCourseNames = null;
     	private List<String> iCourseTitles = null;
     	private String iName;
+    	private String iNote;
     	private String iInstruction = null;
     	private Integer iInstructionType = null, iMaxCapacity = null;
     	private List<ContactInterface> iInstructors;
@@ -934,6 +935,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public void setType(RelatedObjectType type) { iType = type; }
     	public String getName() { return iName; }
     	public void setName(String name) { iName = name; }
+    	public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+    	public String getNote() { return iNote; }
+    	public void setNote(String note) { iNote = note; }
     	
     	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
     	public void addCourseName(String name) {
@@ -1864,7 +1868,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		SHOW_SPONSOR,
 		SHOW_SECTION,
 		SHOW_TITLE,
-		SHOW_APPROVAL;
+		SHOW_APPROVAL,
+		SHOW_NOTE;
 		
 		public int flag() { return 1 << ordinal(); }
 		public boolean in(int flags) {

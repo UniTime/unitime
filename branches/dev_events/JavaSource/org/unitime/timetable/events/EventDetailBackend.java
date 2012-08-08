@@ -133,6 +133,11 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setType(RelatedObjectInterface.RelatedObjectType.Class);
     		related.setUniqueId(clazz.getUniqueId());
     		related.setName(clazz.getClassLabel(hibSession));
+    		String note = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getScheduleBookNote();
+    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
+    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
+			related.setNote(note);
+
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
     		related.addCourseName(courseOffering.getCourseName());
     		related.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());

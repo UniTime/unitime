@@ -54,16 +54,17 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 		switch (flag) {
 		case SHOW_SECTION: out.hideColumn(1); break;
 		case SHOW_TITLE: out.hideColumn(3); break;
-		case SHOW_PUBLISHED_TIME: out.hideColumn(5); out.hideColumn(6); break;
-		case SHOW_ALLOCATED_TIME: out.hideColumn(7); out.hideColumn(8); break;
-		case SHOW_SETUP_TIME: out.hideColumn(9); break;
-		case SHOW_TEARDOWN_TIME: out.hideColumn(10); break;
-		case SHOW_CAPACITY: out.hideColumn(12); break;
-		case SHOW_ENROLLMENT: out.hideColumn(13); break;
-		case SHOW_LIMIT: out.hideColumn(14); break;
-		case SHOW_SPONSOR: out.hideColumn(15); out.hideColumn(16); break;
-		case SHOW_MAIN_CONTACT: out.hideColumn(17); out.hideColumn(18); break;
-		case SHOW_APPROVAL: out.hideColumn(19); break;
+		case SHOW_NOTE: out.hideColumn(4); break;
+		case SHOW_PUBLISHED_TIME: out.hideColumn(6); out.hideColumn(7); break;
+		case SHOW_ALLOCATED_TIME: out.hideColumn(8); out.hideColumn(9); break;
+		case SHOW_SETUP_TIME: out.hideColumn(10); break;
+		case SHOW_TEARDOWN_TIME: out.hideColumn(11); break;
+		case SHOW_CAPACITY: out.hideColumn(13); break;
+		case SHOW_ENROLLMENT: out.hideColumn(14); break;
+		case SHOW_LIMIT: out.hideColumn(15); break;
+		case SHOW_SPONSOR: out.hideColumn(16); out.hideColumn(17); break;
+		case SHOW_MAIN_CONTACT: out.hideColumn(18); out.hideColumn(19); break;
+		case SHOW_APPROVAL: out.hideColumn(20); break;
 		}
 	}
 	
@@ -73,22 +74,23 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 				/*  1 */ MESSAGES.colSection(),
 				/*  2 */ MESSAGES.colType(),
 				/*  3 */ MESSAGES.colTitle(),
-				/*  4 */ MESSAGES.colDate(),
-				/*  5 */ MESSAGES.colPublishedStartTime(),
-				/*  6 */ MESSAGES.colPublishedEndTime(),
-				/*  7 */ MESSAGES.colAllocatedStartTime(),
-				/*  8 */ MESSAGES.colAllocatedEndTime(),
-				/*  9 */ MESSAGES.colSetupTimeShort(),
-				/* 10 */ MESSAGES.colTeardownTimeShort(),
-				/* 11 */ MESSAGES.colLocation(),
-				/* 12 */ MESSAGES.colCapacity(),
-				/* 13 */ MESSAGES.colEnrollment(),
-				/* 14 */ MESSAGES.colLimit(),
-				/* 15 */ MESSAGES.colSponsorOrInstructor(),
-				/* 16 */ MESSAGES.colEmail(),
-				/* 17 */ MESSAGES.colMainContact(),
-				/* 18 */ MESSAGES.colEmail(),
-				/* 19 */ MESSAGES.colApproval());
+				/*  4 */ MESSAGES.colNote(),
+				/*  5 */ MESSAGES.colDate(),
+				/*  6 */ MESSAGES.colPublishedStartTime(),
+				/*  7 */ MESSAGES.colPublishedEndTime(),
+				/*  8 */ MESSAGES.colAllocatedStartTime(),
+				/*  9 */ MESSAGES.colAllocatedEndTime(),
+				/* 10 */ MESSAGES.colSetupTimeShort(),
+				/* 11 */ MESSAGES.colTeardownTimeShort(),
+				/* 12 */ MESSAGES.colLocation(),
+				/* 13 */ MESSAGES.colCapacity(),
+				/* 14 */ MESSAGES.colEnrollment(),
+				/* 15 */ MESSAGES.colLimit(),
+				/* 16 */ MESSAGES.colSponsorOrInstructor(),
+				/* 17 */ MESSAGES.colEmail(),
+				/* 18 */ MESSAGES.colMainContact(),
+				/* 19 */ MESSAGES.colEmail(),
+				/* 20 */ MESSAGES.colApproval());
 		
 		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		EventInterface last = null;
@@ -107,6 +109,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
 					getTitle(event),
+					event.hasNotes() ? event.getNotes().first().getNote() : "",
 					meeting.isArrangeHours() ? "" : df.format(meeting.getMeetingDate()),
 					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, true),
 					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, true),
