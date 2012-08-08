@@ -34,7 +34,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Preference;
@@ -46,6 +45,8 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -71,13 +72,13 @@ public class SolverGroupEditForm extends ActionForm {
 		ActionErrors errors = new ActionErrors();
 		
 		try {
-			Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+			Long sessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
 
 			if(iName==null || iName.trim().length()==0)
 				errors.add("name", new ActionMessage("errors.required", ""));
 			else {
 				try {
-					SolverGroup g = SolverGroup.findBySessionIdName(session.getUniqueId(), iName);
+					SolverGroup g = SolverGroup.findBySessionIdName(sessionId, iName);
 					if (g!=null && !g.getUniqueId().equals(iUniqueId))
 						errors.add("name", new ActionMessage("errors.exists", iName));
 				} catch (Exception e) {
@@ -90,7 +91,7 @@ public class SolverGroupEditForm extends ActionForm {
 				errors.add("abbv", new ActionMessage("errors.required", ""));
 			else {
 				try {
-					SolverGroup g = SolverGroup.findBySessionIdAbbv(session.getUniqueId(), iAbbv);
+					SolverGroup g = SolverGroup.findBySessionIdAbbv(sessionId, iAbbv);
 					if (g!=null && !g.getUniqueId().equals(iUniqueId))
 						errors.add("abbv", new ActionMessage("errors.exists", iAbbv));
 				} catch (Exception e) {
@@ -190,15 +191,15 @@ public class SolverGroupEditForm extends ActionForm {
 		}
 	}
 	
-	public SolverGroup saveOrUpdate(org.hibernate.Session hibSession, Long sessionId, HttpServletRequest request) throws Exception {
+	public SolverGroup saveOrUpdate(org.hibernate.Session hibSession, SessionContext context) throws Exception {
 		SolverGroup group = null;
 		if (iUniqueId.longValue()>=0)
 			group = (new SolverGroupDAO()).get(iUniqueId);
 		if (group==null) {
-			group = create(hibSession, sessionId);
+			group = create(hibSession, context.getUser().getCurrentAcademicSessionId());
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    context, 
                     group, 
                     ChangeLog.Source.SOLVER_GROUP_EDIT, 
                     ChangeLog.Operation.CREATE, 
@@ -208,7 +209,7 @@ public class SolverGroupEditForm extends ActionForm {
 			update(group, hibSession);
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    context, 
                     group, 
                     ChangeLog.Source.SOLVER_GROUP_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -314,7 +315,7 @@ public class SolverGroupEditForm extends ActionForm {
 			hibSession.refresh(i.next());
 	}
 	
-	public void delete(org.hibernate.Session hibSession, HttpServletRequest request) throws Exception {
+	public void delete(org.hibernate.Session hibSession, SessionContext context) throws Exception {
 		if (iUniqueId.longValue()<0) return;
 		if (!iDepartmentsEditable) return;
 		SolverGroup group = (new SolverGroupDAO()).get(iUniqueId);
@@ -331,7 +332,7 @@ public class SolverGroupEditForm extends ActionForm {
 		}
         ChangeLog.addChange(
                 hibSession, 
-                request, 
+                context, 
                 group, 
                 ChangeLog.Source.SOLVER_GROUP_EDIT, 
                 ChangeLog.Operation.DELETE, 

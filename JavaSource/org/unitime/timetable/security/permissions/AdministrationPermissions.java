@@ -22,6 +22,7 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.UserContext;
@@ -148,6 +149,49 @@ public class AdministrationPermissions {
 					return false;
 			
 			return true;
+		}
+	}
+	
+	@PermissionForRight(Right.SolverGroups)
+	public static class SolverGroups extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.SubjectAreas)
+	public static class SubjectAreas extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.SubjectAreaAdd)
+	public static class SubjectAreaAdd extends SubjectAreas {}
+
+	@PermissionForRight(Right.SubjectAreaEdit)
+	public static class SubjectAreaEdit implements Permission<SubjectArea> {
+		@Autowired Permission<Session> permissionSession;
+
+		@Override
+		public boolean check(UserContext user, SubjectArea source) {
+			return permissionSession.check(user, source.getSession());
+		}
+
+		@Override
+		public Class<SubjectArea> type() { return SubjectArea.class; }
+	}
+	
+	@PermissionForRight(Right.SubjectAreaDelete)
+	public static class SubjectAreaDelete extends SubjectAreaEdit {
+		@Override
+		public boolean check(UserContext user, SubjectArea source) {
+			if (!super.check(user, source)) return false;
+			
+			return !source.hasOfferedCourses();
+		}
+	}
+	
+	@PermissionForRight(Right.SubjectAreaChangeDepartment)
+	public static class SubjectAreaChangeDepartment extends SubjectAreaEdit {
+		@Override
+		public boolean check(UserContext user, SubjectArea source) {
+			if (!super.check(user, source)) return false;
+			
+			return !source.hasOfferedCourses() || source.getDepartment() == null || source.getDepartment().getSolverGroup() == null ||
+					source.getDepartment().getSolverGroup().getCommittedSolution() == null;
 		}
 	}
 }

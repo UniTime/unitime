@@ -19,17 +19,18 @@
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmDelete() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -47,8 +48,6 @@
 
 <html:form method="post" action="subjectAreaEdit.do">
 <html:hidden name="subjectAreaEditForm" property="uniqueId" />
-	<html:hidden property="canDelete" />
-	<html:hidden property="canChangeDepartment" />
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 
@@ -75,11 +74,11 @@
 							<bean:message key="button.updateSubjectArea"/>
 						</html:submit>
 						
-						<logic:equal name="subjectAreaEditForm" property="canDelete" value="true">
+						<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
 							<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
 								<bean:message key="button.deleteSubjectArea"/>
 							</html:submit>
-						</logic:equal>
+						</sec:authorize>
 					</logic:notEmpty>
 
 					<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
@@ -108,7 +107,7 @@
 
 		<TR>
 			<TD>Academic Session: </TD>
-			<TD><%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %></TD>
+			<TD><%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %></TD>
 		</TR>
 
 		<TR>
@@ -142,22 +141,33 @@
 		<TR>
 			<TD>Department:</TD>
 			<TD>
-				<logic:equal name="subjectAreaEditForm" property="canChangeDepartment" value="true">
+				<logic:empty name="subjectAreaEditForm" property="uniqueId">
 					<html:select property="department"
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" >
 						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-					</html:select>
-				</logic:equal>
-				<logic:equal name="subjectAreaEditForm" property="canChangeDepartment" value="false">
-					<html:hidden property="department"/>
-					<html:select property="department" disabled="true">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
-						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
-					</html:select>
-				</logic:equal>
+					</html:select>					
+				</logic:empty>
+				<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
+					<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
+						<html:select property="department"
+							onfocus="setUp();" 
+							onkeypress="return selectSearch(event, this);" 
+							onkeydown="return checkKey(event, this);" >
+							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+							<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
+						</html:select>
+					</sec:authorize>
+					<sec:authorize access="!hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaChangeDepartment')">
+						<html:hidden property="department"/>
+						<html:select property="department" disabled="true">
+							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+							<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="uniqueId" labelProperty="label"/>
+						</html:select>
+					</sec:authorize>
+				</logic:notEmpty>
 			</TD>
 		</TR>
 
@@ -194,11 +204,11 @@
 						<bean:message key="button.updateSubjectArea"/>
 					</html:submit>
 					
-					<logic:equal name="subjectAreaEditForm" property="canDelete" value="true">
+					<sec:authorize access="hasPermission(#subjectAreaEditForm.uniqueId, 'SubjectArea', 'SubjectAreaDelete')">
 						<html:submit property="op" onclick="return confirmDelete();" styleClass="btn" accesskey="D" titleKey="title.deleteSubjectArea">
 							<bean:message key="button.deleteSubjectArea"/>
 						</html:submit>
-					</logic:equal>
+					</sec:authorize>
 				</logic:notEmpty>
 
 				<html:submit property="op" styleClass="btn" accesskey="B" titleKey="title.backToPrevious">
