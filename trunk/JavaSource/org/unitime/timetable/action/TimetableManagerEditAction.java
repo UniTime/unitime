@@ -39,9 +39,8 @@ import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimetableManagerForm;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
@@ -57,6 +56,8 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -72,6 +73,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/timetableManagerEdit")
 public class TimetableManagerEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -92,13 +95,9 @@ public class TimetableManagerEditAction extends Action {
         HttpServletResponse response) throws Exception {
 
         // Check access
-        if(!Web.hasRole( request.getSession(),
-		 			 new String[] {Roles.ADMIN_ROLE} )) {
-		  throw new Exception ("Access Denied.");
-		}
+    	sessionContext.checkPermission(Right.TimetableManagers);
 
         MessageResources rsc = getResources(request);
-        User user = Web.getUser(request.getSession());        
         TimetableManagerForm frm = (TimetableManagerForm) form;
 
         // Read Operation
@@ -114,8 +113,8 @@ public class TimetableManagerEditAction extends Action {
 		    throw new Exception ("Operation could not be interpreted: " + op);
 
 		// Set up Departments
-		LookupTables.setupDepts(request, (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME));
-		request.setAttribute("solverGroupList", SolverGroup.findBySessionId((Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME)));
+		LookupTables.setupDepts(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		request.setAttribute("solverGroupList", SolverGroup.findBySessionId(sessionContext.getUser().getCurrentAcademicSessionId()));
         frm.setOp(op);
 
         // Back
@@ -134,6 +133,7 @@ public class TimetableManagerEditAction extends Action {
         
         // Redirect from Manager List - Add Manager
         if (op.equalsIgnoreCase(rsc.getMessage("button.addTimetableManager"))) {
+        	sessionContext.checkPermission(Right.TimetableManagerAdd);
             frm.setOp1("1");
             String uidLookupEnabled = ApplicationProperties.getProperty("tmtbl.manager.external_id.lookup.enabled");
             if (uidLookupEnabled!=null && uidLookupEnabled.equalsIgnoreCase("true")) {
@@ -179,8 +179,6 @@ public class TimetableManagerEditAction extends Action {
 
             Department dept = new DepartmentDAO().get(new Long(frm.getDept()));            
             frm.addToDepts(dept);    
-            if (dept.isExternalManager().booleanValue())
-                frm.setIsExternalManager(new Boolean(true));
         }
         
         // Add Solver Group
@@ -355,6 +353,8 @@ public class TimetableManagerEditAction extends Action {
         catch (Exception e) {
             throw new Exception ("Invalid Manager Id : " + uniqueId);
         }
+        
+        sessionContext.checkPermission(mgrId, "TimetableManager", Right.TimetableManagerEdit);
 
         frm.setUniqueId(uniqueId);
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
@@ -362,7 +362,6 @@ public class TimetableManagerEditAction extends Action {
         
         frm.setEmail(mgr.getEmailAddress());
         frm.setExternalId(mgr.getExternalUniqueId());
-        frm.setIsExternalManager(new Boolean(mgr.isExternalManager()));
         
         Set rolesSet = mgr.getManagerRoles();
         ArrayList roles = new ArrayList(rolesSet);
@@ -377,8 +376,7 @@ public class TimetableManagerEditAction extends Action {
             frm.getRoleReceiveEmailFlags().add(mgrRole.isReceiveEmails() == null? new Boolean(false): mgrRole.isReceiveEmails());
         }
 
-        User user = Web.getUser(request.getSession());    
-        Long sessionId = (Long)user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
+        Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
         Set depts = mgr.getDepartments();
         for (Iterator i=depts.iterator(); i.hasNext(); ) {
             Department dept = (Department) i.next();
@@ -414,6 +412,8 @@ public class TimetableManagerEditAction extends Action {
     private void addManager(
             HttpServletRequest request, TimetableManagerForm frm ) throws Exception {
 
+    	sessionContext.checkPermission(Right.TimetableManagerAdd);
+    	
         lookupManager(frm);
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
@@ -476,7 +476,7 @@ public class TimetableManagerEditAction extends Action {
 
         ChangeLog.addChange(
                 hibSession, 
-                request, 
+                sessionContext, 
                 mgr, 
                 ChangeLog.Source.MANAGER_EDIT, 
                 ChangeLog.Operation.CREATE, 
@@ -498,6 +498,8 @@ public class TimetableManagerEditAction extends Action {
     private void updateManager(
             HttpServletRequest request, TimetableManagerForm frm ) throws Exception {
         
+    	sessionContext.checkPermission(frm.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
+    	
         lookupManager(frm);
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
@@ -505,8 +507,7 @@ public class TimetableManagerEditAction extends Action {
         DepartmentDAO dDao = new DepartmentDAO();
         SolverGroupDAO sgDao = new SolverGroupDAO();
         
-        User user = Web.getUser(request.getSession());
-        Long sessionId = org.unitime.timetable.model.Session.getCurrentAcadSession(user).getUniqueId();
+        Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
         
         Session hibSession = mgrDao.getSession();
         
@@ -689,7 +690,7 @@ public class TimetableManagerEditAction extends Action {
 
         ChangeLog.addChange(
                 hibSession, 
-                request, 
+                sessionContext, 
                 mgr, 
                 ChangeLog.Source.MANAGER_EDIT, 
                 ChangeLog.Operation.UPDATE, 
@@ -709,6 +710,8 @@ public class TimetableManagerEditAction extends Action {
      */
     private void deleteManager(
             HttpServletRequest request, TimetableManagerForm frm ) {
+    	
+    	sessionContext.checkPermission(frm.getUniqueId(), "TimetableManager", Right.TimetableManagerEdit);
         
         TimetableManagerDAO mgrDao = new TimetableManagerDAO();
         Session hibSession = mgrDao.getSession();
@@ -718,7 +721,7 @@ public class TimetableManagerEditAction extends Action {
        	
         ChangeLog.addChange(
                 hibSession, 
-                request, 
+                sessionContext, 
                 mgr, 
                 ChangeLog.Source.MANAGER_EDIT, 
                 ChangeLog.Operation.DELETE, 

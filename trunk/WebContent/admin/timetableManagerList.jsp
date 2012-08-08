@@ -22,23 +22,27 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<tt:session-context/>
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD align="right">
 			<tt:section-header>
 			
 				<tt:section-title>
-					Manager List - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
+					Manager List - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
 				</tt:section-title>
 				
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 					<TR><TD nowrap>
+						<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
 						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
 							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
 								<bean:message key="button.addTimetableManager" />
 							</html:submit>
 						</html:form>
+						</sec:authorize>
 					</TD><TD nowrap>
 						<input type='button' onclick="document.location='timetableManagerList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 					</TD></TR>
@@ -49,9 +53,35 @@
 	</TR>
 </TABLE>				
 
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
-	<%=request.getAttribute("schedDeputyList")%>
-</TABLE>
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="1">
+		<bean:write name="schedDeputyList" scope="request" filter="false"/>
+	</TABLE>
+
+	<table width="100%" border="0" cellspacing="0" cellpadding="3">
+		<tr>
+			<td align="center" class="WelcomeRowHead">
+			&nbsp;
+			</td>
+		</tr>
+		<tr>
+			<td align="right">
+				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
+					<TR><TD nowrap>
+						<sec:authorize access="hasPermission(null, null, 'TimetableManagerAdd')">
+						<html:form action="timetableManagerEdit" styleClass="FormWithNoPadding">			
+							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="T" titleKey="title.addTimetableManager">
+								<bean:message key="button.addTimetableManager" />
+							</html:submit>
+						</html:form>
+						</sec:authorize>
+					</TD><TD nowrap>
+						<input type='button' onclick="document.location='timetableManagerList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
+					</TD></TR>
+				</TABLE>
+			</td>
+		</tr>
+	</table>
+
 
 <SCRIPT type="text/javascript" language="javascript">
 	function jumpToAnchor() {

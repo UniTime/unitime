@@ -26,23 +26,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.hibernate.criterion.Order;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ManagerRole;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.RolesComparator;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /**
@@ -52,24 +48,19 @@ import org.unitime.timetable.util.Constants;
  */
 public class TimetableManagerBuilder {
     
-    public PdfWebTable getManagersTable(HttpServletRequest request, boolean images, boolean html) {
+    public PdfWebTable getManagersTable(SessionContext context, boolean html) {
 
         int cols = 7;
 		org.hibernate.Session hibSession = null;
         
-        Session session = null;
-        try {
-            session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
-        } catch (Exception e) {}
-        
-        User user = Web.getUser(request.getSession());
-        boolean dispLastChanges = (!"no".equals(Settings.getSettingValue(user, Constants.SETTINGS_DISP_LAST_CHANGES)));
+        boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(context.getUser()));
         if (dispLastChanges) cols++;
 
-
+	    Long currentAcadSession = context.getUser().getCurrentAcademicSessionId();
+	    
 		// Create new table
         PdfWebTable webTable = new PdfWebTable( cols,
-			    (html?"":"Manager List - "+Web.getUser(request.getSession()).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME)),
+			    (html?"":"Manager List - " + (currentAcadSession == null ? "" : " - " + context.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel())),
 			    "timetableManagerList.do?order=%%",
                 (dispLastChanges?
                         new String[] {"Roles", "External ID", "Name", "Email Address", "Department", "Subject Area", "Solver Group", "Last Change"}:
@@ -103,8 +94,7 @@ public class TimetableManagerBuilder {
 		    Set depts = manager.getDepartments();
 		    Set mgrRolesSet = manager.getManagerRoles();
 		    
-		    String onClick = "onClick=\"document.location='timetableManagerEdit.do?op=Edit&id="
-				+ manager.getUniqueId() + "';\"";
+		    String onClick = (context.hasPermission(manager, Right.TimetableManagerEdit) ? "onClick=\"document.location='timetableManagerEdit.do?op=Edit&id=" + manager.getUniqueId() + "';\"" : null);
 
 		    // Construct Full Name
 		    if(middleName==null || middleName.equals("null") || middleName.trim().length()==0)
@@ -128,42 +118,14 @@ public class TimetableManagerBuilder {
                 String roleRef = mgrRole.getRole().getReference(); 
 		        String title = roleRef;
 		        boolean receivesEmail = (mgrRole.isReceiveEmails() == null?false:mgrRole.isReceiveEmails().booleanValue());
-                if (images && html) {
-                    String border = "0";
-                    if(mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
-                        border="1";
-                        title += " - Primary Role";
-                    }
-                    if (!receivesEmail){
-                    	title += ", * No Email for this Role";
-                    	border="1";
-                    }
-                    roleStr += "<IMG height='25' width='25' border='" + border + "'" +
-                        "src='" + request.getContextPath() + "/images/" + Roles.getRoleIcon(roleRef) + "' " +
-		        		"title='" + title + "' " +
-		        		"alt='" + title + "' " +
-		        		"align='middle'>";
+                if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
+                if (mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
+                    roleStr += (html?"<span title='"+roleRef+" - Primary Role" + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:bold;'>"+roleRef + (receivesEmail?"":"*") +"</span>":"@@BOLD "+roleRef + (receivesEmail?"":"*")+"@@END_BOLD ");
                 } else {
-                    if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
-                    if (mgrRoles.size()>1 && mgrRole.isPrimary().booleanValue()) {
-                        roleStr += (html?"<span title='"+roleRef+" - Primary Role" + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:bold;'>"+roleRef + (receivesEmail?"":"*") +"</span>":"@@BOLD "+roleRef + (receivesEmail?"":"*")+"@@END_BOLD ");
-                    } else {
-                        roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
-                    }
+                    roleStr += (html?(!receivesEmail?"<span title='"+roleRef + (receivesEmail?"":", * No Email for this Role")+"' style='font-weight:normal;'>"+roleRef + (receivesEmail?"":"*") +"</span>": roleRef):roleRef + (receivesEmail?"":"*"));
                 }
 		        roleOrd += title;
 		    }
-		    
-		    /*
-		    if (manager.isExternalManager()) {
-                if (images && html)
-                    roleStr += "<IMG height='25' width='25' src='" + request.getContextPath() + "/images/ext-mgr-icon.gif' alt='External Manager' title='External Manager' border='0' align='middle'>";
-                else
-                    roleStr += ","+(html?"<br>":"\n")+"External Manager";
-		    }
-		    */
-
-		    Long currentAcadSession = (Long) user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
 		    
 		    // Departments
 		    for (Iterator di=depts.iterator(); di.hasNext(); ) {
@@ -212,7 +174,7 @@ public class TimetableManagerBuilder {
             Long lastChangeCmp = null;
             if (dispLastChanges) {
                 List changes = null;
-                if (session!=null) changes = ChangeLog.findLastNChanges(session.getUniqueId(), manager.getUniqueId(), null, null, 1);
+                if (currentAcadSession!=null) changes = ChangeLog.findLastNChanges(currentAcadSession, manager.getUniqueId(), null, null, 1);
                 ChangeLog lastChange = (changes==null || changes.isEmpty()?null:(ChangeLog)changes.get(0));
                 if (html)
                     lastChangeStr = (lastChange==null?"&nbsp;":"<span title='"+lastChange.getLabel()+"'>"+lastChange.getSourceTitle()+" ("+lastChange.getOperationTitle()+") on "+ChangeLog.sDFdate.format(lastChange.getTimeStamp())+"</span>");

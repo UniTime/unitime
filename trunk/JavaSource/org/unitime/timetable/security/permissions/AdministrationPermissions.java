@@ -22,6 +22,7 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -117,5 +118,36 @@ public class AdministrationPermissions {
 
 		@Override
 		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.TimetableManagerEdit)
+	public static class TimetableManagerEdit implements Permission<TimetableManager> {
+		@Autowired Permission<Session> permissionSession;
+
+		@Override
+		public boolean check(UserContext user, TimetableManager source) {
+			for (Department d: source.getDepartments()) {
+				if (d.getSessionId().equals(user.getCurrentAcademicSessionId())) {
+					return permissionSession.check(user, d.getSession());
+				}
+			}
+			
+			return true;
+		}
+
+		@Override
+		public Class<TimetableManager> type() { return TimetableManager.class; }
+	}
+	
+	@PermissionForRight(Right.TimetableManagerDelete)
+	public static class TimetableManagerDelete extends TimetableManagerEdit {
+		@Override
+		public boolean check(UserContext user, TimetableManager source) {
+			for (Department d: source.getDepartments())
+				if (!permissionSession.check(user, d.getSession()))
+					return false;
+			
+			return true;
+		}
 	}
 }
