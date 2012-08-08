@@ -32,16 +32,15 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.DeptStatusTypeEditForm;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -49,16 +48,15 @@ import org.unitime.timetable.model.dao.DepartmentStatusTypeDAO;
  */
 @Service("/deptStatusTypeEdit")
 public class DeptStatusTypeEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 		DeptStatusTypeEditForm myForm = (DeptStatusTypeEditForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.StatusTypes);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -70,9 +68,6 @@ public class DeptStatusTypeEditAction extends Action {
             myForm.reset(mapping, request);
         }
         
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-
         // Reset Form
         if ("Back".equals(op)) {
             myForm.reset(mapping, request);
@@ -200,7 +195,7 @@ public class DeptStatusTypeEditAction extends Action {
 
         if ("List".equals(myForm.getOp())) {
             // Read all existing settings and store in request
-            getDeptStatusList(request, sessionId);
+            getDeptStatusList(request, sessionContext.getUser().getCurrentAcademicSessionId());
             return mapping.findForward("list");
         }
         
@@ -212,7 +207,7 @@ public class DeptStatusTypeEditAction extends Action {
 	}
 	
     private void getDeptStatusList(HttpServletRequest request, Long sessionId) throws Exception {
-		WebTable.setOrder(request.getSession(),"deptStatusTypes.ord",request.getParameter("ord"),2);
+		WebTable.setOrder(sessionContext,"deptStatusTypes.ord",request.getParameter("ord"),2);
 		// Create web table instance 
         WebTable webTable = new WebTable( 5,
 			    null, "deptStatusTypeEdit.do?ord=%%",
@@ -363,7 +358,7 @@ public class DeptStatusTypeEditAction extends Action {
         }
         
         request.setAttribute("DeptStatusType.last", new Integer(statuses.size()-1));
-	    request.setAttribute("DeptStatusType.table", webTable.printTable(WebTable.getOrder(request.getSession(),"deptStatusTypes.ord")));
+	    request.setAttribute("DeptStatusType.table", webTable.printTable(WebTable.getOrder(sessionContext,"deptStatusTypes.ord")));
     }	
 }
 

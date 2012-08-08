@@ -402,6 +402,14 @@ public class Roles extends BaseRoles implements HasRights {
 		case AcademicSessionAdd:
 		case AcademicSessionDelete:
 		case AcademicSessionEdit:
+		case TimetableManagers:
+		case TimetableManagerAdd:
+		case TimetableManagerEdit:
+		case TimetableManagerDelete:
+		case ExactTimes:
+		case StandardEventNotes: 
+		case StatusTypes:
+		case TestHQL:
 			return ADMIN_ROLE.equals(getReference());
 			
 		case HasRole:

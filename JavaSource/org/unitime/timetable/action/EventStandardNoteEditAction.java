@@ -29,16 +29,21 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.EventStandardNoteEditForm;
 import org.unitime.timetable.model.StandardEventNote;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Zuzana Mullerova
  */
 @Service("/eventStandardNoteEdit")
 public class EventStandardNoteEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(
 			ActionMapping mapping,
@@ -48,6 +53,8 @@ public class EventStandardNoteEditAction extends Action {
 
 		EventStandardNoteEditForm myForm = (EventStandardNoteEditForm) form;
 		String op = myForm.getOp();
+		
+		sessionContext.checkPermission(Right.StandardEventNotes);
 		
 		if ("Back".equals(op)) {
 			return mapping.findForward("list");
