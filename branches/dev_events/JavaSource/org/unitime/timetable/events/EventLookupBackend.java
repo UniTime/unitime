@@ -102,6 +102,31 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return findEvents(request, rights);
 	}
 	
+	private boolean hasChild(Set<Long> restrictions, Class_ clazz) {
+		if (restrictions.contains(clazz.getUniqueId())) return true;
+    	for (Class_ child: clazz.getChildClasses())
+    		if (hasChild(restrictions, child)) return true;
+    	return false;
+	}
+	
+	protected boolean hide(Set<Long>[] restrictions, Class_ clazz) {
+		// check configs
+		if (!restrictions[0].isEmpty() && !restrictions[0].contains(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId()))
+			return true;
+		// check classes
+		if (!restrictions[1].isEmpty()) {
+			Class_ parent = clazz;
+			while (parent != null) {
+				if (restrictions[1].contains(parent.getUniqueId())) return false;
+				parent = parent.getParentClass();
+			}
+			for (Class_ child: clazz.getChildClasses())
+				if (hasChild(restrictions[1], child)) return false;
+			return true;
+		}
+		return false;
+	}
+	
 	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request, EventRights rights) throws EventException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
@@ -116,6 +141,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				int limit = request.getLimit();
 				
 				List<Meeting> meetings = null;
+				Map<Long, Set<Long>[]> restrictions = null;
 				Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 				Collection<Long> curriculumCourses = null;
 				Department department = null;
@@ -235,6 +261,28 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							.set("resourceId", request.getResourceId())
 							.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())
 							.query(hibSession).list());
+					
+					restrictions = new Hashtable<Long, Set<Long>[]>();
+					for (Object[] o: (List<Object[]>)hibSession.createQuery(
+							"select distinct cc.course.instructionalOffering.uniqueId, g.uniqueId, z.uniqueId " +
+							"from CurriculumReservation r left outer join r.configurations g left outer join r.classes z " +
+							"left outer join r.majors rm left outer join r.classifications rc, " +
+							"CurriculumCourse cc inner join cc.classification.curriculum.majors cm " +
+							"where (cc.classification.curriculum.uniqueId = :resourceId or cc.classification.uniqueId = :resourceId) " +
+							"and cc.course.instructionalOffering = r.instructionalOffering and r.area = cc.classification.curriculum.academicArea "+
+							"and (rm is null or rm = cm) and (rc is null or rc = cc.classification.academicClassification)")
+							.setLong("resourceId", request.getResourceId()).setCacheable(true).list()) {
+						Long offeringId = (Long)o[0];
+						Long configId = (Long)o[1];
+						Long clazzId = (Long)o[2];
+						Set<Long>[] r = restrictions.get(offeringId);
+						if (r == null) {
+							r = new Set[] { new HashSet<Long>(), new HashSet<Long>()};
+							restrictions.put(offeringId, r);
+						}
+						if (configId != null) r[0].add(configId);
+						if (clazzId != null) r[1].add(clazzId);
+					}
 					
 					if (limit <= 0 || meetings.size() < limit)
 						meetings.addAll(query.select("distinct m").type("ExamEvent")
@@ -609,7 +657,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						events.put(m.getEvent().getUniqueId(), event);
 						event.setCanView(rights.canSee(m.getEvent()));
 						event.setMaxCapacity(m.getEvent().getMaxCapacity());
-						ret.add(event);
 						
 						if (m.getEvent().getMainContact() != null) {
 							ContactInterface contact = new ContactInterface();
@@ -645,6 +692,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
+				    		
+				    		Set<Long>[] r = (restrictions == null ? null : restrictions.get(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId()));
+				    		if (r != null && hide(r, clazz)) continue;
+				    		
 							event.setEnrollment(clazz.getEnrollment());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
@@ -694,8 +745,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    					}
 			    				}
 				    			break;
-				    		case CURRICULUM:
 				    		*/
+				    		case CURRICULUM:
 				    		case PERSON:
 			    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 			    					CourseOffering co = i.next();
@@ -761,10 +812,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			if (department.isExternalManager()) break courses;
 						    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId())) continue courses;
 						    			break;
-						    		case CURRICULUM:
-						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
-						    			break;
 						    		*/
+						    		case CURRICULUM:
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
@@ -796,7 +845,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    				}
 			    				}
 			    			}
-			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && request.getResourceType() == ResourceType.PERSON)
+			    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM))
 		    					event.setName(name);
 				    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 				    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
@@ -823,10 +872,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    			if (department.isExternalManager()) break courses;
 						    			if (!course.getSubjectArea().getDepartment().getUniqueId().equals(request.getResourceId())) continue courses;
 						    			break;
-						    		case CURRICULUM:
-						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
-						    			break;
 						    		*/
+						    		case CURRICULUM:
 						    		case PERSON:
 						    			if (!curriculumCourses.contains(course.getUniqueId())) continue courses;
 						    			break;
@@ -863,6 +910,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    			n.setNote(note);
 			    			event.addNote(n);
 			    		}
+			    		
+						ret.add(event);
 					}
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
@@ -1303,7 +1352,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    				event.addExternalId(label.trim());
 					    				}
 					    			}
-					    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && request.getResourceType() == ResourceType.PERSON)
+					    			if (event.hasCourseNames() && event.getCourseNames().size() == 1 && (request.getResourceType() == ResourceType.PERSON || request.getResourceType() == ResourceType.CURRICULUM))
 				    					event.setName((event.getCourseNames().get(0) + " " + event.getExternalIds().get(0)).trim());
 						    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 						    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
@@ -1434,6 +1483,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		CourseOffering correctedOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 					    		List<CourseOffering> courses = new ArrayList<CourseOffering>(clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings());
 					    		switch (request.getResourceType()) {
+					    		case CURRICULUM:
 					    		case PERSON:
 				    				for (Iterator<CourseOffering> i = courses.iterator(); i.hasNext(); ) {
 				    					CourseOffering co = i.next();
