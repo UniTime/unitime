@@ -36,6 +36,9 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.DatePatterns)
 	public static class DatePatterns extends SimpleSessionPermission {}
 	
+	@PermissionForRight(Right.TimePatterns)
+	public static class TimePatterns extends SimpleSessionPermission {}
+
 	@PermissionForRight(Right.ExaminationPeriods)
 	public static class ExaminationPeriods extends SimpleSessionPermission {}
 

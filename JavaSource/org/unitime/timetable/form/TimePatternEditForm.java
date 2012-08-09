@@ -35,18 +35,18 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
@@ -78,7 +78,7 @@ public class TimePatternEditForm extends ActionForm {
 			errors.add("name", new ActionMessage("errors.required", ""));
 		else {
 			try {
-				TimePattern pat = TimePattern.findByName(request,iName);
+				TimePattern pat = TimePattern.findByName(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId(),iName);
 				if (pat!=null && !pat.getUniqueId().equals(iUniqueId))
 					errors.add("name", new ActionMessage("errors.exists", iName));
 			} catch (Exception e) {
@@ -157,7 +157,7 @@ public class TimePatternEditForm extends ActionForm {
 		}
 	}
 	
-	public void update(TimePattern tp, org.hibernate.Session hibSession, Long sessionId) throws Exception {
+	public void update(TimePattern tp, org.hibernate.Session hibSession) throws Exception {
 		tp.setName(getName());
 		tp.setVisible(new Boolean(getVisible()));
 		tp.setType(new Integer(getTypeInt()));
@@ -209,7 +209,6 @@ public class TimePatternEditForm extends ActionForm {
 		}
 		for (Iterator i=oldDepts.iterator();i.hasNext();) {
 			Department d = (Department)i.next();
-			if (!d.getSessionId().equals(sessionId)) continue;
 			tp.getDepartments().remove(d);
 			d.getTimePatterns().remove(tp);
 			hibSession.saveOrUpdate(d);
@@ -217,7 +216,7 @@ public class TimePatternEditForm extends ActionForm {
 		hibSession.saveOrUpdate(tp);
 	}
 	
-	public TimePattern create(HttpServletRequest request, org.hibernate.Session hibSession) throws Exception {
+	public TimePattern create(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		TimePattern tp = new TimePattern();
 		tp.setName(getName());
 		tp.setVisible(new Boolean(getVisible()));
@@ -228,10 +227,7 @@ public class TimePatternEditForm extends ActionForm {
 		tp.setSlotsPerMtg(new Integer(getSlotsPerMtg()));
 		tp.setTimes(str2startSlots(getStartTimes(),"\n, "));
 		tp.setDays(str2dayCodes(getDayCodes(),"\n, "));
-		if (request!=null) {
-	    	User user = Web.getUser(request.getSession());
-	    	tp.setSession(Session.getCurrentAcadSession(user));
-		}
+		tp.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 		for (Iterator i=tp.getTimes().iterator();i.hasNext();) {
 			TimePatternTime t = (TimePatternTime)i.next();
 			hibSession.save(t);
@@ -258,25 +254,25 @@ public class TimePatternEditForm extends ActionForm {
 		return tp;
 	}
 	
-	public TimePattern saveOrUpdate(HttpServletRequest request, org.hibernate.Session hibSession, Long sessionId) throws Exception {
+	public TimePattern saveOrUpdate(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		TimePattern tp = null;
 		if (getUniqueId().intValue()>=0)
 			tp = (new TimePatternDAO()).get(getUniqueId());
 		if (tp==null) {
-			tp = create(request, hibSession);
+			tp = create(context, hibSession);
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    context, 
                     tp, 
                     ChangeLog.Source.TIME_PATTERN_EDIT, 
                     ChangeLog.Operation.CREATE, 
                     null, 
                     null);
         } else { 
-			update(tp, hibSession, sessionId);
+			update(tp, hibSession);
             ChangeLog.addChange(
                     hibSession, 
-                    request, 
+                    context, 
                     tp, 
                     ChangeLog.Source.TIME_PATTERN_EDIT, 
                     ChangeLog.Operation.UPDATE, 
@@ -286,7 +282,7 @@ public class TimePatternEditForm extends ActionForm {
 		return tp;
 	}
 	
-	public void delete(org.hibernate.Session hibSession, HttpServletRequest request) throws Exception {
+	public void delete(SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getUniqueId().intValue()<0)
 			return;
 		if (!getEditable())
@@ -299,7 +295,7 @@ public class TimePatternEditForm extends ActionForm {
 		}
         ChangeLog.addChange(
                 hibSession, 
-                request, 
+                context, 
                 tp, 
                 ChangeLog.Source.TIME_PATTERN_EDIT, 
                 ChangeLog.Operation.DELETE, 
