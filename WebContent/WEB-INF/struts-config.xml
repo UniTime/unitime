@@ -527,20 +527,6 @@
       </action>
   
       <action 
-      	path="/preferenceLevelList" 
-      	type="org.springframework.web.struts.DelegatingActionProxy"
-        validate="false">
-         <forward
-            name="success"
-            path="preferenceLevelListTile"
-            redirect="true" />
-         <forward
-            name="fail"
-            path="/error.jsp"
-            redirect="true" />
-      </action>
-      
-      <action 
       	path="/itypeDescList" 
       	type="org.springframework.web.struts.DelegatingActionProxy" 
       	validate="false">
