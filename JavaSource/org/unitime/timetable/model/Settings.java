@@ -51,9 +51,6 @@ public class Settings extends BaseSettings {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	/** Request attribute name **/
-	public static String SETTINGS_ATTR_NAME = "settings";
-
     /**
      * Returns all the settings for a user
      * @param request request object 

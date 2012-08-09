@@ -32,13 +32,14 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.criterion.Order;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.SettingsForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.dao.SettingsDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -51,6 +52,8 @@ import org.unitime.timetable.model.dao.SettingsDAO;
 @Service("/settings")
 public class SettingsAction extends Action {
 
+	@Autowired SessionContext sessionContext;
+	
     // --------------------------------------------------------- Instance Variables
 
     // --------------------------------------------------------- Methods
@@ -70,10 +73,7 @@ public class SettingsAction extends Action {
         HttpServletResponse response) throws Exception {
         
         // Check Access
-        if(!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+    	sessionContext.checkPermission(Right.SettingsAdmin);
         
         // Read operation to be performed
         SettingsForm settingsForm = (SettingsForm) form;
@@ -167,7 +167,7 @@ public class SettingsAction extends Action {
      * @throws Exception
      */
     private void getSettingsList(HttpServletRequest request) throws Exception {
-        WebTable.setOrder(request.getSession(),"settings.ord",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"settings.ord",request.getParameter("ord"),1);
 		org.hibernate.Session hibSession = null;
 
 		// Create web table instance 
@@ -214,6 +214,6 @@ public class SettingsAction extends Action {
 	    finally {
 	    }
 
-	    request.setAttribute(Settings.SETTINGS_ATTR_NAME, webTable.printTable(WebTable.getOrder(request.getSession(),"settings.ord")));
+	    request.setAttribute("table", webTable.printTable(WebTable.getOrder(sessionContext,"settings.ord")));
     }
 }
