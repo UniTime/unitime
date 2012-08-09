@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,19 +33,16 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.Email;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InquiryForm;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.EventContact;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.SolverGroup;
-import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
@@ -54,6 +52,8 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/inquiry")
 public class InquiryAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
@@ -62,16 +62,12 @@ public class InquiryAction extends Action {
 	        MessageResources rsc = getResources(request);
 			
 	        // Check Access
-	        if (!Web.isLoggedIn( request.getSession())) {
-	            throw new Exception ("Access Denied.");
-	        }
+	        sessionContext.checkPermission(Right.Inquiry);
 			
 	        // Read operation to be performed
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 	        
-            User user = Web.getUser(request.getSession());
-            TimetableManager mgr = TimetableManager.getManager(user);
-            myForm.setNoRole(mgr==null);
+            myForm.setNoRole(!sessionContext.getUser().getCurrentAuthority().hasRight(Right.HasRole));
 	        
 	        if ("Cancel".equals(op) || "Back".equals(op)) {
 	        	return mapping.findForward("submit");
@@ -111,57 +107,32 @@ public class InquiryAction extends Action {
 	            if(errors.size()>0) {
 	                saveErrors(request, errors);
 	            } else {
-	            	Session session = Session.getCurrentAcadSession(user);
-	            	
 	            	String mail = myForm.getMessage();;
 	            	mail += "\r\n";
 	            	mail += "\r\n";
 	            	mail += "User info -------------- \r\n";
-	            	mail += "User: "+user.getName()+"\r\n";
-	            	mail += "Login: "+user.getLogin()+"\r\n";
-	            	//mail += "PUID: "+user.getId()+"\r\n";
-	            	mail += "Role: "+user.getCurrentRole()+"\r\n";
-	            	mail += "Departments: "+user.getDepartments()+"\r\n";
+	            	mail += "User: "+sessionContext.getUser().getName()+"\r\n";
+	            	mail += "Login: "+sessionContext.getUser().getUsername()+"\r\n";
+	            	mail += "Email: "+sessionContext.getUser().getEmail()+"\r\n";
+	            	mail += "Role: "+sessionContext.getUser().getCurrentAuthority()+"\r\n";
+	            	List<? extends Qualifiable> sessions = sessionContext.getUser().getCurrentAuthority().getQualifiers("Session");
+	            	if (!sessions.isEmpty())
+	            		mail += "Academic Session: " + sessions.get(0).getQualifierLabel()+"\r\n";
+	            	List<? extends Qualifiable> depts = sessionContext.getUser().getCurrentAuthority().getQualifiers("Department");
+	            	if (!depts.isEmpty())
+	            		mail += "Departments: "+depts+"\r\n";
+	            	List<? extends Qualifiable> sg = sessionContext.getUser().getCurrentAuthority().getQualifiers("SolverGroup");
+	            	if (!sg.isEmpty())
+	            		mail += "Solver Groups: "+sg+"\r\n";
+	            	
 	            	mail += "\r\n";
-	            	if (mgr!=null) {
-	            	    mail += "Manager info -------------- \r\n";
-	            	    mail += "Name: "+mgr.getName()+"\r\n";
-	            	//    mail += "PUID: "+mgr.getPuid()+"\r\n";
-	            	    mail += "Email: "+mgr.getEmailAddress()+"\r\n";
-	            	    mail += "\r\n";
-	            	}
-	            	if (session!=null) {
-	            	    mail += "Session info -------------- \r\n";
-	            	    mail += "Session Term: "+session.getAcademicYearTerm()+"\r\n";
-	            	    mail += "Session Initiative: "+session.getAcademicInitiative()+"\r\n";
-	            	    if (mgr!=null) {
-	                        mail += "Departments: \r\n";
-	                        for (Iterator i=mgr.getDepartments().iterator();i.hasNext();) {
-	                            Department d = (Department)i.next();
-	                            if (!session.equals(d.getSession())) continue;
-	                            mail += "  "+d.getLabel()+"\r\n";
-	                        }
-	                        mail += "Solver Groups: \r\n";
-	                        for (Iterator i=mgr.getSolverGroups().iterator();i.hasNext();) {
-	                            SolverGroup g = (SolverGroup)i.next();
-	                            if (!session.equals(g.getSession())) continue;
-	                            mail += "  "+g.getName()+"\r\n";
-	                        }
-	                        mail += "Subject Areas: \r\n";
-	                        for (Iterator i=TimetableManager.getSubjectAreas(user).iterator();i.hasNext();) {
-	                            SubjectArea sa = (SubjectArea)i.next();
-	                            if (!session.equals(sa.getSession())) continue;
-	                            mail += "  "+sa.getSubjectAreaAbbreviation()+"\r\n";
-	                        }
-	            	    }
-	            	}
+	            	
 	            	mail += "\r\n";
 	            	mail += "Application info -------------- \r\n";
-	            	mail += "Version: "+Constants.getVersion()+" ("+Constants.getReleaseDate()+")\r\n";
-	            	mail += "TimeStamp: "+(new Date());
+	            	mail += "Version: " + Constants.getVersion()+" ("+Constants.getReleaseDate()+")\r\n";
+	            	mail += "TimeStamp: " + (new Date());
 	            	
-	            	
-                    EventContact c = EventContact.findByExternalUniqueId(user.getId());
+                    EventContact c = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
 	            	
                     Email email = new Email();
                     email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
@@ -181,15 +152,16 @@ public class InquiryAction extends Action {
                     boolean autoreply = "true".equals(ApplicationProperties.getProperty("unitime.email.inquiry.autoreply", ApplicationProperties.getProperty("tmtbl.inquiry.autoreply", "false")));
                     
                     if (!autoreply) {
-                        if (mgr != null && mgr.getEmailAddress() != null) {
-                            email.addRecipientCC(mgr.getEmailAddress(), mgr.getName());
-                        } else if (c != null && c.getEmailAddress() != null) {
+                        if (sessionContext.getUser().getEmail() != null && !sessionContext.getUser().getEmail().isEmpty()) {
+                            email.addRecipientCC(sessionContext.getUser().getEmail(), sessionContext.getUser().getName());
+                        } else if (c != null && c.getEmailAddress() != null && !c.getEmailAddress().isEmpty()) {
                         	email.addRecipientCC(c.getEmailAddress(), c.getName());
                         } else {
-                        	email.addRecipientCC(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
+                        	email.addRecipientCC(sessionContext.getUser().getUsername() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), sessionContext.getUser().getName());
                         }
-                        email.send();
                     }
+                    email.send();
+                    
                     
                     if (autoreply) {
             		
@@ -211,12 +183,12 @@ public class InquiryAction extends Action {
                             email.setSubject("RE: UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
                             email.setText(mail);
                             
-                            if (mgr != null && mgr.getEmailAddress() != null) {
-                                email.addRecipient(mgr.getEmailAddress(), mgr.getName());
-                            } else if (c != null && c.getEmailAddress() != null) {
+                            if (sessionContext.getUser().getEmail() != null && !sessionContext.getUser().getEmail().isEmpty()) {
+                                email.addRecipient(sessionContext.getUser().getEmail(), sessionContext.getUser().getName());
+                            } else if (c != null && c.getEmailAddress() != null && !c.getEmailAddress().isEmpty()) {
                             	email.addRecipient(c.getEmailAddress(), c.getName());
                             } else {
-                            	email.addRecipient(user.getLogin() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), null);
+                            	email.addRecipient(sessionContext.getUser().getUsername() + ApplicationProperties.getProperty("unitime.email.inquiry.suffix", ApplicationProperties.getProperty("tmtbl.inquiry.email.suffix","@unitime.org")), sessionContext.getUser().getName());
                             }
                             
                             email.send();

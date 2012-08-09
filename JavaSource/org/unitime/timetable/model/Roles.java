@@ -419,6 +419,7 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference());
 			
 		case HasRole:
+		case Inquiry:
 			return true;
 
 		case IsAdmin:
