@@ -43,24 +43,23 @@ import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimePatternEditForm;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
 import org.unitime.timetable.model.TimePatternTime;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
@@ -70,16 +69,15 @@ import net.sf.cpsolver.ifs.util.CSVFile;
  */
 @Service("/timePatternEdit")
 public class TimePatternEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 		TimePatternEditForm myForm = (TimePatternEditForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.TimePatterns);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -95,8 +93,7 @@ public class TimePatternEditAction extends Action {
             myForm.setOp("List");
         }
         
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+    	Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
 
     	List list = (new DepartmentDAO()).getSession()
 					.createCriteria(Department.class)
@@ -167,7 +164,7 @@ public class TimePatternEditAction extends Action {
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(request, hibSession, sessionId);
+                	myForm.saveOrUpdate(sessionContext, hibSession);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -211,7 +208,7 @@ public class TimePatternEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	myForm.delete(hibSession, request);
+            	myForm.delete(sessionContext, hibSession);
             	
     			tx.commit();
     	    } catch (Exception e) {
@@ -231,9 +228,7 @@ public class TimePatternEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	Session session = Session.getCurrentAcadSession(user);
-
-            	TimePattern tp = TimePattern.findByName(session, "Exact Time");
+            	TimePattern tp = TimePattern.findByName(sessionId, "Exact Time");
             	
             	List timePrefs = 
             			hibSession.
@@ -253,7 +248,7 @@ public class TimePatternEditAction extends Action {
             		TimePref tpref = (TimePref)i.next();
             		if (!(tpref.getOwner() instanceof Class_)) continue;
             		Class_ clazz = (Class_)tpref.getOwner();
-            		if (!clazz.getSessionId().equals(session.getUniqueId())) continue;
+            		if (!clazz.getSessionId().equals(sessionId)) continue;
             		int dayCode = tpref.getTimePatternModel().getExactDays();
             		String name = "";
             		int nrDays = 0;
@@ -297,7 +292,7 @@ public class TimePatternEditAction extends Action {
                 File file = ApplicationProperties.getTempFile("tp", "sql");
                 out = new PrintWriter(new FileWriter(file));
                 
-                TreeSet patterns = new TreeSet(TimePattern.findAll(request,null));
+                TreeSet patterns = new TreeSet(TimePattern.findAll(sessionId,null));
                 
                 boolean mysql = false;
 
@@ -429,8 +424,7 @@ public class TimePatternEditAction extends Action {
             	File file = ApplicationProperties.getTempFile("assigndept", "txt");
             	out = new PrintWriter(new FileWriter(file));
             	
-            	Session session = Session.getCurrentAcadSession(user);
-            	TreeSet patterns = new TreeSet(TimePattern.findAll(request,null));
+            	TreeSet patterns = new TreeSet(TimePattern.findAll(sessionId,null));
 
             	for (Iterator i=patterns.iterator();i.hasNext();) {
             		TimePattern tp = (TimePattern)i.next();
@@ -451,11 +445,11 @@ public class TimePatternEditAction extends Action {
             			TimePref timePref = (TimePref)j.next();
             			if (timePref.getOwner() instanceof Class_) {
             				Class_ c = (Class_)timePref.getOwner();
-            				if (!c.getSession().getUniqueId().equals(session.getUniqueId())) continue;
+            				if (!c.getSession().getUniqueId().equals(sessionId)) continue;
             				depts.add(c.getManagingDept());
             			} else if (timePref.getOwner() instanceof SchedulingSubpart) {
             				SchedulingSubpart s = (SchedulingSubpart)timePref.getOwner();
-            				if (!s.getSession().getUniqueId().equals(session.getUniqueId())) continue;
+            				if (!s.getSession().getUniqueId().equals(sessionId)) continue;
             				depts.add(s.getManagingDept());
             			}
             		}
@@ -518,8 +512,6 @@ public class TimePatternEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	Session session = Session.getCurrentAcadSession(user);
-            	
             	CSVFile csv = new CSVFile();
             	csv.setHeader(
             			new CSVFile.CSVField[] {
@@ -537,7 +529,7 @@ public class TimePatternEditAction extends Action {
             					new CSVFile.CSVField("Classes")
             			});
             	
-            	TreeSet patterns = new TreeSet(TimePattern.findAll(request,null));
+            	TreeSet patterns = new TreeSet(TimePattern.findAll(sessionId,null));
 
             	for (Iterator i=patterns.iterator();i.hasNext();) {
             		TimePattern tp = (TimePattern)i.next();
@@ -546,7 +538,7 @@ public class TimePatternEditAction extends Action {
                 	TreeSet depts = new TreeSet(tp.getDepartments()); 
                 	for (Iterator j=depts.iterator();j.hasNext();) {
                 		Department d = (Department)j.next();
-                		if (!d.getSessionId().equals(session.getUniqueId())) continue;
+                		if (!d.getSessionId().equals(sessionId)) continue;
                 		if (deptStr.length()>0) { deptStr += ", "; }
                 		deptStr += d.getShortLabel().trim();
                 	}
@@ -565,11 +557,11 @@ public class TimePatternEditAction extends Action {
 	            			Object owner = j.next();
 	            			if (owner instanceof Class_) {
 	            				Class_ c = (Class_)owner;
-	            				if (!c.getSession().getUniqueId().equals(session.getUniqueId())) continue;
+	            				if (!c.getSession().getUniqueId().equals(sessionId)) continue;
                                 allOwners.add(c.getClassLabel());
 	            			} else if (owner instanceof SchedulingSubpart) {
 	            				SchedulingSubpart s = (SchedulingSubpart)owner;
-	            				if (!s.getSession().getUniqueId().equals(session.getUniqueId())) continue;
+	            				if (!s.getSession().getUniqueId().equals(sessionId)) continue;
                                 allOwners.add(s.getSchedulingSubpartLabel());
 	            			}
 	            		}
@@ -643,7 +635,7 @@ public class TimePatternEditAction extends Action {
 	}
 	
     private void getTimePatterns(HttpServletRequest request, Long sessionId) throws Exception {
-		WebTable.setOrder(request.getSession(),"timePatterns.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"timePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 10,
 			    null, "timePatternEdit.do?ord=%%",
@@ -651,14 +643,12 @@ public class TimePatternEditAction extends Action {
 			    new String[] {"left", "left", "left", "left", "left","left", "left", "left", "left", "left"},
 			    null );
         
-        List<TimePattern> patterns = TimePattern.findAll(request,null);
+        List<TimePattern> patterns = TimePattern.findAll(sessionId,null);
 		if(patterns.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No time pattern defined for this academic initiative and term."}, null, null );			    
 		}
 		
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-		Set used = TimePattern.findAllUsed(session);
+		Set used = TimePattern.findAllUsed(sessionId);
 
         for (TimePattern pattern: patterns) {
         	String onClick = "onClick=\"document.location='timePatternEdit.do?op=Edit&id=" + pattern.getUniqueId() + "';\"";
@@ -702,7 +692,7 @@ public class TimePatternEditAction extends Action {
         		});
         }
         
-	    request.setAttribute("TimePatterns.table", webTable.printTable(WebTable.getOrder(request.getSession(),"timePatterns.ord")));
+	    request.setAttribute("TimePatterns.table", webTable.printTable(WebTable.getOrder(sessionContext,"timePatterns.ord")));
     }	
 }
 
