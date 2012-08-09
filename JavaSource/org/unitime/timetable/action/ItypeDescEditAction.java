@@ -29,15 +29,14 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.ItypeDescEditForm;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -46,16 +45,15 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/itypeDescEdit")
 public class ItypeDescEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 		ItypeDescEditForm myForm = (ItypeDescEditForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.InstructionalTypes);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -65,15 +63,15 @@ public class ItypeDescEditAction extends Action {
             myForm.setOp("Save");
         }
         
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-
         // Return
         if ("Back".equals(op)) {
             return mapping.findForward("back");
         }
         
         if ("Add IType".equals(op)) {
+        	
+        	sessionContext.checkPermission(Right.InstructionalTypeAdd);
+        	
             myForm.setOp("Save");
         }
 
@@ -89,12 +87,17 @@ public class ItypeDescEditAction extends Action {
             } else {
         		Transaction tx = null;
         		
+        		if (myForm.getUniqueId() == null)
+        			sessionContext.checkPermission(Right.InstructionalTypeAdd);
+        		else
+        			sessionContext.checkPermission(myForm.getUniqueId(), "ItypeDesc", Right.InstructionalTypeEdit);
+        		
                 try {
                 	org.hibernate.Session hibSession = (new ItypeDescDAO()).getSession();
                 	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
                 		tx = hibSession.beginTransaction();
                 	
-                	myForm.saveOrUpdate(hibSession, session);
+                	myForm.saveOrUpdate(hibSession);
                 	
         			if (tx!=null) tx.commit();
         	    } catch (Exception e) {
@@ -109,6 +112,9 @@ public class ItypeDescEditAction extends Action {
         // Edit
         if("Edit".equals(op)) {
             String id = request.getParameter("id");
+            
+            sessionContext.checkPermission(Integer.valueOf(id), "ItypeDesc", Right.InstructionalTypeEdit);
+            
             ActionMessages errors = new ActionMessages();
             if(id==null || id.trim().length()==0) {
                 errors.add("externalId", new ActionMessage("errors.invalid", id));
@@ -128,6 +134,8 @@ public class ItypeDescEditAction extends Action {
         // Delete 
         if("Delete".equals(op)) {
     		Transaction tx = null;
+    		
+    		sessionContext.checkPermission(myForm.getUniqueId(), "ItypeDesc", Right.InstructionalTypeDelete);
     		
             try {
             	org.hibernate.Session hibSession = (new ItypeDescDAO()).getSession();

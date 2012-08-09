@@ -23,12 +23,12 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 
 <html:form action="/itypeDescEdit">
 	<html:hidden property="uniqueId"/>
-	<html:hidden property="canDelete"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -48,9 +48,9 @@
 					</logic:equal>
 					<logic:equal name="itypeDescEditForm" property="op" value="Update">
 						<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/>
-						<logic:equal name="itypeDescEditForm" property="canDelete" value="true"> 
+						<sec:authorize access="hasPermission(#itypeDescEditForm.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')"> 
 							<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/>
-						</logic:equal> 
+						</sec:authorize>
 					</logic:equal>
 					<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 				</tt:section-header>
@@ -136,9 +136,9 @@
 				</logic:equal>
 				<logic:equal name="itypeDescEditForm" property="op" value="Update">
 					<html:submit property="op" value="Update" title="Update (Alt+U)" accesskey="U"/>
-					<logic:equal name="itypeDescEditForm" property="canDelete" value="true"> 
+					<sec:authorize access="hasPermission(#itypeDescEditForm.uniqueId, 'ItypeDesc', 'InstructionalTypeDelete')"> 
 						<html:submit property="op" value="Delete" title="Delete (Alt+D)" accesskey="D"/>
-					</logic:equal> 
+					</sec:authorize>
 				</logic:equal>
 				<html:submit property="op" value="Back" title="Back (Alt+B)" accesskey="B"/> 
 			</TD>

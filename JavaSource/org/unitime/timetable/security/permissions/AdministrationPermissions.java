@@ -21,10 +21,12 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.ItypeDescDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -201,4 +203,38 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.LastChanges)
 	public static class LastChanges extends SimpleSessionPermission {}
 
+	@PermissionForRight(Right.InstructionalTypeEdit)
+	public static class InstructionalTypeEdit implements Permission<ItypeDesc> {
+		@Autowired Permission<Session> permissionSession;
+
+		@Override
+		public boolean check(UserContext user, ItypeDesc source) {
+			return true;
+		}
+
+		@Override
+		public Class<ItypeDesc> type() { return ItypeDesc.class; }
+	}
+	
+	@PermissionForRight(Right.InstructionalTypeDelete)
+	public static class InstructionalTypeDelete implements Permission<ItypeDesc> {
+		@Autowired Permission<Session> permissionSession;
+
+		@Override
+		public boolean check(UserContext user, ItypeDesc source) {
+	        int nrUsed = ((Number)ItypeDescDAO.getInstance().getSession().
+	        		createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype").
+	                setInteger("itype", source.getItype()).
+	                uniqueResult()).intValue();
+	        int nrChildren = ((Number)ItypeDescDAO.getInstance().getSession().
+	        		createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype").
+	        		setInteger("itype", source.getItype()).
+	                uniqueResult()).intValue();
+	        
+	        return nrUsed == 0 && nrChildren == 0;
+		}
+
+		@Override
+		public Class<ItypeDesc> type() { return ItypeDesc.class; }
+	}
 }
