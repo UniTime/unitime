@@ -197,4 +197,8 @@ public class AdministrationPermissions {
 					source.getDepartment().getSolverGroup().getCommittedSolution() == null;
 		}
 	}
+	
+	@PermissionForRight(Right.LastChanges)
+	public static class LastChanges extends SimpleSessionPermission {}
+
 }

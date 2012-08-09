@@ -39,6 +39,7 @@ public abstract class QueueItem {
 	private Long iSessionId;
 	private String iOwnerId;
 	private String iOwnerName;
+	private String iOwnerEmail;
 	private File iOutput = null;
 	private String iLog = "";
 	private String iStatus = "Waiting...";
@@ -51,12 +52,15 @@ public abstract class QueueItem {
 		iSessionId = session.getUniqueId();
 		iOwnerId = owner.getExternalUserId();
 		iOwnerName = owner.getName();
+		iOwnerEmail = owner.getEmail();
 	}
 	
 	public Long getSessionId() { return iSessionId; }
 	public Session getSession() { return SessionDAO.getInstance().get(iSessionId); }
 	public String getOwnerId() { return iOwnerId; }
 	public String getOwnerName() { return iOwnerName; }
+	public boolean hasOwnerEmail() { return iOwnerEmail != null && !iOwnerEmail.isEmpty(); }
+	public String getOwnerEmail() { return iOwnerEmail; }
 	
 	public abstract String type();
 	public abstract String name();

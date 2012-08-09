@@ -289,6 +289,7 @@ public enum Right {
     SubjectAreaDelete(SubjectArea.class),
     SubjectAreaChangeDepartment(SubjectArea.class),
     TimePatterns(Session.class),
+    LastChanges(Session.class),
     
     Registration,
     ExtendedTimePatterns,
