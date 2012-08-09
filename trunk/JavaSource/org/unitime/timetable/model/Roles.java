@@ -416,10 +416,12 @@ public class Roles extends BaseRoles implements HasRights {
 		case SubjectAreaEdit:
 		case SubjectAreaChangeDepartment:
 		case SubjectAreaDelete:
+		case SettingsAdmin:
 			return ADMIN_ROLE.equals(getReference());
 			
 		case HasRole:
 		case Inquiry:
+		case SettingsUser:
 			return true;
 
 		case IsAdmin:

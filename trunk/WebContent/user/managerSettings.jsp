@@ -22,22 +22,23 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
-<%@ page import="org.unitime.timetable.model.Settings" %>
+
 <tiles:importAttribute />
 
 <html:form action="/managerSettings">
 
 <logic:equal name="mgrSettingsForm" property="op" value="Edit">
 
-<html:hidden property="keyId"/><html:errors property="keyId"/>
-<html:hidden property="settingId"/><html:errors property="settingId"/>
+	<html:hidden property="key"/>
+	<html:hidden property="name"/>
+	<html:hidden property="defaultValue"/>
 
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD>
 				<tt:section-header>
 					<tt:section-title>
-						<bean:write name="mgrSettingsForm" property="key"/>
+						<bean:write name="mgrSettingsForm" property="name"/>
 					</tt:section-title>
 					<html:submit styleClass="btn" property="op" accesskey="U" titleKey="title.updateSetting">
 						<bean:message key="button.updateSetting" />
@@ -56,7 +57,9 @@
 				</html :select -->
 				<logic:iterate id="allowedValue" name="mgrSettingsForm" property="allowedValues">
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<html:radio property="value" value="${allowedValue}"> &nbsp; ${allowedValue}</html:radio><BR>
+					<html:radio property="value" value="${allowedValue}"> &nbsp; ${allowedValue}</html:radio>
+					<logic:equal property="defaultValue" name="mgrSettingsForm" value="${allowedValue}"><i>(default)</i></logic:equal>
+					<BR>
 				</logic:iterate>				
 				<html:errors property="value"/>
 			</TD>
@@ -83,7 +86,7 @@
 </logic:equal>
 <logic:notEqual name="mgrSettingsForm" property="op" value="Edit">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-		<%= request.getAttribute(Settings.SETTINGS_ATTR_NAME) %>
+		<bean:write name="table" scope="request" filter="false"/>
 	</TABLE>
 </logic:notEqual>
 
