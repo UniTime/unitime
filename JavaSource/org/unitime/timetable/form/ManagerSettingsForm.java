@@ -43,17 +43,15 @@ public class ManagerSettingsForm extends ActionForm {
 
 	private String op;
 
-    /** keyId  property */
-    private Long keyId;
-
-    /** settingId  property */
-    private Long settingId;
-
     /** key property */
     private String key;
+    
+    private String name;
 
     /** defaultValue property */
     private String value;
+    
+    private String defaultValue;
 
     /** allowedValues property */
     private String[] allowedValues;
@@ -85,9 +83,10 @@ public class ManagerSettingsForm extends ActionForm {
      */
     public void reset(ActionMapping mapping, HttpServletRequest request) {
         op = null;
-        keyId = null;
         key = "";
+        name = "";
         value = "";
+        defaultValue = "";
         allowedValues = null;
     }
 
@@ -136,18 +135,6 @@ public class ManagerSettingsForm extends ActionForm {
         this.op = op;
     }
     /**
-     * @return Returns the keyId.
-     */
-    public Long getKeyId() {
-        return keyId;
-    }
-    /**
-     * @param keyId The keyId to set.
-     */
-    public void setKeyId(Long keyId) {
-        this.keyId = keyId;
-    }
-    /**
      * @return Returns the allowedValues.
      */
     public String[] getAllowedValues() {
@@ -173,16 +160,9 @@ public class ManagerSettingsForm extends ActionForm {
         }
     }
     
-    /**
-     * @return Returns the settingId.
-     */
-    public Long getSettingId() {
-        return settingId;
-    }
-    /**
-     * @param settingId The settingId to set.
-     */
-    public void setSettingId(Long settingId) {
-        this.settingId = settingId;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getDefaultValue() { return defaultValue; }
+    public void setDefaultValue(String defaultValue) { this.defaultValue = defaultValue; }
 }

@@ -44,6 +44,7 @@ import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.UserDataDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.authority.InstructorAuthority;
+import org.unitime.timetable.security.authority.NoRoleAuthority;
 import org.unitime.timetable.security.authority.RoleAuthority;
 import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
@@ -176,6 +177,12 @@ public class UniTimeUserContext extends AbstractUserContext {
 				List<? extends UserAuthority> authorities = getAuthorities(StudentAuthority.TYPE, new SimpleQualifier("Session", sessionId));
 				if (!authorities.isEmpty())
 					setCurrentAuthority(authorities.get(0));
+			}
+			
+			if (getAuthorities().isEmpty()) {
+				NoRoleAuthority noRole = new NoRoleAuthority();
+				addAuthority(noRole);
+				setCurrentAuthority(noRole);
 			}
 		} finally {
 			hibSession.close();

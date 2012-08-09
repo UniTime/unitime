@@ -288,13 +288,15 @@ public enum Right {
     SubjectAreaEdit(SubjectArea.class),
     SubjectAreaDelete(SubjectArea.class),
     SubjectAreaChangeDepartment(SubjectArea.class),
-    Inquiry(Session.class),
     
     Registration,
     ExtendedTimePatterns,
     ExtendedDatePatterns,
     SessionRollForward,
     CanSelectSolverServer,
+    Inquiry,
+    SettingsUser,
+    SettingsAdmin,
 
     ;
 	

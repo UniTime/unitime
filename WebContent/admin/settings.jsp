@@ -120,7 +120,7 @@
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%= request.getAttribute(org.unitime.timetable.model.Settings.SETTINGS_ATTR_NAME) %>
+	<bean:write name="table" scope="request" filter="false"/>
 	<TR>
 		<TD colspan='4'>
 			<tt:section-title/>
