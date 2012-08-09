@@ -35,6 +35,7 @@ public class InstructorAuthority extends AbstractAuthority {
 		switch (right) {
 		case SessionDefaultCurrent:
 		case PersonalSchedule:
+		case Inquiry:
 			return true;
 		default:
 			return false;
