@@ -12,7 +12,12 @@ public class NoRoleAuthority extends AbstractAuthority {
 
 	@Override
 	public boolean hasRight(Right right) {
-		return false;
+		switch (right) {
+		case Inquiry:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 }
