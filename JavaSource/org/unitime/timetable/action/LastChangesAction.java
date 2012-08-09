@@ -31,17 +31,17 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.LastChangesForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -51,16 +51,15 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/lastChanges")
 public class LastChangesAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         LastChangesForm myForm = (LastChangesForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
-        
+        sessionContext.checkPermission(Right.LastChanges);
+
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
@@ -70,13 +69,13 @@ public class LastChangesAction extends Action {
             myForm.load(request);
         }
         
-        Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+        Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
         
-        request.setAttribute("departments",Department.findAll(session.getUniqueId()));
-        request.setAttribute("subjAreas",new TreeSet(SubjectArea.getSubjectAreaList(session.getUniqueId())));
+        request.setAttribute("departments",Department.findAll(sessionId));
+        request.setAttribute("subjAreas",new TreeSet(SubjectArea.getSubjectAreaList(sessionId)));
         request.setAttribute("managers",TimetableManager.getManagerList());
         
-        WebTable.setOrder(request.getSession(),"lastChanges.ord2",request.getParameter("ord"),1);
+        WebTable.setOrder(sessionContext,"lastChanges.ord2",request.getParameter("ord"),1);
         
         WebTable webTable = new WebTable( 7, "Last Changes",
                 "lastChanges.do?ord=%%",
@@ -85,7 +84,7 @@ public class LastChangesAction extends Action {
                 new boolean[] { false, true, true, true, true, true, true} );
         
         List changes = ChangeLog.findLastNChanges(
-                session.getUniqueId(), 
+                sessionId, 
                 (myForm.getManagerId()==null || myForm.getManagerId().longValue()<0?null:myForm.getManagerId()), 
                 (myForm.getSubjAreaId()==null || myForm.getSubjAreaId().longValue()<0?null:myForm.getSubjAreaId()),
                 (myForm.getDepartmentId()==null || myForm.getDepartmentId().longValue()<0?null:myForm.getDepartmentId()),
@@ -96,7 +95,7 @@ public class LastChangesAction extends Action {
                 printLastChangeTableRow(request, webTable, (ChangeLog)i.next(), true);
         }
         
-        request.setAttribute("table", webTable.printTable(WebTable.getOrder(request.getSession(),"lastChanges.ord2")));
+        request.setAttribute("table", webTable.printTable(WebTable.getOrder(sessionContext,"lastChanges.ord2")));
         
         if ("Export PDF".equals(op) && changes!=null) {
             PdfWebTable pdfTable = new PdfWebTable( 7, "Last Changes",
@@ -107,7 +106,7 @@ public class LastChangesAction extends Action {
             for (Iterator i=changes.iterator();i.hasNext();)
                 printLastChangeTableRow(request, pdfTable, (ChangeLog)i.next(), false);
             File file = ApplicationProperties.getTempFile("lastChanges", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(request.getSession(),"lastChanges.ord2"));
+            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"lastChanges.ord2"));
             if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         

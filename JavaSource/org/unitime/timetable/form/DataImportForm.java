@@ -30,8 +30,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.upload.FormFile;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.TimetableManager;
 
 /** 
  * MyEclipse Struts
@@ -46,7 +44,6 @@ public class DataImportForm extends ActionForm {
 	private String iOp;
 	private String iExport;
     private boolean iEmail = false;
-    private String iAddr = null;
     
     public static enum ExportType {
     	COURSES("offerings", "Course Offerings",
@@ -108,9 +105,7 @@ public class DataImportForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iFile = null;
 		iExport = null;
-		iEmail = false; iAddr = null;
-        TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
-        if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
+		iEmail = false;
 	}
 
 	public FormFile getFile() { return iFile; }
@@ -123,8 +118,6 @@ public class DataImportForm extends ActionForm {
     
     public boolean getEmail() { return iEmail; }
     public void setEmail(boolean email) { iEmail = email; }
-    public String getAddress() { return iAddr; }
-    public void setAddress(String addr) { iAddr = addr; }
     
     public Object clone() {
     	DataImportForm form = new DataImportForm();
@@ -132,7 +125,6 @@ public class DataImportForm extends ActionForm {
     	form.iOp = iOp;
     	form.iExport = iExport;
         form.iEmail = iEmail;
-        form.iAddr = iAddr;
         return form;
     }
     

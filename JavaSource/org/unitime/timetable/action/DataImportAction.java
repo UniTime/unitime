@@ -26,7 +26,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -275,7 +274,7 @@ public class DataImportAction extends Action {
             } finally {
             	Progress.removeInstance(this);
             }
-            if (iForm.getEmail() && iForm.getAddress()!=null && iForm.getAddress().length()>0) {
+            if (iForm.getEmail() && hasOwnerEmail()) {
                 try {
                 	Email mail = new Email();
                 	mail.setSubject("Data " + (iImport ? "import" : "export") + " finished.");
@@ -285,8 +284,7 @@ public class DataImportAction extends Action {
                             ", by "+
                             "UniTime "+Constants.getVersion()+
                             " (Univesity Timetabling Application, http://www.unitime.org).");
-                	for (StringTokenizer s=new StringTokenizer(iForm.getAddress(),";,\n\r ");s.hasMoreTokens();) 
-                        mail.addRecipient(s.nextToken(), null);
+                	mail.addRecipient(getOwnerEmail(), getOwnerName());
                 	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
                 		mail.addNotifyCC();
                     if (!iImport && hasOutput() && output().exists()) 

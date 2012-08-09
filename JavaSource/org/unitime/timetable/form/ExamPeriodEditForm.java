@@ -288,7 +288,8 @@ public class ExamPeriodEditForm extends ActionForm {
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
 		iAutoSetup = false;
-		iSession = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
+		if (request != null)
+			iSession = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
 	}
 	
 	public void load(ExamPeriod ep, SessionContext context) throws Exception {
