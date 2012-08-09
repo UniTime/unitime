@@ -21,21 +21,24 @@ package org.unitime.timetable.action;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.SponsoringOrgListForm;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Zuzana Mullerova
  */
 @Service("/sponsoringOrgList")
 public class SponsoringOrgListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(
 			ActionMapping mapping,
@@ -45,13 +48,8 @@ public class SponsoringOrgListAction extends Action {
 
 		SponsoringOrgListForm myForm = (SponsoringOrgListForm) form;
 		String op = myForm.getOp();
-		HttpSession session = request.getSession();
 		
-        if(!Web.isLoggedIn( session )) {
-            throw new Exception ("Access Denied.");
-        }
-        
-		
+		sessionContext.checkPermission(Right.SponsoringOrganizations);
         
 		if("Add Organization".equals(op)) {
 			request.setAttribute("op", "add");

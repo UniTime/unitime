@@ -23,6 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 
@@ -33,8 +34,10 @@
 		<TD>
 			<tt:section-header>
 				<tt:section-title>Sponsoring Organizations</tt:section-title>
-				<html:submit property="op" styleClass="btn" accesskey="A" 
-					title="Add Sponsoring Organization (Alt+A)" value="Add Organization"/>
+				<sec:authorize access="hasPermission(null, null, 'SponsoringOrganizationAdd')">
+					<html:submit property="op" styleClass="btn" accesskey="A" 
+						title="Add Sponsoring Organization (Alt+A)" value="Add Organization"/>
+				</sec:authorize>
 			</tt:section-header>
 		</TD>
 	</TR>
@@ -52,8 +55,10 @@
 	</TR>
 	<TR>
 		<TD align='right'>
-			<html:submit property="op" styleClass="btn" accesskey="A" 
-			title="Add Sponsoring Organization (Alt+A)" value="Add Organization"/>
+			<sec:authorize access="hasPermission(null, null, 'SponsoringOrganizationAdd')">
+				<html:submit property="op" styleClass="btn" accesskey="A" 
+					title="Add Sponsoring Organization (Alt+A)" value="Add Organization"/>
+			</sec:authorize>
 		</TD>
 	</TR>
 

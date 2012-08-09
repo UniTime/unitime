@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -205,7 +206,6 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.InstructionalTypeEdit)
 	public static class InstructionalTypeEdit implements Permission<ItypeDesc> {
-		@Autowired Permission<Session> permissionSession;
 
 		@Override
 		public boolean check(UserContext user, ItypeDesc source) {
@@ -217,8 +217,7 @@ public class AdministrationPermissions {
 	}
 	
 	@PermissionForRight(Right.InstructionalTypeDelete)
-	public static class InstructionalTypeDelete implements Permission<ItypeDesc> {
-		@Autowired Permission<Session> permissionSession;
+	public static class InstructionalTypeDelete extends InstructionalTypeEdit {
 
 		@Override
 		public boolean check(UserContext user, ItypeDesc source) {
@@ -233,8 +232,21 @@ public class AdministrationPermissions {
 	        
 	        return nrUsed == 0 && nrChildren == 0;
 		}
+	}
+	
+	@PermissionForRight(Right.SponsoringOrganizationEdit)
+	public static class SponsoringOrganizationEdit implements Permission<SponsoringOrganization> {
+		@Autowired Permission<Session> permissionSession;
 
 		@Override
-		public Class<ItypeDesc> type() { return ItypeDesc.class; }
+		public boolean check(UserContext user, SponsoringOrganization source) {
+			return true;
+		}
+
+		@Override
+		public Class<SponsoringOrganization> type() { return SponsoringOrganization.class; }
 	}
+	
+	@PermissionForRight(Right.SponsoringOrganizationAdd)
+	public static class SponsoringOrganizationAdd extends SponsoringOrganizationEdit {}
 }
