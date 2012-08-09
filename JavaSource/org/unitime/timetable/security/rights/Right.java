@@ -42,6 +42,7 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 
@@ -295,7 +296,11 @@ public enum Right {
     InstructionalTypeAdd,
     InstructionalTypeEdit(ItypeDesc.class),
     InstructionalTypeDelete(ItypeDesc.class),
-    
+    SponsoringOrganizations,
+    SponsoringOrganizationAdd,
+    SponsoringOrganizationEdit(SponsoringOrganization.class),
+    SponsoringOrganizationDelete(SponsoringOrganization.class),
+
     Registration,
     ExtendedTimePatterns,
     ExtendedDatePatterns,
@@ -304,7 +309,7 @@ public enum Right {
     Inquiry,
     SettingsUser,
     SettingsAdmin,
-
+    RoomTypes,
     ;
 	
 	private Class<?> iType;

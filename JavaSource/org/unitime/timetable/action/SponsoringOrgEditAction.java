@@ -29,16 +29,21 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.form.SponsoringOrgEditForm;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Zuzana Mullerova
  */
 @Service("/sponsoringOrgEdit")
 public class SponsoringOrgEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(
 			ActionMapping mapping,
@@ -49,11 +54,16 @@ public class SponsoringOrgEditAction extends Action {
 		SponsoringOrgEditForm myForm = (SponsoringOrgEditForm) form;
 		String op = myForm.getOp();
 		
+		sessionContext.checkPermission(Right.SponsoringOrganizations);
+		
 		if ("Back".equals(op)) {
 			return mapping.findForward("list");
 		}
 
 		if ("Save".equals(op)) {
+			
+			sessionContext.checkPermission(Right.SponsoringOrganizationAdd);
+			
 			ActionMessages errors = myForm.validate(mapping, request);
 			if (!errors.isEmpty()) saveErrors(request, errors);
 			else {
@@ -86,6 +96,9 @@ public class SponsoringOrgEditAction extends Action {
 			}
 		
 		if ("Update".equals(op)) {
+			
+			sessionContext.checkPermission(myForm.getId(), "SponsoringOrganization", Right.SponsoringOrganizationEdit);
+			
 			ActionMessages errors = myForm.validate(mapping, request);
 			if (!errors.isEmpty()) saveErrors(request, errors);
 			else {
@@ -120,6 +133,9 @@ public class SponsoringOrgEditAction extends Action {
 		}
 
 		if ("Delete".equals(op)) {
+			
+			sessionContext.checkPermission(myForm.getId(), "SponsoringOrganization", Right.SponsoringOrganizationDelete);
+			
 			Transaction tx = null;
             try {
     			Session hibSession = new _RootDAO().getSession();
