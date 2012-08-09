@@ -27,7 +27,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.ItypeDesc;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
 
 /** 
@@ -44,7 +43,6 @@ public class ItypeDescEditForm extends ActionForm {
     private String iName = null;
     private String iAbbreviation = null;
     private int iType = 1;
-    private boolean iCanDelete = false;
     private boolean iOrganized = false;
     private Integer iParent = null;
 
@@ -81,7 +79,7 @@ public class ItypeDescEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
         iId = null; iOp = null; iUniqueId = -1;
         iAbbreviation = null; iReference = null; iName = null;
-        iType = 1; iCanDelete = false; iOrganized = false;
+        iType = 1; iOrganized = false;
 	}
 	
 	public String getOp() { return iOp; }
@@ -104,8 +102,6 @@ public class ItypeDescEditForm extends ActionForm {
     public int getBasicType() { return iType; }
     public void setBasicType(int type) { iType = type; }
     public String[] getTypes() { return ItypeDesc.sBasicTypes; }
-    public boolean getCanDelete() { return iCanDelete; }
-    public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
     public boolean getOrganized() { return iOrganized; }
     public void setOrganized(boolean organized) { iOrganized = organized; }
     public Integer getParent() { return iParent; }
@@ -119,22 +115,11 @@ public class ItypeDescEditForm extends ActionForm {
         setName(itype.getDesc());
         setReference(itype.getSis_ref());
         setBasicType(itype.getBasic());
-        int nrUsed = ((Number)
-            new ItypeDescDAO().getSession().
-            createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype").
-            setInteger("itype", itype.getItype()).
-            uniqueResult()).intValue();
-        int nrChildren = ((Number)
-                new ItypeDescDAO().getSession().
-                createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype").
-                setInteger("itype", itype.getItype()).
-                uniqueResult()).intValue();
-        setCanDelete(nrUsed <= 0 && nrChildren <= 0);
         setParent(itype.getParent()==null?null:itype.getParent().getItype());
         setOrganized(itype.isOrganized());
     }
     
-    public void saveOrUpdate(org.hibernate.Session hibSession, Session session) throws Exception {
+    public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         ItypeDesc itype = null;
         if (getUniqueId()!=null) itype = new ItypeDescDAO().get(getUniqueId());
         if (itype==null) itype = new ItypeDesc();

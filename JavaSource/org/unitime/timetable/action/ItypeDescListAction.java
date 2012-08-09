@@ -24,16 +24,17 @@ import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -47,6 +48,8 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/itypeDescList")
 public class ItypeDescListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	// --------------------------------------------------------- Instance Variables
 
@@ -69,10 +72,7 @@ public class ItypeDescListAction extends Action {
 	       String errM = "";
 	        
 	        // Check if user is logged in
-		    HttpSession webSession = request.getSession();
-	        if(!Web.isLoggedIn( webSession )) {
-	            throw new Exception ("Access Denied.");
-	        }
+	       sessionContext.checkPermission(Right.InstructionalTypes);
 
 			// Create new table
 		    PdfWebTable webTable = new PdfWebTable( 6,
@@ -82,7 +82,7 @@ public class ItypeDescListAction extends Action {
 		    	    new String[] {"left", "left","left","left", "left", "left", "center"},
 		    	    new boolean[] {true, true, true, true, false, true, true} );
 		    
-	        PdfWebTable.setOrder(request.getSession(),"itypeDescList.ord",request.getParameter("ord"),1);
+	        PdfWebTable.setOrder(sessionContext,"itypeDescList.ord",request.getParameter("ord"),1);
 
 	        for (Iterator i=ItypeDesc.findAll(false).iterator();i.hasNext();) {
 	            ItypeDesc itypeDesc = (ItypeDesc)i.next();
@@ -108,11 +108,11 @@ public class ItypeDescListAction extends Action {
 	        
 	        if ("Export PDF".equals(request.getParameter("op"))) {
 	            File file = ApplicationProperties.getTempFile("itypes", "pdf");
-	            webTable.exportPdf(file, PdfWebTable.getOrder(request.getSession(),"itypeDescList.ord"));
+	            webTable.exportPdf(file, PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"));
 	            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
 	        }
 
-	        String tblData = webTable.printTable(PdfWebTable.getOrder(request.getSession(),"itypeDescList.ord"));
+	        String tblData = webTable.printTable(PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"));
 	        request.setAttribute("itypeDescList", errM + tblData);
 	        return mapping.findForward("success");
 
