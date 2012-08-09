@@ -87,7 +87,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				case Course:
 					event = new CourseEvent(); break;
 				default:
-					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(request.getEvent().getType().getName()));
+					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(request.getEvent().getType().getName(CONSTANTS)));
 				}
 			}
 			

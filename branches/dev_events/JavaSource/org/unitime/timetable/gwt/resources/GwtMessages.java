@@ -868,4 +868,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Press ENTER or double click a standard note to add it to additional information.")
 	String hintStandardNoteDoubleClickToSelect();
+	
+	@DefaultMessage("{2}, {0} {1}")
+	String formatName(String first, String middle, String last);
 }

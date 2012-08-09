@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -65,39 +66,41 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private String iMessage = null;
 	
 	public static enum ResourceType implements IsSerializable {
-		ROOM("room", "Room Timetable", true),
-		SUBJECT("subject", "Subject Timetable", true),
-		CURRICULUM("curriculum", "Curriculum Timetable", true),
-		DEPARTMENT("department", "Departmental Timetable", true),
-		PERSON("person", "Personal Timetable", true),
-		COURSE("course", "Course Timetable", false);
+		ROOM("room", true),
+		SUBJECT("subject", true),
+		CURRICULUM("curriculum", true),
+		DEPARTMENT("department", true),
+		PERSON("person", true),
+		COURSE("course", false);
 		
 		private String iLabel;
-		private String iPageTitle;
 		private boolean iVisible;
 		
-		ResourceType(String label, String title, boolean visible) { iLabel = label; iPageTitle = title; iVisible = visible; }
+		ResourceType(String label, boolean visible) { iLabel = label; iVisible = visible; }
 		
 		public String getLabel() { return iLabel; }
-		public String getPageTitle() { return iPageTitle; }
+		public String getPageTitle(GwtConstants constants) {
+			return constants.resourceType()[ordinal()];
+		}
+		public String getName(GwtConstants constants) {
+			return constants.resourceName()[ordinal()];
+		}
 		public boolean isVisible() { return iVisible; }
 	}
 	
 	public static enum EventType implements IsSerializable {
-		Class("Class", "Class Event"),
-		FinalExam("Final Exam", "Final Examination Event"),
-		MidtermExam("Midterm Exam", "Midterm Examination Event"),
-		Course("Course", "Course Related Event"),
-		Special("Special", "Special Event"),
-		Unavailabile("Not Available", "Not Available");
+		Class,
+		FinalExam,
+		MidtermExam,
+		Course,
+		Special,
+		Unavailabile,
+		;
 		
-		private String iAbbreviation, iName;
-		EventType(String abbv, String name) { iAbbreviation = abbv; iName = name; }
-		
-		public String getAbbreviation() { return iAbbreviation; }
-		public String getName() { return iName; }
+		public String getAbbreviation(GwtConstants constants) { return constants.eventTypeAbbv()[ordinal()]; }
+		public String getName(GwtConstants constants) { return constants.eventTypeName()[ordinal()]; }
 		public int getType() { return ordinal(); }
-		public String toString() { return getAbbreviation(); }
+		public String toString() { return name(); }
 	}
 
 	public EventInterface() {}
@@ -143,11 +146,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
 		iInstructors.add(instructor);
 	}
-	public String getInstructorNames(String separator) { 
+	public String getInstructorNames(String separator, GwtMessages messages) { 
 		if (!hasInstructors()) return "";
 		String ret = "";
 		for (ContactInterface instructor: getInstructors()) {
-			ret += (ret.isEmpty() ? "" : separator) + instructor.getName();
+			ret += (ret.isEmpty() ? "" : separator) + instructor.getName(messages);
 		}
 		return ret;
 	}
@@ -170,11 +173,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (iAdditionalContacts == null) iAdditionalContacts = new ArrayList<ContactInterface>();
 		iAdditionalContacts.add(contact);
 	}
-	public String getAdditionalContactNames(String separator) { 
+	public String getAdditionalContactNames(String separator, GwtMessages messages) { 
 		if (!hasAdditionalContacts()) return "";
 		String ret = "";
 		for (ContactInterface contact: getAdditionalContacts()) {
-			ret += (ret.isEmpty() ? "" : separator) + contact.getName();
+			ret += (ret.isEmpty() ? "" : separator) + contact.getName(messages);
 		}
 		return ret;
 	}
@@ -266,7 +269,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		return getId().compareTo(event.getId());
 	}
 	public String toString() {
-		return getType().getAbbreviation() + ": " + getName();
+		return getType() + ": " + getName();
 	}
 	
 	public boolean inConflict(MeetingInterface meeting) {
@@ -420,17 +423,45 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
+	public static class DateInterface implements IsSerializable {
+		String iLabel;
+		int iMonth, iDay;
+		
+		public DateInterface() {}
+		public DateInterface(String label, int month, int day) { iLabel = label; iMonth = month; iDay = day; }
+		
+		public int getMonth() { return iMonth; }
+		public void setMonth(int month) { iMonth = month; }
+		
+		public int getDay() { return iDay; }
+		public void setDay(int day) { iDay = day; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		public String toString() { return getLabel(); }
+		public boolean equals(Object o) {
+			if (o == null) return false;
+			if (o instanceof String) return getLabel().equals((String)o);
+			if (o instanceof DateInterface) {
+				DateInterface d = (DateInterface)o;
+				return getMonth() == d.getMonth() && getDay() == d.getDay();
+			}
+			return false;
+		}
+	}
+	
 	public static class WeekInterface implements IsSerializable {
 		private int iDayOfYear;
-		private List<String> iDayNames = new ArrayList<String>();
+		private List<DateInterface> iDayNames = new ArrayList<DateInterface>();
 		
 		public WeekInterface() {}
 		
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
 		
-		public void addDayName(String name) { iDayNames.add(name); }
-		public List<String> getDayNames() { return iDayNames; }
+		public void addDayName(DateInterface name) { iDayNames.add(name); }
+		public List<DateInterface> getDayNames() { return iDayNames; }
 		
 		public String getName() { return getDayNames().get(0) + " - " + getDayNames().get(getDayNames().size() - 1); }
 		
@@ -479,7 +510,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			int h = min / 60;
 	        int m = min % 60;
 	        if (constants != null && min == 0)
-	        	return constants.timeMidnitgh();
+	        	return constants.timeMidnight();
 	        if (constants != null && min == 720)
 	        	return constants.timeNoon();
 	        if (constants == null || constants.useAmPm()) {
@@ -493,9 +524,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			int h = min / 60;
 	        int m = min % 60;
 	        if (constants != null && min == 720)
-	        	return constants.timeMidnitgh();
-	        if (constants != null && min == 1440)
 	        	return constants.timeNoon();
+	        if (constants != null && min == 1440)
+	        	return constants.timeMidnight();
 	        if (constants == null || constants.useAmPm()) {
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
 			} else {
@@ -808,9 +839,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public boolean hasPhone() { return iPhone != null && !iPhone.isEmpty(); }
     	public String getPhone() { return iPhone; }
     	
-    	public String getName() {
-    		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
-    				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : ""); 
+    	public String getName(GwtMessages messages) {
+    		if (messages == null) return toString();
+    		return messages.formatName(
+    				hasFirstName() ? getFirstName() : "",
+    				hasMiddleName() ? getMiddleName() : "",
+    				hasLastName() ? getLastName() : "");
     	}
     	
     	public String getShortName() {
@@ -828,10 +862,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		if (o == null || !(o instanceof ContactInterface)) return false;
     		if (getExternalId() != null)
     			return getExternalId().equals(((ContactInterface)o).getExternalId());
-    		return getName().equals(((ContactInterface)o).getName());
+    		return toString().equals(((ContactInterface)o).toString());
     	}
     	
-    	public String toString() { return getName(); }
+    	public String toString() { 
+    		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
+    				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : "");
+    	}
     }
     
     public static class SponsoringOrganizationInterface implements IsSerializable {
@@ -984,11 +1021,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
 			iInstructors.add(instructor);
 		}
-		public String getInstructorNames(String separator) { 
+		public String getInstructorNames(String separator, GwtMessages messages) { 
 			if (!hasInstructors()) return "";
 			String ret = "";
 			for (ContactInterface instructor: getInstructors()) {
-				ret += (ret.isEmpty() ? "" : separator) + instructor.getName();
+				ret += (ret.isEmpty() ? "" : separator) + instructor.getName(messages);
 			}
 			return ret;
 		}

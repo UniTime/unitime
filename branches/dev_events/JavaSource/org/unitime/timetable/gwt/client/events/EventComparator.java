@@ -50,13 +50,13 @@ public class EventComparator {
 	}
 	
 	protected static int compareBySponsor(EventInterface e1, EventInterface e2) {
-		int cmp = compare(e1.getInstructorNames("|"), e2.getInstructorNames("|"));
+		int cmp = compare(e1.getInstructorNames("|", null), e2.getInstructorNames("|", null));
 		if (cmp != 0) return cmp;
 		return compare(e1.hasSponsor() ? e1.getSponsor().getName() : null, e2.hasSponsor() ? e2.getSponsor().getName() : null);
 	}
 	
 	protected static int compareByMainContact(EventInterface e1, EventInterface e2) {
-		return compare(e1.hasContact() ? e1.getContact().getName() : null, e2.hasContact() ? e2.getContact().getName() : null);
+		return compare(e1.hasContact() ? e1.getContact().toString() : null, e2.hasContact() ? e2.getContact().toString() : null);
 	}
 	
 	protected static int compareByLimit(EventInterface e1, EventInterface e2) {

@@ -82,6 +82,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -235,11 +236,16 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			protected void onInitializationSuccess(List<AcademicSession> sessions) {
 				iFilter.setVisible(sessions != null && !sessions.isEmpty());
-				try {
-					((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
-				} catch (Exception e) {
-					UniTimeNotifications.error(MESSAGES.failedToHideSessionInfo(e.getMessage()));
-				}
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						try {
+							((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
+						} catch (Exception e) {
+							UniTimeNotifications.error(MESSAGES.failedToHideSessionInfo(e.getMessage()));
+						}
+					}
+				});
 			}
 			
 			@Override
@@ -260,7 +266,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iResourceTypes = new ListBox();
 		for (ResourceType resource: ResourceType.values()) {
 			if (resource.isVisible())
-				iResourceTypes.addItem(resource.getPageTitle(), resource.toString());
+				iResourceTypes.addItem(resource.getPageTitle(CONSTANTS), resource.toString());
 		}
 		
 		iResourceTypes.addChangeHandler(new ChangeHandler() {
@@ -1019,7 +1025,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		} else {
 			iFilter.getRowFormatter().setVisible(iResourcesRow, type != ResourceType.PERSON);
-			((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getLabel().substring(0,1).toUpperCase() + type.getLabel().substring(1) + ":");
+			((Label)iFilter.getWidget(iResourcesRow, 0)).setText(type.getName(CONSTANTS) + ":");
 			iFilterHeader.setEnabled("lookup", iProperties != null && iProperties.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 			if (getResourceName() != null || (type == ResourceType.PERSON && loadData)) {
 				if (iSession.getAcademicSessionId() == null) {
@@ -1038,7 +1044,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						public void onSuccess(GwtRpcResponseList<ResourceInterface> result) {
 							resourceChanged(result.get(0));
 						}
-					}, "Loading " + type.getLabel() + (type != ResourceType.PERSON ? " " + getResourceName() : "") + " ...");
+					}, MESSAGES.waitLoading(type.getName(CONSTANTS) + (type != ResourceType.PERSON ? " " + getResourceName() : "")));
 				}
 			}				
 		}
@@ -1645,7 +1651,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		String pageName = iHistoryToken.getParameter("title", "Events");
 		ResourceType resource = getResourceType();
 		if (!"true".equals(iHistoryToken.getParameter("fixedTitle")) && resource != null)
-			pageName = resource.getPageTitle();
+			pageName = resource.getPageTitle(CONSTANTS);
 		return pageName;
 	}
 

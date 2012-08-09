@@ -258,18 +258,18 @@ public class EventDetail extends Composite {
 		iForm.clear();
 
 		iHeader.clearMessage();
-		iHeader.setHeaderTitle(iEvent.getName() + " (" + iEvent.getType().getName() + ")");
+		iHeader.setHeaderTitle(iEvent.getName() + " (" + iEvent.getType().getName(CONSTANTS) + ")");
 		iHeader.setEnabled("edit", iEvent.isCanEdit());
 		iHeader.setEnabled("previous", getPrevious(iEvent.getId()) != null);
 		iHeader.setEnabled("next", getNext(iEvent.getId()) != null);
 		iForm.addHeaderRow(iHeader);
 		
-		iForm.addRow(MESSAGES.propEventType(), new Label(iEvent.getType().getName()));
+		iForm.addRow(MESSAGES.propEventType(), new Label(iEvent.getType().getName(CONSTANTS)));
 		
 		iContacts.clearTable(1);
 		if (iEvent.hasContact()) {
 			List<Label> row = new ArrayList<Label>();
-			row.add(new Label(iEvent.getContact().getName(), false));
+			row.add(new Label(iEvent.getContact().getName(MESSAGES), false));
 			row.add(new Label(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "", false));
 			row.add(new Label(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "", false));
 			int rowNum = iContacts.addRow(iEvent.getContact(), row);
@@ -279,7 +279,7 @@ public class EventDetail extends Composite {
 		if (iEvent.hasAdditionalContacts()) {
 			for (ContactInterface contact: iEvent.getAdditionalContacts()) {
 				List<Label> row = new ArrayList<Label>();
-				row.add(new Label(contact.getName(), false));
+				row.add(new Label(contact.getName(MESSAGES), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
 				int rowNum = iContacts.addRow(contact, row);
@@ -426,7 +426,7 @@ public class EventDetail extends Composite {
 				row.add(new HTML(location, false));
 
 				if (obj.hasInstructors()) {
-					row.add(new HTML(obj.getInstructorNames("<br>"), false));
+					row.add(new HTML(obj.getInstructorNames("<br>", MESSAGES), false));
 				} else {
 					row.add(new HTML());
 				}

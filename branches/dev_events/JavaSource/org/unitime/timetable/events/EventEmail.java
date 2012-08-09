@@ -81,11 +81,11 @@ public class EventEmail {
 			
 			Email email = new Email();
 			if (event().hasContact() && event().getContact().getEmail() != null)
-				email.addRecipient(event().getContact().getEmail(), event().getContact().getName());
+				email.addRecipient(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			if (event().hasAdditionalContacts()) {
 				for (ContactInterface contact: event().getAdditionalContacts()) {
 					if (contact.getEmail() != null)
-						email.addRecipient(contact.getEmail(), contact.getName());
+						email.addRecipient(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
 			if (event().hasSponsor() && event().getSponsor().hasEmail())
@@ -97,7 +97,7 @@ public class EventEmail {
 				}
 			}
 			
-			email.setSubject(event().getName() + " (" + event().getType().getName() + ")");
+			email.setSubject(event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
 			
 			if (helper.getUser() != null) {
 				TimetableManager manager = (TimetableManager)TimetableManagerDAO.getInstance().getSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", helper.getUser().getId()).uniqueResult();
@@ -166,7 +166,7 @@ public class EventEmail {
 					sMessageId.put(eventId, messageId);
 			}
 			
-			response().info(MESSAGES.infoConfirmationEmailSent(event().hasContact() ? event().getContact().getName() : "?"));
+			response().info(MESSAGES.infoConfirmationEmailSent(event().hasContact() ? event().getContact().getName(MESSAGES) : "?"));
 		} catch (Exception e) {
 			response().error(MESSAGES.failedToSendConfirmationEmail(e.getMessage()));
 			e.printStackTrace();
@@ -297,7 +297,7 @@ public class EventEmail {
 	
 	private void generateEventDetails(PrintWriter out) {
 		out.println("<table>");
-		out.println("	<tr><td>" + MESSAGES.propEventType() + "</td><td>" + event().getType().getName() + "</td></tr>");
+		out.println("	<tr><td>" + MESSAGES.propEventType() + "</td><td>" + event().getType().getName(CONSTANTS) + "</td></tr>");
 		out.println("	<tr><td>" + MESSAGES.propContacts() + "</td><td>");
 		generateContacts(out);
 		out.println("	</td></tr>");
@@ -326,11 +326,11 @@ public class EventEmail {
 		out.println("</tr>");
 		if (event().hasContact()) {
 			ContactInterface contact = event().getContact();
-			out.println("<tr><td>" + contact.getName() + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
+			out.println("<tr><td>" + contact.getName(MESSAGES) + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
 		}
 		if (event().hasAdditionalContacts()) {
 			for (ContactInterface contact: event().getAdditionalContacts())
-				out.println("<tr><td>" + contact.getName() + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
+				out.println("<tr><td>" + contact.getName(MESSAGES) + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
 		}
 		out.println("</table>");
 	}

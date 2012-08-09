@@ -595,7 +595,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				}
 				row.add(new MultiLineCell(name));
 				row.add(new MultiLineNumberCell(section));
-				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation() : event.getInstruction(), false));
+				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
 				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
@@ -608,7 +608,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			} else {
 				row.add(new HTML(event.getName()));
 				row.add(new HTML("&nbsp;"));
-				row.add(new Label(event.getType().getAbbreviation(), false));
+				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
 				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
@@ -619,7 +619,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		} else if (conflict != null) {
 			row.add(new HTML(conflict.getName()));
 			row.add(new HTML("&nbsp;"));
-			row.add(new HTML(conflict.getType().getAbbreviation(), false));
+			row.add(new HTML(conflict.getType().getAbbreviation(CONSTANTS), false));
 			row.add(new HTML("&nbsp;"));
 			row.add(new HTML("&nbsp;"));
 		} else {
@@ -636,22 +636,22 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new HTML(conflict.getType() == EventType.Unavailabile ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
-				row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate())));
+				row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate()), false));
 			}
-			row.add(new Label(meeting.getMeetingTime(CONSTANTS)));
-			row.add(new Label(meeting.getAllocatedTime(CONSTANTS)));
+			row.add(new Label(meeting.getMeetingTime(CONSTANTS), false));
+			row.add(new Label(meeting.getAllocatedTime(CONSTANTS), false));
 			row.add(new NumberCell(meeting.getStartOffset()));
 			row.add(new NumberCell(- meeting.getEndOffset()));
 			if (meeting.getLocation() == null) {
 				if (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().getLocation() != null) {
-					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint()));
+					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint(), false));
 					row.add(new NumberCell(data.getParent().getMeeting().getLocation().getSize() == null ? MESSAGES.notApplicable() : data.getParent().getMeeting().getLocation().getSize().toString()));
 				} else {
 					row.add(new Label(""));
 					row.add(new Label(""));
 				}
 			} else {
-				row.add(new HTML(meeting.getLocationNameWithHint()));
+				row.add(new HTML(meeting.getLocationNameWithHint(), false));
 				row.add(new NumberCell(meeting.getLocation().getSize() == null ? MESSAGES.notApplicable() : meeting.getLocation().getSize().toString()));
 			}
 			if (meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast()))
@@ -702,7 +702,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		if (event != null && event.hasInstructors()) {
-			row.add(new HTML(event.getInstructorNames("<br>"), false));
+			row.add(new HTML(event.getInstructorNames("<br>", MESSAGES), false));
 		} else if (event != null && event.hasSponsor()) {
 			row.add(new Label(event.getSponsor().getName()));
 		} else {
@@ -710,7 +710,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		if (event != null && iShowMainContact) {
-			row.add(new HTML(event.hasContact() ? event.getContact().getName() : "&nbsp;"));
+			row.add(new HTML(event.hasContact() ? event.getContact().getName(MESSAGES) : "&nbsp;"));
 			if (isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().isShowOptionalColumns()) {
 				switch (event.getType()) {
 				case Course:

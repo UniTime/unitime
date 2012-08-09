@@ -32,6 +32,9 @@ public interface GwtConstants extends Constants {
 	@DefaultBooleanValue(true)
 	boolean useAmPm();
 
+	@DefaultBooleanValue(false)
+	boolean firstDayThenMonth();
+
 	@DefaultStringArrayValue({"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"})
 	String[] days();
 
@@ -47,7 +50,7 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("EEE MM/dd, yyyy")
 	String meetingDateFormat();
 	
-	@DefaultStringValue("MM/dd hh:mmaa")
+	@DefaultStringValue("MM/dd/yyyy hh:mmaa")
 	String timeStampFormat();
 	
 	@DefaultIntValue(3)
@@ -72,7 +75,7 @@ public interface GwtConstants extends Constants {
 	String[] shortDays();
 	
 	@DefaultStringValue("midnight")
-	String timeMidnitgh();
+	String timeMidnight();
 
 	@DefaultStringValue("noon")
 	String timeNoon();
@@ -92,4 +95,25 @@ public interface GwtConstants extends Constants {
 		"lightgreen", "yellowgreen", "redorange", "lightbrown", "lightpurple",
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown", "red"})
 	String[] meetingColors();
+	
+	@DefaultStringArrayValue({
+		"Room Timetable", "Subject Timetable", "Curriculum Timetable", "Departmental Timetable", "Personal Timetable", "Course Timetable"
+	})
+	String[] resourceType();
+
+	@DefaultStringArrayValue({
+		"Room", "Subject", "Curriculum", "Department", "Person", "Course"
+	})
+	String[] resourceName();
+	
+	@DefaultStringArrayValue({
+		"Class Event", "Final Examination Event", "Midterm Examination Event", "Course Related Event", "Special Event", "Not Available"
+	})
+	String[] eventTypeName();
+	
+	@DefaultStringArrayValue({
+		"Class", "Final Examination", "Midterm Examination", "Course", "Special", "Not Available"
+	})
+	String[] eventTypeAbbv();
+
 }

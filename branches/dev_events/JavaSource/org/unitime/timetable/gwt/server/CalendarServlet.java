@@ -48,11 +48,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.unitime.commons.User;
 import org.unitime.commons.web.Web;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.events.SimpleEventRights;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
@@ -97,6 +99,7 @@ import net.sf.cpsolver.studentsct.model.Section;
  */
 public class CalendarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
+	private static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		Params params = null;
@@ -410,7 +413,7 @@ public class CalendarServlet extends HttpServlet {
             if (event.hasInstructors()) {
             	int idx = 0;
             	for (ContactInterface instructor: event.getInstructors()) {
-            		out.println((idx++ == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor.getName() + "\":MAILTO:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
+            		out.println((idx++ == 0 ? "ORGANIZER" : "ATTENDEE") + ";ROLE=CHAIR;CN=\"" + instructor.getName(MESSAGES) + "\":MAILTO:" + (instructor.hasEmail() ? instructor.getEmail() : ""));
             	}
             } else if (event.hasSponsor()) {
             	out.println("ORGANIZER;ROLE=CHAIR;CN=\"" + event.getSponsor().getName() + "\":MAILTO:" + (event.getSponsor().hasEmail() ? event.getSponsor().getEmail() : ""));

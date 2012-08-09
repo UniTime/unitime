@@ -107,7 +107,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 			out.printLine(
 					getName(event),
 					getSection(event),
-					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
+					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
 					event.hasNotes() ? event.getNotes().first().getNote() : "",
 					meeting.isArrangeHours() ? "" : df.format(meeting.getMeetingDate()),
@@ -121,9 +121,9 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
-					event.hasInstructors() ? event.getInstructorNames("\n") : event.hasSponsor() ? event.getSponsor().getName() : null,
+					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
-					event.hasContact() ? event.getContact().getName() : null,
+					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
 					meeting.isArrangeHours() ? "" : meeting.isApproved() ? df.format(meeting.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);

@@ -2,7 +2,6 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;

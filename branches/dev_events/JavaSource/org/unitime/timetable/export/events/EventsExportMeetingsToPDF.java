@@ -103,7 +103,7 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 			out.printLine(
 					getName(event),
 					getSection(event),
-					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(),
+					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
 					event.hasNotes() ? event.getNotes().first().getNote() : "",
 					meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : dfMeeting.format(meeting.getMeetingDate()),
@@ -115,8 +115,8 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 					meeting.hasLocation() && meeting.getLocation().hasSize() ? meeting.getLocation().getSize().toString() : null,
 					event.hasEnrollment() ? event.getEnrollment().toString() : null,
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
-					event.hasInstructors() ? event.getInstructorNames("\n") : event.hasSponsor() ? event.getSponsor().getName() : null,
-					event.hasContact() ? event.getContact().getName() : null,
+					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,
+					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					meeting.isArrangeHours() ? "" : meeting.isApproved() ? df.format(meeting.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);
 		}
