@@ -32,16 +32,15 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.RoomTypeEditForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -49,16 +48,15 @@ import org.unitime.timetable.model.dao.RoomTypeDAO;
  */
 @Service("/roomTypeEdit")
 public class RoomTypeEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		try {
 		RoomTypeEditForm myForm = (RoomTypeEditForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.RoomTypes);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -70,9 +68,6 @@ public class RoomTypeEditAction extends Action {
             myForm.reset(mapping, request);
         }
         
-    	User user = Web.getUser(request.getSession());
-    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
-
         // Reset Form
         if ("Back".equals(op)) {
             myForm.reset(mapping, request);
@@ -200,7 +195,7 @@ public class RoomTypeEditAction extends Action {
 
         if ("List".equals(myForm.getOp())) {
             // Read all existing settings and store in request
-            getRoomTypeList(request, sessionId);
+            getRoomTypeList(request);
             return mapping.findForward("list");
         }
         
@@ -211,8 +206,8 @@ public class RoomTypeEditAction extends Action {
 		}
 	}
 	
-    private void getRoomTypeList(HttpServletRequest request, Long sessionId) throws Exception {
-		WebTable.setOrder(request.getSession(),"roomTypes.ord",request.getParameter("ord"),2);
+    private void getRoomTypeList(HttpServletRequest request) throws Exception {
+		WebTable.setOrder(sessionContext,"roomTypes.ord",request.getParameter("ord"),2);
 		// Create web table instance 
         WebTable webTable = new WebTable( 5,
 			    null, "roomTypeEdit.do?ord=%%",
@@ -257,7 +252,7 @@ public class RoomTypeEditAction extends Action {
         }
         
         request.setAttribute("RoomType.last", new Integer(types.size()-1));
-	    request.setAttribute("RoomType.table", webTable.printTable(WebTable.getOrder(request.getSession(),"roomTypes.ord")));
+	    request.setAttribute("RoomType.table", webTable.printTable(WebTable.getOrder(sessionContext,"roomTypes.ord")));
     }	
 }
 

@@ -23,6 +23,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 
@@ -54,8 +55,10 @@
 						<tt:section-title> Edit <bean:write name="sponsoringOrgEditForm" property="orgName"/></tt:section-title>
 						<html:submit property="op" styleClass="btn" accesskey="U" 
 							title="Update (Alt+U)" value="Update"/>
-						<html:submit property="op" styleClass="btn" accesskey="D" 
-							title="Delete (Alt+D)" value="Delete"/>
+						<sec:authorize access="hasPermission(#sponsoringOrgEditForm.id, 'SponsoringOrganization', 'SponsoringOrganizationDelete')">
+							<html:submit property="op" styleClass="btn" accesskey="D" 
+								title="Delete (Alt+D)" value="Delete"/>
+						</sec:authorize>
 						<html:submit property="op" styleClass="btn" accesskey="B" 
 							title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
 						</tt:section-header>
@@ -92,8 +95,10 @@
 				<logic:notEqual name="sponsoringOrgEditForm" property="screen" value="add">		
 					<html:submit property="op" styleClass="btn" accesskey="U" 
 						title="Update (Alt+U)" value="Update"/>
-					<html:submit property="op" styleClass="btn" accesskey="D" 
-						title="Delete (Alt+D)" value="Delete"/>
+					<sec:authorize access="hasPermission(#sponsoringOrgEditForm.id, 'SponsoringOrganization', 'SponsoringOrganizationDelete')">
+						<html:submit property="op" styleClass="btn" accesskey="D" 
+							title="Delete (Alt+D)" value="Delete"/>
+					</sec:authorize>
 					<html:submit property="op" styleClass="btn" accesskey="B" 
 						title="Back to Sponsoring Organizations (Alt+B)" value="Back"/>
 				</logic:notEqual>
