@@ -20,6 +20,8 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='7'>
@@ -27,11 +29,13 @@
 				<tt:section-title>Instructional Types</tt:section-title>
 				<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 					<TR><TD nowrap>
-						<html:form action="itypeDescEdit" styleClass="FormWithNoPadding">
-							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="I" titleKey="title.addIType">
-								<bean:message key="button.addIType" />
-							</html:submit>
-						</html:form>
+						<sec:authorize access="hasPermission(null, null, 'InstructionalTypeAdd')">
+							<html:form action="itypeDescEdit" styleClass="FormWithNoPadding">
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="I" titleKey="title.addIType">
+									<bean:message key="button.addIType" />
+								</html:submit>
+							</html:form>
+						</sec:authorize>
 					</TD><TD nowrap>
 						<input type='button' onclick="document.location='itypeDescList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 					</TD></TR>
@@ -39,7 +43,7 @@
 			</tt:section-header>
 		</TD>
 	</TR>
-	<%=request.getAttribute("itypeDescList")%>
+	<bean:write name="itypeDescList" scope="request" filter="false"/>
 	<TR>
 		<TD colspan='7'>
 			<tt:section-title/>
@@ -49,11 +53,13 @@
 		<TD colspan='7' align="right">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 				<TR><TD nowrap>
-					<html:form action="itypeDescEdit" styleClass="FormWithNoPadding">
-						<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="I" titleKey="title.addIType">
-							<bean:message key="button.addIType" />
-						</html:submit>
-					</html:form>
+					<sec:authorize access="hasPermission(null, null, 'InstructionalTypeAdd')">
+						<html:form action="itypeDescEdit" styleClass="FormWithNoPadding">
+							<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="I" titleKey="title.addIType">
+								<bean:message key="button.addIType" />
+							</html:submit>
+						</html:form>
+					</sec:authorize>
 				</TD><TD nowrap>
 					<input type='button' onclick="document.location='itypeDescList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 				</TD></TR>

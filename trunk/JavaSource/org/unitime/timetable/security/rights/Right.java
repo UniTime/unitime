@@ -32,6 +32,7 @@ import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
@@ -290,6 +291,10 @@ public enum Right {
     SubjectAreaChangeDepartment(SubjectArea.class),
     TimePatterns(Session.class),
     LastChanges(Session.class),
+    InstructionalTypes,
+    InstructionalTypeAdd,
+    InstructionalTypeEdit(ItypeDesc.class),
+    InstructionalTypeDelete(ItypeDesc.class),
     
     Registration,
     ExtendedTimePatterns,
