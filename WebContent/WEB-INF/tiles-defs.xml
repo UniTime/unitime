@@ -349,11 +349,6 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
-  	<definition	name="preferenceLevelListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Preference Levels"/>
-		<put name="body" value="/admin/prefsLevelList.jsp" />
-  	</definition>
-  	
   	<definition	name="itypeDescListTile" extends="pageLayoutDef">
 	<put name="title" type="string" value="Instructional Types"/>
 	<put name="body" value="/admin/itypeDescList.jsp" />
