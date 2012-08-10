@@ -310,6 +310,7 @@ public enum Right {
     SettingsUser,
     SettingsAdmin,
     RoomTypes,
+    Users,
     ;
 	
 	private Class<?> iType;

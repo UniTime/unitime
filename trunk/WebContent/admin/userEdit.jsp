@@ -17,8 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -27,22 +25,7 @@
 
 <tiles:importAttribute />
 
-<SCRIPT language="javascript">
-	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
-		
-		function confirmDelete() {
-			if (jsConfirm!=null && !jsConfirm)
-				return true;
-
-			if(confirm('The user will be deleted. Continue?')) {
-				return true;
-			}
-			return false;
-		}
-
-	// -->
-</SCRIPT>
+<tt:confirm name="confirmDelete">The user will be deleted. Continue?</tt:confirm>
 
 <html:form action="/userEdit">
 <logic:notEqual name="userEditForm" property="op" value="List">
