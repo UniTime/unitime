@@ -1070,7 +1070,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		if (now >= start) {
 			week = (int)((now - start) / (1000 * 60 * 60 * 24 * 7)) + 1;
 		} else {
-			week = -((int)(start - now) / (1000 * 60 * 60 * 24 * 7));
+			week = -(int)((start - now) / (1000 * 60 * 60 * 24 * 7));
 		}
 
 		if (section.getTime() == null)
@@ -1081,7 +1081,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		if (time >= start) {
 			offset = (int)((time - start) / (1000 * 60 * 60 * 24 * 7));
 		} else {
-			offset = -((int)(start - time) / (1000 * 60 * 60 * 24 * 7)) - 1;
+			offset = -(int)((start - time) / (1000 * 60 * 60 * 24 * 7)) - 1;
 		}
 		
 		return week <= deadline + offset;
