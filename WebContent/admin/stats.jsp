@@ -24,9 +24,12 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 
+<sec:authorize access="hasPermission(null, null, 'PageStatistics')">
+<tt:session-context/>
 <table width="100%" cellpadding="10" cellspacing="0">
 	<% for (QueryLog.ChartWindow ch: QueryLog.ChartWindow.values()) { %>
 		<tr><td colspan="<%=QueryLog.ChartType.values().length%>">
@@ -40,6 +43,10 @@
 	<% } %>
 </table>
 <table width="100%" cellpadding="2" cellspacing="0">
-	<% WebTable.setOrder(session,"pageStats.ord",request.getParameter("ord"), 1); %>
-	<%=QueryLog.getTopQueries(7).printTable(WebTable.getOrder(session, "pageStats.ord"))%>
+	<% WebTable.setOrder(sessionContext,"pageStats.ord",request.getParameter("ord"), 1); %>
+	<%=QueryLog.getTopQueries(7).printTable(WebTable.getOrder(sessionContext, "pageStats.ord"))%>
 </table>
+</sec:authorize>
+<sec:authorize access="!hasPermission(null, null, 'PageStatistics')">
+Access denied.
+</sec:authorize>
