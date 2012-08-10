@@ -34,14 +34,15 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.SolverParamGroupsForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -49,15 +50,14 @@ import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
  */
 @Service("/solverParamGroups")
 public class SolverParamGroupsAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
         SolverParamGroupsForm myForm = (SolverParamGroupsForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+        sessionContext.checkPermission(Right.SolverParameterGroups);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -212,7 +212,7 @@ public class SolverParamGroupsAction extends Action {
     private void getSolverParameterGroups(HttpServletRequest request) throws Exception {
 		Transaction tx = null;
 		
-		WebTable.setOrder(request.getSession(),"solverParamGroups.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"solverParamGroups.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
 			    null, "solverParamGroups.do?ord=%%",
@@ -258,7 +258,7 @@ public class SolverParamGroupsAction extends Action {
 	    	throw e;
 	    }
 
-	    request.setAttribute("SolverParameterGroup.table", webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamGroups.ord")));
+	    request.setAttribute("SolverParameterGroup.table", webTable.printTable(WebTable.getOrder(sessionContext,"solverParamGroups.ord")));
 	    request.setAttribute("SolverParameterGroup.last", new Integer(size-1));
     }	
 

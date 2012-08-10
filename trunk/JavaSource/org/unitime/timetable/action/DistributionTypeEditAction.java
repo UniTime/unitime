@@ -32,17 +32,16 @@ import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.DistributionTypeEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionType;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.DistributionTypeDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionErrors;
@@ -65,6 +64,9 @@ import org.apache.struts.util.LabelValueBean;
  */
 @Service("/distributionTypeEdit")
 public class DistributionTypeEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
@@ -85,22 +87,17 @@ public class DistributionTypeEditAction extends Action {
             HttpServletResponse response) throws Exception {
     	
     		DistributionTypeEditForm myForm = (DistributionTypeEditForm) form;
-		
-			// Check Access
-			if (!Web.isLoggedIn(request.getSession()) || !Web.hasRole(request.getSession(),Roles.getAdminRoles())) {
-				throw new Exception ("Access Denied.");
-			}
-			
-	    	User user = Web.getUser(request.getSession());
-	    	Long sessionId = Session.getCurrentAcadSession(user).getSessionId();
+    		
+    		sessionContext.checkPermission(Right.DistributionTypeEdit);
         
 			// Read operation to be performed
 			String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
+			Long sessionId = sessionContext.getUser().getCurrentAcademicSessionId();
+			
 			if (op==null) {
 				Long id =  new Long(Long.parseLong(request.getParameter("id")));
 				myForm.setRefTableEntry((new DistributionTypeDAO()).get(id), sessionId);
-				
 			}
 			
 	        if (request.getParameterValues("depts")!=null) {
@@ -154,7 +151,7 @@ public class DistributionTypeEditAction extends Action {
 	                hibSession.saveOrUpdate(distType);
 	                ChangeLog.addChange(
 	                        hibSession, 
-	                        request, 
+	                        sessionContext, 
 	                        distType, 
 	                        ChangeLog.Source.DIST_TYPE_EDIT, 
 	                        ChangeLog.Operation.UPDATE, 

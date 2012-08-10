@@ -311,6 +311,12 @@ public enum Right {
     SettingsAdmin,
     RoomTypes,
     Users,
+    SolutionInformationDefinitions,
+    SolverParameterGroups,
+    SolverParameters,
+    SolverConfigurations,
+    DistributionTypes,
+    DistributionTypeEdit(Session.class),
     ;
 	
 	private Class<?> iType;
