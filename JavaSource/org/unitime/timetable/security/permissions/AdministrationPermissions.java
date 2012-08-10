@@ -249,4 +249,7 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.SponsoringOrganizationAdd)
 	public static class SponsoringOrganizationAdd extends SponsoringOrganizationEdit {}
+	
+	@PermissionForRight(Right.DistributionTypeEdit)
+	public static class DistributionTypeEdit extends SimpleSessionPermission {}
 }
