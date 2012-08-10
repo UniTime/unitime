@@ -317,6 +317,9 @@ public enum Right {
     SolverConfigurations,
     DistributionTypes,
     DistributionTypeEdit(Session.class),
+    HibernateStatistics,
+    PageStatistics,
+    
     ;
 	
 	private Class<?> iType;

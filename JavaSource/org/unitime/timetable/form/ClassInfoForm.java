@@ -27,12 +27,11 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.Session;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.solver.course.ui.ClassInfoModel;
 
 /**
@@ -82,7 +81,7 @@ public class ClassInfoForm extends ActionForm {
         iRoomTypes = null;
         iRoomFeatures = null;
         iRoomGroups = null;
-        iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
+        iSessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
     }
     
     public void load(HttpSession session) {
