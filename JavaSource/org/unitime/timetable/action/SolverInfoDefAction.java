@@ -32,14 +32,15 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.SolverInfoDefForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverInfoDef;
 import org.unitime.timetable.model.dao.SolverInfoDefDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -47,14 +48,13 @@ import org.unitime.timetable.model.dao.SolverInfoDefDAO;
  */
 @Service("/solverInfoDef")
 public class SolverInfoDefAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverInfoDefForm myForm = (SolverInfoDefForm) form;
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.SolutionInformationDefinitions);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -153,7 +153,7 @@ public class SolverInfoDefAction extends Action {
     private void getSolverInfoDefs(HttpServletRequest request) throws Exception {
 		Transaction tx = null;
 		
-		WebTable.setOrder(request.getSession(),"solverInfoDef.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"solverInfoDef.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 3,
 			    "Solution Info Definitions", "solverInfoDef.do?ord=%%",
@@ -193,7 +193,7 @@ public class SolverInfoDefAction extends Action {
 	    	throw e;
 	    }
 
-	    request.setAttribute("SolverInfoDef.table", webTable.printTable(WebTable.getOrder(request.getSession(),"solverInfoDef.ord")));
+	    request.setAttribute("SolverInfoDef.table", webTable.printTable(WebTable.getOrder(sessionContext,"solverInfoDef.ord")));
     }	
 
 }

@@ -45,11 +45,9 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverSettingsForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
@@ -57,6 +55,8 @@ import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverParameterDAO;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
@@ -69,6 +69,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/solverSettings")
 public class SolverSettingsAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	@Autowired SolverService<ExamSolverProxy> examinationSolverService;
@@ -76,11 +78,9 @@ public class SolverSettingsAction extends Action {
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverSettingsForm myForm = (SolverSettingsForm) form;
+		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.SolverConfigurations);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -347,7 +347,7 @@ public class SolverSettingsAction extends Action {
     private void getSolverSettingsTable(HttpServletRequest request) throws Exception {
     	Transaction tx = null;
 		
-		WebTable.setOrder(request.getSession(),"solverSettings.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"solverSettings.ord",request.getParameter("ord"),1);
 		// Create web table instance 
         WebTable webTable = new WebTable( 4,
 			    null, "solverSettings.do?ord=%%",
@@ -388,7 +388,7 @@ public class SolverSettingsAction extends Action {
 	    	throw e;
 	    }
 
-	    request.setAttribute("SolverSettings.table", webTable.printTable(WebTable.getOrder(request.getSession(),"solverSettings.ord")));
+	    request.setAttribute("SolverSettings.table", webTable.printTable(WebTable.getOrder(sessionContext,"solverSettings.ord")));
     }	
 	
 

@@ -34,16 +34,17 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.SolverParamDefForm;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverParameterGroup;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
 import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 
 /** 
@@ -52,14 +53,13 @@ import org.unitime.timetable.model.dao.SolverParameterGroupDAO;
 @Service("/solverParamDef")
 public class SolverParamDefAction extends Action {
 
+	@Autowired SessionContext sessionContext;
+	
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		SolverParamDefForm myForm = (SolverParamDefForm) form;
 
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )
-               || !Web.hasRole(request.getSession(), Roles.getAdminRoles()) ) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.SolverParameters);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
@@ -256,7 +256,7 @@ public class SolverParamDefAction extends Action {
     private void getSolverParameterDefs(HttpServletRequest request, Long uniqueId) throws Exception {
 		Transaction tx = null;
 		
-		WebTable.setOrder(request.getSession(),"solverParamDef.ord",request.getParameter("ord"),1);
+		WebTable.setOrder(sessionContext,"solverParamDef.ord",request.getParameter("ord"),1);
 		
 		StringBuffer tables = new StringBuffer();
         try {
@@ -275,7 +275,7 @@ public class SolverParamDefAction extends Action {
 					    new String[] {"left", "left", "left", "left", "left"},
 					    null );
 				webTable.addLine(null, new String[] {"No solver parameter group defined."}, null, null );
-				tables.append(webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamDef.ord")));
+				tables.append(webTable.printTable(WebTable.getOrder(sessionContext,"solverParamDef.ord")));
 			}
 			
 			for (Iterator i=groups.iterator();i.hasNext();) {
@@ -343,7 +343,7 @@ public class SolverParamDefAction extends Action {
 					if (def.getUniqueId().equals(uniqueId))
 						request.setAttribute("SolverParameterDef.last", new Integer(parameters.size()-1));
 		        }
-		        tables.append(webTable.printTable(WebTable.getOrder(request.getSession(),"solverParamDef.ord")));
+		        tables.append(webTable.printTable(WebTable.getOrder(sessionContext,"solverParamDef.ord")));
 			}
 			
 			if (!groups.isEmpty()) {
