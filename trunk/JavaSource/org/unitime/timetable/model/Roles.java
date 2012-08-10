@@ -435,6 +435,8 @@ public class Roles extends BaseRoles implements HasRights {
 		case SolverConfigurations:
 		case SolverParameterGroups:
 		case SolverParameters:
+		case HibernateStatistics:
+		case PageStatistics:
 			return ADMIN_ROLE.equals(getReference());
 			
 		case HasRole:

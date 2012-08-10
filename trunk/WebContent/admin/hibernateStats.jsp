@@ -20,13 +20,12 @@
 <%@ page errorPage="../error.jsp" %>
 <%@ page import="org.hibernate.SessionFactory" %>
 <%@ page import="org.unitime.timetable.model.dao._RootDAO" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.commons.hibernate.stats.StatsProvider" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<sec:authorize access="hasPermission(null, null, 'HibernateStatistics')">
 <%
-	if (!Web.isLoggedIn(session) || !Web.isAdmin(session))
-            throw new Exception ("Access Denied.");
     boolean details = "true".equals(request.getParameter("details"));
 	if (request.getParameter("enable")!=null) {
 		new _RootDAO().getSession().getSessionFactory().getStatistics().setStatisticsEnabled("true".equals(request.getParameter("enable")));
@@ -63,3 +62,7 @@
 			</TD>
 		</TR>
 </TABLE>
+</sec:authorize>
+<sec:authorize access="!hasPermission(null, null, 'HibernateStatistics')">
+Access denied.
+</sec:authorize>
