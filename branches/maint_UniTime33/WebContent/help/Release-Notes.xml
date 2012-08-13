@@ -128,6 +128,18 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room / Instructor Availabilities</name>
+			<description>
+				<line>When a new unavailability is added, ensure that all the related classes do not have a value conflicting with the unavailability in the domain cache.</line>
+			</description>
+		</item>
+		<item>
+			<name>Purge Invalid Values</name>
+			<description>
+				<line>Removed check for constant variables as it may find (and remove) values that are inconsistent for some other reason (e.g., room / instructor availability).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>
