@@ -29,6 +29,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.DateInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -41,7 +42,10 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public class WeekSelector extends IntervalSelector<WeekInterface>{
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private RegExp iRegExp = RegExp.compile("[^0-9]*([0-9]+)[/ ]*([0-9]*)[ -]*([0-9]*)[/ ]*([0-9]*)");
+	private RegExp[] iRegExp = new RegExp[] {
+			RegExp.compile("^[^0-9]*([0-9]+)[/ ]*([0-9]*)[ -]*([0-9]*)[/ ]*([0-9]*)$"),
+			RegExp.compile("^[^0-9]*([0-9]+)\\.?([0-9]*)\\.?[ -]*([0-9]*)\\.?([0-9]*)\\.?$")
+	};
 
 	private AcademicSessionProvider iAcademicSession;
 	
@@ -104,7 +108,7 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 	@Override
 	public Interval parse(String query) {
 		if (query == null || getValues() == null) return new Interval();
-		MatchResult match = iRegExp.exec(query);
+		MatchResult match = iRegExp[0].exec(query);
 		if (match != null) {
 			int m1 = Integer.parseInt(match.getGroup(1));
 			int d1 = (match.getGroup(2).isEmpty() ? 1 : Integer.parseInt(match.getGroup(2)));
@@ -115,6 +119,18 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 			WeekInterface last = (match.getGroup(3).isEmpty() ? null : find(m2, d2, first));
 			return new Interval(first, last);
 		}
+		match = iRegExp[1].exec(query);
+		if (match != null) {
+			int d1 = Integer.parseInt(match.getGroup(1));
+			int m1 = (match.getGroup(2).isEmpty() ? -1 : Integer.parseInt(match.getGroup(2)));
+			WeekInterface first = find(m1, d1, null);
+			int d2 = (match.getGroup(3).isEmpty() ? 1 : Integer.parseInt(match.getGroup(3)));
+			int m2 = (match.getGroup(4).isEmpty() ? -1 : Integer.parseInt(match.getGroup(4)));
+			if (m2 == m1 && d2 < d1) d2 = d1;
+			WeekInterface last = (match.getGroup(3).isEmpty() ? null : find(m2, d2, first));
+			return new Interval(first, last);
+		}
+
 		return new Interval();
 	}
 	
@@ -123,16 +139,12 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		for (WeekInterface w: getValues()) {
 			if (after != null && w.getDayOfYear() < after.getDayOfYear()) continue;
 			if (first == null) first = w;
-			for (String dayName : w.getDayNames()) {
-				int m = Integer.parseInt(dayName.substring(0, dayName.indexOf('/')));
-				int d = Integer.parseInt(dayName.substring(1 + dayName.indexOf('/')));
-				if (m == month && d == day) return w;
+			for (DateInterface dayName : w.getDayNames()) {
+				if (dayName.getMonth() == month && dayName.getDay() == day) return w;
 			}
 		}
-		String firstDay = getValues().get(0).getDayNames().get(0);
-		int m = Integer.parseInt(firstDay.substring(0, firstDay.indexOf('/')));
-		int d = Integer.parseInt(firstDay.substring(1 + firstDay.indexOf('/')));
-		return (month < m || (m == month && day < d) ? first == null ? getValues().get(0) : first : getValues().get(getValues().size() - 1));
+		DateInterface firstDay = getValues().get(0).getDayNames().get(0);
+		return (month < firstDay.getMonth() || (firstDay.getMonth() == month && day < firstDay.getDay()) ? first == null ? getValues().get(0) : first : getValues().get(getValues().size() - 1));
 	}
 	
 	@Override
@@ -140,7 +152,7 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		if (interval.isAll())
 			return interval.isEnableFilter() ? MESSAGES.itemAllWeeksWithFilter() : MESSAGES.itemAllWeeks();
 		if (interval.isOne())
-			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1));
+			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0).getLabel(), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1).getLabel());
 		return "&nbsp;&nbsp;&nbsp;" + interval.getFirst().getDayNames().get(0) + " - " + interval.getLast().getDayNames().get(6);
 	}
 
@@ -149,13 +161,13 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		if (interval.isAll())
 			return interval.isEnableFilter() ? MESSAGES.itemAllWeeksWithFilter() : MESSAGES.itemAllWeeks();
 		if (interval.isOne())
-			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1));
-		return MESSAGES.itemWeeks(interval.getFirst().getDayNames().get(0), interval.getLast().getDayNames().get(6));
+			return MESSAGES.itemWeek(interval.getFirst().getDayNames().get(0).getLabel(), interval.getFirst().getDayNames().get(interval.getFirst().getDayNames().size() - 1).getLabel());
+		return MESSAGES.itemWeeks(interval.getFirst().getDayNames().get(0).getLabel(), interval.getLast().getDayNames().get(6).getLabel());
 	}
 	
 	public String getSelection() {
 		if (getValue() == null || getValue().isAll()) return "";
-		return (getValue().isOne() ? getValue().getFirst().getDayNames().get(0) : getValue().getFirst().getDayNames().get(0) + "-" + getValue().getLast().getDayNames().get(6));
+		return (getValue().isOne() ? getValue().getFirst().getDayNames().get(0).getLabel() : getValue().getFirst().getDayNames().get(0).getLabel() + "-" + getValue().getLast().getDayNames().get(6).getLabel());
 	}
 	
 	public int getFirstDayOfYear() {

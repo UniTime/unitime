@@ -25,6 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.lowagie.text.Document;
@@ -37,12 +38,13 @@ import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfEventHandler extends PdfPageEventHelper {
 	private static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	private static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	private BaseFont baseFont;
 	private float fontSize;
 	
 	private Date dateTime = null;
-	private SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	private SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale());
 	
     /**
      * Constructor for PdfEventHandler

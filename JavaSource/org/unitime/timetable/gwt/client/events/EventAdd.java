@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -105,6 +106,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	
 	private String iMainExternalId = null;
 	private UniTimeWidget<TextBox> iName;
@@ -168,7 +170,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				if (event.getValue() != null) {
 					final ContactInterface contact = new ContactInterface(event.getValue());
 					List<Widget> row = new ArrayList<Widget>();
-					row.add(new Label(contact.getName(), false));
+					row.add(new Label(contact.getName(MESSAGES), false));
 					row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 					row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
 					Image remove = new Image(RESOURCES.delete());
@@ -312,7 +314,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iForm.addRow(MESSAGES.propSponsor(), iSponsors);
 		
 		iEventType = new UniTimeWidget<ListBox>(new ListBox());
-		iEventType.getWidget().addItem(EventInterface.EventType.Special.getName());
+		iEventType.getWidget().addItem(EventInterface.EventType.Special.getName(CONSTANTS));
 		iForm.addRow(MESSAGES.propEventType(), iEventType);
 		
 		iLimit = new NumberBox();
@@ -751,7 +753,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		boolean canAddCourseEvent = (getProperties() == null ? false : getProperties().isCanAddCourseEvent());
 		if (canAddCourseEvent) {
 			if (iEventType.getWidget().getItemCount() == 1)
-				iEventType.getWidget().addItem(EventInterface.EventType.Course.getName());
+				iEventType.getWidget().addItem(EventInterface.EventType.Course.getName(CONSTANTS));
 		} else {
 			if (iEventType.getWidget().getItemCount() == 2)
 				iEventType.getWidget().removeItem(1);
@@ -761,7 +763,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEventType.getWidget().setSelectedIndex(0);
 			iEventType.setReadOnly(false);
 		} else {
-			iEventType.setText(iEvent.getType().getName());
+			iEventType.setText(iEvent.getType().getName(CONSTANTS));
 			iEventType.setReadOnly(true);
 		}
 
@@ -846,7 +848,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		if (iEvent.hasAdditionalContacts()) {
 			for (final ContactInterface contact: iEvent.getAdditionalContacts()) {
 				List<Widget> row = new ArrayList<Widget>();
-				row.add(new Label(contact.getName(), false));
+				row.add(new Label(contact.getName(MESSAGES), false));
 				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
 				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
 				Image remove = new Image(RESOURCES.delete());

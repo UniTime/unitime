@@ -35,6 +35,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.DateInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -380,7 +381,8 @@ public class TimeGrid extends Composite {
 					for (int w = 0; w < iSelectedWeeks.size(); w++) {
 						if (w > 0)
 							iVLines.add(new P("week-separator"), 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
-						P p = new P("week-title"); p.setHTML(iSelectedWeeks.get(w).getDayNames().get(iDays[d]).replaceAll("/", "<br>"));
+						DateInterface di = iSelectedWeeks.get(w).getDayNames().get(iDays[d]);
+						P p = new P("week-title"); p.setHTML(CONSTANTS.firstDayThenMonth() ? di.getDay() + "<br>" + di.getMonth() : di.getMonth() + "<br>" + di.getDay());
 						p.setWidth((iCellWidth - 6) / iSelectedWeeks.size());
 						iVLines.add(p, 3 + iCellWidth * d + w * (iCellWidth - 6) / iSelectedWeeks.size(), 0);
 					}
@@ -698,7 +700,7 @@ public class TimeGrid extends Composite {
 				notes.add(roomString);
 			if (event.hasInstructors())
 				for (ContactInterface instructor: event.getInstructors())
-					notes.add(instructor.getName());
+					notes.add(instructor.getName(MESSAGES));
 			if (event.hasSponsor())
 				notes.add(event.getSponsor().getName());
 			done.add(addMeeting(
