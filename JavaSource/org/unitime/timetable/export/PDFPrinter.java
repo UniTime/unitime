@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.util.PdfEventHandler;
@@ -45,6 +46,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 
 public class PDFPrinter implements Printer {
+	private static Pattern sNumber = Pattern.compile("[+-]?[0-9]*\\.?[0-9]*[a-z]?");
 	private OutputStream iOutput;
 	private String[] iLastLine = null;
 	private boolean iCheckLast = false;
@@ -114,10 +116,7 @@ public class PDFPrinter implements Printer {
 			String f = fields[idx];
 			if (f == null || f.isEmpty() || (iCheckLast && f.equals(iLastLine == null || idx >= iLastLine.length ? null : iLastLine[idx]))) f = "";
 			
-			boolean number = false;
-			try {
-				Double.parseDouble(f); number = true;
-			} catch (NumberFormatException e) {}
+			boolean number = sNumber.matcher(f).matches();
 
 			Font font = PdfFont.getFont();
 			Phrase p = new Phrase(f, PdfFont.getSmallFont());
@@ -137,7 +136,7 @@ public class PDFPrinter implements Printer {
 					width = Math.max(width,font.getBaseFont().getWidthPoint(s.nextToken(), font.getSize()));
 			} else 
 				width = Math.max(width,font.getBaseFont().getWidthPoint(f, font.getSize()));
-			iMaxWidth[idx] = Math.max(iMaxWidth[idx], width);
+			iMaxWidth[idx] = Math.max(iMaxWidth[idx], width + (number ? 10 : 0));
 		}
 		iLastLine = fields;
 	}

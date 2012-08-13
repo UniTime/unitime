@@ -394,7 +394,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					int count = 0;
 					for (MeetingConglictInterface event: conflicts) {
 						if (count == 3) { conf += "<br>..."; break; }
-						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + " (" + event.getType().getAbbreviation() + ")";
+						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + " (" + event.getType().getAbbreviation(CONSTANTS) + ")";
 						count ++;
 					}
 					p.setHTML(conf);
@@ -434,7 +434,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						if (conflicts != null && !conflicts.isEmpty()) {
 							message += "<br>" + MESSAGES.propConflicts();
 							for (MeetingConglictInterface conflictingEvent: conflicts)
-								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + " (" + conflictingEvent.getType().getAbbreviation() + ")";
+								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + " (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + ")";
 						}
 						GwtHint.showHint(p.getElement(), message);
 					}

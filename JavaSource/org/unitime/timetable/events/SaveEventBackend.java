@@ -66,7 +66,11 @@ import org.unitime.timetable.util.Constants;
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, SessionContext context, EventRights rights) {
-		if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
+		if (request.getEvent().getId() == null) { // new event
+			if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
+		} else { // existing event
+			if (!rights.canEdit(EventDAO.getInstance().get(request.getEvent().getId()))) throw rights.getException();
+		}
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
@@ -85,7 +89,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				case Course:
 					event = new CourseEvent(); break;
 				default:
-					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(request.getEvent().getType().getName()));
+					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(request.getEvent().getType().getName(CONSTANTS)));
 				}
 			}
 			
@@ -162,7 +166,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						if (m.getId().equals(x.getUniqueId())) { meeting = x; i.remove(); break; }
 					}
 				if (meeting != null) {
-					if (m.getStartOffset() != meeting.getStartOffset() || m.getEndOffset() != meeting.getStopOffset()) {
+					if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
 						if (!rights.canEdit(meeting))
 							throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
 						meeting.setStartOffset(m.getStartOffset());

@@ -429,7 +429,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		
 		public static String slot2time(int slot) {
 			if (CONSTANTS.useAmPm()) {
-				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnitgh();
+				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnight();
 				if (slot == 144) return CONSTANTS.timeNoon();
 			}
 			int h = slot / 12;
@@ -442,7 +442,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		
 		public static String slot2short(int slot) {
 			if (CONSTANTS.useAmPm()) {
-				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnitgh();
+				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnight();
 				if (slot == 144) return CONSTANTS.timeNoon();
 			}
 			int h = slot / 12;

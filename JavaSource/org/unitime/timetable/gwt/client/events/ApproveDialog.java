@@ -2,7 +2,6 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
@@ -50,7 +49,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		
 		if (iTable instanceof Widget) {
 			ScrollPanel scroll = new ScrollPanel((Widget)iTable);
-			ToolBox.setMaxHeight(scroll.getElement().getStyle(), "200px");
+			scroll.addStyleName("scroll");
 			iForm.addRow(MESSAGES.propMeetings(), scroll);
 		}
 		
