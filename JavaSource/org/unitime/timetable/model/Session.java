@@ -769,10 +769,14 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	}
 	
 	public boolean hasStudentSchedule() {
+		return hasStudentSchedule(getUniqueId());
+	}
+	
+	public static boolean hasStudentSchedule(Long sessionId) {
         return ((Number)new ExamDAO().getSession().
                 createQuery("select count(x) from StudentClassEnrollment x " +
                         "where x.student.session.uniqueId=:sessionId").
-                setLong("sessionId",getUniqueId()).uniqueResult()).longValue()>0;
+                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
 	}
 
 	public Collection<Long> getLockedOfferings() {

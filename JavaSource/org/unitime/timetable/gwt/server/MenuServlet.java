@@ -334,7 +334,7 @@ public class MenuServlet implements MenuService {
 				} else if ("hasASolverGroup".equals(right)) {
 					return !SolverGroup.getUserSolverGroups(user).isEmpty();
 				} else if ("canSectionStudents".equals(right)) {
-					return manager.canSectionStudents(session, user);
+					return sessionContext.hasPermission(Right.StudentScheduling);
 				} else if ("canSeeExams".equals(right)) {
 					return sessionContext.hasPermission(Right.Examinations);
 				} else if ("canTimetableExams".equals(right)) {

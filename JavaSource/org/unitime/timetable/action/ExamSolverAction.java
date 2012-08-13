@@ -122,7 +122,6 @@ public class ExamSolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.save();
-        	myForm.setChangeTab(true);
         }
         
         if ("Unload".equals(op)) {
@@ -137,7 +136,6 @@ public class ExamSolverAction extends Action {
             if (solver==null) throw new Exception("Solver is not started.");
             if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
             solver.clear();
-            myForm.setChangeTab(true);
         }
 
         // Reload
@@ -153,7 +151,6 @@ public class ExamSolverAction extends Action {
             config.setProperty("Exam.Type", String.valueOf(myForm.getExamType()));
             request.getSession().setAttribute("Exam.Type", myForm.getExamType());
             examinationSolverService.reload(config);
-        	myForm.setChangeTab(true);
         }
         
         if ("Start".equals(op) || "Load".equals(op)) {
@@ -174,7 +171,6 @@ public class ExamSolverAction extends Action {
     	    	solver.setProperties(config);
     	    	solver.start();
         	}
-    	    myForm.setChangeTab(true);
         }
         
         if ("Stop".equals(op)) {

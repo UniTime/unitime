@@ -62,7 +62,6 @@ public class ExamSolverForm extends ActionForm {
 	private static Long sSolver = new Long(-3);
 	private Vector iParams = new Vector();
 	private String iHost = null;
-	private boolean iChangeTab = false;
 	private int iExamType = 0;
     private boolean iHasMidtermExams = false;
 
@@ -85,7 +84,6 @@ public class ExamSolverForm extends ActionForm {
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; 
-		iChangeTab=false;
 		iSettings.clear();
 		iSetting = sEmpty;
 		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
@@ -262,8 +260,6 @@ public class ExamSolverForm extends ActionForm {
 		iHost = host;
 	}
 	
-    public boolean isChangeTab() { return iChangeTab;}
-    public void setChangeTab(boolean changeTab) { iChangeTab = changeTab; }
     public int getExamType() { return iExamType; }
     public void setExamType(int type) { iExamType = type; }
     public Collection getExamTypes() {
