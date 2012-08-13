@@ -178,6 +178,12 @@
 				<line>Fixed a bug thrown when there is a student enrolled in the same (not cross-listed) class two times.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling: Enrollment</name>
+			<description>
+				<line>Fixed a rounding problem in the deadline check.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
