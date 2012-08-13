@@ -320,6 +320,11 @@ public enum Right {
     HibernateStatistics,
     PageStatistics,
     
+    StudentScheduling(Session.class),
+    EnrollmentAuditPDFReports(Session.class),
+    StudentSectioningSolver(Session.class),
+    StudentSectioningSolverLog(Session.class),
+    
     ;
 	
 	private Class<?> iType;

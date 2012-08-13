@@ -20,13 +20,11 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -39,18 +37,11 @@ import org.apache.struts.action.ActionMessage;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 
@@ -68,10 +59,7 @@ public class StudentSolverForm extends ActionForm {
 	private static Long sDefault = new Long(-2);
 	private static Long sSolver = new Long(-3);
 	private Vector iParams = new Vector();
-	private Vector iHosts = new Vector();
 	private String iHost = null;
-	private boolean iCanDo = true;
-	private boolean iChangeTab = false;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -92,16 +80,8 @@ public class StudentSolverForm extends ActionForm {
 
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null; 
-		iChangeTab=false;
 		iSettings.clear();
 		iSetting = sEmpty;
-		iCanDo = false;
-		User user = Web.getUser(request.getSession());
-		try {
-			TimetableManager manager = (user==null?null:TimetableManager.getManager(user)); 
-			Session acadSession = (user==null?null:Session.getCurrentAcadSession(user));
-			iCanDo = manager.canSectionStudents(acadSession, user);
-		} catch (Exception e){}
 		StudentSolverProxy solver = WebSolver.getStudentSolver(request.getSession());
 		Transaction tx = null;
 		iParams.clear(); iDefaults.clear(); iParamValues.clear();
@@ -119,7 +99,6 @@ public class StudentSolverForm extends ActionForm {
 				SolverParameterDef def = (SolverParameterDef)i.next();
 				if (!"StudentSctBasic".equals(def.getGroup().getName())) continue;
 				if (!def.isVisible().booleanValue()) continue;
-				if (!iCanDo) continue;
 				if ("boolean".equals(def.getType())) {
 					iParamValues.put(def.getUniqueId(),"false");
 					empty.put(def.getUniqueId(),"false");
@@ -145,7 +124,7 @@ public class StudentSolverForm extends ActionForm {
 						skip |= !"No Action".equals(param.getValue()==null?param.getDefinition().getDefault():param.getValue());
 					settings.put(param.getDefinition().getUniqueId(),param.getValue());
 				}
-				if (iCanDo || !skip) {
+				if (!skip) {
 					iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
 					iDefaults.put(setting.getUniqueId(),settings);
 				}
@@ -194,21 +173,6 @@ public class StudentSolverForm extends ActionForm {
 		}
 		
 		iHost = (solver==null?"auto":solver.getHost());
-		iHosts.clear();
-		if (user.isAdmin()) {
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (server.isActive())
-                        iHosts.addElement(server.getAddress().getHostName()+":"+server.getPort());
-                }
-			}
-			Collections.sort(iHosts);
-			if (ApplicationProperties.isLocalSolverEnabled())
-				iHosts.insertElementAt("local",0);
-			iHosts.insertElementAt("auto",0);
-		}	
 	}
 	
 	public void init() {
@@ -280,18 +244,11 @@ public class StudentSolverForm extends ActionForm {
 		return options;
 	}
 
-	public Collection getHosts() {
-		return iHosts;
-	}
 	public String getHost() {
 		return iHost;
 	}
 	public void setHost(String host) {
 		iHost = host;
 	}
-	
-	public boolean getCanDo() { return iCanDo; }
-    public boolean isChangeTab() { return iChangeTab;}
-    public void setChangeTab(boolean changeTab) { iChangeTab = changeTab; }
 }
 

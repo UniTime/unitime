@@ -24,7 +24,6 @@ import java.util.Hashtable;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
@@ -32,14 +31,11 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Email;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
 import org.unitime.timetable.reports.enrollment.MissingCourseEnrollmentsAuditReport;
 import org.unitime.timetable.reports.enrollment.MultipleCourseEnrollmentsAuditReport;
+import org.unitime.timetable.security.SessionContext;
 
 /*
  * @author Stephanie Schluttenhofer
@@ -105,54 +101,47 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
         iSubject = "Enrollment Audit Report";
         iMessage = null;
         iReport = null;
-        if (getAddress()==null) {
-            TimetableManager manager = TimetableManager.getManager(Web.getUser(request.getSession()));
-            if (manager!=null && manager.getEmailAddress()!=null) setAddress(manager.getEmailAddress());
-        }
     }
     
-    public void load(HttpSession session) {
- 	    setSubjectArea(session.getAttribute("EnrollmentAuditPdfReport.subjectArea")==null?null:(Long)session.getAttribute("EnrollmentAuditPdfReport.subjectArea"));
+    public void load(SessionContext context) {
+ 	    setSubjectArea(context.getAttribute("EnrollmentAuditPdfReport.subjectArea")==null?null:(Long)context.getAttribute("EnrollmentAuditPdfReport.subjectArea"));
 	    try {
 	        iSubjectAreas = new TreeSet(
 	                new SubjectAreaDAO().getSession().createQuery(
 	                        "select distinct co.subjectArea from CourseOffering co where "+
 	                        "co.subjectArea.session.uniqueId=:sessionId")
-	                        .setLong("sessionId", Session.getCurrentAcadSession(Web.getUser(session)).getUniqueId())
+	                        .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
 	                        .setCacheable(true).list());
 	    } catch (Exception e) {}
 
-        setAll(session.getAttribute("EnrollmentAuditPdfReport.all")==null?true:(Boolean)session.getAttribute("EnrollmentAuditPdfReport.all"));
-        setReports((String[])session.getAttribute("EnrollmentAuditPdfReport.reports"));
-        setMode(session.getAttribute("EnrollmentAuditPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("EnrollmentAuditPdfReport.mode"));
-        setSubjects((String[])session.getAttribute("EnrollmentAuditPdfReport.subjects"));
-        setExternalId(UserData.getPropertyBoolean(session, "EnrollmentAuditPdfReport.externalId", false));
-        setStudentName(UserData.getPropertyBoolean(session, "EnrollmentAuditPdfReport.studentName", false));
-        setEmail(UserData.getPropertyBoolean(session, "EnrollmentAuditPdfReport.email", false));
-        setAddress(UserData.getProperty(session,"EnrollmentAuditPdfReport.addr"));
-        setCc(UserData.getProperty(session,"EnrollmentAuditPdfReport.cc"));
-        setBcc(UserData.getProperty(session,"EnrollmentAuditPdfReport.bcc"));
-        setMessage(UserData.getProperty(session,"EnrollmentAuditPdfReport.message"));
-        setSubject(UserData.getProperty(session,"EnrollmentAuditPdfReport.subject","Enrollment Audit"));
+        setAll(context.getAttribute("EnrollmentAuditPdfReport.all")==null ? true : (Boolean)context.getAttribute("EnrollmentAuditPdfReport.all"));
+        setReports((String[])context.getAttribute("EnrollmentAuditPdfReport.reports"));
+        setMode(context.getAttribute("EnrollmentAuditPdfReport.mode") == null ? sModes[0] : (String)context.getAttribute("EnrollmentAuditPdfReport.mode"));
+        setSubjects((String[])context.getAttribute("EnrollmentAuditPdfReport.subjects"));
+        setExternalId("1".equals(context.getUser().getProperty("EnrollmentAuditPdfReport.externalId", "0")));
+        setStudentName("1".equals(context.getUser().getProperty( "EnrollmentAuditPdfReport.studentName", "0")));
+        setEmail("1".equals(context.getUser().getProperty("EnrollmentAuditPdfReport.email", "0")));
+        setAddress(context.getUser().getProperty("EnrollmentAuditPdfReport.addr", context.getUser().getEmail()));
+        setCc(context.getUser().getProperty("EnrollmentAuditPdfReport.cc"));
+        setBcc(context.getUser().getProperty("EnrollmentAuditPdfReport.bcc"));
+        setMessage(context.getUser().getProperty("EnrollmentAuditPdfReport.message"));
+        setSubject(context.getUser().getProperty("EnrollmentAuditPdfReport.subject","Enrollment Audit"));
     }
     
-    public void save(HttpSession session) {
-        if (getSubjectArea()==null)
-            session.removeAttribute("EnrollmentAuditPdfReport.reports.subjectArea");
-        else
-            session.setAttribute("EnrollmentAuditPdfReport.reports.subjectArea", getSubjectArea());
-        session.setAttribute("EnrollmentAuditPdfReport.reports", getReports());
-        session.setAttribute("EnrollmentAuditPdfReport.mode", getMode());
-        session.setAttribute("EnrollmentAuditPdfReport.all", getAll());
-        session.setAttribute("EnrollmentAuditPdfReport.subjects", getSubjects());
-        UserData.setPropertyBoolean(session, "EnrollmentAuditPdfReport.externalId", getExternalId());
-        UserData.setPropertyBoolean(session, "EnrollmentAuditPdfReport.studentName", getStudentName());
-        UserData.setPropertyBoolean(session, "EnrollmentAuditPdfReport.email", getEmail());
-        UserData.setProperty(session,"EnrollmentAuditPdfReport.addr", getAddress());
-        UserData.setProperty(session,"EnrollmentAuditPdfReport.cc", getCc());
-        UserData.setProperty(session,"EnrollmentAuditPdfReport.bcc", getBcc());
-        UserData.setProperty(session,"EnrollmentAuditPdfReport.message", getMessage());
-        UserData.setProperty(session,"EnrollmentAuditPdfReport.subject", getSubject());
+    public void save(SessionContext context) {
+    	context.setAttribute("EnrollmentAuditPdfReport.reports.subjectArea", getSubjectArea());
+    	context.setAttribute("EnrollmentAuditPdfReport.reports", getReports());
+    	context.setAttribute("EnrollmentAuditPdfReport.mode", getMode());
+    	context.setAttribute("EnrollmentAuditPdfReport.all", getAll());
+    	context.setAttribute("EnrollmentAuditPdfReport.subjects", getSubjects());
+        context.getUser().setProperty("EnrollmentAuditPdfReport.externalId", getExternalId() ? "1" : "0");
+        context.getUser().setProperty("EnrollmentAuditPdfReport.studentName", getStudentName() ? "1" : "0");
+        context.getUser().setProperty("EnrollmentAuditPdfReport.email", getEmail() ? "1" : "0");
+        context.getUser().setProperty("EnrollmentAuditPdfReport.addr", getAddress());
+        context.getUser().setProperty("EnrollmentAuditPdfReport.cc", getCc());
+        context.getUser().setProperty("EnrollmentAuditPdfReport.bcc", getBcc());
+        context.getUser().setProperty("EnrollmentAuditPdfReport.message", getMessage());
+        context.getUser().setProperty("EnrollmentAuditPdfReport.subject", getSubject());
     }
 
     public String[] getReports() { return iReports;}

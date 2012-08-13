@@ -246,10 +246,10 @@ public class AdministrationPermissions {
 		@Override
 		public Class<SponsoringOrganization> type() { return SponsoringOrganization.class; }
 	}
-	
-	@PermissionForRight(Right.SponsoringOrganizationAdd)
-	public static class SponsoringOrganizationAdd extends SponsoringOrganizationEdit {}
-	
+		
+	@PermissionForRight(Right.SponsoringOrganizationDelete)
+	public static class SponsoringOrganizationDelete extends SponsoringOrganizationEdit {}
+
 	@PermissionForRight(Right.DistributionTypeEdit)
 	public static class DistributionTypeEdit extends SimpleSessionPermission {}
 }

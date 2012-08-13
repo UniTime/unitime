@@ -26,11 +26,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.StudentSolverLogForm;
-import org.unitime.timetable.model.UserData;
-import org.unitime.timetable.solver.WebSolver;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 
 
@@ -39,30 +40,36 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
  */
 @Service("/studentSolverLog")
 public class StudentSolverLogAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
+	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	
 	// --------------------------------------------------------- Instance Variables
 
 	// --------------------------------------------------------- Methods
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception{
 		StudentSolverLogForm myForm = (StudentSolverLogForm) form;
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.StudentSectioningSolverLog);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         // Change log level
-        if (op==null || "Change".equals(op)) {
+        if ("Change".equals(op)) {
         	if (myForm.getLevelNoDefault()!=null)
-        		UserData.setProperty(request.getSession(), "SolverLog.level", myForm.getLevelNoDefault());
-        	StudentSolverProxy solver = WebSolver.getStudentSolver(request.getSession());
-        	if (solver!=null)
-        		solver.setDebugLevel(myForm.getLevelInt());
+        		sessionContext.getUser().setProperty("SolverLog.level", myForm.getLevelNoDefault());
+        } else {
+        	myForm.setLevel(sessionContext.getUser().getProperty("SolverLog.level"));
         }
         
-        myForm.reset(mapping, request);
+        // Change log level
+        StudentSolverProxy solver = studentSectioningSolverService.getSolver();
+        if (solver != null) {
+        	solver.setDebugLevel(myForm.getLevelInt());
+        	request.setAttribute("log", solver.getLog());
+        }
         
         return mapping.findForward("showLog");
 	}

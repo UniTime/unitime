@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.action;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,11 +38,11 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.StudentSolverForm;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
@@ -49,14 +55,31 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 public class StudentSolverAction extends Action {
 	
 	@Autowired SolverService<StudentSolverProxy> studentSectioningSolverService;
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		StudentSolverForm myForm = (StudentSolverForm) form;
 		
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.StudentSectioningSolver);
+		
+		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.CanSelectSolverServer)) {
+			List<String> hosts = new ArrayList<String>();
+            Set servers = SolverRegisterService.getInstance().getServers();
+            synchronized (servers) {
+                for (Iterator i=servers.iterator();i.hasNext();) {
+                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
+                    if (server.isActive())
+                        hosts.add(server.getAddress().getHostName()+":"+server.getPort());
+                }
+			}
+			Collections.sort(hosts);
+			if (ApplicationProperties.isLocalSolverEnabled())
+				hosts.add(0, "local");
+			hosts.add(0, "auto");
+			request.setAttribute("hosts", hosts);
+		}
         
         try {
         	SolverRegisterService.setupLocalSolver(request.getRequestURL().substring(0,request.getRequestURL().lastIndexOf("/")),request.getServerName(),SolverRegisterService.getPort());
@@ -68,9 +91,6 @@ public class StudentSolverAction extends Action {
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
         StudentSolverProxy solver = studentSectioningSolverService.getSolver();
-        User user = Web.getUser(request.getSession());
-        TimetableManager manager = (user==null?null:TimetableManager.getManager(user));
-        Session acadSession = (manager==null?null:Session.getCurrentAcadSession(user));
 
         if (op==null) {
         	myForm.init();
@@ -93,7 +113,6 @@ public class StudentSolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	solver.save();
-        	myForm.setChangeTab(true);
         }
         
         if ("Unload".equals(op)) {
@@ -108,7 +127,6 @@ public class StudentSolverAction extends Action {
             if (solver==null) throw new Exception("Solver is not started.");
             if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
             solver.clear();
-            myForm.setChangeTab(true);
         }
 
         // Reload
@@ -122,7 +140,6 @@ public class StudentSolverAction extends Action {
             }
             DataProperties config = studentSectioningSolverService.createConfig(myForm.getSetting(), myForm.getParameterValues());
             studentSectioningSolverService.reload(config);
-        	myForm.setChangeTab(true);
         }
         
         if ("Start".equals(op) || "Load".equals(op)) {
@@ -140,7 +157,6 @@ public class StudentSolverAction extends Action {
         		solver.setProperties(config);
         		solver.start();
         	}
-    	    myForm.setChangeTab(true);
         }
         
         if ("Stop".equals(op)) {
