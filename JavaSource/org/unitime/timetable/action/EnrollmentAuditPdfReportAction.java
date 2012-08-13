@@ -40,9 +40,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Email;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EnrollmentAuditPdfReportForm;
 import org.unitime.timetable.model.Session;
@@ -51,6 +51,8 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.PdfEnrollmentAuditReport;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -60,18 +62,18 @@ import org.unitime.timetable.util.Constants;
 @Service("/enrollmentAuditPdfReport")
 public class EnrollmentAuditPdfReportAction extends Action {
     protected static Logger sLog = Logger.getLogger(EnrollmentAuditPdfReportAction.class);
+    
+    @Autowired SessionContext sessionContext;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		EnrollmentAuditPdfReportForm myForm = (EnrollmentAuditPdfReportForm) form;
         // Check Access
-        if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermission(Right.EnrollmentAuditPDFReports);
         
         // Read operation to be performed
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
-        if ("Generate".equals(op)) myForm.save(request.getSession());
-        myForm.load(request.getSession());
+        if ("Generate".equals(op)) myForm.save(sessionContext);
+        myForm.load(sessionContext);
         
         if ("Generate".equals(op)) {
             ActionMessages errors = myForm.validate(mapping, request);
@@ -80,7 +82,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                 return mapping.findForward("show");
             }
                         
-            Session session = Session.getCurrentAcadSession(Web.getUser(request.getSession()));
+            Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             try {
                 myForm.setReport("");
 
@@ -98,7 +100,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                         myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf")+"</a>");
                         PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                             getConstructor(int.class, File.class, Session.class).
-                            newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()));
+                            newInstance(myForm.getModeIdx(), file, session);
                         report.setShowId(myForm.getExternalId());
                         report.setShowName(myForm.getStudentName());
                         report.printReport();
@@ -123,7 +125,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                         myForm.log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subjAbbvs+"_"+reportName+"."+(myForm.getModeIdx()==PdfEnrollmentAuditReport.sModeText?"txt":"pdf")+"</a>");
                         PdfEnrollmentAuditReport report = (PdfEnrollmentAuditReport)reportClass.
                             getConstructor(int.class, File.class, Session.class, TreeSet.class, String.class).
-                            newInstance(myForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), subjectAreas, subjAbbvs);
+                            newInstance(myForm.getModeIdx(), file, session, subjectAreas, subjAbbvs);
                         report.setShowId(myForm.getExternalId());
                         report.setShowName(myForm.getStudentName());
                         report.printReport();

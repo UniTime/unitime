@@ -21,14 +21,13 @@
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
 <%@ page import="org.unitime.timetable.solver.studentsct.StudentSolverProxy" %>
 <%@ page import="org.hibernate.Transaction" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.solver.ui.PropertiesInfo" %>
 <%@ page import="net.sf.cpsolver.ifs.util.Progress" %>
 <%@ page import="org.unitime.timetable.solver.ui.LogInfo" %>
-<%@ page import="org.unitime.commons.User" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@page import="org.unitime.timetable.model.Session"%>
 <%@page import="org.unitime.timetable.form.ListSolutionsForm"%>
+<%@ page import="org.unitime.commons.web.Web" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -43,15 +42,15 @@
 <tiles:importAttribute />
 
 <html:form action="/studentSolver">
+<tt:session-context/>
 <%
 try {
 %>
 <%
-	User user = Web.getUser(session); 
 	StudentSolverProxy solver = WebSolver.getStudentSolver(session);
 	String status = null;
 	String progress = null;
-	boolean hasSolution = Session.getCurrentAcadSession(user).hasStudentSchedule();
+	boolean hasSolution = Session.hasStudentSchedule(sessionContext.getUser().getCurrentAcademicSessionId());
 	if (solver!=null) {
 		Map p = solver.getProgress();
 		status = (String)p.get("STATUS");
@@ -132,14 +131,15 @@ try {
 			</TD>		
 		</TR>
 	</logic:iterate>
-	<logic:empty name="studentSolverForm" property="hosts">
+	<logic:empty name="hosts" scope="request">
 		<html:hidden property="host"/>
 	</logic:empty>
-	<logic:notEmpty name="studentSolverForm" property="hosts">
+	<logic:notEmpty name="hosts" scope="request">
+		<bean:define id="hosts" name="hosts" scope="request"/>
 	   	<TR><TD>Host:</TD>
 			<TD>
 				<html:select property="host" disabled="<%=(solver!=null)%>">
-					<html:options name="studentSolverForm" property="hosts"/>
+					<html:options name="hosts"/>
 				</html:select>
 				&nbsp;<html:errors property="host"/>
 			</TD>
@@ -158,7 +158,6 @@ try {
 <% }
    if (solver!=null && !solver.isWorking()) { %>
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
-				<logic:equal name="studentSolverForm" property="canDo" value="true">
 <%
 				if (hasSolution) {
 %>
@@ -170,7 +169,6 @@ try {
 <%
 				}
 %>
-				</logic:equal>
 			<html:submit onclick="if (!confirmClear()) return false; displayLoading();" property="op" value="Clear"/>
 			<html:submit onclick="if (!confirmUnload()) return false; displayLoading();" property="op" value="Unload"/>
 <% } %>

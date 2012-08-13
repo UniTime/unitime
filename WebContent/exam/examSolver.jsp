@@ -28,7 +28,6 @@
 <%@ page import="org.unitime.timetable.solver.ui.PropertiesInfo" %>
 <%@ page import="net.sf.cpsolver.ifs.util.Progress" %>
 <%@ page import="org.unitime.timetable.solver.ui.LogInfo" %>
-<%@ page import="org.unitime.commons.User" %>
 <%@ page import="org.unitime.timetable.form.ExamSolverForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@page import="org.unitime.timetable.model.Exam"%>
@@ -47,15 +46,15 @@
 <tiles:importAttribute />
 
 <html:form action="/examSolver">
+<tt:session-context/>
 <%
 try {
 %>
 <%
-	User user = Web.getUser(session); 
 	ExamSolverProxy solver = WebSolver.getExamSolver(session);
 	String status = null;
 	String progress = null;
-	boolean hasSolution = Exam.hasTimetable(Session.getCurrentAcadSession(user).getUniqueId());
+	boolean hasSolution = Exam.hasTimetable(sessionContext.getUser().getCurrentAcademicSessionId());
 	if (solver!=null) {
 		Map p = solver.getProgress();
 		status = (String)p.get("STATUS");
