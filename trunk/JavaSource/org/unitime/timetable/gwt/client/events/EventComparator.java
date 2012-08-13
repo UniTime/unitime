@@ -26,7 +26,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 public class EventComparator {
 	public static enum EventMeetingSortBy {
-		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE
+		NAME, SECTION, TYPE, DATE, PUBLISHED_TIME, ALLOCATED_TIME, SETUP_TIME, TEARDOWN_TIME, LOCATION, CAPACITY, SPONSOR, MAIN_CONTACT, APPROVAL, LIMIT, ENROLLMENT, TITLE, NOTE
 	}
 
 	protected static int compareByName(EventInterface e1, EventInterface e2) {
@@ -50,13 +50,13 @@ public class EventComparator {
 	}
 	
 	protected static int compareBySponsor(EventInterface e1, EventInterface e2) {
-		int cmp = compare(e1.getInstructorNames("|"), e2.getInstructorNames("|"));
+		int cmp = compare(e1.getInstructorNames("|", null), e2.getInstructorNames("|", null));
 		if (cmp != 0) return cmp;
 		return compare(e1.hasSponsor() ? e1.getSponsor().getName() : null, e2.hasSponsor() ? e2.getSponsor().getName() : null);
 	}
 	
 	protected static int compareByMainContact(EventInterface e1, EventInterface e2) {
-		return compare(e1.hasContact() ? e1.getContact().getName() : null, e2.hasContact() ? e2.getContact().getName() : null);
+		return compare(e1.hasContact() ? e1.getContact().toString() : null, e2.hasContact() ? e2.getContact().toString() : null);
 	}
 	
 	protected static int compareByLimit(EventInterface e1, EventInterface e2) {
@@ -87,6 +87,15 @@ public class EventComparator {
 		return compareByName(e1, e2);
 	}
 
+	protected static int compareByNote(EventInterface e1, EventInterface e2) {
+		if (e1.hasNotes()) {
+			if (e2.hasNotes()) {
+				int cmp = e1.getNotes().first().getNote().compareTo(e2.getNotes().first().getNote());
+				if (cmp != 0) return cmp;
+			} else return -1;
+		} else if (e2.hasNotes()) return 1;
+		return compareByName(e1, e2);
+	}
 	
 	public static int compareEvents(EventInterface e1, EventInterface e2, EventMeetingSortBy sortBy) {
 		switch (sortBy) {
@@ -106,6 +115,8 @@ public class EventComparator {
 			return compareByLimit(e1, e2);
 		case ENROLLMENT:
 			return compareByEnrollment(e1, e2);
+		case NOTE:
+			return compareByNote(e1, e2);
 		}
 		return 0;
 	}
