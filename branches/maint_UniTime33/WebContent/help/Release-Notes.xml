@@ -172,6 +172,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Enrollment Audit PDF Reports</name>
+			<description>
+				<line>Fixed a bug thrown when there is a student enrolled in the same (not cross-listed) class two times.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
