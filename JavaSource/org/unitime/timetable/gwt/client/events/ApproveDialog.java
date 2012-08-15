@@ -60,6 +60,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iStandardNotes.addDoubleClickHandler(new DoubleClickHandler() {
 			@Override
 			public void onDoubleClick(DoubleClickEvent event) {
+				if (iStandardNotes.getItemCount() <= 0) return;
 				String text = iNotes.getText();
 				if (!text.isEmpty() && !text.endsWith("\n"))
 					text += "\n";
@@ -137,7 +138,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	public void reset(EventPropertiesRpcResponse properties) {
 		iNotes.setText("");
 		iStandardNotes.clear();
-		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propNotes()), properties != null && properties.hasStandardNotes());
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propStandardNotes()), properties != null && properties.hasStandardNotes());
 		if (properties != null && properties.hasStandardNotes()) {
 			for (String note: properties.getStandardNotes())
 				iStandardNotes.addItem(note);
