@@ -45,16 +45,17 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$ResourceLookupRpcRequest")
 public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {
 
 	@Override
-	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, SessionContext context, EventRights rights) {
+	public GwtRpcResponseList<ResourceInterface> execute(ResourceLookupRpcRequest request, EventContext context) {
 		if (request.getResourceType() == ResourceType.PERSON) {
 			if (!request.hasName()) request.setName(context.getUser().getExternalUserId());
-			if (!rights.canSeeSchedule(request.getName())) throw rights.getException();
+			else if (!request.getName().equals(context.isAuthenticated() ? context.getUser().getExternalUserId() : null))
+				context.checkPermission(Right.EventLookupSchedule);
 		}
 		
 		GwtRpcResponseList<ResourceInterface> response = new GwtRpcResponseList<ResourceInterface>();

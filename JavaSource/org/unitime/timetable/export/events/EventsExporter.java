@@ -30,8 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.events.EventLookupBackend;
-import org.unitime.timetable.events.EventRights;
-import org.unitime.timetable.events.SimpleEventRights;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
 import org.unitime.timetable.gwt.client.events.EventComparator;
@@ -46,7 +45,10 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
-import org.unitime.timetable.security.context.SimpleUserContext;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.UniTimeUserContext;
+import org.unitime.timetable.security.rights.Right;
 
 public abstract class EventsExporter implements Exporter {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -90,48 +92,35 @@ public abstract class EventsExporter implements Exporter {
     	}
     	if (hasRoomFilter)
     		request.setRoomFilter(roomFilter);
+    	
+    	UserContext u = helper.getSessionContext().getUser();
     	String user = helper.getParameter("user");
-    	SimpleUserContext u = null;
-    	if (user != null) {
-    		u = new SimpleUserContext();
-    		u.setExternalUsetId(user);
-    		eventFilter.setOption("user", user);
-    		roomFilter.setOption("user", user);
+    	if (u == null && user != null && !checkRights()) {
+    		u = new UniTimeUserContext(user, null, null, null);
     		String role = helper.getParameter("role");
     		if (role != null) {
-    			eventFilter.setOption("role", role);
-    			roomFilter.setOption("role", role);
-    			u.setCurrentRole(role, sessionId);
-    		}
-    	} else if (helper.getUser() != null) {
-    		u = new SimpleUserContext();
-    		u.setExternalUsetId(helper.getUser().getExternalUserId());
-    		eventFilter.setOption("user", helper.getUser().getExternalUserId());
-    		roomFilter.setOption("user", helper.getUser().getExternalUserId());
-    		if (helper.getUser().getCurrentRole() != null) {
-    			u.setCurrentRole(helper.getUser().getCurrentRole(), sessionId);
-        		eventFilter.setOption("role", helper.getUser().getCurrentRole());
-        		roomFilter.setOption("role", helper.getUser().getCurrentRole());
+    			for (UserAuthority a: u.getAuthorities()) {
+    				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
+    					u.setCurrentAuthority(a); break;
+    				}
+    			}
     		}
     	}
-    	
-    	EventRights rights = null;
+    	EventContext context = new EventContext(helper.getSessionContext(), u, sessionId);
+
     	if (checkRights()) {
-    		rights = new SimpleEventRights(helper.getUser(), false, sessionId);
-    		rights.checkAccess();
-    		if (request.getResourceType() == ResourceType.PERSON && !rights.canSeeSchedule(request.getResourceExternalId()))
-    			throw rights.getException();
-    	} else {
-    		rights = new SimpleEventRights(u, false, sessionId);
+    		context.checkPermission(Right.Events);
+    		if (request.getResourceType() == ResourceType.PERSON && !context.getUser().getExternalUserId().equals(request.getResourceExternalId()))
+    			context.checkPermission(Right.EventLookupSchedule);
     	}
     	
-    	List<EventInterface> events = new EventLookupBackend().findEvents(request, rights);
+    	List<EventInterface> events = new EventLookupBackend().findEvents(request, context);
     	
     	EventMeetingSortBy sort = (helper.getParameter("sort") == null ? null :
     		EventMeetingSortBy.values()[Integer.parseInt(helper.getParameter("sort"))]);
     	
     	int eventCookieFlags = (helper.getParameter("flags") == null ? EventInterface.sDefaultEventFlags : Integer.parseInt(helper.getParameter("flags")));
-    	if (!rights.canLookupContacts())
+    	if (!context.hasPermission(Right.EventLookupContact))
     		eventCookieFlags = EventFlag.SHOW_MAIN_CONTACT.clear(eventCookieFlags);
     	eventCookieFlags = EventFlag.SHOW_SECTION.set(eventCookieFlags);
     	

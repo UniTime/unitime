@@ -21,39 +21,33 @@ package org.unitime.timetable.events;
 
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
-import org.unitime.timetable.security.SessionContext;
 
 public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, FilterRpcResponse> {
 
 	@Override
-	public FilterRpcResponse execute(FilterRpcRequest request, SessionContext context, EventRights rights) {
-		if (context.isAuthenticated()) {
-			request.addOption("user", context.getUser().getExternalUserId());
-			if (context.getUser().getCurrentRole() != null)
-				request.addOption("role", context.getUser().getCurrentRole());
-		}
+	public FilterRpcResponse execute(FilterRpcRequest request, EventContext context) {
 		
 		FilterRpcResponse response = new FilterRpcResponse();
 		
 		switch (request.getCommand()) {
 			case LOAD:
-				load(request, response, rights);
+				load(request, response, context);
 				break;
 			case SUGGESTIONS:
-				suggestions(request, response, rights);
+				suggestions(request, response, context);
 				break;
 			case ENUMERATE:
-				enumarate(request, response, rights);
+				enumarate(request, response, context);
 				break;
 		}
 		
 		return response;
 	}
 	
-	public abstract void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);
+	public abstract void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context);
 	
-	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);
+	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context);
 	
-	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights);	
+	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context);	
 
 }

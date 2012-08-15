@@ -21,6 +21,8 @@ package org.unitime.timetable.security.evaluation;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,16 +34,19 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.SecurityMessages;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.permissions.Permission.PermissionDepartment;
 import org.unitime.timetable.security.permissions.Permission.PermissionSession;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("unitimePermissionCheck")
@@ -280,4 +285,102 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		}
 	}
 
+	@Override
+	public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException {
+		AccessDeniedException ret = null;
+		authorities: for (UserAuthority authority: user.getAuthorities()) {
+			for (Qualifiable q: filter)
+				if (!authority.hasQualifier(q)) continue authorities;
+			try {
+				checkPermission(new UserContextWrapper(user, authority), targetId, targetType, right);
+				return;
+			} catch (AccessDeniedException e) {
+				if (ret == null) ret = e;
+			}
+		}
+		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
+	}
+
+	@Override
+	public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+		AccessDeniedException ret = null;
+		authorities: for (UserAuthority authority: user.getAuthorities()) {
+			for (Qualifiable q: filter)
+				if (!authority.hasQualifier(q)) continue authorities;
+			try {
+				checkPermission(new UserContextWrapper(user, authority), targetObject, right);
+				return;
+			} catch (AccessDeniedException e) {
+				if (ret == null) ret = e;
+			}
+		}
+		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
+	}
+	
+	public static class UserContextWrapper implements UserContext {
+		private static final long serialVersionUID = 1L;
+		UserAuthority iAuthority;
+		UserContext iContext;
+		
+		public UserContextWrapper(UserContext context, UserAuthority authority) {
+			iContext = context; iAuthority = authority;
+		}
+		
+		@Override
+		public boolean isEnabled() { return iContext.isEnabled(); }
+		@Override
+		public boolean isCredentialsNonExpired() { return iContext.isCredentialsNonExpired(); }
+		@Override
+		public boolean isAccountNonLocked() { return iContext.isAccountNonLocked(); }
+		@Override
+		public boolean isAccountNonExpired() { return iContext.isAccountNonExpired(); }
+		@Override
+		public String getUsername() { return iContext.getUsername(); }
+		@Override
+		public String getPassword() { return iContext.getPassword(); }
+		@Override
+		public void setProperty(UserProperty property, String value) { iContext.setProperty(property, value); }
+		@Override
+		public void setProperty(String key, String value) { iContext.setProperty(key, value); }
+		@Override
+		public void setCurrentAuthority(UserAuthority authority) { iAuthority = authority; }
+		@Override
+		public boolean hasRole(String role) { return iContext.hasRole(role); }
+		@Override
+		public boolean hasDepartment(Long departmentId) { return iAuthority.hasQualifier(new SimpleQualifier(Department.class.getSimpleName(), departmentId)); }
+		@Override
+		public boolean hasAuthority(String authority) { return iContext.hasAuthority(authority); }
+		@Override
+		public boolean hasAuthority(String role, Long uniqueId) { return iContext.hasAuthority(role, uniqueId); }
+		@Override
+		public boolean hasAuthority(UserAuthority authority) { return iContext.hasAuthority(authority); }
+		@Override
+		public String getProperty(UserProperty property) { return iContext.getProperty(property); }
+		@Override
+		public String getProperty(String key, String defaultValue) { return iContext.getProperty(key, defaultValue); }
+		@Override
+		public String getProperty(String key) { return iContext.getProperty(key); }
+		@Override
+		public Map<String, String> getProperties() { return iContext.getProperties(); }
+		@Override
+		public String getName() { return iContext.getName(); }
+		@Override
+		public String getExternalUserId() { return iContext.getExternalUserId(); }
+		@Override
+		public String getEmail() { return iContext.getEmail(); }
+		@Override
+		public String getCurrentRole() { return iAuthority.getRole(); }
+		@Override
+		public UserAuthority getCurrentAuthority() { return iAuthority; }
+		@Override
+		public Long getCurrentAcademicSessionId() { return (Long)iAuthority.getAcademicSession().getQualifierId(); }
+		@Override
+		public UserAuthority getAuthority(String authority) { return iContext.getAuthority(authority); }
+		@Override
+		public UserAuthority getAuthority(String role, Long uniqueId) { return iContext.getAuthority(role, uniqueId); }
+		@Override
+		public List<? extends UserAuthority> getAuthorities(String role, Qualifiable... filter) { return iContext.getAuthorities(role, filter); }
+		@Override
+		public Collection<? extends UserAuthority> getAuthorities() { return iContext.getAuthorities(); }
+	}
 }

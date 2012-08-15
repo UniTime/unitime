@@ -25,7 +25,6 @@ import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
@@ -39,14 +38,14 @@ import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$RelatedObjectLookupRpcRequest")
 public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupRpcRequest, GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
 
 	@Override
-	public GwtRpcResponseList<RelatedObjectLookupRpcResponse> execute(RelatedObjectLookupRpcRequest request, SessionContext context, EventRights rights) {
-		if (!rights.canAddEvent(EventType.Course, null)) throw rights.getException();
+	public GwtRpcResponseList<RelatedObjectLookupRpcResponse> execute(RelatedObjectLookupRpcRequest request, EventContext context) {
+		context.checkPermission(Right.EventAddCourseRelated);
 
 		GwtRpcResponseList<RelatedObjectLookupRpcResponse> response = new GwtRpcResponseList<RelatedObjectLookupRpcResponse>();
 

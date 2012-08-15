@@ -31,6 +31,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.timetable.defaults.SessionAttribute;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
@@ -154,6 +155,51 @@ public class HttpSessionContext implements SessionContext {
 	public boolean hasPermission(Object targetObject, Right right) {
 		try {
 			unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
+	}
+	
+	@Override
+	public void checkPermissionAnyAuthority(Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), null, null, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
+	}
+
+	@Override
+	public void checkPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
+		unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetObject, right, filter);
+	}
+	
+	@Override
+	public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter) {
+		try {
+			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), null, null, right, filter);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		try {
+			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
+		try {
+			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetObject, right, filter);
 			return true;
 		} catch (AccessDeniedException e) {
 			return false;

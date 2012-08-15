@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.security.rights;
 
+import java.util.Date;
+
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -27,6 +29,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
@@ -34,6 +37,7 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Room;
@@ -324,6 +328,23 @@ public enum Right {
     EnrollmentAuditPDFReports(Session.class),
     StudentSectioningSolver(Session.class),
     StudentSectioningSolverLog(Session.class),
+    
+    Events(Session.class),
+    EventAddSpecial(Session.class),
+    EventAddCourseRelated(Session.class),
+    EventLookupContact,
+    EventLookupSchedule,
+    EventDetail(Event.class),
+    EventEdit(Event.class),
+    EventDate(Date.class),
+    EventLocation(Location.class),
+    EventLocationApprove(Location.class),
+    EventLocationOverbook(Location.class),
+    EventMeetingEdit(Meeting.class),
+    EventMeetingApprove(Meeting.class),
+    EventApprovePast,
+    EventAnyLocation,
+    EventEditPast,
     
     ;
 	

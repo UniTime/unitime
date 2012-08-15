@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.server.LookupServlet;
-import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -41,23 +40,23 @@ import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventPropertiesRpcRequest")
 public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
 
 	@Override
-	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, SessionContext context, EventRights rights) {
+	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, EventContext context) {
 		EventPropertiesRpcResponse response = new EventPropertiesRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
 		
-		response.setCanLookupPeople(rights.canSeeSchedule(null));
-		response.setCanLookupContacts(rights.canLookupContacts());
+		response.setCanLookupPeople(context.hasPermission(Right.EventLookupSchedule));
+		response.setCanLookupContacts(context.hasPermission(Right.EventLookupContact));
 		
-		response.setCanAddEvent(rights.canAddEvent(EventType.Special, null));
-		response.setCanAddCourseEvent(rights.canAddEvent(EventType.Course, null));
+		response.setCanAddEvent(context.hasPermission(Right.EventAddSpecial));
+		response.setCanAddCourseEvent(context.hasPermission(Right.EventAddCourseRelated));
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		

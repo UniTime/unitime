@@ -44,10 +44,10 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.MidtermExamEvent;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
@@ -55,8 +55,8 @@ import org.unitime.timetable.util.DateUtils;
 public class EventFilterBackend extends FilterBoxBackend {
 	
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
-		EventQuery query = getQuery(request);
+	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+		EventQuery query = getQuery(request, context);
 		
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -97,15 +97,14 @@ public class EventFilterBackend extends FilterBoxBackend {
 		Entity all = new Entity(0l, "All", "All Events");
 		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
-		if (request.hasOption("user")) {
-			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user").set("user", request.getOption("user"))
+		if (context.isAuthenticated()) {
+			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user").set("user", context.getUser().getExternalUserId())
 					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 			if (myCnt > 0) {
 				Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
 				response.add("mode", my);
 			}
-			String role = request.getOption("role");
-			if (role != null) {
+			if (context.hasPermission(Right.HasRole)) {
 				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is not null")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
 				if (approvedCnt > 0) {
@@ -135,9 +134,9 @@ public class EventFilterBackend extends FilterBoxBackend {
 					response.add("mode", conflicting);
 				}
 				
-				if (Roles.EVENT_MGR_ROLE.equals(role)) {
+				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
 					int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", request.getOption("user"))
+							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
 							.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					if (myApprovalCnt > 0) {
 						Entity awaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
@@ -157,7 +156,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 		}
 	}
 	
-	public static EventQuery getQuery(FilterRpcRequest request) {
+	public static EventQuery getQuery(FilterRpcRequest request, EventContext context) {
 		EventQuery query = new EventQuery(request.getSessionId());
 		
 		if (request.hasOptions("flag")) {
@@ -281,8 +280,8 @@ public class EventFilterBackend extends FilterBoxBackend {
 		
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
-			if ("My Events".equals(mode)) {
-				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + request.getOption("user") + "'");
+			if ("My Events".equals(mode) && context.isAuthenticated()) {
+				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + context.getUser().getExternalUserId() + "'");
 			} else if ("Approved Events".equals(mode)) {
 				query.addWhere("mode", "m.approvedDate is not null");
 			} else if ("Not Approved Events".equals(mode)) {
@@ -290,10 +289,10 @@ public class EventFilterBackend extends FilterBoxBackend {
 			} else if ("Awaiting Events".equals(mode)) {
 				query.addWhere("mode", "m.approvedDate is null and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xtoday", today);
-			} else if ("Awaiting My Approval".equals(mode)) {
+			} else if ("Awaiting My Approval".equals(mode) && context.isAuthenticated()) {
 				query.addFrom("mode", "Location Xl inner join Xl.roomDepts Xrd inner join Xrd.department.timetableManagers Xg");
 				query.addWhere("mode", "m.approvedDate is null and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
-				query.addParameter("mode", "Xuser", request.getOption("user"));
+				query.addParameter("mode", "Xuser", context.getUser().getExternalUserId());
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Conflicting Events".equals(mode)) {
 				query.addFrom("mode", "Meeting Xm");
@@ -318,15 +317,15 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
+	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
-		EventQuery query = getQuery(request);
+		EventQuery query = getQuery(request, context);
 		
 		for (Event event: (List<Event>)query.select("distinct e").limit(20).order("e.eventName").query(hibSession).list())
 			response.addSuggestion(event.getEventName(), event.getEventName(), event.getEventTypeLabel());
 		
-		if (rights.canLookupContacts() && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
+		if (context.hasPermission(Right.EventLookupContact) && (!request.getText().isEmpty() && (response.getSuggestions() == null || response.getSuggestions().size() < 20))) {
 			EventQuery.EventInstance instance = query.select("distinct c").from("inner join e.mainContact c").exclude("sponsor").exclude("query");
 			
 			int id = 0;
@@ -342,10 +341,10 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
+	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
-		EventQuery query = getQuery(request);
+		EventQuery query = getQuery(request, context);
 		
 		for (Event event: (List<Event>)query.select("distinct e").query(hibSession).list()) {
 			Entity entity = new Entity(event.getUniqueId(), event.getEventTypeAbbv(), event.getEventName());

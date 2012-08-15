@@ -23,25 +23,19 @@ package org.unitime.timetable.form;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SponsoringOrganization;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.webutil.WebTextValidation;
@@ -67,11 +61,6 @@ public class EventListForm extends ActionForm {
 	public static final int sModeAllConflictingEvents = 5;
 	
 	private int iMode = sModeMyEvents;
-	private boolean iAdmin = false;
-	private boolean iEventMgr = false;
-	private boolean iNoRole = false;
-	private String iUserId = null;
-	private Set iManagingDepts = null;
 	private boolean iConf = false;
 	
 	private boolean iDayMon, iDayTue, iDayWed, iDayThu, iDayFri, iDaySat, iDaySun;
@@ -161,19 +150,7 @@ public class EventListForm extends ActionForm {
 				Event.sEventTypeSpecial
 		};
 		iOp = null;
-		User user = Web.getUser(request.getSession());
-		iAdmin = false; iEventMgr = false; iNoRole = false;
-		if (user==null || user.getRole()==null) {
-		    iMode = sModeMyEvents; iNoRole = true;
-		} else if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-		    iMode = sModeEvents4Approval; iEventMgr = true;
-		    TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
-            if (mgr!=null) iManagingDepts = mgr.getDepartments();
-		} else if (user.isAdmin()) {
-		    iMode = sModeAllEvents;
-		    iAdmin = true;
-		}
-		iUserId = (user==null?null:user.getId());
+		iMode = sModeAllEvents;
 		iSponsorOrgId = null;
 		iConf = false;
 		
@@ -182,98 +159,107 @@ public class EventListForm extends ActionForm {
 		iDayMon = false; iDayTue = false; iDayWed = false; iDayThu = false; iDayFri = false; iDaySat = false; iDaySun = false;
 	}
 	
-	public void load(HttpSession session) {
-		String eventTypes = UserData.getProperty(session, "EventList.EventTypesInt", Event.sEventTypeFinalExam+","+Event.sEventTypeMidtermExam);
+	public void load(SessionContext context) {
+		String eventTypes = context.getUser().getProperty("EventList.EventTypesInt", Event.sEventTypeFinalExam+","+Event.sEventTypeMidtermExam);
 		StringTokenizer stk = new StringTokenizer(eventTypes,",");
 		iEventTypes = new Integer[stk.countTokens()];
 		int idx = 0;
 		while (stk.hasMoreTokens()) iEventTypes[idx++] = Integer.valueOf(stk.nextToken());
 		
-		iEventNameSubstring = (String)session.getAttribute("EventList.EventNameSubstring");
- 		iEventMainContactSubstring = (String)session.getAttribute("EventList.EventMainContactSubstring");
- 		if (session.getAttribute("EventList.EventDateFrom")!=null)
- 			iEventDateFrom = (String)session.getAttribute("EventList.EventDateFrom");
-		iEventDateTo = (String)session.getAttribute("EventList.EventDateTo");		
-		if (session.getAttribute("EventList.Mode")!=null)
-		    iMode = (Integer)session.getAttribute("EventList.Mode");
-		iSponsorOrgId = (Long)session.getAttribute("EventList.SponsoringOrganizationId");
-		if (session.getAttribute("EventList.Conf")!=null) {
-		    iConf = (Boolean) session.getAttribute("EventList.Conf");
+		iEventNameSubstring = (String)context.getAttribute("EventList.EventNameSubstring");
+ 		iEventMainContactSubstring = (String)context.getAttribute("EventList.EventMainContactSubstring");
+ 		if (context.getAttribute("EventList.EventDateFrom")!=null)
+ 			iEventDateFrom = (String)context.getAttribute("EventList.EventDateFrom");
+		iEventDateTo = (String)context.getAttribute("EventList.EventDateTo");
+		if (context.getAttribute("EventList.Mode")!=null)
+		    iMode = (Integer)context.getAttribute("EventList.Mode");
+		else {
+			if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
+				iMode = sModeEvents4Approval;
+			} else if (context.hasPermission(Right.HasRole)) { 
+				iMode = sModeAllEvents;
+			} else {
+				iMode = sModeMyEvents;
+			}
+		}
+		iSponsorOrgId = (Long)context.getAttribute("EventList.SponsoringOrganizationId");
+		if (context.getAttribute("EventList.Conf")!=null) {
+		    iConf = (Boolean) context.getAttribute("EventList.Conf");
 		}
 		
-		if (session.getAttribute("EventList.StartTime")!=null) {
-			iStartTime = (Integer)session.getAttribute("EventList.StartTime");
+		if (context.getAttribute("EventList.StartTime")!=null) {
+			iStartTime = (Integer)context.getAttribute("EventList.StartTime");
 		}
-		if (session.getAttribute("EventList.StopTime")!=null) {
-			iStopTime = (Integer)session.getAttribute("EventList.StopTime");
+		if (context.getAttribute("EventList.StopTime")!=null) {
+			iStopTime = (Integer)context.getAttribute("EventList.StopTime");
 		}
-		if (session.getAttribute("EventList.DayMon")!=null) {
-			iDayMon = (Boolean)session.getAttribute("EventList.DayMon");
+		if (context.getAttribute("EventList.DayMon")!=null) {
+			iDayMon = (Boolean)context.getAttribute("EventList.DayMon");
 		}
-		if (session.getAttribute("EventList.DayTue")!=null) {
-			iDayTue = (Boolean)session.getAttribute("EventList.DayTue");
+		if (context.getAttribute("EventList.DayTue")!=null) {
+			iDayTue = (Boolean)context.getAttribute("EventList.DayTue");
 		}
-		if (session.getAttribute("EventList.DayWed")!=null) {
-			iDayWed = (Boolean)session.getAttribute("EventList.DayWed");
+		if (context.getAttribute("EventList.DayWed")!=null) {
+			iDayWed = (Boolean)context.getAttribute("EventList.DayWed");
 		}
-		if (session.getAttribute("EventList.DayThu")!=null) {
-			iDayThu = (Boolean)session.getAttribute("EventList.DayThu");
+		if (context.getAttribute("EventList.DayThu")!=null) {
+			iDayThu = (Boolean)context.getAttribute("EventList.DayThu");
 		}
-		if (session.getAttribute("EventList.DayFri")!=null) {
-			iDayFri = (Boolean)session.getAttribute("EventList.DayFri");
+		if (context.getAttribute("EventList.DayFri")!=null) {
+			iDayFri = (Boolean)context.getAttribute("EventList.DayFri");
 		}
-		if (session.getAttribute("EventList.DaySat")!=null) {
-			iDaySat = (Boolean)session.getAttribute("EventList.DaySat");
+		if (context.getAttribute("EventList.DaySat")!=null) {
+			iDaySat = (Boolean)context.getAttribute("EventList.DaySat");
 		}
-		if (session.getAttribute("EventList.DaySun")!=null) {
-			iDaySun = (Boolean)session.getAttribute("EventList.DaySun");
+		if (context.getAttribute("EventList.DaySun")!=null) {
+			iDaySun = (Boolean)context.getAttribute("EventList.DaySun");
 		}
 	}
 	
-	public void save(HttpSession session) {
+	public void save(SessionContext context) {
 		String eventTypes = "";
 		if (iEventTypes!=null)
 			for (int idx=0; idx<iEventTypes.length; idx++)
 				eventTypes += (idx>0?",":"") + iEventTypes[idx];
-		UserData.setProperty(session, "EventList.EventTypesInt", eventTypes);
+		context.getUser().setProperty("EventList.EventTypesInt", eventTypes);
 		
 		if (iEventNameSubstring==null)
-			session.removeAttribute("EventList.EventNameSubstring");
+			context.removeAttribute("EventList.EventNameSubstring");
 		else
-			session.setAttribute("EventList.EventNameSubstring", iEventNameSubstring);
+			context.setAttribute("EventList.EventNameSubstring", iEventNameSubstring);
 
 		if (iEventMainContactSubstring==null)
-			session.removeAttribute("EventList.EventMainContactSubstring");
+			context.removeAttribute("EventList.EventMainContactSubstring");
 		else
-			session.setAttribute("EventList.EventMainContactSubstring", iEventMainContactSubstring);
+			context.setAttribute("EventList.EventMainContactSubstring", iEventMainContactSubstring);
 		
 		if (iEventDateFrom==null)
-			session.removeAttribute("EventList.EventDateFrom");
+			context.removeAttribute("EventList.EventDateFrom");
 		else
-			session.setAttribute("EventList.EventDateFrom", iEventDateFrom);		
+			context.setAttribute("EventList.EventDateFrom", iEventDateFrom);		
 
 		if (iEventDateTo==null)
-			session.removeAttribute("EventList.EventDateTo");
+			context.removeAttribute("EventList.EventDateTo");
 		else
-			session.setAttribute("EventList.EventDateTo", iEventDateTo);
+			context.setAttribute("EventList.EventDateTo", iEventDateTo);
 		
 		if (iSponsorOrgId==null)
-		    session.removeAttribute("EventList.SponsoringOrganizationId");
+		    context.removeAttribute("EventList.SponsoringOrganizationId");
 		else
-		    session.setAttribute("EventList.SponsoringOrganizationId", iSponsorOrgId);
+		    context.setAttribute("EventList.SponsoringOrganizationId", iSponsorOrgId);
 		
-		session.setAttribute("EventList.Mode", iMode);  
-		session.setAttribute("EventList.Conf", iConf);
+		context.setAttribute("EventList.Mode", iMode);  
+		context.setAttribute("EventList.Conf", iConf);
 		
-		session.setAttribute("EventList.StartTime", iStartTime);
-		session.setAttribute("EventList.StopTime", iStopTime);
-		session.setAttribute("EventList.DayMon", iDayMon);
-		session.setAttribute("EventList.DayTue", iDayTue);
-		session.setAttribute("EventList.DayWed", iDayWed);
-		session.setAttribute("EventList.DayThu", iDayThu);
-		session.setAttribute("EventList.DayFri", iDayFri);
-		session.setAttribute("EventList.DaySat", iDaySat);
-		session.setAttribute("EventList.DaySun", iDaySun);
+		context.setAttribute("EventList.StartTime", iStartTime);
+		context.setAttribute("EventList.StopTime", iStopTime);
+		context.setAttribute("EventList.DayMon", iDayMon);
+		context.setAttribute("EventList.DayTue", iDayTue);
+		context.setAttribute("EventList.DayWed", iDayWed);
+		context.setAttribute("EventList.DayThu", iDayThu);
+		context.setAttribute("EventList.DayFri", iDayFri);
+		context.setAttribute("EventList.DaySat", iDaySat);
+		context.setAttribute("EventList.DaySun", iDaySun);
 	}
 
 	public String getEventNameSubstring () {
@@ -307,31 +293,8 @@ public class EventListForm extends ActionForm {
 	    return Event.sEventTypes;
 	}
 	
-	public boolean isAdmin() { return iAdmin; }
-	public boolean isNoRole() { return iNoRole; }
-	public boolean isEventManager() { return iEventMgr; }
-	
 	public int getMode() { return iMode; }
 	public void setMode(int mode) { iMode = mode; }
-	
-	public String getUserId() { return iUserId; }
-	
-	public Vector<ComboBoxLookup> getModes() {
-	    Vector<ComboBoxLookup> modes = new Vector();
-	    if (!isAdmin()) modes.add(new ComboBoxLookup("My Events", String.valueOf(sModeMyEvents)));
-	    if (isEventManager()) modes.add(new ComboBoxLookup("Events Awaiting My Approval", String.valueOf(sModeEvents4Approval)));
-	    modes.add(new ComboBoxLookup("All Events", String.valueOf(sModeAllEvents)));
-	    if (!isNoRole()) {
-	        modes.add(new ComboBoxLookup("All Approved Events", String.valueOf(sModeAllApprovedEvents)));
-	        modes.add(new ComboBoxLookup("All Events Awaiting Approval", String.valueOf(sModeAllEventsWaitingApproval)));
-	        modes.add(new ComboBoxLookup("All Conflicting Events", String.valueOf(sModeAllConflictingEvents)));
-	    }
-	    return modes;
-	}
-
-	public Set<Department> getManagingDepartments() {
-	    return iManagingDepts;
-	}
 	
     public Long getSponsoringOrganization() { return iSponsorOrgId; }
     public void setSponsoringOrganization(Long org) { iSponsorOrgId = org; }

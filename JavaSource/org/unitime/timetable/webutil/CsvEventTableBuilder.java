@@ -41,6 +41,8 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 public class CsvEventTableBuilder extends WebEventTableBuilder {
     SimpleDateFormat df = new SimpleDateFormat("yyyy/MM/dd");
@@ -125,8 +127,8 @@ public class CsvEventTableBuilder extends WebEventTableBuilder {
     	});
     }
     
-    public File csvTableForEvents (EventListForm form){
-        List events = loadEvents(form);
+    public File csvTableForEvents (SessionContext context, EventListForm form){
+        List events = loadEvents(form, context);
         if (events.isEmpty()) return null;
         
         try {
@@ -153,7 +155,7 @@ public class CsvEventTableBuilder extends WebEventTableBuilder {
                     boolean myApproval = false;
                     for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                         Meeting m = (Meeting)j.next();
-                        if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        if (m.getApprovedDate() == null && context.hasPermissionAnyAuthority(m, Right.EventMeetingApprove)) {
                             myApproval = true; break;
                         }
                     }
@@ -172,8 +174,8 @@ public class CsvEventTableBuilder extends WebEventTableBuilder {
         return null;
     }
 
-    public File csvTableForMeetings (MeetingListForm form){
-        List meetings = loadMeetings(form);
+    public File csvTableForMeetings (SessionContext context, MeetingListForm form){
+        List meetings = loadMeetings(form, context);
         
         if (meetings.isEmpty()) return null;
         

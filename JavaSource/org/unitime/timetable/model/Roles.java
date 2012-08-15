@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.hibernate.criterion.Order;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.rights.HasRights;
@@ -450,7 +451,35 @@ public class Roles extends BaseRoles implements HasRights {
 
 		case IsAdmin:
 			return ADMIN_ROLE.equals(getReference());
+			
+		case Events:
+		case EventDetail:
+		case EventLocation:
+		case EventAddSpecial:
+		case EventEdit:
+		case EventMeetingEdit:
+		case EventDate:
+			return true;
+			
+		case EventLookupSchedule:
+			return ADMIN_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) ;
 
+		case EventAddCourseRelated:
+			return ADMIN_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) ;
+			
+		case EventLookupContact:
+		case EventMeetingApprove:
+		case EventLocationApprove:
+		case EventLocationOverbook:
+			return ADMIN_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
+			
+		case EventAnyLocation:
+		case EventApprovePast:
+			return ADMIN_ROLE.equals(getReference());
+		
+		case EventEditPast:
+			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
+			
 		default:
 			
 			return false;

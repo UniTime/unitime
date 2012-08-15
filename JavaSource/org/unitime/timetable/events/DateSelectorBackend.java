@@ -27,14 +27,13 @@ import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.DateUtils;
 
 @Service("org.unitime.timetable.gwt.client.events.SessionDatesSelector$RequestSessionDetails")
 public class DateSelectorBackend extends EventAction<SessionDatesSelector.RequestSessionDetails, GwtRpcResponseList<SessionDatesSelector.SessionMonth>> {
 
 	@Override
-	public GwtRpcResponseList<SessionDatesSelector.SessionMonth> execute(SessionDatesSelector.RequestSessionDetails command, SessionContext helper, EventRights rights) {
+	public GwtRpcResponseList<SessionDatesSelector.SessionMonth> execute(SessionDatesSelector.RequestSessionDetails command, EventContext context) {
 		Session session = SessionDAO.getInstance().get(command.getSessionId());
 		
 		GwtRpcResponseList<SessionDatesSelector.SessionMonth> response = new GwtRpcResponseList<SessionDatesSelector.SessionMonth>();
@@ -69,7 +68,7 @@ public class DateSelectorBackend extends EventAction<SessionDatesSelector.Reques
 
 				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)
 					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.DISABLED);
-				else if (rights.isPastOrOutside(calendar.getTime()))
+				else if (context.isPastOrOutside(calendar.getTime()))
 					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.PAST);
 				
 				calendar.add(Calendar.DAY_OF_YEAR, 1);

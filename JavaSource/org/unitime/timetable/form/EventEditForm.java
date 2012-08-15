@@ -28,20 +28,17 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SponsoringOrganization;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.EventEmail;
 
 
@@ -79,7 +76,7 @@ public class EventEditForm extends EventAddInfoForm {
 
 	}
 	
-	public void update(HttpServletRequest request) {
+	public void update(HttpServletRequest request, SessionContext context) {
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -119,20 +116,12 @@ public class EventEditForm extends EventAddInfoForm {
 				}
 			}			
 			
-			User user = Web.getUser(request.getSession());
-			String uname = event.getMainContact().getShortName();
-	        if (user!=null && (user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()))) {
-	            TimetableManager mgr = TimetableManager.getManager(user);
-	            if (mgr!=null) uname = mgr.getShortName();
-	        }
-	        if (uname==null) uname = user.getName();
-	        
             // add event note (additional info)
             EventNote en = new EventNote();
             en.setNoteType(EventNote.sEventNoteTypeEditEvent);
             en.setTimeStamp(new Date());
             en.setTextNote(getAdditionalInfo());
-            en.setUser(uname);
+            en.setUser(context.getUser().getName());
             en.setEvent(event);
             hibSession.saveOrUpdate(en);
             // attach the note to event
@@ -145,7 +134,7 @@ public class EventEditForm extends EventAddInfoForm {
 			
 			ChangeLog.addChange(
                     hibSession,
-                    request,
+                    context,
                     event,
                     ChangeLog.Source.EVENT_EDIT,
                     ChangeLog.Operation.UPDATE,

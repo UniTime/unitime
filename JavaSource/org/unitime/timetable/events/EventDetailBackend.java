@@ -64,7 +64,7 @@ import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -72,26 +72,26 @@ import org.unitime.timetable.util.Constants;
 public class EventDetailBackend extends EventAction<EventDetailRpcRequest, EventInterface> {
 	
 	@Override
-	public EventInterface execute(EventDetailRpcRequest request, SessionContext context, EventRights rights) {
+	public EventInterface execute(EventDetailRpcRequest request, EventContext context) {
 		Event event = EventDAO.getInstance().get(request.getEventId());
 		if (event == null)
 			throw new EventException("No event with id " + request.getEventId() + " found.");
 		
-		if (!rights.canSee(event)) throw rights.getException();
+		context.checkPermission(event, Right.EventDetail);
 		
-		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, rights);
+		EventInterface detail = getEventDetail(SessionDAO.getInstance().get(request.getSessionId()), event, context);
 		
 		return detail;
 	}
 	
-	public static EventInterface getEventDetail(Session session, Event e, EventRights rights) throws EventException {
+	public static EventInterface getEventDetail(Session session, Event e, EventContext context) throws EventException {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		EventInterface event = new EventInterface();
 		event.setId(e.getUniqueId());
 		event.setName(e.getEventName());
 		event.setType(EventInterface.EventType.values()[e.getEventType()]);
-		event.setCanView(rights.canSee(e));
-		event.setCanEdit(rights.canEdit(e)); 
+		event.setCanView(context.hasPermission(e, Right.EventDetail));
+		event.setCanEdit(context.hasPermission(e, Right.EventEdit)); 
 		event.setEmail(e.getEmail());
 		event.setMaxCapacity(e.getMaxCapacity());
 				
@@ -390,11 +390,11 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			meeting.setEndSlot(m.getStopPeriod());
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-			meeting.setPast(rights.isPastOrOutside(m.getStartTime()));
+			meeting.setPast(context.isPastOrOutside(m.getStartTime()));
 			if (m.isApproved())
 				meeting.setApprovalDate(m.getApprovedDate());
-			meeting.setCanEdit(rights.canEdit(m));
-			meeting.setCanApprove(rights.canApprove(m));
+			meeting.setCanEdit(context.hasPermission(m, Right.EventMeetingEdit));
+			meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);
@@ -433,7 +433,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						confEvent.setName(overlap.getEvent().getEventName());
 						confEvent.setType(EventInterface.EventType.values()[overlap.getEvent().getEventType()]);
 						conflictingEvents.put(overlap.getEvent().getUniqueId(), confEvent);
-						confEvent.setCanView(rights.canSee(overlap.getEvent()));
+						confEvent.setCanView(context.hasPermission(overlap.getEvent(), Right.EventDetail));
 						confEvent.setMaxCapacity(overlap.getEvent().getMaxCapacity());
 						if (overlap.getEvent().getMainContact() != null) {
 							ContactInterface contact = new ContactInterface();

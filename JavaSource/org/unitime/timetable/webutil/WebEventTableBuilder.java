@@ -35,7 +35,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.servlet.http.HttpSession;
 import javax.servlet.jsp.JspWriter;
 
 import org.hibernate.Query;
@@ -57,6 +56,8 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 
@@ -556,7 +557,7 @@ public class WebEventTableBuilder {
         table.addContent(row);
     }
     
-    protected List loadEvents(EventListForm form) {
+    protected List loadEvents(EventListForm form, SessionContext context) {
         boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
         
         
@@ -698,7 +699,7 @@ public class WebEventTableBuilder {
         
         switch (form.getMode()) {
             case EventListForm.sModeMyEvents :
-                hibQuery.setString("userId", form.getUserId());
+                hibQuery.setString("userId", context.getUser().getExternalUserId());
                 break;
             case EventListForm.sModeAllApprovedEvents :
             case EventListForm.sModeAllEventsWaitingApproval :
@@ -709,9 +710,10 @@ public class WebEventTableBuilder {
         return hibQuery.setCacheable(true).list();        
     }
     
-    public void htmlTableForEvents (HttpSession httpSession, EventListForm form, JspWriter outputStream){
-        List events = loadEvents(form);
+    public void htmlTableForEvents (SessionContext context, EventListForm form, JspWriter outputStream){
+        List events = loadEvents(form, context);
         int numberOfEvents = events.size();
+        boolean mainContact = context.hasPermissionAnyAuthority(Right.EventLookupContact);
         
         TableStream eventsTable = this.initTable(outputStream);
         if (numberOfEvents>getMaxResults() && form.getMode()!=EventListForm.sModeEvents4Approval) {
@@ -729,7 +731,7 @@ public class WebEventTableBuilder {
         	cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
         	row.addContent(cell);
         	eventsTable.addContent(row);
-        } else buildTableHeader(eventsTable, form.isAdmin() || form.isEventManager());
+        } else buildTableHeader(eventsTable, mainContact);
 
         ArrayList eventIds = new ArrayList();
         int idx = 0;
@@ -739,7 +741,7 @@ public class WebEventTableBuilder {
                 boolean myApproval = false;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting m = (Meeting)j.next();
-                    if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                    if (m.getApprovedDate() == null && context.hasPermissionAnyAuthority(m, Right.EventMeetingApprove)) {
                         myApproval = true; break;
                     }
                 }
@@ -747,13 +749,13 @@ public class WebEventTableBuilder {
             } else  if (idx==getMaxResults()) break;
             eventIds.add(event.getUniqueId());
             TreeSet<MultiMeeting> meetings = event.getMultiMeetings();
-            addEventsRowsToTable(eventsTable, event, form.isAdmin() || form.isEventManager(), meetings);
+            addEventsRowsToTable(eventsTable, event, mainContact, meetings);
             for (MultiMeeting meeting : meetings) 
-                addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), form.getDispConflicts());
+                addMeetingRowsToTable(eventsTable, meeting, mainContact, form.getDispConflicts());
         }
 
         eventsTable.tableComplete();
-        Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, eventIds);
+        Navigation.set(context, Navigation.sInstructionalOfferingLevel, eventIds);
     }
     
     protected boolean match(String filter, String name) {
@@ -778,7 +780,7 @@ public class WebEventTableBuilder {
         return false;
     }
     
-    protected List<Meeting> loadMeetings(MeetingListForm form) {
+    protected List<Meeting> loadMeetings(MeetingListForm form, SessionContext context) {
         boolean conf = (form.getMode()==EventListForm.sModeAllConflictingEvents);
         
         String query = "select m from Event e inner join e.meetings m where e.class in (";
@@ -948,7 +950,7 @@ public class WebEventTableBuilder {
         
         switch (form.getMode()) {
             case EventListForm.sModeMyEvents :
-                hibQuery.setString("userId", form.getUserId());
+                hibQuery.setString("userId", context.getUser().getExternalUserId());
                 break;
             case EventListForm.sModeAllApprovedEvents :
             case EventListForm.sModeAllEventsWaitingApproval :
@@ -961,8 +963,7 @@ public class WebEventTableBuilder {
             for (Iterator it = meetings.iterator();it.hasNext();){
                 Meeting meeting = (Meeting) it.next();
                 if (form.getMode()==EventListForm.sModeEvents4Approval) {
-                    if (meeting.getApprovedDate()!=null || meeting.getLocation()==null || 
-                            !form.getManagingDepartments().contains(meeting.getLocation().getControllingDepartment())) {
+                	if (meeting.getApprovedDate() != null || !context.hasPermissionAnyAuthority(meeting, Right.EventMeetingApprove)) {
                         it.remove(); continue;
                     }
                 }
@@ -1007,9 +1008,10 @@ public class WebEventTableBuilder {
         return meetings;
     }
 
-    public void htmlTableForMeetings(HttpSession httpSession, MeetingListForm form, JspWriter outputStream){
-        List meetings = loadMeetings(form);
+    public void htmlTableForMeetings(SessionContext context, MeetingListForm form, JspWriter outputStream){
+        List meetings = loadMeetings(form, context);
         int numberOfMeetings = meetings.size();
+        boolean mainContact = context.hasPermissionAnyAuthority(Right.EventLookupContact);
         
         TableStream eventsTable = this.initTable(outputStream);
         if (numberOfMeetings>getMaxResults() && form.getMode()!=EventListForm.sModeEvents4Approval) {
@@ -1027,7 +1029,7 @@ public class WebEventTableBuilder {
             cell.setStyle("padding-bottom:10px;color:red;font-weight:bold;");
             row.addContent(cell);
             eventsTable.addContent(row);
-        } else buildMeetingTableHeader(eventsTable, form.isAdmin() || form.isEventManager());
+        } else buildMeetingTableHeader(eventsTable, mainContact);
 
         int idx = 0;
         HashSet<Long> eventIdsHash = new HashSet();
@@ -1040,12 +1042,12 @@ public class WebEventTableBuilder {
             Meeting meeting = (Meeting) it.next();
             if (idx==getMaxResults()) break;
             if (eventIdsHash.add(meeting.getEvent().getUniqueId())) eventIds.add(meeting.getEvent().getUniqueId());
-            addMeetingRowsToTable(eventsTable, meeting, form.isAdmin() || form.isEventManager(), lastEvent, now, line, form.getDispConflicts());
+            addMeetingRowsToTable(eventsTable, meeting, mainContact, lastEvent, now, line, form.getDispConflicts());
             lastEvent = meeting.getEvent();
         }
 
         eventsTable.tableComplete();
-        Navigation.set(httpSession, Navigation.sInstructionalOfferingLevel, eventIds);
+        Navigation.set(context, Navigation.sInstructionalOfferingLevel, eventIds);
     }
         
     protected TableStream initTable(JspWriter outputStream){

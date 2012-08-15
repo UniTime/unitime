@@ -38,8 +38,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventDetailForm.ContactBean;
 import org.unitime.timetable.form.EventDetailForm.MeetingBean;
@@ -57,11 +55,9 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.SponsoringOrganization;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -72,6 +68,7 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -288,7 +285,7 @@ public class EventAddInfoForm extends ActionForm {
 		session.setAttribute("Event.Capacity", iCapacity);
 	}
 	
-	public void submit(HttpServletRequest request) {
+	public void submit(HttpServletRequest request, SessionContext context) {
 
 		Transaction tx = null;
 		try {
@@ -359,13 +356,6 @@ public class EventAddInfoForm extends ActionForm {
 				event.getMeetings().add(m); // link each meeting with event
 				createdMeetings.add(m);
 			}
-			User user = Web.getUser(request.getSession());
-			String uname = event.getMainContact().getShortName();
-	        if (user!=null && (user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()))) {
-	            TimetableManager mgr = TimetableManager.getManager(user);
-	            if (mgr!=null) uname = mgr.getShortName();
-	        }
-	        if (uname==null) uname = user.getName();
 	        
             // add event note (additional info)
             EventNote en = new EventNote();
@@ -373,7 +363,7 @@ public class EventAddInfoForm extends ActionForm {
             en.setTimeStamp(new Date());
             en.setMeetingCollection(createdMeetings);
             en.setTextNote(iAdditionalInfo);
-            en.setUser(uname);
+            en.setUser(context.getUser().getName());
             en.setEvent(event);
             //hibSession.saveOrUpdate(en);
             // attach the note to event
@@ -384,7 +374,7 @@ public class EventAddInfoForm extends ActionForm {
 			
 			ChangeLog.addChange(
                     hibSession,
-                    request,
+                    context,
                     event,
                     ChangeLog.Source.EVENT_EDIT,
                     ChangeLog.Operation.CREATE,
@@ -400,7 +390,7 @@ public class EventAddInfoForm extends ActionForm {
 		}
 	}
 	
-	public void update (HttpServletRequest request) {
+	public void update (HttpServletRequest request, SessionContext context) {
 		Transaction tx = null;
 		try {
 			Session hibSession = new _RootDAO().getSession();
@@ -421,14 +411,6 @@ public class EventAddInfoForm extends ActionForm {
 				iEvent.getMeetings().add(m); // link each meeting with event
 				createdMeetings.add(m);
 			}
-
-			User user = Web.getUser(request.getSession());
-			String uname = iEvent.getMainContact().getShortName();
-	        if (user!=null && (user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()))) {
-	            TimetableManager mgr = TimetableManager.getManager(user);
-	            if (mgr!=null) uname = mgr.getShortName();
-	        }
-	        if (uname==null) uname = user.getName();
 	        
             // add event note (additional info)
             EventNote en = new EventNote();
@@ -436,7 +418,7 @@ public class EventAddInfoForm extends ActionForm {
             en.setTimeStamp(new Date());
             en.setMeetingCollection(createdMeetings);
             en.setTextNote(iAdditionalInfo);
-            en.setUser(uname);
+            en.setUser(context.getUser().getName());
             en.setEvent(iEvent);
             //hibSession.saveOrUpdate(en);
             // attach the note to event
@@ -447,7 +429,7 @@ public class EventAddInfoForm extends ActionForm {
 
 			ChangeLog.addChange(
                     hibSession,
-                    request,
+                    context,
                     iEvent,
                     ChangeLog.Source.EVENT_EDIT,
                     ChangeLog.Operation.UPDATE,

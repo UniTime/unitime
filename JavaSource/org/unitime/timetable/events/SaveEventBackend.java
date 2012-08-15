@@ -58,18 +58,29 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$SaveEventRpcRequest")
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
-	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, SessionContext context, EventRights rights) {
-		if (request.getEvent().getId() == null) { // new event
-			if (!rights.canAddEvent(request.getEvent().getType(), request.getEvent().hasContact() ? request.getEvent().getContact().getExternalId() : null)) throw rights.getException();
+	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {
+		if (request.getEvent().hasContact() && !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId()))
+			context.checkPermission(Right.EventLookupContact);
+		if (request.getEvent().getId() == null) { // new even
+			switch (request.getEvent().getType()) {
+			case Special:
+				context.checkPermission(Right.EventAddSpecial);
+				break;
+			case Course:
+				context.checkPermission(Right.EventAddCourseRelated);
+				break;
+			default:
+				throw context.getException();
+			}
 		} else { // existing event
-			if (!rights.canEdit(EventDAO.getInstance().get(request.getEvent().getId()))) throw rights.getException();
+			context.checkPermission(request.getEvent().getId(), "Event", Right.EventEdit);
 		}
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -105,7 +116,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			if (event.getAdditionalContacts() == null) {
 				event.setAdditionalContacts(new HashSet<EventContact>());
 			}
-			if (rights.canLookupContacts()) {
+			if (context.hasPermission(Right.EventLookupContact)) {
 				Set<EventContact> existingContacts = new HashSet<EventContact>(event.getAdditionalContacts());
 				event.getAdditionalContacts().clear();
 				if (request.getEvent().hasAdditionalContacts())
@@ -167,7 +178,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					}
 				if (meeting != null) {
 					if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
-						if (!rights.canEdit(meeting))
+						if (!context.hasPermission(meeting, Right.EventMeetingEdit))
 							throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
 						meeting.setStartOffset(m.getStartOffset());
 						meeting.setStopOffset(m.getEndOffset());
@@ -182,13 +193,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					if (location == null) throw new GwtRpcException(MESSAGES.failedSaveEventNoLocation(toString(m)));
 					meeting.setLocationPermanentId(location.getPermanentId());
 					meeting.setApprovedDate(null);
-					if (!rights.canCreate(location.getUniqueId()))
+					if (!context.hasPermission(location, Right.EventLocation))
 						throw new GwtRpcException(MESSAGES.failedSaveEventWrongLocation(m.getLocationName()));
-					if (rights.canApprove(location.getUniqueId()))
+					if (context.hasPermission(location, Right.EventLocationApprove))
 						meeting.setApprovedDate(now);
-					if (rights.isPastOrOutside(m.getMeetingDate()))
+					if (context.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
-					if (!rights.canOverbook(location.getUniqueId())) {
+					if (!context.hasPermission(location, Right.EventLocationOverbook)) {
 						List<MeetingConglictInterface> conflicts = computeConflicts(hibSession, m, event.getUniqueId());
 						if (!conflicts.isEmpty())
 							throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(conflicts.get(0))));
@@ -207,7 +218,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			
 			if (!remove.isEmpty()) {
 				for (Meeting m: remove) {
-					if (!rights.canEdit(m))
+					if (!context.hasPermission(m, Right.EventMeetingEdit))
 						throw new GwtRpcException(MESSAGES.failedSaveEventCanNotDeleteMeeting(toString(m)));
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
@@ -220,7 +231,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					meeting.setEndSlot(m.getStopPeriod());
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-					meeting.setPast(rights.isPastOrOutside(m.getStartTime()));
+					meeting.setPast(context.isPastOrOutside(m.getStartTime()));
 					if (m.isApproved()) meeting.setApprovalDate(m.getApprovedDate());
 					if (m.getLocation() != null) {
 						ResourceInterface location = new ResourceInterface();
@@ -330,14 +341,14 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			
 			if (event.getUniqueId() == null) {
 				hibSession.save(event);
-				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
+				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 			} else if (event.getMeetings().isEmpty()) {
-				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
+				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 				response.getEvent().setId(null);
 				hibSession.delete(event);
 			} else {
 				hibSession.update(event);
-				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
+				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 			}
 			
 			new EventEmail(request, response).send(context);
