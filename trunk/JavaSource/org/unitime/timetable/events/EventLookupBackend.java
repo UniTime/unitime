@@ -60,7 +60,6 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ClassEventDAO;
@@ -69,7 +68,7 @@ import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -78,10 +77,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 	private static Logger sLog = Logger.getLogger(EventLookupBackend.class);
 
 	@Override
-	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, SessionContext context, EventRights rights) {
+	public GwtRpcResponseList<EventInterface> execute(EventLookupRpcRequest request, EventContext context) {
 		if (request.getResourceType() == ResourceType.PERSON) {
 			if (!request.hasResourceExternalId()) request.setResourceExternalId(context.isAuthenticated() ? context.getUser().getExternalUserId() : null);
-			if (!rights.canSeeSchedule(request.getResourceExternalId())) throw rights.getException();
+			else if (!request.getResourceExternalId().equals(context.isAuthenticated() ? context.getUser().getExternalUserId() : null))
+				context.checkPermission(Right.EventLookupSchedule);
 		}
 		
 		if (request.getEventFilter() == null) {
@@ -90,18 +90,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			request.setEventFilter(eventFilter);
 		}
 		
-		if (context.isAuthenticated()) {
-			request.getEventFilter().setOption("user", context.getUser().getExternalUserId());
-			if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
-				request.getRoomFilter().setOption("user", context.getUser().getExternalUserId());
-			if (context.getUser().getCurrentRole() != null) {
-				request.getEventFilter().setOption("role", context.getUser().getCurrentRole());
-				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty())
-					request.getRoomFilter().setOption("role", context.getUser().getCurrentRole());
-			}
-		}
-
-		return findEvents(request, rights);
+		return findEvents(request, context);
 	}
 	
 	private boolean hasChild(Set<Long> restrictions, Class_ clazz) {
@@ -129,7 +118,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return false;
 	}
 	
-	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request, EventRights rights) throws EventException {
+	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request, EventContext context) throws EventException {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
@@ -139,7 +128,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 					}
 				}
-				EventFilterBackend.EventQuery query = EventFilterBackend.getQuery(request.getEventFilter());
+				EventFilterBackend.EventQuery query = EventFilterBackend.getQuery(request.getEventFilter(), context);
 				int limit = request.getLimit();
 				
 				List<Meeting> meetings = null;
@@ -464,8 +453,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					
 					break;
 				case PERSON:
-					String role = request.getEventFilter().getOption("role");
-					boolean overrideStatus = role != null && (Roles.ADMIN_ROLE.equals(role) || Roles.DEPT_SCHED_MGR_ROLE.equals(role));
+					boolean overrideStatus = context.hasPermission(Right.EventLookupSchedule); 
 					boolean canViewFinalExams = overrideStatus || session.getStatusType().canNoRoleReportExamFinal();
 					boolean canViewMidtermExams = overrideStatus || session.getStatusType().canNoRoleReportExamMidterm();
 					boolean canViewClasses = overrideStatus || session.getStatusType().canNoRoleReportClass();
@@ -657,7 +645,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						event.setName(m.getEvent().getEventName());
 						event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 						events.put(m.getEvent().getUniqueId(), event);
-						event.setCanView(rights.canSee(m.getEvent()));
+						event.setCanView(context.hasPermission(m.getEvent(), Right.EventDetail));
 						event.setMaxCapacity(m.getEvent().getMaxCapacity());
 						
 						if (m.getEvent().getMainContact() != null) {
@@ -926,9 +914,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					meeting.setEndSlot(m.getStopPeriod());
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-					meeting.setPast(rights.isPastOrOutside(m.getStartTime()));
-					meeting.setCanEdit(rights.canEdit(m));
-					meeting.setCanApprove(rights.canApprove(m));
+					meeting.setPast(context.isPastOrOutside(m.getStartTime()));
+					meeting.setCanEdit(context.hasPermission(m, Right.EventMeetingEdit));
+					meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
 					if (m.isApproved())
 						meeting.setApprovalDate(m.getApprovedDate());
 					if (m.getLocation() != null) {
@@ -948,7 +936,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				
 				if (request.getEventFilter().hasOptions("flag") && request.getEventFilter().getOptions("flag").contains("Conflicts")) {
 					request.getEventFilter().setOption("mode", "Conflicting Events");
-					query = EventFilterBackend.getQuery(request.getEventFilter());
+					query = EventFilterBackend.getQuery(request.getEventFilter(), context);
 					
 					List<Object[]> conflicts = null;
 					switch (request.getResourceType()) {
@@ -1196,7 +1184,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								event.setName(m.getEvent().getEventName());
 								event.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 								conflictingEvents.put(m.getEvent().getUniqueId(), event);
-								event.setCanView(rights.canSee(m.getEvent()));
+								event.setCanView(context.hasPermission(m.getEvent(), Right.EventDetail));
 								event.setMaxCapacity(m.getEvent().getMaxCapacity());
 								if (m.getEvent().getMainContact() != null) {
 									ContactInterface contact = new ContactInterface();
@@ -1410,7 +1398,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							meeting.setEndSlot(m.getStopPeriod());
 							meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 							meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-							meeting.setPast(rights.isPastOrOutside(m.getStartTime()));
+							meeting.setPast(context.isPastOrOutside(m.getStartTime()));
 							if (m.isApproved())
 								meeting.setApprovalDate(m.getApprovedDate());
 							if (m.getLocation() != null) {

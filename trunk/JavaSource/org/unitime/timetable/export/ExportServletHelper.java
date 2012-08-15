@@ -37,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.unitime.timetable.events.QueryEncoderBackend;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.UserContext;
 
 public class ExportServletHelper implements ExportHelper {
 	private SessionContext iContext;
@@ -192,8 +191,8 @@ public class ExportServletHelper implements ExportHelper {
 	}
 
 	@Override
-	public UserContext getUser() {
-		return iContext.getUser();
+	public SessionContext getSessionContext() {
+		return iContext;
 	}
 	
 	@Override

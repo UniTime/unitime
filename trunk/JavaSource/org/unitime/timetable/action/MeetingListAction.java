@@ -21,6 +21,7 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,11 +31,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
+import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
-import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CalendarEventTableBuilder;
@@ -46,6 +49,8 @@ import org.unitime.timetable.webutil.pdf.PdfEventTableBuilder;
  */
 @Service("/meetingList")
 public class MeetingListAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(
 			ActionMapping mapping,
@@ -54,9 +59,19 @@ public class MeetingListAction extends Action {
 			HttpServletResponse response) throws Exception {
 		MeetingListForm myForm = (MeetingListForm)form;
 		
-        User user = Web.getUser(request.getSession()); 
-        if (user==null || !TimetableManager.canSeeEvents(user)) 
-        	throw new Exception ("Access Denied.");
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
+		
+		Vector<ComboBoxLookup> modes = new Vector();
+		modes.add(new ComboBoxLookup("My Events", String.valueOf(EventListForm.sModeMyEvents)));
+		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove))
+			 modes.add(new ComboBoxLookup("Events Awaiting My Approval", String.valueOf(EventListForm.sModeEvents4Approval)));
+		modes.add(new ComboBoxLookup("All Events", String.valueOf(EventListForm.sModeAllEvents)));
+		if (sessionContext.hasPermission(Right.HasRole)) {
+	        modes.add(new ComboBoxLookup("All Approved Events", String.valueOf(EventListForm.sModeAllApprovedEvents)));
+	        modes.add(new ComboBoxLookup("All Events Awaiting Approval", String.valueOf(EventListForm.sModeAllEventsWaitingApproval)));
+	        modes.add(new ComboBoxLookup("All Conflicting Events", String.valueOf(EventListForm.sModeAllConflictingEvents)));
+		}
+		request.setAttribute("modes", modes);
 
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if (!("Search".equals(op) || "Export PDF".equals(op)
@@ -67,25 +82,25 @@ public class MeetingListAction extends Action {
         if ("Search".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
         	ActionMessages errors = myForm.validate(mapping, request);
         	if (!errors.isEmpty()) saveErrors(request, errors);
-        	else myForm.save(request.getSession());
-        } else myForm.load(request.getSession());
+        	else myForm.save(sessionContext);
+        } else myForm.load(sessionContext);
 
         if ("Add Event".equals(op)) {
             return mapping.findForward("addEvent");
         }
         
         if ("Export PDF".equals(op)) {
-            File pdfFile = new PdfEventTableBuilder().pdfTableForMeetings(myForm);
+            File pdfFile = new PdfEventTableBuilder().pdfTableForMeetings(sessionContext, myForm);
             if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
         }
 
         if ("Export CSV".equals(op)) {
-            File csvFile = new CsvEventTableBuilder().csvTableForMeetings(myForm);
+            File csvFile = new CsvEventTableBuilder().csvTableForMeetings(sessionContext, myForm);
             if (csvFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+csvFile.getName());
         }
 
         if ("iCalendar".equals(op)) {
-            String url = new CalendarEventTableBuilder().calendarUrlForMeetings(myForm);
+            String url = new CalendarEventTableBuilder().calendarUrlForMeetings(sessionContext, myForm);
             if (url!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, url);
             /*
             File pdfFile = new CalendarEventTableBuilder().calendarTableForMeetings(myForm);

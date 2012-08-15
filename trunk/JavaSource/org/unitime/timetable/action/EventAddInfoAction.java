@@ -28,16 +28,18 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.form.EventAddInfoForm;
 import org.unitime.timetable.model.EventContact;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("/eventAddInfo")
 public class EventAddInfoAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	public ActionForward execute(
 			ActionMapping mapping,
@@ -46,18 +48,15 @@ public class EventAddInfoAction extends Action {
 			HttpServletResponse response) throws Exception {
 	
 		EventAddInfoForm myForm = (EventAddInfoForm) form;
-		User user = Web.getUser(request.getSession());
+
+		//Verification of user being logged in
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
 		
-//Verification of user being logged in
-		if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
-		
-		myForm.setMainContactLookup(user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()));
+		myForm.setMainContactLookup(sessionContext.hasPermissionAnyAuthority(Right.EventLookupContact));
 		if (!myForm.getMainContactLookup()) {
-		    myForm.setMainContactExternalId(user.getId());
-		    TimetableManager m = TimetableManager.getManager(user);
-		    EventContact c = EventContact.findByExternalUniqueId(user.getId());
+		    myForm.setMainContactExternalId(sessionContext.getUser().getExternalUserId());
+		    TimetableManager m = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
+		    EventContact c = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
 		    if (c!=null) {
                 if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
                     myForm.setMainContactFirstName(c.getFirstName());
@@ -80,7 +79,7 @@ public class EventAddInfoAction extends Action {
 		            myForm.setMainContactEmail(m.getEmailAddress());
 		    } else {
 		        if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
-		            myForm.setMainContactLastName(user.getName());
+		            myForm.setMainContactLastName(sessionContext.getUser().getName());
 		    }
 		}
 
@@ -99,7 +98,7 @@ public class EventAddInfoAction extends Action {
 	        	if (!errors.isEmpty()) {
 	        		saveErrors(request, errors);
 	        	} else {
-	        		myForm.submit(request);
+	        		myForm.submit(request, sessionContext);
 	        		myForm.cleanSessionAttributes(request.getSession());
 	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
 	        		return null;
@@ -111,7 +110,7 @@ public class EventAddInfoAction extends Action {
 	        	if (!errors.isEmpty()) {
 	        		saveErrors(request, errors);
 	        	} else {
-	        		myForm.update(request);
+	        		myForm.update(request, sessionContext);
 	        		myForm.cleanSessionAttributes(request.getSession());
 	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getEventId()));
 	        		return null;

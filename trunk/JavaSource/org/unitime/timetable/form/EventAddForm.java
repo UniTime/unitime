@@ -42,8 +42,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.hibernate.Query;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Class_;
@@ -66,7 +64,6 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -78,6 +75,9 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
@@ -217,15 +217,13 @@ public class EventAddForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iOp = null;
 		iEventType = Event.sEventTypes[Event.sEventTypeSpecial];
-		iSessionId = null;
+		SessionContext context = HttpSessionContext.getSessionContext(request.getSession().getServletContext());
+		iSessionId = (context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null);
 		iEventId = null;
-		try {
-			iSessionId = Session.getCurrentAcadSession(Web.getUser(request.getSession())).getUniqueId();
-		} catch (Exception e) {}
 		if (iSessionId==null) {
 		    TreeSet<Session> sessions = Session.getAllSessions();
 		    if (!sessions.isEmpty()) {
-		        Session s = Session.defaultSession(sessions, null);
+		    	Session s = Session.defaultSession(sessions);
 		        iSessionId = (s==null?sessions.last().getUniqueId():s.getUniqueId());
 		    }
 		}
@@ -245,13 +243,8 @@ public class EventAddForm extends ActionForm {
         for (int i=0;i<Constants.PREF_ROWS_ADDED;i++) {
             addRelatedCourseInfo(null);
         }
-        User user = Web.getUser(request.getSession());
-        iAdmin = (user!=null && user.isAdmin());
-        iHasRole = (user!=null && user.getRole()!=null);
-        if (iHasRole && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-            TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
-            if (mgr!=null) iManagingDepts = mgr.getDepartments();
-        }
+        iAdmin = context.hasPermission(Right.EventAnyLocation);
+        iHasRole = context.hasPermission(Right.HasRole);
         iMaxRooms = "10";
         iBuildingId = null;
         iRoomTypes = null;

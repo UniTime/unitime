@@ -33,9 +33,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventAddForm;
 import org.unitime.timetable.model.Class_;
@@ -51,6 +50,8 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -58,6 +59,8 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("/eventAdd")
 public class EventAddAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	/** 
 	 * Method execute
@@ -72,17 +75,10 @@ public class EventAddAction extends Action {
 			ActionForm form,
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-
-//Collect initial info
 		EventAddForm myForm = (EventAddForm) form;
-		User user = Web.getUser(request.getSession());
 
-//Verification of user being logged in
-		if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }		
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
 
-//Operations
 		String iOp = myForm.getOp();
 
 		if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
@@ -215,15 +211,14 @@ public class EventAddAction extends Action {
         
         if (myForm.getSessionId()!=null)
             myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(myForm.getSessionId())));
-
   
-//Display the page        
+//		Display the page        
         if (myForm.getEventId()==null || myForm.getEventId()==0) {
-        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+        	TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
     		if (mgr != null){
         		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
 	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
 	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
         			for(RoomType displayedRoomType : allRoomTypes){
 		        		for(RoomType rt : defaultRoomTypes){

@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.SessionContext;
 
 public interface ExportHelper extends Exporter.Params {
 	public Long getAcademicSessionId();
@@ -34,7 +34,7 @@ public interface ExportHelper extends Exporter.Params {
 	
 	public OutputStream getOutputStream() throws IOException;
 	
-	public UserContext getUser();
+	public SessionContext getSessionContext();
 	
 	public boolean isRequestEncoded();
 }

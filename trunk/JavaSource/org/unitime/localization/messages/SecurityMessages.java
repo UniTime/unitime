@@ -29,6 +29,9 @@ public interface SecurityMessages extends Messages {
 	@DefaultMessage("Access denied for {0}: user has no active role / academic session selected.")
 	String noAuthority(String right);
 	
+	@DefaultMessage("Access denied for {0}: user has no matching role / academic session.")
+	String noMatchingAuthority(String right);
+	
 	@DefaultMessage("Access denied: unknown or no permission provided.")
 	String noRight();
 

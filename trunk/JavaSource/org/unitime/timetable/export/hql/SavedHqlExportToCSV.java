@@ -58,8 +58,7 @@ public class SavedHqlExportToCSV implements Exporter {
 	@Override
 	public void export(ExportHelper helper) throws IOException {
 		// Check rights
-		if (helper.getUser() == null) throw new PageAccessException("Login is required to use this page.");
-		if (helper.getUser().getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
+		// FIXME: helper.getSessionContext().checkPermission(Right.???);
 		
 		// Retrive report
 		SavedHQL hql = SavedHQLDAO.getInstance().get(Long.valueOf(helper.getParameter("report")));
@@ -89,7 +88,7 @@ public class SavedHqlExportToCSV implements Exporter {
 		Printer out = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(out.getContentType(), q.getName().replace('/', '-').replace('\\', '-').replace(':', '-') + ".csv", false);
 		
-		execute(helper.getUser(), out, q, params, 0, -1);
+		execute(helper.getSessionContext().getUser(), out, q, params, 0, -1);
 		
 		out.close();
 	}
