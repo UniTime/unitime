@@ -40,7 +40,7 @@ public interface SessionContext {
     public Object getAttribute(String name);
     public void removeAttribute(String name);
     public void setAttribute(String name, Object value);
-    public void removeAttribute(SessionAttribute SessionAttribute);
+    public void removeAttribute(SessionAttribute attribute);
     public void setAttribute(SessionAttribute attribute, Object value);
     public Object getAttribute(SessionAttribute attribute);
 
@@ -50,7 +50,13 @@ public interface SessionContext {
     public void checkPermission(Right right);
     public void checkPermission(Serializable targetId, String targetType, Right right);
     public void checkPermission(Object targetObject, Right right);
+    public void checkPermissionAnyAuthority(Right right, Qualifiable... filter);
+    public void checkPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter);
+    public void checkPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter);
     public boolean hasPermission(Right right);
     public boolean hasPermission(Serializable targetId, String targetType, Right right);
     public boolean hasPermission(Object targetObject, Right right);
+    public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter);
+    public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter);
+    public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter);
 }

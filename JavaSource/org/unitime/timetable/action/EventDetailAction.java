@@ -22,12 +22,10 @@ package org.unitime.timetable.action;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
@@ -36,11 +34,9 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventDetailForm;
 import org.unitime.timetable.form.EventDetailForm.MeetingBean;
 import org.unitime.timetable.model.ChangeLog;
@@ -48,23 +44,20 @@ import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.CourseOffering;
-import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.EventNote;
-import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.EventEmail;
 import org.unitime.timetable.webutil.Navigation;
@@ -74,6 +67,8 @@ import org.unitime.timetable.webutil.Navigation;
  */
 @Service("/eventDetail")
 public class EventDetailAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	/** 
 	 * Method execute
@@ -89,33 +84,18 @@ public class EventDetailAction extends Action {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
+		
 		EventDetailForm myForm = (EventDetailForm) form;
-        HttpSession webSession = request.getSession();
-        if (!Web.isLoggedIn(webSession)) {
-            throw new Exception("Access Denied.");
-        }           
 		ActionMessages errors1 = myForm.validate(mapping, request);
     	if (!errors1.isEmpty()) {
     		saveErrors(request, errors1);
     	} else {
 	        String iOp = myForm.getOp();
-			User user = Web.getUser(webSession);
 			Event event = EventDAO.getInstance().get(Long.valueOf(myForm.getId()));
+			
+			//sessionContext.checkPermissionAnyAuthority(event, Right.EventDetail);
 	
-	        Set<Department> userDepartments = null;
-			String uname = (event==null || event.getMainContact()==null?user.getName():event.getMainContact().getShortName()); 
-			if (user!=null && Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-				TimetableManager mgr = TimetableManager.getManager(user);
-				if (mgr!=null) {
-				    userDepartments = mgr.getDepartments();
-				    uname = mgr.getShortName();
-				}
-			} else if (user!=null && user.isAdmin()) {
-			    TimetableManager mgr = TimetableManager.getManager(user);
-	            if (mgr!=null) uname = mgr.getShortName();
-			}
-			
-			
 			if (iOp != null) {
 			
 				if("Edit Event".equals(iOp)) {
@@ -156,19 +136,16 @@ public class EventDetailAction extends Action {
 	                    HashSet<Meeting> meetings = new HashSet();
 						for (int i=0; i<selectedMeetings.length; i++) {
 							Meeting approvedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
-							if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-							    Location location = approvedMeeting.getLocation();
-							    if (location!=null && (userDepartments==null || location.getControllingDepartment()==null || !userDepartments.contains(location.getControllingDepartment()))) {
-							        errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to approve "+approvedMeeting.toString()+" (controlling department does not match)."));
-							        continue;
-							    }
-	                        }
+							if (!sessionContext.hasPermissionAnyAuthority(approvedMeeting, Right.EventMeetingApprove)) {
+								errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to approve "+approvedMeeting.toString()+" (controlling department does not match)."));
+								continue;
+							}
 							approvedMeeting.setApprovedDate(new Date());
 							meetings.add(approvedMeeting);
 							hibSession.saveOrUpdate(approvedMeeting);
 	                        ChangeLog.addChange(
 	                                hibSession,
-	                                request,
+	                                sessionContext,
 	                                event,
 	                                approvedMeeting.toString()+" of "+event.getEventName(),
 	                                ChangeLog.Source.EVENT_EDIT,
@@ -179,7 +156,7 @@ public class EventDetailAction extends Action {
 		                    EventNote en = new EventNote();
 		                    en.setTimeStamp(new Date());
 		                    en.setNoteType(EventNote.sEventNoteTypeApproval);
-		                    en.setUser(uname);
+		                    en.setUser(sessionContext.getUser().getName());
 		                    en.setMeetingCollection(meetings);
 		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
@@ -220,7 +197,7 @@ public class EventDetailAction extends Action {
 		                    EventNote en = new EventNote();
 		                    en.setTimeStamp(new Date());
 		                    en.setNoteType(EventNote.sEventNoteTypeInquire);
-		                    en.setUser(uname);
+		                    en.setUser(sessionContext.getUser().getName());
 		                    en.setMeetingCollection(meetings);
 		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
@@ -254,18 +231,15 @@ public class EventDetailAction extends Action {
 	                    HashSet<Meeting> meetings = new HashSet();        			
 						for (int i=0; i<selectedMeetings.length; i++) {
 							Meeting rejectedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
-	                        if (Roles.EVENT_MGR_ROLE.equals(user.getRole())) {
-	                            Location location = rejectedMeeting.getLocation();
-	                            if (location!=null && (userDepartments==null || location.getControllingDepartment()==null || !userDepartments.contains(location.getControllingDepartment()))) {
-	                                errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to reject "+rejectedMeeting.toString()+" (controlling department does not match)."));
-	                                continue;
-	                            }
+							if (!sessionContext.hasPermissionAnyAuthority(rejectedMeeting, Right.EventMeetingApprove)) {
+                                errors.add("approve", new ActionMessage("errors.generic", "Insufficient rights to reject "+rejectedMeeting.toString()+" (controlling department does not match)."));
+                                continue;
 	                        }
 		                    event.getMeetings().remove(rejectedMeeting);
 		                    meetings.add(rejectedMeeting);
 		        			ChangeLog.addChange(
 		                            hibSession,
-		                            request,
+		                            sessionContext,
 		                            event,
 		                            rejectedMeeting.toString()+" of "+event.getEventName(),
 		                            ChangeLog.Source.EVENT_EDIT,
@@ -276,7 +250,7 @@ public class EventDetailAction extends Action {
 		                    EventNote en = new EventNote();
 		                    en.setTimeStamp(new Date());
 		                    en.setNoteType(EventNote.sEventNoteTypeRejection);
-		                    en.setUser(uname);
+		                    en.setUser(sessionContext.getUser().getName());
 		                    en.setMeetingCollection(meetings);
 		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
@@ -293,7 +267,7 @@ public class EventDetailAction extends Action {
 		                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
 		        			ChangeLog.addChange(
 		                            hibSession,
-		                            request,
+		                            sessionContext,
 		                            event,
 		                            msg,
 		                            ChangeLog.Source.EVENT_EDIT,
@@ -315,6 +289,7 @@ public class EventDetailAction extends Action {
 				}				
 				
 				if(iOp.equals("Delete") && myForm.getSelectedMeetings()!=null && myForm.getSelectedMeetings().length>0) {
+					sessionContext.checkPermissionAnyAuthority(event, Right.EventEdit);
 						Long[] selectedMeetings = myForm.getSelectedMeetings();
 		                org.hibernate.Session hibSession = new EventDAO().getSession();
 		                Transaction tx = null;
@@ -324,11 +299,11 @@ public class EventDetailAction extends Action {
 		                    HashSet<Meeting> meetings = new HashSet();
 							for (int i=0; i<selectedMeetings.length; i++) {
 								Meeting deletedMeeting = MeetingDAO.getInstance().get(selectedMeetings[i]);
-			                    meetings.add(deletedMeeting);
+								meetings.add(deletedMeeting);
 			                    event.getMeetings().remove(deletedMeeting);
 			        			ChangeLog.addChange(
 			                            hibSession,
-			                            request,
+			                            sessionContext,
 			                            event,
 			                            deletedMeeting.toString()+" of "+event.getEventName(),
 			                            ChangeLog.Source.EVENT_EDIT,
@@ -339,7 +314,7 @@ public class EventDetailAction extends Action {
 							EventNote en = new EventNote();
 		                    en.setTimeStamp(new Date());
 		                    en.setNoteType(EventNote.sEventNoteTypeDeletion);
-		                    en.setUser(uname);
+		                    en.setUser(sessionContext.getUser().getName());
 		                    en.setMeetingCollection(meetings);
 		                    en.setTextNote(myForm.getEventNoteWithAttachement());
 		                    en.setEvent(event);
@@ -353,7 +328,7 @@ public class EventDetailAction extends Action {
 			                	String msg = "All meetings of "+event.getEventName()+" ("+event.getEventTypeLabel()+") have been deleted.";
 			                	ChangeLog.addChange(
 			                            hibSession,
-			                            request,
+			                            sessionContext,
 			                            event,
 			                            msg,
 			                            ChangeLog.Source.EVENT_EDIT,
@@ -399,7 +374,7 @@ public class EventDetailAction extends Action {
 						myForm.setAttendanceRequired(((CourseEvent) event).isReqAttendance());
 					} else
 						myForm.setSponsoringOrgName(event.getSponsoringOrganization()==null?"":event.getSponsoringOrganization().getName());
-					myForm.setIsManager(user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE));
+					myForm.setIsManager(sessionContext.hasPermissionAnyAuthority(Right.EventLookupContact));
 					for (Iterator i = new TreeSet(event.getNotes()).iterator(); i.hasNext();) {
 						EventNote en = (EventNote) i.next();
 						myForm.addNote(en.toHtmlString(myForm.getIsManager()));
@@ -415,40 +390,23 @@ public class EventDetailAction extends Action {
 								(ec.getEmailAddress()==null?"":ec.getEmailAddress()),
 								(ec.getPhone()==null?"":ec.getPhone()));
 					}
-					if (event.getMainContact()!=null && user.getId().equals(event.getMainContact().getExternalUniqueId())) {
-					    myForm.setCanDelete(true);
-					    myForm.setCanEdit(true);
-					}
-	                if (user.isAdmin()||user.hasRole(Roles.EVENT_MGR_ROLE)) {
-	                    myForm.setCanApprove(true);
-	                    myForm.setCanEdit(true);
-	                }
-	                if (event instanceof ClassEvent || event instanceof ExamEvent) {
-	                    //myForm.setCanEdit(false);
-	                    myForm.setCanApprove(false);
-	                    myForm.setCanDelete(false);
-	                }
+				    myForm.setCanDelete(false);
+				    myForm.setCanEdit(sessionContext.hasPermissionAnyAuthority(event, Right.EventEdit));
+				    myForm.setCanApprove(false);
 					for (Iterator i=new TreeSet(event.getMeetings()).iterator();i.hasNext();) {
 						Meeting meeting = (Meeting)i.next();
-						Location location = meeting.getLocation();
 						MeetingBean mb = new MeetingBean(meeting);
-						if (myForm.getCanEdit() && (!mb.getIsPast() || "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false")))) {
-	                        if (myForm.getCanDelete()) {
-	                            mb.setCanSelect(true);
-	                        } else if (user.isAdmin()) {
-								mb.setCanSelect(myForm.getCanApprove());
-							} else if (userDepartments!=null && location!=null && location.getControllingDepartment()!=null) {
-							    mb.setCanSelect(myForm.getCanApprove() && userDepartments.contains(location.getControllingDepartment()));
-							}
-						}
+						mb.setCanSelect(sessionContext.hasPermissionAnyAuthority(meeting, Right.EventMeetingEdit) || sessionContext.hasPermissionAnyAuthority(meeting, Right.EventMeetingApprove));
 						for (Meeting overlap : meeting.getTimeRoomOverlaps())
 						    mb.getOverlaps().add(new MeetingBean(overlap));
 						myForm.addMeeting(mb);
+						if (!myForm.getCanApprove() && sessionContext.hasPermissionAnyAuthority(meeting, Right.EventMeetingApprove))
+							myForm.setCanApprove(true);
+						if (!myForm.getCanDelete() && sessionContext.hasPermissionAnyAuthority(meeting, Right.EventMeetingEdit))
+							myForm.setCanDelete(true);
 					}
-					if (myForm.getCanApprove() && !myForm.getCanSelectAll())
-					    myForm.setCanApprove(false);
-			        Long nextId = Navigation.getNext(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
-			        Long prevId = Navigation.getPrevious(request.getSession(), Navigation.sInstructionalOfferingLevel, event.getUniqueId());
+			        Long nextId = Navigation.getNext(sessionContext, Navigation.sInstructionalOfferingLevel, event.getUniqueId());
+			        Long prevId = Navigation.getPrevious(sessionContext, Navigation.sInstructionalOfferingLevel, event.getUniqueId());
 			        myForm.setPreviousId(prevId==null?null:prevId.toString());
 			        myForm.setNextId(nextId==null?null:nextId.toString());
 				
@@ -463,7 +421,7 @@ public class EventDetailAction extends Action {
 				                switch (rci.getOwnerType()) {
 				                    case ExamOwner.sOwnerTypeClass :
 				                        Class_ clazz = (Class_)rci.getOwnerObject();
-				                        if (user.getRole()!=null && clazz.isViewableBy(user))
+				                        if (sessionContext.hasPermissionAnyAuthority(clazz, Right.ClassDetail))
 				                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 				                        name = rci.getLabel();//clazz.getClassLabel();
 				                        type = "Class";
@@ -474,7 +432,7 @@ public class EventDetailAction extends Action {
 				                        break;
 				                    case ExamOwner.sOwnerTypeConfig :
 				                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-				                        if (user.getRole()!=null && config.isViewableBy(user))
+				                        if (sessionContext.hasPermissionAnyAuthority(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 				                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";
 				                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 				                        type = "Configuration";
@@ -482,7 +440,7 @@ public class EventDetailAction extends Action {
 				                        break;
 				                    case ExamOwner.sOwnerTypeOffering :
 				                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-				                        if (user.getRole()!=null && offering.isViewableBy(user))
+				                        if (sessionContext.hasPermissionAnyAuthority(offering, Right.InstructionalOfferingDetail))
 				                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";
 				                        name = rci.getLabel();//offering.getCourseName();
 				                        type = "Offering";
@@ -490,7 +448,7 @@ public class EventDetailAction extends Action {
 				                        break;
 				                    case ExamOwner.sOwnerTypeCourse :
 				                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-				                        if (user.getRole()!=null && course.isViewableBy(user))
+				                        if (sessionContext.hasPermissionAnyAuthority(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 				                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";
 				                        name = rci.getLabel();//course.getCourseName();
 				                        type = "Course";
@@ -562,7 +520,7 @@ public class EventDetailAction extends Action {
 	                        WebTable table = new WebTable(4, null, new String[] {"Name","Title","Limit","Assignment"}, new String[] {"left","left","right","left"}, new boolean[] {true, true, true, true});
 	                        Class_ clazz = (Class_)classEvent.getClazz();
 	                        String onclick = null, assignment = null;
-	                        if (user.getRole()!=null && clazz.isViewableBy(user))
+	                        if (sessionContext.hasPermissionAnyAuthority(clazz, Right.ClassDetail))
 	                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 	                        String name = clazz.getClassLabel();
 	                        String title = clazz.getSchedulePrintNote();

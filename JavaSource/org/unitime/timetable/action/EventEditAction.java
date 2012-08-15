@@ -31,9 +31,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventEditForm;
 import org.unitime.timetable.model.Class_;
@@ -44,15 +43,18 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Zuzana Mullerova
  */
 @Service("/eventEdit")
 public class EventEditAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	
 	public ActionForward execute(
@@ -62,20 +64,16 @@ public class EventEditAction extends Action {
 			HttpServletResponse response) throws Exception {
 	
 		EventEditForm myForm = (EventEditForm) form;
-		User user = Web.getUser(request.getSession());
-		
 		
 //Verification of user being logged in
-		if (!Web.isLoggedIn( request.getSession() )) {
-            throw new Exception ("Access Denied.");
-        }
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
 
 // Contact Lookup
-		myForm.setMainContactLookup(user.isAdmin() || Roles.EVENT_MGR_ROLE.equals(user.getRole()));
+		myForm.setMainContactLookup(sessionContext.hasPermissionAnyAuthority(Right.EventLookupContact));
 		if (!myForm.getMainContactLookup()) {
-		    myForm.setMainContactExternalId(user.getId());
-		    TimetableManager m = TimetableManager.getManager(user);
-		    EventContact c = EventContact.findByExternalUniqueId(user.getId());
+		    myForm.setMainContactExternalId(sessionContext.getUser().getExternalUserId());
+		    TimetableManager m = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
+		    EventContact c = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
 		    if (c!=null) {
                 if (myForm.getMainContactFirstName()==null || myForm.getMainContactFirstName().length()==0)
                     myForm.setMainContactFirstName(c.getFirstName());
@@ -98,7 +96,7 @@ public class EventEditAction extends Action {
 		            myForm.setMainContactEmail(m.getEmailAddress());
 		    } else {
 		        if (myForm.getMainContactLastName()==null || myForm.getMainContactLastName().length()==0)
-		            myForm.setMainContactLastName(user.getName());
+		            myForm.setMainContactLastName(sessionContext.getUser().getName());
 		    }
 		}
 
@@ -111,7 +109,7 @@ public class EventEditAction extends Action {
 	        	if (!errors.isEmpty()) {
 	        		saveErrors(request, errors);
 	        	} else {
-	        		myForm.update(request);
+	        		myForm.update(request, sessionContext);
 	        		myForm.cleanSessionAttributes(request.getSession());
 	        		response.sendRedirect(response.encodeURL("eventDetail.do?id="+myForm.getId()));
 	        		return null;
@@ -139,7 +137,7 @@ public class EventEditAction extends Action {
 	                switch (rci.getOwnerType()) {
 	                    case ExamOwner.sOwnerTypeClass :
 	                        Class_ clazz = (Class_)rci.getOwnerObject();
-	                        if (user.getRole()!=null && clazz.isViewableBy(user))
+	                        if (sessionContext.hasPermissionAnyAuthority(clazz, Right.ClassDetail))
 	                            onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 	                        name = rci.getLabel();//clazz.getClassLabel();
 	                        type = "Class";
@@ -150,7 +148,7 @@ public class EventEditAction extends Action {
 	                        break;
 	                    case ExamOwner.sOwnerTypeConfig :
 	                        InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-	                        if (user.getRole()!=null && config.isViewableBy(user))
+	                        if (sessionContext.hasPermissionAnyAuthority(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 	                        type = "Configuration";
@@ -158,7 +156,7 @@ public class EventEditAction extends Action {
 	                        break;
 	                    case ExamOwner.sOwnerTypeOffering :
 	                        InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-	                        if (user.getRole()!=null && offering.isViewableBy(user))
+	                        if (sessionContext.hasPermissionAnyAuthority(offering, Right.InstructionalOfferingDetail))
 	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//offering.getCourseName();
 	                        type = "Offering";
@@ -166,7 +164,7 @@ public class EventEditAction extends Action {
 	                        break;
 	                    case ExamOwner.sOwnerTypeCourse :
 	                        CourseOffering course = (CourseOffering)rci.getOwnerObject();
-	                        if (user.getRole()!=null && course.isViewableBy(user))
+	                        if (sessionContext.hasPermissionAnyAuthority(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 	                            onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
 	                        name = rci.getLabel();//course.getCourseName();
 	                        type = "Course";

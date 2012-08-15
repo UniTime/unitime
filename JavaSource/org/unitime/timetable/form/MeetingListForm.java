@@ -21,11 +21,11 @@
 package org.unitime.timetable.form;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.webutil.WebTextValidation;
 
 /**
@@ -65,25 +65,25 @@ public class MeetingListForm extends EventListForm {
         iLocation = null;
     }
     
-    public void load(HttpSession session) {
-        super.load(session);
-        iOrderBy = (String)session.getAttribute("MeetingList.OrderBy");
-        iLocation = (String)session.getAttribute("MeetingList.Location");
+    public void load(SessionContext context) {
+        super.load(context);
+        iOrderBy = (String)context.getAttribute("MeetingList.OrderBy");
+        iLocation = (String)context.getAttribute("MeetingList.Location");
         if (iOrderBy==null) iOrderBy = sOrderByName;
     }
     
-    public void save(HttpSession session) {
-        super.save(session);
+    public void save(SessionContext context) {
+        super.save(context);
 
         if (iOrderBy==null)
-            session.removeAttribute("MeetingList.OrderBy");
+        	context.removeAttribute("MeetingList.OrderBy");
         else
-            session.setAttribute("MeetingList.OrderBy", iOrderBy);
+        	context.setAttribute("MeetingList.OrderBy", iOrderBy);
 
         if (iLocation==null)
-            session.removeAttribute("MeetingList.Location");
+        	context.removeAttribute("MeetingList.Location");
         else
-            session.setAttribute("MeetingList.Location", iLocation);
+        	context.setAttribute("MeetingList.Location", iLocation);
     }
     
     public String getOrderBy() { return iOrderBy; }

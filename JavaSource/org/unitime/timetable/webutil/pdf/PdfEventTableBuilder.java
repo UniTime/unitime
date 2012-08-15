@@ -48,6 +48,8 @@ import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -507,11 +509,11 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         iTextColor = Color.BLACK; iTextItalic = false; iBgColor = Color.WHITE;
     }    
     
-    public File pdfTableForEvents (EventListForm form){
-        List events = loadEvents(form);
+    public File pdfTableForEvents (SessionContext context, EventListForm form){
+        List events = loadEvents(form, context);
         if (events.isEmpty()) return null;
         
-        boolean mainContact = form.isAdmin() || form.isEventManager();
+        boolean mainContact = context.hasPermissionAnyAuthority(Right.EventLookupContact);
         
         FileOutputStream out = null;
         try {
@@ -537,7 +539,7 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
                     boolean myApproval = false;
                     for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                         Meeting m = (Meeting)j.next();
-                        if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        if (m.getApprovedDate() == null && context.hasPermissionAnyAuthority(m, Right.EventMeetingApprove)) {
                             myApproval = true; break;
                         }
                     }
@@ -563,12 +565,12 @@ public class PdfEventTableBuilder extends WebEventTableBuilder {
         return null;
     }
     
-    public File pdfTableForMeetings(MeetingListForm form) {
-        List meetings = loadMeetings(form);
+    public File pdfTableForMeetings(SessionContext context, MeetingListForm form) {
+        List meetings = loadMeetings(form, context);
         
         if (meetings.isEmpty()) return null;
         
-        boolean mainContact = form.isAdmin() || form.isEventManager();
+        boolean mainContact = context.hasPermissionAnyAuthority(Right.EventLookupContact);
         
         FileOutputStream out = null;
         try {

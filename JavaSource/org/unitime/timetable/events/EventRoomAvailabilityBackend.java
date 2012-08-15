@@ -33,7 +33,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
@@ -41,7 +41,7 @@ import org.unitime.timetable.util.Constants;
 public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
 	
 	@Override
-	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, SessionContext context, EventRights rights) {
+	public EventRoomAvailabilityRpcResponse execute(EventRoomAvailabilityRpcRequest request, EventContext context) {
 		EventRoomAvailabilityRpcResponse response = new EventRoomAvailabilityRpcResponse();
 		
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
@@ -107,7 +107,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				if (meeting.isDelete()) continue;
 				
-				if (rights.isPastOrOutside(meeting.getMeetingDate())) {
+				if (context.isPastOrOutside(meeting.getMeetingDate())) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
 					conflict.setName(MESSAGES.conflictPastOrOutside(session.getLabel()));
 					conflict.setType(EventInterface.EventType.Unavailabile);
@@ -123,9 +123,9 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				if (!meeting.hasLocation()) continue;
 				
-				meeting.setCanApprove(rights.canApprove(meeting.getLocation().getId()));
+				meeting.setCanApprove(context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocationApprove));
 				
-				if (!rights.canCreate(meeting.getLocation().getId())) {
+				if (!context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocation)) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
 					conflict.setType(EventInterface.EventType.Unavailabile);

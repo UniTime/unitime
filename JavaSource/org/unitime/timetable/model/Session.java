@@ -265,6 +265,49 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		}
 		return (Session)orderedSession.last(); // return the last one, i.e., the most recent one
 	}
+    
+    public static Session defaultSession(Set sessions) throws HibernateException {
+        if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
+        TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
+        
+        //try to pick among active sessions first (check that all active sessions are of the same initiative)
+        String initiative = null;
+        Session lastActive = null;
+        Session currentActive = null;
+        Session firstFutureSession = null;
+        long now = (new Date()).getTime();
+        for (Iterator it = sessions.iterator();it.hasNext();) {
+            Session session = (Session)it.next();
+            if (session.getStatusType()==null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
+            if (initiative==null) 
+                initiative = session.getAcademicInitiative();
+            else if (!initiative.equals(session.getAcademicInitiative()))
+                return null; // multiple initiatives -> no default
+            if (currentActive == null && session.getSessionBeginDateTime().getTime() < now && session.getSessionEndDateTime().getTime() > now){
+            		currentActive = session;
+            }
+            if (currentActive != null && firstFutureSession == null && currentActive.getUniqueId().longValue() != session.getUniqueId().longValue()){
+            	firstFutureSession = session;
+            }
+            if (currentActive == null && firstFutureSession == null && now < session.getSessionBeginDateTime().getTime()){
+            	firstFutureSession = session;
+            }
+            lastActive = session;
+        }
+    	if (currentActive != null) return currentActive;
+    	if (firstFutureSession != null) return firstFutureSession;
+        if (lastActive!=null) return lastActive; //return the last (most recent) active session
+        
+        //pick among all sessions (check that all sessions are of the same initiative)
+		for (Iterator it = sessions.iterator();it.hasNext();) {
+		    Session session = (Session)it.next();
+		    if (initiative==null) 
+		        initiative = session.getAcademicInitiative();
+		    else if (!initiative.equals(session.getAcademicInitiative())) 
+		        return null; // multiple initiatives -> no default
+		}
+		return (Session)orderedSession.last(); // return the last one, i.e., the most recent one
+	}
 
 	/**
 	 * Gets the current user session

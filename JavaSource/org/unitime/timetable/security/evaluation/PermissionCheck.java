@@ -22,6 +22,7 @@ package org.unitime.timetable.security.evaluation;
 import java.io.Serializable;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -30,5 +31,9 @@ public interface PermissionCheck {
     public void checkPermission(UserContext user, Serializable targetId, String targetType, Right right) throws AccessDeniedException;
     
     public void checkPermission(UserContext user, Object targetObject, Right right) throws AccessDeniedException;
+    
+    public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException;
+    
+    public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException;
 
 }

@@ -26,10 +26,12 @@
 <%@ taglib uri="http://struts.apache.org/tags-logic" prefix="logic" %>
 <%@ taglib uri="http://struts.apache.org/tags-tiles" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
 
 <tiles:importAttribute />
+<tt:session-context/>
 <html:form action="/meetingList">
 <script language="JavaScript">blToggleHeader('Filter','dispFilter');blStart('dispFilter');</script>
 <TABLE border="0" cellspacing="0" cellpadding="3" width='100%'>
@@ -55,14 +57,14 @@
 				<html:text property="eventNameSubstring" maxlength="50" size="50" /> 
 			</TD>
 		</TR>
-		<logic:equal name="meetingListForm" property="noRole" value="false">
+		<sec:authorize access="hasPermission(null, null, 'HasRole')">
 		<TR>
 			<TD>Requested By: </TD>
 			<TD>
 				<html:text property="eventMainContactSubstring" maxlength="50" size="50" /> 
 			</TD> 
 		</TR>
-		</logic:equal>
+		</sec:authorize>
 		<TR>
 			<TD>Location: </TD>
 			<TD>
@@ -139,12 +141,13 @@
 		<TR>
 			<TD valign="top">Mode:</TD>
 			<TD>
+				<bean:define id="modes" name="modes" scope="request"/>
 				<html:select property="mode">
-					<html:optionsCollection property="modes" label="label" value="value"/>
+					<html:optionsCollection name="modes" label="label" value="value"/>
 				</html:select>
-				<logic:equal name="meetingListForm" property="noRole" value="false">
+				<sec:authorize access="hasPermission(null, null, 'HasRole')">
 					&nbsp;&nbsp;&nbsp;<html:checkbox property="dispConflicts"/> Display Conflicts
-				</logic:equal>
+				</sec:authorize>
 			</TD>
 		</TR>
 		<TR>
@@ -189,7 +192,7 @@
 
 	<% 
 		MeetingListForm form = (MeetingListForm)request.getAttribute("meetingListForm");
-		new WebEventTableBuilder().htmlTableForMeetings(session,form,out);
+		new WebEventTableBuilder().htmlTableForMeetings(sessionContext,form,out);
 	%>
 
 	<logic:notEmpty scope="request" name="hash">

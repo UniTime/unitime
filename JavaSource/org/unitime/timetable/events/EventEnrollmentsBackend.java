@@ -33,7 +33,6 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
@@ -59,16 +58,15 @@ import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventEnrollmentsRpcRequest")
 public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	
 	@Override
-	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, SessionContext context, EventRights rights) {
+	public GwtRpcResponseList<Enrollment> execute(EventEnrollmentsRpcRequest request, EventContext context) {
 		if (request.hasRelatedObjects()) {
-			if (!rights.canAddEvent(EventType.Course, null)) throw rights.getException();
-			
+			context.checkPermission(Right.EventAddCourseRelated);
 			Map<Long, List<Meeting>> conflicts = null;
 			HashSet<StudentClassEnrollment> enrollments = new HashSet<StudentClassEnrollment>();
 			for (RelatedObjectInterface related: request.getRelatedObjects()) {
@@ -86,7 +84,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 			Event event = EventDAO.getInstance().get(request.getEventId());
 			if (event == null) throw new GwtRpcException(MESSAGES.errorBadEventId());
 			
-			if (!rights.canSee(event)) throw rights.getException();
+			context.checkPermission(event, Right.EventDetail);
 
 	    	Collection<StudentClassEnrollment> enrollments = event.getStudentClassEnrollments();
 	    	if (enrollments == null || enrollments.isEmpty()) return null;

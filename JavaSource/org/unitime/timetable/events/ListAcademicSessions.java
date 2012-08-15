@@ -36,12 +36,12 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.PageAccessException;
-import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox$ListAcademicSessions")
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
@@ -78,7 +78,6 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery("select s from Session s").list());
 		if (selected == null) selected = sessions.last();
 		for (Session session: sessions) {
-			EventRights rights = new SimpleEventRights(context, session.getUniqueId());
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			
 			AcademicSession acadSession = new AcademicSession(
@@ -93,9 +92,9 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				acadSession.set(AcademicSession.Flag.HasFinalExams);
 			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeMidterm))
 				acadSession.set(AcademicSession.Flag.HasMidtermExams);
-			if (rights.isEventLocation(null))
+			if (context.hasPermission(session, Right.Events))
 				acadSession.set(AcademicSession.Flag.HasEvents);
-			if (rights.canAddEvent(EventType.Special, null))
+			if (context.hasPermission(session, Right.EventAddSpecial))
 				acadSession.set(AcademicSession.Flag.CanAddEvents);
 			Session prev = null, next = null;
 			for (Session s: sessions) {

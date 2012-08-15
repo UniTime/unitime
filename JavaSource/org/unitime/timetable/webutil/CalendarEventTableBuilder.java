@@ -35,6 +35,8 @@ import org.unitime.timetable.form.EventListForm;
 import org.unitime.timetable.form.MeetingListForm;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 public class CalendarEventTableBuilder extends WebEventTableBuilder {
@@ -93,8 +95,8 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         out.println("END:VEVENT");
     }
     
-    public String calendarUrlForEvents(EventListForm form) {
-        List events = loadEvents(form);
+    public String calendarUrlForEvents(SessionContext context, EventListForm form) {
+        List events = loadEvents(form, context);
         if (events.isEmpty()) return null;
 
         String eventIds = "";
@@ -105,7 +107,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                 boolean myApproval = false;
                 for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                     Meeting m = (Meeting)j.next();
-                    if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                    if (m.getApprovedDate() == null && context.hasPermissionAnyAuthority(m, Right.EventMeetingApprove)) {
                         myApproval = true; break;
                     }
                 }
@@ -127,8 +129,8 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         return "calendar?q=" + QueryEncoderBackend.encode((sid == null ? "" : "sid=" + sid + "&") + "eid=" + eventIds);
     }
     
-    public File calendarTableForEvents (EventListForm form){
-        List events = loadEvents(form);
+    public File calendarTableForEvents (SessionContext context, EventListForm form){
+        List events = loadEvents(form, context);
         if (events.isEmpty()) return null;
         
         PrintWriter out = null;
@@ -151,7 +153,7 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
                     boolean myApproval = false;
                     for (Iterator j=event.getMeetings().iterator();j.hasNext();) {
                         Meeting m = (Meeting)j.next();
-                        if (m.getApprovedDate()==null && m.getLocation()!=null && form.getManagingDepartments().contains(m.getLocation().getControllingDepartment())) {
+                        if (m.getApprovedDate() == null && context.hasPermissionAnyAuthority(m, Right.EventMeetingApprove)) {
                             myApproval = true; break;
                         }
                     }
@@ -172,8 +174,8 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         return null;
     }
     
-    public String calendarUrlForMeetings(MeetingListForm form) {
-        List meetings = loadMeetings(form);
+    public String calendarUrlForMeetings(SessionContext context, MeetingListForm form) {
+        List meetings = loadMeetings(form, context);
         if (meetings.isEmpty()) return null;
 
         String meetingIds = "";
@@ -192,8 +194,8 @@ public class CalendarEventTableBuilder extends WebEventTableBuilder {
         return "calendar?q=" + QueryEncoderBackend.encode((sid == null ? "" : "sid=" + sid + "&") + "mid=" + meetingIds);
     }
 
-    public File calendarTableForMeetings (MeetingListForm form){
-        List meetings = loadMeetings(form);
+    public File calendarTableForMeetings (SessionContext context, MeetingListForm form){
+        List meetings = loadMeetings(form, context);
         
         if (meetings.isEmpty()) return null;
         

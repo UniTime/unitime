@@ -43,14 +43,14 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$ApproveEventRpcRequest")
 public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, SaveOrApproveEventRpcResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
-	public SaveOrApproveEventRpcResponse execute(ApproveEventRpcRequest request, SessionContext context, EventRights rights) {
+	public SaveOrApproveEventRpcResponse execute(ApproveEventRpcRequest request, EventContext context) {
 		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
@@ -75,7 +75,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     					
     					switch (request.getOperation()) {
     					case REJECT:
-    						if (!rights.canApprove(meeting))
+    						if (!context.hasPermission(meeting, Right.EventMeetingApprove))
     							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
     						
     						hibSession.delete(meeting);
@@ -83,7 +83,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						
     						break;
     					case APPROVE:
-    						if (!rights.canApprove(meeting))
+    						if (!context.hasPermission(meeting, Right.EventMeetingApprove))
     							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
     						
     						meeting.setApprovedDate(now);
@@ -137,12 +137,12 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			response.addNote(n);
 			
 			if (event.getMeetings().isEmpty()) {
-				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, rights));
+				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 				response.getEvent().setId(null);
 				hibSession.delete(event);
 			} else {
 				hibSession.update(event);
-				response.setEvent(EventDetailBackend.getEventDetail(session, event, rights));
+				response.setEvent(EventDetailBackend.getEventDetail(session, event, context));
 			}
 			
 			new EventEmail(request, response).send(context);

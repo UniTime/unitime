@@ -52,7 +52,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
-import org.unitime.timetable.events.SimpleEventRights;
+import org.unitime.timetable.events.EventAction.EventContext;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
@@ -84,8 +84,9 @@ import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.context.SimpleUserContext;
+import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
@@ -314,20 +315,19 @@ public class CalendarServlet extends HttpServlet {
             	if (hasRoomFilter)
             		r.setRoomFilter(roomFilter);
             	String user = params.getParameter("user");
-            	SimpleUserContext u = null;
-            	if (user != null) {
-            		u = new SimpleUserContext();
-            		u.setExternalUsetId(user);
-            		eventFilter.setOption("user", user);
-            		roomFilter.setOption("user", user);
+            	UserContext u = sessionContext.getUser();
+            	if (u == null && user != null) {
+            		u = new UniTimeUserContext(user, null, null, null);
             		String role = params.getParameter("role");
             		if (role != null) {
-            			eventFilter.setOption("role", role);
-            			roomFilter.setOption("role", role);
-            			u.setCurrentRole(role, sessionId);
+            			for (UserAuthority a: u.getAuthorities()) {
+            				if (a.getAcademicSession() != null && a.getAcademicSession().getQualifierId().equals(sessionId) && role.equals(a.getRole())) {
+            					u.setCurrentAuthority(a); break;
+            				}
+            			}
             		}
             	}
-            	for (EventInterface e: new EventLookupBackend().findEvents(r, new SimpleEventRights(u, false, sessionId)))
+            	for (EventInterface e: new EventLookupBackend().findEvents(r, new EventContext(sessionContext, u, sessionId)))
         			printEvent(e, out);
             }
             out.println("END:VCALENDAR");

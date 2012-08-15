@@ -52,10 +52,10 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$RoomFilterRpcRequest")
 public class RoomFilterBackend extends FilterBoxBackend {
@@ -68,7 +68,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	};
 
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
+	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Set<String> eventDepts = new HashSet<String>(
 				DepartmentDAO.getInstance().getSession().createQuery(
 						"select distinct d.deptCode from Department d inner join d.timetableManagers m inner join m.managerRoles mr " +
@@ -90,13 +90,10 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		Set<String> departments = request.getOptions("department");
 		
 		Set<String> userDepts = null;
-		if (request.hasOption("user")) {
-			TimetableManager m = TimetableManager.findByExternalId(request.getOption("user"));
-			if (m != null) {
-				userDepts = new HashSet<String>();
-				for (Department d: m.getDepartments())
-					if (d.getSessionId().equals(request.getSessionId())) userDepts.add(d.getDeptCode());
-			}
+		if (context.isAuthenticated()) {
+			userDepts = new HashSet<String>();
+			for (Department d: Department.getUserDepartments(context.getUser()))
+				userDepts.add(d.getDeptCode());
 		}
 		
 		Map<Long, Entity> types = new HashMap<Long, Entity>();
@@ -417,7 +414,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
+	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), 20, distances, null)) {
 			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
@@ -428,7 +425,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventRights rights) {
+	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
@@ -444,7 +441,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"capacity", location.getCapacity().toString(),
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"mouseOver", hint,
-					"overbook", rights.canOverbook(location.getUniqueId()) ? "1" : "0",
+					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
 					"breakTime", String.valueOf(location.getBreakTime())
 					));
 		}

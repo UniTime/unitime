@@ -19,10 +19,17 @@
 */
 package org.unitime.timetable.events;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -30,8 +37,17 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserAuthority;
+import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.evaluation.UniTimePermissionCheck;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
+import org.unitime.timetable.security.rights.Right;
 
 public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpcResponse> implements GwtRpcImplementation<T, R> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -39,23 +55,16 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	protected static DateFormat sMeetingDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
 
 	@Override
-	public R execute(T request, SessionContext helper) {
-		// Create event rights
-		EventRights rights = createEventRights(request, helper);
-		
-		// Check basic access
-		rights.checkAccess();
+	public R execute(T request, SessionContext context) {
+		// Check basic permissions
+		context.checkPermission(Right.Events);
 		
 		// Execute action
-		return execute(request, helper, rights);
-	}
-	
-	public abstract R execute(T request, SessionContext context, EventRights rights);
-	
-	protected EventRights createEventRights(T request, SessionContext context) {
-		return new SimpleEventRights(context, request.getSessionId());
+		return execute(request, new EventContext(context, request.getSessionId()));
 	}
 
+	public abstract R execute(T request, EventContext context);
+	
 	protected static String toString(MeetingInterface meeting) {
 		return (meeting instanceof MeetingConglictInterface ? ((MeetingConglictInterface)meeting).getName() + " " : "") +
 				(meeting.getMeetingDate() == null ? "" : sMeetingDateFormat.format(meeting.getMeetingDate()) + " ") +
@@ -79,6 +88,151 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		} else {
 			return h + ":" + (m < 10 ? "0" : "") + m;
 		}
+	}
+	
+	public static class EventContext implements SessionContext {
+		private SessionContext iContext;
+		private Qualifiable[] iFilter;
+		
+		private Date iToday, iBegin, iEnd;
+		
+		private UserContext iUser;
+		private boolean iAllowEditPast = false;
+		
+		public EventContext(SessionContext context, UserContext user, Long sessionId) {
+			iContext = context;
+			
+			if (sessionId == null)
+				sessionId = context.getUser().getCurrentAcademicSessionId();
+			iFilter = new Qualifiable[] { new SimpleQualifier("Session", sessionId) };
+
+			Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			iToday = cal.getTime();
+			
+			Session session = SessionDAO.getInstance().get(sessionId);
+			if (session != null) {
+				iBegin = session.getEventBeginDate();
+				cal.setTime(session.getEventEndDate());
+				cal.add(Calendar.DAY_OF_YEAR, 1);
+				iEnd = cal.getTime();
+			}
+			
+			if (user != null) {
+				String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getRole()); 
+				for (UserAuthority authority: context.getUser().getAuthorities()) {
+					if (authority.getAcademicSession() != null && authority.getAcademicSession().getQualifierId().equals(sessionId) && (role == null || role.equals(authority.getRole()))) {
+						iUser = new UniTimePermissionCheck.UserContextWrapper(user, authority); break;
+					}
+				}
+			}
+			
+			iAllowEditPast = context.hasPermission(Right.EventEditPast);
+		}
+		
+		public EventContext(SessionContext context, Long sessionId) {
+			this(context, context.getUser(), sessionId);
+		}
+		
+		public boolean isOutside(Date date) {
+			return date == null || (iBegin != null && date.before(iBegin)) || (iEnd != null && !date.before(iEnd));
+		}
+		public boolean isPast(Date date) {
+			return !iAllowEditPast && (date == null || date.before(iToday));
+		}
+		public boolean isPastOrOutside(Date date) {
+			return isPast(date) || isOutside(date);
+		}
+
+		@Override
+		public boolean isAuthenticated() { return iUser != null; }
+		@Override
+		public UserContext getUser() { return iUser; }
+		@Override @Deprecated
+		public HttpSession getHttpSession() { return iContext.getHttpSession(); }
+		@Override
+		public boolean isHttpSessionNew() { return iContext.isHttpSessionNew(); }
+		@Override
+		public String getHttpSessionId() { return iContext.getHttpSessionId(); }
+		@Override
+		public Object getAttribute(String name) { return iContext.getAttribute(name); }
+		@Override
+		public void removeAttribute(String name) { iContext.removeAttribute(name); }
+		@Override
+		public void setAttribute(String name, Object value) { iContext.setAttribute(name, value); }
+		@Override
+		public void removeAttribute(SessionAttribute attribute) { iContext.removeAttribute(attribute); }
+		@Override
+		public void setAttribute(SessionAttribute attribute, Object value) { iContext.setAttribute(attribute, value); }
+		@Override
+		public Object getAttribute(SessionAttribute attribute) { return iContext.getAttribute(attribute); }
+		@Override @Deprecated
+		public HttpServletRequest getHttpServletRequest() { return iContext.getHttpServletRequest(); }
+		public PageAccessException getException() {
+			if (iContext.isAuthenticated()) return new PageAccessException(MESSAGES.authenticationInsufficient());
+			return new PageAccessException(iContext.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
+		}
+		@Override
+		public void checkPermission(Right right) {
+			if (!iContext.hasPermissionAnyAuthority(right, iFilter)) throw getException();
+		}
+
+		@Override
+		public void checkPermission(Serializable targetId, String targetType, Right right) {
+			if (!iContext.hasPermissionAnyAuthority(targetId, targetType, right, iFilter)) throw getException();
+		}
+
+		@Override
+		public void checkPermission(Object targetObject, Right right) {
+			if (!iContext.hasPermissionAnyAuthority(targetObject, right, iFilter)) throw getException();
+		}
+
+		@Override
+		public boolean hasPermission(Right right) {
+			return iContext.hasPermissionAnyAuthority(right, iFilter);
+		}
+
+		@Override
+		public boolean hasPermission(Serializable targetId, String targetType, Right right) {
+			return iContext.hasPermissionAnyAuthority(targetId, targetType, right, iFilter);
+		}
+
+		@Override
+		public boolean hasPermission(Object targetObject, Right right) {
+			return iContext.hasPermissionAnyAuthority(targetObject, right, iFilter);
+		}
+
+		@Override
+		public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnyAuthority(right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+		@Override
+		public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnyAuthority(targetId, targetType, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+		@Override
+		public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
+			return iContext.hasPermissionAnyAuthority(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnyAuthority(Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnyAuthority(right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnyAuthority(targetId, targetType, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+
+		@Override
+		public void checkPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
+			iContext.checkPermissionAnyAuthority(targetObject, right, filter == null || filter.length == 0 ? iFilter : filter);
+		}
+		
 	}
 
 }

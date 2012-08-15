@@ -35,9 +35,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.EventRoomAvailabilityForm;
 import org.unitime.timetable.model.Class_;
@@ -50,12 +49,16 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Zuzana Mullerova
  */
 @Service("/eventRoomAvailability")
 public class EventRoomAvailabilityAction extends Action {
+	
+	@Autowired SessionContext sessionContext;
 
 	/** 
 	 * Method execute
@@ -72,11 +75,8 @@ public class EventRoomAvailabilityAction extends Action {
 			HttpServletResponse response) throws Exception {
 
 		HttpSession webSession = request.getSession();
-		User user = Web.getUser(webSession);
-			
-		if (!Web.isLoggedIn(webSession)) {
-			throw new Exception("Access Denied.");
-		}					
+		
+		sessionContext.checkPermissionAnyAuthority(Right.Events);
 		
 		EventRoomAvailabilityForm myForm = (EventRoomAvailabilityForm) form;
 		try { 
@@ -124,7 +124,7 @@ public class EventRoomAvailabilityAction extends Action {
 			                    switch (rci.getOwnerType()) {
 			                        case ExamOwner.sOwnerTypeClass :
 			                            Class_ clazz = (Class_)rci.getOwnerObject();
-			                            if (user.getRole()!=null && clazz.isViewableBy(user))
+			                            if (sessionContext.hasPermissionAnyAuthority(clazz, Right.ClassDetail))
 			                                onclick = "onClick=\"document.location='classDetail.do?cid="+clazz.getUniqueId()+"';\"";
 			                            name = rci.getLabel();//clazz.getClassLabel();
 			                            type = "Class";
@@ -135,7 +135,7 @@ public class EventRoomAvailabilityAction extends Action {
 			                            break;
 			                        case ExamOwner.sOwnerTypeConfig :
 			                            InstrOfferingConfig config = (InstrOfferingConfig)rci.getOwnerObject();
-			                            if (user.getRole()!=null && config.isViewableBy(user))
+			                            if (sessionContext.hasPermissionAnyAuthority(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 			                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+config.getInstructionalOffering().getUniqueId()+"';\"";;
 			                            name = rci.getLabel();//config.getCourseName()+" ["+config.getName()+"]";
 			                            type = "Configuration";
@@ -143,7 +143,7 @@ public class EventRoomAvailabilityAction extends Action {
 			                            break;
 			                        case ExamOwner.sOwnerTypeOffering :
 			                            InstructionalOffering offering = (InstructionalOffering)rci.getOwnerObject();
-			                            if (user.getRole()!=null && offering.isViewableBy(user))
+			                            if (sessionContext.hasPermissionAnyAuthority(offering, Right.InstructionalOfferingDetail))
 			                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+offering.getUniqueId()+"';\"";;
 			                            name = rci.getLabel();//offering.getCourseName();
 			                            type = "Offering";
@@ -151,7 +151,7 @@ public class EventRoomAvailabilityAction extends Action {
 			                            break;
 			                        case ExamOwner.sOwnerTypeCourse :
 			                            CourseOffering course = (CourseOffering)rci.getOwnerObject();
-			                            if (user.getRole()!=null && course.isViewableBy(user))
+			                            if (sessionContext.hasPermissionAnyAuthority(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
 			                                onclick = "onClick=\"document.location='instructionalOfferingDetail.do?io="+course.getInstructionalOffering().getUniqueId()+"';\"";;
 			                            name = rci.getLabel();//course.getCourseName();
 			                            type = "Course";
@@ -176,11 +176,11 @@ public class EventRoomAvailabilityAction extends Action {
 		} 
 
         if (myForm.getEventId()==null || myForm.getEventId()==0) {
-        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+        	TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
     		if (mgr != null){
         		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
 	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
 	        		Vector<Long> orderedTypeList = new Vector();
         			for(RoomType displayedRoomType : allRoomTypes){
 		        		for(RoomType rt : defaultRoomTypes){
@@ -198,7 +198,7 @@ public class EventRoomAvailabilityAction extends Action {
 	        		}
         		}
         	}
-        }		
+        }
 		
 		return  mapping.findForward("show");
 	}

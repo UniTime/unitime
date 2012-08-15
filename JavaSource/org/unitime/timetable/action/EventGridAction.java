@@ -36,10 +36,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.EventGridForm;
 import org.unitime.timetable.form.EventRoomAvailabilityForm.DateLocation;
@@ -50,6 +49,8 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.timegrid.PdfEventGridTable;
 
@@ -59,14 +60,14 @@ import org.unitime.timetable.webutil.timegrid.PdfEventGridTable;
  */
 @Service("/eventGrid")
 public class EventGridAction extends Action{
+	
+	@Autowired SessionContext sessionContext;
 
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         EventGridForm myForm = (EventGridForm) form;
         
-        if (!Web.isLoggedIn(request.getSession())) {
-            throw new Exception("Access Denied.");
-        }
+        sessionContext.checkPermissionAnyAuthority(Right.Events);
 
         String op = myForm.getOp();
 
@@ -75,12 +76,11 @@ public class EventGridAction extends Action{
         
         if (op == null  || op.trim().length() == 0){
         	myForm.reset(mapping, request);
-    		User user = Web.getUser(request.getSession());
-        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+        	TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
     		if (mgr != null){
         		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
             		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-            		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+					Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
             		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
         			for(RoomType displayedRoomType : allRoomTypes){
     	        		for(RoomType rt : defaultRoomTypes){
@@ -109,12 +109,11 @@ public class EventGridAction extends Action{
             Long sessionId = myForm.getSessionId();
             myForm.reset(mapping, request);
             myForm.setSessionId(sessionId);
-    		User user = Web.getUser(request.getSession());
-        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
+    		TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
     		if (mgr != null){
         		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
 	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
 	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
         			for(RoomType displayedRoomType : allRoomTypes){
 		        		for(RoomType rt : defaultRoomTypes){
@@ -147,12 +146,11 @@ public class EventGridAction extends Action{
                 }
                 myForm.setBuildingId(nb==null?null:nb.getUniqueId());
             }
-    		User user = Web.getUser(request.getSession());
-        	TimetableManager mgr = (user==null?null:TimetableManager.getManager(user));
-    		if (mgr != null){
+            TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
+            if (mgr != null){
         		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
 	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(user.getRole(), myForm.getSessionId());
+	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
 	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
         			for(RoomType displayedRoomType : allRoomTypes){
 		        		for(RoomType rt : defaultRoomTypes){
@@ -170,7 +168,6 @@ public class EventGridAction extends Action{
 	        		}
         		}
         	}
-
             myForm.save(request.getSession());
         }
         
