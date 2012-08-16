@@ -125,6 +125,20 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (iNotes == null) iNotes = new TreeSet<NoteInterface>();
 		iNotes.add(note);
 	}
+	public boolean hasEventNote() {
+		return hasNotes() && !getEventNote().isEmpty();
+	}
+	public String getEventNote() {
+		String note = "";
+		if (hasNotes())
+			for (NoteInterface n: getNotes()) {
+				if (n.getNote() != null && !n.getNote().isEmpty()) {
+					if (!note.isEmpty()) note += "\n";
+					note += n.getNote();
+				}
+			}
+		return note;
+	}
 
 	public String getLastChange() { return iLastChange; }
 	public boolean hasLastChange() { return iLastChange != null && !iLastChange.isEmpty(); }

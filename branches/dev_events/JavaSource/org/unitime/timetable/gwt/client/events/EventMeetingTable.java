@@ -597,7 +597,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
-				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().isShowEventDetails() ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
 				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
@@ -610,7 +610,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new HTML("&nbsp;"));
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
-				P note = new P("note"); note.setHTML(event.hasNotes() && getMode().isShowEventDetails() ? event.getNotes().first().getNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().isShowEventDetails() ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
 				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
