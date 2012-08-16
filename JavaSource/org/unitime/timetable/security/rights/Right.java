@@ -43,6 +43,7 @@ import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
@@ -350,6 +351,17 @@ public enum Right {
     EventApprovePast,
     EventAnyLocation,
     EventEditPast,
+    
+    HQLReports(Session.class),
+    HQLReportAdd(Session.class),
+    HQLReportEdit(SavedHQL.class),
+    HQLReportDelete(SavedHQL.class),
+    HQLReportsCourses(Session.class),
+    HQLReportsExaminations(Session.class),
+    HQLReportsStudents(Session.class),
+    HQLReportsEvents(Session.class),
+    HQLReportsAdministration(Session.class),
+    HQLReportsAdminOnly(Session.class),
     
     ;
 	
