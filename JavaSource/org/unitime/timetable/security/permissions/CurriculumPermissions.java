@@ -30,15 +30,13 @@ import org.unitime.timetable.security.rights.Right;
 public class CurriculumPermissions {
 
 	@PermissionForRight(Right.CurriculumView)
-	public static class CanView implements Permission<Session> {
+	public static class CurriculumView implements Permission<Session> {
 		@Autowired
 		PermissionSession permissionSession;
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(
-					user,
-					source);
+			return permissionSession.check(user, source);
 		}
 
 		@Override
@@ -46,16 +44,13 @@ public class CurriculumPermissions {
 	}
 	
 	@PermissionForRight(Right.CurriculumAdd)
-	public static class CanAdd implements Permission<Department> {
+	public static class CurriculumAdd implements Permission<Department> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return source != null && permissionDepartment.check(
-					user,
-					source,
-					(source.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
+			return source != null && permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit); 
 		}
 
 		@Override
@@ -63,17 +58,14 @@ public class CurriculumPermissions {
 	}
 	
 	@PermissionForRight(Right.CurriculumEdit)
-	public static class CanEdit implements Permission<Curriculum> {
+	public static class CurriculumEdit implements Permission<Curriculum> {
 		@Autowired
 		PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Curriculum source) {
 			Department department = (source == null ? null : source.getDepartment());
-			return department != null && permissionDepartment.check(
-					user,
-					department,
-					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
+			return department != null && permissionDepartment.check(user, department, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit); 
 		}
 
 		@Override
@@ -81,15 +73,13 @@ public class CurriculumPermissions {
 	}
 	
 	@PermissionForRight(Right.CurriculumDetail)
-	public static class CanDetail implements Permission<Curriculum> {
+	public static class CurriculumDetail implements Permission<Curriculum> {
 		@Autowired
-		PermissionDepartment permissionDepartment;
+		PermissionSession permissionSession;
 
 		@Override
 		public boolean check(UserContext user, Curriculum source) {
-			return source != null && permissionDepartment.check(
-					user,
-					source.getDepartment()); 
+			return source != null && permissionSession.check(user, source.getDepartment().getSession()); 
 		}
 
 		@Override
@@ -97,40 +87,10 @@ public class CurriculumPermissions {
 	}
 	
 	@PermissionForRight(Right.CurriculumDelete)
-	public static class CanDelete implements Permission<Curriculum> {
-		@Autowired
-		PermissionDepartment permissionDepartment;
-
-		@Override
-		public boolean check(UserContext user, Curriculum source) {
-			Department department = (source == null ? null : source.getDepartment());
-			return department != null && permissionDepartment.check(
-					user,
-					department,
-					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
-		}
-
-		@Override
-		public Class<Curriculum> type() { return Curriculum.class; }
-	}
+	public static class CurriculumDelete extends CurriculumEdit { }
 	
 	@PermissionForRight(Right.CurriculumMerge)
-	public static class CanMerge implements Permission<Curriculum> {
-		@Autowired
-		PermissionDepartment permissionDepartment;
-
-		@Override
-		public boolean check(UserContext user, Curriculum source) {
-			Department department = (source == null ? null : source.getDepartment());
-			return department != null && permissionDepartment.check(
-					user,
-					department,
-					(department.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit)); 
-		}
-
-		@Override
-		public Class<Curriculum> type() { return Curriculum.class; }
-	}
+	public static class CurriculumMerge extends CurriculumEdit { }
 	
 	@PermissionForRight(Right.CurriculumAdmin)
 	public static class CurriculumAdmin implements Permission<Session> {
@@ -144,4 +104,10 @@ public class CurriculumPermissions {
 		@Override
 		public Class<Session> type() { return Session.class; }
 	}
+	
+	@PermissionForRight(Right.CurriculumProjectionRulesDetail)
+	public static class CurriculumProjectionRulesDetail extends CurriculumView {}
+	
+	@PermissionForRight(Right.CurriculumProjectionRulesEdit)
+	public static class CurriculumProjectionRulesEdit extends CurriculumAdmin {}
 }

@@ -318,11 +318,12 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 		case CurriculumDetail:
 		case CurriculumView:
+		case CurriculumProjectionRulesDetail:
 			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference());
 		case CurriculumMerge:
-			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference());
+		case CurriculumProjectionRulesEdit:
 		case CurriculumAdmin:
-			return ADMIN_ROLE.equals(getReference());
+			return ADMIN_ROLE.equals(getReference()) || CURRICULUM_MGR_ROLE.equals(getReference());
 			
 		case ExaminationSchedule:
 		case CanUseHardDistributionPrefs:
@@ -479,7 +480,7 @@ public class Roles extends BaseRoles implements HasRights {
 		
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
-			
+		
 		default:
 			
 			return false;
