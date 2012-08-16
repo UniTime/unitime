@@ -22,6 +22,7 @@ public class NoRoleAuthority extends AbstractAuthority {
 		case EventEdit:
 		case EventMeetingEdit:
 		case EventDate:
+		case SchedulingAssistant:
 			return true;
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
