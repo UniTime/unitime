@@ -484,6 +484,24 @@ public class Roles extends BaseRoles implements HasRights {
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
 
+		case HQLReportAdd:
+		case HQLReportEdit:
+		case HQLReportDelete:
+		case HQLReportsAdminOnly:
+		case HQLReportsAdministration:
+			return ADMIN_ROLE.equals(getReference());
+			
+		case HQLReports:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
+		case HQLReportsCourses:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+		case HQLReportsStudents:
+			return ADMIN_ROLE.equals(getReference());
+		case HQLReportsExaminations:
+			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
+		case HQLReportsEvents:
+			return ADMIN_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
+			
 		default:
 			
 			return false;

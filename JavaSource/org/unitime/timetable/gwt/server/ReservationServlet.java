@@ -578,7 +578,7 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	@Override
-	@PreAuthorize("(#reservation.id != null and checkPermission(#reservation.id, 'Reservation', 'ReservationEdit')) or (checkPermission(#reservation.offering.id, 'InstructionalOffering', 'ReservationOffering') and checkPermission('ReservationAdd'))")
+	@PreAuthorize("(#reservation.id != null and checkPermission(#reservation.id, 'Reservation', 'ReservationEdit')) or (#reservation.id == null and checkPermission(#reservation.offering.id, 'InstructionalOffering', 'ReservationOffering') and checkPermission('ReservationAdd'))")
 	public Long save(ReservationInterface reservation) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();

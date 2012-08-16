@@ -22,6 +22,7 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.SubjectArea;
@@ -252,4 +253,44 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.DistributionTypeEdit)
 	public static class DistributionTypeEdit extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.HQLReports)
+	public static class HQLReports extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.HQLReportAdd)
+	public static class HQLReportAdd extends HQLReports {}
+		
+	@PermissionForRight(Right.HQLReportEdit)
+	public static class HQLReportEdit implements Permission<SavedHQL>{
+		@Override
+		public boolean check(UserContext user, SavedHQL source) {
+			if (source.isSet(SavedHQL.Flag.ADMIN_ONLY))
+				return user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly);
+			return true;
+		}
+
+		@Override
+		public Class<SavedHQL> type() { return SavedHQL.class; }
+	}
+
+	@PermissionForRight(Right.HQLReportDelete)
+	public static class HQLReportDelete extends HQLReportEdit {}
+	
+	@PermissionForRight(Right.HQLReportsCourses)
+	public static class HQLReportsCourses extends HQLReports {}
+
+	@PermissionForRight(Right.HQLReportsExaminations)
+	public static class HQLReportsExaminations extends HQLReports {}
+
+	@PermissionForRight(Right.HQLReportsEvents)
+	public static class HQLReportsEvents extends HQLReports {}
+
+	@PermissionForRight(Right.HQLReportsStudents)
+	public static class HQLReportsStudents extends HQLReports {}
+
+	@PermissionForRight(Right.HQLReportsAdministration)
+	public static class HQLReportsAdministration extends HQLReports {}
+
+	@PermissionForRight(Right.HQLReportsAdminOnly)
+	public static class HQLReportsAdminOnly extends HQLReports {}
 }
