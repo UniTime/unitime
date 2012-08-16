@@ -157,7 +157,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 		}
 		iTooBigRoomPreference = TooBigRooms.getTooBigRoomPreference(placement);
 		iMinRoomSize = lecture.minRoomSize();
-		iUselessHalfHours = (int)Math.round(
+		iUselessHalfHours = placement.variable().getModel() == null ? 0 : (int)Math.round(
 				placement.variable().getModel().getCriterion(UselessHalfHours.class).getValue(placement, null) + 
 				placement.variable().getModel().getCriterion(BrokenTimePatterns.class).getValue(placement, null));
 		DepartmentSpreadConstraint deptConstraint = null;
