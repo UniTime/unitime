@@ -436,7 +436,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
-	@PreAuthorize("(#curriculum.id != null and checkPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit')) or checkPermission(#curriculum.department.id, 'Department', 'CurriculumAdd')")
+	@PreAuthorize("(#curriculum.id != null and checkPermission(#curriculum.id, 'Curriculum', 'CurriculumEdit')) or (#curriculum.id == null and checkPermission(#curriculum.department.id, 'Department', 'CurriculumAdd'))")
 	public Long saveCurriculum(CurriculumInterface curriculum) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("saveCurriculum(curriculum=" + curriculum.getId() + ")");

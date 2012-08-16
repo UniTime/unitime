@@ -193,8 +193,7 @@ public class SavedHQLPage extends Composite {
 			}
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage(caught.getMessage());
-				ToolBox.checkAccess(caught);
+				iHeader.setEnabled("add", false);
 			}
 		});
 
