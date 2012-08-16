@@ -502,6 +502,21 @@ public class Roles extends BaseRoles implements HasRights {
 		case HQLReportsEvents:
 			return ADMIN_ROLE.equals(getReference()) || EVENT_MGR_ROLE.equals(getReference());
 			
+		case ConsentApproval:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
+
+		case OfferingEnrollments:
+		case StudentEnrollments:
+		case SchedulingAssistant:
+		case SchedulingDashboard:
+			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference()) || VIEW_ALL_ROLE.equals(getReference()); 
+			
+		case StudentSchedulingAdmin:
+			return ADMIN_ROLE.equals(getReference());
+			
+		case StudentSchedulingAdvisor:
+			return ADMIN_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference());
+					
 		default:
 			
 			return false;
