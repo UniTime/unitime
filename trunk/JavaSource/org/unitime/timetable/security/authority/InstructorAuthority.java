@@ -44,6 +44,10 @@ public class InstructorAuthority extends AbstractAuthority {
 		case EventEdit:
 		case EventMeetingEdit:
 		case EventDate:
+		case ConsentApproval:
+		case OfferingEnrollments:
+		case SchedulingAssistant:
+		case SchedulingDashboard:
 			return true;
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));

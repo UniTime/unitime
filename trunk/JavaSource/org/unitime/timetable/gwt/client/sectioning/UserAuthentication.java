@@ -306,7 +306,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogIn(e);
-					if (iOnLoginCommand != null) iOnLoginCommand.execute();
+					if (iOnLoginCommand != null) iOnLoginCommand.execute();						
 				}
 			});
 			return;
@@ -322,13 +322,36 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		sSectioningService.logOut(new AsyncCallback<Boolean>() {
 			public void onFailure(Throwable caught) { }
 			public void onSuccess(Boolean result) {
-				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
-				iHint.setText(MESSAGES.userHintClose());
-				iUserLabel.setText(MESSAGES.userNotAuthenticated());
-				iLastUser = null;
-				for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
-					h.onLogOut(e);
-				iLoggedIn = false;
+				if (result) {
+					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
+					iHint.setText(MESSAGES.userHintClose());
+					iUserLabel.setText(MESSAGES.userNotAuthenticated());
+					iLastUser = null;
+					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
+						h.onLogOut(e);
+					iLoggedIn = false;
+				} else {
+					sSectioningService.whoAmI(new AsyncCallback<String>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
+							iHint.setText(MESSAGES.userHintClose());
+							iUserLabel.setText(MESSAGES.userNotAuthenticated());
+							iLastUser = null;
+							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
+								h.onLogOut(e);
+							iLoggedIn = false;					
+						}
+
+						@Override
+						public void onSuccess(String result) {
+							authenticated(result);
+							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
+							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
+								h.onLogOut(e);
+						}
+					});
+				}
 			}
 		});
 	}

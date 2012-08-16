@@ -308,12 +308,13 @@ public class UniTimeUserContext extends AbstractUserContext {
 				
 				if (userData == null)
 					userData = new UserData(getExternalUserId(), key);
-				userData.setValue(value);
-
-				if (value == null)
+				
+				if (value == null) {
 					hibSession.delete(userData);
-				else
+				} else {
+					userData.setValue(value);
 					hibSession.saveOrUpdate(userData);
+				}
 			}
 		} finally {
 			hibSession.close();

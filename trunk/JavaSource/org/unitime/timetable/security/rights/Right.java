@@ -49,6 +49,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SponsoringOrganization;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 
@@ -363,6 +364,13 @@ public enum Right {
     HQLReportsAdministration(Session.class),
     HQLReportsAdminOnly(Session.class),
     
+    ConsentApproval(InstructionalOffering.class),
+    StudentSchedulingAdvisor,
+    StudentSchedulingAdmin,
+    OfferingEnrollments(InstructionalOffering.class),
+    StudentEnrollments(Student.class),
+    SchedulingAssistant,
+    SchedulingDashboard(Session.class),
     ;
 	
 	private Class<?> iType;

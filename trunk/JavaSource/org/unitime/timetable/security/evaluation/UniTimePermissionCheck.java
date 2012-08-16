@@ -287,6 +287,8 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 
 	@Override
 	public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException {
+		if (user == null)
+			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
 		AccessDeniedException ret = null;
 		authorities: for (UserAuthority authority: user.getAuthorities()) {
 			for (Qualifiable q: filter)
@@ -303,6 +305,8 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 
 	@Override
 	public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+		if (user == null)
+			throw new AccessDeniedException(MSG.noAuthentication(right == null ? "NULL" : right.toString()));
 		AccessDeniedException ret = null;
 		authorities: for (UserAuthority authority: user.getAuthorities()) {
 			for (Qualifiable q: filter)

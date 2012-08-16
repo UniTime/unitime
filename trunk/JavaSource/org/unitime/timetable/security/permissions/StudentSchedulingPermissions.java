@@ -19,6 +19,11 @@
 */
 package org.unitime.timetable.security.permissions;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Student;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
 public class StudentSchedulingPermissions {
@@ -34,4 +39,69 @@ public class StudentSchedulingPermissions {
 
 	@PermissionForRight(Right.EnrollmentAuditPDFReports)
 	public static class EnrollmentAuditPDFReports extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.ConsentApproval)
+	public static class ConsentApproval implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if (source.getConsentType() == null) return false;
+			
+			if ("Instructor".equals(user.getCurrentAuthority().getRole())) {
+				if (!"IN".equals(source.getConsentType().getReference())) return false;
+				
+				for (DepartmentalInstructor instructor: source.getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+
+				return false;
+			} else {
+				return permissionDepartment.check(user, source.getControllingCourseOffering().getSubjectArea().getDepartment());
+			}
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.OfferingEnrollments)
+	public static class OfferingEnrollments implements Permission<InstructionalOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, InstructionalOffering source) {
+			if ("Instructor".equals(user.getCurrentAuthority().getRole())) {
+				for (DepartmentalInstructor instructor: source.getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				
+				return false;
+			} else {
+				return permissionDepartment.check(user, source.getControllingCourseOffering().getSubjectArea().getDepartment());
+			}
+		}
+
+		@Override
+		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		
+	}
+	
+	@PermissionForRight(Right.StudentEnrollments)
+	public static class StudentEnrollments implements Permission<Student> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Student source) {
+			if ("Student".equals(user.getCurrentAuthority().getRole()))
+				return source.getExternalUniqueId().equals(user.getExternalUserId());
+			
+			return true;
+		}
+
+		@Override
+		public Class<Student> type() { return Student.class; }
+		
+	}
 }
