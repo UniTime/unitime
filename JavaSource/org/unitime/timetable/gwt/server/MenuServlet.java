@@ -289,8 +289,8 @@ public class MenuServlet implements MenuService {
 			UserContext user = userInfo.getUser();
 			if (user == null) return false;
 			String role = conditionElement.attributeValue("name");
-			if (role == null) return user.getCurrentRole() != null; // has any role
-			return role.equalsIgnoreCase(user.getCurrentRole());
+			if (role == null) return sessionContext.hasPermission(Right.HasRole);; // has any role
+			return user.getCurrentAuthority() != null && role.equalsIgnoreCase(user.getCurrentAuthority().getRole());
 		} else if ("propertyEquals".equals(cond)) {
 			return conditionElement.attributeValue("value", "true").equalsIgnoreCase(ApplicationProperties.getProperty(
 					conditionElement.attributeValue("name", "dummy"),
@@ -303,7 +303,7 @@ public class MenuServlet implements MenuService {
 		} else if ("hasRight".equals(cond)) {
 			String right = conditionElement.attributeValue("name", "unknown");
 			if ("canSeeEvents".equals(right)) {
-				return userInfo.getUser() != null && TimetableManager.canSeeEvents(userInfo.getUser());
+				return userInfo.getUser() != null && getSessionContext().hasPermissionAnyAuthority(Right.Events);
 			} else if ("hasRoomAvailability".equals(right)) {
 				return RoomAvailability.getInstance() != null;
 			} else if ("hasPersonalReport".equals(right)) {
@@ -423,8 +423,8 @@ public class MenuServlet implements MenuService {
 		 		}
 		 		ret.put("1Dept", dept);
 		 		
-		 		String role = user.getUser().getCurrentRole();
-		 		if (role==null) role = "No Role";
+		 		String role = (user.getUser().getCurrentAuthority() == null ? null : user.getUser().getCurrentAuthority().getRole());
+		 		if (role == null) role = "No Role";
 		 		ret.put("2Role", role);
 		 		
 		 		if (sessionContext.hasPermission(Right.Chameleon) || (user.getUser() != null && user.getUser() instanceof UserContext.Chameleon))
