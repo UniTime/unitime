@@ -220,7 +220,6 @@ public class Roles extends BaseRoles implements HasRights {
 		case InstrOfferingConfigEdit:
 		case InstrOfferingConfigEditDepartment:
 		case InstrOfferingConfigEditSubpart:
-		case AddReservation:
 		case EditCourseOffering:
 		case InstructionalOfferingCrossLists:
 		case OfferingMakeNotOffered:
@@ -242,6 +241,10 @@ public class Roles extends BaseRoles implements HasRights {
 		case DistributionPreferenceAdd:
 		case DistributionPreferenceEdit:
 		case DistributionPreferenceDelete:
+		case ReservationAdd:
+		case ReservationEdit:
+		case ReservationDelete:
+		case ReservationOffering:
 			return ADMIN_ROLE.equals(getReference()) || DEPT_SCHED_MGR_ROLE.equals(getReference());
 			
 		case SolverSolutionExportXml:
@@ -480,7 +483,7 @@ public class Roles extends BaseRoles implements HasRights {
 		
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
-		
+
 		default:
 			
 			return false;

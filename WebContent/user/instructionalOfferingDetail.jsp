@@ -438,10 +438,10 @@
 		<TR>
 			<TD colspan="2">
 				<a name="reservations"></a>
-				<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddReservation')">
+				<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') and hasPermission(null, null, 'ReservationAdd')">
 					<div id='UniTimeGWT:OfferingReservations' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
 				</sec:authorize>
-				<sec:authorize access="not hasPermission(#instrOfferingId, 'InstructionalOffering', 'AddReservation')">
+				<sec:authorize access="not hasPermission(#instrOfferingId, 'InstructionalOffering', 'ReservationOffering') or not hasPermission(null, null, 'ReservationAdd')">
 					<div id='UniTimeGWT:OfferingReservationsRO' style="display: none;"><bean:write name="instructionalOfferingDetailForm" property="instrOfferingId" /></div>
 				</sec:authorize>
 			</TD>
