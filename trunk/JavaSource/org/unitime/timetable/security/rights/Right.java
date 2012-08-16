@@ -176,6 +176,8 @@ public enum Right {
     CurriculumDelete(Curriculum.class),
     CurriculumMerge(Curriculum.class),
     CurriculumAdmin(Session.class),
+    CurriculumProjectionRulesDetail(Session.class),
+    CurriculumProjectionRulesEdit(Session.class),
     
     Instructors(Department.class),
     InstructorsExportPdf(Department.class),

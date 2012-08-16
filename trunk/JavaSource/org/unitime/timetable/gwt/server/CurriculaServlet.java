@@ -75,9 +75,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -90,8 +88,10 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 
@@ -126,7 +126,6 @@ public class CurriculaServlet implements CurriculaService {
 			Query q = new Query(filter);
 			getSessionContext().setAttribute("Curricula.LastFilter", filter);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
 			try {
 				List<Curriculum> curricula = findAllCurricula(hibSession);
 				for (Curriculum c: curricula) {
@@ -135,7 +134,7 @@ public class CurriculaServlet implements CurriculaService {
 						ci.setId(c.getUniqueId());
 						ci.setAbbv(c.getAbbv());
 						ci.setName(c.getName());
-						ci.setEditable(c.canUserEdit(user));
+						ci.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
 						DepartmentInterface di = new DepartmentInterface();
 						di.setId(c.getDepartment().getUniqueId());
 						di.setAbbv(c.getDepartment().getAbbreviation());
@@ -278,8 +277,6 @@ public class CurriculaServlet implements CurriculaService {
 				classifications.put(clasf.getId(), idx++);
 			}
 			
-			UserContext user = getSessionContext().getUser();
-
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
@@ -289,7 +286,7 @@ public class CurriculaServlet implements CurriculaService {
 				curriculumIfc.setId(c.getUniqueId());
 				curriculumIfc.setAbbv(c.getAbbv());
 				curriculumIfc.setName(c.getName());
-				curriculumIfc.setEditable(c.canUserEdit(user));
+				curriculumIfc.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(c.getDepartment().getUniqueId());
 				deptIfc.setAbbv(c.getDepartment().getAbbreviation());
@@ -446,7 +443,6 @@ public class CurriculaServlet implements CurriculaService {
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
-			UserContext user = getSessionContext().getUser();
 			try {
 				tx = hibSession.beginTransaction();
 				
@@ -469,7 +465,6 @@ public class CurriculaServlet implements CurriculaService {
 				c.setName(curriculum.getName());
 				c.setAcademicArea(AcademicAreaDAO.getInstance().get(curriculum.getAcademicArea().getId(), hibSession));
 				c.setDepartment(DepartmentDAO.getInstance().get(curriculum.getDepartment().getId(), hibSession));
-				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to " + (c.getUniqueId() == null ? "create" : "update") + " this curriculum.");
 				if (c.getMajors() == null) {
 					c.setMajors(new HashSet());
 					if (curriculum.hasMajors()) 
@@ -686,14 +681,13 @@ public class CurriculaServlet implements CurriculaService {
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
-			UserContext user = getSessionContext().getUser();
 			try {
 				tx = hibSession.beginTransaction();
 				
 				int ord = 0;
 				for (CurriculumInterface curriculum: curricula) {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculum.getId(), hibSession);
-					if (c == null || !c.canUserEdit(user)) continue;
+					if (c == null) continue;
 					
 					HashSet<CurriculumClassification> remove = new HashSet<CurriculumClassification>(c.getClassifications());
 					
@@ -765,7 +759,6 @@ public class CurriculaServlet implements CurriculaService {
 			sLog.debug("deleteCurriculum(curriculumId=" + curriculumId + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
@@ -775,8 +768,6 @@ public class CurriculaServlet implements CurriculaService {
 				
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 				if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
-				
-				if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete this curriculum.");
 				
 				ChangeLog.addChange(hibSession,
 						getSessionContext(),
@@ -817,7 +808,6 @@ public class CurriculaServlet implements CurriculaService {
 			sLog.debug("deleteCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
@@ -828,8 +818,6 @@ public class CurriculaServlet implements CurriculaService {
 					
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
-					
-					if (!c.canUserEdit(user)) throw new CurriculaException("You are not authorized to delete curriculum " + c.getAbbv() + ".");
 					
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
@@ -872,7 +860,6 @@ public class CurriculaServlet implements CurriculaService {
 			sLog.debug("mergeCurricula(curriculumIds=" + curriculumIds + ")");
 			Long s0 = System.currentTimeMillis();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
 			Transaction tx = null;
 			try {
 				tx = hibSession.beginTransaction();
@@ -892,8 +879,6 @@ public class CurriculaServlet implements CurriculaService {
 					
 					Curriculum curriculum = CurriculumDAO.getInstance().get(curriculumId, hibSession);
 					if (curriculum == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
-					
-					if (!curriculum.canUserEdit(user)) throw new CurriculaException("You are not authorized to merge curriculum " + curriculum.getAbbv() + ".");
 					
 					cidx++;
 						
@@ -1663,33 +1648,14 @@ public class CurriculaServlet implements CurriculaService {
 			Long s0 = System.currentTimeMillis();
 			TreeSet<DepartmentInterface> results = new TreeSet<DepartmentInterface>();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			Long sessionId = getAcademicSessionId();
 			try {
-				UserContext user = getSessionContext().getUser();
-				if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) {
-					List<Department> depts = hibSession.createQuery(
-							"select d from Department d where d.session.uniqueId = :sessionId order by d.deptCode")
-							.setLong("sessionId", sessionId).setCacheable(true).list();
-					for (Department d: depts) {
-						DepartmentInterface di = new DepartmentInterface();
-						di.setId(d.getUniqueId());
-						di.setCode(d.getDeptCode());
-						di.setAbbv(d.getAbbreviation());
-						di.setName(d.getName());
-						results.add(di);
-					}
-				} else {
-					for (Iterator<Department> i = getManager().getDepartments().iterator(); i.hasNext();) {
-						Department d = i.next();
-						if (d.getSession().getUniqueId().equals(sessionId)) {
-							DepartmentInterface di = new DepartmentInterface();
-							di.setId(d.getUniqueId());
-							di.setCode(d.getDeptCode());
-							di.setAbbv(d.getAbbreviation());
-							di.setName(d.getName());
-							results.add(di);
-						}
-					}
+				for (Department d: Department.getUserDepartments(getSessionContext().getUser())) {
+					DepartmentInterface di = new DepartmentInterface();
+					di.setId(d.getUniqueId());
+					di.setCode(d.getDeptCode());
+					di.setAbbv(d.getAbbreviation());
+					di.setName(d.getName());
+					results.add(di);
 				}
 			} finally {
 				hibSession.close();
@@ -1713,13 +1679,9 @@ public class CurriculaServlet implements CurriculaService {
 		String filter = (String)getSessionContext().getAttribute("Curricula.LastFilter");
 		if (filter == null) {
 			filter = "";
-			Long sessionId = getAcademicSessionId();
-			for (Iterator<Department> i = getManager().getDepartments().iterator(); i.hasNext(); ) {
-				Department d = i.next();
-				if (d.getSession().getUniqueId().equals(sessionId)) {
-					if (!filter.isEmpty()) filter += " or ";
-					filter += "dept:" + d.getDeptCode();
-				}
+			for (Qualifiable q: getSessionContext().getUser().getCurrentAuthority().getQualifiers("Department")) {
+				if (!filter.isEmpty()) filter += " or ";
+				filter += "dept:" + q.getQualifierReference();
 			}
 		}
 		sLog.debug("Last filter is '" + filter + "'  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
@@ -1919,39 +1881,15 @@ public class CurriculaServlet implements CurriculaService {
 	
 	@PreAuthorize("checkPermission('CurriculumAdd') and checkPermission('CurriculumView')")
 	public Boolean canAddCurriculum() throws CurriculaException, PageAccessException {
-		try {
-			UserContext user = getSessionContext().getUser();
-			if (user == null) throw new PageAccessException(
-					getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
-			return Roles.CURRICULUM_MGR_ROLE.equals(user.getCurrentRole()) ||
-				Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) ||
-				Roles.ADMIN_ROLE.equals(user.getCurrentRole());
-		} catch (PageAccessException e) {
-			throw e;
-		} catch (CurriculaException e) {
-			throw e;
-		} catch  (Exception e) {
-			sLog.error(e.getMessage(), e);
-			throw new CurriculaException(e.getMessage());
-		}
+		return true;
 	}
 	
 	@PreAuthorize("checkPermission('CurriculumAdmin') and checkPermission('CurriculumView')")
 	public Boolean isAdmin() throws CurriculaException, PageAccessException {
-		try {
-			UserContext user = getSessionContext().getUser();
-			return user != null && Roles.ADMIN_ROLE.equals(user.getCurrentRole());
-		} catch (PageAccessException e) {
-			throw e;
-		} catch (CurriculaException e) {
-			throw e;
-		} catch  (Exception e) {
-			sLog.error(e.getMessage(), e);
-			throw new CurriculaException(e.getMessage());
-		}
+		return true;
 	}
 
+	@PreAuthorize("checkPermission('CurriculumProjectionRulesDetail')")
 	public HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> loadProjectionRules() throws CurriculaException, PageAccessException {
 		sLog.debug("loadProjectionRules()");
 		Long s0 = System.currentTimeMillis();
@@ -1959,8 +1897,6 @@ public class CurriculaServlet implements CurriculaService {
 			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
 					getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (!Roles.ADMIN_ROLE.equals(user.getCurrentRole()) && !Roles.CURRICULUM_MGR_ROLE.equals(user.getCurrentRole()) && !Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()))
-				throw new PageAccessException("Insufficient user privileges.");
 
 			HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules = new HashMap<AcademicAreaInterface, HashMap<MajorInterface,HashMap<AcademicClassificationInterface, Number[]>>>();
 			
@@ -2062,6 +1998,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("checkPermission('CurriculumProjectionRulesEdit')")
 	public Boolean saveProjectionRules(HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules) throws CurriculaException, PageAccessException {
 		sLog.debug("saveProjectionRules()");
 		long s0 = System.currentTimeMillis();
@@ -2146,17 +2083,12 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("checkPermission('CurriculumProjectionRulesEdit')")
 	public Boolean canEditProjectionRules() throws CurriculaException, PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null)
-			new PageAccessException(
-					getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-			if (user.getCurrentRole() == null) throw new PageAccessException("Insufficient user privileges.");
-		if (!Roles.ADMIN_ROLE.equals(user.getCurrentRole()))
-			throw new PageAccessException("Insufficient user privileges.");
 		return true;
 	}
 	
+	@PreAuthorize("checkPermission('CurriculumAdmin')")
 	public Boolean makeupCurriculaFromLastLikeDemands(boolean lastLike) throws CurriculaException, PageAccessException {
 		sLog.debug("makeupCurriculaFromLastLikeDemands(lastLike=" + lastLike + ")");
 		long s0 = System.currentTimeMillis();
@@ -2222,7 +2154,6 @@ public class CurriculaServlet implements CurriculaService {
 	public Boolean updateCurriculaByProjections(Set<Long> curriculumIds, boolean updateCurriculumCourses) throws CurriculaException, PageAccessException {
 		sLog.debug("updateCurriculaByProjections(curricula=" + curriculumIds + ", updateCurriculumCourses=" + updateCurriculumCourses + ")");
 		long s0 = System.currentTimeMillis();
-		UserContext user = getSessionContext().getUser();
 		try {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -2240,8 +2171,7 @@ public class CurriculaServlet implements CurriculaService {
 				}
 				
 				for (Curriculum c: curricula) {
-					if (c == null || !c.canUserEdit(user)) continue;
-					
+					if (c == null || !getSessionContext().hasPermission(c, Right.CurriculumEdit)) continue;
 					
 					List<AcademicClassification> classifications = (List<AcademicClassification>)hibSession.createQuery(
 							"select c from AcademicClassification c where c.session.uniqueId = :sessionId")
@@ -2391,6 +2321,7 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("checkPermission('CurriculumAdmin')")
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ")");
 		long s0 = System.currentTimeMillis();
@@ -2511,11 +2442,11 @@ public class CurriculaServlet implements CurriculaService {
 		}
 	}
 	
+	@PreAuthorize("checkPermission(#offeringId, 'InstructionalOffering', 'InstructionalOfferingDetail') or checkPermission('CurriculumAdmin')")
 	public Boolean populateCourseProjectedDemands(boolean includeOtherStudents, Long offeringId) throws CurriculaException, PageAccessException {
 		sLog.debug("populateCourseProjectedDemands(includeOtherStudents=" + includeOtherStudents + ", offering=" + offeringId +")");
 		long s0 = System.currentTimeMillis();
 		try {
-			UserContext user = getSessionContext().getUser();
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
 			try {
@@ -2523,11 +2454,6 @@ public class CurriculaServlet implements CurriculaService {
 				
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
 				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
-				
-				if (!offering.isEditableBy(user)) {
-					if (user == null || !Roles.CURRICULUM_MGR_ROLE.equals(user.getCurrentRole()) || !getManager().getDepartments().contains(offering.getDepartment()))
-						throw new CurriculaException("not authorized to populate course projected demands");
-				}
 				
 				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
 					CourseOffering courseOffering = i.next();
@@ -2623,25 +2549,8 @@ public class CurriculaServlet implements CurriculaService {
 	}
 
 	/* Support functions (lookups etc.) */
-	
-	@Deprecated
-	private TimetableManager getManager() throws PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (user.getCurrentAuthority() == null) throw new PageAccessException("Insufficient user privileges.");
-		TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-		if (manager == null) throw new PageAccessException("Insufficient user privileges.");
-		return manager;
-	}
-	
-	private Long getAcademicSessionId() throws PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		Long sessionId = user.getCurrentAcademicSessionId();
-		if (sessionId == null) throw new PageAccessException("No academic session is selected.");
-		return sessionId;
+	private Long getAcademicSessionId() {
+		return getSessionContext().getUser().getCurrentAcademicSessionId();
 	}
 	
 	private class CurriculaMatcher implements Query.TermMatcher {
