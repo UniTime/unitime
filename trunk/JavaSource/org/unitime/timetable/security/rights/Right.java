@@ -40,6 +40,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SchedulingSubpart;
@@ -89,9 +90,11 @@ public enum Right {
 	InstrOfferingConfigEditSubpart(SchedulingSubpart.class),
 	InstrOfferingConfigDelete(InstrOfferingConfig.class),
 	InstructionalOfferingCrossLists(InstructionalOffering.class),
-	AddReservation(InstructionalOffering.class),
-	
 	Reservations(Department.class),
+	ReservationOffering(InstructionalOffering.class),
+	ReservationAdd(Department.class),
+	ReservationEdit(Reservation.class),
+	ReservationDelete(Reservation.class),
 
 	InstructionalOfferings(Department.class),
 	InstructionalOfferingsExportPDF(Department.class),

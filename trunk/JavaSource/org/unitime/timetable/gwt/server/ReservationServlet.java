@@ -29,14 +29,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
@@ -59,13 +60,10 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.SchedulingSubpart;
-import org.unitime.timetable.model.Session;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.StudentSectioningQueue;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -78,8 +76,8 @@ import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -97,6 +95,7 @@ public class ReservationServlet implements ReservationService {
 	private SessionContext getSessionContext() { return sessionContext; }
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public List<ReservationInterface.Area> getAreas() throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface.Area> results = new ArrayList<ReservationInterface.Area>();
@@ -199,6 +198,7 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public ReservationInterface.Offering getOffering(Long offeringId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -231,6 +231,8 @@ public class ReservationServlet implements ReservationService {
 		}
 		return null;
 	}
+	
+	@PreAuthorize("checkPermission('Reservations')")
 	public ReservationInterface.Offering getOfferingByCourseName(String courseName) throws ReservationException, PageAccessException{
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -269,7 +271,7 @@ public class ReservationServlet implements ReservationService {
 		return clasf2major2proj;
 	}
 	
-	public float getProjection(Hashtable<String,HashMap<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
+	private float getProjection(Hashtable<String,HashMap<String, Float>> clasf2major2proj, String majorCode, String clasfCode) {
 		if (clasf2major2proj == null || clasf2major2proj.isEmpty()) return 1.0f;
 		HashMap<String, Float> major2proj = clasf2major2proj.get(clasfCode);
 		if (major2proj == null) return 1.0f;
@@ -489,18 +491,18 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public List<ReservationInterface> getReservations(Long offeringId) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
-			String nameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+			String nameFormat = UserProperty.NameFormat.get(getSessionContext().getUser());
 			try {
 				for (Reservation reservation: (List<Reservation>)hibSession.createQuery(
 						"select r from Reservation r where r.instructionalOffering.uniqueId = :offeringId")
 						.setLong("offeringId", offeringId).setCacheable(true).list()) {
 					ReservationInterface r = convert(reservation, nameFormat, hibSession);
-					r.setEditable(reservation.isEditableBy(user));
+					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
 					results.add(r);
 				}				
 			} finally {
@@ -519,6 +521,7 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public List<ReservationInterface.IdName> getStudentGroups() throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface.IdName> results = new ArrayList<ReservationInterface.IdName>();
@@ -549,17 +552,17 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission(#reservationId, 'Reservation', 'ReservationEdit')")
 	public ReservationInterface getReservation(Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
-			UserContext user = getSessionContext().getUser();
 			ReservationInterface r;
 			try {
 				Reservation reservation = ReservationDAO.getInstance().get(reservationId, hibSession);
 				if (reservation == null)
 					throw new ReservationException("Reservation not found.");
-				r = convert(reservation, Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT), hibSession);
-				r.setEditable(reservation.isEditableBy(user));
+				r = convert(reservation, UserProperty.NameFormat.get(getSessionContext().getUser()), hibSession);
+				r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
 			} finally {
 				hibSession.close();
 			}
@@ -575,6 +578,7 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	@Override
+	@PreAuthorize("(#reservation.id != null and checkPermission(#reservation.id, 'Reservation', 'ReservationEdit')) or (checkPermission(#reservation.offering.id, 'InstructionalOffering', 'ReservationOffering') and checkPermission('ReservationAdd'))")
 	public Long save(ReservationInterface reservation) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -583,10 +587,6 @@ public class ReservationServlet implements ReservationService {
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(reservation.getOffering().getId(), hibSession);
 				if (offering == null)
 					throw new ReservationException("Offering " + reservation.getOffering().getName() + " does not exist.");
-				if (!offering.getDepartment().isLimitedEditableBy(user))
-					throw new ReservationException("You are not not authorized to create / update reservations for " + offering.getCourseName() + ".");
-		    	if (offering.getSession().isOfferingLockNeeded(offering.getUniqueId()))
-					throw new ReservationException("Offering " + offering.getCourseName() + " is unlocked, please lock it first.");
 				Reservation r = null;
 				if (reservation.getId() != null) {
 					r = ReservationDAO.getInstance().get(reservation.getId(), hibSession);
@@ -675,6 +675,7 @@ public class ReservationServlet implements ReservationService {
 	}
 	
 	@Override
+	@PreAuthorize("checkPermission(#reservationId, 'Reservation', 'ReservationDelete')")
 	public Boolean delete(Long reservationId) throws ReservationException, PageAccessException {
 		try {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
@@ -686,8 +687,6 @@ public class ReservationServlet implements ReservationService {
 				InstructionalOffering offering = reservation.getInstructionalOffering();
 		    	if (offering.getSession().isOfferingLockNeeded(offering.getUniqueId()))
 					throw new ReservationException("Offering " + offering.getCourseName() + " is unlocked, please lock it first.");
-				if (!reservation.isEditableBy(user))
-					throw new ReservationException("You are not not authorized to delete reservations for " + reservation.getInstructionalOffering().getCourseName() + ".");
 				offering.getReservations().remove(reservation);
 				hibSession.delete(reservation);
 				hibSession.saveOrUpdate(offering);
@@ -710,15 +709,6 @@ public class ReservationServlet implements ReservationService {
 		}
 	}
 	
-	private TimetableManager getManager() throws PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		TimetableManager manager = TimetableManager.findByExternalId(user.getExternalUserId());
-		if (manager == null) throw new PageAccessException("Insufficient user privileges.");
-		return manager;
-	}
-	
 	private Long getAcademicSessionId() throws PageAccessException {
 		UserContext user = getSessionContext().getUser();
 		if (user == null) throw new PageAccessException(
@@ -731,46 +721,27 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('ReservationAdd')")
 	public Boolean canAddReservation() throws ReservationException, PageAccessException {
-		try {
-			UserContext user = getSessionContext().getUser();
-			if (user == null || user.getCurrentAuthority() == null) return false;
-			if (!user.getCurrentAuthority().hasRight(Right.CurriculumAdd)) return false;
-			if (getManager().getDepartments().isEmpty()) return false;
-			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
-			try {
-				Session session = SessionDAO.getInstance().get(getAcademicSessionId(), hibSession);
-				return session != null && session.getStatusType().canOwnerLimitedEdit();
-			} finally {
-				hibSession.close();
-			}
-		} catch (PageAccessException e) {
-			throw e;
-		} catch (ReservationException e) {
-			throw e;
-		} catch (Exception e) {
-			sLog.error(e.getMessage(), e);
-			throw new ReservationException(e.getMessage());
-		}
+		return true;
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public List<ReservationInterface> findReservations(String filter) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			Query q = new Query(filter);
 			getSessionContext().setAttribute("Reservations.LastFilter", filter);
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			getManager();
-			UserContext user = getSessionContext().getUser();
-			String nameFormat = Settings.getSettingValue(user, Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+			String nameFormat = UserProperty.NameFormat.get(getSessionContext().getUser());
 			try {
 				for (Reservation reservation: (List<Reservation>)hibSession.createQuery(
 					"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId")
 					.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
 					if (q.match(new ReservationMatcher(reservation))) {
 						ReservationInterface r = convert(reservation, nameFormat, hibSession);
-						r.setEditable(reservation.isEditableBy(user));
+						r.setEditable(getSessionContext().hasPermission(r, Right.ReservationEdit));
 						results.add(r);
 					}
 				}
@@ -790,17 +761,14 @@ public class ReservationServlet implements ReservationService {
 	}
 
 	@Override
+	@PreAuthorize("checkPermission('Reservations')")
 	public String lastReservationFilter() throws ReservationException, PageAccessException {
 		String filter = (String)getSessionContext().getAttribute("Reservations.LastFilter");
 		if (filter == null) {
 			filter = "";
-			Long sessionId = getAcademicSessionId();
-			for (Iterator<Department> i = getManager().getDepartments().iterator(); i.hasNext(); ) {
-				Department d = i.next();
-				if (d.getSession().getUniqueId().equals(sessionId)) {
-					if (!filter.isEmpty()) filter += " or ";
-					filter += "dept:" + d.getDeptCode();
-				}
+			for (Qualifiable q: getSessionContext().getUser().getCurrentAuthority().getQualifiers("Department")) {
+				if (!filter.isEmpty()) filter += " or ";
+				filter += "dept:" + q.getQualifierReference();
 			}
 			filter = (filter.isEmpty() ? "not expired" : filter.contains(" or ") ? "(" + filter + ") and not expired" : filter + " and not expired");
 		}
