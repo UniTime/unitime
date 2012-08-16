@@ -849,7 +849,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
                         TimeLocation  loc = new TimeLocation(
                         		pattern.getExactDays(), pattern.getExactStartSlot(), length,
                         		PreferenceLevel.sIntLevelNeutral, 0, PreferenceLevel.prolog2int(pr), 
-                        		datePattern.getUniqueId(), datePattern.getName(), datePattern.getPatternBitSet(),
+                        		child.getUniqueId(), child.getName(), child.getPatternBitSet(),
                         		breakTime);
                         loc.setTimePatternId(pattern.getTimePattern().getUniqueId());
                         if (!PreferenceLevel.sNeutral.equals(pr) && !PreferenceLevel.sRequired.equals(pr)) {
@@ -981,20 +981,44 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         		iProgress.trace("adding prohibited pattern "+model.getName());
                 for (int time=0;time<model.getNrTimes(); time++) {
                     for (int day=0;day<model.getNrDays(); day++) {
-                        TimeLocation  loc = new TimeLocation(
-                                model.getDayCode(day),
-                                model.getStartSlot(time),
-                                model.getSlotsPerMtg(),
-                                PreferenceLevel.prolog2int(model.getPreference(day, time)),
-                                model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
-                                datePattern.getUniqueId(),
-                                datePattern.getName(),
-                                datePattern.getPatternBitSet(),
-                                model.getBreakTime()); 
-                        loc.setTimePatternId(model.getTimePattern().getUniqueId());
-                        loc.setPreference(1000);
-                        loc.setNormalizedPreference(1000.0);
-                        timeLocations.add(loc);
+                    	if (datePattern.getType() == DatePattern.sTypePatternSet) {
+                        	Set<DatePatternPref> datePatternPrefs = (Set<DatePatternPref>)clazz.effectivePreferences(DatePatternPref.class);
+                        	for (DatePattern child: datePattern.findChildren()) {
+                        		String pr = PreferenceLevel.sNeutral;
+                        		for (DatePatternPref p: datePatternPrefs)
+                        			if (p.getDatePattern().equals(child)) pr = p.getPrefLevel().getPrefProlog();
+                        		TimeLocation  loc = new TimeLocation(
+                                        model.getDayCode(day),
+                                        model.getStartSlot(time),
+                                        model.getSlotsPerMtg(),
+                                        PreferenceLevel.prolog2int(model.getPreference(day, time)),
+                                        model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                        PreferenceLevel.prolog2int(pr),
+                                        child.getUniqueId(),
+                                        child.getName(),
+                                        child.getPatternBitSet(),
+                                        model.getBreakTime());
+                                loc.setTimePatternId(model.getTimePattern().getUniqueId());
+                                loc.setPreference(1000);
+                                loc.setNormalizedPreference(1000.0);
+                                timeLocations.add(loc);
+                    		}
+                    	} else {
+                            TimeLocation  loc = new TimeLocation(
+                                    model.getDayCode(day),
+                                    model.getStartSlot(time),
+                                    model.getSlotsPerMtg(),
+                                    PreferenceLevel.prolog2int(model.getPreference(day, time)),
+                                    model.getNormalizedPreference(day,time,iNormalizedPrefDecreaseFactor),
+                                    datePattern.getUniqueId(),
+                                    datePattern.getName(),
+                                    datePattern.getPatternBitSet(),
+                                    model.getBreakTime()); 
+                            loc.setTimePatternId(model.getTimePattern().getUniqueId());
+                            loc.setPreference(1000);
+                            loc.setNormalizedPreference(1000.0);
+                            timeLocations.add(loc);
+                    	}
                     }
                 }
         	}
