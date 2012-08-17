@@ -54,7 +54,6 @@ import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
@@ -75,6 +74,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 
 /**
  * @author Tomas Muller
@@ -88,6 +88,7 @@ public class SimpleEditServlet implements SimpleEditService {
 	
 	@Override
 	public SimpleEditInterface load(Type type) throws SimpleEditException, PageAccessException {
+		getSessionContext().checkPermission(type2right(type));
 		org.hibernate.Session hibSession = null;
 		try {
 			hibSession = CurriculumDAO.getInstance().getSession();
@@ -293,7 +294,7 @@ public class SimpleEditServlet implements SimpleEditService {
 				}
 				break;				
 			}
-			data.setEditable(isAdmin());
+			data.setEditable(getSessionContext().hasPermission(type2editRight(type)));
 			return data;
 		} catch (PageAccessException e) {
 			throw e;
@@ -310,9 +311,9 @@ public class SimpleEditServlet implements SimpleEditService {
 	
 	@Override
 	public SimpleEditInterface save(SimpleEditInterface data) throws SimpleEditException, PageAccessException {
+		getSessionContext().checkPermission(type2editRight(data.getType()));
 		org.hibernate.Session hibSession = null;
 		try {
-			checkAdmin();
 			hibSession = CurriculumDAO.getInstance().getSession();
 			Long sessionId = getAcademicSessionId();
 			Transaction tx = null;
@@ -982,16 +983,62 @@ public class SimpleEditServlet implements SimpleEditService {
 		return sessionId;
 	}
 	
-	public boolean isAdmin() {
-		UserContext user = getSessionContext().getUser();
-		return user != null && user.getCurrentAuthority() != null && Roles.ADMIN_ROLE.equals(user.getCurrentRole());
+	private Right type2right(Type type) {
+		switch (type) {
+		case area:
+			return Right.AcademicAreas;
+		case classification:
+			return Right.AcademicClassifications;
+		case major:
+			return Right.Majors;
+		case minor:
+			return Right.Minors;
+		case group:
+			return Right.StudentGroups;
+		case consent:
+			return Right.OfferingConsentTypes;
+		case creditFormat:
+			return Right.CourseCreditFormats;
+		case creditType:
+			return Right.CourseCreditTypes;
+		case creditUnit:
+			return Right.CourseCreditUnits;
+		case position:
+			return Right.PositionTypes;
+		case sectioning:
+			return Right.StudentSchedulingStatusTypes;
+		default:
+			return Right.IsAdmin;
+		}
 	}
 	
-	public void checkAdmin() throws PageAccessException {
-		UserContext user = getSessionContext().getUser();
-		if (user == null) throw new PageAccessException(
-				getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
-		if (!isAdmin()) throw new PageAccessException("Insufficient user privileges.");
+	private Right type2editRight(Type type) {
+		switch (type) {
+		case area:
+			return Right.AcademicAreaEdit;
+		case classification:
+			return Right.AcademicClassificationEdit;
+		case major:
+			return Right.MajorEdit;
+		case minor:
+			return Right.MinorEdit;
+		case group:
+			return Right.StudentGroupEdit;
+		case consent:
+			return Right.OfferingConsentTypeEdit;
+		case creditFormat:
+			return Right.CourseCreditFormatEdit;
+		case creditType:
+			return Right.CourseCreditTypeEdit;
+		case creditUnit:
+			return Right.CourseCreditUnitEdit;
+		case position:
+			return Right.PositionTypeEdit;
+		case sectioning:
+			return Right.StudentSchedulingStatusTypeEdit;
+		default:
+			return Right.IsAdmin;
+		}
 	}
-
+	
 }
