@@ -293,4 +293,34 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.HQLReportsAdminOnly)
 	public static class HQLReportsAdminOnly extends HQLReports {}
+	
+	@PermissionForRight(Right.AcademicAreas)
+	public static class AcademicAreas extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.AcademicClassifications)
+	public static class AcademicClassifications extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.Majors)
+	public static class Majors extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.Minors)
+	public static class Minors extends SimpleSessionPermission {}
+
+	@PermissionForRight(Right.StudentGroups)
+	public static class StudentGroups extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.AcademicAreaEdit)
+	public static class AcademicAreaEdit extends AcademicAreas {}
+
+	@PermissionForRight(Right.AcademicClassificationEdit)
+	public static class AcademicClassificationEdit extends AcademicClassifications {}
+
+	@PermissionForRight(Right.MajorEdit)
+	public static class MajorEdit extends Majors {}
+
+	@PermissionForRight(Right.MinorEdit)
+	public static class MinorEdit extends MajorEdit {}
+
+	@PermissionForRight(Right.StudentGroupEdit)
+	public static class StudentGroupEdit extends StudentGroups {}
 }
