@@ -20,29 +20,22 @@
 package org.unitime.timetable.action;
 
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Set;
 
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.authenticate.jaas.LoginConfiguration;
-import org.unitime.timetable.authenticate.jaas.UserPasswordHandler;
-import org.unitime.timetable.model.ApplicationConfig;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LoginManager;
 
 
@@ -58,6 +51,8 @@ public class LoginAction extends Action {
 	/*
 	 * Generated Methods
 	 */
+	
+	@Autowired AuthenticationManager authenticationManager;
 
 	/**
 	 * Method execute
@@ -84,9 +79,7 @@ public class LoginAction extends Action {
 			return null;
 		}
 		
-		if (username == null || username.length() == 0 
-				|| password == null || password.length() == 0) {
-
+		if (username == null || username.length() == 0  || password == null || password.length() == 0) {
 			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=1" + "&menu=" + menu);
 			return null;
 		}
@@ -100,51 +93,18 @@ public class LoginAction extends Action {
 			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=4" + "&menu=" + menu);
 			return null;
 		}
-
-		try {
-			UserPasswordHandler handler = new UserPasswordHandler(username,	password);
-			LoginContext lc = new LoginContext("Timetabling", new Subject(), handler, new LoginConfiguration());
-			lc.login();
-			
-			Set creds = lc.getSubject().getPublicCredentials();
-			if (creds==null || creds.size()==0) {
-				LoginManager.addFailedLoginAttempt(username, attemptDateTime);
-				response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=2" + "&menu=" + menu);
-				return null;
-			}
-			
-			for (Iterator i=creds.iterator(); i.hasNext(); ) {
-				Object o = i.next();
-				if (o instanceof User) {
-					User user = (User) o;
-					
-					// Set Session Variables
-					HttpSession session = request.getSession();
-					session.setAttribute("loggedOn", "true");
-					session.setAttribute("hdnCallingScreen", "main.jsp");
-					Web.setUser(session, user);
-					
-					// Check App Status 
-					String appStatus = ApplicationConfig.getConfigValue(Constants.CFG_APP_ACCESS_LEVEL, Constants.APP_ACL_ALL);
-					session.setAttribute(Constants.CFG_APP_ACCESS_LEVEL, appStatus);
-                    
-                    session.setAttribute("authUserExtId", user.getId());
-                    
-                    session.setMaxInactiveInterval(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.maxInactiveInterval","1800")));
-					
-				    response.sendRedirect("selectPrimaryRole.do");
-				    
-				    LoginManager.loginSuceeded(username);
-					break;
-				}
-			}
-			 
-		} 
-		catch (LoginException le) {
+		
+    	try {
+    		Authentication authRequest = new UsernamePasswordAuthenticationToken(username,	password);
+    		Authentication authResult = authenticationManager.authenticate(authRequest);
+    		SecurityContextHolder.getContext().setAuthentication(authResult);
+    		LoginManager.loginSuceeded(authResult.getName());
+    		response.sendRedirect("selectPrimaryRole.do");
+    	} catch (Exception e) {
 			LoginManager.addFailedLoginAttempt(username, attemptDateTime);
-			Debug.error(le.getMessage());
+			Debug.error(e.getMessage());
 			response.sendRedirect(ApplicationProperties.getProperty("tmtbl.login_url")+"?e=3" + "&menu=" + menu);
-		}
+    	}
 
 		return null;
 	}
