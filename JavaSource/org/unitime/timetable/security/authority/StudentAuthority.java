@@ -47,6 +47,7 @@ public class StudentAuthority extends AbstractAuthority {
 		case EventDate:
 		case StudentEnrollments:
 		case SchedulingAssistant:
+		case CourseRequests:
 			return true;
 		case EventEditPast:
 			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));

@@ -179,11 +179,26 @@ public class UniTimeUserContext extends AbstractUserContext {
 					setCurrentAuthority(authorities.get(0));
 			}
 			
-			if (getAuthorities().isEmpty()) {
-				NoRoleAuthority noRole = new NoRoleAuthority();
-				addAuthority(noRole);
-				setCurrentAuthority(noRole);
+			for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll())) {
+				if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
+				List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
+				if (authorities.isEmpty()) {
+					NoRoleAuthority noRole = new NoRoleAuthority();
+					noRole.addQualifier(session);
+					addAuthority(noRole);
+					sessions.add(session);
+				}
 			}
+			
+			if (getCurrentAuthority() == null) {
+				Session session = defaultSession(sessions, null);
+				if (session != null) {
+					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
+					if (!authorities.isEmpty())
+						setCurrentAuthority(authorities.get(0));
+				}
+			}
+			
 		} finally {
 			hibSession.close();
 		}

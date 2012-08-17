@@ -27,7 +27,6 @@ import java.util.TreeSet;
 
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -41,6 +40,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox$ListAcademicSessions")
@@ -50,12 +50,6 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 
 	@Override
 	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, SessionContext context) {
-		// Check authentication if needed
-		if ("true".equals(ApplicationProperties.getProperty("unitime.event_timetable.requires_authentication", "true"))) {
-			if (context.getUser() == null) throw new PageAccessException(
-					context.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
-		}
-		
 		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
@@ -79,6 +73,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		if (selected == null) selected = sessions.last();
 		for (Session session: sessions) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
+			if (!context.hasPermissionAnyAuthority(Right.Events, new SimpleQualifier("Session", session.getUniqueId()))) continue;
 			
 			AcademicSession acadSession = new AcademicSession(
 					session.getUniqueId(),
@@ -92,9 +87,9 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				acadSession.set(AcademicSession.Flag.HasFinalExams);
 			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeMidterm))
 				acadSession.set(AcademicSession.Flag.HasMidtermExams);
-			if (context.hasPermission(session, Right.Events))
+			if (context.hasPermissionAnyAuthority(session, Right.Events, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.HasEvents);
-			if (context.hasPermission(session, Right.EventAddSpecial))
+			if (context.hasPermissionAnyAuthority(session, Right.EventAddSpecial, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.CanAddEvents);
 			Session prev = null, next = null;
 			for (Session s: sessions) {

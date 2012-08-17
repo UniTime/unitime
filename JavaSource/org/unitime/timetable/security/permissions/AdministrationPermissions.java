@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.SavedHQL.Flag;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.SubjectArea;
@@ -277,19 +278,44 @@ public class AdministrationPermissions {
 	public static class HQLReportDelete extends HQLReportEdit {}
 	
 	@PermissionForRight(Right.HQLReportsCourses)
-	public static class HQLReportsCourses extends HQLReports {}
+	public static class HQLReportsCourses extends HQLReports {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && SavedHQL.hasQueries(Flag.APPEARANCE_COURSES, user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly));
+		}
+	}
 
 	@PermissionForRight(Right.HQLReportsExaminations)
-	public static class HQLReportsExaminations extends HQLReports {}
+	public static class HQLReportsExaminations extends HQLReports {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && SavedHQL.hasQueries(Flag.APPEARANCE_EXAMS, user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly));
+		}
+	}
 
 	@PermissionForRight(Right.HQLReportsEvents)
-	public static class HQLReportsEvents extends HQLReports {}
+	public static class HQLReportsEvents extends HQLReports {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && SavedHQL.hasQueries(Flag.APPEARANCE_EVENTS, user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly));
+		}
+	}
 
 	@PermissionForRight(Right.HQLReportsStudents)
-	public static class HQLReportsStudents extends HQLReports {}
+	public static class HQLReportsStudents extends HQLReports {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && SavedHQL.hasQueries(Flag.APPEARANCE_SECTIONING, user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly));
+		}
+	}
 
 	@PermissionForRight(Right.HQLReportsAdministration)
-	public static class HQLReportsAdministration extends HQLReports {}
+	public static class HQLReportsAdministration extends HQLReports {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return super.check(user, source) && (user.getCurrentAuthority().hasRight(Right.HQLReportAdd) || SavedHQL.hasQueries(Flag.APPEARANCE_ADMINISTRATION, user.getCurrentAuthority().hasRight(Right.HQLReportsAdminOnly)));
+		}
+	}
 
 	@PermissionForRight(Right.HQLReportsAdminOnly)
 	public static class HQLReportsAdminOnly extends HQLReports {}
