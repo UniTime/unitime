@@ -64,6 +64,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -294,8 +295,22 @@ public class MenuServlet implements MenuService {
 		} else if ("hasProperty".equals(cond)) {
 			return ApplicationProperties.getProperty(conditionElement.attributeValue("name", "dummy")) != null;
 		} else if ("hasPermission".equals(cond)) {
-			Right right = Right.valueOf(conditionElement.attributeValue("name"));
-			return (right == null ? false : sessionContext.hasPermission(null, conditionElement.attributeValue("target"), right));
+			Right right = null;
+			try {
+				right = Right.valueOf(conditionElement.attributeValue("name"));
+			} catch (IllegalArgumentException e) {
+				sLog.warn("Unknown right: " + conditionElement.attributeValue("name"));
+			}
+			if (right == null) return false;
+			String authority = conditionElement.attributeValue("authority", "current");
+			if ("session".equals(authority)) {
+				Long sessionId = (sessionContext.isAuthenticated() ? sessionContext.getUser().getCurrentAcademicSessionId() : null);
+				return (sessionId == null ? false : sessionContext.hasPermissionAnyAuthority(right, new SimpleQualifier("Session", sessionId)));
+			} else if ("any".equals(authority)) {
+				return sessionContext.hasPermissionAnyAuthority(right);
+			} else {
+				return sessionContext.hasPermission(right);
+			}
 		} else if ("hasRight".equals(cond)) {
 			String right = conditionElement.attributeValue("name", "unknown");
 			if ("canSeeEvents".equals(right)) {
@@ -391,7 +406,16 @@ public class MenuServlet implements MenuService {
 			try {
 				
 				UserContext user = getSessionContext().getUser();
-				if (user == null || user.getCurrentAcademicSessionId() == null) return null;
+				if (user == null) return null;
+				
+				if (user.getCurrentAcademicSessionId() == null) {
+					if (sessionContext.hasPermissionAnyAuthority(Right.HasRole)) {
+						ret.put("0Session", "Not Selected");
+				 		ret.put("2Database", HibernateUtil.getDatabaseName());
+				 		return ret;
+					}
+					return null;
+				}
 				
 				Session session = SessionDAO.getInstance().get(user.getCurrentAcademicSessionId(), hibSession);
 		 		

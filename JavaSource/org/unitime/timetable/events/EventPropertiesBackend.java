@@ -143,38 +143,45 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			c.setEmail(student.getEmail());
 			return c;
 		}
-		List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId,session=" + sessionId);
-		if (people != null) {
-			for (PersonInterface person: people) {
-				if (user.getExternalUserId().equals(person.getId())) {
-					ContactInterface c = new ContactInterface();
-					c.setFirstName(person.getFirstName());
-					c.setMiddleName(person.getMiddleName());
-					c.setLastName(person.getLastName());
-					c.setEmail(person.getEmail());
-					c.setPhone(person.getPhone());
-					c.setExternalId(person.getId());
-					return c;
+		if (user.getName() != null && !user.getName().isEmpty()) {
+			List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId,session=" + sessionId);
+			if (people != null) {
+				for (PersonInterface person: people) {
+					if (user.getExternalUserId().equals(person.getId())) {
+						ContactInterface c = new ContactInterface();
+						c.setFirstName(person.getFirstName());
+						c.setMiddleName(person.getMiddleName());
+						c.setLastName(person.getLastName());
+						c.setEmail(person.getEmail());
+						c.setPhone(person.getPhone());
+						c.setExternalId(person.getId());
+						return c;
+					}
 				}
-			}
+			}			
 		}
 
 		ContactInterface c = new ContactInterface();
-		String name[] = user.getName().split(" ");
-		if (name.length == 1) {
-			c.setLastName(name[0]);
-		} else if (name.length == 2) {
-			c.setFirstName(name[0]);
-			c.setLastName(name[1]);
+		if (user.getName() != null && !user.getName().isEmpty()) {
+			String name[] = user.getName().split(" ");
+			if (name.length == 1) {
+				c.setLastName(name[0]);
+			} else if (name.length == 2) {
+				c.setFirstName(name[0]);
+				c.setLastName(name[1]);
+			} else {
+				c.setFirstName(name[0]);
+				String mName = "";
+				for (int i = 1; i < name.length - 1; i++)
+					mName += (mName.isEmpty() ? "" : " ") + name[i];
+				c.setFirstName(mName);
+				c.setLastName(name[name.length - 1]);
+			}
 		} else {
-			c.setFirstName(name[0]);
-			String mName = "";
-			for (int i = 1; i < name.length - 1; i++)
-				mName += (mName.isEmpty() ? "" : " ") + name[i];
-			c.setFirstName(mName);
-			c.setLastName(name[name.length - 1]);
+			c.setLastName(user.getUsername());
 		}
 		c.setExternalId(user.getExternalUserId());
+		
 		return c;
 	}
 	

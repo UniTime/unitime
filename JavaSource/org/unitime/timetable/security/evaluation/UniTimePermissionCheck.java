@@ -377,7 +377,7 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		@Override
 		public UserAuthority getCurrentAuthority() { return iAuthority; }
 		@Override
-		public Long getCurrentAcademicSessionId() { return (Long)iAuthority.getAcademicSession().getQualifierId(); }
+		public Long getCurrentAcademicSessionId() { return (Long)(iAuthority.getAcademicSession() == null ? null : iAuthority.getAcademicSession().getQualifierId()); }
 		@Override
 		public UserAuthority getAuthority(String authority) { return iContext.getAuthority(authority); }
 		@Override

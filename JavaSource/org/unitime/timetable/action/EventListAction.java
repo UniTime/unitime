@@ -62,7 +62,7 @@ public class EventListAction extends Action {
 		
 		Vector<ComboBoxLookup> modes = new Vector();
 		modes.add(new ComboBoxLookup("My Events", String.valueOf(EventListForm.sModeMyEvents)));
-		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove))
+		if (sessionContext.getUser().getCurrentAuthority() != null && sessionContext.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove))
 			 modes.add(new ComboBoxLookup("Events Awaiting My Approval", String.valueOf(EventListForm.sModeEvents4Approval)));
 		modes.add(new ComboBoxLookup("All Events", String.valueOf(EventListForm.sModeAllEvents)));
 		if (sessionContext.hasPermission(Right.HasRole)) {
