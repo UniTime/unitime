@@ -205,7 +205,7 @@ public class SimpleEditPage extends Composite {
 		iTable.addMouseClickListener(new MouseClickListener<SimpleEditInterface.Record>() {
 			@Override
 			public void onMouseClick(TableEvent<Record> event) {
-				if (iEditable || event.getData() == null || !event.getData().isEditable()) return;
+				if (iEditable || !iData.isEditable() || event.getData() == null || !event.getData().isEditable()) return;
 				detail(event.getData());
 			}
 		});
@@ -462,7 +462,7 @@ public class SimpleEditPage extends Composite {
 				}
 			});
 			line.add(add);
-		} else {
+		} else if (iEditable && iData.isEditable()) {
 			line.add(new Label());
 		}
 		if (iData.isEditable() && iEditable && record.isDeletable()) {
@@ -478,7 +478,7 @@ public class SimpleEditPage extends Composite {
 				}
 			});
 			line.add(delete);
-		} else {
+		} else if (iEditable && iData.isEditable()) {
 			line.add(new Label());
 		}
 		iTable.setRow(row, record, line);

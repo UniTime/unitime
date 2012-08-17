@@ -517,6 +517,30 @@ public class Roles extends BaseRoles implements HasRights {
 		case StudentSchedulingAdvisor:
 			return ADMIN_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference());
 					
+		case AcademicAreas:
+		case AcademicClassifications:
+		case Majors:
+		case Minors:
+		case StudentGroups:
+		case OfferingConsentTypes:
+		case CourseCreditFormats:
+		case CourseCreditTypes:
+		case CourseCreditUnits:
+		case PositionTypes:
+		case StudentSchedulingStatusTypes:
+		case AcademicAreaEdit:
+		case AcademicClassificationEdit:
+		case MajorEdit:
+		case MinorEdit:
+		case StudentGroupEdit:
+		case OfferingConsentTypeEdit:
+		case CourseCreditFormatEdit:
+		case CourseCreditTypeEdit:
+		case CourseCreditUnitEdit:
+		case PositionTypeEdit:
+		case StudentSchedulingStatusTypeEdit:
+			return ADMIN_ROLE.equals(getReference());
+			
 		default:
 			
 			return false;

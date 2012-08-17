@@ -371,7 +371,32 @@ public enum Right {
     StudentEnrollments(Student.class),
     SchedulingAssistant,
     SchedulingDashboard(Session.class),
-    ;
+    
+    AcademicAreas(Session.class),
+    AcademicClassifications(Session.class),
+    Majors(Session.class),
+    Minors(Session.class),
+    StudentGroups(Session.class),
+    OfferingConsentTypes,
+    CourseCreditFormats,
+	CourseCreditTypes,
+	CourseCreditUnits,
+	PositionTypes,
+	StudentSchedulingStatusTypes,
+	
+    AcademicAreaEdit(Session.class),
+    AcademicClassificationEdit(Session.class),
+    MajorEdit(Session.class),
+    MinorEdit(Session.class),
+    StudentGroupEdit(Session.class),
+    OfferingConsentTypeEdit,
+    CourseCreditFormatEdit,
+	CourseCreditTypeEdit,
+	CourseCreditUnitEdit,
+	PositionTypeEdit,
+	StudentSchedulingStatusTypeEdit,
+	
+	;
 	
 	private Class<?> iType;
 	Right(Class<?> type) { iType = type; }
