@@ -20,9 +20,12 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -36,9 +39,47 @@ public class StudentSchedulingPermissions {
 	
 	@PermissionForRight(Right.StudentSectioningSolverLog)
 	public static class StudentSectioningSolverLog extends StudentScheduling {}
+	
+	@PermissionForRight(Right.StudentSectioningSolverDashboard)
+	public static class StudentSectioningSolverDashboard extends StudentScheduling {}
 
 	@PermissionForRight(Right.EnrollmentAuditPDFReports)
 	public static class EnrollmentAuditPDFReports extends SimpleSessionPermission {}
+	
+	@PermissionForRight(Right.SchedulingAssistant)
+	public static class SchedulingAssistant implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source, DepartmentStatusType.Status.StudentsAssistant, DepartmentStatusType.Status.StudentsOnline))
+				return false;
+			
+			return OnlineSectioningService.getInstance(user.getCurrentAcademicSessionId()) != null;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
+	
+	@PermissionForRight(Right.SchedulingDashboard)
+	public static class SchedulingDashboard extends SchedulingAssistant {}
+	
+	@PermissionForRight(Right.CourseRequests)
+	public static class CourseRequests implements Permission<Session> {
+		@Autowired PermissionSession permissionSession;
+		
+		@Override
+		public boolean check(UserContext user, Session source) {
+			DepartmentStatusType status = source.getStatusType();
+			return status != null && status.can(DepartmentStatusType.Status.StudentsPreRegister) &&
+					!status.can(DepartmentStatusType.Status.StudentsAssistant) &&
+					!status.can(DepartmentStatusType.Status.StudentsOnline);
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
 
 	@PermissionForRight(Right.ConsentApproval)
 	public static class ConsentApproval implements Permission<InstructionalOffering> {

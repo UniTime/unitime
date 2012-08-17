@@ -445,6 +445,7 @@ public class Roles extends BaseRoles implements HasRights {
 		case StudentScheduling:
 		case StudentSectioningSolver:
 		case StudentSectioningSolverLog:
+		case StudentSectioningSolverDashboard:
 		case EnrollmentAuditPDFReports:
 			return ADMIN_ROLE.equals(getReference());
 			
@@ -515,6 +516,7 @@ public class Roles extends BaseRoles implements HasRights {
 			return ADMIN_ROLE.equals(getReference());
 			
 		case StudentSchedulingAdvisor:
+		case CourseRequests:
 			return ADMIN_ROLE.equals(getReference()) || STUDENT_ADVISOR.equals(getReference());
 					
 		case AcademicAreas:

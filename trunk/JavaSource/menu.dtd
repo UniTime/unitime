@@ -64,7 +64,7 @@
 
 <!ELEMENT hasPermission EMPTY >
 <!ATTLIST hasPermission name CDATA #REQUIRED >
-<!ATTLIST hasPermission target (Session|Department) #IMPLIED >
+<!ATTLIST hasPermission authority (current|session|any) #IMPLIED >
 
 <!-- custom menu -->
 <!ATTLIST item position CDATA #IMPLIED >

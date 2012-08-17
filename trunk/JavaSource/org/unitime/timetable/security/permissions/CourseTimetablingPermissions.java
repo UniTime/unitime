@@ -83,7 +83,23 @@ public class CourseTimetablingPermissions {
 	}
 	
 	@PermissionForRight(Right.Timetables)
-	public static class Timetables extends CourseTimetabling {}
+	public static class Timetables implements Permission<SolverGroup> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, SolverGroup source) {
+			if (source.getCommittedSolution() != null) return true;
+			
+			for (Department department: source.getDepartments())
+					if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable))
+						return false;
+			return true;
+		}
+
+		@Override
+		public Class<SolverGroup> type() { return SolverGroup.class; }
+		
+	}
 
 	@PermissionForRight(Right.Solver)
 	public static class Solver extends CourseTimetablingOrAudit {}
@@ -113,7 +129,7 @@ public class CourseTimetablingPermissions {
 	public static class SolutionReports extends CourseTimetabling {}
 
 	@PermissionForRight(Right.TimetableGrid)
-	public static class TimetableGrid extends CourseTimetabling {}
+	public static class TimetableGrid extends Timetables {}
 
 	@PermissionForRight(Right.ClassAssignments)
 	public static class ClassAssignments implements Permission<Session> {

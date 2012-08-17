@@ -174,7 +174,7 @@ public class EventListForm extends ActionForm {
 		if (context.getAttribute("EventList.Mode")!=null)
 		    iMode = (Integer)context.getAttribute("EventList.Mode");
 		else {
-			if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
+			if (context.getUser().getCurrentAuthority() != null && context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
 				iMode = sModeEvents4Approval;
 			} else if (context.hasPermission(Right.HasRole)) { 
 				iMode = sModeAllEvents;

@@ -335,6 +335,7 @@ public enum Right {
     EnrollmentAuditPDFReports(Session.class),
     StudentSectioningSolver(Session.class),
     StudentSectioningSolverLog(Session.class),
+    StudentSectioningSolverDashboard(Session.class),
     
     Events(Session.class),
     EventAddSpecial(Session.class),
@@ -369,7 +370,8 @@ public enum Right {
     StudentSchedulingAdmin,
     OfferingEnrollments(InstructionalOffering.class),
     StudentEnrollments(Student.class),
-    SchedulingAssistant,
+    CourseRequests(Session.class),
+    SchedulingAssistant(Session.class),
     SchedulingDashboard(Session.class),
     
     AcademicAreas(Session.class),
