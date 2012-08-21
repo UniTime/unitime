@@ -25,13 +25,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.servlet.http.HttpServletRequest;
-
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
 import org.hibernate.Query;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseTimePattern;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -72,13 +68,6 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
 	}
 
     /*[CONSTRUCTOR MARKER END]*/
-
-	@Deprecated
-    public static List<TimePattern> findAll(HttpServletRequest request, Boolean visible) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-    	return findAll(session, visible);
-    }
 
     public static List<TimePattern> findAll(Session session, Boolean visible) {
     	return findAll(session.getUniqueId(), visible);
@@ -159,13 +148,6 @@ public class TimePattern extends BaseTimePattern implements Comparable<TimePatte
     	Collections.sort(list);
     	
         return list;
-    }
-    
-    @Deprecated
-    public static TimePattern findByName(HttpServletRequest request, String name) throws Exception {
-    	User user = Web.getUser(request.getSession());
-    	Session session = Session.getCurrentAcadSession(user);
-    	return findByName(session, name);
     }
     
     public static TimePattern findByName(Session session, String name) {

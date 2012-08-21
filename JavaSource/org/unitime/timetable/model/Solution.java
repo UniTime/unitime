@@ -103,131 +103,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		return sinfo.getInfo();
 	}
 	
-	//NOTE: In order to decrease the amount of interaction between solutions persistance of committed student conflicts was disabled
-	/*
-	private void removeCommitJenrl(org.hibernate.Session hibSession, Assignment assignment, ConstraintInfo cinfo, JenrlInfo jenrl, Hashtable solverInfos) throws Exception {
-		Assignment otherAssignment = null;
-		for (Iterator i=cinfo.getAssignments().iterator();i.hasNext();) {
-			Assignment a = (Assignment)i.next();
-			if (!assignment.equals(a)) {
-				otherAssignment = a; break;
-			}
-		}
-		if (otherAssignment==null) return;
-		if (DEBUG) {
-			sLog.debug(
-					assignment.getSolution().getUniqueId()+","+assignment.getClassName()+","+assignment.getPlacement().getName()+","+
-					otherAssignment.getSolution().getUniqueId()+","+otherAssignment.getClassName()+","+otherAssignment.getPlacement().getName()+","+
-					(-jenrl.getJenrl()));
-		}
-		for (Iterator j=otherAssignment.getAssignmentInfo().iterator();j.hasNext();) {
-			AssignmentInfo aInfo = (AssignmentInfo)j.next();
-			if (!"AssignmentInfo".equals(aInfo.getDefinition().getName())) continue;
-			AssignmentPreferenceInfo assignmentInfo = (AssignmentPreferenceInfo)aInfo.getInfo();
-			assignmentInfo.setNrStudentConflicts(assignmentInfo.getNrStudentConflicts()-(int)jenrl.getJenrl());
-			aInfo.setInfo(assignmentInfo);
-			hibSession.saveOrUpdate(aInfo);
-			if (DEBUG) sLog.debug("   aInfo["+otherAssignment.getClassName()+"]-="+((int)jenrl.getJenrl())+" (total:"+assignmentInfo.getNrStudentConflicts()+")");
-		}
-		
-		SolutionInfo sInfo = (SolutionInfo)solverInfos.get(otherAssignment.getSolution().getUniqueId());
-		if (sInfo == null) {
-			sInfo = otherAssignment.getSolution().getSolutionInfo("GlobalInfo");
-			if (sInfo!=null)
-				solverInfos.put(otherAssignment.getSolution().getUniqueId(), sInfo);
-		}
-		
-		if (sInfo!=null) {
-			PropertiesInfo propInfo = (PropertiesInfo)sInfo.getInfo();
-			String conf = propInfo.getProperty("Student conflicts");
-			int studentConf = Integer.parseInt(conf.substring(0,conf.indexOf(' ')));
-			int commitedStart = conf.indexOf("committed:")+"committed:".length();
-			int commitedEnd = conf.indexOf(',',commitedStart);
-			int commitedConf = Integer.parseInt(conf.substring(commitedStart,commitedEnd));
-			String newConf = (studentConf-(int)jenrl.getJenrl())+" [committed:"+(commitedConf-(int)jenrl.getJenrl())+conf.substring(commitedEnd);
-			propInfo.setProperty("Student conflicts", newConf);
-			sInfo.setInfo(propInfo);
-			if (DEBUG) sLog.debug("   sInfo["+otherAssignment.getSolution().getOwner().getName()+"]-="+((int)jenrl.getJenrl())+" (total:"+(commitedConf-(int)jenrl.getJenrl())+")");
-		}
-			
-		if (!otherAssignment.getSolution().isCommited().booleanValue()) {
-			if (DEBUG) sLog.debug("   -jInfo["+assignment.getClassName()+","+otherAssignment.getClassName()+"]="+((JenrlInfo)cinfo.getInfo()).getJenrl());
-			for (Iterator i=cinfo.getAssignments().iterator();i.hasNext();) {
-				Assignment a = (Assignment)i.next();
-				a.getConstraintInfo().remove(cinfo);
-				hibSession.saveOrUpdate(a);
-			}
-			hibSession.delete(cinfo);
-		}
-	}
-	
-	private void addCommitJenrl(org.hibernate.Session hibSession, Assignment assignment, Assignment otherAssignment, int jenrl, SolverInfoDef defJenrlInfo, Hashtable solverInfos) throws Exception {
-		if (DEBUG) {
-			sLog.debug(
-					assignment.getSolution().getUniqueId()+","+assignment.getClassName()+","+assignment.getPlacement().getName()+","+
-					otherAssignment.getSolution().getUniqueId()+","+otherAssignment.getClassName()+","+otherAssignment.getPlacement().getName()+","+
-					jenrl);
-		}
-		if (!otherAssignment.getSolution().isCommited().booleanValue()) {
-			JenrlInfo jInfo = new JenrlInfo();
-			jInfo.setJenrl(jenrl);
-			jInfo.setIsCommited(true);
-			jInfo.setIsDistance(!assignment.getTimeLocation().hasIntersection(otherAssignment.getTimeLocation()));
-			ConstraintInfo constraintInfo = new ConstraintInfo();
-			constraintInfo.setInfo(jInfo);
-			constraintInfo.setDefinition(defJenrlInfo);
-			constraintInfo.setOpt("C"+(jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":""));
-			HashSet jAssignments = new HashSet();
-			jAssignments.add(assignment);
-			jAssignments.add(otherAssignment);
-			constraintInfo.setAssignments(jAssignments);
-			hibSession.saveOrUpdate(constraintInfo);
-			assignment.getConstraintInfo().add(constraintInfo);
-			hibSession.saveOrUpdate(assignment);
-			otherAssignment.getConstraintInfo().add(constraintInfo);
-			hibSession.saveOrUpdate(otherAssignment);
-			if (DEBUG) sLog.debug("   +jInfo["+assignment.getClassName()+","+otherAssignment.getClassName()+"]="+jInfo.getJenrl());
-		}
-		
-		for (Iterator j=otherAssignment.getAssignmentInfo().iterator();j.hasNext();) {
-			AssignmentInfo aInfo = (AssignmentInfo)j.next();
-			if (!"AssignmentInfo".equals(aInfo.getDefinition().getName())) continue;
-			AssignmentPreferenceInfo assignmentInfo = (AssignmentPreferenceInfo)aInfo.getInfo();
-			assignmentInfo.setNrStudentConflicts(assignmentInfo.getNrStudentConflicts()+jenrl);
-			aInfo.setInfo(assignmentInfo);
-			hibSession.saveOrUpdate(aInfo);
-			if (DEBUG) sLog.debug("   aInfo["+otherAssignment.getClassName()+"]+="+jenrl+" (total:"+assignmentInfo.getNrStudentConflicts()+")");
-		}
-		
-		SolutionInfo sInfo = (SolutionInfo)solverInfos.get(otherAssignment.getSolution().getUniqueId());
-		if (sInfo == null) {
-			sInfo = otherAssignment.getSolution().getSolutionInfo("GlobalInfo");
-			if (sInfo!=null)
-				solverInfos.put(otherAssignment.getSolution().getUniqueId(), sInfo);
-		}
-
-		if (sInfo!=null) {
-			PropertiesInfo propInfo = (PropertiesInfo)sInfo.getInfo();
-			String conf = propInfo.getProperty("Student conflicts");
-			String newConf = conf;
-			
-			int studentConf = Integer.parseInt(conf.substring(0,conf.indexOf(' ')));
-			int commitedStart = conf.indexOf("committed:");
-			int commitedEnd = conf.indexOf(',',commitedStart);
-			int commitedConf = 0;
-			if (commitedStart>=0) {
-				commitedConf = Integer.parseInt(conf.substring(commitedStart+"committed:".length(),commitedEnd));
-				newConf = (studentConf+jenrl)+" [committed:"+(commitedConf+jenrl)+conf.substring(commitedEnd);
-			} else {
-				commitedEnd = conf.indexOf('[')+1;
-				newConf = (studentConf+jenrl)+" [committed:"+(commitedConf+jenrl)+", "+conf.substring(commitedEnd);
-			}
-			if (DEBUG) sLog.debug("   sInfo["+otherAssignment.getSolution().getOwner().getName()+"]+="+jenrl+" (total:"+(commitedConf+jenrl)+")");
-			propInfo.setProperty("Student conflicts", newConf);
-			sInfo.setInfo(propInfo);
-		}
-	}
-	*/
 	
 	public void uncommitSolution(org.hibernate.Session hibSession) throws Exception {
 		uncommitSolution(hibSession, null);
@@ -237,30 +112,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		if (DEBUG) sLog.debug("uncommit["+getUniqueId()+","+getOwner().getName()+"] -------------------------------------------------------");
 		setCommitDate(null);
 		setCommited(Boolean.FALSE);
-		
-		//NOTE: In order to decrease the amount of interaction between solutions persistance of committed student conflicts was disabled
-		/*
-		Hashtable solverInfos = new Hashtable();
-		Iterator jenrlInfos = 
-			hibSession.createQuery(
-				"select distinct a, c from " +
-				"ConstraintInfo c inner join c.assignments a where " +
-				"c.definition.name='JenrlInfo' and c.opt like '%C%' and a.solution=:solutionId")
-				.setInteger("solutionId",getUniqueId().intValue())
-				.iterate();
-		while (jenrlInfos.hasNext()) {
-			Object[] next = (Object[])jenrlInfos.next(); 
-			Assignment assignment = (Assignment)next[0];
-			ConstraintInfo cinfo = (ConstraintInfo)next[1];
-			JenrlInfo jenrl = (JenrlInfo)cinfo.getInfo();
-			removeCommitJenrl(hibSession,assignment,cinfo,jenrl,solverInfos);
-		}
-		
-		for (Iterator i=solverInfos.values().iterator();i.hasNext();) {
-			SolverInfo sInfo = (SolverInfo)i.next();
-			hibSession.saveOrUpdate(sInfo);
-		}
-		*/
 
 		hibSession.update(this);
 		
@@ -992,17 +843,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
     			list();
     }
 
-    @Deprecated
-    public static Collection findBySessionIdAndManagerId(Long sessionId, Long managerId) {
-    	return (new SolutionDAO()).
-    			getSession().
-    			createQuery("select s from Solution s inner join s.owner sg inner join sg.timetableManagers m where sg.session.uniqueId=:sessionId and m.uniqueId=:managerId").
-    			setLong("sessionId", sessionId.longValue()).
-    			setLong("managerId", managerId.longValue()).
-    			//setCacheable(true).
-    			list();
-    }
-    
     private HashSet takenDivisionNumbers(SchedulingSubpart subpart) {
     	HashSet divNums = new HashSet();
 

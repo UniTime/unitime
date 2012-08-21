@@ -17,7 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
 <%@page import="org.unitime.timetable.ApplicationProperties"%>

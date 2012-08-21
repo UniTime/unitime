@@ -22,18 +22,12 @@ package org.unitime.timetable.webutil;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
 
 import javax.servlet.ServletRequest;
 
-import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.Constants;
 
@@ -44,21 +38,6 @@ import org.unitime.timetable.util.Constants;
  * @author Tomas Muller
  */
 public class RequiredTimeTable {
-	@Deprecated
-    public static String getTimeGridSize(User user) {
-    	return Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_SIZE);
-    }
-
-    @Deprecated
-    public static boolean getTimeGridVertical(User user) {
-    	return Constants.SETTINGS_TIME_GRID_ORIENTATION_VERTICAL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_ORIENTATION));
-    }
-
-    @Deprecated
-    public static boolean getTimeGridAsText(User user) {
-    	return Constants.SETTINGS_TIME_GRID_TEXT.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_TIME_GRID_ORIENTATION));
-    }
-    
     public static String getTimeGridSize(UserContext user) {
     	return UserProperty.GridSize.get(user);
     }
@@ -457,43 +436,5 @@ public class RequiredTimeTable {
         }
         return image;
     }
-    
 
-    /** create a table image -- returns appropriate file (table is not created when the file already exists -- cache) */
-    @Deprecated
-    public File createImage(boolean timeVertical) throws java.io.IOException {
-    	if (getModel().isExactTime()) return null;
-
-    	char axisId;
-        if (timeVertical) {
-            axisId = 'V';
-        } else {
-            axisId = 'H';
-        }
-
-        File file = new File(ApplicationProperties.getTempFolder(),getModel().getFileName()+axisId+".png");
-
-        if (file.exists()) {
-            return file;
-        }
-        
-        file.getParentFile().mkdirs();
-        
-        try {
-        	if (!file.createNewFile()) {
-        		Debug.info("Unable to write a file "+file);
-        		file = File.createTempFile("temp",".PNG",ApplicationProperties.getTempFolder());
-        	}
-        } catch (IOException e) {
-    		Debug.info("Unable to write a file "+file);
-    		file = File.createTempFile("temp",".PNG",ApplicationProperties.getTempFolder());
-        }
-
- //       Debug.log("Writing image " + file + " ...");
-
-
-       	javax.imageio.ImageIO.write(createBufferedImage(timeVertical), "PNG", file);
-        
-        return file;
-    }
 }

@@ -21,9 +21,6 @@ package org.unitime.timetable.gwt.command.server;
 
 import java.io.Serializable;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.Qualifiable;
@@ -50,9 +47,6 @@ public class GwtRpcHelper implements SessionContext {
 
 	@Override
 	public UserContext getUser() { return iUser; }
-
-	@Override
-	public HttpSession getHttpSession() { throw new RuntimeException("Operation not supported."); }
 
 	@Override
 	public boolean isHttpSessionNew() { return iHttpSessionNew; }
@@ -85,9 +79,6 @@ public class GwtRpcHelper implements SessionContext {
     	return (value != null ? value : attribute.defaultValue());
     }
 
-	@Override
-	public HttpServletRequest getHttpServletRequest() { return null; }
-	
 	@Override
 	public void checkPermission(Right right) {
 		iCheck.checkPermission(getUser(), null, null, right);

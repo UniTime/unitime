@@ -19,7 +19,6 @@
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>

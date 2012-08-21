@@ -32,7 +32,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseInstructionalOffering;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
@@ -41,7 +40,6 @@ import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 import org.unitime.timetable.webutil.Navigation;
 
@@ -142,104 +140,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	public Department getDepartment() {
 		return (this.getControllingCourseOffering().getDepartment());
 	}
-
-	@Deprecated
-	public boolean isLockableBy(User user) {
-		if (user == null) return false;
-		if (!getSession().getStatusType().canLockOfferings()) return false;
-		if (user.isAdmin()) return true;
-		if (getDepartment() == null) return false;
-		
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-		if (!tm.getDepartments().contains(getDepartment())) return false;
-		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
-
-		return true;
-	}
-	
-	@Deprecated
-	public boolean isEditableBy(User user){
-    	Debug.debug("Checking edit permission on: " + this.getCourseName());
-
-    	if (user == null){
-        	Debug.debug(" - Cannot Edit: User Info not found ");
-    		return(false);
-    	}
-
-    	if (getSession().isOfferingFullLockNeeded(getUniqueId())) {
-    		return false;
-        }
-    	
-    	if (user.isAdmin()){
-        	Debug.debug(" - Can Edit: User is admin");
-    		return(true);
-    	}
-
-		if(this.getDepartment() == null){
-			return(false);
-    	} else {
-    	    // Check if controlling course belongs to the user
-    		if(!this.getControllingCourseOffering().isEditableBy(user)) {
-            	Debug.debug(" - Cannot Edit: Controlling course owned by another user ");
-    			return false;
-    		}
-
-//    		// Check if cross-listed with a course in a different department
-//    		for (Iterator i=this.getCourseOfferings().iterator();i.hasNext();) {
-//    		    CourseOffering co = (CourseOffering) i.next();
-//    		    if(!co.isEditableBy(user)) {
-//                	Debug.debug(" - Cannot Edit: Cross listed with a course in a different department. ");
-//    		        return false;
-//    		    }
-//    		}
-
-        	Debug.debug(" - Can Edit.");
-    		return true;
-    	}
-     }
-	
-	@Deprecated
-	public boolean isEditableBy(UserContext user){
-    	if (user == null) return false;
-
-    	if (getSession().isOfferingFullLockNeeded(getUniqueId())) return false;
-    	
-    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
-
-    	if (getDepartment() == null) return false;
-    	
-    	if (!getControllingCourseOffering().isEditableBy(user)) return false;
-    	
-    	return true;
-     }
-
-	@Deprecated
-    public boolean isViewableBy(User user){
-    	if(user == null){
-    		return(false);
-    	}
-    	if (user.isAdmin()){
-    		return(true);
-    	}
-    	if (isEditableBy(user)){
-    		return(true);
-    	}
-        if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE))
-            return true;
-    	if(this.getCourseOfferings() != null && this.getCourseOfferings().size() > 0){
-    		Iterator it = this.getCourseOfferings().iterator();
-    		CourseOffering co = null;
-    		while(it.hasNext()){
-    			co = (CourseOffering) it.next();
-    			if (co.isViewableBy(user)){
-    				return(true);
-    			}
-    		}
-    	}
-		return(false);
-    }
 
 	/**
 	 * @return Returns the controllingCourseOffering.

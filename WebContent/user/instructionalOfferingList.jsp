@@ -25,7 +25,6 @@
 <%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder"%>
 <%@ page import="org.unitime.timetable.form.InstructionalOfferingListForm"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
-<%@ page import="org.unitime.commons.web.Web"%>
 <html:form action="/instructionalOfferingSearch">
 <bean:define id="instructionalOfferings" name="instructionalOfferingListForm" property="instructionalOfferings"></bean:define>
 <tt:session-context/>

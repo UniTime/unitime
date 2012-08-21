@@ -25,13 +25,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseChangeLog;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -148,68 +143,6 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
     
     public void setSource(Source source) {
         setSourceString(source.name());
-    }
-
-    @Deprecated
-    public static void addChange(
-            org.hibernate.Session hibSession,
-            HttpServletRequest request,
-            Object object,
-            Source source,
-            Operation operation,
-            SubjectArea subjArea,
-            Department dept) {
-        addChange(
-                hibSession,
-                request,
-                object,
-                null,
-                source,
-                operation,
-                subjArea,
-                dept);
-    }
-
-    @Deprecated
-        public static void addChange(
-            org.hibernate.Session hibSession,
-            HttpServletRequest request,
-            Object object,
-            String objectTitle,
-            Source source,
-            Operation operation,
-            SubjectArea subjArea,
-            Department dept) {
-        try {
-            HttpSession httpSession = request.getSession();
-            String userId = (String)httpSession.getAttribute("authUserExtId");
-            User user = Web.getUser(httpSession);
-            if (userId==null) {
-                if (user!=null) {
-                    Debug.warning("No authenticated user defined, using "+user.getName());
-                    userId = user.getId();
-                }
-            }
-            if (userId==null) {
-                Debug.warning("Unable to add change log -- no user.");
-                return;
-            }
-            Session session = Session.getCurrentAcadSession(user);
-            if (session==null) {
-                Debug.warning("Unable to add change log -- no academic session.");
-                return;
-            }
-            TimetableManager manager = TimetableManager.findByExternalId(userId);
-            if (manager==null)
-                manager = TimetableManager.getManager(user);
-            if (manager==null) {
-                Debug.warning("Unable to add change log -- no timetabling manager.");
-                return;
-            }
-            addChange(hibSession, manager, session, object, objectTitle, source, operation, subjArea, dept);
-        } catch (Exception e) {
-            Debug.error(e);
-        }
     }
     
     public static void addChange(

@@ -285,16 +285,16 @@
 				</condition>
 			</item>
 			<separator/>
-			<menu name="Rooms" page="roomSearch.do">
+			<menu name="Rooms" page="roomSearch.do?default=Exam">
 				<condition>
 					<hasPermission name="Rooms"/>
 				</condition>
-				<item name="Room Features" page="roomFeatureSearch.do">
+				<item name="Room Features" page="roomFeatureSearch.do?default=Exam">
 					<condition>
 						<hasPermission name="RoomFeatures"/>
 					</condition>
 				</item>
-				<item name="Room Groups" page="roomGroupSearch.do">
+				<item name="Room Groups" page="roomGroupSearch.do?default=Exam">
 					<condition>
 						<hasPermission name="RoomGroups"/>
 					</condition>
@@ -449,7 +449,7 @@
 			</or>
 			<hasPermission name="Events" authority="any"/>
 		</condition>
-		<menu name="Rooms" page="roomSearch.do?default=Exam">
+		<menu name="Rooms" page="roomSearch.do">
 			<condition>
 				<hasPermission name="Rooms"/>
 			</condition>

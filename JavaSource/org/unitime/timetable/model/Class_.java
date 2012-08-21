@@ -36,7 +36,6 @@ import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
@@ -595,87 +594,6 @@ public class Class_ extends BaseClass_ {
 	    return Class_.class;
 	}
 
- 	/* (non-Javadoc)
-	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
-	 */
-	@Deprecated
-	protected boolean canUserEdit(User user) {
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
-		if (tm.getDepartments().contains(getManagingDept())) {
-			//I am manager, return true if manager can edit the class
-			if (getManagingDept().effectiveStatusType().canManagerEdit()) return true;
-		}
-
-		if (tm.getDepartments().contains(getControllingDept())) {
-			//I am owner, return true if owner can edit the class
-			if (getManagingDept().effectiveStatusType().canOwnerEdit()) return true;
-		}
-
-		return false;
-	}
-
-	/*
-	 * canUserEdit() - if the user can edit any of the classes in the same
-	 * 	   SchedulingSubpart as this class then the user can view this class
-	 */
-	@Deprecated
-	protected boolean canUserView(User user) {
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-
-		if (tm.getDepartments().contains(getManagingDept())) {
-			//I am manager, return true if manager can view the class
-			if (getManagingDept().effectiveStatusType().canManagerView()) return true;
-		}
-
-		if (tm.getDepartments().contains(getControllingDept())) {
-			//I am owner, return true if owner can view the class
-			if (getManagingDept().effectiveStatusType().canOwnerView()) return true;
-		}
-
-		if (tm.isExternalManager() && getManagingDept().effectiveStatusType().canManagerView()) return true;
-
-		return false;
-	}
-
-	@Override
-	@Deprecated
-	public boolean isEditableBy(User user) {
-    	if (getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLockNeeded(
-    			getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
-    		return false;
-        }
-    	return super.isEditableBy(user);
-	}
-
-	@Deprecated
-	public boolean isLimitedEditable(User user) {
-		if (isEditableBy(user)) return true;
-		if (user==null) return false;
-		if (user.isAdmin()) return true;
-
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
-        if (tm.getDepartments().contains(getManagingDept())) {
-			//I am manager, return true if manager can view the class
-			if (getManagingDept().effectiveStatusType().canManagerLimitedEdit()) return true;
-		}
-
-		if (tm.getDepartments().contains(getControllingDept())) {
-			//I am owner, return true if owner can view the class
-			if (getManagingDept().effectiveStatusType().canOwnerLimitedEdit()) return true;
-		}
-
-		return false;
-	}
-
 	public String htmlLabel(){
 		return(getItypeDesc()+" "+getSectionNumberString());
 	}
@@ -717,24 +635,6 @@ public class Class_ extends BaseClass_ {
     public DatePattern effectiveDatePattern() {
     	if (getDatePattern()!=null) return getDatePattern();
     	return getSchedulingSubpart().effectiveDatePattern();
-    }
-
-    public boolean canUseHardTimePreferences(User user) {
-    	if (user.isAdmin()) return true;
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm.getDepartments().contains(getManagingDept())) return true;
-        if (getControllingDept().isAllowReqTime()!=null && getControllingDept().isAllowReqTime().booleanValue()) return true;
-        if (getManagingDept().isAllowReqTime()!=null && getManagingDept().isAllowReqTime().booleanValue()) return true;
-        return(false);
-    }
-
-    public boolean canUseHardRoomPreferences(User user) {
-        if (user.isAdmin()) return true;
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm.getDepartments().contains(getManagingDept())) return true;
-        if (getControllingDept().isAllowReqRoom()!=null && getControllingDept().isAllowReqRoom().booleanValue()) return true;
-        if (getManagingDept().isAllowReqRoom()!=null && getManagingDept().isAllowReqRoom().booleanValue()) return true;
-        return(false);
     }
 
     public Set<Location> getAvailableRooms() {
@@ -957,7 +857,7 @@ public class Class_ extends BaseClass_ {
     }
 
     public int getClassLimit(CourseOffering offering) {
-        return getClassLimit(new CommitedClassAssignmentProxy(), offering);
+        return getClassLimit(new CommitedClassAssignmentProxy());
     }
     
     private boolean hasChildClass(Reservation r) {
@@ -977,186 +877,6 @@ public class Class_ extends BaseClass_ {
     	for (Class_ child: getChildClasses())
     		if (child.hasChildClass(r)) return true;
     	return false;
-    }
-
-    @Deprecated
-    public int getClassLimit(ClassAssignmentProxy proxy, CourseOffering offering) {
-    	return getClassLimit(proxy);
-    	/*
-        int limit = getClassLimit(proxy);
-
-        if (limit==0 || offering.getInstructionalOffering().getCourseOfferings().size()==1) {
-            //CASE 0: no cross-listing or zero class limit -> return the class limit as it is
-            return limit;
-        }
-
-        Long solutionId = null;
-        if (proxy!=null) {
-            try {
-                Assignment a = proxy.getAssignment(this);
-                if (a!=null) solutionId = a.getSolution().getUniqueId();
-            } catch (Exception e) {}
-        }
-        if (solutionId==null && getCommittedAssignment()!=null) {
-            solutionId = getCommittedAssignment().getSolution().getUniqueId();
-        }
-
-        float nrReservedStudents = 0;
-        float nrReservedStudentsThisOffering = (offering.getReservation() == null ? 0 : offering.getReservation());
-        for (CourseOffering course:offering.getInstructionalOffering().getCourseOfferings()) {
-        	if (course.getReservation() != null)
-        		nrReservedStudents += course.getReservation();
-        }
-
-        float nrLastLikeStudents = (float)(offering.getInstructionalOffering().getDemand()==null?0:offering.getInstructionalOffering().getDemand().intValue());
-        float nrLastLikeStudentsThisOffering = (float)offering.getDemand().intValue();
-        boolean canUseLastLikeData = (solutionId!=null && nrLastLikeStudentsThisOffering>0);
-        if (canUseLastLikeData) {
-            for (Iterator i=offering.getInstructionalOffering().getCourseOfferings().iterator();i.hasNext();) {
-                CourseOffering co = (CourseOffering)i.next();
-                if (co.getDemand().intValue()==0) {
-                    canUseLastLikeData = false; break;
-                }
-            }
-        }
-
-        if (canUseLastLikeData) {
-            //CASE 1: last-like term student course demands are there
-
-            float nrStudents =
-                ((Number)(new Class_DAO()).
-                getSession().
-                createQuery("select count (distinct cod.student.uniqueId) from LastLikeCourseDemand cod, "+
-                    "StudentEnrollment se, "+
-                    "CourseOffering co left outer join co.demandOffering cox " +
-                    "where co.instructionalOffering.uniqueId=:instructionalOfferingId and "+
-                    "se.studentId=cod.student.uniqueId and se.solution.uniqueId=:solutionId and se.clazz.uniqueId=:classId and "+
-                    "((cod.subjectArea = co.subjectArea and cod.courseNbr=co.courseNbr) or "+
-                    "(cod.subjectArea = cox.subjectArea and cod.courseNbr=cox.courseNbr))").
-                setLong("instructionalOfferingId", offering.getInstructionalOffering().getUniqueId().longValue()).
-                setLong("solutionId", solutionId.longValue()).
-                setLong("classId",getUniqueId().longValue()).
-                uniqueResult()).floatValue();
-
-            if (nrStudents==0) return 0;
-
-            float nrStudentsThisOffering =
-                ((Number)(new Class_DAO()).
-                getSession().
-                createQuery("select count (distinct cod.student.uniqueId) from LastLikeCourseDemand cod, "+
-                    "StudentEnrollment se, "+
-                    "CourseOffering co left outer join co.demandOffering cox " +
-                    "where co.uniqueId=:offeringId and "+
-                    "se.studentId=cod.student.uniqueId and se.solution.uniqueId=:solutionId and se.clazz.uniqueId=:classId and "+
-                    "((cod.subjectArea = co.subjectArea and cod.courseNbr=co.courseNbr) or "+
-                    "(cod.subjectArea = cox.subjectArea and cod.courseNbr=cox.courseNbr))").
-                setLong("offeringId", offering.getUniqueId().longValue()).
-                setLong("solutionId", solutionId.longValue()).
-                setLong("classId",getUniqueId().longValue()).
-                uniqueResult()).floatValue();
-
-            if (nrStudentsThisOffering==0) return 0;
-
-            // return number proportional to the number of enrolled students
-            float studentWeightThisOffering = nrReservedStudentsThisOffering / nrLastLikeStudentsThisOffering;
-            float otherStudentWeight = (nrReservedStudents - nrReservedStudentsThisOffering) / (nrLastLikeStudents - nrLastLikeStudentsThisOffering);
-            float ratio = (studentWeightThisOffering * nrStudentsThisOffering) /
-                (studentWeightThisOffering * nrStudentsThisOffering + (nrStudents - nrStudentsThisOffering)*otherStudentWeight);
-            return Math.round(ratio*limit);
-        }
-
-        if (nrReservedStudents>0) {
-            //CASE 2: no last-like term student course demands, but there are course reservations
-
-            if (!getChildClasses().isEmpty()) {
-                //CASE 2a: base the class limit on the limits of children
-                float limitThisOffering = -1;
-                for (Iterator i=getSchedulingSubpart().getChildSubparts().iterator();i.hasNext();) {
-                    SchedulingSubpart subpart = (SchedulingSubpart)i.next();
-                    float limitThisSubpart = 0;
-                    float limitThisSubpartThisOffering = 0;
-                    boolean hasCourseReservation = false;
-                    for (Iterator j=getChildClasses().iterator();j.hasNext();) {
-                        Class_ childClass = (Class_)j.next();
-                        if (childClass.hasCourseReservation(offering)) hasCourseReservation = true;
-                        if (!childClass.getSchedulingSubpart().equals(subpart)) continue;
-                        limitThisSubpart += childClass.getClassLimit(proxy);
-                        limitThisSubpartThisOffering += childClass.getClassLimit(proxy, offering);
-                    }
-                    if (limitThisOffering<0f) {
-                        limitThisOffering = limitThisSubpartThisOffering * (limit/limitThisSubpart);
-                    } else if (hasCourseReservation) {
-                        limitThisOffering = limitThisSubpartThisOffering * (limit/limitThisSubpart);
-                        break;
-                    } else {
-                        limitThisOffering = Math.min(limitThisOffering, limitThisSubpartThisOffering * (limit/limitThisSubpart));
-                    }
-                }
-                if (Math.round(limitThisOffering)>=0)
-                    return Math.round(limitThisOffering);
-            } else {
-                //CASE 2b: compute limit on bottom most classes
-                Hashtable reservedClasses = new Hashtable();
-                for (Iterator i=getSchedulingSubpart().getClasses().iterator();i.hasNext();) {
-                    Class_ clazz = (Class_)i.next();
-                    HashSet courseOfferingsThisClass = new HashSet();
-                	for (Reservation r: offering.getInstructionalOffering().getReservations()) {
-                		if (r instanceof CourseReservation && clazz.hasClass(r)) {
-                			courseOfferingsThisClass.add(((CourseReservation)r).getCourse());
-                		}
-                	}
-                    for (Iterator j=courseOfferingsThisClass.iterator();j.hasNext();) {
-                        CourseOffering co = (CourseOffering)j.next();
-                        HashSet reservedClassesThisCO = (HashSet)reservedClasses.get(co);
-                        if (reservedClassesThisCO==null) {
-                            reservedClassesThisCO = new HashSet();
-                            reservedClasses.put(co, reservedClassesThisCO);
-                        }
-                        reservedClassesThisCO.add(clazz);
-                    }
-                }
-                if (reservedClasses.get(offering)!=null) {
-                    HashSet reservedClassesThisCO = (HashSet)reservedClasses.get(offering);
-                    if (!reservedClassesThisCO.contains(this)) return 0;
-                    if (reservedClassesThisCO.size()==1) return Math.round(nrReservedStudentsThisOffering);
-                    float totalLimit = 0;
-                    for (Iterator j=reservedClassesThisCO.iterator();j.hasNext();) {
-                        Class_ clazz = (Class_)j.next();
-                        totalLimit += clazz.getClassLimit(proxy);
-                    }
-                    return Math.round(nrReservedStudentsThisOffering * (limit / totalLimit));
-                } else {
-                    //all classes but the ones reserved
-                    int updatedLimit = limit;
-                    float updatedNrReservedStudents = nrReservedStudents;
-                    for (Iterator i=reservedClasses.entrySet().iterator();i.hasNext();) {
-                        Map.Entry entry = (Map.Entry)i.next();
-                        CourseOffering co = (CourseOffering)entry.getKey();
-                        HashSet classes = (HashSet)entry.getValue();
-                        float nrReservedStudentsCO = (co.getReservation() == null ? 0 : co.getReservation());
-                        updatedNrReservedStudents -= nrReservedStudentsCO;
-                        if (!classes.contains(this)) continue;
-                        float totalLimit = 0;
-                        for (Iterator j=classes.iterator();j.hasNext();) {
-                            Class_ clazz = (Class_)j.next();
-                            totalLimit += clazz.getClassLimit(proxy);
-                        }
-                        updatedLimit -= Math.round(nrReservedStudentsCO * (limit / totalLimit));
-                    }
-                    float ratio = nrReservedStudentsThisOffering/updatedNrReservedStudents;
-                    return Math.round(ratio * updatedLimit);
-                }
-            }
-
-            // return number proportional to the reserved spaces
-            float ratio = nrReservedStudentsThisOffering/nrReservedStudents;
-            return Math.round(ratio*limit);
-        }
-
-        //CASE 3: no last-like term student course demands, no course reservations
-        // return the class limit as it is
-        return limit;
-        */
     }
 
     /**
@@ -1315,48 +1035,6 @@ public class Class_ extends BaseClass_ {
     }
     public ClassEvent getCachedEvent() {
     	return iEvent;
-    }
-    
-    @Deprecated
-    public static void updateClassEnrollmentForSession(Session acadSession, org.hibernate.Session hibSession) throws Exception{
-    	/*
-       Transaction trans = null;
-       try {
-    	trans = hibSession.beginTransaction();
-    	List<Long> classIds = (List<Long>)hibSession.createQuery(
-    			"select c.uniqueId from Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering as io " +
-    			"where io.session.uniqueId = :sessionId)").
-                setLong("sessionId", acadSession.getUniqueId()).list();
-    	String ids = "";
-    	int count = 0;
-    	for (Long id: classIds) {
-    		if (count > 0) ids += ",";
-    		ids += id;
-    		count ++;
-    		if (count == 1000) {
-    			hibSession.createQuery("update Class_  c " +
-    	        		"set c.enrollment=(select count(distinct d.student) " +
-    	                " from StudentClassEnrollment d " +
-    	                " where d.clazz.uniqueId =c.uniqueId) " + 
-    	                " where c.uniqueId in (" + ids + ")").executeUpdate();
-    			ids = ""; count = 0;
-    		}
-    	}
-    	if (count > 0) {
-			hibSession.createQuery("update Class_  c " +
-	        		"set c.enrollment=(select count(distinct d.student) " +
-	                " from StudentClassEnrollment d " +
-	                " where d.clazz.uniqueId =c.uniqueId) " + 
-	                " where c.uniqueId in (" + ids + ")").executeUpdate();
-    	}
-        trans.commit();
-       } catch (Exception e) {
-    	   if (trans != null){
-    		   trans.rollback();
-    	   }
-		   throw(e);    	   
-       }
-       */
     }
     
     public String unassignCommited(String managerExternalId, org.hibernate.Session hibSession) {

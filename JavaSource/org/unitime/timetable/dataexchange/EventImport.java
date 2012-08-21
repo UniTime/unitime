@@ -22,14 +22,12 @@ package org.unitime.timetable.dataexchange;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.dom4j.Element;
 import org.hibernate.FlushMode;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.action.ajax.PeopleLookupAjax;
-import org.unitime.timetable.action.ajax.PeopleLookupAjax.Person;
+import org.unitime.timetable.interfaces.ExternalUidLookup;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseEvent;
@@ -52,7 +50,6 @@ import org.unitime.timetable.util.CalendarUtils;
  *
  */
 public class EventImport extends EventRelatedImports {
-
 	private static final String specialEventElementName = "specialEvent";
 	private static final String courseRelatedEventElementName = "courseRelatedEvent";
 	private static final String meetingElementName = "meeting";
@@ -61,12 +58,21 @@ public class EventImport extends EventRelatedImports {
 	private static final String sponsoringOrgElementName = "sponsoringOrganization";
 	private static final String courseElementName = "course";
 	private String academicInitiative = null;
+	
+	private ExternalUidLookup iLookup = null;
 
 	/**
 	 * 
 	 */
 	public EventImport() {
-		// TODO Auto-generated constructor stub
+        String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
+        if (className != null) {
+	        try {
+	        	iLookup = (ExternalUidLookup)Class.forName(className).newInstance();
+	        } catch (Exception e) {
+	        	warn("Unable to instantiate external id lookup: " + e.getMessage(), e);
+	        }
+        }
 	}
 
 	/* (non-Javadoc)
@@ -93,7 +99,7 @@ public class EventImport extends EventRelatedImports {
 	        if(timeFormat == null){
 	        	timeFormat = "HHmm";
 	        }
-
+	        
 	        beginTransaction();
 	
 	        if (session == null){
@@ -169,7 +175,7 @@ public class EventImport extends EventRelatedImports {
 				event.setMainContact(elementEventContact(eventContactElement));
 			} 
 
-//			elementAdditionalEventContacts(specialEventElement, event);
+			elementAdditionalEventContacts(specialEventElement, event);
 
 			Element sponsoringOrgElement = specialEventElement.element(sponsoringOrgElementName);
 			if (sponsoringOrgElement != null){
@@ -227,7 +233,7 @@ public class EventImport extends EventRelatedImports {
 				event.setMainContact(elementEventContact(eventContactElement));
 			} 
 
-//			elementAdditionalEventContacts(specialEventElement, event);
+			elementAdditionalEventContacts(specialEventElement, event);
 
 			Element sponsoringOrgElement = specialEventElement.element(sponsoringOrgElementName);
 			if (sponsoringOrgElement != null){
@@ -395,45 +401,25 @@ public class EventImport extends EventRelatedImports {
 		  //  leave the externalId alone
 		}
 		EventContact ec = EventContact.findByExternalUniqueId(externalId);
-		if (ec == null){
-			User user = null;
+		if (ec == null) {
+			UserInfo user = null;
 			try {
-				user = User.identify(externalId);
+				if (iLookup != null)
+					user = iLookup.doLookup(externalId);
 			} catch (Exception e) {
-				user = null;
+				warn("Failed to lookup " + externalId + ": " + e.getMessage(), e);
 			}
-			if (user != null){
-				Person person = null;				
-				PeopleLookupAjax lookup = new PeopleLookupAjax();
-				
-				TreeSet people = null;
-				try {
-					people = lookup.findPeople(user.getLogin(), session.getUniqueId().toString());					
-				} catch (Exception e) {
-					people = new TreeSet();
-				}
-				for(Iterator it = people.iterator(); it.hasNext(); ){
-					person = (Person) it.next();
-					if (person.getId().equals(externalId)){
-						if (person.getEmail() != null){
-							break;
-						} 
-					}
-				}
-				if (person != null){
-					if (email == null) {
-						email = person.getEmail();
-					}
-					if (firstName == null) {
-						firstName = person.getFirstName();
-					}
-					if (middleName == null) {
-						middleName = person.getMiddleName();
-					}
-					if (phone == null){
-						phone = person.getPhone();
-					}
-				}
+			if (user != null) {
+				if (email == null)
+					email = user.getEmail();
+				if (firstName == null)
+					firstName = user.getFirstName();
+				if (middleName == null)
+					middleName = user.getMiddleName();
+				if (lastName == null)
+					lastName = user.getLastName();
+				if (phone == null)
+					phone = user.getLastName();
 			}
 			ec = new EventContact();
 			ec.setFirstName(firstName);
@@ -454,20 +440,20 @@ public class EventImport extends EventRelatedImports {
 	 *  ability to load addition contacts through the xml interface is currently disabled.
 	 */
 	
-//	private void elementAdditionalEventContacts(Element element, Event event) throws Exception {
-//		String additionalContactsElementName = "additionalEventContacts";
-//	    for ( Iterator<?> it = element.elementIterator(additionalContactsElementName); it.hasNext(); ) {
-//	        Element additionalContactsElement = (Element) it.next();
-//	        EventContact ec = null;
-//	        for( Iterator<?> eventContactIt = additionalContactsElement.elementIterator(eventContactElementName); eventContactIt.hasNext(); ){
-//	        	ec = elementEventContact((Element)eventContactIt.next());
-//	        	if (ec != null){
-//	        		event.getAdditionalContacts().add(ec);
-//	        	}
-//	        }    
-//	     }
-//	}
-//
+	private void elementAdditionalEventContacts(Element element, Event event) throws Exception {
+		String additionalContactsElementName = "additionalEventContacts";
+		for ( Iterator<?> it = element.elementIterator(additionalContactsElementName); it.hasNext(); ) {
+			Element additionalContactsElement = (Element) it.next();
+	        EventContact ec = null;
+	        for( Iterator<?> eventContactIt = additionalContactsElement.elementIterator(eventContactElementName); eventContactIt.hasNext(); ){
+	        	ec = elementEventContact((Element)eventContactIt.next());
+	        	if (ec != null){
+	        		event.getAdditionalContacts().add(ec);
+	        	}
+	        }    
+	     }
+	}
+
 	private void elementSponsoringOrganization(Element sponsoringOrgElement, Event event) throws Exception {
 		if (!sponsoringOrgElement.getName().equalsIgnoreCase(sponsoringOrgElementName)){
 			throw(new Exception("Not Loading " + sponsoringOrgElement.getName() + " Error:  attempted to load as " + sponsoringOrgElementName));

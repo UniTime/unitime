@@ -30,7 +30,9 @@ import org.hibernate.FlushMode;
 import org.hibernate.NonUniqueResultException;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.interfaces.ExternalUidLookup;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.base.BaseDepartmentalInstructor;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -265,21 +267,6 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 				break;
 			}
 		}
-	}
-
-	@Deprecated
-	protected boolean canUserEdit(User user) {
-	    if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && 
-	        getDepartment().effectiveStatusType().canExamTimetable()) return true;
-	    
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
-		return getDepartment().canUserEdit(user);
-	}
-	
-	@Deprecated
-	protected boolean canUserView(User user){
-		return getDepartment().canUserView(user);
 	}
 
 	public String htmlLabel(){
@@ -525,5 +512,17 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
     @Override
     public Session getSession() {
     	return getDepartment().getSession();
+    }
+    
+    public static boolean canLookupInstructor() {
+    	return ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class") != null;
+    }
+    
+    public static UserInfo lookupInstructor(String externalId) throws Exception {
+    	ExternalUidLookup lookup = null;
+        String className = ApplicationProperties.getProperty("tmtbl.instructor.external_id.lookup.class");
+        if (className != null)
+        	lookup = (ExternalUidLookup)Class.forName(className).newInstance();
+        return (lookup == null ? null : lookup.doLookup(externalId));
     }
 }

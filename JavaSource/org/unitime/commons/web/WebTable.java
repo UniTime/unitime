@@ -569,19 +569,9 @@ public class WebTable {
     }
     
     /** get order (index of ordered column) for given session and table 
-     * @param session session
+     * @param context session context
      * @param code table code
      * @return index of ordered column (negative for desc.) */
-    @Deprecated
-    public static int getOrder(javax.servlet.http.HttpSession session, String code) {
-        Hashtable orderInfo = (Hashtable)session.getAttribute("OrderInfo");
-        if (orderInfo==null) {
-            orderInfo = new Hashtable();
-            session.setAttribute("OrderInfo",orderInfo);
-        }
-        return (orderInfo.containsKey(code)?((Integer)orderInfo.get(code)).intValue():0);
-    }
-    
     public static int getOrder(SessionContext context, String code) {
         Hashtable orderInfo = (Hashtable)context.getAttribute(SessionAttribute.TableOrder);
         if (orderInfo==null) {
@@ -592,22 +582,11 @@ public class WebTable {
     }
 
     /** set order (index of ordered column) for given session and table 
-     * @param session session
+     * @param context session context
      * @param code table code
      * @param order new order (index of ordered column, negative if desc.)
      * @param defOrder default order (if order is null) 
      */
-    @Deprecated
-    public static void setOrder(javax.servlet.http.HttpSession session, String code, String order, int defOrder) {
-        Hashtable orderInfo = (Hashtable)session.getAttribute("OrderInfo");
-        if (orderInfo==null) {
-            orderInfo = new Hashtable();
-            session.setAttribute("OrderInfo",orderInfo);
-        } 
-        if (order!=null) orderInfo.put(code,Integer.valueOf(order));
-        else if (!orderInfo.containsKey(code)) orderInfo.put(code,new Integer(defOrder));
-    }
-    
     public static void setOrder(SessionContext context, String code, String order, int defOrder) {
         Hashtable orderInfo = (Hashtable)context.getAttribute(SessionAttribute.TableOrder);
         if (orderInfo==null) {

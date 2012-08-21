@@ -24,11 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpSession;
-
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseUserData;
 import org.unitime.timetable.model.dao.UserDataDAO;
 
@@ -86,33 +82,6 @@ public class UserData extends BaseUserData {
 		setProperty(externalUniqueId, name, null);
 	}
 	
-	@Deprecated
-	public static void setProperty(HttpSession session, String name, String value) {
-		User user = Web.getUser(session);
-		if (user==null || user.getId()==null) return;
-		setProperty(user.getId(),name,value);
-	}
-
-	@Deprecated
-	public static String getProperty(HttpSession session, String name) {
-		User user = Web.getUser(session);
-		if (user==null || user.getId()==null) return null;
-		return getProperty(user.getId(),name);
-	}
-	
-	@Deprecated
-	public static String getProperty(HttpSession session, String name, String defaultValue) {
-		String value = getProperty(session, name);
-		return (value!=null?value:defaultValue);
-	}
-	
-	@Deprecated
-	public static HashMap<String,String> getProperties(HttpSession session, Collection<String> names) {
-		User user = Web.getUser(session);
-		if (user==null || user.getId()==null) return null;
-		return getProperties(user.getId(), names);
-	}
-
 	public static HashMap<String,String> getProperties(String externalUniqueId, Collection<String> names) {
 		String q = "select u from UserData u where u.externalUniqueId = :externalUniqueId and u.name in (";
 		for (Iterator<String> i = names.iterator(); i.hasNext(); ) {
@@ -136,45 +105,8 @@ public class UserData extends BaseUserData {
 		return ret;
 	}
 
-	@Deprecated
-	public static void removeProperty(HttpSession session, String name) {
-		setProperty(session, name, null);
-	}
-	
-	@Deprecated
-	public static int getPropertyInt(HttpSession session, String name, int defaultValue) {
-		String value = getProperty(session, name);
-		return (value!=null?Integer.parseInt(value):defaultValue);
-	}
-	
-	@Deprecated
-	public static void setPropertyInt(HttpSession session, String name, int value) {
-		setProperty(session, name, String.valueOf(value));
-	}
-
-	@Deprecated
-	public static double getPropertyDouble(HttpSession session, String name, double defaultValue) {
-		String value = getProperty(session, name);
-		return (value!=null?Double.parseDouble(value):defaultValue);
-	}
-	
-	public static void setPropertyDouble(HttpSession session, String name, double value) {
-		setProperty(session, name, String.valueOf(value));
-	}
-
-	@Deprecated
-	public static boolean getPropertyBoolean(HttpSession session, String name, boolean defaultValue) {
-		String value = getProperty(session, name);
-		return (value!=null?"1".equals(value):defaultValue);
-	}
-	
 	public static boolean getPropertyBoolean(String externalUniqueId, String name, boolean defaultValue) {
 		String value = getProperty(externalUniqueId, name);
 		return (value!=null?"1".equals(value):defaultValue);
-	}
-
-	@Deprecated
-	public static void setPropertyBoolean(HttpSession session, String name, boolean value) {
-		setProperty(session, name, (value?"1":"0"));
 	}
 }

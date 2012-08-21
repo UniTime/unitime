@@ -19,14 +19,11 @@
 */
 package org.unitime.timetable.webutil;
 
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.security.SessionContext;
-import org.unitime.timetable.util.Constants;
 
 
 /**
@@ -37,12 +34,6 @@ import org.unitime.timetable.util.Constants;
 public class JavascriptFunctions {
 	
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
-
-	@Deprecated
-    public static boolean isJsConfirm(User user) {
-        String jsConfirm = Settings.getSettingValue(user, Constants.SETTINGS_JS_DIALOGS);
-        return (jsConfirm==null || !jsConfirm.equals("no")); 
-    }
 
     public static boolean isJsConfirm(SessionContext context) {
         return (context.isAuthenticated() ? CommonValues.Yes.eq(context.getUser().getProperty(UserProperty.ConfirmationDialogs)) : true);
@@ -55,27 +46,8 @@ public class JavascriptFunctions {
      * @param user User Object
      * @return String "var jsConfirm = true;" OR "var jsConfirm = false;"
      */
-    @Deprecated
-    public static String getJsConfirm(User user) {
-        return "var jsConfirm = "+(isJsConfirm(user)?"true":"false")+";";
-    }
-    
     public static String getJsConfirm(SessionContext context) {
     	return "var jsConfirm = "+(isJsConfirm(context) ? "true" : "false")+";";
-    }
-    
-    @Deprecated
-    public static String getInheritInstructorPreferencesCondition(User user) {
-    	String inheritInstrPref = Settings.getSettingValue(user, Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF);
-    	if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_YES.equals(inheritInstrPref)) {
-    		return "true";
-    	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_NO.equals(inheritInstrPref)) {
-    		return "false";
-    	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM.equals(inheritInstrPref)) {
-    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
-    	} else {
-    		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
-    	}
     }
     
     public static String getInheritInstructorPreferencesCondition(SessionContext context) {
@@ -86,20 +58,6 @@ public class JavascriptFunctions {
     		return "false";
     	} else {
     		return "confirm('"+MSG.confirmApplyInstructorPreferencesToClass()+"')";
-    	}
-    }
-    
-    @Deprecated
-    public static String getCancelInheritInstructorPreferencesCondition(User user) {
-    	String inheritInstrPref = Settings.getSettingValue(user, Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF);
-    	if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_YES.equals(inheritInstrPref)) {
-    		return "true";
-    	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_NO.equals(inheritInstrPref)) {
-    		return "false";
-    	} else if (Constants.SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM.equals(inheritInstrPref)) {
-    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
-    	} else {
-    		return "confirm('"+MSG.confirmRemoveInstructorPreferencesFromClass()+"')";
     	}
     }
     

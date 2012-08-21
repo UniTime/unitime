@@ -16,11 +16,8 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ include file="checkLogin.jspf" %>
-<%@ include file="checkRole.jspf" %>
-<%
-	if (!Web.getUser(session).isAdmin()) {
-		throw new AccessDeniedException("Insufficient user privileges.");
-	}
-%>
+<%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<sec:authorize access="!hasPermission(null, null, 'IsAdmin')">
+<% if (true) throw new AccessDeniedException("Insufficient user privileges.");%>
+</sec:authorize>

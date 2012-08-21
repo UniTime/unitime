@@ -55,9 +55,6 @@ public interface UserContext extends UserDetails {
 
 	public Long getCurrentAcademicSessionId();
 	
-	@Deprecated
-	public String getCurrentRole();
-
 	public boolean hasDepartment(Long departmentId);
 	
 	public boolean hasRole(String role);

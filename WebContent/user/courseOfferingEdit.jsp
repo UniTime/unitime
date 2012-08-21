@@ -27,10 +27,8 @@
 <%@ page import="org.unitime.timetable.model.ArrangeCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.VariableFixedCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.VariableRangeCreditUnitConfig" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.form.CourseOfferingEditForm" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.commons.User" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
@@ -41,11 +39,9 @@
 
 <tiles:importAttribute />
 <loc:bundle name="CourseMessages">
+<tt:session-context/>
 <%
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
-	User user = Web.getUser(session);
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
 
 <html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">

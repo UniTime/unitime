@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSchedulingSubpart;
 import org.unitime.timetable.model.comparators.NavigationComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
@@ -152,91 +151,6 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return(htmlForTimePatterns(this.getTimePatterns()));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
-	 * canUserEdit() - the user can edit this subpart if the user canEdit all of the
-	 *      classes owned by this subpart or the user is the schedule deputy for the
-	 *      subjectArea of the subpart and can edit at least one class owned by the
-	 *      subpart
-	 */
-	@Deprecated
-	protected boolean canUserEdit(User user) {
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-		
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-        
-		if (tm.getDepartments().contains(getManagingDept())) {
-			//I am manager, return true if manager can edit the class
-			if (getManagingDept().effectiveStatusType().canManagerEdit()) return true;
-		}
-		
-		if (tm.getDepartments().contains(getControllingDept())) {
-			//I am owner, return true if owner can edit the class
-			if (getManagingDept().effectiveStatusType().canOwnerEdit()) return true;
-		}
-		
-		return false;
-	}
-	
-	@Deprecated
-	protected boolean canUserView(User user){
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-		
-		if (getClasses()==null || getClasses().isEmpty()) {
-			if (tm.getDepartments().contains(getControllingDept())) {
-				//I am owner, return true if owner can edit the class
-				if (getManagingDept().effectiveStatusType().canOwnerView()) return true;
-			}
-			if (tm.isExternalManager() && getManagingDept().effectiveStatusType().canManagerView()) return true;
-		} else {
-			//can view at least one class
-			for (Iterator i=getClasses().iterator();i.hasNext();) {
-				Class_ clazz = (Class_)i.next();
-				if (clazz.canUserView(user)) return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	@Override
-	@Deprecated
-	public boolean isEditableBy(User user) {
-    	if (getInstrOfferingConfig().getInstructionalOffering().getSession().isOfferingLockNeeded(getInstrOfferingConfig().getInstructionalOffering().getUniqueId())) {
-    		return false;
-        }
-    	return super.isEditableBy(user);
-	}
-	
-	@Deprecated
-	public boolean isLimitedEditable(User user) {
-		if (isEditableBy(user)) return true;
-		if (user==null) return false;
-		if (user.isAdmin()) return true;
-		
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm == null) return false;
-		
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-		
-		if (getClasses()==null || getClasses().isEmpty()) {
-			if (tm.getDepartments().contains(getControllingDept())) {
-				//I am owner, return true if owner can edit the class
-				if (getManagingDept().effectiveStatusType().canOwnerLimitedEdit()) return true;
-			}
-		} else {
-			//can view at least one class
-			for (Iterator i=getClasses().iterator();i.hasNext();) {
-				Class_ clazz = (Class_)i.next();
-				if (clazz.isLimitedEditable(user)) return true;
-			}
-		}
-		
-		return false;
-	}
-	
 	
 	/**
 	 * Gets the minimum class limit for the sub class
@@ -395,27 +309,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
 		return getSession().getDefaultDatePatternNotNull();
 	}
 
-	@Deprecated
-    public boolean canUseHardTimePreferences(User user) {
-        if (user.isAdmin()) return true;
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm.getDepartments().contains(getManagingDept())) return true;
-        if (getControllingDept().isAllowReqTime()!=null && getControllingDept().isAllowReqTime().booleanValue()) return true;
-        if (getManagingDept().isAllowReqTime()!=null && getManagingDept().isAllowReqTime().booleanValue()) return true;
-        return(false);
-    }
-    
-    @Deprecated
-    public boolean canUseHardRoomPreferences(User user) {
-        if (user.isAdmin()) return true;
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm.getDepartments().contains(getManagingDept())) return true;
-        if (getControllingDept().isAllowReqRoom()!=null && getControllingDept().isAllowReqRoom().booleanValue()) return true;
-        if (getManagingDept().isAllowReqRoom()!=null && getManagingDept().isAllowReqRoom().booleanValue()) return true;
-        return(false);
-    }
-
-        public Set getAvailableRooms() {
+	public Set getAvailableRooms() {
     	Set rooms =  new TreeSet();
         for (Iterator i=getManagingDept().getRoomDepts().iterator();i.hasNext();) {
         	RoomDept roomDept = (RoomDept)i.next();
@@ -424,6 +318,7 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
         
         return rooms;
     }
+	
     public Set getAvailableRoomFeatures() {
     	Set features = super.getAvailableRoomFeatures();
     	Department dept = getManagingDept();
@@ -619,21 +514,6 @@ public class SchedulingSubpart extends BaseSchedulingSubpart {
     	for (Class_ c: getClasses()) {
     		if (d == null) d = c.getManagingDept();
     		else if (!d.equals(c.getManagingDept())) return true;
-    	}
-    	return false;
-    }
-    
-    /**
-     * Check if subpart has atleast one externally managed class
-     * @param user
-     * @return
-     */
-    @Deprecated
-    public boolean hasExternallyManagedClasses(User user) {
-    	for (Iterator i=getClasses().iterator();i.hasNext();) {
-    		Class_ c = (Class_)i.next();
-    		if (c.isEditableBy(user) && c.getManagingDept().isExternalManager().booleanValue())
-    		    return true;
     	}
     	return false;
     }

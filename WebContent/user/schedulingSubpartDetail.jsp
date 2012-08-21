@@ -17,7 +17,6 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.action.SchedulingSubpartDetailAction" %>
 <%@ page import="org.unitime.timetable.form.SchedulingSubpartEditForm" %>
 <%@ page import="org.unitime.timetable.model.ItypeDesc"%>
@@ -25,6 +24,7 @@
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.webutil.WebClassListTableBuilder"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <jsp:directive.page import="org.unitime.timetable.webutil.JavascriptFunctions"/>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
@@ -33,18 +33,15 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<tt:session-context/>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
 	SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) request.getAttribute(frmName);
-
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>		
 
 <loc:bundle name="CourseMessages">
-<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>

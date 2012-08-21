@@ -20,6 +20,7 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -30,7 +31,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.CurriculumDAO;
 import org.unitime.timetable.util.Constants;
@@ -308,6 +308,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		String shortCommentNoColor = null;
 		String onClick = "showGwtDialog('Suggestions', 'suggestions.do?id="+lecture.getClassId()+"&op=Reset','900','90%');";
 		String background = TimetableGridCell.sBgColorNeutral;
+		DecimalFormat df = new DecimalFormat("0.0");
 		
 		if (bgMode==sBgModeNotAvailable)
 			background = TimetableGridCell.sBgColorNotAvailable;
@@ -405,7 +406,7 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				"Room preference: "+roomPref+
 				(lecture.getInstructorConstraints().isEmpty()?"":"<br>Back-to-back instructor pref.: "+btbInstrPref)+
 				(lecture.getInitialAssignment()!=null?"<br>Initial assignment: "+(lecture.getInitialAssignment().equals(placement)?"<i>current assignment</i>":lecture.getInitialAssignment().getName()):"")+
-				(lecture.getInitialAssignment()!=null?"<br>Perturbation penalty: "+Web.format(penalty):"")+
+				(lecture.getInitialAssignment()!=null?"<br>Perturbation penalty: "+df.format(penalty):"")+
 				(deptConstraint==null?"":"<br>Department balance: "+deptConstraint.getMaxPenalty(placement));
 			
 			int gcPref = 0;

@@ -34,12 +34,12 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.InstructorEditForm;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
@@ -311,12 +311,14 @@ public class InstructorInfoEditAction extends InstructorAction {
 			frm.setCareerAcct(inst.getCareerAcct().trim());
 		}
 		else {
-			if (puid != null && puid.length()>=8 && User.canIdentify()) {
-			    User instructor = User.identify(puid);
-			    if (instructor!=null)
-			        frm.setCareerAcct(instructor.getLogin());
-			    else 
-			        frm.setCareerAcct(MSG.valueInstructorAccountNameNotFound());
+			if (puid != null && !puid.isEmpty() && DepartmentalInstructor.canLookupInstructor()) {
+				try {
+					UserInfo user = DepartmentalInstructor.lookupInstructor(puid);
+					if (user != null && user.getUserName() != null)
+						frm.setCareerAcct(user.getUserName());
+					else
+						frm.setCareerAcct(MSG.valueInstructorAccountNameNotFound());
+				} catch (Exception e) {}
 			}
 		}
 		

@@ -29,7 +29,6 @@ import java.util.TreeSet;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseStudentSectioningQueue;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.security.UserContext;
@@ -89,25 +88,6 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		return getUniqueId().compareTo(q.getUniqueId());
 	}
 	
-	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Collection<Long> ids) {
-		StudentSectioningQueue q = new StudentSectioningQueue();
-		q.setTimeStamp(new Date());
-		q.setType(type.ordinal());
-		q.setSessionId(sessionId);
-		Document d = DocumentHelper.createDocument();
-		Element root = d.addElement("generic");
-		if (user != null) {
-			Element e = root.addElement("user");
-			e.addAttribute("id", user.getId()).setText(user.getName());
-		}
-		if (ids != null && !ids.isEmpty()) {
-			for (Long id: ids)
-				root.addElement("id").setText(id.toString());
-		}
-		q.setMessage(d);
-		hibSession.save(q);
-	}
-	
 	protected static void addItem(org.hibernate.Session hibSession, UserContext user, Long sessionId, Type type, Collection<Long> ids) {
 		StudentSectioningQueue q = new StudentSectioningQueue();
 		q.setTimeStamp(new Date());
@@ -120,26 +100,6 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			e.addAttribute("id", user.getExternalUserId()).setText(user.getName());
 		}
 		if (ids != null && !ids.isEmpty()) {
-			for (Long id: ids)
-				root.addElement("id").setText(id.toString());
-		}
-		q.setMessage(d);
-		hibSession.save(q);
-	}
-	
-	@Deprecated
-	protected static void addItem(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Type type, Long... ids) {
-		StudentSectioningQueue q = new StudentSectioningQueue();
-		q.setTimeStamp(new Date());
-		q.setType(type.ordinal());
-		q.setSessionId(sessionId);
-		Document d = DocumentHelper.createDocument();
-		Element root = d.addElement("generic");
-		if (user != null) {
-			Element e = root.addElement("user");
-			e.addAttribute("id", user.getId()).setText(user.getName());
-		}
-		if (ids != null && ids.length > 0) {
 			for (Long id: ids)
 				root.addElement("id").setText(id.toString());
 		}
@@ -197,51 +157,22 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 		addItem(hibSession, user, sessionId, (reload ? Type.SESSION_RELOAD : Type.SESSION_STATUS_CHANGE));
 	}
 	
-	public static void allStudentsChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId) {
+	public static void allStudentsChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId) {
 		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE);
 	}
 
-	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> studentIds) {
+	public static void studentChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Collection<Long> studentIds) {
 		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
-	}
-	
-	@Deprecated
-	/** Use {@link StudentSectioningQueue#studentChanged(org.hibernate.Session, org.unitime.commons.User, Long, Collection<Long>)} */
-	public static void studentChanged(org.hibernate.Session hibSession, Long sessionId, Collection<Long> studentIds) {
-		addItem(hibSession, (User)null, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
-	}
-	
-	@Deprecated
-	public static void studentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... studentIds) {
-		addItem(hibSession, user, sessionId, Type.STUDENT_ENROLLMENT_CHANGE, studentIds);
-	}
-	
-	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> classIds) {
-		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
 	}
 	
 	public static void classAssignmentChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Collection<Long> classIds) {
 		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
-	}
-
-	@Deprecated
-	public static void classAssignmentChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... classIds) {
-		addItem(hibSession, user, sessionId, Type.CLASS_ASSIGNMENT_CHANGE, classIds);
-	}
-
-	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Collection<Long> offeringId) {
-		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 	
 	public static void offeringChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Collection<Long> offeringId) {
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}
 
-	@Deprecated
-	public static void offeringChanged(org.hibernate.Session hibSession, org.unitime.commons.User user, Long sessionId, Long... offeringId) {
-		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
-	}
-	
 	public static void offeringChanged(org.hibernate.Session hibSession, UserContext user, Long sessionId, Long... offeringId) {
 		addItem(hibSession, user, sessionId, Type.OFFERING_CHANGE, offeringId);
 	}

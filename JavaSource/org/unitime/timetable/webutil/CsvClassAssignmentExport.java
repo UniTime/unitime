@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -118,7 +117,7 @@ public class CsvClassAssignmentExport {
 		return file;
 	}
 
-    public static CSVFile exportCsv2(User user, Collection classes, ClassAssignmentProxy proxy) {
+    public static CSVFile exportCsv2(UserContext user, Collection classes, ClassAssignmentProxy proxy) {
         CSVFile file = new CSVFile();
         file.setSeparator(",");
         file.setQuotationMark("\"");

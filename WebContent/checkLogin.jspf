@@ -16,11 +16,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@page import="org.unitime.timetable.util.AccessDeniedException"%>
+<%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<tt:session-context/>
 <%
-	if (!Web.isLoggedIn(session)) {
-		if (session.isNew()) {
+	if (!sessionContext.isAuthenticated()) {
+		if (sessionContext.isHttpSessionNew()) {
 			throw new AccessDeniedException("Your timetabling session has expired. Please log in again.");
 		} else {
 			throw new AccessDeniedException("Login is required to use timetabling application.");

@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.server;
 import java.io.File;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.commons.web.Web;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.PageNames;
 import org.unitime.timetable.ApplicationProperties;
@@ -504,7 +504,7 @@ public class MenuServlet implements MenuService {
 				ret.put("1Solver", progressStatus);
 				ret.put("2Phase", progressPhase);
 				if (progressMax>0)
-					ret.put("3Progress", (progressCur<progressMax?progressCur:progressMax) + " of " + progressMax + " (" + Web.format(progressPercent) + "%)");
+					ret.put("3Progress", (progressCur<progressMax?progressCur:progressMax) + " of " + progressMax + " (" + new DecimalFormat("0.0").format(progressPercent) + "%)");
 				ret.put("7Version", version);
 				ret.put("6Session", SessionDAO.getInstance().get(properties.getPropertyLong("General.SessionId",null)).getLabel());
 				

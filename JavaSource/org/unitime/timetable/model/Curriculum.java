@@ -23,9 +23,6 @@ import java.util.List;
 
 import org.unitime.timetable.model.base.BaseCurriculum;
 import org.unitime.timetable.model.dao.CurriculumDAO;
-import org.unitime.timetable.security.UserContext;
-
-
 
 public class Curriculum extends BaseCurriculum implements Comparable<Curriculum> {
 	private static final long serialVersionUID = 1L;
@@ -56,25 +53,6 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
             .createQuery("select c from Curriculum c where c.department.uniqueId=:deptId")
             .setLong("deptId", deptId)
             .setCacheable(true).list();
-    }
-    
-    @Deprecated
-    public boolean canUserEdit(UserContext user) {
-    	// Not authenticated -> false
-    	if (user == null) return false;
-    	
-    	// Admin -> always true
-    	if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
-    	
-    	// Not schedule deputy or curriculum manager -> false
-    	if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) &&
-    			!Roles.CURRICULUM_MGR_ROLE.equals(user.getCurrentRole())) return false;
-    	
-		//TODO: Do we want to check Session status as well?
-		//  E.g., getDepartment().effectiveStatusType().canOwnerEdit()
-
-    	// Check department
-    	return getDepartment() != null && user.hasDepartment(getDepartment().getUniqueId());
     }
     
     public int compareTo(Curriculum c) {

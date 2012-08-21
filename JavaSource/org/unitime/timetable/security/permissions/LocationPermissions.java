@@ -124,6 +124,21 @@ public class LocationPermissions {
 		@Override
 		public Class<Location> type() { return Location.class; }
 	}
+	
+	@PermissionForRight(Right.RoomEditChangeCapacity)
+	public static class RoomEditChangeCapacity extends RoomEdit {}
+
+	@PermissionForRight(Right.RoomEditChangeExaminationStatus)
+	public static class RoomEditChangeExaminationStatus extends RoomEdit {}
+
+	@PermissionForRight(Right.RoomEditChangeExternalId)
+	public static class RoomEditChangeExternalId extends RoomEdit {}
+
+	@PermissionForRight(Right.RoomEditChangeRoomProperties)
+	public static class RoomEditChangeRoomProperties extends RoomEdit {}
+
+	@PermissionForRight(Right.RoomEditChangeType)
+	public static class RoomEditChangeType extends RoomEdit {}
 
 	@PermissionForRight(Right.EditRoomDepartments)
 	public static class EditRoomDepartments implements Permission<Department> {

@@ -373,8 +373,6 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		@Override
 		public String getEmail() { return iContext.getEmail(); }
 		@Override
-		public String getCurrentRole() { return iAuthority.getRole(); }
-		@Override
 		public UserAuthority getCurrentAuthority() { return iAuthority; }
 		@Override
 		public Long getCurrentAcademicSessionId() { return (Long)(iAuthority.getAcademicSession() == null ? null : iAuthority.getAcademicSession().getQualifierId()); }

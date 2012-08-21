@@ -22,8 +22,6 @@
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.Building" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
 <%@page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -37,8 +35,6 @@
 	// Get Form 
 	String frmName = "editRoomForm";	
 	EditRoomForm frm = (EditRoomForm) request.getAttribute(frmName);
-	boolean admin = Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE});
-	boolean examMgr = Web.hasRole(request.getSession(), new String[] { Roles.EXAM_MGR_ROLE});
 %>	
 
 <tiles:importAttribute />
@@ -124,13 +120,7 @@
 		<logic:notEmpty name="<%=frmName%>" property="id">
 			<TR>
 				<TD>Name:</TD>
-				<% if (examMgr) { %>
-					<TD width='100%'>
-						<bean:write name="<%=frmName%>" property="bldgName"/>
-						<bean:write name="<%=frmName%>" property="name"/>
-						<html:hidden property="name"/>
-					</TD>
-				<% } else {%>
+				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 				<TD width='100%'>
 					<bean:write name="<%=frmName%>" property="bldgName"/>
 					<logic:empty name="<%=frmName%>" property="bldgName">
@@ -140,24 +130,32 @@
 						<html:text property="name" maxlength="10" size="10" />
 					</logic:notEmpty>
 				</TD>
-				<% } %>
+				</sec:authorize>
+				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+					<TD width='100%'>
+						<bean:write name="<%=frmName%>" property="bldgName"/>
+						<bean:write name="<%=frmName%>" property="name"/>
+						<html:hidden property="name"/>
+					</TD>
+				</sec:authorize>
 			</TR>
 		</logic:notEmpty>
 			
 		<logic:equal name="<%=frmName%>" property="room" value="true">
-			<% if (admin) { %>
+			<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
 				<TR>
 					<TD>External Id:</TD>
 					<TD width='100%'>
 						<html:text property="externalId" maxlength="40" size="40" />
 					</TD>
 				</TR>
-			<% } else { %>
+			</sec:authorize>
+			<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
 				<html:hidden property="externalId"/>
-			<% } %>
+			</sec:authorize>
 		</logic:equal>
 		
-		<% if (admin) { %>
+		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
 			<TR>
 				<TD>Type:</TD>
 				<TD width='100%'>
@@ -166,19 +164,21 @@
 					</html:select>
 				</TD>
 			</TR>
-		<% } else { %>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
 			<html:hidden property="type"/>
-		<% } %>
+		</sec:authorize>
 
 		<TR>
 			<TD>Capacity:</TD>
 			<TD>
-				<% if (examMgr) { %>
+				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
+					<html:text property="capacity" maxlength="15" size="10"/>
+				</sec:authorize>
+				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
 					<bean:write name="<%=frmName%>" property="capacity"/>
 					<html:hidden property="capacity"/>
-				<% } else { %>
-					<html:text property="capacity" maxlength="15" size="10"/>
-				<% } %>
+				</sec:authorize>
 			</TD>
 		</TR>
 		
@@ -209,41 +209,39 @@
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
-				<% if (examMgr) { %>
+				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+					<html:text property="coordX" maxlength="12" size="12" styleId="coordX" onchange="setMarker();"/>, <html:text property="coordY" maxlength="12" size="12" styleId="coordY" onchange="setMarker();"/>
+				</sec:authorize>
+				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 					<bean:write name="<%=frmName%>" property="coordX"/>, <bean:write name="<%=frmName%>" property="coordY"/>
 					<html:hidden property="coordX" styleId="coordX"/>
 					<html:hidden property="coordY" styleId="coordY"/>
-				<% } else { %>
-				<html:text property="coordX" maxlength="12" size="12" styleId="coordX" onchange="setMarker();"/>, <html:text property="coordY" maxlength="12" size="12" styleId="coordY" onchange="setMarker();"/>
-				<% } %>
+				</sec:authorize>
 				<% DistanceMetric.Ellipsoid ellipsoid = DistanceMetric.Ellipsoid.valueOf(ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name())); %>
 				&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 			</TD>
 		</TR>
 
-		<% if (examMgr) { %>
-			<html:hidden property="ignoreTooFar" />
-		<% } else { %>
+		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 			<TR>
 				<TD nowrap>Ignore Too Far Distances:</TD>
 				<TD>
 					<html:checkbox property="ignoreTooFar" />
 				</TD>
 			</TR>
-		<% } %>
-			
-		<% if (examMgr) { %>
+			<TR>
+				<TD nowrap>Ignore Room Checks:</TD>
+				<TD>
+					<html:checkbox property="ignoreRoomCheck" />
+				</TD>
+			</TR>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+			<html:hidden property="ignoreTooFar" />
 			<html:hidden property="ignoreRoomCheck" />
-		<% } else { %>
-		<TR>
-			<TD nowrap>Ignore Room Checks:</TD>
-			<TD>
-				<html:checkbox property="ignoreRoomCheck" />
-			</TD>
-		</TR>
-		<% } %>
+		</sec:authorize>
 		
-		<% if (admin || examMgr) { %>
+		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
 		<TR>
 			<TD nowrap>Examination Room:</TD>
 			<TD>
@@ -260,11 +258,12 @@
 				<html:text property="examCapacity" maxlength="15" size="10"/>
 			</TD>
 		</TR>
-		<% } else { %>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
 			<html:hidden property="examEnabled"/>
 			<html:hidden property="examEEnabled"/>
 			<html:hidden property="examCapacity"/>
-		<% } %>
+		</sec:authorize>
 		
 		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
 					</table>
@@ -334,12 +333,61 @@
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+	<script type="text/javascript" language="javascript">
+		function createGoogleSeachControl(map) {
+			var controlDiv = document.createElement('DIV');
+		    controlDiv.index = 1;
+			controlDiv.style.marginBottom = '15px';
+			var controlUI = document.createElement('DIV');
+			controlUI.style.backgroundColor = 'transparent';
+			controlUI.style.cursor = 'pointer';
+			controlUI.style.textAlign = 'center';
+			controlUI.title = "Seach";
+			controlDiv.appendChild(controlUI);
+			var controltxtbox = document.createElement('input');
+			controltxtbox.setAttribute("id", "txt_googleseach");
+			controltxtbox.setAttribute("type", "text");
+			controltxtbox.setAttribute("value", "");
+			controltxtbox.style.height = '22px';
+			controltxtbox.style.width = '450px';
+			controltxtbox.style.marginRight = '2px';
+			controlUI.appendChild(controltxtbox);
+			var controlbtn = document.createElement('input');
+			controlbtn.setAttribute("id", "btn_googleseach");
+			controlbtn.setAttribute("type", "button");
+			controlbtn.setAttribute("value", "Geocode");
+			controlUI.appendChild(controlbtn);
+			google.maps.event.addDomListener(controlbtn, 'click', function() {
+				geoceodeAddress(controltxtbox.value);
+			});
+			controltxtbox.onkeypress = function(e) {
+				var key = e.keyCode || e.which;
+				if (key == 13) {
+					geoceodeAddress(controltxtbox.value);
+					return false;
+				}
+				return true;
+			};
+			map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(controlDiv);
+			return controltxtbox;
+		}
+		function canDragMarker() { return true; }
+	</script>
+</sec:authorize>
+<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+	<script type="text/javascript" language="javascript">
+		function createGoogleSeachControl(map) { return null; }
+		function canDragMarker() { return false; }
+	</script>
+</sec:authorize>
 <script type="text/javascript" language="javascript">
 	var latlng = new google.maps.LatLng(50, -58);
 	var myOptions = {
 		zoom: 2,
 		center: latlng,
 		mapTypeId: google.maps.MapTypeId.ROADMAP
+		
 	};
 	var geocoder = new google.maps.Geocoder();
 	var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
@@ -350,49 +398,7 @@
 		visible: false
 	});
 	
-	<% if (examMgr) { %>
-	var searchBox = null;
-	<% } else { %>
     var searchBox = createGoogleSeachControl(map);
-    <% } %>
-	
-	function createGoogleSeachControl(map) {
-		var controlDiv = document.createElement('DIV');
-	    controlDiv.index = 1;
-		controlDiv.style.marginBottom = '15px';
-		var controlUI = document.createElement('DIV');
-		controlUI.style.backgroundColor = 'transparent';
-		controlUI.style.cursor = 'pointer';
-		controlUI.style.textAlign = 'center';
-		controlUI.title = "Seach";
-		controlDiv.appendChild(controlUI);
-		var controltxtbox = document.createElement('input');
-		controltxtbox.setAttribute("id", "txt_googleseach");
-		controltxtbox.setAttribute("type", "text");
-		controltxtbox.setAttribute("value", "");
-		controltxtbox.style.height = '22px';
-		controltxtbox.style.width = '450px';
-		controltxtbox.style.marginRight = '2px';
-		controlUI.appendChild(controltxtbox);
-		var controlbtn = document.createElement('input');
-		controlbtn.setAttribute("id", "btn_googleseach");
-		controlbtn.setAttribute("type", "button");
-		controlbtn.setAttribute("value", "Geocode");
-		controlUI.appendChild(controlbtn);
-		google.maps.event.addDomListener(controlbtn, 'click', function() {
-			geoceodeAddress(controltxtbox.value);
-		});
-		controltxtbox.onkeypress = function(e) {
-			var key = e.keyCode || e.which;
-			if (key == 13) {
-				geoceodeAddress(controltxtbox.value);
-				return false;
-			}
-			return true;
-		};
-		map.controls[google.maps.ControlPosition.BOTTOM_LEFT].push(controlDiv);
-		return controltxtbox;
-	}
 	
 	function geoceodeAddress(address) {
 		var address = document.getElementById("txt_googleseach").value;
@@ -439,14 +445,14 @@
 		if (t != null) clearTimeout(t);
 		t = setTimeout("geoceodeMarker()", 500);
 	});
-	<% if (examMgr) { %>
-		marker.setDraggable(false);
-	<% } else { %>
+	if (canDragMarker()) {
 		google.maps.event.addListener(map, 'rightclick', function(event) {
 			marker.setPosition(event.latLng);
 			marker.setVisible(true);
 		});
-	<% } %>
+	} else {
+		marker.setDraggable(false);
+	}
 	function setMarker() {
 		var x = document.getElementById("coordX").value;
 		var y = document.getElementById("coordY").value;

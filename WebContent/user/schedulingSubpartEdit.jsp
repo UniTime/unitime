@@ -28,6 +28,7 @@
 <%@ page import="org.unitime.timetable.model.ArrangeCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.VariableFixedCreditUnitConfig" %>
 <%@ page import="org.unitime.timetable.model.VariableRangeCreditUnitConfig" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -35,17 +36,14 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
+<tt:session-context/>
 <%
 	// Get Form 
 	String frmName = "SchedulingSubpartEditForm";
 	SchedulingSubpartEditForm frm = (SchedulingSubpartEditForm) request.getAttribute(frmName);
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
-
 <loc:bundle name="CourseMessages">
-<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
 		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>

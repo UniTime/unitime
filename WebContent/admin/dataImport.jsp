@@ -131,8 +131,9 @@
 		<TR>
 			<TD nowrap>Email (Log, Export XML):</TD>
 			<TD>
-				<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'inline':'none');"/>
+				<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'inline':'none');" styleId="emlChk"/>
 				<html:text property="address" size="70" styleId="eml" style="display:none;"/>
+				<script type="text/javascript">document.getElementById('eml').style.display=(document.getElementById('emlChk').checked?'inline':'none');</script>
 			</TD>
 		</TR>
 		

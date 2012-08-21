@@ -184,7 +184,6 @@ public class PageAccessFilter implements Filter {
 						message += "\n  Session attributes:";
 						for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
 							String n = (String)e.nextElement();
-							if (n.equals("userTrace")) continue;
 							message+="\n    "+n+"="+r.getSession().getAttribute(n);
 						}
 					}

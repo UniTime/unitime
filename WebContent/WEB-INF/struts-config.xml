@@ -2247,12 +2247,6 @@
     		redirect="true" />
     </action>
 
-	  <action
-         path="/peopleLookupAjax"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         scope="request"
-         validate="false" />
-
     <action
     	path="/classInfo"
     	type="org.springframework.web.struts.DelegatingActionProxy"

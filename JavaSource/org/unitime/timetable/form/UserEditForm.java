@@ -19,13 +19,16 @@
 */
 package org.unitime.timetable.form;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.timetable.authenticate.jaas.DbAuthenticateModule;
+import org.unitime.commons.Base64;
 import org.unitime.timetable.model.User;
 
 /** 
@@ -91,12 +94,19 @@ public class UserEditForm extends ActionForm {
         }
     }
     
+	public static String encodePassword(String clearTextPassword) throws NoSuchAlgorithmException {
+		MessageDigest md = MessageDigest.getInstance("MD5");
+		md.update(clearTextPassword.getBytes());
+		return Base64.encodeBytes(md.digest());
+	}
+
+    
     public void saveOrUpdate(org.hibernate.Session hibSession) throws Exception {
         if ("Update".equals(getOp())) {
             User u = User.findByExternalId(getExternalId());
             if (u.getUsername().equals(getName())) {
                 if (!getPassword().equals(u.getPassword())) {
-                    u.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
+                    u.setPassword(encodePassword(getPassword()));
                 }
                 hibSession.update(u);
             } else {
@@ -106,7 +116,7 @@ public class UserEditForm extends ActionForm {
                 if (getPassword().equals(u.getPassword())) {
                     w.setPassword(getPassword());
                 } else {
-                    w.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
+                    w.setPassword(encodePassword(getPassword()));
                 }
                 hibSession.delete(u);
                 hibSession.save(w);
@@ -115,7 +125,7 @@ public class UserEditForm extends ActionForm {
             User u = new User();
             u.setExternalUniqueId(getExternalId());
             u.setUsername(getName());
-            u.setPassword(DbAuthenticateModule.getEncodedPassword(getPassword()));
+            u.setPassword(encodePassword(getPassword()));
             hibSession.save(u);
         }
     }

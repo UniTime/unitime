@@ -36,11 +36,11 @@ import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructorEditForm;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -409,14 +409,12 @@ public class InstructorDetailAction extends PreferencesAction {
 		
 		if (inst.getCareerAcct() != null) {
 			frm.setCareerAcct(inst.getCareerAcct().trim());
-		}
-		else {
-		    if (puid != null && User.canIdentify()) {
-		        User user = User.identify(puid);
-		        if (user!=null && user.getLogin()!=null) {
-		            frm.setCareerAcct(user.getLogin());
-		        }
-		    }
+		} else if (DepartmentalInstructor.canLookupInstructor()) {
+			try {
+				UserInfo user = DepartmentalInstructor.lookupInstructor(puid);
+				if (user != null && user.getUserName() != null)
+					frm.setCareerAcct(user.getUserName());
+			} catch (Exception e) {}
 		}
 		
 		if (inst.getNote() != null) {
