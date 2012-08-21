@@ -17,8 +17,6 @@
  * 
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.form.RoomFeatureEditForm" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
-import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.command.client.GwtRpc;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -151,15 +150,6 @@ public class LoadingWidget extends Composite {
 		iMessage.setHTML(message);
 	}
 
-	/**
-	 * Call {@link LoadingWidget#hide()} and {@link UniTimeNotifications#error(String)} instead.
-	 */
-	@Deprecated
-	public void fail(String message) {
-		hide();
-		UniTimeNotifications.error(message);
-	}
-	
 	public void hide() {
 		if (iCount > 0) iCount --;
 		if (iCount == 0) {

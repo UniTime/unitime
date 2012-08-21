@@ -22,7 +22,6 @@ package org.unitime.timetable.security.context;
 import java.io.Serializable;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +39,6 @@ import org.unitime.timetable.security.rights.Right;
 public class HttpSessionContext implements SessionContext {
 	@Autowired
 	private HttpSession iSession;
-	@Autowired
-	private HttpServletRequest iRequest;
 	@Autowired
 	PermissionCheck unitimePermissionCheck;
 
@@ -95,16 +92,6 @@ public class HttpSessionContext implements SessionContext {
 	@Override
 	public boolean isAuthenticated() {
 		return getUser() != null;
-	}
-
-	@Override
-	public HttpSession getHttpSession() {
-		return iSession;
-	}
-
-	@Override
-	public HttpServletRequest getHttpServletRequest() {
-		return iRequest;
 	}
 
 	@Override

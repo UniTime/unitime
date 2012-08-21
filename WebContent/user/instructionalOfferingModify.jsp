@@ -17,11 +17,11 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
-<%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.util.IdValue" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.form.InstructionalOfferingModifyForm" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -79,12 +79,11 @@
 
 
 <tiles:importAttribute />
+<tt:session-context/>
 <% 
 	String frmName = "instructionalOfferingModifyForm";
 	InstructionalOfferingModifyForm frm = (InstructionalOfferingModifyForm)request.getAttribute(frmName);
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
 <SCRIPT language="javascript">
 	<!--

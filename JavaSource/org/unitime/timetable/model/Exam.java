@@ -35,7 +35,6 @@ import java.util.Vector;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -79,46 +78,6 @@ public class Exam extends BaseExam implements Comparable<Exam> {
 	public static final int sExamTypeMidterm = 1;
 	
 	public static final String sExamTypes[] = new String[] {MSG.typeFinal(), MSG.typeMidterm()};
-	
-	@Deprecated
-	protected boolean canUserEdit(User user) {
-        //admin
-        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) 
-            return true;
-        
-        //timetable manager 
-        if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) {
-            if (!getSession().getStatusType().canExamEdit())
-                return false;
-            for (Iterator i=getOwners().iterator();i.hasNext();) {
-                ExamOwner owner = (ExamOwner)i.next();
-                if (!owner.getCourse().getDepartment().canUserEdit(user)) return false;
-            }
-            return true;
-        }
-        
-        //exam manager
-        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()))
-            return getSession().getStatusType().canExamTimetable();
-        
-        return false;
-	}
-
-	@Deprecated
-	protected boolean canUserView(User user) {
-	    //can edit -> can view
-        if (canUserEdit(user)) return true;
-        
-        //admin or exam manager
-	    if (Roles.ADMIN_ROLE.equals(user.getCurrentRole()) || Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole())) 
-	        return true;
-	    
-        //timetable manager or view all 
-	    if (Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole()) || Roles.VIEW_ALL_ROLE.equals(user.getCurrentRole()))
-	        return getSession().getStatusType().canExamView();
-	    
-	    return false;
-	}
 	
 	public String generateName() {
         StringBuffer sb = new StringBuffer();

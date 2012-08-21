@@ -19,17 +19,18 @@
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.CourseOffering" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <tiles:importAttribute />
+<tt:session-context/>
 <%
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
 
 <loc:bundle name="CourseMessages">

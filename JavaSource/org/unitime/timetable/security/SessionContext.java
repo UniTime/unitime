@@ -21,9 +21,6 @@ package org.unitime.timetable.security;
 
 import java.io.Serializable;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.rights.Right;
 
@@ -32,8 +29,6 @@ public interface SessionContext {
 	public boolean isAuthenticated();
 	public UserContext getUser();
     
-    @Deprecated
-    public HttpSession getHttpSession();
     public boolean isHttpSessionNew();
     public String getHttpSessionId();
     
@@ -44,9 +39,6 @@ public interface SessionContext {
     public void setAttribute(SessionAttribute attribute, Object value);
     public Object getAttribute(SessionAttribute attribute);
 
-    @Deprecated
-    public HttpServletRequest getHttpServletRequest();
-    
     public void checkPermission(Right right);
     public void checkPermission(Serializable targetId, String targetType, Right right);
     public void checkPermission(Object targetObject, Right right);

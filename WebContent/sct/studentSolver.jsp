@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="java.text.DecimalFormat"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
@@ -27,7 +28,6 @@
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@page import="org.unitime.timetable.model.Session"%>
 <%@page import="org.unitime.timetable.form.ListSolutionsForm"%>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -59,7 +59,7 @@ try {
 			progress = (String)p.get("PHASE");
 			long progressCur = ((Long)p.get("PROGRESS")).longValue();
 			double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
-			progress+=" ("+Web.format(progressPercent)+"%)";
+			progress+=" ("+new DecimalFormat("0.0").format(progressPercent)+"%)";
 		}
 	}
 	if (status==null)

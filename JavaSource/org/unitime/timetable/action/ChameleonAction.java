@@ -37,12 +37,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ChameleonForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.context.ChameleonUserContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -135,7 +135,8 @@ public class ChameleonAction extends Action {
             ChameleonForm frm, 
             UserContext user) throws Exception {
     	
-    	Constants.resetSessionAttributes(request.getSession());
+		for (SessionAttribute a: SessionAttribute.values())
+			request.getSession().removeAttribute(a.key());
     	
     	if (user instanceof UserContext.Chameleon)
     		user = ((UserContext.Chameleon)user).getOriginalUserContext();

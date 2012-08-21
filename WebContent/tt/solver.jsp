@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="java.text.DecimalFormat"%>
 <%@page import="org.unitime.timetable.security.SessionContext"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
@@ -25,7 +26,6 @@
 <%@ page import="org.unitime.timetable.model.Solution" %>
 <%@ page import="org.hibernate.Transaction" %>
 <%@ page import="org.unitime.timetable.form.ListSolutionsForm" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.solver.ui.PropertiesInfo" %>
 <%@ page import="net.sf.cpsolver.ifs.util.Progress" %>
 <%@ page import="org.unitime.timetable.solver.ui.LogInfo" %>
@@ -106,7 +106,7 @@ try {
 			progress = (String)p.get("PHASE");
 			long progressCur = ((Long)p.get("PROGRESS")).longValue();
 			double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
-			progress+=" ("+Web.format(progressPercent)+"%)";
+			progress+=" ("+new DecimalFormat("0.0").format(progressPercent)+"%)";
 		}
 	}
 	if (status==null)

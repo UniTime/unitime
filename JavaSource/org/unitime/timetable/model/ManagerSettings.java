@@ -19,9 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import javax.servlet.http.HttpSession;
-
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseManagerSettings;
 import org.unitime.timetable.model.dao.ManagerSettingsDAO;
 import org.unitime.timetable.model.dao.SettingsDAO;
@@ -45,30 +42,6 @@ public class ManagerSettings extends BaseManagerSettings {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	
-	@Deprecated
-	public static String getValue(HttpSession session, String name, String defaultValue) {
-		return getValue(Web.getUser(session), name, defaultValue);
-	}
-	
-	@Deprecated
-	public static String getValue(HttpSession session, String name) {
-		return getValue(session, name, null);
-	}
-	
-	public static String getValue(org.unitime.commons.User user, String name, String defaultValue) {
-		if (user == null) {
-			Settings s = (Settings)SettingsDAO.getInstance().getSession().createQuery(
-					"select s from Settings s where s.key = :key"
-					).setString("key", name).setCacheable(true).uniqueResult();
-			return (s == null ? defaultValue : s.getDefaultValue());
-		}
-		return getValue(TimetableManager.getManager(user), name, defaultValue);
-	}
-
-	public static String getValue(org.unitime.commons.User user, String name) {
-		return getValue(user, name, null);
-	}
 	
 	public static String getValue(TimetableManager mgr, String name, String defaultValue) {
 		if (mgr == null) {

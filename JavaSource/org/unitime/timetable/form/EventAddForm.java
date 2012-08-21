@@ -77,6 +77,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
@@ -223,7 +224,7 @@ public class EventAddForm extends ActionForm {
 		if (iSessionId==null) {
 		    TreeSet<Session> sessions = Session.getAllSessions();
 		    if (!sessions.isEmpty()) {
-		    	Session s = Session.defaultSession(sessions);
+		    	Session s = UniTimeUserContext.defaultSession(sessions, null);
 		        iSessionId = (s==null?sessions.last().getUniqueId():s.getUniqueId());
 		    }
 		}

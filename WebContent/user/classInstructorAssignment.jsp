@@ -17,11 +17,12 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page import="org.unitime.timetable.defaults.UserProperty"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.form.ClassInstructorAssignmentForm" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -32,12 +33,11 @@
 
 <loc:bundle name="CourseMessages">
 
+<tt:session-context/>
 <% 
 	String frmName = "classInstructorAssignmentForm";
 	ClassInstructorAssignmentForm frm = (ClassInstructorAssignmentForm)request.getAttribute(frmName);
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
 
 <html:form action="/classInstructorAssignment">
@@ -49,7 +49,7 @@
 
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 		
 		function confirmUnassignAll() {
 			if (jsConfirm!=null && !jsConfirm)
@@ -243,9 +243,10 @@
 									</html:select>
 								</logic:equal>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
+									<% String nameFormat = UserProperty.NameFormat.get(sessionContext.getUser()); %>
 									<logic:iterate scope="request" name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" id="instr">
 										<logic:equal name="<%=frmName%>" property='<%= "instructorUids[" + ctr + "]" %>' value="<%=((DepartmentalInstructor)instr).getUniqueId().toString()%>">
-											<%=((DepartmentalInstructor)instr).getName(Web.getUser(session))%>
+											<%=((DepartmentalInstructor)instr).getName(nameFormat)%>
 										</logic:equal>
 									</logic:iterate>
 									<html:hidden property='<%= "instructorUids[" + ctr + "]" %>'/>

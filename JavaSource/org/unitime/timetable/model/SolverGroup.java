@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseSolverGroup;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -142,41 +141,6 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	return getName();
     }
     
-	public boolean canAudit() {
-		for (Iterator j=getDepartments().iterator();j.hasNext();) {
-			Department department = (Department)j.next();
-			if (!department.effectiveStatusType().canAudit()) 
-				return false;
-		}
-		return true;
-	}
-	
-	public boolean canTimetable() {
-		for (Iterator j=getDepartments().iterator();j.hasNext();) {
-			Department department = (Department)j.next();
-			if (!department.effectiveStatusType().canTimetable())
-				return false;
-		}
-		return true;
-	}
-    
-	@Deprecated
-    public boolean canCommit(User user) {
-        if (user.isAdmin()) return true;
-        if (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE)) return false;
-        if (user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)) return false;
-        return canCommit();
-    }
-
-	public boolean canCommit() {
-		for (Iterator j=getDepartments().iterator();j.hasNext();) {
-			Department department = (Department)j.next();
-			if (!department.effectiveStatusType().canCommit())
-				return false;
-		}
-		return true;
-	}
-	
 	public int getMinDistributionPriority() {
 		int ret = Integer.MAX_VALUE;
 		for (Iterator i=getDepartments().iterator();i.hasNext();) {

@@ -237,12 +237,10 @@
 				</logic:equal>
 
 				<!-- Delete button -->
-				<sec:authorize access="hasPermission(#distributionPrefsForm.distPrefId, 'DistributionPref', 'DistributionPreferenceDelete')">
-					&nbsp;&nbsp;				
-					<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-						<bean:message key="button.delete" />
-					</html:submit>
-				</sec:authorize> 			
+				&nbsp;&nbsp;				
+				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
+					<bean:message key="button.delete" />
+				</html:submit>
 				<!--
 				<IMG src="images/Delete16.gif" border="0" align="middle">	
 				-->

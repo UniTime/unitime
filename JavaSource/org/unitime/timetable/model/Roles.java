@@ -71,41 +71,7 @@ public class Roles extends BaseRoles implements HasRights {
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
 
-	/**
-	 * Define Admin and non - admin roles
-	 */
-    @Deprecated
-    private static String[] adminRoles = new String[] { 
-    	Roles.ADMIN_ROLE };
-    
-    @Deprecated
-    private static String[] nonAdminRoles = new String[] { 
-    	Roles.DEPT_SCHED_MGR_ROLE, 
-    	Roles.VIEW_ALL_ROLE, 
-    	Roles.EXAM_MGR_ROLE,
-    	Roles.EVENT_MGR_ROLE };
-    
-    /**
-     * Retrieve admin roles
-     * @return String Array of admin roles (defined in Roles class) 
-     * @see Roles
-     */
-    @Deprecated
-	public static String[] getAdminRoles() {
-	    return adminRoles;
-	}
-	
-    /**
-     * Retrieve non-admin roles
-     * @return String Array of admin roles (defined in Roles class) 
-     * @see Roles
-     */
-    @Deprecated
-	public static String[] getNonAdminRoles() {
-	    return nonAdminRoles;
-	}
-
-    /** Roles List **/
+	/** Roles List **/
     private static Vector rolesList = null;
     
 	/**
@@ -377,11 +343,16 @@ public class Roles extends BaseRoles implements HasRights {
 		case GlobalRoomGroupAdd:
 		case GlobalRoomGroupEdit:
 		case GlobalRoomGroupDelete:
+		case RoomEdit:
+		case RoomEditChangeExaminationStatus:
 			return ADMIN_ROLE.equals(getReference()) || EXAM_MGR_ROLE.equals(getReference());
 			
 		case AddRoom:
-		case RoomEdit:
 		case RoomEditChangeControll:
+		case RoomEditChangeCapacity:
+		case RoomEditChangeExternalId:
+		case RoomEditChangeRoomProperties:
+		case RoomEditChangeType:
 		case GlobalRoomGroupEditSetDefault:
 		case BuildingList:
 		case BuildingAdd:

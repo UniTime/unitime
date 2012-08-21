@@ -16,23 +16,24 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.model.dao.SessionDAO"%>
 <%@ page language="java" pageEncoding="UTF-8"%>
 <%@ page import="org.unitime.timetable.model.dao.Class_DAO" %>
 <%@ page import="org.unitime.timetable.model.Class_" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.model.dao.DatePatternDAO" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<tt:session-context/>
 <%
 	Long datePatternId = Long.valueOf(request.getParameter("id"));
 	DatePattern datePattern = null;
-	if (datePatternId.intValue()<0 && request.getParameter("class")!=null) {
+	if (datePatternId < 0 && request.getParameter("class")!=null) {
 		Class_ clazz = (new Class_DAO()).get(Long.valueOf(request.getParameter("class")));
 		if (clazz!=null) 
 			datePattern = clazz.getSchedulingSubpart().effectiveDatePattern();
-	} else if (datePatternId.intValue()<0) {
-    	datePattern = org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(session)).getDefaultDatePatternNotNull();
+	} else if (datePatternIdd < 0) {
+    	datePattern = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()).getDefaultDatePatternNotNull();
 	} else {
 		datePattern = (new DatePatternDAO()).get(datePatternId);
 	}

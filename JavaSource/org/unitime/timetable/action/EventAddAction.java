@@ -20,10 +20,8 @@
 
 package org.unitime.timetable.action;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,9 +43,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -212,32 +208,6 @@ public class EventAddAction extends Action {
         if (myForm.getSessionId()!=null)
             myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(myForm.getSessionId())));
   
-//		Display the page        
-        if (myForm.getEventId()==null || myForm.getEventId()==0) {
-        	TimetableManager mgr = TimetableManager.findByExternalId(sessionContext.getUser().getExternalUserId());
-    		if (mgr != null){
-        		if (myForm.getRoomTypes() == null || myForm.getRoomTypes().length == 0){	
-	        		Collection<RoomType> allRoomTypes = myForm.getAllRoomTypes();
-	        		Vector<RoomType> defaultRoomTypes = mgr.findDefaultEventManagerRoomTimesFor(sessionContext.getUser().getCurrentRole(), myForm.getSessionId());
-	        		Vector<Long> orderedTypeList = new Vector(allRoomTypes.size());
-        			for(RoomType displayedRoomType : allRoomTypes){
-		        		for(RoomType rt : defaultRoomTypes){
-	        				if (displayedRoomType.getUniqueId().equals(rt.getUniqueId())){
-	        					orderedTypeList.add(rt.getUniqueId());
-	        					break;
-	        				}
-	        			}	        			
-	        		}
-	        		myForm.setRoomTypes(new Long[orderedTypeList.size()]);
-	        		int i = 0;
-	        		for (Long l : orderedTypeList){
-	        			myForm.getRoomTypes()[i] = l;
-	        			i++;
-	        		}
-        		}
-        	}
-		}
-        
         return mapping.findForward("update");
 	}
 }

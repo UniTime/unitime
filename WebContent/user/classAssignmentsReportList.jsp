@@ -20,8 +20,6 @@
 <%@ page language="java"%>
 <%@ page import="org.unitime.timetable.webutil.WebClassAssignmentReportListTableBuilder" %>
 <%@ page import="org.unitime.timetable.form.ClassAssignmentsReportForm" %>
-<%@ page import="org.unitime.commons.User"%>
-<%@ page import="org.unitime.commons.web.Web"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>

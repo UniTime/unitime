@@ -92,7 +92,6 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 						.setName(offering.getName())
 						.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 				checkOffering(server, helper, offering);
-				updateEnrollmentCounters(server, helper, offering);
 			} finally {
 				lock.release();
 			}
@@ -297,34 +296,6 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		}
 	}
 	
-	@Deprecated
-	public static void updateEnrollmentCounters(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
-		/*
-		if (offering == null) return;
-		helper.beginTransaction();
-		try {
-	     	helper.getHibSession().createQuery(
-	     			"update CourseOffering c set c.enrollment = " +
-	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.courseOffering.uniqueId = c.uniqueId) " + 
-	                 "where c.instructionalOffering.uniqueId = :offeringId").
-	                 setLong("offeringId", offering.getId()).executeUpdate();
-	     	
-	     	helper.getHibSession().createQuery(
-	     			"update Class_ c set c.enrollment = " +
-	     			"(select count(distinct e.student) from StudentClassEnrollment e where e.clazz.uniqueId = c.uniqueId) " + 
-	                 "where c.schedulingSubpart.uniqueId in " +
-	                 "(select s.uniqueId from SchedulingSubpart s where s.instrOfferingConfig.instructionalOffering.uniqueId = :offeringId)").
-	                 setLong("offeringId", offering.getId()).executeUpdate();
-			helper.commitTransaction();
-		} catch (Exception e) {
-			helper.rollbackTransaction();
-			if (e instanceof SectioningException)
-				throw (SectioningException)e;
-			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
-		}
-		*/
-	}
-
 	public boolean check(Enrollment e) {
 		if (e.getSections().size() != e.getConfig().getSubparts().size()) return false;
 		for (Section s1: e.getSections())

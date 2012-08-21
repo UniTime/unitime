@@ -21,7 +21,6 @@
 <%@ page import="org.unitime.timetable.form.EditRoomDeptForm" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -33,9 +32,10 @@
 	String frmName = "editRoomDeptForm";	
 	EditRoomDeptForm frm = (EditRoomDeptForm) request.getAttribute(frmName);
 %>	
+<tt:session-context/>
 <SCRIPT language="javascript">
 	<!--
-		<%= JavascriptFunctions.getJsConfirm(Web.getUser(session)) %>
+		<%= JavascriptFunctions.getJsConfirm(sessionContext) %>
 	// -->
 </SCRIPT>
 

@@ -44,6 +44,7 @@ public class DataImportForm extends ActionForm {
 	private String iOp;
 	private String iExport;
     private boolean iEmail = false;
+    private String iAddress = null;
     
     public static enum ExportType {
     	COURSES("offerings", "Course Offerings",
@@ -106,6 +107,7 @@ public class DataImportForm extends ActionForm {
 		iFile = null;
 		iExport = null;
 		iEmail = false;
+		iAddress = null;
 	}
 
 	public FormFile getFile() { return iFile; }
@@ -119,12 +121,16 @@ public class DataImportForm extends ActionForm {
     public boolean getEmail() { return iEmail; }
     public void setEmail(boolean email) { iEmail = email; }
     
+    public String getAddress() { return iAddress; }
+    public void setAddress(String address) { iAddress = address; }
+
     public Object clone() {
     	DataImportForm form = new DataImportForm();
     	form.iFile = iFile;
     	form.iOp = iOp;
     	form.iExport = iExport;
         form.iEmail = iEmail;
+        form.iAddress = iAddress;
         return form;
     }
     

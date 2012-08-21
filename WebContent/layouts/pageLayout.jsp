@@ -21,6 +21,7 @@
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="net.sf.cpsolver.ifs.util.JProf" %>
 <%@ page import="java.util.Date" %>
+<%@ page import="org.unitime.timetable.util.Constants"%>
 <%@ page import="org.unitime.localization.impl.Localization"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld"	prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld"	prefix="html"%>
@@ -31,7 +32,6 @@
 <tiles:importAttribute name="checkLogin" scope="request"/>
 <tiles:importAttribute name="checkRole" scope="request"/>
 <tiles:importAttribute name="checkAdmin" scope="request"/>
-<tiles:importAttribute name="checkAccessLevel" scope="request"/>
 <tiles:importAttribute name="showMenu" scope="request"/>
 
 <logic:equal name="checkLogin" value="true">
@@ -42,9 +42,6 @@
 </logic:equal>
 <logic:equal name="checkAdmin" value="true">
 	<%@ include file="/checkAdmin.jspf"%>
-</logic:equal>
-<logic:equal name="checkAccessLevel" value="true">
-	<%@ include file="/checkAccessLevel.jspf"%>
 </logic:equal>
 
 <html:html>
@@ -245,28 +242,6 @@
 	</td></tr></table>
 	</div>
 	
-<%
-		try {
-			String sb = "";
-			if (session.getAttribute("userTrace")==null) {
-				sb = "User: " + Web.getUser(session).getLogin() + "\nPage: " + request.getAttribute("title");			
-			} else {
-				sb = (String) session.getAttribute("userTrace");
-				sb += "\n" 
-					+ new Date().toString() + " : "
-					+ request.getAttribute("title") 
-					+ (request.getParameter("op")!=null 
-						? " - " + request.getParameter("op") 
-						: (request.getParameter("doit")!=null 
-							? " - " + request.getParameter("doit") 
-							: "") );
-			}
-			
-			session.setAttribute("userTrace", sb);
-		}
-		catch (Exception e) {
-		}
-%>
 <div id="loadingMain" style="visibility:hidden;display:none">
 	<table width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" border="0">
 		<tr>

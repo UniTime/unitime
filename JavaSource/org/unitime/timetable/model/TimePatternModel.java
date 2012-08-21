@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
 
-import org.unitime.commons.User;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 

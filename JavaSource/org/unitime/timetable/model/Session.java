@@ -24,9 +24,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,22 +34,17 @@ import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseSession;
-import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
-import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.onlinesectioning.updates.ReloadOfferingAction;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.ReferenceList;
 
@@ -164,168 +157,6 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		return (getAcademicYear() + getAcademicTerm());
 	}
 
-	public boolean isDefault() throws HibernateException {
-		Session defSessn = Session.defaultSession();
-		return ((defSessn == null) ? false : this.getSessionId().equals(
-				defSessn.getSessionId()));
-	}
-
-	public boolean getIsDefault() throws HibernateException {
-		return isDefault();
-	}
-	
-	public static Session defaultSession() throws HibernateException {
-	    return defaultSession(getAllSessions(), null);
-	}
-	
-	@Deprecated
-	public static Set availableSessions(ManagerRole role) {
-		if (role == null || role.getRole() == null)
-			return getAllSessions();
-	    if (Roles.ADMIN_ROLE.equals(role.getRole().getReference()))
-	    	return new TreeSet(SessionDAO.getInstance().findAll());
-	    Set sessions = role.getTimetableManager().sessionsCanManage();
-	    if (Roles.VIEW_ALL_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
-	        return getAllSessions();
-        if (Roles.EXAM_MGR_ROLE.equals(role.getRole().getReference()) && sessions.isEmpty())
-            return getAllSessions();
-	    return sessions;
-	}
-
-	@Deprecated
-    public static Session defaultSession(ManagerRole role) throws HibernateException {
-        return defaultSession(availableSessions(role), role.getRole());
-    }
-
-    @Deprecated
-    public static Session defaultSession(Set sessions, Roles role) throws HibernateException {
-        if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
-        TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
-        
-        //try to pick among active sessions first (check that all active sessions are of the same initiative)
-        String initiative = null;
-        Session lastActive = null;
-        Session currentActive = null;
-        Session firstFutureSession = null;
-        long now = (new Date()).getTime();
-        for (Iterator it = sessions.iterator();it.hasNext();) {
-            Session session = (Session)it.next();
-            if (session.getStatusType()==null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
-            if (initiative==null) 
-                initiative = session.getAcademicInitiative();
-            else if (!initiative.equals(session.getAcademicInitiative()))
-                return null; // multiple initiatives -> no default
-            if (currentActive == null && session.getSessionBeginDateTime().getTime() < now && session.getSessionEndDateTime().getTime() > now){
-            		currentActive = session;
-            }
-            if (currentActive != null && firstFutureSession == null && currentActive.getUniqueId().longValue() != session.getUniqueId().longValue()){
-            	firstFutureSession = session;
-            }
-            if (currentActive == null && firstFutureSession == null && now < session.getSessionBeginDateTime().getTime()){
-            	firstFutureSession = session;
-            }
-            lastActive = session;
-        }
-        if (role == null || Roles.EVENT_MGR_ROLE.equals(role.getReference())  || Roles.VIEW_ALL_ROLE.equals(role.getReference()) || Roles.ADMIN_ROLE.equals(role.getReference())){
-        	if (currentActive != null){
-        		return(currentActive);
-        	}
-        	if (firstFutureSession != null){
-        		return(firstFutureSession);
-        	}
-        }
-        if (role != null){
-           	if (Roles.DEPT_SCHED_MGR_ROLE.equals(role.getReference())){
-        		if (firstFutureSession != null){
-        			return(firstFutureSession);
-        		}
-        		if (currentActive != null){
-        			return(currentActive);
-        		}
-         	} 
-           	if (Roles.EXAM_MGR_ROLE.equals(role.getReference())){
-           		if (currentActive != null && !currentActive.getStatusType().canNoRoleReportExamFinal()){
-           			return(currentActive);
-           		}
-           		if (firstFutureSession != null){
-           			return(firstFutureSession);
-           		}
-           	}
-        }
-                
-        if (lastActive!=null) return lastActive; //return the last (most recent) active session
-        
-        //pick among all sessions (check that all sessions are of the same initiative)
-		for (Iterator it = sessions.iterator();it.hasNext();) {
-		    Session session = (Session)it.next();
-		    if (initiative==null) 
-		        initiative = session.getAcademicInitiative();
-		    else if (!initiative.equals(session.getAcademicInitiative())) 
-		        return null; // multiple initiatives -> no default
-		}
-		return (Session)orderedSession.last(); // return the last one, i.e., the most recent one
-	}
-    
-    public static Session defaultSession(Set sessions) throws HibernateException {
-        if (sessions==null || sessions.isEmpty()) return null; // no session -> no default
-        TreeSet orderedSession = (sessions instanceof TreeSet?(TreeSet)sessions:new TreeSet(sessions));
-        
-        //try to pick among active sessions first (check that all active sessions are of the same initiative)
-        String initiative = null;
-        Session lastActive = null;
-        Session currentActive = null;
-        Session firstFutureSession = null;
-        long now = (new Date()).getTime();
-        for (Iterator it = sessions.iterator();it.hasNext();) {
-            Session session = (Session)it.next();
-            if (session.getStatusType()==null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
-            if (initiative==null) 
-                initiative = session.getAcademicInitiative();
-            else if (!initiative.equals(session.getAcademicInitiative()))
-                return null; // multiple initiatives -> no default
-            if (currentActive == null && session.getSessionBeginDateTime().getTime() < now && session.getSessionEndDateTime().getTime() > now){
-            		currentActive = session;
-            }
-            if (currentActive != null && firstFutureSession == null && currentActive.getUniqueId().longValue() != session.getUniqueId().longValue()){
-            	firstFutureSession = session;
-            }
-            if (currentActive == null && firstFutureSession == null && now < session.getSessionBeginDateTime().getTime()){
-            	firstFutureSession = session;
-            }
-            lastActive = session;
-        }
-    	if (currentActive != null) return currentActive;
-    	if (firstFutureSession != null) return firstFutureSession;
-        if (lastActive!=null) return lastActive; //return the last (most recent) active session
-        
-        //pick among all sessions (check that all sessions are of the same initiative)
-		for (Iterator it = sessions.iterator();it.hasNext();) {
-		    Session session = (Session)it.next();
-		    if (initiative==null) 
-		        initiative = session.getAcademicInitiative();
-		    else if (!initiative.equals(session.getAcademicInitiative())) 
-		        return null; // multiple initiatives -> no default
-		}
-		return (Session)orderedSession.last(); // return the last one, i.e., the most recent one
-	}
-
-	/**
-	 * Gets the current user session
-	 * 
-	 * @param user
-	 *            User object
-	 * @return Session object of found, throws Exception otherwise
-	 * @throws HibernateException
-	 */
-    @Deprecated
-	public static Session getCurrentAcadSession(User user) {
-		Object sessionId = user.getAttribute(Constants.SESSION_ID_ATTR_NAME);
-		if (sessionId == null || sessionId.toString().trim().length() == 0)
-		    return null;
-		else
-			return Session.getSessionById(new Long(sessionId.toString()));
-	}
-
 	/**
 	 * @return Returns the term.
 	 */
@@ -399,89 +230,6 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		return ref;
 	}
 
-	/**
-	 * Fetch rooms efficiently, joining features and roomDepts
-	 * 
-	 * @return
-	 */
-	@Deprecated
-	public java.util.Set getRoomsFast(String[] depts) {
-		if (depts != null && depts.length > 0) {
-			return new TreeSet((new RoomDAO()).getSession().createQuery(
-					"select room from Location as room "
-							+ "left outer join room.roomDepts as roomDept "
-							+ "where room.session.uniqueId = :sessionId"
-							+ " and roomDept.department.deptCode  in ( "
-							+ Constants.arrayToStr(depts, "'", ", ") + " ) ")
-					.setLong("sessionId", getSessionId().longValue()).list());
-		} else {
-			return new TreeSet(
-					(new RoomDAO())
-							.getSession()
-							.createQuery(
-									"select room from Location as room where room.session.uniqueId = :sessionId")
-							.setLong("sessionId", getSessionId().longValue())
-							.list());
-		}
-	}
-
-	@Deprecated
-	public java.util.Set getRoomsFast(User user) throws Exception {
-		if (user.getRole().equals(Roles.ADMIN_ROLE))
-			return getRoomsFast((String[]) null);
-
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		String mgrId = (String) user
-				.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManager manager = (new TimetableManagerDAO()).get(new Long(
-				mgrId));
-
-		Set departments = manager.departmentsForSession(sessionId);
-		if (departments != null) {
-			String[] depts = new String[departments.size()];
-			int idx = 0;
-			for (Iterator i = departments.iterator(); i.hasNext();) {
-				depts[idx++] = ((Department) i.next()).getDeptCode();
-			}
-			return getRoomsFast(depts);
-		}
-
-		return new TreeSet();
-	}
-
-	/**
-	 * 
-	 * @param depts
-	 * @return
-	 */
-	@Deprecated
-	public java.util.Set getBldgsFast(String[] depts) {
-		if (depts != null && depts.length > 0) {
-			List rooms = (new RoomDAO()).getSession().createQuery(
-					"select room from Room as room "
-							+ "left outer join room.roomDepts as roomDept "
-							+ "where room.session.uniqueId = :sessionId"
-							+ " and roomDept.department.deptCode  in ( "
-							+ Constants.arrayToStr(depts, "'", ", ") + " ) ")
-					.setInteger("sessionId", this.getSessionId().intValue())
-					.list();
-			TreeSet bldgs = new TreeSet();
-			for (Iterator i = rooms.iterator(); i.hasNext();) {
-				Room room = (Room) i.next();
-				bldgs.add(room.getBuilding());
-			}
-			return bldgs;
-		} else {
-			return new TreeSet(
-					(new BuildingDAO())
-							.getSession()
-							.createQuery(
-									"select building from Building as building where building.session.uniqueId = :sessionId")
-							.setInteger("sessionId", getSessionId().intValue())
-							.list());
-		}
-	}
-
 	public static Session getSessionUsingInitiativeYearTerm(
 			String academicInitiative, String academicYear, String academicTerm) {
 		Session s = null;
@@ -523,19 +271,6 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 
 	public void setSessionId(Long sessionId) {
 		this.setUniqueId(sessionId);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
-	 */
-	protected boolean canUserEdit(User user) {
-		return (false);
-	}
-
-	protected boolean canUserView(User user) {
-		return (false);
 	}
 
 	public String htmlLabel() {
@@ -852,18 +587,6 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		if (getStatusType().canLockOfferings()) {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
 			if (server != null) server.lockOffering(offeringId);
-		}
-	}
-	
-	@Deprecated
-	public void unlockOffering(Long offeringId, User user) {
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
-		if (server != null) {
-			server.execute(new ReloadOfferingAction(offeringId),
-					(user == null ? null :
-					OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getId()).setName(user.getName()).setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build()
-					));
-			server.unlockOffering(offeringId);
 		}
 	}
 	

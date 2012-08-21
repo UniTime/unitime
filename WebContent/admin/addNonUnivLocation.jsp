@@ -18,8 +18,6 @@
  --%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
-<%@ page import="org.unitime.commons.web.Web" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.form.NonUnivLocationForm" %>
 <%@page import="net.sf.cpsolver.ifs.util.DistanceMetric"%>
@@ -31,10 +29,6 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 
 <%		
-	boolean flag = true;
-	if(Web.hasRole(request.getSession(), new String[] { Roles.ADMIN_ROLE})) 
-		flag = false;
-			
 	// Get Form 
 	String frmName = "nonUnivLocationForm";	
 	NonUnivLocationForm frm = (NonUnivLocationForm) request.getAttribute(frmName);

@@ -26,7 +26,6 @@ import java.util.Vector;
 
 import org.hibernate.ObjectNotFoundException;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BasePreferenceGroup;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -238,41 +237,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return (htmlForPrefs(assignment, effectivePreferences(type), timeVertical, gridAsText, timeGridSize));
     }
 
-    @Deprecated
-    protected abstract boolean canUserEdit(User user);
-    
-    @Deprecated
-    protected abstract boolean canUserView(User user);
-   
-    @Deprecated
-    public boolean isEditableBy(User user){
-    	if (user == null){
-    		return(false);
-    	}
-    	if (user.isAdmin()){
-    		return(true);
-    	} 
-    	if (user.getCurrentRole() == null || user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE))
-    		return false;
-    	return(this.canUserEdit(user));
-    }
-    
-    @Deprecated
-    public boolean isViewableBy(User user){
-    	if(user == null){
-    		return(false);
-    	}
-    	if (user.isAdmin()){
-    		return(true);
-    	}
-    	if (user.getCurrentRole() != null && (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)))
-    		return true;
-    	if (this.canUserEdit(user)){
-    		return(true);
-    	}
-    	return(this.canUserView(user));
-    }
-    
     public Class getInstanceOf() {
         return PreferenceGroup.class;
     }
@@ -321,16 +285,6 @@ public abstract class PreferenceGroup extends BasePreferenceGroup {
     	return null;
     }
     
-    @Deprecated
-    public boolean canUseHardTimePreferences(User user) {
-    	return true;
-    }
-    
-    @Deprecated
-    public boolean canUseHardRoomPreferences(User user) {
-        return true;
-    }
-
     public Set getAvailableRooms() {
     	return new TreeSet();
     }

@@ -31,10 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
-import org.unitime.commons.web.Web;
-import org.unitime.timetable.model.AcademicArea;
-import org.unitime.timetable.model.AcademicClassification;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
@@ -47,7 +44,6 @@ import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
-import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -55,10 +51,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
-import org.unitime.timetable.model.Settings;
-import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.SubjectArea;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -72,17 +65,6 @@ import org.unitime.timetable.security.UserContext;
  * @author Heston Fernandes
  */
 public class LookupTables {
-    
-    /**
-     * Gets the current academic session id for the current session
-     * @param request
-     * @return
-     */
-	@Deprecated
-    private static String getAcademicSessionId(HttpServletRequest request) {
-        User user = Web.getUser(request.getSession());
-		return user.getAttribute(Constants.SESSION_ID_ATTR_NAME).toString();
-    }
     
     /**
      * Get Itypes and store it in request object
@@ -137,17 +119,6 @@ public class LookupTables {
 		request.setAttribute(Department.DEPT_ATTR_NAME, deptList);
     }
 
-    /**
-     * Get Time Patterns and store it in request object
-     * @param request
-     * @throws Exception
-     */
-    @Deprecated
-    public static void setupTimePatterns(HttpServletRequest request) throws Exception {
-        List<TimePattern> v = TimePattern.findAll(org.unitime.timetable.model.Session.getCurrentAcadSession(Web.getUser(request.getSession())), Boolean.TRUE);
-        request.setAttribute(TimePattern.TIME_PATTERN_ATTR_NAME, v);
-    }
-    
     public static void setupRooms(HttpServletRequest request, PreferenceGroup pg) throws Exception {
     	request.setAttribute(Room.ROOM_LIST_ATTR_NAME, pg.getAvailableRooms());
     }
@@ -255,15 +226,14 @@ public class LookupTables {
      * @param deptUid department id, (null/blank if ALL instructors to be retrieved)
      * @throws Exception
      */
-    public static void setupInstructors (
-            HttpServletRequest request, Long deptUid ) throws Exception {
+    public static void setupInstructors (HttpServletRequest request, SessionContext context, Long deptUid ) throws Exception {
         
 		StringBuffer query = new StringBuffer("");
 		
 		if (deptUid!=null)
 			query.append(" and i.department.uniqueId = " + deptUid);
 		
-        getInstructors(request, query);
+        getInstructors(request, context, query);
     }
     
     /**
@@ -272,8 +242,7 @@ public class LookupTables {
      * @param deptUids department ids, (null if ALL instructors to be retrieved)
      * @throws Exception
      */
-    public static void setupInstructors (
-            HttpServletRequest request, Long[] deptUids ) throws Exception {
+    public static void setupInstructors (HttpServletRequest request, SessionContext context, Long[] deptUids ) throws Exception {
         
 		StringBuffer query = new StringBuffer("");
 
@@ -283,7 +252,7 @@ public class LookupTables {
 		}
 		
         
-        getInstructors(request, query);
+        getInstructors(request, context, query);
     }
 
     /**
@@ -292,11 +261,10 @@ public class LookupTables {
      * @param clause
      * @throws Exception
      */
-    @Deprecated
-    private static void getInstructors(HttpServletRequest request, StringBuffer clause) throws Exception {
-        String instructorNameFormat = Settings.getSettingValue(Web.getUser(request.getSession()), Constants.SETTINGS_INSTRUCTOR_NAME_FORMAT);
+    private static void getInstructors(HttpServletRequest request, SessionContext context, StringBuffer clause) throws Exception {
+        String instructorNameFormat = UserProperty.NameFormat.get(context.getUser());
         
-        String acadSessionId = getAcademicSessionId(request);
+        Long acadSessionId = context.getUser().getCurrentAcademicSessionId();
 
 		StringBuffer query = new StringBuffer();
 		query.append("select distinct i from DepartmentalInstructor i ");
@@ -310,7 +278,7 @@ public class LookupTables {
 		Query q = hibSession.createQuery(query.toString());
 		q.setFetchSize(5000);
 		q.setCacheable(true);
-		q.setInteger("acadSessionId", Integer.parseInt(acadSessionId));
+		q.setLong("acadSessionId", acadSessionId);
         
 		List result = q.list();
         Vector v = new Vector(result.size());
@@ -387,50 +355,6 @@ public class LookupTables {
      */
     public static void setupPositionTypes(HttpServletRequest request) throws Exception{
         request.setAttribute(PositionType.POSTYPE_ATTR_NAME, PositionType.getPositionTypeList());
-    }
-
-    /**
-     * Retrieves list of academic areas for the current academic session 
-     * @param request
-     * @throws Exception
-     */
-    public static void setupAcademicAreas(HttpServletRequest request) throws Exception{
-		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
-        Vector v = new Vector(AcademicArea.getAcademicAreaList(acadSessionId)); 
-        request.setAttribute(AcademicArea.ACAD_AREA_REQUEST_ATTR, v);
-    }
-
-    /**
-     * Retrieves list of academic classifications for the current academic session
-     * @param request
-     * @throws Exception
-     */
-    public static void setupAcademicClassifications(HttpServletRequest request) throws Exception{
-		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
-        Vector v = new Vector(AcademicClassification.getAcademicClassificationList(acadSessionId)); 
-        request.setAttribute(AcademicClassification.ACAD_CLASS_REQUEST_ATTR, v);
-    }
-
-    /**
-     * Retrieves list of POS majors for the current academic session
-     * @param request
-     * @throws Exception
-     */
-    public static void setupPosMajors(HttpServletRequest request) throws Exception{
-		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
-        Vector v = new Vector(PosMajor.getPosMajorList(acadSessionId)); 
-        request.setAttribute(PosMajor.POSMAJOR_ATTR_NAME, v);
-    }
-
-    /**
-     * Retrieves list of student groups for the current academic session
-     * @param request
-     * @throws Exception
-     */
-    public static void setupStudentGroups(HttpServletRequest request) throws Exception{
-		Long acadSessionId = Long.valueOf(getAcademicSessionId(request));
-        Vector v = new Vector(StudentGroup.getStudentGroupList(acadSessionId)); 
-        request.setAttribute(StudentGroup.STUGRP_ATTR_NAME, v);
     }
 
     /**

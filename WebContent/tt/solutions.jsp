@@ -16,12 +16,12 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="java.text.DecimalFormat"%>
 <%@page import="org.unitime.timetable.security.rights.Right"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="java.util.*" %>
 <%@ page import="org.unitime.timetable.solver.WebSolver" %>
 <%@ page import="org.unitime.timetable.solver.SolverProxy" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.model.dao.SolutionDAO" %>
 <%@ page import="org.unitime.timetable.model.Solution" %>
 <%@ page import="org.hibernate.Transaction" %>
@@ -163,7 +163,7 @@
 				progress = (String)p.get("PHASE");
 				long progressCur = ((Long)p.get("PROGRESS")).longValue();
 				double progressPercent = 100.0*((double)(progressCur<progressMax?progressCur:progressMax))/((double)progressMax);
-				progress+=" ("+Web.format(progressPercent)+"%)";
+				progress+=" ("+new DecimalFormat("0.0").format(progressPercent)+"%)";
 			}
 		}
 		if (status==null)
