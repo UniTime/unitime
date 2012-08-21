@@ -62,6 +62,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
@@ -109,12 +110,31 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
     	return false;
 	}
 	
+	private boolean hasClassRestrictionChild(Set<Long> restrictions, SchedulingSubpart subpart) {
+		for (Class_ other: subpart.getClasses())
+			if (restrictions.contains(other.getUniqueId())) return true;
+    	for (SchedulingSubpart child: subpart.getChildSubparts())
+    		if (hasClassRestrictionChild(restrictions, child)) return true;
+		return false;
+	}
+	
+	private boolean hasClassRestriction(Set<Long> restrictions, Class_ clazz) {
+		if (restrictions.isEmpty()) return false;
+		SchedulingSubpart parent = clazz.getSchedulingSubpart().getParentSubpart();
+		while (parent != null) {
+			for (Class_ other: parent.getClasses())
+				if (restrictions.contains(other.getUniqueId())) return true;
+			parent = parent.getParentSubpart();
+		}
+		return hasClassRestrictionChild(restrictions, clazz.getSchedulingSubpart());
+	}
+	
 	protected boolean hide(Set<Long>[] restrictions, Class_ clazz) {
 		// check configs
 		if (!restrictions[0].isEmpty() && !restrictions[0].contains(clazz.getSchedulingSubpart().getInstrOfferingConfig().getUniqueId()))
 			return true;
 		// check classes
-		if (!restrictions[1].isEmpty()) {
+		if (hasClassRestriction(restrictions[1], clazz)) {
 			Class_ parent = clazz;
 			while (parent != null) {
 				if (restrictions[1].contains(parent.getUniqueId())) return false;
