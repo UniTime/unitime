@@ -24,21 +24,17 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
 import org.hibernate.criterion.Restrictions;
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
 import org.unitime.timetable.model.dao.DepartmentDAO;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
 
 
 public class Department extends BaseDepartment implements Comparable, Qualifiable {
@@ -89,13 +85,6 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
                 list());
     }
 
-    @Deprecated
-    public static TreeSet findAllOwned(Long sessionId, TimetableManager mgr, boolean includeExternal) {
-		TreeSet ret = new TreeSet(mgr.departmentsForSession(sessionId));
-		if (includeExternal && !mgr.isExternalManager()) ret.addAll(findAllExternal(sessionId));
-		return ret;
-	}
-
     /**
      * 
      * @param deptCode
@@ -145,41 +134,6 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		return getUniqueId().compareTo(d.getUniqueId()); 
 	}
 
-	/* (non-Javadoc)
-	 * @see org.unitime.timetable.model.PreferenceGroup#canUserEdit(org.unitime.commons.User)
-	 */
-	@Deprecated
-	protected boolean canUserEdit(User user) {
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm==null) return false;
-		
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-		
-		if (tm.getDepartments().contains(this)) {
-			if (isExternalManager().booleanValue() && effectiveStatusType().canManagerEdit())
-				return true;
-			if (effectiveStatusType().canOwnerEdit()) 
-				return true; 
-		}
-		
-		return false;
-	}
-	
-	@Deprecated
-	protected boolean canUserView(User user){
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm==null) return false;
-		
-		if (tm.getDepartments().contains(this)) {
-			if (isExternalManager().booleanValue() && effectiveStatusType().canManagerView())
-				return true;
-			if (!isExternalManager().booleanValue() && effectiveStatusType().canOwnerView())
-				return true; 
-		}
-		
-		return false;
-	}
-	
 	public String htmlLabel(){
 		return(this.getDeptCode() + " - " + this.getName());
 	}
@@ -372,32 +326,6 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		return ret;
 	}
 
-	@Deprecated
-	public static String[] getDeptCodesForUser(User user, boolean includeExternal) throws Exception {
-		boolean isAdmin = user.getRole().equals(Roles.ADMIN_ROLE);
-		boolean isViewAll = user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE);
-		Long sessionId = Session.getCurrentAcadSession(user).getUniqueId();
-		
-		String mgrId = (String)user.getAttribute(Constants.TMTBL_MGR_ID_ATTR_NAME);
-		TimetableManagerDAO tdao = new TimetableManagerDAO();
-        TimetableManager manager = tdao.get(new Long(mgrId));
-		
-		String[] depts = new String[] {};
-		if (isAdmin || isViewAll) {
-			depts = null;
-		} else {
-			Set departments = findAllOwned(sessionId, manager, includeExternal);
-			if (departments!=null) {
-				depts = new String[departments.size()];
-				int idx = 0;
-				for (Iterator i=departments.iterator();i.hasNext();) {
-					depts[idx++] = ((Department)i.next()).getDeptCode();
-				}
-			}
-		}
-		return depts;
-	}
-	
 	public DepartmentStatusType effectiveStatusType() {
 		DepartmentStatusType t = getStatusType();
 		if (t!=null) return t;
@@ -460,41 +388,6 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		else return(null);
 	}
 	
-	@Deprecated
-    public boolean isLimitedEditableBy(User user){
-        if (user==null) return false;
-        if (user.isAdmin()) return true;
-        
-        if (user.getRole().equals(Roles.EXAM_MGR_ROLE) && effectiveStatusType().canExamTimetable()) return true;
-        
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-        
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm==null) return false;
-
-        if (!tm.getDepartments().contains(this)) return false;
-        
-        if (!effectiveStatusType().canOwnerLimitedEdit()) return false;
-
-        return true;
-    }
-    
-    @Deprecated
-    public boolean isLimitedEditableBy(UserContext user){
-        if (user==null) return false;
-        if (Roles.ADMIN_ROLE.equals(user.getCurrentRole())) return true;
-        
-        if (Roles.EXAM_MGR_ROLE.equals(user.getCurrentRole()) && effectiveStatusType().canExamTimetable()) return true;
-        
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentRole())) return false;
-        
-        if (!user.hasDepartment(getUniqueId())) return false;
-        
-        if (!effectiveStatusType().canOwnerLimitedEdit()) return false;
-
-        return true;
-    }
-
 	@Override
 	public Serializable getQualifierId() {
 		return getUniqueId();

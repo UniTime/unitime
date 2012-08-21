@@ -26,9 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.servlet.http.HttpSession;
-
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -39,7 +36,6 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomPref;
-import org.unitime.timetable.model.Settings;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.security.UserContext;
 
@@ -110,18 +106,8 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static String JUMP_TO_ATTR_NAME = "jumpTo";
     
     /** Session Attribute Names */
-    @Deprecated
-    public static String SUBJ_AREA_ID_ATTR_NAME = "subjectAreaId";
-    @Deprecated
-    public static String CRS_NBR_ATTR_NAME = "courseNbr";
     public static String DEPT_ID_ATTR_NAME = "deptUniqueId";
     public static String DEPT_CODE_ATTR_NAME = "deptCode";
-    @Deprecated
-    public static String DEPT_CODE_ATTR_ROOM_NAME = "deptCodeRoom";
-    @Deprecated
-    public static String CRS_LST_SUBJ_AREA_IDS_ATTR_NAME = "crsLstSubjectAreaIds";
-    @Deprecated
-    public static String CRS_LST_CRS_NBR_ATTR_NAME = "crsLstCrsNbr";
     public static String CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME = "crsAsgnLstSubjectAreaIds";
     
     /** LLR Manager Department Codes **/
@@ -147,56 +133,13 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
             DistributionPref.class.getName()
         };
 
-	/** User settings */
-    public static final String SETTINGS_TIME_GRID_SIZE = "timeGridSize";
-    public static final String SETTINGS_TIME_GRID_TEXT = "text";
-    public static final String SETTINGS_TIME_GRID_ORIENTATION = "timeGrid";
-    public static final String SETTINGS_TIME_GRID_ORIENTATION_VERTICAL = "vertical";
-    public static final String SETTINGS_TIME_GRID_ORIENTATION_HORIZONTAL = "horizontal";
-    public static final String SETTINGS_AUTOCALC = "cfgAutoCalc";
-    public static final String SETTINGS_JS_DIALOGS = "jsConfirm";
-    public static final String SETTINGS_MENU_EXPAND = "expandMenuItems";
-    public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF = "inheritInstrPref";
-    public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF_CONFIRM = "ask";
-    public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF_YES = "always";
-    public static final String SETTINGS_INHERIT_INSTRUCTOR_PREF_NO = "never";
-    public static final String SETTINGS_INSTRUCTOR_NAME_FORMAT = "name";
-    public static final String SETTINGS_INSTRUCTOR_SORT = "instrNameSort";
-    public static final String SETTINGS_INSTRUCTOR_SORT_LNAME_ALWAYS = "Always by Last Name";
-    public static final String SETTINGS_INSTRUCTOR_SORT_NATURAL = "Natural Order (as displayed)";
-    public static final String SETTINGS_SHOW_VAR_LIMITS = "showVarLimits";
-    public static final String SETTINGS_KEEP_SORT = "keepSort";
-    public static final String SETTINGS_ROOMS_FEATURES_ONE_COLUMN = "roomFeaturesInOneColumn";
-    public static final String SETTINGS_DISP_LAST_CHANGES = "dispLastChanges";
-    public static final String SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY="printNoteDisplay";
-    public static final String SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY="crsOffrNoteDisplay";
-    public static final String SETTINGS_NOTE_TO_MGR_LIST_DISPLAY="mgrNoteDisplay";
-    public static final String SETTINGS_TEXT_ICON="icon";
-    public static final String SETTINGS_TEXT_ABBV="shortened text";
-    public static final String SETTINGS_TEXT_FULL="full text";
-   
     /** Indicates classes are managed by multiple departments */
     public static final long MANAGED_BY_MULTIPLE_DEPTS = 0;
-    
-    /** Configuration Keys */
-    @Deprecated
-    public static final String SESSION_APP_ACCESS_LEVEL = "systemAccess";
-    @Deprecated
-    public static final String CFG_APP_ACCESS_LEVEL = "tmtbl.access_level";
-    @Deprecated
-    public static final String CFG_SYSTEM_MESSAGE = "tmtbl.system_message";
-
-    /** Configuration Values */
-    @Deprecated
-    public static final String APP_ACL_ALL = "all";
-    @Deprecated
-    public static final String APP_ACL_ADMIN = "admin";
 
     /** (Http)Request attributes */
     public static final String REQUEST_OPEN_URL = "RqOpenUrl";
     public static final String REQUEST_WARN = "RqWarn";
     public static final String REQUEST_MSSG = "RqMsg";
-    
     
     public static final String MIDTERM_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.midterm";
     public static final String MIDTERM_DEFAULT_STOP_OFFSET_PROP = "tmtbl.exam.defaultStopOffset.midterm";
@@ -454,45 +397,6 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	}
 
     /**
-     * Reset Session variables for a particular user
-     * @param webSession
-     */
-	@Deprecated
-    public static void resetSessionAttributes(HttpSession webSession) {
-		// webSession.setAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME, null);
-		// webSession.setAttribute(Constants.CRS_NBR_ATTR_NAME, null);
-		webSession.setAttribute(Constants.DEPT_ID_ATTR_NAME, null);
-		webSession.setAttribute(Constants.DEPT_CODE_ATTR_NAME, null);
-		webSession.setAttribute(Constants.DEPT_CODE_ATTR_ROOM_NAME, null);
-		webSession.setAttribute(Constants.CRS_LST_SUBJ_AREA_IDS_ATTR_NAME, null);
-		// webSession.removeAttribute(Constants.CRS_ASGN_LST_SUBJ_AREA_IDS_ATTR_NAME);
-		webSession.removeAttribute("SolverProxy");
-		webSession.removeAttribute("ExamSolverProxy");
-		webSession.removeAttribute("StudentSolverProxy");
-		webSession.removeAttribute("ManageSolver.puid");
-        webSession.removeAttribute("ManageSolver.examPuid");
-        webSession.removeAttribute("ManageSolver.sectionPuid");
-		webSession.removeAttribute("Solver.selectedSolutionId");
-		webSession.removeAttribute("LastSolutionClassAssignmentProxy");
-		webSession.removeAttribute("EventGrid.RoomTypes");
-		webSession.removeAttribute("EventGrid.EventType");
-		webSession.removeAttribute("EventGrid.SessionId");        
-		webSession.removeAttribute("EventGrid.StartTime");
-		webSession.removeAttribute("EventGrid.StopTime");
-		webSession.removeAttribute("EventGrid.MeetingDates");
-		webSession.removeAttribute("EventGrid.MinCapacity");
-		webSession.removeAttribute("EventGrid.MaxCapacity");
-		webSession.removeAttribute("EventGrid.BuildingId");
-		webSession.removeAttribute("EventGrid.RoomNumber");
-		webSession.removeAttribute("EventGrid.LookAtNearLocations");
-		webSession.removeAttribute("EventGrid.IsAddMeetings");
-		webSession.removeAttribute("EventGrid.RoomTypes");
-		webSession.removeAttribute("EventGrid.RoomGroups");
-		webSession.removeAttribute("EventGrid.RoomFeatures");
-		webSession.removeAttribute("EventGrid.Mode");
-    }
-
-    /**
      * True if string can be parsed to an integer
      * @param str
      * @return
@@ -528,41 +432,14 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	    return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
 	}
 	
-	@Deprecated
-    public static boolean showPrintNoteAsFullText(User user) {
-    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
-    }
-	
 	public static boolean showPrintNoteAsFullText(UserContext user) {
 		return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.SchedulePrintNoteDisplay));
     }
 	
-	@Deprecated
-    public static boolean showPrintNoteAsShortenedText(User user) {
-    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_SCHEDULE_PRINT_NOTE_LIST_DISPLAY));
-    }
-    @Deprecated
-    public static boolean showCrsOffrAsFullText(User user) {
-    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
-    }
-    
     public static boolean showCrsOffrAsFullText(UserContext user) {
     	return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.CourseOfferingNoteDisplay));
     }
     
-    @Deprecated
-    public static boolean showCrsOffrAsShortenedText(User user) {
-    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_CRS_OFFR_NOTE_LIST_DISPLAY));
-    }
-    @Deprecated
-    public static boolean showMgrNoteFullText(User user) {
-    	return Constants.SETTINGS_TEXT_FULL.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
-    }
-    @Deprecated
-    public static boolean showMgrNoteShortenedText(User user) {
-    	return Constants.SETTINGS_TEXT_ABBV.equalsIgnoreCase(Settings.getSettingValue(user, Constants.SETTINGS_NOTE_TO_MGR_LIST_DISPLAY));
-    }
-
     public static int getDefaultExamStartOffset(int examType){
       	return(getExamOffset((examType == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_START_OFFSET_PROP:FINAL_DEFAULT_START_OFFSET_PROP));
     }

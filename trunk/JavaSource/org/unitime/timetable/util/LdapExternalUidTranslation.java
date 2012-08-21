@@ -19,13 +19,17 @@
 */
 package org.unitime.timetable.util;
 
+import java.util.Hashtable;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.authenticate.jaas.LdapAuthenticateModule;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 
 public class LdapExternalUidTranslation implements ExternalUidTranslation {
@@ -37,11 +41,34 @@ public class LdapExternalUidTranslation implements ExternalUidTranslation {
         return uid;
     }
     
+    public DirContext getDirContext() throws NamingException {
+        Hashtable<String,String> env = new Hashtable();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ctxFactory","com.sun.jndi.ldap.LdapCtxFactory"));
+        env.put(Context.PROVIDER_URL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.provider"));
+        env.put(Context.REFERRAL, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.referral","ignore"));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.version")!=null)
+            env.put("java.naming.ldap.version", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.version"));
+        env.put(Context.SECURITY_AUTHENTICATION, ApplicationProperties.getProperty("tmtbl.authenticate.ldap.security","simple"));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.socketFactory")!=null)
+            env.put("java.naming.ldap.factory.socket",ApplicationProperties.getProperty("tmtbl.authenticate.ldap.socketFactory"));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.keyStore")!=null)
+            System.setProperty("javax.net.ssl.keyStore", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.keyStore").replaceAll("%WEB-INF%", ApplicationProperties.getBasePath()));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStore")!=null)
+            System.setProperty("javax.net.ssl.trustStore", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStore").replaceAll("%WEB-INF%", ApplicationProperties.getBasePath()));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword")!=null)
+            System.setProperty("javax.net.ssl.keyStorePassword", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.keyStorePassword"));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword")!=null)
+            System.setProperty("javax.net.ssl.trustStorePassword", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStorePassword"));
+        if (ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType")!=null)
+            System.setProperty("javax.net.ssl.trustStoreType", ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ssl.trustStoreType"));  
+        return new InitialDirContext(env);
+    }
+    
     public String uid2ext(String uid) {
         try {
             DirContext ctx = null;
             try {
-                ctx = LdapAuthenticateModule.getDirContext();
+                ctx = getDirContext();
                 Attributes attributes = ctx.getAttributes(
                 		ApplicationProperties.getProperty("tmtbl.authenticate.ldap.uid2ext").replaceAll("%", uid),
                 		new String[] {
@@ -64,7 +91,7 @@ public class LdapExternalUidTranslation implements ExternalUidTranslation {
         try {
             DirContext ctx = null;
             try {
-                ctx = LdapAuthenticateModule.getDirContext();
+                ctx = getDirContext();
                 Attributes attributes = ctx.getAttributes(
                 		ApplicationProperties.getProperty("tmtbl.authenticate.ldap.ext2uid").replaceAll("%", puid),
                 		new String[] {

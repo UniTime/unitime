@@ -39,6 +39,7 @@ public interface ExternalUidLookup {
 		private String iLastName = null;
 		private String iEmail = null;
 		private String iName = null;
+		private String iPhone = null;
 		
 		public UserInfo() {}
 		
@@ -93,6 +94,9 @@ public interface ExternalUidLookup {
 		
 		public String getEmail() { return iEmail; }
 		public void setEmail(String email) { iEmail = email; }
+		
+		public String getPhone() { return iPhone; }
+		public void setPhone(String phone) { iPhone = phone; }
 		
 		public String getName() {
 			if (iName != null) return iName;

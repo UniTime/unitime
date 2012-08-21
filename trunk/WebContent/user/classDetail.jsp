@@ -22,7 +22,7 @@
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.model.DatePattern" %>
 <%@ page import="org.unitime.timetable.util.IdValue" %>
-<%@ page import="org.unitime.timetable.model.Reservation" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -31,14 +31,13 @@
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
+<tt:session-context/>
 <%
 	// Get Form 
 	String frmName = "ClassEditForm";
 	ClassEditForm frm = (ClassEditForm)request.getAttribute(frmName);
 
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 
 %>		
 <tiles:importAttribute />

@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,6 +36,7 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.rights.Right;
 
 import org.apache.struts.action.Action;
@@ -89,6 +91,9 @@ public class SessionListAction extends Action {
 		
 		DecimalFormat df5 = new DecimalFormat("####0");
 		DateFormat df = DateFormat.getDateInstance();
+		
+		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
+		Session defaultSession = UniTimeUserContext.defaultSession(sessions, null);
 
 		for (Session s: SessionDAO.getInstance().findAll()) {
 			String roomTypes = ""; boolean all = true;
@@ -113,7 +118,7 @@ public class SessionListAction extends Action {
 			webTable.addLine(
 					sessionContext.hasPermission(s, Right.AcademicSessionEdit) ?  "onClick=\"document.location='sessionEdit.do?doit=editSession&sessionId=" + s.getSessionId() + "';\"" : null,
 					new String[] {
-						s.getIsDefault() ? "<img src='images/tick.gif'> " : "&nbsp; ", 
+						s.equals(defaultSession) ? "<img src='images/tick.gif'> " : "&nbsp; ", 
 						s.getAcademicTerm() + " " + s.getSessionStartYear(),
 						s.academicInitiativeDisplayString(),
 						df.format(s.getSessionBeginDateTime()).replace(" ", "&nbsp;"),
@@ -132,7 +137,7 @@ public class SessionListAction extends Action {
 						(s.getDefaultSectioningStatus() == null ? "&nbsp;" : s.getDefaultSectioningStatus().getReference()),
 						 },
 					new Comparable[] {
-						s.getIsDefault() ? "<img src='images/tick.gif'>" : "",
+						s.equals(defaultSession) ? "<img src='images/tick.gif'>" : "",
 						s.getLabel(),
 						s.academicInitiativeDisplayString(),
 						s.getSessionBeginDateTime(),

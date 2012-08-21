@@ -29,7 +29,6 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.impl.SessionImpl;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
 import org.unitime.timetable.model.base.BaseCourseOffering;
@@ -37,7 +36,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
 
@@ -259,120 +257,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 		return (dept);
 	}
 	
-	/** The course as well as all its classes are editable by the user */
-	@Deprecated
-	public boolean isFullyEditableBy(User user) {
-    	if (user==null) return false;
-
-    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
-        	return false;
-
-    	if (user.isAdmin()) return true;
-
-		if (getDepartment()==null) return false;
-		
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm==null) return false;
-
-		if (!tm.getDepartments().contains(getDepartment())) return false;
-		
-		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
-
-    	if (getInstructionalOffering()!=null) {
-    		for (Iterator i1=getInstructionalOffering().getInstrOfferingConfigs().iterator();i1.hasNext();) {
-    			InstrOfferingConfig ioc = (InstrOfferingConfig) i1.next();
-    			for (Iterator i2=ioc.getSchedulingSubparts().iterator();i2.hasNext();) {
-    				SchedulingSubpart ss = (SchedulingSubpart)i2.next();
-    				if (!ss.canUserEdit(user)) return false;
-    			}
-    		}
-    	}
-
-    	return true;
-	}
-
-	@Deprecated
-    public boolean isEditableBy(User user){
-    	if (user==null) return false;
-
-    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
-    		return false;
-
-    	if (user.isAdmin()) return true;
-		if (getDepartment()==null) return false;
-		
-		TimetableManager tm = TimetableManager.getManager(user);
-		if (tm==null) return false;
-		
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
-		if (!tm.getDepartments().contains(getDepartment())) return false;
-		
-		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
-
-    	return true;
-    }
-    
-	@Deprecated
-    public boolean isEditableBy(UserContext user){
-    	if (user == null || user.getCurrentAuthority() == null) return false;
-
-    	if (getSubjectArea().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
-    		return false;
-
-    	if (Roles.ADMIN_ROLE.equals(user.getCurrentAuthority().getRole())) return true;
-    	
-		if (getDepartment()==null) return false;
-		
-		if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getCurrentAuthority().getRole())) return false;
-
-		if (!user.getCurrentAuthority().hasQualifier(getDepartment())) return false;
-		
-		if (!getDepartment().effectiveStatusType().canOwnerEdit()) return false;
-
-    	return true;
-    }
-    
-	@Deprecated
-    public boolean isLimitedEditableBy(User user){
-        if (user==null) return false;
-        if (user.isAdmin()) return true;
-        if (getDepartment()==null) return false;
-        
-        TimetableManager tm = TimetableManager.getManager(user);
-        if (tm==null) return false;
-
-        if (!Roles.DEPT_SCHED_MGR_ROLE.equals(user.getRole())) return false;
-
-        if (!tm.getDepartments().contains(getDepartment())) return false;
-        
-        if (!getDepartment().effectiveStatusType().canOwnerLimitedEdit()) return false;
-
-        return true;
-    }
-
-	@Deprecated
-    public boolean isViewableBy(User user){
-    	if (user==null) return false;
-    	if (user.isAdmin()) return true;
-		if (getDepartment()==null) return false;
-		if (isEditableBy(user)) return true;
-        if (user.getCurrentRole() != null && (user.getCurrentRole().equals(Roles.VIEW_ALL_ROLE) || user.getCurrentRole().equals(Roles.EXAM_MGR_ROLE)))
-            return true;
-		
-    	if (getInstructionalOffering()!=null) {
-    		for (Iterator i1=getInstructionalOffering().getInstrOfferingConfigs().iterator();i1.hasNext();) {
-    			InstrOfferingConfig ioc = (InstrOfferingConfig) i1.next();
-    			for (Iterator i2=ioc.getSchedulingSubparts().iterator();i2.hasNext();) {
-    				SchedulingSubpart ss = (SchedulingSubpart)i2.next();
-    				if (ss.canUserView(user)) return true;
-    			}
-    		}
-    	}
-
-    	return false;
-    }
-    
     public List getCourseOfferingDemands() {
         if (getPermId()!=null)
             return (new CourseOfferingDAO()).
@@ -482,30 +366,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             uniqueResult();
     }
 
-    @Deprecated
-    public static void updateCourseOfferingEnrollmentForSession(org.unitime.timetable.model.Session acadSession, org.hibernate.Session hibSession) throws Exception{
-    	/*
-        Transaction trans = null;
-        try {
-     	trans = hibSession.beginTransaction();
-
-     	hibSession.createQuery("update CourseOffering  c " +
-         		"set c.enrollment=(select count(distinct d.student) " +
-                 " from StudentClassEnrollment d " +
-                 " where d.courseOffering.uniqueId =c.uniqueId) " + 
-                 " where c.subjectArea.uniqueId in (select sa.uniqueId " + 
-                 " from SubjectArea sa where sa.session.uniqueId = :sessionId)").
-                 setLong("sessionId", acadSession.getUniqueId().longValue()).executeUpdate();
-         trans.commit();
-        } catch (Exception e) {
-     	   if (trans != null){
-     		   trans.rollback();
-     	   }
- 		   throw(e);
-        }
-        */
-     }
-    
     public int compareTo(Object o) {
     	if (o == null || !(o instanceof CourseOffering)) return -1;
     	CourseOffering co = (CourseOffering)o;

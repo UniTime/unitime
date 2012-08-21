@@ -19,8 +19,6 @@
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.webutil.WebClassListTableBuilder"%>
 <%@ page import="org.unitime.timetable.form.ClassListForm"%>
-<%@ page import="org.unitime.commons.User"%>
-<%@ page import="org.unitime.commons.web.Web"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>

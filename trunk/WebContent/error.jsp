@@ -21,11 +21,6 @@
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ page import="org.unitime.commons.web.WebOutputStream"%>
 <%@ page import="java.io.PrintWriter"%>
-<%@ page import="org.unitime.commons.web.Web"%>
-<%@ page import="org.unitime.commons.Debug"%>
-<%@ page import="org.unitime.commons.Email" %>
-<%@ page import="java.util.Vector" %>
-<%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.util.AccessDeniedException"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
 
@@ -102,21 +97,6 @@
 				    %></FONT>
 				</TD>
 			</TR>
-		<%	try {
-				if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.error", "false")) && 
-					session.getAttribute("userTrace") !=null && exception.getMessage().toLowerCase().indexOf("access denied") < 0) {	
-					Email email = new Email();
-					email.setSubject("UniTime Error Report");
-					email.setText("Server: " +  request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath()+"/\n"
-								+ "Exception: " + exception.getMessage() + "\n" 
-								+ "Stack Trace: " + stackTrace.replaceAll("<br>", "") + "\n\n"								
-								+ (String) session.getAttribute("userTrace"));
-					email.addNotify();
-					email.send();
-				}
-			} catch (Exception e) { }
-			Debug.error(exception);
-		%>
 		</TABLE>
 	<% } %>	    
 	    </td></tr></table>

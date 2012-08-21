@@ -417,7 +417,7 @@ public class ExamEditAction extends PreferencesAction {
         for (Iterator i=deptIds.iterator();i.hasNext();)
             deptsIdsArray[idx++]=(Long)i.next();
 
-        LookupTables.setupInstructors(request, deptsIdsArray);
+        LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);
         Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
 
         // For each instructor set the instructor list

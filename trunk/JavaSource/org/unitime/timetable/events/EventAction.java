@@ -25,9 +25,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -151,8 +148,6 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		public boolean isAuthenticated() { return iUser != null; }
 		@Override
 		public UserContext getUser() { return iUser; }
-		@Override @Deprecated
-		public HttpSession getHttpSession() { return iContext.getHttpSession(); }
 		@Override
 		public boolean isHttpSessionNew() { return iContext.isHttpSessionNew(); }
 		@Override
@@ -169,8 +164,6 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		public void setAttribute(SessionAttribute attribute, Object value) { iContext.setAttribute(attribute, value); }
 		@Override
 		public Object getAttribute(SessionAttribute attribute) { return iContext.getAttribute(attribute); }
-		@Override @Deprecated
-		public HttpServletRequest getHttpServletRequest() { return iContext.getHttpServletRequest(); }
 		public PageAccessException getException() {
 			if (iContext.isAuthenticated()) return new PageAccessException(MESSAGES.authenticationInsufficient());
 			return new PageAccessException(iContext.isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());

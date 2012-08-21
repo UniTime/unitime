@@ -20,12 +20,13 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
 <%@ page import="org.unitime.timetable.ApplicationProperties" %>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ page import="org.unitime.commons.web.Web"%>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<tt:session-context/>
 <HTML>
 	<HEAD>
     	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 	    <meta charset="UTF-8"/>
-		<% if (!Web.isLoggedIn(session)) {%>
+		<% if (!sessionContext.isAuthenticated()) {%>
 		<META http-equiv="Refresh" content="1; url=login.do">	
 		<% } else { %>	
 		<META http-equiv="Refresh" content="1; url=selectPrimaryRole.do">	

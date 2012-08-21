@@ -22,6 +22,7 @@
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.action.ClassEditAction" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ page import="java.util.Enumeration" %>
 <%@ page import="java.util.Vector" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
@@ -103,9 +104,7 @@
 	String frmName = "ClassEditForm";
 	ClassEditForm frm = (ClassEditForm) request.getAttribute(frmName);
 
-	String crsNbr = "";
-	if (session.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = session.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>		
 <tiles:importAttribute />
 <html:form action="/classEdit" focus="expectedCapacity">

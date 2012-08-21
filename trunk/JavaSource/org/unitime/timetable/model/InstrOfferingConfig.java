@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.unitime.commons.User;
 import org.unitime.timetable.model.base.BaseInstrOfferingConfig;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.NavigationComparator;
@@ -72,75 +71,6 @@ public class InstrOfferingConfig extends BaseInstrOfferingConfig {
 		return(this.getControllingCourseOffering().getCourseNameWithTitle());
 	}
 
-	@Deprecated
-	public boolean isEditableBy(User user){
-    	if (user == null){
-    		return(false);
-    	}
-    	if (getInstructionalOffering().getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId())) {
-    		return false;
-    	}
-    	if (user.isAdmin()){
-    		return(true);
-    	} 
-		if (this.getInstructionalOffering().isEditableBy(user)){
-			return(true);
-		}
-		if (this.getSchedulingSubparts() != null && this.getSchedulingSubparts().size() > 0){
-			boolean canEdit = true;
-			SchedulingSubpart ss = null;
-			Iterator it = this.getSchedulingSubparts().iterator();
-			while(canEdit && it.hasNext()){
-				ss = (SchedulingSubpart) it.next();
-				if (!ss.isEditableBy(user)){
-					canEdit = false;
-				}
-			}
-			if (canEdit){
-				return(true);
-			}
-		}
-		return(false);
-     }
-	@Deprecated
-    public boolean isViewableBy(User user){
-    	if (user == null){
-    		return(false);
-    	}
-    	if (user.isAdmin()){
-    		return(true);
-    	} 
-		if (this.getInstructionalOffering().isViewableBy(user)){
-			return(true);
-		}
-		return(false);
-     }
-    
-    /**
-     * Check if config has atleast one externally managed subpart
-     * @param user
-     * @param checkClasses checks classes as well for externally managed flags
-     * @return
-     */
-	@Deprecated
-    public boolean hasExternallyManagedSubparts(User user, boolean checkClasses) {
-    	if (getSession().isOfferingFullLockNeeded(getInstructionalOffering().getUniqueId()))
-    		return false;
-    	
-		if (this.getSchedulingSubparts() != null && this.getSchedulingSubparts().size() > 0){
-			Iterator it = this.getSchedulingSubparts().iterator();
-			while(it.hasNext()){
-			    SchedulingSubpart ss = (SchedulingSubpart) it.next();
-				if (ss.isEditableBy(user) && ss.getManagingDept().isExternalManager().booleanValue()){
-				    return true;
-				}
-				if (checkClasses && ss.hasExternallyManagedClasses(user))
-				    return true;
-			}
-		}
-        return false;
-    }
-    
 	public CourseOffering getControllingCourseOffering() {
 	       return(this.getInstructionalOffering().getControllingCourseOffering());
 		}

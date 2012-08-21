@@ -36,7 +36,6 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.model.base.BaseDatePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -415,11 +414,6 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		}
 	}
 
-	@Deprecated
-    public static DatePattern findByName(HttpServletRequest request, String name) throws Exception {
-    	return findByName(Session.getCurrentAcadSession(Web.getUser(request.getSession())), name);
-	}
-	
 	public static DatePattern findByName(Session session, String name) {
 		return findByName(session.getUniqueId(), name);
 	}

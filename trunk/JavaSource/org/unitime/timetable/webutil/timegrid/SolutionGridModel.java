@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.webutil.timegrid;
 
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -36,7 +37,6 @@ import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 import org.hibernate.Query;
 import org.unitime.commons.Debug;
-import org.unitime.commons.web.Web;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Assignment;
@@ -63,6 +63,7 @@ import org.unitime.timetable.util.RoomAvailability;
 public class SolutionGridModel extends TimetableGridModel {
 	private static final long serialVersionUID = -3207641071203870684L;
 	private transient Long iRoomId = null;
+	private static DecimalFormat sDF = new DecimalFormat("0.0");
     
 	public SolutionGridModel(String solutionIdsStr, Location room, org.hibernate.Session hibSession, int firstDay, int bgMode, boolean showEvents) {
 		super(sResourceTypeRoom, room.getUniqueId().intValue());
@@ -443,7 +444,7 @@ public class SolutionGridModel extends TimetableGridModel {
 					"Room preference: "+roomPref+"<br>"+
 					"Back-to-back instructor pref.: "+assignmentInfo.getBtbInstructorPreference()+"<br>"+
 					(assignmentInfo.getInitialAssignment()!=null?"Initial assignment: "+(assignmentInfo.getIsInitial()?"<i>current assignment</i>":assignmentInfo.getInitialAssignment())+"<br>":"")+
-					(assignmentInfo.getInitialAssignment()!=null?"Perturbation penalty: "+Web.format(assignmentInfo.getPerturbationPenalty())+"<br>":"")+
+					(assignmentInfo.getInitialAssignment()!=null?"Perturbation penalty: "+sDF.format(assignmentInfo.getPerturbationPenalty())+"<br>":"")+
 					"Non-conflicting placements: "+assignmentInfo.getNrPlacementsNoConf()+"<br>"+
 					"Department balance: "+assignmentInfo.getDeptBalancPenalty();
 		} else {

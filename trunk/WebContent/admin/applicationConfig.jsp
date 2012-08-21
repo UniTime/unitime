@@ -31,6 +31,7 @@
 
 <tiles:importAttribute />
 
+<tt:session-context/>
 <tt:confirm name="confirmDelete">The application setting will be deleted. Continue?</tt:confirm>
 
 <html:form action="/applicationConfig">
@@ -145,7 +146,7 @@
 
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<% 
-		WebTable.setOrder(request.getSession(),"applicationConfig.ord2",request.getParameter("ord2"),1);
+		WebTable.setOrder(sessionContext,"applicationConfig.ord2",request.getParameter("ord2"),1);
 		Vector props = new Vector (ApplicationProperties.getProperties().keySet()); 
 		Collections.sort(props);
 		Pattern pattern = null;
@@ -162,7 +163,7 @@
 			String value = ApplicationProperties.getProperty(prop.toString());
 			table.addLine(null, new String[] {prop.toString(), value}, new String[] {prop.toString(), value});
 		}			
-		out.println(table.printTable(WebTable.getOrder(request.getSession(),"applicationConfig.ord2")));
+		out.println(table.printTable(WebTable.getOrder(sessionContext,"applicationConfig.ord2")));
 	%>
 </TABLE>
 </logic:equal>

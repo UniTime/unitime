@@ -491,7 +491,7 @@ public class CourseOfferingEditAction extends Action {
             for (Long departmentId: deptIds)
                 deptsIdsArray[idx++] = departmentId;
 
-            LookupTables.setupInstructors(request, deptsIdsArray);
+            LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);
         } else
             frm.setConsent(null);
 
@@ -554,7 +554,7 @@ public class CourseOfferingEditAction extends Action {
             for (Long departmentId: deptIds)
                 deptsIdsArray[idx++] = departmentId;
 
-            LookupTables.setupInstructors(request, deptsIdsArray);        	
+            LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);        	
         }
     }
     

@@ -28,9 +28,9 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.util.LabelValueBean;
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
+import org.unitime.timetable.interfaces.ExternalUidLookup.UserInfo;
 import org.unitime.timetable.model.PositionType;
 
 
@@ -75,7 +75,7 @@ public class InstructorEditForm extends PreferencesForm  {
 	private String email;
 
 	private String searchSelect;
-	private User i2a2Match;
+	private UserInfo i2a2Match;
 	private Collection staffMatch;
 	private Boolean matchFound;
 	
@@ -305,10 +305,10 @@ public class InstructorEditForm extends PreferencesForm  {
 		this.displayPrefs = displayPrefs;
 	}	
 	
-    public User getI2a2Match() {
+    public UserInfo getI2a2Match() {
         return i2a2Match;
     }
-    public void setI2a2Match(User match) {
+    public void setI2a2Match(UserInfo match) {
         i2a2Match = match;
     }
     

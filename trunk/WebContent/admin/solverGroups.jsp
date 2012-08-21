@@ -18,7 +18,6 @@
  --%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.util.Constants"%>
-<%@ page import="org.unitime.commons.web.Web"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -30,7 +29,7 @@
 <tt:confirm name="confirmDelete">The solver group will be deleted. Continue?</tt:confirm>
 <tt:confirm name="confirmDeleteAll">All solver groups will be deleted. Continue?</tt:confirm>
 <tt:confirm name="confirmAutoSetup">New solver groups may be created. Continue?</tt:confirm>
-
+<tt:session-context/>
 <html:form action="/solverGroupEdit">
 <html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 <html:hidden property="departmentsEditable"/><html:errors property="departmentsEditable"/>
@@ -177,7 +176,7 @@
 			<TD align="right" colspan="5">
 				<tt:section-header>
 					<tt:section-title>
-						Solver Groups - <%= Web.getUser(session).getAttribute(Constants.ACAD_YRTERM_LABEL_ATTR_NAME) %>
+						Solver Groups - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
 					</tt:section-title>
 				<html:submit property="op" value="Add Solver Group" title="Create New Solver Group (Alt+A)" accesskey="A"/> 
 				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete All Solver Groups"/> 

@@ -94,7 +94,7 @@ public class DistributionPrefsTableBuilder {
             prefs.addAll(DistributionPref.getInstructorPreferences(context.getUser().getCurrentAcademicSessionId(),d.getUniqueId(),subjAreaId, (courseNbr==null || courseNbr.length()==0 ? null : courseNbr)));
 		}
 		
-		return toHtmlTable(request, context, prefs); 
+		return toHtmlTable(request, context, prefs, true); 
 	}
 
 	public File getAllDistPrefsTableForCurrentUserAsPdf(SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
@@ -141,13 +141,13 @@ public class DistributionPrefsTableBuilder {
 			}
 		}
 		
-		return toHtmlTable(request, context, prefs); 
+		return toHtmlTable(request, context, prefs, false); 
 	}
 
     public String getDistPrefsTableForExam(HttpServletRequest request, SessionContext context, Exam exam, boolean editable) {
         Set prefs = exam.effectivePreferences(DistributionPref.class); 
 
-        return toHtmlTable(request, context, prefs); 
+        return toHtmlTable(request, context, prefs, false); 
     }
 
     public String getDistPrefsTableForSchedulingSubpart(HttpServletRequest request, SessionContext context, SchedulingSubpart subpart) {
@@ -169,7 +169,7 @@ public class DistributionPrefsTableBuilder {
 			prefs.addAll(instructor.getDistributionPreferences());
 		}
 		
-		return toHtmlTable(request, context, prefs); 
+		return toHtmlTable(request, context, prefs, false); 
 	}
 	
 	public String getDistPrefsTableForInstructionalOffering(HttpServletRequest request, SessionContext context, InstructionalOffering instructionalOffering) throws Exception {
@@ -195,7 +195,7 @@ public class DistributionPrefsTableBuilder {
 			prefs.addAll(instructor.getDistributionPreferences());
 		}
 		
-		return toHtmlTable(request, context, prefs); 
+		return toHtmlTable(request, context, prefs, false); 
 	}
 
 
@@ -206,7 +206,7 @@ public class DistributionPrefsTableBuilder {
      * @param editable
      * @return
      */
-    public String toHtmlTable(HttpServletRequest request, SessionContext context, Collection distPrefs) {
+    public String toHtmlTable(HttpServletRequest request, SessionContext context, Collection distPrefs, boolean addButton) {
     	String title = MSG.sectionTitleDistributionPreferences();
  
     	String backType = request.getParameter("backType");
@@ -214,7 +214,7 @@ public class DistributionPrefsTableBuilder {
     	
     	String instructorFormat = UserProperty.NameFormat.get(context.getUser());
         
-        if (context.hasPermission(Right.DistributionPreferenceAdd)) {
+        if (addButton && context.hasPermission(Right.DistributionPreferenceAdd)) {
         	title = "<table width='100%'><tr><td width='100%'>" + 
         		 	"<DIV class=\"WelcomeRowHeadNoLine\">" + MSG.sectionTitleDistributionPreferences() +"</DIV>"+
         		 	"</td><td style='padding-bottom: 2px'>"+

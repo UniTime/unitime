@@ -33,7 +33,6 @@ import org.hibernate.Query;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.commons.Debug;
-import org.unitime.commons.User;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
@@ -152,11 +151,7 @@ public class InstructorAction extends Action {
 	    if (login!=null && login.trim().length()>0 && frm.getLookupEnabled()) {
 	    	UserInfo results = lookupInstructor(frm);
 	    	if (results!=null) {
-				User user = new User();
-				user.setId(results.getExternalId());
-				user.setLogin(results.getUserName());
-				user.setName(Constants.toInitialCase(results.getName()));
-				frm.setI2a2Match(user);
+				frm.setI2a2Match(results);
 	    		frm.setMatchFound(Boolean.TRUE);
 	    	}
 	    }

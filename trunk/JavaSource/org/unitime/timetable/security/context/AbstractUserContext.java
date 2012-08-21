@@ -107,11 +107,6 @@ public abstract class AbstractUserContext implements UserContext {
 	}
 
 	@Override
-	public String getCurrentRole() {
-		return (getCurrentAuthority() == null ? null : getCurrentAuthority().getRole());
-	}
-
-	@Override
 	public boolean hasDepartment(Long departmentId) {
 		return getCurrentAuthority() == null ? false : getCurrentAuthority().hasQualifier(new SimpleQualifier(Department.class.getSimpleName(), departmentId));
 	}

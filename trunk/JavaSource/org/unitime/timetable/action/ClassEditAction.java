@@ -577,7 +577,7 @@ public class ClassEditAction extends PreferencesAction {
             return;
 
         // Get dept instructor list
-        LookupTables.setupInstructors(request, c.getDepartmentForSubjectArea().getUniqueId());
+        LookupTables.setupInstructors(request, sessionContext, c.getDepartmentForSubjectArea().getUniqueId());
         Vector deptInstrList = (Vector) request.getAttribute(DepartmentalInstructor.INSTR_LIST_ATTR_NAME);
 
         // For each instructor set the instructor list

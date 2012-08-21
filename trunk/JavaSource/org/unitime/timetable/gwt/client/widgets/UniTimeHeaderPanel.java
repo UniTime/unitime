@@ -188,11 +188,6 @@ public class UniTimeHeaderPanel extends Composite {
 			clone.showLoading();
 	}
 
-	@Deprecated
-	public void addButton(String operation, String name, Character accessKey, Integer width, ClickHandler clickHandler) {
-		addButton(operation, name, accessKey, width == null ? null : width + "px", clickHandler);
-	}
-	
 	public void addButton(String operation, String name, ClickHandler clickHandler) {
 		addButton(operation, name, null, clickHandler);
 	}

@@ -20,8 +20,8 @@
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.ItypeDesc"%>
 <%@ page import="org.unitime.timetable.model.SimpleItypeConfig"%>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
+<%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean"%> 
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html"%>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic"%>
@@ -89,12 +89,8 @@
 </SCRIPT>
 
 <% 
-	String crsNbr = "";
-	String subjArea = "";
-	if (sessionContext.getAttribute(Constants.CRS_NBR_ATTR_NAME)!=null )
-		crsNbr = sessionContext.getAttribute(Constants.CRS_NBR_ATTR_NAME).toString();
-	if (sessionContext.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME)!=null )
-		subjArea = sessionContext.getAttribute(Constants.SUBJ_AREA_ID_ATTR_NAME).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
+	String subjArea = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
 %>
 
 <html:form action="/instructionalOfferingConfigEdit">

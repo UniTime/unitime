@@ -20,15 +20,12 @@
 <%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
-<%@ page import="org.unitime.commons.web.Web" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.webutil.WebInstrOfferingConfigTableBuilder"%>
 <%@ page import="org.unitime.timetable.form.InstructionalOfferingDetailForm"%>
 <%@ page import="org.unitime.timetable.solver.WebSolver"%>
 <%@ page import="org.unitime.timetable.model.CourseOffering" %>
 <%@ page import="org.unitime.timetable.model.Reservation" %>
-<%@ page import="org.unitime.timetable.model.Roles" %>
-<%@ page import="org.unitime.commons.User" %>
 
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
@@ -40,13 +37,10 @@
 <tiles:importAttribute />
 <tt:session-context/>
 <% 
-	User user = Web.getUser(session);
 	String frmName = "instructionalOfferingDetailForm";
 	InstructionalOfferingDetailForm frm = (InstructionalOfferingDetailForm) request.getAttribute(frmName);
 
-	String crsNbr = "";
-	if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber) != null )
-		crsNbr = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString();
+	String crsNbr = (String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
 %>
 <loc:bundle name="CourseMessages">
 <SCRIPT language="javascript">

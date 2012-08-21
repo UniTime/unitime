@@ -98,6 +98,9 @@ public class DataImportAction extends Action {
 		
 		sessionContext.checkPermission(Right.DataExchange);
 		
+		if (op == null)
+			myForm.setAddress(sessionContext.getUser().getEmail());
+		
 		Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		if ("Import".equals(op)) {
@@ -274,27 +277,31 @@ public class DataImportAction extends Action {
             } finally {
             	Progress.removeInstance(this);
             }
-            if (iForm.getEmail() && hasOwnerEmail()) {
-                try {
-                	Email mail = new Email();
-                	mail.setSubject("Data " + (iImport ? "import" : "export") + " finished.");
-                	mail.setHTML(log()+"<br><br>"+
-                            "This email was automatically generated at "+
-                            iUrl+
-                            ", by "+
-                            "UniTime "+Constants.getVersion()+
-                            " (Univesity Timetabling Application, http://www.unitime.org).");
-                	mail.addRecipient(getOwnerEmail(), getOwnerName());
-                	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
-                		mail.addNotifyCC();
-                    if (!iImport && hasOutput() && output().exists()) 
-                    	mail.addAttachement(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));
-                    mail.send();
-                } catch (Exception e) {
-                	error("Unable to send email: " + e.getMessage());
-                    Debug.error(e);
-                    setError(e);
-                }
+            if (iForm.getEmail()) {
+            	String address = iForm.getAddress();
+            	if (address == null || address.isEmpty()) address = getOwnerEmail();
+            	if (address != null && !address.isEmpty()) {
+                    try {
+                    	Email mail = new Email();
+                    	mail.setSubject("Data " + (iImport ? "import" : "export") + " finished.");
+                    	mail.setHTML(log()+"<br><br>"+
+                                "This email was automatically generated at "+
+                                iUrl+
+                                ", by "+
+                                "UniTime "+Constants.getVersion()+
+                                " (Univesity Timetabling Application, http://www.unitime.org).");
+                    	mail.addRecipient(address, getOwnerName());
+                    	if ("true".equals(ApplicationProperties.getProperty("unitime.email.notif.data", "false")))
+                    		mail.addNotifyCC();
+                        if (!iImport && hasOutput() && output().exists()) 
+                        	mail.addAttachement(output(), iSessionName + "_" + iForm.getExportType().getType() + "." + output().getName().substring(output().getName().lastIndexOf('.') + 1));
+                        mail.send();
+                    } catch (Exception e) {
+                    	error("Unable to send email: " + e.getMessage());
+                        Debug.error(e);
+                        setError(e);
+                    }
+            	}
             }
 		}
 	}
