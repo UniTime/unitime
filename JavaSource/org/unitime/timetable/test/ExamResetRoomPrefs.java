@@ -29,9 +29,6 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
-import org.unitime.timetable.model.ExamPeriodPref;
-import org.unitime.timetable.model.Preference;
-import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 
@@ -42,11 +39,6 @@ public class ExamResetRoomPrefs {
         for (Iterator i=new TreeSet(Exam.findAll(sessionId, examType)).iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sLog.info("Updating "+exam.getLabel());
-            for (Iterator j=exam.getPreferences().iterator();j.hasNext();) {
-                Preference p = (Preference)j.next();
-                if (p instanceof RoomPref) { j.remove(); }
-                else if (p instanceof ExamPeriodPref) { j.remove(); }
-            }
             exam.generateDefaultPreferences(override);
             hibSession.saveOrUpdate(exam);
             hibSession.flush();
