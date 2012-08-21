@@ -741,7 +741,7 @@ public class ReservationServlet implements ReservationService {
 					.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
 					if (q.match(new ReservationMatcher(reservation))) {
 						ReservationInterface r = convert(reservation, nameFormat, hibSession);
-						r.setEditable(getSessionContext().hasPermission(r, Right.ReservationEdit));
+						r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
 						results.add(r);
 					}
 				}
