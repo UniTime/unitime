@@ -1,34 +1,14 @@
 package org.unitime.timetable.security.authority;
 
-import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.security.rights.HasRights;
 
 public class NoRoleAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "NoRole";
+	public static final String TYPE = Roles.ROLE_NONE;
 	
-	public NoRoleAuthority() {
-		super(0l, TYPE, "No Role");
-	}
-
-	@Override
-	public boolean hasRight(Right right) {
-		switch (right) {
-		case Inquiry:
-		case Events:
-		case EventDetail:
-		case EventLocation:
-		case EventAddSpecial:
-		case EventEdit:
-		case EventMeetingEdit:
-		case EventDate:
-		case SchedulingAssistant:
-			return true;
-		case EventEditPast:
-			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
-		default:
-			return false;
-		}
+	public NoRoleAuthority(HasRights permissions) {
+		super(0l, TYPE, "No Role", permissions);
 	}
 
 }

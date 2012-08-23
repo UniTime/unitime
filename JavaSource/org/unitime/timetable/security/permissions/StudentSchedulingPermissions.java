@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
@@ -135,7 +136,7 @@ public class StudentSchedulingPermissions {
 
 		@Override
 		public boolean check(UserContext user, Student source) {
-			if ("Student".equals(user.getCurrentAuthority().getRole()))
+			if (Roles.ROLE_STUDENT.equals(user.getCurrentAuthority().getRole()))
 				return source.getExternalUniqueId().equals(user.getExternalUserId());
 			
 			return true;

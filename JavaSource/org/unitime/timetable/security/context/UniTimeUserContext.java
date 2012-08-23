@@ -93,6 +93,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 				TreeSet<Session> primarySessions = null;
 				
 				for (ManagerRole role: manager.getManagerRoles()) {
+					if (!role.getRole().isEnabled()) continue;
 					TreeSet<Session> sessions = new TreeSet<Session>();
 					if (role.getRole().hasRight(Right.SessionIndependent) || (sessions.isEmpty() && role.getRole().hasRight(Right.SessionIndependentIfNoSessionGiven)))
 						sessions.addAll(SessionDAO.getInstance().findAll(hibSession));
@@ -110,7 +111,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 							if (!role.getRole().hasRight(Right.AllowTestSessions)) continue;
 						}
 						
-						RoleAuthority authority = new RoleAuthority(role.getRole());
+						UserAuthority authority = new RoleAuthority(role.getRole());
 						authority.addQualifier(session);
 						authority.addQualifier(manager);
 						for (Department department: manager.getDepartments())
@@ -137,31 +138,38 @@ public class UniTimeUserContext extends AbstractUserContext {
 			}
 			
 			TreeSet<Session> sessions = new TreeSet<Session>();
-			for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
-					"from DepartmentalInstructor where externalUniqueId = :id")
-					.setString("id", userId).list()) {
-				if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
-				if (iEmail == null) iEmail = instructor.getEmail();
-				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, instructor.getDepartment().getSession());
-				InstructorAuthority authority = (authorities.isEmpty() ? null : (InstructorAuthority)authorities.get(0));
-				if (authority == null) {
-					authority = new InstructorAuthority(instructor);
-					authority.addQualifier(instructor.getDepartment().getSession());
-					addAuthority(authority);
-					sessions.add(instructor.getDepartment().getSession());
-				}
-				authority.addQualifier(instructor.getDepartment());
+
+			Roles instructorRole = Roles.getRole(Roles.ROLE_INSTRUCTOR);
+			if (instructorRole != null && instructorRole.isEnabled()) {
+				for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
+						"from DepartmentalInstructor where externalUniqueId = :id")
+						.setString("id", userId).list()) {
+					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					if (iEmail == null) iEmail = instructor.getEmail();
+					List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, instructor.getDepartment().getSession());
+					UserAuthority authority = (authorities.isEmpty() ? null : authorities.get(0));
+					if (authority == null) {
+						authority = new InstructorAuthority(instructor, instructorRole);
+						authority.addQualifier(instructor.getDepartment().getSession());
+						addAuthority(authority);
+						sessions.add(instructor.getDepartment().getSession());
+					}
+					authority.addQualifier(instructor.getDepartment());
+				}				
 			}
 
-			for (Student student: (List<Student>)hibSession.createQuery(
-					"from Student where externalUniqueId = :id")
-					.setString("id", userId).list()) {
-				if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
-				if (iEmail == null) iEmail = student.getEmail();
-				StudentAuthority authority = new StudentAuthority(student);
-				authority.addQualifier(student.getSession());
-				addAuthority(authority);
-				sessions.add(student.getSession());
+			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT);
+			if (studentRole != null && studentRole.isEnabled()) {
+				for (Student student: (List<Student>)hibSession.createQuery(
+						"from Student where externalUniqueId = :id")
+						.setString("id", userId).list()) {
+					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
+					if (iEmail == null) iEmail = student.getEmail();
+					UserAuthority authority = new StudentAuthority(student, studentRole);
+					authority.addQualifier(student.getSession());
+					addAuthority(authority);
+					sessions.add(student.getSession());
+				}				
 			}
 			
 			if (sessionId == null) {
@@ -169,24 +177,27 @@ public class UniTimeUserContext extends AbstractUserContext {
 				if (session != null) sessionId = session.getUniqueId();
 			}
 			if (getCurrentAuthority() == null && sessionId != null) {
-				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, new SimpleQualifier("Session", sessionId));
+				List<? extends UserAuthority> authorities = getAuthorities(Roles.ROLE_INSTRUCTOR, new SimpleQualifier("Session", sessionId));
 				if (!authorities.isEmpty())
 					setCurrentAuthority(authorities.get(0));
 			}
 			if (getCurrentAuthority() == null && sessionId != null) {
-				List<? extends UserAuthority> authorities = getAuthorities(StudentAuthority.TYPE, new SimpleQualifier("Session", sessionId));
+				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, new SimpleQualifier("Session", sessionId));
 				if (!authorities.isEmpty())
 					setCurrentAuthority(authorities.get(0));
 			}
 			
-			for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll())) {
-				if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
-				List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
-				if (authorities.isEmpty()) {
-					NoRoleAuthority noRole = new NoRoleAuthority();
-					noRole.addQualifier(session);
-					addAuthority(noRole);
-					sessions.add(session);
+			Roles noRole = Roles.getRole(Roles.ROLE_NONE);
+			if (noRole != null && noRole.isEnabled()) {
+				for (Session session: new TreeSet<Session>(SessionDAO.getInstance().findAll())) {
+					if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
+					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
+					if (authorities.isEmpty()) {
+						UserAuthority authority = new NoRoleAuthority(noRole);
+						authority.addQualifier(session);
+						addAuthority(authority);
+						sessions.add(session);
+					}
 				}
 			}
 			

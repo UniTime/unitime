@@ -116,6 +116,7 @@ import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverService;
@@ -659,7 +660,7 @@ public class SectioningServlet implements SectioningService {
     		SecurityContextHolder.getContext().setAuthentication(authResult);
     		UserContext user = (UserContext)authResult.getPrincipal();
     		if (user.getCurrentAuthority() == null)
-    			for (UserAuthority auth: user.getAuthorities("Student")) {
+    			for (UserAuthority auth: user.getAuthorities(StudentAuthority.TYPE)) {
     				if (getLastSessionId() == null || auth.getAcademicSession().getQualifierId().equals(getLastSessionId())) {
     					user.setCurrentAuthority(auth); break;
     				}
@@ -696,7 +697,7 @@ public class SectioningServlet implements SectioningService {
 			return principal.getStudentId(sessionId);
 		UserContext user = getSessionContext().getUser();
 		if (user == null) return null;
-		for (UserAuthority a: user.getAuthorities("Student", new SimpleQualifier("Session", sessionId)))
+		for (UserAuthority a: user.getAuthorities(StudentAuthority.TYPE, new SimpleQualifier("Session", sessionId)))
 			return a.getUniqueId();
 		return null;
 	}
