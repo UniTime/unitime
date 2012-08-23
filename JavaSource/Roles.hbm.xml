@@ -21,7 +21,6 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Roles" table="roles">
-        <meta attribute="class-description">This class represents the roles other than Schedule Deputy. Examples of other roles are LLR Manager, Lab Manager, Administrator. @author Heston Fernandes</meta>
         <cache include="non-lazy" usage="nonstrict-read-write"/>
         <id
             name="roleId"
@@ -47,6 +46,22 @@
             length="40"
             not-null="true"
             unique="true"/>
+            
+        <property
+            name="manager"
+            column="manager"
+            type="boolean"
+            not-null="true"/>
+            
+        <property
+            name="enabled"
+            column="enabled"
+            type="boolean"
+            not-null="true"/>
 
+        <set name="rights" table="rights">
+        	<key column="role_id"/>
+        	<element column="value" type="string"/>
+        </set>
     </class>
 </hibernate-mapping>

@@ -19,40 +19,15 @@
  */
 package org.unitime.timetable.security.authority;
 
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.security.rights.HasRights;
 
 public class InstructorAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
-	public static final String TYPE = "Instructor";
+	public static final String TYPE = Roles.ROLE_INSTRUCTOR;
 	
-	public InstructorAuthority(DepartmentalInstructor instructor) {
-		super(instructor.getUniqueId(), TYPE, instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
-	}
-
-	@Override
-	public boolean hasRight(Right right) {
-		switch (right) {
-		case SessionDefaultCurrent:
-		case PersonalSchedule:
-		case Inquiry:
-		case Events:
-		case EventDetail:
-		case EventLocation:
-		case EventAddSpecial:
-		case EventEdit:
-		case EventMeetingEdit:
-		case EventDate:
-		case ConsentApproval:
-		case OfferingEnrollments:
-		case SchedulingAssistant:
-		case SchedulingDashboard:
-			return true;
-		case EventEditPast:
-			return "true".equals(ApplicationProperties.getProperty("tmtbl.event.allowEditPast","false"));
-		default:
-			return false;
-		}
+	public InstructorAuthority(DepartmentalInstructor instructor, HasRights permissions) {
+		super(instructor.getUniqueId(), TYPE, instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle), permissions);
 	}
 }

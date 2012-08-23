@@ -753,6 +753,19 @@
 					<hasPermission name="StudentSchedulingStatusTypes"/>
 				</condition>
 			</item>
+			<separator/>
+			<item name="Roles" page="admin" type="gwt">
+				<parameter name="type">roles</parameter>
+				<condition>
+					<hasPermission name="Roles"/>
+				</condition>
+			</item>
+			<item name="Permissions" page="admin" type="gwt">
+				<parameter name="type">permissions</parameter>
+				<condition>
+					<hasPermission name="Permissions"/>
+				</condition>
+			</item>
 		</menu>
 		<menu name="Defaults">
 			<item name="Configuration" page="applicationConfig.do">

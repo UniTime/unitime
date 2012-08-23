@@ -77,104 +77,68 @@ public enum Right {
 	HasRole,
 	IsAdmin,
 	
-	Chameleon(Session.class),
-	PersonalSchedule(Session.class),
-	PersonalScheduleLookup(Session.class),
+	/** Can register UniTime */
+    Registration,
+
+	/** Individual page rights: Courses Input Data */
+	
+	InstructionalOfferings(Department.class),
+	InstructionalOfferingsExportPDF(Department.class),
+	InstructionalOfferingsWorksheetPDF(Department.class),
+
+	Classes(Department.class),
+	ClassesExportPDF(Department.class),
+	
+	ClassAssignments(Session.class),
+	ClassAssignmentsExportPdf(Session.class),
+	ClassAssignmentsExportCsv(Session.class),
+
+	InstructionalOfferingDetail(InstructionalOffering.class),
+	
+	AddCourseOffering(SubjectArea.class),
+	EditCourseOffering(CourseOffering.class),
 	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),
 	OfferingMakeNotOffered(InstructionalOffering.class),
 	OfferingMakeOffered(InstructionalOffering.class),
 	OfferingDelete(InstructionalOffering.class),
+	
+	InstructionalOfferingCrossLists(InstructionalOffering.class),
+
 	InstrOfferingConfigAdd(InstructionalOffering.class),
 	InstrOfferingConfigEdit(InstrOfferingConfig.class),
 	InstrOfferingConfigEditDepartment(Department.class),
 	InstrOfferingConfigEditSubpart(SchedulingSubpart.class),
 	InstrOfferingConfigDelete(InstrOfferingConfig.class),
-	InstructionalOfferingCrossLists(InstructionalOffering.class),
-	Reservations(Department.class),
-	ReservationOffering(InstructionalOffering.class),
-	ReservationAdd(Department.class),
-	ReservationEdit(Reservation.class),
-	ReservationDelete(Reservation.class),
 
-	InstructionalOfferings(Department.class),
-	InstructionalOfferingsExportPDF(Department.class),
-	InstructionalOfferingsWorksheetPDF(Department.class),
-	
-	EditCourseOffering(CourseOffering.class),
-	
-	Classes(Department.class),
-	ClassesExportPDF(Department.class),
-	
-	InstructionalOfferingDetail(InstructionalOffering.class),
 	MultipleClassSetup(InstrOfferingConfig.class),
 	MultipleClassSetupDepartment(Department.class),
 	MultipleClassSetupClass(Class_.class),
 	
 	AssignInstructors(InstrOfferingConfig.class),
 	AssignInstructorsClass(Class_.class),
-	
-	CourseTimetabling(SolverGroup.class),
-	CourseTimetablingAudit(SolverGroup.class),
-	ClassAssignments(Session.class),
-	ClassAssignmentsExportPdf(Session.class),
-	ClassAssignmentsExportCsv(Session.class),
-	
-	Examinations(Session.class),
-	ExaminationSchedule(Session.class),
-	AddCourseOffering(SubjectArea.class),
-	
-	AddNonUnivLocation(Department.class),
-	AddSpecialUseRoom(Department.class),
-	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
-	ApplicationConfig,
-	
-	
-	Timetables(SolverGroup.class),
-	TimetablesSolutionExportCsv(Solution.class),
-	TimetablesSolutionChangeNote(Solution.class),
-	TimetablesSolutionCommit(SolverGroup.class),
-	TimetablesSolutionLoad(Solution.class),
-	TimetablesSolutionLoadEmpty(SolverGroup.class),
-	TimetablesSolutionDelete(Solution.class),
-	Solver(SolverGroup.class),
-	SolverSolutionSave(SolverGroup.class),
-	SolverSolutionExportCsv(SolverGroup.class),
-	SolverSolutionExportXml(SolverGroup.class),
-	TimetableGrid(SolverGroup.class),
-	AssignedClasses(SolverGroup.class),
-	NotAssignedClasses(SolverGroup.class),
-	SolutionChanges(SolverGroup.class),
-	AssignmentHistory(SolverGroup.class),
-	Suggestions(SolverGroup.class),
-	ConflictStatistics(SolverGroup.class),
-	SolverLog(SolverGroup.class),
-	SolutionReports(SolverGroup.class),
-	ManageSolvers(Session.class),
-	
-	/** Class level rights */
-	ClassDetail(Class_.class),
-	ClassEdit(Class_.class),
-	ClassEditClearPreferences(Class_.class),
-	ClassAssignment(Class_.class),
-	
+
 	SchedulingSubpartDetail(SchedulingSubpart.class),
 	SchedulingSubpartDetailClearClassPreferences(SchedulingSubpart.class),
 	SchedulingSubpartEdit(SchedulingSubpart.class),
 	SchedulingSubpartEditClearPreferences(SchedulingSubpart.class),
-	
-	DistributionPreferences(Department.class),
-	DistributionPreferenceAdd(Department.class),
-	DistributionPreferenceDetail(DistributionPref.class),
-	DistributionPreferenceEdit(DistributionPref.class),
-	DistributionPreferenceDelete(DistributionPref.class),
-	DistributionPreferenceClass(Class_.class),
-	DistributionPreferenceSubpart(SchedulingSubpart.class),
-	DistributionPreferenceExam(Exam.class),
 
-	/** Curriculum rights */
-    CurriculumView(Session.class),
+	ClassDetail(Class_.class),
+	ClassEdit(Class_.class),
+	ClassEditClearPreferences(Class_.class),
+	
+    ExtendedDatePatterns,
+    ExtendedTimePatterns,
+
+    CanUseHardTimePrefs(PreferenceGroup.class),
+    CanUseHardRoomPrefs(PreferenceGroup.class),
+    CanUseHardDistributionPrefs(PreferenceGroup.class),
+    CanUseHardPeriodPrefs(PreferenceGroup.class),
+    
+	ClassAssignment(Class_.class),
+
+	CurriculumView(Session.class),
     CurriculumDetail(Curriculum.class),
     CurriculumAdd(Department.class),
     CurriculumEdit(Curriculum.class),
@@ -194,30 +158,6 @@ public enum Right {
     InstructorDelete(DepartmentalInstructor.class),
     InstructorPreferences(DepartmentalInstructor.class),
     
-    ExaminationDetail(Exam.class),
-    ExaminationEdit(Exam.class),
-    ExaminationEditClearPreferences(Exam.class),
-    ExaminationDelete(Exam.class),
-    ExaminationClone(Exam.class),
-    ExaminationAdd(Session.class),
-    ExaminationAssignment(Exam.class),
-    ExaminationDistributionPreferences(Session.class),
-    ExaminationDistributionPreferenceAdd(Session.class),
-    ExaminationDistributionPreferenceDetail(DistributionPref.class),
-    ExaminationDistributionPreferenceEdit(DistributionPref.class),
-    ExaminationDistributionPreferenceDelete(DistributionPref.class),
-	
-	ExaminationTimetabling(Session.class),
-	ExaminationSolver(Session.class),
-	ExaminationTimetable(Session.class),
-	AssignedExaminations(Session.class),
-	NotAssignedExaminations(Session.class),
-	ExaminationAssignmentChanges(Session.class),
-	ExaminationConflictStatistics(Session.class),
-	ExaminationSolverLog(Session.class),
-	ExaminationReports(Session.class),
-	ExaminationPdfReports(Session.class),
-	
 	Rooms(Department.class),
 	RoomsExportPdf(Department.class),
 	RoomsExportCsv(Department.class),
@@ -235,6 +175,11 @@ public enum Right {
 	EditRoomDepartmentsFinalExams(Session.class),
 	EditRoomDepartmentsMidtermExams(Session.class),
 	AddRoom(Department.class),
+	AddNonUnivLocation(Department.class),
+	AddSpecialUseRoom(Department.class),
+	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
+    RoomDelete(Room.class),
+    NonUniversityLocationDelete(NonUniversityLocation.class),
 	RoomDetailAvailability(Location.class),
 	RoomDetailPeriodPreferences(Location.class),
 	RoomEditAvailability(Location.class),
@@ -243,6 +188,7 @@ public enum Right {
 	RoomEditGlobalGroups(Location.class),
 	RoomEditFeatures(Location.class),
 	RoomEditGlobalFeatures(Location.class),
+	
 	RoomFeatures(Department.class),
 	RoomFeaturesExportPdf(Department.class),
 	GlobalRoomFeatureAdd(Session.class),
@@ -251,6 +197,7 @@ public enum Right {
 	GlobalRoomFeatureEdit(GlobalRoomFeature.class),
 	DepartmenalRoomFeatureDelete(DepartmentRoomFeature.class),
 	GlobalRoomFeatureDelete(GlobalRoomFeature.class),
+	
 	RoomGroups(Department.class),
 	RoomGroupsExportPdf(Department.class),
 	GlobalRoomGroupAdd(Session.class),
@@ -260,87 +207,107 @@ public enum Right {
 	GlobalRoomGroupEditSetDefault(RoomGroup.class),
 	DepartmenalRoomGroupDelete(RoomGroup.class),
 	GlobalRoomGroupDelete(RoomGroup.class),
-
-    
-    CanUseHardTimePrefs(PreferenceGroup.class),
-    CanUseHardRoomPrefs(PreferenceGroup.class),
-    CanUseHardDistributionPrefs(PreferenceGroup.class),
-    CanUseHardPeriodPrefs(PreferenceGroup.class),
-    
-    BuildingList(Session.class),
-    BuildingAdd(Session.class),
-    BuildingEdit(Building.class),
-    BuildingDelete(Building.class),
-    BuildingUpdateData(Session.class),
-    BuildingExportPdf(Session.class),
-    
-    RoomDelete(Room.class),
-    NonUniversityLocationDelete(NonUniversityLocation.class),
     
     TravelTimesLoad(Session.class),
     TravelTimesSave(Session.class),
-    
-    DatePatterns(Session.class),
-    DataExchange(Session.class),
-    ExaminationPeriods(Session.class),
-    Departments(Session.class),
-    DepartmentAdd(Session.class),
-    DepartmentEdit(Department.class),
-    DepartmentEditChangeExternalManager(Department.class),
-    DepartmentDelete(Department.class),
-    AcademicSessions,
-    AcademicSessionAdd,
-    AcademicSessionEdit(Session.class),
-    AcademicSessionDelete(Session.class),
-    TimetableManagers,
-    TimetableManagerAdd,
-    TimetableManagerEdit(TimetableManager.class),
-    TimetableManagerDelete(TimetableManager.class),
-    ExactTimes,
-    StandardEventNotes,
-    TestHQL,
-    StatusTypes,
-    SolverGroups(Session.class),
-    SubjectAreas(Session.class),
-    SubjectAreaAdd(Session.class),
-    SubjectAreaEdit(SubjectArea.class),
-    SubjectAreaDelete(SubjectArea.class),
-    SubjectAreaChangeDepartment(SubjectArea.class),
-    TimePatterns(Session.class),
-    LastChanges(Session.class),
-    InstructionalTypes,
-    InstructionalTypeAdd,
-    InstructionalTypeEdit(ItypeDesc.class),
-    InstructionalTypeDelete(ItypeDesc.class),
-    SponsoringOrganizations,
-    SponsoringOrganizationAdd,
-    SponsoringOrganizationEdit(SponsoringOrganization.class),
-    SponsoringOrganizationDelete(SponsoringOrganization.class),
+	
+	DistributionPreferences(Department.class),
+	DistributionPreferenceAdd(Department.class),
+	DistributionPreferenceDetail(DistributionPref.class),
+	DistributionPreferenceEdit(DistributionPref.class),
+	DistributionPreferenceDelete(DistributionPref.class),
+	DistributionPreferenceClass(Class_.class),
+	DistributionPreferenceSubpart(SchedulingSubpart.class),
+	DistributionPreferenceExam(Exam.class),
 
-    Registration,
-    ExtendedTimePatterns,
-    ExtendedDatePatterns,
-    SessionRollForward,
+	Reservations(Department.class),
+	ReservationOffering(InstructionalOffering.class),
+	ReservationAdd(Department.class),
+	ReservationEdit(Reservation.class),
+	ReservationDelete(Reservation.class),
+	
+	/** Individual page rights: Course Timetabling */
+	
+	CourseTimetabling(SolverGroup.class),
+	CourseTimetablingAudit(SolverGroup.class),
+	
+	Timetables(SolverGroup.class),
+	TimetablesSolutionExportCsv(Solution.class),
+	TimetablesSolutionChangeNote(Solution.class),
+	TimetablesSolutionCommit(SolverGroup.class),
+	TimetablesSolutionLoad(Solution.class),
+	TimetablesSolutionLoadEmpty(SolverGroup.class),
+	TimetablesSolutionDelete(Solution.class),
+	Solver(SolverGroup.class),
+	SolverSolutionSave(SolverGroup.class),
+	SolverSolutionExportCsv(SolverGroup.class),
+	SolverSolutionExportXml(SolverGroup.class),
     CanSelectSolverServer,
-    Inquiry,
-    SettingsUser,
-    SettingsAdmin,
-    RoomTypes,
-    Users,
-    SolutionInformationDefinitions,
-    SolverParameterGroups,
-    SolverParameters,
-    SolverConfigurations,
-    DistributionTypes,
-    DistributionTypeEdit(Session.class),
-    HibernateStatistics,
-    PageStatistics,
+	Suggestions(SolverGroup.class),
+	TimetableGrid(SolverGroup.class),
+	AssignedClasses(SolverGroup.class),
+	NotAssignedClasses(SolverGroup.class),
+	SolutionChanges(SolverGroup.class),
+	AssignmentHistory(SolverGroup.class),
+	ConflictStatistics(SolverGroup.class),
+	SolverLog(SolverGroup.class),
+	SolutionReports(SolverGroup.class),
+	
+	/** Individual page rights: Examinations */
+	
+	Examinations(Session.class),
+
+    ExaminationDetail(Exam.class),
+    ExaminationEdit(Exam.class),
+    ExaminationEditClearPreferences(Exam.class),
+    ExaminationDelete(Exam.class),
+    ExaminationClone(Exam.class),
+    ExaminationAdd(Session.class),
+    ExaminationAssignment(Exam.class),
     
+    ExaminationDistributionPreferences(Session.class),
+    ExaminationDistributionPreferenceAdd(Session.class),
+    ExaminationDistributionPreferenceDetail(DistributionPref.class),
+    ExaminationDistributionPreferenceEdit(DistributionPref.class),
+    ExaminationDistributionPreferenceDelete(DistributionPref.class),
+    
+	ExaminationSchedule(Session.class),
+
+	/** Individual page rights: Examination Timetabling */
+
+	ExaminationTimetabling(Session.class),
+	ExaminationSolver(Session.class),
+	ExaminationTimetable(Session.class),
+	AssignedExaminations(Session.class),
+	NotAssignedExaminations(Session.class),
+	ExaminationAssignmentChanges(Session.class),
+	ExaminationConflictStatistics(Session.class),
+	ExaminationSolverLog(Session.class),
+	ExaminationReports(Session.class),
+	ExaminationPdfReports(Session.class),
+	
+	/** Individual page rights: Students Scheduling */
+	
     StudentScheduling(Session.class),
     EnrollmentAuditPDFReports(Session.class),
     StudentSectioningSolver(Session.class),
     StudentSectioningSolverLog(Session.class),
     StudentSectioningSolverDashboard(Session.class),
+    
+    /** Individual page rights: Online Students Scheduling */
+
+    CourseRequests(Session.class),
+    SchedulingAssistant(Session.class),
+    SchedulingDashboard(Session.class),
+
+    ConsentApproval(InstructionalOffering.class),
+    StudentSchedulingAdvisor,
+    StudentSchedulingAdmin,
+    
+    OfferingEnrollments(InstructionalOffering.class),
+    StudentEnrollments(Student.class),
+
+    /** Individual page rights: Events */
     
     Events(Session.class),
     EventAddSpecial(Session.class),
@@ -359,6 +326,152 @@ public enum Right {
     EventAnyLocation,
     EventEditPast,
     
+    /** Administration: Academic Sessions */
+    
+    AcademicSessions,
+    AcademicSessionAdd,
+    AcademicSessionEdit(Session.class),
+    AcademicSessionDelete(Session.class),
+    
+    TimetableManagers,
+    TimetableManagerAdd,
+    TimetableManagerEdit(TimetableManager.class),
+    TimetableManagerDelete(TimetableManager.class),
+
+    Departments(Session.class),
+    DepartmentAdd(Session.class),
+    DepartmentEdit(Department.class),
+    DepartmentEditChangeExternalManager(Department.class),
+    DepartmentDelete(Department.class),
+
+    SolverGroups(Session.class),
+    
+    SubjectAreas(Session.class),
+    SubjectAreaAdd(Session.class),
+    SubjectAreaEdit(SubjectArea.class),
+    SubjectAreaDelete(SubjectArea.class),
+    SubjectAreaChangeDepartment(SubjectArea.class),
+
+    BuildingList(Session.class),
+    BuildingAdd(Session.class),
+    BuildingEdit(Building.class),
+    BuildingDelete(Building.class),
+    BuildingUpdateData(Session.class),
+    BuildingExportPdf(Session.class),
+
+    DatePatterns(Session.class),
+
+    TimePatterns(Session.class),
+
+    ExactTimes,
+
+    AcademicAreas(Session.class),
+    AcademicAreaEdit(Session.class),
+    
+    AcademicClassifications(Session.class),
+    AcademicClassificationEdit(Session.class),
+
+    Majors(Session.class),
+    MajorEdit(Session.class),
+
+    Minors(Session.class),
+    MinorEdit(Session.class),
+    
+    StudentGroups(Session.class),
+    StudentGroupEdit(Session.class),
+    
+    ExaminationPeriods(Session.class),
+
+    DataExchange(Session.class),
+
+    SessionRollForward,
+
+    LastChanges(Session.class),
+    
+    /** Administration: Solver */
+    
+	ManageSolvers(Session.class),
+
+	SolverParameterGroups,
+    SolverParameters,
+    SolverConfigurations,
+    DistributionTypes,
+    DistributionTypeEdit(Session.class),
+
+    /** Administration: Other */
+    
+    InstructionalTypes,
+    InstructionalTypeAdd,
+    InstructionalTypeEdit(ItypeDesc.class),
+    InstructionalTypeDelete(ItypeDesc.class),
+
+    StatusTypes,
+
+    RoomTypes,
+
+    SponsoringOrganizations,
+    SponsoringOrganizationAdd,
+    SponsoringOrganizationEdit(SponsoringOrganization.class),
+    SponsoringOrganizationDelete(SponsoringOrganization.class),
+
+    StandardEventNotes,
+
+    Users,
+    
+    OfferingConsentTypes,
+    OfferingConsentTypeEdit,
+
+    CourseCreditFormats,
+    CourseCreditFormatEdit,
+
+    CourseCreditTypes,
+	CourseCreditTypeEdit,
+
+	CourseCreditUnits,
+	CourseCreditUnitEdit,
+
+	PositionTypes,
+	PositionTypeEdit,
+
+	StudentSchedulingStatusTypes,
+	StudentSchedulingStatusTypeEdit,
+    
+	Roles,
+	RoleEdit,
+
+	Permissions,
+	PermissionEdit,
+	
+	/** Administration: Defaults */
+	
+	ApplicationConfig,
+	
+    SettingsAdmin,
+
+    /** Administration: Utilities */
+    
+    PageStatistics,
+
+    HibernateStatistics,
+    
+    TestHQL,
+    
+    /** Preferences */
+
+	Chameleon(Session.class),
+    SettingsUser,
+    
+    /** Help */
+    
+    Inquiry,
+
+    /** Other */
+	
+	PersonalSchedule(Session.class),
+	PersonalScheduleLookup(Session.class),
+	
+	/** Reports */
+	
     HQLReports(Session.class),
     HQLReportAdd(Session.class),
     HQLReportEdit(SavedHQL.class),
@@ -369,40 +482,11 @@ public enum Right {
     HQLReportsEvents(Session.class),
     HQLReportsAdministration(Session.class),
     HQLReportsAdminOnly(Session.class),
+
+	/** Obsolete */
     
-    ConsentApproval(InstructionalOffering.class),
-    StudentSchedulingAdvisor,
-    StudentSchedulingAdmin,
-    OfferingEnrollments(InstructionalOffering.class),
-    StudentEnrollments(Student.class),
-    CourseRequests(Session.class),
-    SchedulingAssistant(Session.class),
-    SchedulingDashboard(Session.class),
-    
-    AcademicAreas(Session.class),
-    AcademicClassifications(Session.class),
-    Majors(Session.class),
-    Minors(Session.class),
-    StudentGroups(Session.class),
-    OfferingConsentTypes,
-    CourseCreditFormats,
-	CourseCreditTypes,
-	CourseCreditUnits,
-	PositionTypes,
-	StudentSchedulingStatusTypes,
-	
-    AcademicAreaEdit(Session.class),
-    AcademicClassificationEdit(Session.class),
-    MajorEdit(Session.class),
-    MinorEdit(Session.class),
-    StudentGroupEdit(Session.class),
-    OfferingConsentTypeEdit,
-    CourseCreditFormatEdit,
-	CourseCreditTypeEdit,
-	CourseCreditUnitEdit,
-	PositionTypeEdit,
-	StudentSchedulingStatusTypeEdit,
-	
+	SolutionInformationDefinitions,
+
 	;
 	
 	private Class<?> iType;

@@ -64,6 +64,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.authority.InstructorAuthority;
+import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -324,9 +326,9 @@ public class MenuServlet implements MenuService {
 			} else if ("isSectioningEnabled".equals(right)) {
 				return OnlineSectioningService.isEnabled();
 			} else if ("isStudent".equals(right)) {
-				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole("Student");
+				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(StudentAuthority.TYPE);
 			} else if ("isInstructor".equals(right)) {
-				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole("Instructor");
+				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(InstructorAuthority.TYPE);
 			} else if ("isRegistrationEnabled".equals(right)) {
 				return OnlineSectioningService.isRegistrationEnabled();
 			} else {

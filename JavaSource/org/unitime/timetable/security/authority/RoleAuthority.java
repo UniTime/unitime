@@ -20,21 +20,12 @@
 package org.unitime.timetable.security.authority;
 
 import org.unitime.timetable.model.Roles;
-import org.unitime.timetable.security.rights.HasRights;
-import org.unitime.timetable.security.rights.Right;
 
 public class RoleAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
-	private HasRights iRights = null;
 	
 	public RoleAuthority(Roles role) {
-		super(role.getRoleId(), role.getReference(), role.getAbbv());
-		iRights = role;
-	}
-	
-	@Override
-	public boolean hasRight(Right right) {
-		return iRights.hasRight(right);
+		super(role.getRoleId(), role.getReference(), role.getAbbv(), role);
 	}
 	
 }
