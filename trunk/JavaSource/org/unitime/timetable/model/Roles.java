@@ -102,7 +102,7 @@ public class Roles extends BaseRoles implements HasRights {
     
     public boolean isUsed() {
     	return ((Number)RolesDAO.getInstance().getSession().createQuery(
-    			"count m from ManagerRole m where m.role.roleId = :roleId")
+    			"select count(m) from ManagerRole m where m.role.roleId = :roleId")
     			.setLong("roleId", getRoleId()).uniqueResult()).intValue() > 0;
     }
 }
