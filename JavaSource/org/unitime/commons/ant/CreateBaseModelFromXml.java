@@ -434,6 +434,12 @@ public class CreateBaseModelFromXml extends Task {
 					imports.add(type);
 					type = type.substring(type.lastIndexOf('.')+1);
 				}
+			} else if (el.element("element")!=null) {
+				type = fixType(el.element("element").attributeValue("type"), pkg);
+				if (type.indexOf('.')>=0) {
+					imports.add(type);
+					type = type.substring(type.lastIndexOf('.')+1);
+				}
 			} else {
 				System.err.println("Unknown type of set");
 			}
