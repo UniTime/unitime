@@ -42,6 +42,8 @@ public class SimpleEditInterface implements IsSerializable {
 		creditUnit("Course Credit Unit"),
 		position("Position Type"),
 		sectioning("Student Scheduling Status Type"),
+		roles("Roles"),
+		permissions("Permissions"),
 		;
 	
 		private String iSingular, iPlural;
@@ -142,6 +144,8 @@ public class SimpleEditInterface implements IsSerializable {
 	
 	public class RecordComparator implements Comparator<Record> {
 		public int compare(int index, Record r1, Record r2) {
+			if (index < 0)
+				return r1.getUniqueId().compareTo(r2.getUniqueId());
 			Field field = getFields()[index]; 
 			String s1 = r1.getText(field, index);
 			String s2 = r2.getText(field, index);

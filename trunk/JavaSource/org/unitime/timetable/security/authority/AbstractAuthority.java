@@ -20,13 +20,17 @@
 package org.unitime.timetable.security.authority;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
+import org.unitime.timetable.security.rights.HasRights;
+import org.unitime.timetable.security.rights.Right;
 
 public abstract class AbstractAuthority implements UserAuthority {
 	private static final long serialVersionUID = 1L;
@@ -35,11 +39,14 @@ public abstract class AbstractAuthority implements UserAuthority {
 	private String iLabel;
 	private List<UserQualifier> iQualifiers = new ArrayList<UserQualifier>();
 	private UserQualifier iSession = null;
-	
-	public AbstractAuthority(Long uniqueId, String role, String label) {
+	private Set<Right> iRights = new HashSet<Right>();
+
+	public AbstractAuthority(Long uniqueId, String role, String label, HasRights permissions) {
 		iUniqueId = uniqueId;
 		iRole = role;
 		iLabel = label;
+		for (Right right: Right.values())
+			if (permissions.hasRight(right)) iRights.add(right);
 	}
 	
 	@Override
@@ -58,6 +65,11 @@ public abstract class AbstractAuthority implements UserAuthority {
 	public String getAuthority() {
 		UserQualifier session = getAcademicSession();
 		return (getRole() + (session == null ? "" : "_" + session.getQualifierReference())).toUpperCase().replace(' ', '_');
+	}
+	
+	@Override
+	public boolean hasRight(Right right) {
+		return iRights.contains(right);
 	}
 	
 	public String toString() { return getAuthority() + " " + getQualifiers(); }

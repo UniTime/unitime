@@ -32,6 +32,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.services.SimpleEditService;
@@ -54,6 +55,7 @@ import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
@@ -69,6 +71,7 @@ import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
+import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
@@ -292,7 +295,40 @@ public class SimpleEditServlet implements SimpleEditService {
 					r.setField(4, status.hasOption(StudentSectioningStatus.Option.email) ? "true" : "false");
 					r.setField(5, status.getMessage());
 				}
-				break;				
+				break;	
+			case roles:
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 250, 40),
+						new Field("Enabled", FieldType.toggle, 40)
+						);
+				data.setSortBy(0, 1);
+				for (Roles role: RolesDAO.getInstance().findAll()) {
+					Record r = data.addRecord(role.getRoleId(), role.isManager() && !role.isUsed());
+					r.setField(0, role.getReference(), role.isManager());
+					r.setField(1, role.getAbbv());
+					r.setField(2, role.isEnabled() ? "true" : "false");
+				}
+				break;
+			case permissions:
+				List<Roles> roles = RolesDAO.getInstance().findAll(Order.asc("reference"));
+				Field[] fields = new Field[2 + roles.size()];
+				fields[0] = new Field("Name", FieldType.text, 160, 200);
+				fields[1] = new Field("Level", FieldType.text, 160, 200);
+				for (int i = 0; i < roles.size(); i++) {
+					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40);
+				}
+				data = new SimpleEditInterface(type, fields);
+				data.setSortBy(-1);
+				data.setAddable(false);
+				for (Right right: Right.values()) {
+					Record r = data.addRecord((long)right.ordinal(), false);
+					r.setField(0, right.toString(), false);
+					r.setField(1, right.hasType() ? right.type().getSimpleName().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2").replace("_", " ") : "Global", false);
+					for (int i = 0; i < roles.size(); i++)
+						r.setField(2 + i, roles.get(i).getRights().contains(right.name()) ? "true" : "false");
+				}
+				break;
 			}
 			data.setEditable(getSessionContext().hasPermission(type2editRight(type)));
 			return data;
@@ -947,6 +983,84 @@ public class SimpleEditServlet implements SimpleEditService {
 								null);
 					}	
 					break;
+				case roles:
+					for (Roles role: RolesDAO.getInstance().findAll()) {
+						Record r = data.getRecord(role.getRoleId());
+						if (r == null) {
+							if (!role.isManager())
+								throw new PageAccessException("Role "  + role.getAbbv() + " cannot be deleted.");
+							ChangeLog.addChange(hibSession,
+									getSessionContext(),
+									role,
+									role.getAbbv(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(role);
+						} else {
+							boolean changed = 
+								!ToolBox.equals(role.getReference(), r.getField(0)) ||
+								!ToolBox.equals(role.getAbbv(), r.getField(1)) ||
+								!ToolBox.equals(role.isEnabled(), "true".equals(r.getField(2)));
+							role.setReference(r.getField(0));
+							role.setAbbv(r.getField(1));
+							role.setEnabled("true".equals(r.getField(2)));
+							hibSession.saveOrUpdate(role);
+							if (changed)
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										role,
+										role.getAbbv(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						Roles role = new Roles();
+						role.setReference(r.getField(0));
+						role.setAbbv(r.getField(1));
+						role.setEnabled("true".equals(r.getField(2)));
+						role.setManager(true);
+						r.setUniqueId((Long)hibSession.save(role));
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								role,
+								role.getAbbv(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
+				case permissions:
+					List<Roles> roles = RolesDAO.getInstance().findAll(Order.asc("reference"));
+					Set<Roles> changed = new HashSet<Roles>();
+					for (Record r: data.getRecords()) {
+						Right right = Right.values()[(int)r.getUniqueId().longValue()];
+						for (int i = 0; i < roles.size(); i++) {
+							boolean newValue = "true".equals(r.getField(2 + i));
+							boolean oldValue = roles.get(i).getRights().contains(right.name());
+							if (newValue != oldValue) {
+								changed.add(roles.get(i));
+								if (newValue) roles.get(i).getRights().add(right.name());
+								else roles.get(i).getRights().remove(right.name());
+							}
+						}
+					}
+					for (Roles role: changed) {
+						hibSession.saveOrUpdate(role);
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								role,
+								role.getAbbv(),
+								Source.SIMPLE_EDIT, 
+								Operation.UPDATE,
+								null,
+								null);
+					}
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1007,6 +1121,10 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.PositionTypes;
 		case sectioning:
 			return Right.StudentSchedulingStatusTypes;
+		case roles:
+			return Right.RoleEdit;
+		case permissions:
+			return Right.PermissionEdit;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1036,6 +1154,10 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.PositionTypeEdit;
 		case sectioning:
 			return Right.StudentSchedulingStatusTypeEdit;
+		case roles:
+			return Right.Roles;
+		case permissions:
+			return Right.Permissions;
 		default:
 			return Right.IsAdmin;
 		}

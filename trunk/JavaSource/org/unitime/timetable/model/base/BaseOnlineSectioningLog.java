@@ -44,7 +44,7 @@ public abstract class BaseOnlineSectioningLog implements Serializable {
 	public static String PROP_OPERATION = "operation";
 	public static String PROP_ACTION = "action";
 	public static String PROP_RESULT = "result";
-	public static String PROP_USER = "user";
+	public static String PROP_USER_ID = "user";
 
 	public BaseOnlineSectioningLog() {
 		initialize();

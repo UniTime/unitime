@@ -20,6 +20,8 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.Roles;
 
@@ -29,11 +31,16 @@ public abstract class BaseRoles implements Serializable {
 	private Long iRoleId;
 	private String iReference;
 	private String iAbbv;
+	private Boolean iManager;
+	private Boolean iEnabled;
 
+	private Set<String> iRights;
 
 	public static String PROP_ROLE_ID = "roleId";
 	public static String PROP_REFERENCE = "reference";
 	public static String PROP_ABBV = "abbv";
+	public static String PROP_MANAGER = "manager";
+	public static String PROP_ENABLED = "enabled";
 
 	public BaseRoles() {
 		initialize();
@@ -55,6 +62,21 @@ public abstract class BaseRoles implements Serializable {
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	public Boolean isManager() { return iManager; }
+	public Boolean getManager() { return iManager; }
+	public void setManager(Boolean manager) { iManager = manager; }
+
+	public Boolean isEnabled() { return iEnabled; }
+	public Boolean getEnabled() { return iEnabled; }
+	public void setEnabled(Boolean enabled) { iEnabled = enabled; }
+
+	public Set<String> getRights() { return iRights; }
+	public void setRights(Set<String> rights) { iRights = rights; }
+	public void addTorights(String string) {
+		if (iRights == null) iRights = new HashSet<String>();
+		iRights.add(string);
+	}
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Roles)) return false;
 		if (getRoleId() == null || ((Roles)o).getRoleId() == null) return false;
@@ -73,6 +95,8 @@ public abstract class BaseRoles implements Serializable {
 	public String toDebugString() {
 		return "Roles[" +
 			"\n	Abbv: " + getAbbv() +
+			"\n	Enabled: " + getEnabled() +
+			"\n	Manager: " + getManager() +
 			"\n	Reference: " + getReference() +
 			"\n	RoleId: " + getRoleId() +
 			"]";
