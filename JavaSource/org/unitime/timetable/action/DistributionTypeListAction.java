@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -94,8 +93,7 @@ public class DistributionTypeListAction extends Action {
 		    } else if ("P43210R".equals(d.getAllowedPref())) {
 		    	allowPref = "<i>All</i>";
 		    } else {
-		    	for (Enumeration e=PreferenceLevel.elements();e.hasMoreElements();) {
-		    		PreferenceLevel p = (PreferenceLevel)e.nextElement();
+		    	for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
 		    		if (d.getAllowedPref().indexOf(PreferenceLevel.prolog2char(p.getPrefProlog()))<0) continue;
 		    		if (allowPref==null)
 		    			allowPref="";

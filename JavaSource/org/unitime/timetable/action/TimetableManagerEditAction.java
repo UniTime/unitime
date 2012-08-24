@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -310,26 +309,15 @@ public class TimetableManagerEditAction extends Action {
      * Display only those roles not already assigned to the manager
      * @param request
      */
-    private void setupRoles(
-            HttpServletRequest request, 
-            TimetableManagerForm frm ) {
+    private void setupRoles(HttpServletRequest request, TimetableManagerForm frm ) {
+        List<Roles> roles = Roles.findAll(true);
         
-        Vector v = Roles.getRolesList(false);
-        Vector rolesList = (Vector) v.clone();
+        if (frm.getRoleRefs() != null && !frm.getRoleRefs().isEmpty())
+        	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )
+        		if (frm.getRoleRefs().contains(i.next().getReference()))
+        			i.remove();
         
-        ArrayList exclude = new ArrayList(frm.getRoleRefs()); 
-        
-        if (exclude!=null && exclude.size()>0) {
-            for (int i=0; i<exclude.size(); i++) {
-                for (int j=(rolesList.size()-1); j>=0; j--) {
-                    Roles role = (Roles) rolesList.elementAt(j);
-                    if (role.getReference().equals(exclude.get(i).toString()))
-                        rolesList.remove(j);
-                }
-            }
-        }
-        
-        request.setAttribute(Roles.ROLES_ATTR_NAME, rolesList);
+        request.setAttribute(Roles.ROLES_ATTR_NAME, roles);
     }
 
     /**

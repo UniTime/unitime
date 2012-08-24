@@ -20,10 +20,9 @@
 package org.unitime.timetable.model;
 
 import java.awt.Color;
-import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
@@ -162,34 +161,20 @@ public class PreferenceLevel extends BasePreferenceLevel {
 		return sPref2color;
 	}
 	
-    /** Preference Levels List **/
-    private static Vector prefLevelsList = null;
-     
-	/**
+    /**
 	 * Retrieves all preference levels in the database
 	 * ordered by column pref_id
-	 * @param refresh true - refreshes the list from database
 	 * @return Vector of PreferenceLevel objects
 	 */
-    public static synchronized Vector getPreferenceLevelList(boolean refresh) {
-
-        if(prefLevelsList!=null && !refresh)
-            return prefLevelsList;
-        
-        PreferenceLevelDAO pdao = new PreferenceLevelDAO();
-
-        List l = pdao.findAll(Order.asc("prefId"));
-        prefLevelsList = new Vector(l);
-        return prefLevelsList;
+    public static synchronized List<PreferenceLevel> getPreferenceLevelList() {
+    	return PreferenceLevelDAO.getInstance().findAll(Order.asc("prefId"));
     }
 
-    public static Vector getPreferenceLevelListSoftOnly(boolean refresh) {
-    	Vector ret = new Vector();
-    	for (Enumeration e=getPreferenceLevelList(refresh).elements();e.hasMoreElements();) {
-    		PreferenceLevel level = (PreferenceLevel)e.nextElement();
-    		if (sRequired.equals(level.getPrefProlog())) continue;
-    		if (sProhibited.equals(level.getPrefProlog())) continue;
-    		ret.addElement(level);
+    public static List<PreferenceLevel> getPreferenceLevelListSoftOnly() {
+    	List<PreferenceLevel> ret = getPreferenceLevelList();
+    	for (Iterator<PreferenceLevel> i = ret.iterator(); i.hasNext(); ) {
+    		PreferenceLevel level = i.next();
+    		if (sRequired.equals(level.getPrefProlog()) || sProhibited.equals(level.getPrefProlog())) i.remove();
     	}
     	return ret;
     }
@@ -219,48 +204,13 @@ public class PreferenceLevel extends BasePreferenceLevel {
     }
 
     /**
-     * Retrieves Preferece Level list as enumeration
-     * @return Enumerated list of PreferenceLevel objects
-     */
-    public static Enumeration elements() {
-        Vector sPreferences = getPreferenceLevelList(false);
-        return sPreferences.elements();
-    }
-    
-    /**
-     * @return No. of Preference Levels
-     */
-    public static int size() {
-        Vector sPreferences = getPreferenceLevelList(false);
-        return sPreferences.size();
-    }
-    
-    /**
-     * Retrieves Preferece Level from the list  
-     * @param i Index 
-     * @return PreferenceLevel object
-     */
-    public static Preference elementAt(int i) {
-        Vector sPreferences = getPreferenceLevelList(false);
-        return (Preference) sPreferences.elementAt(i);
-    }
-    
-    public static int indexOf(PreferenceLevel pref) {
-        Vector sPreferences = getPreferenceLevelList(false);
-        return sPreferences.indexOf(pref);
-    }
-
-    /**
      * Retrieves PreferenceLevel for given Pref Id (not uniqueid)
      * @param id Preference Id
      * @return PreferenceLevel object
      */
     public static PreferenceLevel getPreferenceLevel(int id) {
-        Vector sPreferences = getPreferenceLevelList(false);
-        for (Enumeration e=sPreferences.elements(); e.hasMoreElements(); ) {
-            PreferenceLevel p = (PreferenceLevel)e.nextElement();
-            if (p.getPrefId().intValue()==id) return p;
-        }
+        for (PreferenceLevel p: getPreferenceLevelList())
+            if (p.getPrefId() == id) return p;
         return null;
     }
     
@@ -270,11 +220,8 @@ public class PreferenceLevel extends BasePreferenceLevel {
      * @return PreferenceLevel object
      */
     public static PreferenceLevel getPreferenceLevel(String prologId) {
-        Vector sPreferences = getPreferenceLevelList(false);
-        for (Enumeration e=sPreferences.elements(); e.hasMoreElements(); ) {
-            PreferenceLevel p = (PreferenceLevel)e.nextElement();
+        for (PreferenceLevel p: getPreferenceLevelList())
             if (p.getPrefProlog().equalsIgnoreCase(prologId)) return p;
-        }
         return null;
     }
 

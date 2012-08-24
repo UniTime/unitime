@@ -19,11 +19,11 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Vector;
 
+import org.hibernate.Criteria;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
 import org.unitime.timetable.security.rights.HasRights;
@@ -62,35 +62,11 @@ public class Roles extends BaseRoles implements HasRights {
 	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
-
-	/** Roles List **/
-    private static Vector rolesList = null;
-    
-	/**
-	 * Retrieves all roles in the database
-	 * ordered by column label
-	 * @param refresh true - refreshes the list from database
-	 * @return Vector of Roles objects
-	 */
-    public static synchronized Vector getRolesList(boolean refresh) {
-        
-        if(rolesList!=null && !refresh)
-            return rolesList;
-        
-
-        RolesDAO rdao = new RolesDAO();
-
-        List l = rdao.findAll(Order.asc("abbv"));
-        rolesList = new Vector(l);
-        return rolesList;
-    }
     
     public static Roles getRole(String roleRef) {
-        for (Enumeration e=getRolesList(false).elements();e.hasMoreElements();) {
-            Roles role = (Roles)e.nextElement();
-            if (roleRef.equals(role.getReference())) return role;
-        }
-        return null;
+    	return (Roles)RolesDAO.getInstance().getSession().createQuery(
+    			"from Roles where reference = :reference")
+    			.setString("reference", roleRef).setCacheable(true).uniqueResult();
     }
 
     @Override
@@ -105,4 +81,12 @@ public class Roles extends BaseRoles implements HasRights {
     			"select count(m) from ManagerRole m where m.role.roleId = :roleId")
     			.setLong("roleId", getRoleId()).uniqueResult()).intValue() > 0;
     }
+    
+    public static List<Roles> findAll(boolean managerOnly) {
+    	Criteria criteria = RolesDAO.getInstance().getSession().createCriteria(Roles.class);
+    	if (managerOnly)
+    		criteria = criteria.add(Restrictions.eq("manager", Boolean.TRUE));
+    	return (List<Roles>)criteria.addOrder(Order.asc("abbv")).setCacheable(true).list();
+    }
+    		
 }
