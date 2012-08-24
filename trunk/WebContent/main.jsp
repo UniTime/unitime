@@ -18,7 +18,7 @@
  * 
 --%>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" errorPage="/error.jsp"%>
-<%@ page import="org.unitime.timetable.model.ApplicationConfig"%>
+<%@ page import="org.unitime.timetable.ApplicationProperties"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
@@ -145,7 +145,7 @@
 <TABLE width="100%" height="600px" align="center" >
 	<TR>
 	<% 
-	String sysMessage = ApplicationConfig.getConfigValue(Constants.CFG_SYSTEM_MESSAGE, "");
+	String sysMessage = ApplicationProperties.getProperty("tmtbl.system_message");
 	boolean showBackground = (sysMessage == null || sysMessage.trim().isEmpty());
 	%>
 	<tt:registration method="hasMessage">
