@@ -19,13 +19,12 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseCourseCreditType;
 import org.unitime.timetable.model.dao.CourseCreditTypeDAO;
+import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
 
 
 
@@ -49,46 +48,19 @@ public class CourseCreditType extends BaseCourseCreditType {
 
 	public static String COURSE_CREDIT_TYPE_ATTR_NAME = "courseCreditTypeList";
 	
-	public static Vector courseCreditTypeList = null;
-	
-	public static synchronized Vector getCourseCreditTypeList(boolean refresh) {
-		if (courseCreditTypeList != null && !refresh){
-			return(courseCreditTypeList);
-		}
-		
-		CourseCreditTypeDAO cctDao = new CourseCreditTypeDAO();
-        
-        List l = cctDao.findAll(Order.asc("label"));
-		courseCreditTypeList = new Vector(l);
-        return(courseCreditTypeList);
+	public static synchronized List<CourseCreditType> getCourseCreditTypeList() {
+		return CourseCreditTypeDAO.getInstance().findAll(Order.asc("label"));
 	}
 	
 	public static CourseCreditType getCourseCreditTypeForReference(String referenceString){
-		if (referenceString == null || referenceString.length() == 0){
-			return(null);
-		}
-		CourseCreditType cct = null;
-		for(Iterator it = getCourseCreditTypeList(false).iterator(); it.hasNext(); ){
-			cct = (CourseCreditType) it.next();
-			if (referenceString.equals(cct.getReference())){
-				return(cct);
-			}
-		}
-		return(null);
+		if (referenceString == null || referenceString.isEmpty()) return null;
+		return (CourseCreditType)CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
+				"from CourseCreditType where reference = :reference")
+				.setString("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 
 	public static CourseCreditType getCourseCreditTypeForUniqueId(Long uniqueId){
-		if (uniqueId == null){
-			return(null);
-		}
-		CourseCreditType cct = null;
-		for(Iterator it = getCourseCreditTypeList(false).iterator(); it.hasNext(); ){
-			cct = (CourseCreditType) it.next();
-			if (uniqueId.equals(cct.getUniqueId())){
-				return(cct);
-			}
-		}
-		return(null);
+		return (uniqueId == null ? null : CourseCreditTypeDAO.getInstance().get(uniqueId));
 	}
 	
 	public String getAbbv() {

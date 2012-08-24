@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -231,8 +230,7 @@ public class ExamDistributionPrefsAction extends Action {
         	DistributionType dist = (new DistributionTypeDAO().get(new Long(frm.getDistType())));
         	frm.setDescription(dist.getDescr());
         	boolean containsPref = false; 
-        	for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
-        		PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+        	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
         		if (dist.isAllowed(pref)) {
         			prefs.addElement(pref);
         			if (frm.getPrefLevel()!=null && !frm.getPrefLevel().equals(Preference.BLANK_PREF_VALUE) && pref.getPrefId().equals(new Integer(frm.getPrefLevel()))) containsPref = true;

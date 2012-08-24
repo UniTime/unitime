@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseOfferingConsentType;
@@ -50,37 +48,20 @@ public class OfferingConsentType extends BaseOfferingConsentType {
     /** Request attribute name for available consent typess **/
     public static String CONSENT_TYPE_ATTR_NAME = "consentTypeList";  
     
-    /** Consent Type List **/
-    private static Vector consentTypeList = null;
-    
 	/**
 	 * Retrieves all consent types in the database
 	 * ordered by column label
-	 * @param refresh true - refreshes the list from database
-	 * @return Vector of ConsentType objects
+	 * @return List of ConsentType objects
 	 */
-    public static synchronized Vector getConsentTypeList(boolean refresh) {
-        if(consentTypeList!=null && !refresh)
-            return consentTypeList;
-        
-        OfferingConsentTypeDAO cdao = new OfferingConsentTypeDAO();
-
-        List l = cdao.findAll(Order.asc("label"));
-        consentTypeList = new Vector(l);
-        return consentTypeList;
+    public static List<OfferingConsentType> getConsentTypeList() {
+    	return OfferingConsentTypeDAO.getInstance().findAll(Order.asc("label"));
     }
-	public static OfferingConsentType getOfferingConsentTypeForReference(String referenceString){
-		if (referenceString == null || referenceString.length() == 0){
-			return(null);
-		}
-		OfferingConsentType oct = null;
-		for(Iterator it = getConsentTypeList(false).iterator(); it.hasNext(); ){
-			oct = (OfferingConsentType) it.next();
-			if (referenceString.equals(oct.getReference())){
-				return(oct);
-			}
-		}
-		return(null);
+    
+	public static OfferingConsentType getOfferingConsentTypeForReference(String referenceString) {
+		if (referenceString == null || referenceString.isEmpty()) return null;
+		return (OfferingConsentType)OfferingConsentTypeDAO.getInstance().getSession().createQuery(
+				"from OfferingConsentType where reference = :reference")
+				.setString("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
 }

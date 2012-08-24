@@ -19,13 +19,12 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import org.hibernate.criterion.Order;
 import org.unitime.timetable.model.base.BaseCourseCreditFormat;
 import org.unitime.timetable.model.dao.CourseCreditFormatDAO;
+import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
 
 
 
@@ -49,46 +48,19 @@ public class CourseCreditFormat extends BaseCourseCreditFormat {
 
 	public static String COURSE_CREDIT_FORMAT_ATTR_NAME = "courseCreditFormatList";
 	
-	public static Vector courseCreditFormatList = null;
-	
-	public synchronized static Vector getCourseCreditFormatList(boolean refresh) {
-		if (courseCreditFormatList != null && !refresh){
-			return(courseCreditFormatList);
-		}
-		
-		CourseCreditFormatDAO ccfDao = new CourseCreditFormatDAO();
-		
-        List l = ccfDao.findAll(Order.asc("label"));
-		courseCreditFormatList = new Vector(l);
-        return(courseCreditFormatList);
+	public synchronized static List<CourseCreditFormat> getCourseCreditFormatList() {
+		return CourseCreditFormatDAO.getInstance().findAll(Order.asc("label"));
 	}
 	
 	public static CourseCreditFormat getCourseCreditForReference(String referenceString){
-		if (referenceString == null || referenceString.length() == 0){
-			return(null);
-		}
-		CourseCreditFormat ccf = null;
-		for(Iterator it = getCourseCreditFormatList(false).iterator(); it.hasNext(); ){
-			ccf = (CourseCreditFormat) it.next();
-			if (referenceString.equals(ccf.getReference())){
-				return(ccf);
-			}
-		}
-		return(null);
+		if (referenceString == null || referenceString.isEmpty()) return null;
+		return (CourseCreditFormat)CourseCreditUnitTypeDAO.getInstance().getSession().createQuery(
+				"from CourseCreditFormat where reference = :reference")
+				.setString("reference", referenceString).setMaxResults(1).setCacheable(true).uniqueResult();
 	}
 	
-	public static CourseCreditFormat getCourseCreditForUniqueId(Integer uniqueId){
-		if (uniqueId == null){
-			return(null);
-		}
-		CourseCreditFormat ccf = null;
-		for(Iterator it = getCourseCreditFormatList(false).iterator(); it.hasNext(); ){
-			ccf = (CourseCreditFormat) it.next();
-			if (uniqueId.equals(ccf.getUniqueId())){
-				return(ccf);
-			}
-		}
-		return(null);
+	public static CourseCreditFormat getCourseCreditForUniqueId(Long uniqueId) {
+		return (uniqueId == null ? null : CourseCreditFormatDAO.getInstance().get(uniqueId));
 	}
 	
 	public String getAbbv() {

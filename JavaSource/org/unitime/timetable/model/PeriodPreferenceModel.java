@@ -30,7 +30,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
@@ -251,10 +250,8 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
     
     public String[] getPreferenceNames() {
-        Vector prefs = PreferenceLevel.getPreferenceLevelList(false);
         ArrayList<String> ret = new ArrayList<String>();
-        for (Enumeration e=prefs.elements();e.hasMoreElements();) {
-            PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+        for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
             if (!iAllowRequired && PreferenceLevel.sRequired.equals(pref.getPrefProlog())) continue;
             if (!iAllowHard && pref.isHard() && !hasPreference(pref.getPrefProlog())) continue;
             ret.add(pref.getPrefProlog());

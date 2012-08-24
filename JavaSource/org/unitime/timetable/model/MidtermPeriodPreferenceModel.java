@@ -22,13 +22,11 @@ package org.unitime.timetable.model;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -291,10 +289,8 @@ public class MidtermPeriodPreferenceModel {
         StringBuffer legendCode = new StringBuffer("[");
         StringBuffer legendText = new StringBuffer("[");
         StringBuffer legendColor = new StringBuffer("[");
-        Vector prefs = new Vector(PreferenceLevel.getPreferenceLevelList(false));
-        prefs.remove(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
-        for (Enumeration e=prefs.elements();e.hasMoreElements();) {
-            PreferenceLevel p = (PreferenceLevel)e.nextElement();
+        for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList()) {
+        	if (p.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired)) continue;
             legendCode.append("'"+p.getPrefProlog()+"',");
             legendText.append("'"+p.getPrefName()+"',");
             legendColor.append("'"+PreferenceLevel.prolog2bgColor(p.getPrefProlog())+"',");
