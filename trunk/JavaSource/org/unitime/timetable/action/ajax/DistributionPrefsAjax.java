@@ -21,7 +21,6 @@ package org.unitime.timetable.action.ajax;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -115,8 +114,7 @@ public class DistributionPrefsAjax extends Action {
         if (distTypeId==null || distTypeId.length()==0 || distTypeId.equals(Preference.BLANK_PREF_VALUE)) return;
         DistributionType dist = new DistributionTypeDAO().get(Long.valueOf(distTypeId));
         print(out, "desc", dist.getDescr().replaceAll("<", "@lt@").replaceAll(">", "@gt@").replaceAll("\"","@quot@").replaceAll("&","@amp@"));
-        for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
-            PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+        for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
             if (dist.isAllowed(pref))
                 print(out, pref.getPrefId().toString(), pref.getPrefName(), pref.prefcolor());
         }

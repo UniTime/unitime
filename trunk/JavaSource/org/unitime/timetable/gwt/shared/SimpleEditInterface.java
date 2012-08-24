@@ -42,8 +42,8 @@ public class SimpleEditInterface implements IsSerializable {
 		creditUnit("Course Credit Unit"),
 		position("Position Type"),
 		sectioning("Student Scheduling Status Type"),
-		roles("Roles"),
-		permissions("Permissions"),
+		roles("Role"),
+		permissions("Permission"),
 		;
 	
 		private String iSingular, iPlural;

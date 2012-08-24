@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -293,10 +294,11 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	if (isExactTime()) return iPref;
     	int[] limit = getSelectionLimits(getDefaultSelection());
     	BigInteger idn = new BigInteger("0");
-    	BigInteger mx = new BigInteger(String.valueOf(PreferenceLevel.size()));
+    	List<PreferenceLevel> prefs = PreferenceLevel.getPreferenceLevelList();
+    	BigInteger mx = new BigInteger(String.valueOf(prefs.size()));
         for (int d=limit[2];d<=limit[3];d++)
             for (int t=limit[0];t<=limit[1];t++) {
-            	BigInteger add = new BigInteger(String.valueOf(PreferenceLevel.indexOf(PreferenceLevel.getPreferenceLevel(getPreference(d,t)))));
+            	BigInteger add = new BigInteger(String.valueOf(prefs.indexOf(PreferenceLevel.getPreferenceLevel(getPreference(d,t)))));
             	idn = idn.multiply(mx).add(add);
             }
         StringBuffer s = new StringBuffer();
@@ -841,9 +843,8 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	}
     
 	public String[] getPreferenceNames() {
-		Vector prefs = PreferenceLevel.getPreferenceLevelList(false);
+		List<PreferenceLevel> prefs = PreferenceLevel.getPreferenceLevelList();
 		if (!iAllowHard) {
-			prefs = new Vector(prefs);
 	    	boolean hasRequired = false, hasProhibited = false;
 	    	for (int d=0;d<getNrDays();d++)
 	    		for (int t=0;t<getNrTimes();t++) {
@@ -859,8 +860,8 @@ public class TimePatternModel implements RequiredTimeTableModel {
 		}
 		String[] ret = new String[prefs.size()];
 		int idx=0;
-		for (Enumeration e=prefs.elements();e.hasMoreElements();idx++) {
-			ret[idx]=((PreferenceLevel)e.nextElement()).getPrefProlog();
+		for (PreferenceLevel p: prefs) {
+			ret[idx++] = p.getPrefProlog();
 		}
 		return ret;
 	}

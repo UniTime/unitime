@@ -22,7 +22,6 @@ package org.unitime.timetable.form;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -614,8 +613,7 @@ public class ExamPeriodEditForm extends ActionForm {
     
     public Vector getPrefLevels() {
         Vector ret = new Vector();
-        for (Enumeration e=PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
-            PreferenceLevel level = (PreferenceLevel)e.nextElement();
+        for (PreferenceLevel level: PreferenceLevel.getPreferenceLevelList()) {
             if (PreferenceLevel.sRequired.equals(level.getPrefProlog())) continue;
             ret.addElement(level);
         }

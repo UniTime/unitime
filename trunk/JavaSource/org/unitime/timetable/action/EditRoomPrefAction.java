@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -167,8 +166,7 @@ public class EditRoomPrefAction extends Action {
 		
         //set availabe room preferences
     	Vector<PreferenceLevel> prefs = new Vector<PreferenceLevel>();
-    	for (Enumeration e = PreferenceLevel.getPreferenceLevelList(false).elements();e.hasMoreElements();) {
-    		PreferenceLevel pref = (PreferenceLevel)e.nextElement();
+    	for (PreferenceLevel pref: PreferenceLevel.getPreferenceLevelList()) {
     		if (!pref.getPrefProlog().equalsIgnoreCase(PreferenceLevel.sRequired))
     			prefs.addElement(pref);
     	}

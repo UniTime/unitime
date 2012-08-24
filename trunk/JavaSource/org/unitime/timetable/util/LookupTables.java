@@ -134,8 +134,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupPrefLevels(HttpServletRequest request) throws Exception {
-        Vector v = PreferenceLevel.getPreferenceLevelList(false);
-        request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, v);
+        request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, PreferenceLevel.getPreferenceLevelList());
     }
     
     /**
@@ -144,8 +143,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupPrefLevelsSoftOnly(HttpServletRequest request) throws Exception {
-        Vector v = PreferenceLevel.getPreferenceLevelListSoftOnly(false);
-        request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, v);
+        request.setAttribute(PreferenceLevel.PREF_LEVEL_ATTR_NAME, PreferenceLevel.getPreferenceLevelListSoftOnly());
     }
 
     /**
@@ -302,8 +300,7 @@ public class LookupTables {
      * @throws Exception
      */
     public static void setupRoles(HttpServletRequest request) throws Exception {
-        Vector v = Roles.getRolesList(false);
-        request.setAttribute(Roles.ROLES_ATTR_NAME, v);
+        request.setAttribute(Roles.ROLES_ATTR_NAME, Roles.findAll(true));
     }
 
     /**
@@ -334,18 +331,15 @@ public class LookupTables {
     }
 
     public static void setupCourseCreditFormats(HttpServletRequest request) throws Exception {
-        Vector v = CourseCreditFormat.getCourseCreditFormatList(false);
-        request.setAttribute(CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME, v);
+        request.setAttribute(CourseCreditFormat.COURSE_CREDIT_FORMAT_ATTR_NAME, CourseCreditFormat.getCourseCreditFormatList());
     }
     
     public static void setupCourseCreditTypes(HttpServletRequest request) throws Exception {
-        Vector v = CourseCreditType.getCourseCreditTypeList(false);
-        request.setAttribute(CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME, v);
+        request.setAttribute(CourseCreditType.COURSE_CREDIT_TYPE_ATTR_NAME, CourseCreditType.getCourseCreditTypeList());
     }
     
     public static void setupCourseCreditUnitTypes(HttpServletRequest request) throws Exception {
-        Vector v = CourseCreditUnitType.getCourseCreditUnitTypeList(false);
-        request.setAttribute(CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME, v);
+        request.setAttribute(CourseCreditUnitType.COURSE_CREDIT_UNIT_TYPE_ATTR_NAME, CourseCreditUnitType.getCourseCreditUnitTypeList());
     }
 
     /**
@@ -362,8 +356,7 @@ public class LookupTables {
      * @param request
      */
     public static void setupConsentType(HttpServletRequest request) {
-        Vector v = new Vector(OfferingConsentType.getConsentTypeList(false)); 
-        request.setAttribute(OfferingConsentType.CONSENT_TYPE_ATTR_NAME, v);
+        request.setAttribute(OfferingConsentType.CONSENT_TYPE_ATTR_NAME, OfferingConsentType.getConsentTypeList());
     }
 
     /**

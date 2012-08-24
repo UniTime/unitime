@@ -47,7 +47,7 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 			unitimePermissionCheck.checkPermission(user, domainObject, right);
 			return true;
 		} catch (AccessDeniedException e) {
-			sLog.info(permission + " failed for " + domainObject + ": " + e.getMessage());
+			sLog.debug(permission + " failed for " + domainObject + ": " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + domainObject + ": " + e.getMessage());
@@ -63,7 +63,7 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 			unitimePermissionCheck.checkPermission(user, targetId, targetType, right);
 			return true;
 		} catch (AccessDeniedException e) {
-			sLog.info(permission + " failed for " + targetType + "@"+ targetId + ": " + e.getMessage());
+			sLog.debug(permission + " failed for " + targetType + "@"+ targetId + ": " + e.getMessage());
 			throw e;
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + targetType + "@"+ targetId + ": " + e.getMessage());
