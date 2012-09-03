@@ -238,6 +238,11 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
             Config config = new Config(ioc.getUniqueId(), configLimit, courseName + " [" + ioc.getName() + "]", offering);
             TreeSet<SchedulingSubpart> subparts = new TreeSet<SchedulingSubpart>(new SchedulingSubpartComparator());
             subparts.addAll(ioc.getSchedulingSubparts());
+            boolean subpartCredit = false;
+            for (SchedulingSubpart ss: subparts) {
+            	if (ss.getCredit() != null) { subpartCredit = true; break; }
+            }
+            boolean offeringCredit = !subpartCredit;
             for (SchedulingSubpart ss: subparts) {
                 String sufix = ss.getSchedulingSubpartSuffix(helper.getHibSession());
                 Subpart parentSubpart = (ss.getParentSubpart() == null ? null : (Subpart)ss2subpart.get(ss.getParentSubpart().getUniqueId()));
@@ -247,6 +252,12 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                 }
                 Subpart subpart = new Subpart(ss.getUniqueId().longValue(), df.format(ss.getItype().getItype()) + sufix,
                 		ss.getItype().getAbbv().trim(), config, parentSubpart);
+                if (subpartCredit && ss.getCredit() != null) {
+                	subpart.setCredit(ss.getCredit().creditAbbv() + "|" + ss.getCredit().creditText());
+                } else if (offeringCredit && io.getCredit() != null) {
+                	subpart.setCredit(io.getCredit().creditAbbv() + "|" + io.getCredit().creditText());
+                	offeringCredit = false;
+                }
                 subpart.setAllowOverlap(ss.isStudentAllowOverlap());
                 ss2subpart.put(ss.getUniqueId(), subpart);
                 for (Iterator<Class_> j = ss.getClasses().iterator(); j.hasNext(); ) {
