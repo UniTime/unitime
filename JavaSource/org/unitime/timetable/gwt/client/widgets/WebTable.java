@@ -459,8 +459,30 @@ public class WebTable extends Composite {
 		public NoteCell(String text) {
 			super(null);
 			iNote = new P("unitime-Note");
-			iNote.setHTML(text.replace("\n", "<br>"));
-			iNote.setTitle(text);
+			iNote.setHTML(text == null ? "" : text.replace("\n", "<br>"));
+			if (text != null) iNote.setTitle(text);
+		}
+		
+		public String getValue() { return iNote.getHTML(); }
+		public Widget getWidget() { return iNote; }
+		public void setStyleName(String styleName) {
+			super.setStyleName(styleName);
+		}
+	}
+	
+	public static class AbbvTextCell extends Cell {
+		private P iNote = null;
+		
+		public AbbvTextCell(String text) {
+			super(null);
+			iNote = new P("unitime-Note");
+			if (text != null && text.indexOf('|') >= 0) {
+				iNote.setHTML(text.substring(0, text.indexOf('|')));
+				iNote.setTitle(text.substring(text.indexOf('|') + 1).replace("\n", "<br>"));
+			} else {
+				iNote.setHTML(text == null ? "" : text.replace("\n", "<br>"));
+				if (text != null) iNote.setTitle(text);
+			}
 		}
 		
 		public String getValue() { return iNote.getHTML(); }

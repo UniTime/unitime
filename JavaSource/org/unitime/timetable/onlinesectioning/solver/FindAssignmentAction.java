@@ -295,6 +295,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				Subpart clonedSubpart = new Subpart(subpart.getId(), subpart.getInstructionalType(), subpart.getName(), clonedConfig,
 						(subpart.getParent() == null ? null: subparts.get(subpart.getParent())));
 				clonedSubpart.setAllowOverlap(subpart.isAllowOverlap());
+				clonedSubpart.setCredit(subpart.getCredit());
 				subparts.put(subpart, clonedSubpart);
 				for (Iterator<Section> g = subpart.getSections().iterator(); g.hasNext();) {
 					Section section = g.next();
@@ -647,6 +648,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setHasAlternatives(hasAlt);
 					a.addNote(course.getNote());
 					a.addNote(section.getNote());
+					a.setCredit(section.getSubpart().getCredit());
 					int dist = 0;
 					String from = null;
 					TreeSet<String> overlap = new TreeSet<String>();
