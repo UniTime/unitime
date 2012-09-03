@@ -105,6 +105,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 
+	@DefaultMessage("Credit")
+	String colCredit();
+
 	@DefaultMessage("Year")
 	String colYear();
 	
