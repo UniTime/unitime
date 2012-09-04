@@ -62,6 +62,10 @@ public class WebTable extends Composite {
 	private ArrayList<RowClickHandler> iRowClickHandlers = new ArrayList<RowClickHandler>();
 	private ArrayList<RowDoubleClickHandler> iRowDoubleClickHandlers = new ArrayList<RowDoubleClickHandler>();
 	
+	private ArrayList<RowOverHandler> iRowOverHandlers = new ArrayList<RowOverHandler>();
+	private ArrayList<RowOutHandler> iRowOutHandlers = new ArrayList<RowOutHandler>();
+	private ArrayList<RowMoveHandler> iRowMoveHandlers = new ArrayList<RowMoveHandler>();
+	
 	private RowSelectingFlexTable iTable;
 	
 	private int iSelectedRow = -1;
@@ -251,6 +255,18 @@ public class WebTable extends Composite {
 		iRowDoubleClickHandlers.add(rowDoubleClickHandler);
 	}
 	
+	public void addRowOverHandler(RowOverHandler rowOverHandler) {
+		iRowOverHandlers.add(rowOverHandler);
+	}
+
+	public void addRowOutHandler(RowOutHandler rowOutHandler) {
+		iRowOutHandlers.add(rowOutHandler);
+	}
+
+	public void addRowMoveHandler(RowMoveHandler rowMoveHandler) {
+		iRowMoveHandlers.add(rowMoveHandler);
+	}
+
 	public void fireRowClickEvent(Event event, int row) {
 		RowClickEvent e = new RowClickEvent(event, iRows[row], row);
 		for (RowClickHandler h: iRowClickHandlers)
@@ -262,7 +278,7 @@ public class WebTable extends Composite {
 		for (RowDoubleClickHandler h: iRowDoubleClickHandlers)
 			h.onRowDoubleClick(e);
 	}
-
+	
 	public void setSelectedRow(int row) {
 		if (iSelectedRow>=0) {
 			if (isSelectSameIdRows() && iRows != null && iSelectedRow < iRows.length) {
@@ -583,6 +599,7 @@ public class WebTable extends Composite {
 			super();
 			sinkEvents(Event.ONMOUSEOVER);
 			sinkEvents(Event.ONMOUSEOUT);
+			sinkEvents(Event.ONMOUSEMOVE);
 			sinkEvents(Event.ONCLICK);
 			sinkEvents(Event.ONDBLCLICK);
 		}
@@ -611,6 +628,9 @@ public class WebTable extends Composite {
 					} else {
 						getRowFormatter().setStyleName(row, (row - getHeaderRowsCount() == iSelectedRow? "unitime-TableRowSelectedHover" : "unitime-TableRowHover"));	
 					}
+					RowOverEvent e = new RowOverEvent(event, iRows[row - getHeaderRowsCount()], row - getHeaderRowsCount());
+					for (RowOverHandler h: iRowOverHandlers)
+						h.onRowOver(e);
 				}
 				break;
 			case Event.ONMOUSEOUT:
@@ -626,6 +646,11 @@ public class WebTable extends Composite {
 						getRowFormatter().setStyleName(row, (row - getHeaderRowsCount() == iSelectedRow? "unitime-TableRowSelectedHover" : null));
 					}
 				}
+				if (row >= getHeaderRowsCount() && row < getHeaderRowsCount() + iRows.length) {
+					RowOutEvent e = new RowOutEvent(event, iRows[row - getHeaderRowsCount()], row - getHeaderRowsCount());
+					for (RowOutHandler h: iRowOutHandlers)
+						h.onRowOut(e);
+				}
 				break;
 			case Event.ONCLICK:
 				if (row >= getHeaderRowsCount() && row < getHeaderRowsCount() + iRows.length) {
@@ -640,6 +665,11 @@ public class WebTable extends Composite {
 					for (RowDoubleClickHandler h: iRowDoubleClickHandlers)
 						h.onRowDoubleClick(e);
 				}
+				break;
+			case Event.ONMOUSEMOVE:
+				RowMoveEvent e = new RowMoveEvent(event, iRows[row - getHeaderRowsCount()], row - getHeaderRowsCount());
+				for (RowMoveHandler h: iRowMoveHandlers)
+					h.onRowMove(e);
 				break;
 			}
 		}
@@ -662,11 +692,11 @@ public class WebTable extends Composite {
 		public Row getRow() { return iRow; }
 		public int getRowIdx() { return iRowIdx; }
 	}
-	
+		
 	public static interface RowClickHandler {
 		public void onRowClick(RowClickEvent event);
 	}
-
+	
 	public static class RowDoubleClickEvent {
 		private Event iEvent;
 		private Row iRow;
@@ -685,4 +715,34 @@ public class WebTable extends Composite {
 		public void onRowDoubleClick(RowDoubleClickEvent event);
 	}
 	
+	public static class RowOverEvent extends RowClickEvent {
+		private RowOverEvent(Event event, Row row, int rowIdx) {
+			super(event, row, rowIdx);
+		}
+	}
+
+	public static interface RowOverHandler {
+		public void onRowOver(RowOverEvent event);
+	}
+	
+	public static class RowOutEvent extends RowClickEvent {
+		private RowOutEvent(Event event, Row row, int rowIdx) {
+			super(event, row, rowIdx);
+		}
+	}
+
+	public static interface RowOutHandler {
+		public void onRowOut(RowOutEvent event);
+	}
+	
+	public static class RowMoveEvent extends RowClickEvent {
+		private RowMoveEvent(Event event, Row row, int rowIdx) {
+			super(event, row, rowIdx);
+		}
+	}
+
+	public static interface RowMoveHandler {
+		public void onRowMove(RowMoveEvent event);
+	}
+
 }

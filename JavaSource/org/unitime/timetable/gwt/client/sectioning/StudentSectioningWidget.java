@@ -537,7 +537,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		if (iSuggestionsBox == null) {
-			iSuggestionsBox = new SuggestionsBox(iOnline);
+			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline);
 
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -570,7 +570,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String ftParam = "&ft=";
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-			iAssignmentGrid.clear();
+			iAssignmentGrid.clear(true);
 			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				if (course.isAssigned()) {
 					boolean firstClazz = true;
