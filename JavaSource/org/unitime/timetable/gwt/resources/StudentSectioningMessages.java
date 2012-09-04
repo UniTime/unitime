@@ -160,7 +160,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course {0} used multiple times.")
 	String validationMultiple(String course);
 	
-	@DefaultMessage("No course provided.")
+	@DefaultMessage("No primary course provided.")
 	String validationNoCourse();
 	
 	@DefaultMessage("No alternative for a free time.")
