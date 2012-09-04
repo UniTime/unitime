@@ -2442,3 +2442,17 @@ div.gwt-MenuBarPopup {
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+
+.unitime-SuggestionsLegend {
+	width: 100%;
+	font-size: x-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	margin-bottom: 5px;
+}
+
+.unitime-SuggestionsMessage {
+	color: red;
+}
