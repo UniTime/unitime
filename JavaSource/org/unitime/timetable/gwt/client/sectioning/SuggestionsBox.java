@@ -556,6 +556,7 @@ public class SuggestionsBox extends DialogBox {
 		iSource = null;
 		iRequest = request;
 		iIndex = index;
+		iHintId = null;
 		if (row.isFreeTime()) {
 			iSource = MESSAGES.freeTime(row.getDaysString(CONSTANTS.shortDays()), row.getStartString(CONSTANTS.useAmPm()), row.getEndString(CONSTANTS.useAmPm()));
 		} else {
