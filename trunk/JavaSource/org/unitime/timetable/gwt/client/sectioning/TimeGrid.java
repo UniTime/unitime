@@ -72,7 +72,6 @@ public class TimeGrid extends Composite {
 	private ArrayList<ArrayList<Meeting>> iMeetings = new ArrayList<ArrayList<Meeting>>();
 	@SuppressWarnings("unchecked")
 	private ArrayList<Meeting>[][] iMeetingTable = new ArrayList[7][24 * 60 / 5];
-	private ArrayList<String[]> iColor = new ArrayList<String[]>();
 	
 	private int iCellWidth = 150;
 	private int iNrDays = 5;
@@ -80,16 +79,23 @@ public class TimeGrid extends Composite {
 	private int iEnd = 24;
 	private boolean iPrint = false;
 	
+	private ColorProvider iColor = null;
+	
 	private ArrayList<MeetingClickHandler> iMeetingClickHandlers = new ArrayList<MeetingClickHandler>();
 	private ArrayList<PinClickHandler> iPinClickHandlers = new ArrayList<PinClickHandler>();
 	private ArrayList<ClassAssignmentInterface.ClassAssignment> iClasses = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
 	private ArrayList<BusyPanel> iBusy = new ArrayList<BusyPanel>();
 	
 	public TimeGrid() {
-		this(5, 900 / 5, false, 0, 24);
+		this(new ColorProvider(), 5, 900 / 5, false, 0, 24);
 	}
 	
-	public TimeGrid(int nrDays, int cellWidth, boolean print, int start, int end) {
+	public TimeGrid(ColorProvider color) {
+		this(color, 5, 900 / 5, false, 0, 24);
+	}
+	
+	public TimeGrid(ColorProvider color, int nrDays, int cellWidth, boolean print, int start, int end) {
+		iColor = color;
 		iNrDays = nrDays;
 		iCellWidth = cellWidth;
 		iStart = start;
@@ -195,7 +201,7 @@ public class TimeGrid extends Composite {
 	public Widget getPrintWidget() {
 		int firstHour = firstSlot() / 12;
 		int lastHour = 1 + lastSlot() / 12;
-		TimeGrid tg = new TimeGrid(iNrDays, iCellWidth, true, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+		TimeGrid tg = new TimeGrid(iColor, iNrDays, iCellWidth, true, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 		int i = 0;
 		for (ClassAssignmentInterface.ClassAssignment c: iClasses)
 			for (Meeting m : tg.addClass(c, i++)) {
@@ -283,6 +289,14 @@ public class TimeGrid extends Composite {
 		return iNrDays * iCellWidth + 40;
 	}
 	
+	public int getHeight() {
+		return iPrint ? 25 + 50 * (iEnd - iStart) : 575;
+	}
+	
+	public ColorProvider getColorProvider() {
+		return iColor;
+	}
+	
 	public void scrollDown() {
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
@@ -293,7 +307,7 @@ public class TimeGrid extends Composite {
 		});
 	}
 	
-	public void clear() {
+	public void clear(boolean clearColors) {
 		for (ArrayList<Meeting> meetings: iMeetings)
 			for (Meeting meeting: meetings)
 				iPanel.remove(meeting);
@@ -301,22 +315,13 @@ public class TimeGrid extends Composite {
 		for (int i = 0; i < iMeetingTable.length; i++)
 			for (int j = 0 ; j < iMeetingTable[i].length; j++)
 				if (iMeetingTable[i][j] != null) iMeetingTable[i][j].clear();
-		iColor.clear();
 		iClasses.clear();
 		for (BusyPanel busy: iBusy)
 			busy.remove();
 		iBusy.clear();
+		if (clearColors) iColor.clear();
 	}
-	
-	public String getColor(ClassAssignmentInterface.ClassAssignment clazz) {
-		if (clazz.isFreeTime()) return CONSTANTS.freeTimeColor();
-		for (String[] pair: iColor)
-			if (pair[0].equals(clazz.getCourseId().toString())) return pair[1];
-		String color = CONSTANTS.meetingColors()[iColor.size() % CONSTANTS.meetingColors().length];
-		iColor.add(new String[] {clazz.getCourseId().toString(), color});
-		return color;
-	}
-	
+		
 	protected Meeting addMeeting(int index, int day, int startSlot, int length, String name, ArrayList<String> body, String note, String title, String color, boolean pinned, ArrayList<Meeting> meetings) {
 		int col = -1;
 		for (int i = 0; i < length; i++) {
@@ -379,7 +384,7 @@ public class TimeGrid extends Composite {
 			notes.add(row.getRooms(", "));
 			notesNoHtml.add(row.getRooms(", "));
 		}
-		String color = getColor(row);
+		String color = iColor.getColor(row);
 		if (row.hasInstructors()) {
 			if (!iPrint) {
 				String instructors = "";
@@ -718,4 +723,20 @@ public class TimeGrid extends Composite {
 		
 	}
 	
+	public static class ColorProvider {
+		private ArrayList<String[]> iColor = new ArrayList<String[]>();
+		
+		public String getColor(ClassAssignmentInterface.ClassAssignment clazz) {
+			if (clazz.isFreeTime()) return CONSTANTS.freeTimeColor();
+			for (String[] pair: iColor)
+				if (pair[0].equals(clazz.getCourseId().toString())) return pair[1];
+			String color = CONSTANTS.meetingColors()[iColor.size() % CONSTANTS.meetingColors().length];
+			iColor.add(new String[] {clazz.getCourseId().toString(), color});
+			return color;
+		}
+
+		public void clear() {
+			iColor.clear();
+		}
+	}
 }
