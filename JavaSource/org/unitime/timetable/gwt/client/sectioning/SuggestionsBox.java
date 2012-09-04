@@ -44,7 +44,10 @@ import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -54,7 +57,9 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -87,7 +92,12 @@ public class SuggestionsBox extends DialogBox {
 	private Button iSearch;
 	private boolean iOnline;
 	
-	public SuggestionsBox(boolean online) {
+	private TimeGrid iGrid;
+	private PopupPanel iHint;
+	private String iHintId = null;
+	private Timer iHideHint;
+	
+	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online) {
 		super();
 		
 		iOnline = online;
@@ -96,7 +106,7 @@ public class SuggestionsBox extends DialogBox {
 		setAnimationEnabled(true);
 		setAutoHideEnabled(true);
 		setGlassEnabled(true);
-		setModal(true);
+		setModal(false);
 		
 		VerticalPanel suggestionPanel = new VerticalPanel();
 		suggestionPanel.setSpacing(5);
@@ -131,11 +141,11 @@ public class SuggestionsBox extends DialogBox {
 				new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
 				new WebTable.Cell(MESSAGES.colClass(), 1, "85"),
 				new WebTable.Cell(MESSAGES.colTime(), 1, "75"),
-				new WebTable.Cell("", 1, "0"),
+				new WebTable.Cell("", 1, "1"),
 				new WebTable.Cell(MESSAGES.colDate(), 1, "50"),
-				new WebTable.Cell("", 1, "0"),
+				new WebTable.Cell("", 1, "1"),
 				new WebTable.Cell(MESSAGES.colRoom(), 1, "50"),
-				new WebTable.Cell("", 1, "0"),
+				new WebTable.Cell("", 1, "1"),
 				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
 				new WebTable.Cell(MESSAGES.colParent(), 1, "85"),
 				new WebTable.Cell(MESSAGES.colSaved(), 1, "10"),
@@ -156,7 +166,7 @@ public class SuggestionsBox extends DialogBox {
 		iMessages = new HTML();
 		iMessages.setStyleName("unitime-SuggestionsMessage");
 		suggestionPanel.add(iMessages);
-
+		
 		iCallback = new AsyncCallback<Collection<ClassAssignmentInterface>>() {
 			public void onFailure(Throwable caught) {
 				iSuggestions.clearData(true);
@@ -433,7 +443,90 @@ public class SuggestionsBox extends DialogBox {
 			}
 		});
 		
+		iGrid = new TimeGrid(color);
+		iHint = new PopupPanel();
+		iHint.setStyleName("unitime-SuggestionsHint");
+		iHideHint = new Timer() {
+			@Override
+			public void run() {
+				if (iHint.isShowing()) iHint.hide();
+				
+			}
+		};
+
+		iSuggestions.addRowOverHandler(new WebTable.RowOverHandler() {
+			@Override
+			public void onRowOver(final WebTable.RowOverEvent event) {
+				iHideHint.cancel();
+				
+				if (iHint.isShowing() && event.getRow().getId().equals(iHintId)) return;
+
+				if (!event.getRow().getId().equals(iHintId)) {
+					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(event.getRow().getId()));
+					int index = 0;
+					iGrid.clear(false);
+					for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
+						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+							if (clazz.isFreeTime()) {
+								CourseRequestInterface.FreeTime ft = new CourseRequestInterface.FreeTime();
+								ft.setLength(clazz.getLength());
+								ft.setStart(clazz.getStart());
+								for (int d: clazz.getDays()) ft.addDay(d);
+								iGrid.addFreeTime(ft);
+							} else if (clazz.isAssigned()) {
+								iGrid.addClass(clazz, index++);
+							}
+						}
+					}
+					TimeGrid w = (TimeGrid)iGrid.getPrintWidget();
+					w.addStyleName("unitime-SuggestionsHintWidget");
+					iHint.setWidget(new SimplePanel(w));
+					iHint.setSize((w.getWidth() / 2) + "px", (w.getHeight() / 2) + "px");
+					iHintId = event.getRow().getId();
+				}
+				
+				iHint.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+					@Override
+					public void setPosition(int offsetWidth, int offsetHeight) {
+						Element tr = iSuggestions.getTable().getRowFormatter().getElement(event.getRowIdx());
+						boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + offsetHeight > Window.getClientHeight());
+						iHint.setPopupPosition(
+								Math.max(Math.min(event.getEvent().getClientX(), tr.getAbsoluteRight() - offsetWidth - 15), tr.getAbsoluteLeft() + 15),
+								top ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
+					}
+				});
+			}
+		});
+
+		iSuggestions.addRowOutHandler(new WebTable.RowOutHandler() {
+			@Override
+			public void onRowOut(WebTable.RowOutEvent event) {
+				if (iHint.isShowing()) iHideHint.schedule(500);
+			}
+		});
+		
+		iSuggestions.addRowMoveHandler(new WebTable.RowMoveHandler() {
+			@Override
+			public void onRowMove(WebTable.RowMoveEvent event) {
+				if (iHint.isShowing()) {
+					Element tr = iSuggestions.getTable().getRowFormatter().getElement(event.getRowIdx());
+					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + iHint.getOffsetHeight() > Window.getClientHeight());
+					iHint.setPopupPosition(
+							Math.max(Math.min(event.getEvent().getClientX(), tr.getAbsoluteRight() - iHint.getOffsetWidth() - 15), tr.getAbsoluteLeft() + 15),
+							top ? tr.getAbsoluteTop() - iHint.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
+			
+				}
+			}
+		});
+		
 		setWidget(suggestionPanel);
+	}
+	
+	@Override
+	public void hide() {
+		if (iHint.isShowing()) iHint.hide();
+		iHideHint.cancel();
+		super.hide();
 	}
 	
 	private static enum CmpMode {
