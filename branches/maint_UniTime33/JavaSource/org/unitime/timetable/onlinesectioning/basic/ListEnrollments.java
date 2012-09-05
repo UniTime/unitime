@@ -159,6 +159,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 								a.setSubpartId(section.getSubpart().getId());
 								a.addNote(course.getNote());
 								a.addNote(section.getNote());
+								a.setCredit(section.getSubpart().getCredit());
 								int dist = 0;
 								String from = null;
 								TreeSet<String> overlap = new TreeSet<String>();
@@ -294,6 +295,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 								a.setParentSection(section.getParent().getName(course.getId()));
 							a.setSubpartId(section.getSubpart().getId());
 							a.addNote(section.getNote());
+							a.setCredit(section.getSubpart().getCredit());
 							int dist = 0;
 							String from = null;
 							TreeSet<String> overlap = new TreeSet<String>();

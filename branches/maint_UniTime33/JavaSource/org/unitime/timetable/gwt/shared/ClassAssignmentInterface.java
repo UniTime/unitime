@@ -185,6 +185,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private boolean iSaved = false;
 		private Integer iExpected = null;
 		private String iNote = null;
+		private String iCredit = null;
 		
 		public ClassAssignment() {}
 		public ClassAssignment(CourseAssignment course) {
@@ -408,6 +409,13 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				iNote += note;
 			}
 		}
+		
+		public boolean hasCredit() {
+			return iCredit != null && !iCredit.isEmpty();
+		}
+		public String getCredit() { return (iCredit == null ? "" : iCredit); }
+		public void setCredit(String credit) { iCredit = credit; }
+
 	}
 	
 	public static class Student implements IsSerializable, Serializable {

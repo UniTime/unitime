@@ -43,6 +43,8 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -67,10 +69,12 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
@@ -106,6 +110,7 @@ public class CourseSelectionBox extends Composite {
 	private Set<String> iValidCourseNames = new HashSet<String>();
 	
 	private TextBox iFilter;
+	private Button iFilterSelect;
 	private DialogBox iDialog;
 	private ScrollPanel iCoursesPanel;
 	private VerticalPanel iDialogPanel, iCoursesTab, iFreeTimeTab;
@@ -311,6 +316,37 @@ public class CourseSelectionBox extends Composite {
 			iFilter.setStyleName("gwt-SuggestBox");
 			iFilter.setWidth("600");
 			
+			iFilterSelect = new Button(MESSAGES.buttonSelect(), new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length && iTabPanel.getSelectedTab() == 0) {
+						WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
+						if ("true".equals(r.getId()))
+							iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+						else
+							iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+						for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
+							h.onChange(iTextField.getText(), true);
+					} else {
+						try {
+							iFreeTimePicker.clearFreeTime();
+							ArrayList<CourseRequestInterface.FreeTime> freeTimes = parseFreeTime(iFilter.getText());
+							iFreeTimePicker.setFreeTime(freeTimes, false);
+							iFilter.setText(freeTimesToString(freeTimes));
+						} catch (IllegalArgumentException e) {}
+						iTextField.setText(iFilter.getText());
+					}
+					iDialog.hide();
+					iImage.setResource(RESOURCES.search_picker());
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						public void execute() {
+							setFocus(true);
+						}
+					});
+				}
+			});
+			iFilterSelect.setAccessKey('s');
+			
 			iCourses = new WebTable();
 			iCourses.setHeader(
 					new WebTable.Row(
@@ -321,13 +357,21 @@ public class CourseSelectionBox extends Composite {
 							new WebTable.Cell(MESSAGES.colNote(), 1, "300")
 							));
 			
+			HorizontalPanel filterWithSelect = new HorizontalPanel();
+			filterWithSelect.add(iFilter);
+			filterWithSelect.add(iFilterSelect);
+			filterWithSelect.setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
+			filterWithSelect.setCellVerticalAlignment(iFilterSelect, HasVerticalAlignment.ALIGN_MIDDLE);
+			iFilterSelect.getElement().getStyle().setMarginLeft(5, Unit.PX);
+			
 			iDialogPanel = new VerticalPanel();
 			iDialogPanel.setSpacing(5);
-			iDialogPanel.add(iFilter);
-			iDialogPanel.setCellHorizontalAlignment(iFilter, HasHorizontalAlignment.ALIGN_CENTER);
+			iDialogPanel.add(filterWithSelect);
+			iDialogPanel.setCellHorizontalAlignment(filterWithSelect, HasHorizontalAlignment.ALIGN_CENTER);
 						
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
+					RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 					iImage.setResource(RESOURCES.search_picker());
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
@@ -573,6 +617,7 @@ public class CourseSelectionBox extends Composite {
 		if (iCourseDetailsTabPanel != null)
 			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 		iDialog.center();
+		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			public void execute() {
 				iFilter.setFocus(true);

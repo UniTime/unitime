@@ -1290,3 +1290,42 @@ h1 {
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+
+.unitime-SuggestionsLegend {
+	width: 100%;
+	font-size: x-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	margin-bottom: 5px;
+}
+
+.unitime-SuggestionsMessage {
+	color: red;
+}
+
+.unitime-SuggestionsHint {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 4px;
+	color: #000000;
+	background: #FFFDDD;
+	border: 1px solid #AB8B00;
+	z-index: 1000000;
+	overflow: visible;
+}
+
+.unitime-SuggestionsHintWidget {
+	zoom:50%;
+	display: inline-block;
+	-moz-transform: scale(0.5);
+	-moz-transform-origin: top left;
+}

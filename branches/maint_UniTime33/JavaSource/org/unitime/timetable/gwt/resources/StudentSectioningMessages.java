@@ -90,6 +90,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 
+	@DefaultMessage("Credit")
+	String colCredit();
+
 	@DefaultMessage("Year")
 	String colYear();
 	
@@ -142,7 +145,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course {0} used multiple times.")
 	String validationMultiple(String course);
 	
-	@DefaultMessage("No course provided.")
+	@DefaultMessage("No primary course provided.")
 	String validationNoCourse();
 	
 	@DefaultMessage("No alternative for a free time.")
@@ -317,6 +320,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("<u>S</u>ave")
 	String buttonSave();
+	
+	@DefaultMessage("<u>S</u>elect")
+	String buttonSelect();
 
 	@DefaultMessage("<u>L</u>ist of Classes")
 	String tabClasses();
@@ -716,6 +722,15 @@ public interface StudentSectioningMessages extends Messages {
 			"<br><br>Example: day: monday and (time: 730 or time: 830)")
 	String suggestionsFilterHint();
 	
+	@DefaultMessage("Changes to the selected free time {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other classes or free times are in <font color='black'>black</font>.")
+	String suggestionsLegendOnFreeTime(String freeTime);
+
+	@DefaultMessage("Changes to the selected class {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other classes or free times are in <font color='black'>black</font>.")
+	String suggestionsLegendOnClass(String clazz);
+	
+	@DefaultMessage("Changes to the selected course {0} are in <font color='blue'>blue</font>, classes to be removed from the schedule are in <font color='red'>red</font>. Changes to other courses or free times are in <font color='black'>black</font>.")
+	String suggestionsLegendOnCourse(String course);
+
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
 	
