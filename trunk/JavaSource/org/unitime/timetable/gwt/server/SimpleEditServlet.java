@@ -313,8 +313,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			case permissions:
 				List<Roles> roles = RolesDAO.getInstance().findAll(Order.asc("reference"));
 				Field[] fields = new Field[2 + roles.size()];
-				fields[0] = new Field("Name", FieldType.text, 160, 200);
-				fields[1] = new Field("Level", FieldType.text, 160, 200);
+				fields[0] = new Field("Name", FieldType.text, 160, 200, false);
+				fields[1] = new Field("Level", FieldType.text, 160, 200, false);
 				for (int i = 0; i < roles.size(); i++) {
 					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40);
 				}
