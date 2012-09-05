@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -631,6 +632,8 @@ public class WebTable extends Composite {
 					RowOverEvent e = new RowOverEvent(event, iRows[row - getHeaderRowsCount()], row - getHeaderRowsCount());
 					for (RowOverHandler h: iRowOverHandlers)
 						h.onRowOver(e);
+					if (!iRowClickHandlers.isEmpty())
+						getRowFormatter().getElement(row).getStyle().setCursor(Cursor.POINTER);
 				}
 				break;
 			case Event.ONMOUSEOUT:
@@ -650,6 +653,8 @@ public class WebTable extends Composite {
 					RowOutEvent e = new RowOutEvent(event, iRows[row - getHeaderRowsCount()], row - getHeaderRowsCount());
 					for (RowOutHandler h: iRowOutHandlers)
 						h.onRowOut(e);
+					if (!iRowClickHandlers.isEmpty())
+						getRowFormatter().getElement(row).getStyle().clearCursor();
 				}
 				break;
 			case Event.ONCLICK:
