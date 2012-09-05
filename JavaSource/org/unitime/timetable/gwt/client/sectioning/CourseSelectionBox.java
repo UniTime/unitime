@@ -44,6 +44,7 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -369,6 +370,7 @@ public class CourseSelectionBox extends Composite {
 						
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
+					RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 					iImage.setResource(RESOURCES.search_picker());
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
@@ -604,6 +606,7 @@ public class CourseSelectionBox extends Composite {
 		if (iCourseDetailsTabPanel != null)
 			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
 		iDialog.center();
+		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			public void execute() {
 				iFilter.setFocus(true);
