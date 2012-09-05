@@ -493,10 +493,10 @@ public class SuggestionsBox extends DialogBox {
 					@Override
 					public void setPosition(int offsetWidth, int offsetHeight) {
 						Element tr = iSuggestions.getTable().getRowFormatter().getElement(event.getRowIdx());
-						boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + offsetHeight > Window.getClientHeight());
+						boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 30 + offsetHeight > Window.getClientHeight());
 						iHint.setPopupPosition(
-								Math.max(Math.min(event.getEvent().getClientX(), tr.getAbsoluteRight() - offsetWidth - 15), tr.getAbsoluteLeft() + 15),
-								top ? tr.getAbsoluteTop() - offsetHeight - 15 : tr.getAbsoluteBottom() + 15);
+								Math.max(Math.min(event.getEvent().getClientX() + 15, tr.getAbsoluteRight() - offsetWidth - 15), tr.getAbsoluteLeft() + 15),
+								top ? tr.getAbsoluteTop() - offsetHeight - 30 : tr.getAbsoluteBottom() + 30);
 					}
 				});
 			}
@@ -514,10 +514,10 @@ public class SuggestionsBox extends DialogBox {
 			public void onRowMove(WebTable.RowMoveEvent event) {
 				if (iHint.isShowing()) {
 					Element tr = iSuggestions.getTable().getRowFormatter().getElement(event.getRowIdx());
-					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 15 + iHint.getOffsetHeight() > Window.getClientHeight());
+					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 30 + iHint.getOffsetHeight() > Window.getClientHeight());
 					iHint.setPopupPosition(
-							Math.max(Math.min(event.getEvent().getClientX(), tr.getAbsoluteRight() - iHint.getOffsetWidth() - 15), tr.getAbsoluteLeft() + 15),
-							top ? tr.getAbsoluteTop() - iHint.getOffsetHeight() - 15 : tr.getAbsoluteBottom() + 15);
+							Math.max(Math.min(event.getEvent().getClientX() + 15, tr.getAbsoluteRight() - iHint.getOffsetWidth() - 15), tr.getAbsoluteLeft() + 15),
+							top ? tr.getAbsoluteTop() - iHint.getOffsetHeight() - 30 : tr.getAbsoluteBottom() + 30);
 			
 				}
 			}
