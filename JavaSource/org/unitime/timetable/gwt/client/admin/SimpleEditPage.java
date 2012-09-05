@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
@@ -90,6 +91,7 @@ import com.google.gwt.user.client.ui.Widget;
  */
 public class SimpleEditPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private final SimpleEditServiceAsync iService = GWT.create(SimpleEditService.class);
 	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
 
@@ -104,6 +106,7 @@ public class SimpleEditPage extends Composite {
 	private boolean iEditable = false;
 	private TextArea iStudentsText = null;
 	private Lookup iLookup;
+	private boolean[] iVisible = null;
 	
 	public SimpleEditPage() throws SimpleEditException {
 		String typeString = Window.Location.getParameter("type");
@@ -373,14 +376,12 @@ public class SimpleEditPage extends Composite {
 		});
 	}
 	
-	private void refreshTable() {
-		UniTimePageLabel.getInstance().setPageName((iEditable ? "Edit " : "") + iData.getType().getTitlePlural());
-		iTable.clearTable();
-
-		List<Widget> header = new ArrayList<Widget>();
+	private List<UniTimeTableHeader> header(boolean top) {
+		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		int col = 0;
 		for (final Field field: iData.getFields()) {
 			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName(), col + 1 == iData.getFields().length && iData.isEditable() && iEditable ? 3 : 1);
+			if (!top) { cell.addStyleName("unitime-TopLineDash"); cell.getElement().getStyle().setPaddingTop(2, Unit.PX); }
 			header.add(cell);
 			final int index = col;
 			cell.addOperation(new UniTimeTableHeader.Operation() {
@@ -421,13 +422,62 @@ public class SimpleEditPage extends Composite {
 			});
 			col++;
 		}
-		iTable.addRow(null, header);
+		for (UniTimeTableHeader h: header) {
+			col = 0;
+			boolean first = true;
+			for (final Field field: iData.getFields()) {
+				final int index = col;
+				if (field.isEditable()) {
+					final boolean sep = first; first = false;
+					h.addOperation(new UniTimeTableHeader.Operation() {
+						@Override
+						public void execute() {
+							iTable.setColumnVisible(index, !iTable.isColumnVisible(index));
+							iVisible[index] = iTable.isColumnVisible(index);
+						}
+						
+						@Override
+						public boolean isApplicable() {
+							if (!iTable.isColumnVisible(index)) return true;
+							int nrVisible = 0;
+							for (boolean v: iVisible) if (v) nrVisible ++;
+							return nrVisible > 1;
+						}
+						
+						@Override
+						public boolean hasSeparator() {
+							return sep;
+						}
+						
+						@Override
+						public String getName() {
+							return (iTable.isColumnVisible(index) ? MESSAGES.opHide(field.getName()): MESSAGES.opShow(field.getName()));
+						}
+					});
+				}
+				col ++;
+			}
+		}
+		return header;
+	}
+	
+	private void refreshTable() {
+		UniTimePageLabel.getInstance().setPageName((iEditable ? "Edit " : "") + iData.getType().getTitlePlural());
+		iTable.clearTable();
+
+		iTable.addRow(null, header(true));
+		
+		if (iVisible == null) {
+			iVisible = new boolean[iData.getFields().length];
+			for (int i = 0; i < iVisible.length; i++) iVisible[i] = true;
+		}
 		
 		boolean empty = false;
 		int row = 1;
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
 			empty = r.isEmpty();
+			if ((row % 31) == 0) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);
@@ -439,6 +489,10 @@ public class SimpleEditPage extends Composite {
 			iHeader.setEnabled("edit", !iEditable);
 			iHeader.setEnabled("add", !iEditable && iData.isAddable());
 		}
+		
+		for (int i = 0; i < iVisible.length; i++) 
+			iTable.setColumnVisible(i, iVisible[i]);
+		
 		iHeader.clearMessage();
 	}
 	
