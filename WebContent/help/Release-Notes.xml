@@ -97,6 +97,28 @@
 				<line>Note column (List of Classes table) can now have multiple lines, and has limited width.</line>
 			</description>
 		</item>
+		<item>
+			<name>List of Classes</name>
+			<description>
+				<line>Added credit information.</line>
+				<line>Requires column: only allow the text to wrap when it is more than 10 characters long (i.e., it is not a Section / CRN, but the consent).</line>
+			</description>
+		</item>
+		<item>
+			<name>Course Finder</name>
+			<description>
+				<line>Added Select button (does the same thing as pressing Enter).</line>
+				<line>Disable page scrolling of the page while the Course Finder dialog is open.</line>
+			</description>
+		</item>
+		<item>
+			<name>Alternatives (Suggestions)</name>
+			<description>
+				<line>Align the arrows (e.g., old time -> new time), add a note bellow the table describing the color scheme (red / blue / black lines).</line>
+				<line>Show a grid as a mouseover tooltip for each suggestion.</line>
+				<line>Disable page scrolling of the page while the Alternatives dialog is open.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>

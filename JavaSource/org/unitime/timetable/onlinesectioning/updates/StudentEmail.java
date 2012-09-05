@@ -490,6 +490,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<td style=\"" + style + "\">" + MSG.colInstructor() + "</td>");
 		out.println("	<td style=\"" + style + "\">" + MSG.colParent() + "</td>");
 		out.println("	<td style=\"" + style + "\">" + MSG.colNote() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MSG.colCredit() + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -497,7 +498,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		if (link) {
 			String url = ApplicationProperties.getProperty("unitime.url");
 			if (url != null) {
-				out.println("	<tr><td colspan=\"11\" style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
+				out.println("	<tr><td colspan=\"12\" style=\"font-size: 9pt; font-style: italic; color: #9CB0CE; text-align: right; margin-top: -2px; white-space: nowrap;\">");
 				out.println("		" + MSG.emailLinkToUniTime(url));
 				out.println("	</td></tr>");
 			}
@@ -575,6 +576,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		String note = (request.getAssignment() == null ? request.getInitialAssignment() : request.getAssignment()).getCourse().getNote();
 		if (section.getNote() != null) note = (note == null || note.isEmpty() ? "" : note + "<br>") + section.getNote();
 		out.println("	<td style= \"" + style + "\">" + (note == null ? "&nbsp;" : note.replace("\n", "<br>")) + "</td>");
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(section) + "\">" + creditAbbv(section) + "</td>");
 		out.println("</tr>");
 	}
 	
@@ -660,9 +662,20 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 		out.println("	<td style= \"" + style + "\">" +
 				(request.getAssignment().getCourse().getNote() == null ? "" : request.getAssignment().getCourse().getNote().replace("\n", "<br>") + "<br>") +
 				diff(old.getNote(), section.getNote()).replace("\n", "<br>") + "</td>");
+		out.println("	<td style= \"" + style + "\" title= \"" +  creditText(section) + "\">" + diff(creditAbbv(old), creditAbbv(section)) + "</td>");
 		out.println("</tr>");
 	}
 	
+	private String creditAbbv(Section section) {
+		String credit = (section == null ? null : section.getSubpart().getCredit());
+		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(0, credit.indexOf('|')); 
+	}
+
+	private String creditText(Section section) {
+		String credit = (section == null ? null : section.getSubpart().getCredit());
+		return credit == null ? "" : credit.indexOf('|') < 0 ? credit : credit.substring(1 + credit.indexOf('|')); 
+	}
+
 	private void generateListOfClassesLine(PrintWriter out, Request request, String consent) {
 		if (request.getAssignment() == null) {
 			if (request instanceof CourseRequest) {
@@ -676,9 +689,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				if (request.isAlternative())
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"8\" align=\"center\">" + MSG.emailWaitListedAlternativeRequest() + "</td>");
+					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + MSG.emailWaitListedAlternativeRequest() + "</td>");
 				else
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"8\" align=\"center\">" + MSG.emailWaitListedRequest() + "</td>");
+					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + MSG.emailWaitListedRequest() + "</td>");
 				out.println("</tr>");
 			}
 			return;
@@ -694,7 +707,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + DayCode.toString(fr.getTime().getDayCode()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + startTime(fr.getTime()) + "</td>");
 			out.println("	<td style= \"white-space: nowrap; " + style + "\">" + endTime(fr.getTime()) + "</td>");
-			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"5\">&nbsp;</td>");
+			out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"6\">&nbsp;</td>");
 			out.println("</tr>");
 			return;
 		}

@@ -175,6 +175,7 @@ public class FindEnrollmentAction implements OnlineSectioningAction<List<ClassAs
 					a.setSubpartId(section.getSubpart().getId());
 					a.addNote(course.getNote());
 					a.addNote(section.getNote());
+					a.setCredit(section.getSubpart().getCredit());
 					int dist = 0;
 					String from = null;
 					TreeSet<String> overlap = new TreeSet<String>();

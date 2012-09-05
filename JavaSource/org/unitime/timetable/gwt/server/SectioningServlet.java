@@ -428,6 +428,7 @@ public class SectioningServlet extends RemoteServiceServlet implements Sectionin
 					}
 					a.addNote(c.getNote());
 					a.addNote(section.getNote());
+					a.setCredit(section.getSubpart().getCredit());
 					if (section.getTime() != null) {
 						for (DayCode d: DayCode.toDayCodes(section.getTime().getDayCode()))
 							a.addDay(d.getIndex());

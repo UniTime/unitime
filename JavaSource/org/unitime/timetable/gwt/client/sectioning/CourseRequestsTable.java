@@ -329,7 +329,7 @@ public class CourseRequestsTable extends Composite {
 				public void onChange(String course, boolean valid) {
 					if (valid) c[0].hideError();
 					if (!c[0].isFreeTime()) {
-						c[1].setEnabled(valid);
+						c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
 						if (valid && !c[0].getCourse().isEmpty())
 							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
 						else
@@ -342,7 +342,7 @@ public class CourseRequestsTable extends Composite {
 			c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
 				public void onChange(String course, boolean valid) {
 					if (valid) c[1].hideError();
-					c[2].setEnabled(valid);
+					c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
 					if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
 						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
 					else
@@ -394,7 +394,7 @@ public class CourseRequestsTable extends Composite {
 				public void onChange(String course, boolean valid) {
 					if (valid) c[0].hideError();
 					if (!c[0].isFreeTime()) {
-						c[1].setEnabled(valid);
+						c[1].setEnabled(valid || !c[1].getCourse().isEmpty() || !c[2].getCourse().isEmpty());
 						if (valid && !c[0].getCourse().isEmpty())
 							c[1].setHint(MESSAGES.courseRequestsHintAlt(c[0].getCourse()));
 						else
@@ -407,7 +407,7 @@ public class CourseRequestsTable extends Composite {
 			c[1].addCourseSelectionChangeHandler(new CourseSelectionBox.CourseSelectionChangeHandler() {
 				public void onChange(String course, boolean valid) {
 					if (valid) c[1].hideError();
-					c[2].setEnabled(valid);
+					c[2].setEnabled(valid || !c[2].getCourse().isEmpty());
 					if (valid && !c[0].getCourse().isEmpty() && !c[1].getCourse().isEmpty())
 						c[2].setHint(MESSAGES.courseRequestsHintAlt2(c[0].getCourse(), c[1].getCourse()));
 					else

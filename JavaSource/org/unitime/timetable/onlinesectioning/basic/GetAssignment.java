@@ -197,6 +197,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 							a.setHasAlternatives(hasAlt);
 							a.addNote(course.getNote());
 							a.addNote(section.getNote());
+							a.setCredit(section.getSubpart().getCredit());
 							int dist = 0;
 							String from = null;
 							TreeSet<String> overlap = new TreeSet<String>();

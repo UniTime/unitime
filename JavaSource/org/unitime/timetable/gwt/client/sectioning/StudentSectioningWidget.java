@@ -244,8 +244,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				new WebTable.Cell(MESSAGES.colDate(), 1, "50"),
 				new WebTable.Cell(MESSAGES.colRoom(), 1, "80"),
 				new WebTable.Cell(MESSAGES.colInstructor(), 1, "80"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "70"),
+				new WebTable.Cell(MESSAGES.colParent(), 1, "80"),
 				new WebTable.Cell(MESSAGES.colNote(), 1, "50"),
+				new WebTable.Cell(MESSAGES.colCredit(), 1, "30"),
 				new WebTable.WidgetCell(iCalendar, MESSAGES.colSaved(), 1, "10"),
 				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10")
 			));
@@ -534,7 +535,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 	
 	public void openSuggestionsBox(int rowIndex) {
 		if (iSuggestionsBox == null) {
-			iSuggestionsBox = new SuggestionsBox(iOnline);
+			iSuggestionsBox = new SuggestionsBox(iAssignmentGrid.getColorProvider(), iOnline);
 
 			iSuggestionsBox.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
@@ -567,7 +568,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		String ftParam = "&ft=";
 		if (!result.getCourseAssignments().isEmpty()) {
 			ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
-			iAssignmentGrid.clear();
+			iAssignmentGrid.clear(true);
 			for (ClassAssignmentInterface.CourseAssignment course: result.getCourseAssignments()) {
 				if (course.isAssigned()) {
 					boolean firstClazz = true;
@@ -590,8 +591,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-								new WebTable.Cell(clazz.getParentSection(), true),
+								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
 								new WebTable.NoteCell(clazz.getNote()),
+								new WebTable.AbbvTextCell(clazz.getCredit()),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : 
 								 clazz.isFreeTime() || !result.isCanEnroll() ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null)),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
@@ -653,7 +655,8 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
 								new WebTable.Cell(clazz.getDatePattern()),
 								new WebTable.Cell(unassignedMessage, 4, null),
-								new WebTable.Cell(clazz.getNote(), true),
+								new WebTable.NoteCell(clazz.getNote()),
+								new WebTable.AbbvTextCell(clazz.getCredit()),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
 						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
@@ -664,7 +667,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(null),
 								new WebTable.Cell(course.getSubject()),
 								new WebTable.Cell(course.getCourseNbr()),
-								new WebTable.Cell(unassignedMessage, 12, null),
+								new WebTable.Cell(unassignedMessage, 13, null),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
 						row.setId(course.getCourseId().toString());
 						iLastResult.add(course.addClassAssignment());
@@ -694,8 +697,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 									new WebTable.Cell(clazz.getDatePattern()),
 									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-									new WebTable.Cell(clazz.getParentSection(), true),
-									new WebTable.Cell(clazz.getNote(), true),
+									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
 									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
 									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 							rows.add(row);
@@ -728,8 +732,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								new WebTable.Cell(clazz.getDatePattern()),
 								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
 								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-								new WebTable.Cell(clazz.getParentSection(), true),
-								new WebTable.Cell(clazz.getNote(), true),
+								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+								new WebTable.NoteCell(clazz.getNote()),
+								new WebTable.AbbvTextCell(clazz.getCredit()),
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
 								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
 						rows.add(row);
@@ -757,7 +762,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			int idx = 0;
 			for (WebTable.Row row: rows) rowArray[idx++] = row;
 			iAssignmentGrid.shrink();
-			iAssignmentPanel.setWidth(iAssignmentGrid.getWidth());
+			iAssignmentPanel.setWidth(iAssignmentGrid.getWidth() + "px");
 			iAssignments.setData(rowArray);
 			if (LoadingWidget.getInstance().isShowing())
 				LoadingWidget.getInstance().hide();
