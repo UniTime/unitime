@@ -150,7 +150,7 @@ public class EditRoomForm extends ActionForm {
 	}
 
 	public void setId(String id) {
-		this.id = id;
+		this.id = ("".equals(id) ? null : id);
 	}
 
 	public String getDoit() {
@@ -310,6 +310,5 @@ public class EditRoomForm extends ActionForm {
 	public Set<RoomType> getRoomTypes() {
 	    return RoomType.findAll(room);
 	}
-    
 }
 
