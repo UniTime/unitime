@@ -149,7 +149,7 @@
 					<TR>
 						<TD></TD>
 						<TD colspan="2">
-							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].designatorRequired.checked = true;document.forms[0].schedulePrintNote.checked = true;} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].designatorRequired.checked = false;document.forms[0].schedulePrintNote.checked = false;};"/>
+							<html:checkbox property="catalogInformation" value="1" onclick="if (document.forms[0].catalogInformation.checked){document.forms[0].title.checked = true;document.forms[0].credit.checked = true;document.forms[0].subpartCredit.checked = true;document.forms[0].consent.checked = true;document.forms[0].schedulePrintNote.checked = true;} else {document.forms[0].title.checked = false;document.forms[0].credit.checked = false;document.forms[0].subpartCredit.checked = false;document.forms[0].consent.checked = false;document.forms[0].schedulePrintNote.checked = false;};"/>
 							<loc:message name="columnCatalogInformation"/>
 						</TD>
 					</TR>
@@ -183,14 +183,6 @@
 						<TD>
 							<html:checkbox property="consent" />
 							<loc:message name="columnConsent"/>
-						</TD>
-					</TR>
-					<TR>
-						<TD></TD>
-						<TD></TD>
-						<TD>
-							<html:checkbox property="designatorRequired" />
-							<loc:message name="columnDesignatorRequired"/>
 						</TD>
 					</TR>
 					<TR>

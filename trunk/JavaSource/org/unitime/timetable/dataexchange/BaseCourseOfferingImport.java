@@ -560,11 +560,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
          	changed = true;
         }
 
-		if (elementDesignatorRequired(element, io)){
-         	addNote("\tdesignator status changed");
-			changed = true;
-		}
-		
 		if (elementConsent(element, io)){
          	addNote("\tconsent changed");
 			changed = true;
@@ -1420,23 +1415,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 
 	}
 
-	private boolean elementDesignatorRequired(Element element, InstructionalOffering io){
-		boolean changed = false;
-		Element desigElement = element.element("designatorRequired");
-		if (desigElement != null){
-			if (io.isDesignatorRequired() == null || !io.isDesignatorRequired().booleanValue()){
-				io.setDesignatorRequired(new Boolean(true));
-				changed = true;
-				addNote("\tdesignatorRequired element changed");
-			}
-		} else if (io.isDesignatorRequired() == null || io.isDesignatorRequired().booleanValue()){
-				io.setDesignatorRequired(new Boolean(false));
-				changed = true;
-				addNote("\tdesignatorRequired element changed");
-		}
-		return(changed);
-	}
-	
 	private boolean elementInstrOffrConfig(Element element, InstructionalOffering io) throws Exception{
 		boolean changed = false;
 		HashMap<String, InstrOfferingConfig> existingConfigs = new HashMap<String, InstrOfferingConfig>();

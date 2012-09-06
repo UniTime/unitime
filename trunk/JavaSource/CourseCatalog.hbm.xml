@@ -74,12 +74,6 @@
             length="20"/>
 
         <property
-            name="designatorRequired"
-            column="designator_req"
-            type="java.lang.Boolean"
-            not-null="true"/>
-
-        <property
             name="previousSubject"
             column="prev_subject"
             type="java.lang.String"

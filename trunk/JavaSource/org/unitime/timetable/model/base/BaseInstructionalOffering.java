@@ -42,7 +42,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Integer iEnrollment;
 	private Integer iCtrlCourseId;
 	private Integer iLimit;
-	private Boolean iDesignatorRequired;
 	private Long iUniqueIdRolledForwardFrom;
 	private String iExternalUniqueId;
 	private Boolean iByReservationOnly;
@@ -61,7 +60,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_INSTR_OFFERING_PERM_ID = "instrOfferingPermId";
 	public static String PROP_NOT_OFFERED = "notOffered";
-	public static String PROP_DESIGNATOR_REQUIRED = "designatorRequired";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_REQ_RESERVATION = "byReservationOnly";
@@ -101,10 +99,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 
 	public Integer getLimit() { return iLimit; }
 	public void setLimit(Integer limit) { iLimit = limit; }
-
-	public Boolean isDesignatorRequired() { return iDesignatorRequired; }
-	public Boolean getDesignatorRequired() { return iDesignatorRequired; }
-	public void setDesignatorRequired(Boolean designatorRequired) { iDesignatorRequired = designatorRequired; }
 
 	public Long getUniqueIdRolledForwardFrom() { return iUniqueIdRolledForwardFrom; }
 	public void setUniqueIdRolledForwardFrom(Long uniqueIdRolledForwardFrom) { iUniqueIdRolledForwardFrom = uniqueIdRolledForwardFrom; }
@@ -185,7 +179,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 		return "InstructionalOffering[" +
 			"\n	ByReservationOnly: " + getByReservationOnly() +
 			"\n	ConsentType: " + getConsentType() +
-			"\n	DesignatorRequired: " + getDesignatorRequired() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	InstrOfferingPermId: " + getInstrOfferingPermId() +
 			"\n	LastWeekToChange: " + getLastWeekToChange() +

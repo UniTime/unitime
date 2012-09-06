@@ -49,6 +49,7 @@
 <!ATTLIST courseCredit maximumCredit CDATA #IMPLIED >
 <!ATTLIST courseCredit minimumCredit CDATA #IMPLIED >
 
+<!-- designatorRequired toggle is deprecated since UniTime 3.4 -->
 <!ELEMENT designatorRequired EMPTY >
 
 <!ELEMENT instructor EMPTY >

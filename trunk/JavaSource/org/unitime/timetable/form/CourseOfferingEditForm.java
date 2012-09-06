@@ -65,7 +65,6 @@ public class CourseOfferingEditForm extends ActionForm {
     private Long demandCourseOfferingId;
     private boolean allowDemandCourseOfferings;
     private Long consent;
-    private Boolean designatorRequired;
     private String creditFormat;
     private Long creditType;
     private Long creditUnitType;
@@ -154,7 +153,6 @@ public class CourseOfferingEditForm extends ActionForm {
         scheduleBookNote = "";
         demandCourseOfferingId = null;
         consent = null;
-        designatorRequired = null;
         creditFormat = null; creditType = null;
         creditUnitType = null;
         units = null;
@@ -234,12 +232,6 @@ public class CourseOfferingEditForm extends ActionForm {
     }
     public void setConsent(Long consent) {
         this.consent = consent;
-    }
-    public Boolean getDesignatorRequired() {
-        return designatorRequired;
-    }
-    public void setDesignatorRequired(Boolean designatorRequired) {
-        this.designatorRequired = designatorRequired;
     }
 
 	public String getCreditFormat() {

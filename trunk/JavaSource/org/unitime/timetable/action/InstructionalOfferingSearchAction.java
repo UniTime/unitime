@@ -142,7 +142,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.title", frm.getTitle() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.exams", (frm.getExams() == null ? "0" : frm.getExams() ? "1" : "0"));
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.consent", frm.getConsent() ? "1" : "0");
-		    	sessionContext.getUser().setProperty("InstructionalOfferingList.designatorRequired", frm.getDesignatorRequired() ? "1" : "0");
 		    	sessionContext.getUser().setProperty("InstructionalOfferingList.sortBy", frm.getSortBy());
 		    }
 		    
@@ -243,7 +242,6 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		frm.setNote("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.note", "0")));
 		frm.setTitle("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.title", "0")));
 		frm.setConsent("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.consent", "0")));
-		frm.setDesignatorRequired("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.designatorRequired", "0")));
 		frm.setSortBy(sessionContext.getUser().getProperty("InstructionalOfferingList.sortBy",ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME)));
 		frm.setExams("1".equals(sessionContext.getUser().getProperty("InstructionalOfferingList.exams", "0")));		
 	}

@@ -192,7 +192,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
 	        // Add new Instructional Offering
 		    InstructionalOffering io = new InstructionalOffering();
 		    io.setNotOffered(new Boolean(false));
-		    io.setDesignatorRequired(new Boolean(false));
 		    io.setSession(acadSession);
 		    io.generateInstrOfferingPermId();
 		    io.setLimit(new Integer(0));

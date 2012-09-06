@@ -100,8 +100,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 
 	private Boolean consent;
 	
-	private Boolean designatorRequired;
-	
 	private Boolean title;
 	
 	private Boolean exams;
@@ -231,7 +229,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 		note = new Boolean(false);
 		title = new Boolean(false);
 		consent = new Boolean(false);
-		designatorRequired = new Boolean(false);
 		exams = new Boolean(false);
 		sortBy = ClassCourseComparator.getName(ClassCourseComparator.SortBy.NAME);
 	}
@@ -450,14 +447,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         this.consent = consent;
     }
     
-    public Boolean getDesignatorRequired() {
-        return designatorRequired;
-    }
-    
-    public void setDesignatorRequired(Boolean designatorRequired) {
-        this.designatorRequired = designatorRequired;
-    }
-
     public Boolean getTitle() {
         return title;
     }
@@ -502,7 +491,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         note=null;
         title=null;
         consent=null;
-        designatorRequired=null;
         super.finalize();
     }
 
@@ -533,7 +521,6 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 				&& getCredit().booleanValue()
 				&& getSubpartCredit().booleanValue()
 				&& getConsent().booleanValue()
-				&& getDesignatorRequired().booleanValue()
 				&& getSchedulePrintNote().booleanValue()));
 	}
 	public void setCatalogInformation(){

@@ -58,7 +58,6 @@ public class CourseCatalogImport extends BaseImport {
                 CourseCatalog catalog = new CourseCatalog();
                 catalog.setCourseNumber(element.attributeValue("courseNumber"));
                 catalog.setApprovalType(element.attributeValue("approvalType"));
-                catalog.setDesignatorRequired(Boolean.valueOf(element.attributeValue("designatorRequired")));
                 catalog.setExternalUniqueId(element.attributeValue("externalId"));
                 catalog.setFractionalCreditAllowed(Boolean.valueOf(element.attributeValue("fractionalCreditAllowed")));
                 catalog.setPermanentId(element.attributeValue("permanentId"));

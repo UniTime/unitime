@@ -225,7 +225,7 @@ public class CourseOfferingEditAction extends Action {
 	        	co.setDemandOffering(dco==null?null:dco);
 	        }
 
-	        // Update designator required and consent only if course is controlling
+	        // Update consent only if course is controlling
 	        InstructionalOffering io = null;
 	        if (co.isIsControl().booleanValue()) {
 		        io = co.getInstructionalOffering();
@@ -235,12 +235,6 @@ public class CourseOfferingEditAction extends Action {
 		        else {
 		            OfferingConsentType oct = odao.get(frm.getConsent());
 		            io.setConsentType(oct);
-		        }
-
-		        if (frm.getDesignatorRequired()==null)
-		            io.setDesignatorRequired(new Boolean(false));
-		        else {
-		            io.setDesignatorRequired(frm.getDesignatorRequired());
 		        }
 
 		        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
@@ -430,13 +424,8 @@ public class CourseOfferingEditAction extends Action {
         for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
             frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         
-        // Consent Type, Credit and Designator Required can be edited only on the controlling course offering
+        // Consent Type and Credit can be edited only on the controlling course offering
         if (co.isIsControl().booleanValue()) {
-            if (io.isDesignatorRequired()!=null)
-                frm.setDesignatorRequired(io.isDesignatorRequired());
-            else
-                frm.setDesignatorRequired(new Boolean(false));
-
             if (io.getConsentType()!=null)
                 frm.setConsent(io.getConsentType().getUniqueId());
             else
@@ -516,11 +505,8 @@ public class CourseOfferingEditAction extends Action {
 
     	frm.setAllowDemandCourseOfferings(true);
 
-        // Consent Type, Credit and Designator Required can be edited only on the controlling course offering
+        // Consent Type and Credit can be edited only on the controlling course offering
         if (frm.getIsControl().booleanValue()) {
-            if (frm.getDesignatorRequired()==null)
-                frm.setDesignatorRequired(new Boolean(false));
-
             if (frm.getConsent()==null)
                 frm.setConsent(new Long(-1));
 
