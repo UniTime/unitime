@@ -397,9 +397,6 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
     public Boolean getConsent() {
 		return (new Boolean(false));
     }
-    public Boolean getDesignatorRequired() {
-		return (new Boolean(false));
-    }
     public Boolean getTitle() {
 		return (new Boolean(false));
     }

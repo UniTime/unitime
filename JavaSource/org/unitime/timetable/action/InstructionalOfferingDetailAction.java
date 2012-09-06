@@ -336,7 +336,6 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setProjectedDemand(io.getProjectedDemand());
         frm.setLimit(io.getLimit());
         frm.setUnlimited(Boolean.FALSE);
-        frm.setDesignatorRequired(io.isDesignatorRequired());
         frm.setCreditText((io.getCredit() != null)?io.getCredit().creditText():"");
         frm.setByReservationOnly(io.isByReservationOnly());
         frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());

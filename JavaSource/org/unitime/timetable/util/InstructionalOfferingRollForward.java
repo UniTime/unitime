@@ -402,7 +402,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
 		toInstructionalOffering.setConsentType(fromInstructionalOffering.getConsentType());
-		toInstructionalOffering.setDesignatorRequired(fromInstructionalOffering.isDesignatorRequired());
 		toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
 		toInstructionalOffering.setSession(toSession);
 		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
@@ -476,7 +475,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		}
 		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
 		toInstructionalOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
-		toInstructionalOffering.setDesignatorRequired(courseCatalogEntry.isDesignatorRequired());
 		toInstructionalOffering.setNotOffered(new Boolean(false));
 		toInstructionalOffering.setSession(session);
 		toInstructionalOffering.setByReservationOnly(false);

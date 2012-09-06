@@ -20,7 +20,8 @@
 <!ELEMENT course ( courseCredit, subpartCredit* ) >
 <!ATTLIST course approvalType ( department | instructor | timeblock ) #IMPLIED >
 <!ATTLIST course courseNumber CDATA #REQUIRED >
-<!ATTLIST course designatorRequired ( false | False | true | True ) #REQUIRED >
+<!-- designatorRequired toggle is deprecated since UniTime 3.4, it was required in UniTime 3.3 or earlier -->
+<!ATTLIST course designatorRequired ( false | False | true | True ) #IMPLIED >
 <!ATTLIST course externalId CDATA #IMPLIED >
 <!ATTLIST course permanentId CDATA #IMPLIED >
 <!ATTLIST course previousCourseNumber CDATA #IMPLIED >

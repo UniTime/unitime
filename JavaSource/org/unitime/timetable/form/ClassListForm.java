@@ -522,9 +522,6 @@ public class ClassListForm extends ActionForm implements ClassListFormInterface 
     public Boolean getConsent() {
 		return (new Boolean(false));
     }
-    public Boolean getDesignatorRequired() {
-		return (new Boolean(false));
-    }
     public Boolean getTitle() {
 		return (new Boolean(false));
     }

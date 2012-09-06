@@ -164,7 +164,6 @@ public class CourseOfferingExport extends BaseExport {
         offeringElement.addAttribute("id", (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         offeringElement.addAttribute("offered", (offering.isNotOffered()?"false":"true"));
         offeringElement.addAttribute("action", "insert");
-        if (offering.isDesignatorRequired()) offeringElement.addElement("designatorRequired");
         if (offering.getConsentType()!=null)
             offeringElement.addElement("consent").addAttribute("type", offering.getConsentType().getReference());
         for (Iterator i=offering.getCreditConfigs().iterator();i.hasNext();) {

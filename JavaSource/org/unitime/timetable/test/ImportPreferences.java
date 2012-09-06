@@ -663,7 +663,6 @@ public class ImportPreferences {
 			}
 			io = new InstructionalOffering();
 		    io.setNotOffered(new Boolean(false));
-		    io.setDesignatorRequired(new Boolean(false));
 		    io.setSession(iSession);
 		    io.setInstrOfferingPermId(Integer.valueOf(element.attributeValue("instrOfferingPermId")));
 		    io.setCourseOfferings(courseOfferings);

@@ -69,7 +69,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String subjectAreaAbbr;
     private String courseNbr;
     private String consentType;
-    private Boolean designatorRequired;
     private String creditText;
     private String nextId;
     private String previousId;
@@ -253,13 +252,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     }
     public void setConsentType(String consentType) {
         this.consentType = consentType;
-    }
-    
-    public Boolean getDesignatorRequired() {
-        return designatorRequired;
-    }
-    public void setDesignatorRequired(Boolean designatorRequired) {
-        this.designatorRequired = designatorRequired;
     }
     
     public String getCatalogLinkLabel() {

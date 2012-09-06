@@ -344,9 +344,9 @@ public class PdfWorksheet {
         int lastLikeEnrl = co.getCourseOfferingDemands().size();
         String title = co.getTitle();
         if (title==null) title="*** Title not set";
-        println("                                                                                              Proj  "+s2+"   Desig                   ");
-        println("Course     Title/Notes                           Credit Course Organization             Limit Enrl  Enrl  Reqd  Consent    Cross List");
-        println("---------- ------------------------------------- ------ ------------------------------- ----- ----- ----- ----- ---------- ----------");
+        println("                                                                                              Proj  "+s2+"                     ");
+        println("Course     Title/Notes                           Credit Course Organization             Limit Enrl  Enrl  Consent    Cross List");
+        println("---------- ------------------------------------- ------ ------------------------------- ----- ----- ----- ---------- ----------");
         println(rpad(co.getCourseName(),10)+" "+
                 rpad(title,37)+(title.length()>37?"-":" ")+" "+
                 rpad(offering.getCredit()==null?"":offering.getCredit().creditAbbv(),5)+" "+
@@ -354,7 +354,6 @@ public class PdfWorksheet {
                 lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),5)+" "+
                 lpad(enrl<=0?"":String.valueOf(enrl),5)+" "+
                 lpad(lastLikeEnrl<=0?"":String.valueOf(lastLikeEnrl),5)+" "+
-                rpad(offering.isDesignatorRequired()==null?"":offering.isDesignatorRequired().booleanValue()?"yes":"no",5)+" "+
                 rpad(offering.getConsentType()==null?"":offering.getConsentType().getAbbv(),10)+" "+
                 rpad(offering.getCourseOfferings().size()>1?offering.getCourseName():"",10)
                 );

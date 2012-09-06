@@ -37,7 +37,6 @@ public abstract class BaseCourseCatalog implements Serializable {
 	private String iTitle;
 	private String iPermanentId;
 	private String iApprovalType;
-	private Boolean iDesignatorRequired;
 	private String iPreviousSubject;
 	private String iPreviousCourseNumber;
 	private String iCreditType;
@@ -57,7 +56,6 @@ public abstract class BaseCourseCatalog implements Serializable {
 	public static String PROP_TITLE = "title";
 	public static String PROP_PERM_ID = "permanentId";
 	public static String PROP_APPROVAL_TYPE = "approvalType";
-	public static String PROP_DESIGNATOR_REQ = "designatorRequired";
 	public static String PROP_PREV_SUBJECT = "previousSubject";
 	public static String PROP_PREV_CRS_NBR = "previousCourseNumber";
 	public static String PROP_CREDIT_TYPE = "creditType";
@@ -98,10 +96,6 @@ public abstract class BaseCourseCatalog implements Serializable {
 
 	public String getApprovalType() { return iApprovalType; }
 	public void setApprovalType(String approvalType) { iApprovalType = approvalType; }
-
-	public Boolean isDesignatorRequired() { return iDesignatorRequired; }
-	public Boolean getDesignatorRequired() { return iDesignatorRequired; }
-	public void setDesignatorRequired(Boolean designatorRequired) { iDesignatorRequired = designatorRequired; }
 
 	public String getPreviousSubject() { return iPreviousSubject; }
 	public void setPreviousSubject(String previousSubject) { iPreviousSubject = previousSubject; }
@@ -160,7 +154,6 @@ public abstract class BaseCourseCatalog implements Serializable {
 			"\n	CreditFormat: " + getCreditFormat() +
 			"\n	CreditType: " + getCreditType() +
 			"\n	CreditUnitType: " + getCreditUnitType() +
-			"\n	DesignatorRequired: " + getDesignatorRequired() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	FixedMinimumCredit: " + getFixedMinimumCredit() +
 			"\n	FractionalCreditAllowed: " + getFractionalCreditAllowed() +

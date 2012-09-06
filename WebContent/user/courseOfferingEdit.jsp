@@ -140,15 +140,7 @@
 		</TR>
 		</logic:notEmpty>
 
-		<logic:notEmpty name="courseOfferingEditForm" property="designatorRequired">
-		<TR>
-			<TD valign="top"><loc:message name="propertyDesignatorRequired"/> </TD>
-			<TD>
-				<html:checkbox name="courseOfferingEditForm" property="designatorRequired" />
-			</TD>
-		</TR>
-		</logic:notEmpty>
-		<logic:notEmpty name="courseOfferingEditForm" property="designatorRequired">
+		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 		<%
 		// Get Form
 		String frmName = "courseOfferingEditForm";
@@ -204,7 +196,7 @@
 				</table>
 			</TD>
 		</TR>
-		</logic:notEmpty>
+		</logic:equal>
 
 		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
 			<TR>
