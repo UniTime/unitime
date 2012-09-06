@@ -325,6 +325,7 @@ public class RoomListAction extends Action {
 	                                                 { "Availability", "left", "true" },
 	                                                 { "Departments", "left", "true" },
 	                                                 { "Control", "left", "true" },
+	                                                 { "Events", "left", "true" },
 	                                                 { "Groups", "left", "true" },
 	                                                 { "Features", "left", "true" } } 
 	                                             : new String[][]
@@ -334,6 +335,7 @@ public class RoomListAction extends Action {
 	                                                 { "Availability", "left", "true" },
 	                                                 { "Departments", "left", "true" },
 	                                                 { "Control", "left", "true" },
+	                                                 { "Events", "left", "true" },
 	                                                 { "Groups", "left", "true" } })                    
 			    );
 	
@@ -396,6 +398,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" },
 	                                                   { "Features", "left", "true" }}
 	                                           : new String[][]
@@ -406,6 +409,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" } })
 	        );
 			
@@ -626,6 +630,16 @@ public class RoomListAction extends Action {
 	                    }
 	                }
 	                idx++;
+	                
+	                //events column
+                	if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
+                        text[idx] = location.getEventDepartment().htmlShortLabel();
+                        comp[idx] = location.getEventDepartment().getDeptCode();
+                    } else {
+                        text[idx] = "";
+                        comp[idx] = "";
+                	}
+	                idx++;
 				}
 				
 				text[0] += "<A name=\"A"+location.getUniqueId()+"\"></A>";
@@ -841,6 +855,7 @@ public class RoomListAction extends Action {
                                                      { "Availability", "left", "true" },
                                                      { "Departments", "left", "true" },
                                                      { "Control", "left", "true" },
+                                                     { "Events", "left", "true" },
                                                      { "Groups", "left", "true" },
                                                      { "Features", "left", "true" } } 
                                                  : new String[][]
@@ -850,6 +865,7 @@ public class RoomListAction extends Action {
                                                      { "Availability", "left", "true" },
                                                      { "Departments", "left", "true" },
                                                      { "Control", "left", "true" },
+                                                     { "Events", "left", "true" },
                                                      { "Groups", "left", "true" } }));                   
 	
 			String heading1[] = new String[fixedHeading1.length
@@ -910,6 +926,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" },
 	                                                   { "Features", "left", "true" }}
 	                                           : new String[][]
@@ -921,6 +938,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" } })
 			    );
 			
@@ -1126,6 +1144,16 @@ public class RoomListAction extends Action {
 	                        comp[idx] = "";
 	                    }
 	                }
+	                idx++;
+	                
+	                //events column
+                	if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
+                        text[idx] = "@@COLOR "+location.getEventDepartment().getRoomSharingColor(null)+" "+location.getEventDepartment().getShortLabel();
+                        comp[idx] = location.getEventDepartment().getDeptCode();
+                    } else {
+                        text[idx] = "";
+                        comp[idx] = "";
+                	}
 	                idx++;
 				}
 				
@@ -1342,6 +1370,7 @@ public class RoomListAction extends Action {
                                                      { "Availability", "left", "true" },
                                                      { "Departments", "left", "true" },
                                                      { "Control", "left", "true" },
+                                                     { "Events", "left", "true" },
                                                      { "Groups", "left", "true" },
                                                      { "Features", "left", "true" } } 
                                                  : new String[][]
@@ -1351,6 +1380,7 @@ public class RoomListAction extends Action {
                                                      { "Availability", "left", "true" },
                                                      { "Departments", "left", "true" },
                                                      { "Control", "left", "true" },
+                                                     { "Events", "left", "true" },
                                                      { "Groups", "left", "true" } }));                   
 	
 			String heading1[] = new String[fixedHeading1.length
@@ -1403,6 +1433,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" },
 	                                                   { "Features", "left", "true" }}
 	                                           : new String[][]
@@ -1414,6 +1445,7 @@ public class RoomListAction extends Action {
 	                                                   { "Availability", "left", "true" },
 	                                                   { "Departments", "left", "true" },
 	                                                   { "Control", "left", "true" },
+	                                                   { "Events", "left", "true" },
 	                                                   { "Groups", "left", "true" } })
 			    );
 			
@@ -1563,6 +1595,14 @@ public class RoomListAction extends Action {
 	                        text[idx] = new CSVField("");
 	                    }
 	                }
+	                idx++;
+
+	                //events column
+                	if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
+                		text[idx] = new CSVField(location.getEventDepartment().getShortLabel());
+                    } else {
+                    	text[idx] = new CSVField("");
+                	}
 	                idx++;
 				}
 				

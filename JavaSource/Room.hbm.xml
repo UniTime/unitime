@@ -165,6 +165,12 @@
             <key column="room_id"/>
             <one-to-many class="org.unitime.timetable.model.RoomDept"/>
         </set>
+        
+        <many-to-one
+            name="eventDepartment"
+            class="Department"
+            column="event_dept_id"
+            not-null="false"/>
 
         <union-subclass
             name="Room"

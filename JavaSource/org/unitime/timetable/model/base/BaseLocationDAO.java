@@ -42,4 +42,9 @@ public abstract class BaseLocationDAO extends _RootDAO<Location,Long> {
 	public List<Location> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from Location x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<Location> findByEventDepartment(org.hibernate.Session hibSession, Long eventDepartmentId) {
+		return hibSession.createQuery("from Location x where x.eventDepartment.uniqueId = :eventDepartmentId").setLong("eventDepartmentId", eventDepartmentId).list();
+	}
 }

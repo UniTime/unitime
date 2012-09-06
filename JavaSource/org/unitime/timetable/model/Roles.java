@@ -53,9 +53,6 @@ public class Roles extends BaseRoles implements HasRights {
 
 /*[CONSTRUCTOR MARKER END]*/
 
-	@Deprecated
-	public static String EVENT_MGR_ROLE = "Event Mgr";
-	
 	public static final String ROLE_STUDENT = "Student";
 	public static final String ROLE_INSTRUCTOR = "Instructor";
 	public static final String ROLE_NONE = "No Role";

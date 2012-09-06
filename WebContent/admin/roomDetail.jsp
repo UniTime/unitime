@@ -214,6 +214,19 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		
+		<logic:notEmpty name="<%=frmName%>" property="eventDepartment">
+			<TR>
+				<TD nowrap>Event Department:</TD>
+				<TD>
+					<logic:iterate scope="request" name="eventDepts" id="d">
+						<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
+							<bean:write name="d" property="label"/>
+						</logic:equal>
+					</logic:iterate>
+				</TD>
+			</TR>		
+		</logic:notEmpty>
 			
 		<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
 			<TR>

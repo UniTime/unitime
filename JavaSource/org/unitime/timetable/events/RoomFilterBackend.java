@@ -47,7 +47,6 @@ import org.unitime.timetable.model.DepartmentRoomFeature;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
@@ -69,16 +68,6 @@ public class RoomFilterBackend extends FilterBoxBackend {
 
 	@Override
 	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
-		Set<String> eventDepts = new HashSet<String>(
-				DepartmentDAO.getInstance().getSession().createQuery(
-						"select distinct d.deptCode from Department d inner join d.timetableManagers m inner join m.managerRoles mr " +
-						"where d.session.uniqueId = :sessionId and mr.role.reference=:eventMgr"
-				)
-				.setLong("sessionId", request.getSessionId())
-				.setString("eventMgr", Roles.EVENT_MGR_ROLE)
-				.setCacheable(true)
-				.list());
-
 		Set<String> eventRoomTypes = new HashSet<String>(
 				DepartmentDAO.getInstance().getSession().createQuery(
 						"select o.roomType.label from RoomTypeOption o where o.status = 1 and o.session.uniqueId = :sessionId"
@@ -159,8 +148,6 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "department")) {
 			boolean isManaged = false;
 			for (RoomDept rd: location.getRoomDepts()) {
-				if (rd.isControl() && eventRoomTypes.contains(location.getRoomType().getLabel()) && eventDepts.contains(rd.getDepartment().getDeptCode()))
-					event.incCount();
 				Entity department = depts.get(rd.getDepartment().getUniqueId());
 				if (department == null) {
 					department = new Entity(rd.getDepartment().getUniqueId(), rd.getDepartment().getDeptCode(),
@@ -170,6 +157,9 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				department.incCount();
 				if (userDepts != null && userDepts.contains(rd.getDepartment().getDeptCode())) isManaged = true;
 			}
+			if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && eventRoomTypes.contains(location.getRoomType().getLabel()))
+				event.incCount();
+
 			if (location.isExamEnabled(Exam.sExamTypeFinal))
 				examFinal.incCount();
 			if (location.isExamEnabled(Exam.sExamTypeMidterm))
@@ -232,19 +222,16 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 		
 		List<Location> locations = (department != null && department.contains("Event") ? (List<Location>)hibSession.createQuery("select distinct l from" +
-				" Location l inner join l.roomDepts rd" +
-				" inner join rd.department.timetableManagers m" +
-				" inner join m.managerRoles mr " +
+				" Location l " +
 				" left outer join l.roomType t " +
 				" left outer join l.roomGroups g " +
 				" left outer join l.features f " +
 				" ,RoomTypeOption o" +
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
-				" rd.control=true and mr.role.reference=:eventMgr and" +
+				" l.eventDepartment.allowEvents = true and" +
 				" o.status = 1 and o.roomType = l.roomType and o.session = l.session")
 				.setLong("sessionId", sessionId)
-				.setString("eventMgr", Roles.EVENT_MGR_ROLE)
 				.setCacheable(true)
 				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?
 				(List<Location>)hibSession.createQuery("select distinct l from" +

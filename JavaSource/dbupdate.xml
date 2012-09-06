@@ -5614,4 +5614,53 @@
 		<plsql>alter table %SCHEMA%.instructional_offering drop constraint nn_instr_offr_designator_reqd</plsql>
 		<plsql>alter table %SCHEMA%.course_catalog drop constraint nn_crs_catlog_des_req</plsql>
 	</update>
+	<update version="89" date="06-Sep-2012" comment="Event Departments">
+		<plsql>
+			alter table %SCHEMA%.room add event_dept_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.room add event_dept_id decimal(20,0)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.non_university_location add event_dept_id number(20)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location add event_dept_id decimal(20,0)
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.room add constraint fk_room_event_dept foreign key (event_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</sql>
+		<sql>
+			alter table %SCHEMA%.non_university_location add constraint fk_loc_event_dept foreign key (event_dept_id)
+			references %SCHEMA%.department (uniqueid) on delete set null
+		</sql>
+		<sql>
+			update %SCHEMA%.room l
+			set l.event_dept_id = (
+				select distinct d.uniqueid 
+				from %SCHEMA%.room_dept rd, %SCHEMA%.department d, %SCHEMA%.timetable_manager m, %SCHEMA%.dept_to_tt_mgr dm, %SCHEMA%.roles r, %SCHEMA%.tmtbl_mgr_to_roles mr
+				where dm.timetable_mgr_id = m.uniqueid and dm.department_id = d.uniqueid and mr.manager_id = m.uniqueid and
+				mr.role_id = r.role_id and r.reference = 'Event Mgr' and l.uniqueid = rd.room_id and rd.is_control = 1 and rd.department_id = d.uniqueid
+			)
+		</sql>
+		<sql>
+			update %SCHEMA%.non_university_location l
+			set l.event_dept_id = (
+				select distinct d.uniqueid 
+				from %SCHEMA%.room_dept rd, %SCHEMA%.department d, %SCHEMA%.timetable_manager m, %SCHEMA%.dept_to_tt_mgr dm, %SCHEMA%.roles r, %SCHEMA%.tmtbl_mgr_to_roles mr
+				where dm.timetable_mgr_id = m.uniqueid and dm.department_id = d.uniqueid and mr.manager_id = m.uniqueid and
+				mr.role_id = r.role_id and r.reference = 'Event Mgr' and l.uniqueid = rd.room_id and rd.is_control = 1 and rd.department_id = d.uniqueid
+			)
+		</sql>
+		<mysql>alter table %SCHEMA%.department add allow_events int(1) null default 0</mysql>
+		<plsql>alter table %SCHEMA%.department add allow_events number(1) default 0</plsql>
+		<sql>
+			update %SCHEMA%.department d set d.allow_events = 1 where d.uniqueid in (
+				select dm.department_id
+				from %SCHEMA%.timetable_manager m, %SCHEMA%.dept_to_tt_mgr dm, %SCHEMA%.roles r, %SCHEMA%.tmtbl_mgr_to_roles mr
+				where dm.timetable_mgr_id = m.uniqueid and mr.manager_id = m.uniqueid and mr.role_id = r.role_id and r.reference = 'Event Mgr'
+			) 
+		</sql>
+	</update>
 </dbupdate>

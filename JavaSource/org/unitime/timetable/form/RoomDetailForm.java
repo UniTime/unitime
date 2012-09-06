@@ -63,6 +63,7 @@ public class RoomDetailForm extends ActionForm {
 	private Integer examCapacity;
 	private String examPref;
 	private String examEPref;
+	private String eventDepartment;
 	
 	private Long previos, next;
 
@@ -98,6 +99,7 @@ public class RoomDetailForm extends ActionForm {
 		examEnabled = false; examEEnabled = false;
 		examPref = null; examEPref = null;
 		previos = null; next = null;
+		eventDepartment = null;
 	}
 
 	public Integer getCapacity() {
@@ -312,6 +314,14 @@ public class RoomDetailForm extends ActionForm {
     
     public void setPrevious(Long previous) {
     	this.previos = previous;
+    }
+    
+    public String getEventDepartment() {
+    	return eventDepartment;
+    }
+    
+    public void setEventDepartment(String eventDepartment) {
+    	this.eventDepartment = eventDepartment;
     }
 }
 
