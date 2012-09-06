@@ -148,6 +148,7 @@ public class DataImportAction extends Action {
 		long timeToShow = 1000 * 60 * 60;
 		for (QueueItem item: queue) {
 			if (item.finished() != null && now.getTime() - item.finished().getTime() > timeToShow) continue;
+			if (item.getSession() == null) continue;
 			String name = item.name();
 			if (name.length() > 60) name = name.substring(0, 57) + "...";
 			String delete = null;
