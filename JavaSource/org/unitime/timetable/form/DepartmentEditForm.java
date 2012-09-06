@@ -53,6 +53,7 @@ public class DepartmentEditForm extends ActionForm {
     public boolean iAllowReqTime = false;
     public boolean iAllowReqRoom = false;
     public boolean iAllowReqDist = false;
+    public boolean iAllowEvents = false;
     
 	
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
@@ -122,7 +123,7 @@ public class DepartmentEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		iId = null; iSessionId = null; iName = null; iDeptCode = null; iStatusType = null; iAbbv=null; iDistPrefPriority = 0;
 		iIsExternal = false; iExtName = null; iExtAbbv = null;
-        iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false;
+        iAllowReqTime = false; iAllowReqRoom = false; iAllowReqDist = false; iAllowEvents = false;
 	}
 
 	public Long getId() { return iId; }
@@ -160,6 +161,8 @@ public class DepartmentEditForm extends ActionForm {
     public void setAllowReqRoom(boolean allowReqRoom) { iAllowReqRoom = allowReqRoom; }
     public boolean getAllowReqDist() { return iAllowReqDist; }
     public void setAllowReqDist(boolean allowReqDist) { iAllowReqDist = allowReqDist; }
+    public boolean getAllowEvents() { return iAllowEvents; }
+    public void setAllowEvents(boolean allowEvents) { iAllowEvents = allowEvents; }
 	public String getExtAbbv() { return iExtAbbv; }
 	public void setExtAbbv(String extAbbv) { iExtAbbv = extAbbv; }
 	public String getExtName() { return iExtName; }
@@ -186,6 +189,7 @@ public class DepartmentEditForm extends ActionForm {
         setAllowReqRoom(department.isAllowReqRoom()!=null && department.isAllowReqRoom().booleanValue());
         setAllowReqTime(department.isAllowReqTime()!=null && department.isAllowReqTime().booleanValue());
         setAllowReqDist(department.isAllowReqDistribution()!=null && department.isAllowReqDistribution().booleanValue());
+        setAllowEvents(department.isAllowEvents());
 	}
 
 	public void save(SessionContext context) throws Exception {
@@ -217,6 +221,7 @@ public class DepartmentEditForm extends ActionForm {
             department.setAllowReqRoom(new Boolean(getAllowReqRoom()));
             department.setAllowReqTime(new Boolean(getAllowReqTime()));
             department.setAllowReqDistribution(new Boolean(getAllowReqDist()));
+            department.setAllowEvents(getAllowEvents());
 
 			dao.saveOrUpdate(department);
 //			if( acadSession != null) {

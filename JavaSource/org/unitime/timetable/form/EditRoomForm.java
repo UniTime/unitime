@@ -60,6 +60,7 @@ public class EditRoomForm extends ActionForm {
 	private Boolean ignoreTooFar;
 	private Boolean ignoreRoomCheck;
 	private String controlDept;
+	private String eventDepartment;
 	private String bldgName;
     private String bldgId;
 	private String coordX, coordY;
@@ -310,5 +311,13 @@ public class EditRoomForm extends ActionForm {
 	public Set<RoomType> getRoomTypes() {
 	    return RoomType.findAll(room);
 	}
+
+    public String getEventDepartment() {
+    	return eventDepartment;
+    }
+    
+    public void setEventDepartment(String eventDepartment) {
+    	this.eventDepartment = eventDepartment;
+    }
 }
 

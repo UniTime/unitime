@@ -45,6 +45,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	private Boolean iAllowReqTime;
 	private Boolean iAllowReqRoom;
 	private Boolean iAllowReqDistribution;
+	private Boolean iAllowEvents;
 	private String iRoomSharingColor;
 	private Boolean iExternalManager;
 	private String iExternalMgrLabel;
@@ -68,6 +69,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public static String PROP_ALLOW_REQ_TIME = "allowReqTime";
 	public static String PROP_ALLOW_REQ_ROOM = "allowReqRoom";
 	public static String PROP_ALLOW_REQ_DIST = "allowReqDistribution";
+	public static String PROP_ALLOW_EVENTS = "allowEvents";
 	public static String PROP_RS_COLOR = "roomSharingColor";
 	public static String PROP_EXTERNAL_MANAGER = "externalManager";
 	public static String PROP_EXTERNAL_MGR_LABEL = "externalMgrLabel";
@@ -108,6 +110,10 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public Boolean isAllowReqDistribution() { return iAllowReqDistribution; }
 	public Boolean getAllowReqDistribution() { return iAllowReqDistribution; }
 	public void setAllowReqDistribution(Boolean allowReqDistribution) { iAllowReqDistribution = allowReqDistribution; }
+
+	public Boolean isAllowEvents() { return iAllowEvents; }
+	public Boolean getAllowEvents() { return iAllowEvents; }
+	public void setAllowEvents(Boolean allowEvents) { iAllowEvents = allowEvents; }
 
 	public String getRoomSharingColor() { return iRoomSharingColor; }
 	public void setRoomSharingColor(String roomSharingColor) { iRoomSharingColor = roomSharingColor; }
@@ -194,6 +200,7 @@ public abstract class BaseDepartment extends PreferenceGroup implements Serializ
 	public String toDebugString() {
 		return "Department[" +
 			"\n	Abbreviation: " + getAbbreviation() +
+			"\n	AllowEvents: " + getAllowEvents() +
 			"\n	AllowReqDistribution: " + getAllowReqDistribution() +
 			"\n	AllowReqRoom: " + getAllowReqRoom() +
 			"\n	AllowReqTime: " + getAllowReqTime() +

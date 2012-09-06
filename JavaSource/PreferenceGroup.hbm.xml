@@ -474,6 +474,12 @@
                 not-null="true"/>
 
             <property
+                name="allowEvents"
+                column="allow_events"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
                 name="roomSharingColor"
                 column="rs_color"
                 type="java.lang.String"

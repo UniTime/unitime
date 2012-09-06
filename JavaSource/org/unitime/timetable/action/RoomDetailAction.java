@@ -287,7 +287,9 @@ public class RoomDetailAction extends Action {
 			if (rd.isControl().booleanValue())
 				roomDetailForm.setControl(rd.getDepartment().getUniqueId().toString());
 		
-		EditRoomAction.setupDepartments(request, location);
+		roomDetailForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
+		
+		EditRoomAction.setupDepartments(request, sessionContext, location);
 
 		return mapping.findForward("showRoomDetail");
 	}

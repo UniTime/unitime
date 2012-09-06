@@ -202,7 +202,14 @@
 				<html:checkbox property="allowReqDist"/>
 			</TD>
 		</TR>
-
+		
+		<TR>
+			<TD nowrap>Event Management:</TD>
+			<TD>
+				<html:checkbox property="allowEvents"/>
+			</TD>
+		</TR>
+		
 		<TR>
 			<TD colspan="2">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>

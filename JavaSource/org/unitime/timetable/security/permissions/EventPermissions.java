@@ -31,7 +31,6 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
@@ -96,9 +95,8 @@ public class EventPermissions {
 			if (sessionId == null) return new ArrayList<Long>();
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId " +
-					"from Location l inner join l.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr, RoomTypeOption o " +
-					"where rd.control = true and mr.role.reference = :eventMgr and o.status = 1 and o.roomType = l.roomType and o.session = l.session and l.session.uniqueId = :sessionId")
-					.setString("eventMgr", Roles.EVENT_MGR_ROLE)
+					"from Location l, RoomTypeOption o " +
+					"where l.eventDepartment.allowEvents = true and o.status = 1 and o.roomType = l.roomType and o.session = l.session and l.session.uniqueId = :sessionId")
 					.setLong("sessionId", sessionId).setCacheable(true).list();
 		}
 	}

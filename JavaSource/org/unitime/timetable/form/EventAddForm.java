@@ -57,7 +57,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.RelatedCourseInfo;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
@@ -941,9 +940,8 @@ public class EventAddForm extends ActionForm {
     			}
     		};
         } else {
-            query = "select r from Room r " +
-                    "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+a+
-                    " where rd.control=true and mr.role.reference=:eventMgr" +
+            query = "select r from Room r " + a +
+                    " where r.eventDepartment.allowEvents = true" +
                     " and 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId) ";
             if (iBuildingId!=null && iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
@@ -957,7 +955,6 @@ public class EventAddForm extends ActionForm {
 		Query hibQuery = new LocationDAO().getSession().createQuery(query);
 
 		if (iBuildingId!=null && iBuildingId>=0 && !iLookAtNearLocations) hibQuery.setLong("buildingId", iBuildingId);
-		hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
 		if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
 		if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
 		if (iRoomNumber!=null && iRoomNumber.length()>0) { 
@@ -972,9 +969,8 @@ public class EventAddForm extends ActionForm {
 		}
 		
         if (iBuildingId==null || iBuildingId<0) {
-            query = "select r from NonUniversityLocation r " +
-                "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr"+
-                a+" where rd.control=true and mr.role.reference=:eventMgr";
+            query = "select r from NonUniversityLocation r " + a +
+            		" where r.eventDepartment.allowEvents = true";
             
             if (iMinCapacity!=null && iMinCapacity.length()>0) { query+= " and r.capacity>= :minCapacity";  }
             if (iMaxCapacity!=null && iMaxCapacity.length()>0) { query+= " and r.capacity<= :maxCapacity";  }
@@ -984,7 +980,6 @@ public class EventAddForm extends ActionForm {
             query += b;
             query += " and r.session.uniqueId=:sessionId";
             hibQuery = new LocationDAO().getSession().createQuery(query);
-            hibQuery.setString("eventMgr", Roles.EVENT_MGR_ROLE);
             if (iMinCapacity!=null && iMinCapacity.length()>0) { hibQuery.setInteger("minCapacity", Integer.valueOf(iMinCapacity)); }
             if (iMaxCapacity!=null && iMaxCapacity.length()>0) { hibQuery.setInteger("maxCapacity", Integer.valueOf(iMaxCapacity)); }
             if (iRoomNumber!=null && iRoomNumber.length()>0) { 
