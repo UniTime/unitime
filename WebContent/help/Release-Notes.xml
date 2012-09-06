@@ -218,6 +218,16 @@
 				<line>Fixed a rounding problem in the deadline check.</line>
 			</description>
 		</item>
+		<item>
+			<name>Data Exchange, Roll Forward Session, Examination PDF Reports</name>
+			<description>
+				<line>Operations in progress: do not show items for which academic session does no longer exist.
+					<line>This fixes the NullPointerException thrown when a page is accessed shortly after an academic
+						session was deleted (and there was a data exchange / roll forward / examination report operation
+						in the past 60 minutes).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
