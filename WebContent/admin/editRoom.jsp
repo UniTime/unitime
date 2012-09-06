@@ -142,7 +142,7 @@
 		</logic:notEmpty>
 			
 		<logic:equal name="<%=frmName%>" property="room" value="true">
-			<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
+			<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
 				<TR>
 					<TD>External Id:</TD>
 					<TD width='100%'>
@@ -150,12 +150,12 @@
 					</TD>
 				</TR>
 			</sec:authorize>
-			<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
+			<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
 				<html:hidden property="externalId"/>
 			</sec:authorize>
 		</logic:equal>
 		
-		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
+		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
 			<TR>
 				<TD>Type:</TD>
 				<TD width='100%'>
@@ -165,17 +165,17 @@
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
+		<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
 			<html:hidden property="type"/>
 		</sec:authorize>
 
 		<TR>
 			<TD>Capacity:</TD>
 			<TD>
-				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
+				<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
 					<html:text property="capacity" maxlength="15" size="10"/>
 				</sec:authorize>
-				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
+				<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeCapacity')">
 					<bean:write name="<%=frmName%>" property="capacity"/>
 					<html:hidden property="capacity"/>
 				</sec:authorize>
@@ -209,10 +209,10 @@
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
-				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+				<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 					<html:text property="coordX" maxlength="12" size="12" styleId="coordX" onchange="setMarker();"/>, <html:text property="coordY" maxlength="12" size="12" styleId="coordY" onchange="setMarker();"/>
 				</sec:authorize>
-				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+				<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 					<bean:write name="<%=frmName%>" property="coordX"/>, <bean:write name="<%=frmName%>" property="coordY"/>
 					<html:hidden property="coordX" styleId="coordX"/>
 					<html:hidden property="coordY" styleId="coordY"/>
@@ -222,7 +222,7 @@
 			</TD>
 		</TR>
 
-		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 			<TR>
 				<TD nowrap>Ignore Too Far Distances:</TD>
 				<TD>
@@ -236,12 +236,12 @@
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+		<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 			<html:hidden property="ignoreTooFar" />
 			<html:hidden property="ignoreRoomCheck" />
 		</sec:authorize>
 		
-		<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
+		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
 		<TR>
 			<TD nowrap>Examination Room:</TD>
 			<TD>
@@ -259,7 +259,7 @@
 			</TD>
 		</TR>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
+		<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
 			<html:hidden property="examEnabled"/>
 			<html:hidden property="examEEnabled"/>
 			<html:hidden property="examCapacity"/>
@@ -333,7 +333,7 @@
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
 <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 	<script type="text/javascript" language="javascript">
 		function createGoogleSeachControl(map) {
 			var controlDiv = document.createElement('DIV');
@@ -375,7 +375,7 @@
 		function canDragMarker() { return true; }
 	</script>
 </sec:authorize>
-<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 	<script type="text/javascript" language="javascript">
 		function createGoogleSeachControl(map) { return null; }
 		function canDragMarker() { return false; }
