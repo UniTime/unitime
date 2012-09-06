@@ -210,9 +210,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Consent:")
 	String propertyConsent();
 	
-	@DefaultMessage("Designator Required:")
-	String propertyDesignatorRequired();
-	
 	@DefaultMessage("Coordinators:")
 	String propertyCoordinators();
 	
@@ -369,9 +366,6 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Consent")
 	String columnConsent();
 
-	@DefaultMessage("Designator Required")
-	String columnDesignatorRequired();
-
 	@DefaultMessage("Schedule Print Note")
 	String columnSchedulePrintNote();
 	
@@ -443,9 +437,6 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Position")
 	String columnInstructorPosition();
-	
-	@DefaultMessage("Designator")
-	String columnInstructorDesignatorNr();
 	
 	@DefaultMessage("Note")
 	String columnInstructorNote();
@@ -656,9 +647,6 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Controlling Course")
 	String altControllingCourse();
-	
-	@DefaultMessage("Designator Required")
-	String altDesignatorRequired();
 	
 	@DefaultMessage("Not Available")
 	String altNotAvailableExternalId();
@@ -1435,9 +1423,6 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Unlimited Enrollment")
 	String titleUnlimitedEnrollment();
-	
-	@DefaultMessage("Designator Required")
-	String titleDesignatorRequired();
 	
 	@DefaultMessage("Set Up Configuration")
 	String titleEditConfiguration();

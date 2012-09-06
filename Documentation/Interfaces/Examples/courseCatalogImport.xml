@@ -20,8 +20,9 @@
  * 
  -->
 
-	<!-- course          ==> Required:  subject, courseNumber, title, designatorRequired
+	<!-- course          ==> Required:  subject, courseNumber, title
 	                         Optional:  externalId, approvalType, permanentId, previousSubject, previousCourseNumber
+	                         Deprecated: designatorRequired (since UniTime 3.4)
 	       courseCredit  ==> Required:  creditType, creditUnitType, creditFormat
                                         fixedCredit or (minimumCredit and maximumCredit and fractionalCreditAllowed)
            subpartCredit ==> [0 ==> N entries]
@@ -31,7 +32,7 @@
 	     approvalType = instructor, department or timeblock
 	     creditFormat = arrangeHours, fixedUnit, variableMinMax, variableRange
 	     creditType = collegiate, equivalent, mastersCredit, phdThesisCredit
-	     designatorRequired = T or F
+	     designatorRequired = T or F (deprecated in UniTime 3.4, required in UniTime 3.3 or earlier)
 	     fractionalCreditAllowed = T or F
 	-->
 <courseCatalog campus="puWestLafayetteTrdtn" term="Fal" year="2007">

@@ -5610,4 +5610,8 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'SchedulingDashboard' as value from %SCHEMA%.roles where reference = 'Instructor')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'SessionDefaultCurrent' as value from %SCHEMA%.roles where reference = 'Instructor')</plsql>
 	</update>
+	<update version="88" date="06-Sep-2012" comment="Designator required toggle no longer needed">
+		<plsql>alter table %SCHEMA%.instructional_offering drop constraint nn_instr_offr_designator_reqd</plsql>
+		<plsql>alter table %SCHEMA%.course_catalog drop constraint nn_crs_catlog_des_req</plsql>
+	</update>
 </dbupdate>

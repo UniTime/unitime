@@ -243,9 +243,6 @@ public class LastChange extends BodyTagSupport {
         nrChanges += printLastChangeTableRow(webTable, 
                 ChangeLog.findLastChange(inst, ChangeLog.Source.INSTRUCTOR_PREF_EDIT));
 
-        nrChanges += printLastChangeTableRow(webTable,
-                ChangeLog.findLastChange(inst, ChangeLog.Source.DESIGNATOR_EDIT));
-
         if (nrChanges>0) {
             pageContext.getOut().println(
                     "<TR><TD coslpan='2'>&nbsp;</TD></TR>"+

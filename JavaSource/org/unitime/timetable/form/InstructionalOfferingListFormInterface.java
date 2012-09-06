@@ -37,7 +37,6 @@ public interface InstructionalOfferingListFormInterface {
 	public Boolean getSchedulePrintNote();
 	public Boolean getNote();
 	public Boolean getConsent();
-	public Boolean getDesignatorRequired();
 	public Boolean getTitle();
 	public Boolean getExams();
 	public String getSortBy();

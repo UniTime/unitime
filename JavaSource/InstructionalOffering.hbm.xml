@@ -125,12 +125,6 @@
             insert="true"
             update="true"/>
 
-        <property
-            name="designatorRequired"
-            column="designator_required"
-            type="java.lang.Boolean"
-            not-null="true"/>
-
         <set
             name="creditConfigs"
             inverse="true"

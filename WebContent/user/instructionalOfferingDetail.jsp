@@ -338,17 +338,6 @@
 		</TR>
 
 		<TR>
-			<TD><loc:message name="propertyDesignatorRequired"/></TD>
-			<TD>
-				<logic:equal name="instructionalOfferingDetailForm" property="designatorRequired" value="true">
-					<IMG src="images/tick.gif" alt="<%=MSG.altDesignatorRequired() %>" title="<%=MSG.titleDesignatorRequired() %>" border="0">
-				</logic:equal>
-				<logic:equal name="instructionalOfferingDetailForm" property="designatorRequired" value="false">
-					<loc:message name="no"/>
-				</logic:equal>&nbsp;
-			</TD>
-		</TR>
-		<TR>
 			<TD><loc:message name="propertyCredit"/></TD>
 			<TD>
 				<bean:write name="instructionalOfferingDetailForm" property="creditText" />

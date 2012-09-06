@@ -109,7 +109,6 @@ public class WebInstructionalOfferingTableBuilder {
     										MSG.columnDemand(),
     										MSG.columnProjectedDemand(),
     										MSG.columnConsent(),
-    										MSG.columnDesignatorRequired(),
     										MSG.columnMinPerWk(),
     										MSG.columnLimit(),
     										MSG.columnRoomRatio(),
@@ -168,7 +167,6 @@ public class WebInstructionalOfferingTableBuilder {
     private boolean showNote;
     private boolean showTitle;
     private boolean showConsent;
-    private boolean showDesignatorRequired;
     private boolean showExam;
     private boolean showExamName=true;
     private boolean showExamTimetable;
@@ -243,13 +241,6 @@ public class WebInstructionalOfferingTableBuilder {
         this.showConsent = showConsent;
     }
     
-    public boolean isShowDesignatorRequired() {
-        return showDesignatorRequired;
-    }
-    public void setShowDesignatorRequired(boolean showDesignatorRequired) {
-        this.showDesignatorRequired = showDesignatorRequired;
-    }
-
     public boolean isShowTitle() {
         return showTitle;
     }
@@ -459,10 +450,6 @@ public class WebInstructionalOfferingTableBuilder {
     	}
     	if (isShowConsent()){
     		cell = this.headerCell(MSG.columnConsent(), 2, 1);
-    		row.addContent(cell);    		
-    	}
-    	if (isShowDesignatorRequired()){
-    		cell = this.headerCell(MSG.columnDesignatorRequired(), 2, 1);
     		row.addContent(cell);    		
     	}
     	if (isShowSchedulePrintNote()){
@@ -1237,9 +1224,6 @@ public class WebInstructionalOfferingTableBuilder {
     	if (isShowConsent()){
     		row.addContent(this.initNormalCell("&nbsp;", isEditable));
     	}
-    	if (isShowDesignatorRequired()){
-    		row.addContent(this.initNormalCell("&nbsp;", isEditable));
-    	}
     	if (isShowSchedulePrintNote()){
             row.addContent(this.buildSchedulePrintNote(prefGroup, isEditable, context.getUser()));     		
     	} 
@@ -1422,9 +1406,6 @@ public class WebInstructionalOfferingTableBuilder {
                 row.addContent(initNormalCell("", isEditable));
         	} 
         	if (isShowConsent()){
-        		row.addContent(this.initNormalCell("", isEditable));
-        	}
-        	if (isShowDesignatorRequired()){
         		row.addContent(this.initNormalCell("", isEditable));
         	}
         	if (isShowSchedulePrintNote()){
@@ -1623,11 +1604,6 @@ public class WebInstructionalOfferingTableBuilder {
     	} 
     	if (isShowConsent()){
             row.addContent(initNormalCell(io.getConsentType()!=null ? "<span title='"+io.getConsentType().getLabel()+"'>"+io.getConsentType().getAbbv()+"</span>" : "&nbsp;", isEditable));     		
-    	}
-    	if (isShowDesignatorRequired()){
-    		cell = initNormalCell(io.isDesignatorRequired()!=null && io.isDesignatorRequired().booleanValue()?"<IMG border='0' alt='Yes' title='Designator is required.' align='absmiddle' src='images/tick.gif'>":"", isEditable);
-    		cell.setAlign("center");
-            row.addContent(cell);
     	}
     	if (isShowSchedulePrintNote()){
             row.addContent(buildSchedulePrintNote(io, isEditable, context.getUser()));     		
@@ -1894,7 +1870,6 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowSchedulePrintNote(form.getSchedulePrintNote().booleanValue());
 		setShowNote(form.getNote().booleanValue());
 		setShowConsent(form.getConsent().booleanValue());
-		setShowDesignatorRequired(form.getDesignatorRequired().booleanValue());
 		setShowTitle(form.getTitle().booleanValue());
 		if (form.getExams() != null) {
 		    setShowExam(form.getExams());
@@ -1927,7 +1902,6 @@ public class WebInstructionalOfferingTableBuilder {
 		setShowSchedulePrintNote(a.contains(MSG.columnSchedulePrintNote()));
 		setShowNote(a.contains(MSG.columnNote()));
 		setShowConsent(a.contains(MSG.columnConsent()));
-		setShowDesignatorRequired(a.contains(MSG.columnDesignatorRequired()));
 		setShowTitle(a.contains(MSG.columnTitle()));
 		setShowExam(a.contains(MSG.columnExam()));
 		
