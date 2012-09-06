@@ -114,6 +114,16 @@
 					</html:select>
 				</TD>
 			</TR>
+			
+			<TR>
+				<TD nowrap>Event Department:</TD>
+				<TD>
+					<html:select property="eventDepartment">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
+						<html:options collection="eventDepts" property="value" labelProperty="label"/>
+					</html:select>
+				</TD>
+			</TR>
 		</logic:empty>
 		
 		
@@ -203,6 +213,29 @@
 						</sec:authorize>
 					</TD>
 				</TR>
+			</logic:notEmpty>
+			
+			<logic:notEmpty name="eventDepts" scope="request">
+				
+				<TR>
+					<TD nowrap>Event Department:</TD>
+					<TD>
+						<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+							<html:select property="eventDepartment">
+								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
+								<html:options collection="eventDepts" property="value" labelProperty="label"/>
+							</html:select>
+						</sec:authorize>
+						<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+							<html:hidden property="eventDepartment"/>
+							<logic:iterate scope="request" name="eventDepts" id="d">
+								<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
+									<bean:write name="d" property="label"/>
+								</logic:equal>
+							</logic:iterate>
+						</sec:authorize>
+					</TD>
+				</TR>				
 			</logic:notEmpty>
 		</logic:notEmpty>
 			

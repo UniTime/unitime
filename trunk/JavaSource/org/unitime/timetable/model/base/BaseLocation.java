@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
@@ -48,6 +49,7 @@ public abstract class BaseLocation implements Serializable {
 	private String iDisplayName;
 
 	private Session iSession;
+	private Department iEventDepartment;
 	private Set<RoomFeature> iFeatures;
 	private Set<ExamLocationPref> iExamPreferences;
 	private Set<Assignment> iAssignments;
@@ -119,6 +121,9 @@ public abstract class BaseLocation implements Serializable {
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
+	public Department getEventDepartment() { return iEventDepartment; }
+	public void setEventDepartment(Department eventDepartment) { iEventDepartment = eventDepartment; }
+
 	public Set<RoomFeature> getFeatures() { return iFeatures; }
 	public void setFeatures(Set<RoomFeature> features) { iFeatures = features; }
 	public void addTofeatures(RoomFeature roomFeature) {
@@ -175,6 +180,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	CoordinateX: " + getCoordinateX() +
 			"\n	CoordinateY: " + getCoordinateY() +
 			"\n	DisplayName: " + getDisplayName() +
+			"\n	EventDepartment: " + getEventDepartment() +
 			"\n	ExamCapacity: " + getExamCapacity() +
 			"\n	ExamType: " + getExamType() +
 			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +

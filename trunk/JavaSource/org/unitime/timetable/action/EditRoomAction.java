@@ -127,7 +127,7 @@ public class EditRoomAction extends Action {
 				if (editRoomForm.getId()==null || editRoomForm.getId().isEmpty())
 					setupDepartments(request, sessionContext);
 				else
-					setupDepartments(request, LocationDAO.getInstance().get(Long.valueOf(editRoomForm.getId())));
+					setupDepartments(request, sessionContext, LocationDAO.getInstance().get(Long.valueOf(editRoomForm.getId())));
                 setupBuildings(request);
                 return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
 			}
@@ -163,6 +163,7 @@ public class EditRoomAction extends Action {
             editRoomForm.setCoordX(location.getCoordinateX()==null ? null : location.getCoordinateX().toString());
             editRoomForm.setCoordY(location.getCoordinateY()==null ? null : location.getCoordinateY().toString());
             editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
+            editRoomForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
             
             PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
             px.load(location);
@@ -177,7 +178,7 @@ public class EditRoomAction extends Action {
                 request.setAttribute("PeriodEPrefs", epx.print(true));
             }
 
-            EditRoomAction.setupDepartments(request, location);
+            EditRoomAction.setupDepartments(request, sessionContext, location);
         } else {
         	sessionContext.checkPermission(Right.AddRoom);
             editRoomForm.reset(mapping, request);
@@ -186,6 +187,7 @@ public class EditRoomAction extends Action {
             	Department d = Department.findByDeptCode((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom), sessionContext.getUser().getCurrentAcademicSessionId());
                 if (d!=null) editRoomForm.setControlDept(d.getUniqueId().toString());
             }
+            editRoomForm.setEventDepartment(null);
 
             setupDepartments(request, sessionContext);
             setupBuildings(request);
@@ -194,7 +196,7 @@ public class EditRoomAction extends Action {
 		return mapping.findForward(editRoomForm.getId()==null || editRoomForm.getId().length()==0?"showAddRoom":"showEditRoom");
 	}
 	
-    public static void setupDepartments(HttpServletRequest request, Location location) throws Exception {
+    public static void setupDepartments(HttpServletRequest request, SessionContext context, Location location) throws Exception {
     	Collection availableDepts = new Vector();
 
         for (Iterator i=new TreeSet(location.getRoomDepts()).iterator();i.hasNext();) {
@@ -204,6 +206,14 @@ public class EditRoomAction extends Action {
         }
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
+		
+    	Collection eventDepts = new Vector();
+    	
+		for (Department d: Department.getUserDepartments(context.getUser()))
+			if (d.isAllowEvents())
+				eventDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
+
+		request.setAttribute("eventDepts", eventDepts);
     }
     
     public static void setupDepartments(HttpServletRequest request, SessionContext context) throws Exception {
@@ -213,6 +223,14 @@ public class EditRoomAction extends Action {
             availableDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
 		
 		request.setAttribute(Department.DEPT_ATTR_NAME, availableDepts);
+		
+		Collection eventDepts = new Vector();
+		
+		for (Department d: Department.getUserDepartments(context.getUser()))
+			if (d.isAllowEvents())
+				eventDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
+		
+		request.setAttribute("eventDepts", eventDepts);
     }
     
     private void setupBuildings(HttpServletRequest request) throws Exception {
@@ -311,6 +329,7 @@ public class EditRoomAction extends Action {
 					hibSession.saveOrUpdate(rd);
 				}
 			}
+			location.setEventDepartment(editRoomForm.getEventDepartment() == null || editRoomForm.getEventDepartment().isEmpty() ? null : new DepartmentDAO().get(Long.valueOf(editRoomForm.getEventDepartment())));
 
 			hibSession.saveOrUpdate(location);
 			
@@ -350,6 +369,7 @@ public class EditRoomAction extends Action {
             room.setRoomDepts(new HashSet());
             RoomDept rd = new RoomDept();
             rd.setRoom(room); rd.setDepartment(new DepartmentDAO().get(Long.valueOf(editRoomForm.getControlDept()))); rd.setControl(Boolean.TRUE);
+            room.setEventDepartment(editRoomForm.getEventDepartment() == null || editRoomForm.getEventDepartment().isEmpty() ? null : new DepartmentDAO().get(Long.valueOf(editRoomForm.getEventDepartment())));
             room.getRoomDepts().add(rd);
             room.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
             room.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
