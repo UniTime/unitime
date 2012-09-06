@@ -20,7 +20,7 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentStatusType;
@@ -31,8 +31,8 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.solver.service.AssignmentService;
+import org.unitime.timetable.solver.SolverProxy;
+import org.unitime.timetable.solver.service.SolverService;
 
 public class CourseTimetablingPermissions {
 	
@@ -169,7 +169,7 @@ public class CourseTimetablingPermissions {
 		
 		@Autowired SessionContext sessionContext;
 		
-		@Autowired AssignmentService<ClassAssignmentProxy> classAssignmentService;
+		@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 
 		@Autowired PermissionDepartment permissionDepartment;
 		
@@ -184,14 +184,12 @@ public class CourseTimetablingPermissions {
 			// No date or time pattern
 			if (source.effectiveDatePattern() == null || source.effectiveTimePatterns().isEmpty()) return false;
 			
-			// Showing an in-memory or uncommitted solution
-			try {
-				Assignment assignment = (classAssignmentService.getAssignment() == null ? null : classAssignmentService.getAssignment().getAssignment(source));
-				if (assignment.getUniqueId() == null || assignment.getSolution() == null || !assignment.getSolution().isCommited())
-					return false;
-			} catch (Exception e) {
-				return false;
-			}
+			// Showing an in-memory solution
+			if (courseTimetablingSolverService.getSolver() != null) return false;
+			
+			// Showing a selected solution
+			String solutionIdsStr = (String)sessionContext.getAttribute(SessionAttribute.SelectedSolution);
+			if (solutionIdsStr != null && !solutionIdsStr.isEmpty()) return false;
 			
 			// Need an offering lock
 			if (permissionOfferingLockNeededLimitedEdit.check(user, source.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering()))
