@@ -36,7 +36,7 @@ public class CurriculumPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source);
+			return permissionSession.check(user, source, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
 		}
 
 		@Override

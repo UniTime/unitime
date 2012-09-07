@@ -259,7 +259,7 @@ public class ExamDistributionPrefsAction extends Action {
         if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
         	frm.setExamType((Integer)sessionContext.getAttribute(SessionAttribute.ExamType));
         
-        frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+        frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         if (frm.getFilterSubjectAreas().size()==1) {
             SubjectArea firstSubjectArea = (SubjectArea)frm.getFilterSubjectAreas().iterator().next();
             frm.setFilterSubjectAreaId(firstSubjectArea.getUniqueId().toString());
