@@ -302,7 +302,6 @@ public class RoomDetailAction extends Action {
     private void doDelete(RoomDetailForm roomDetailForm, HttpServletRequest request) throws Exception {
 		//get location
     	Long id = Long.valueOf(request.getParameter("id"));
-    	sessionContext.checkPermission(id, "Location", Right.RoomDelete);
 		LocationDAO ldao = new LocationDAO();
 		org.hibernate.Session hibSession = ldao.getSession();
 		Transaction tx = null;
@@ -310,6 +309,10 @@ public class RoomDetailAction extends Action {
 			tx = hibSession.beginTransaction();
 			Location location = ldao.get(id, hibSession);
 			if (location != null){
+				if (location instanceof NonUniversityLocation)
+					sessionContext.checkPermission(id, "NonUniversityLocation", Right.NonUniversityLocationDelete);
+				else
+					sessionContext.checkPermission(id, "Location", Right.RoomDelete);
                 ChangeLog.addChange(
                         hibSession, 
                         sessionContext, 

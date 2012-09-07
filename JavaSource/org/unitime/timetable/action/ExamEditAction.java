@@ -286,7 +286,7 @@ public class ExamEditAction extends PreferencesAction {
             
             frm.setAllowHardPrefs(sessionContext.hasPermission(exam, Right.CanUseHardPeriodPrefs));
             
-            frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+            frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         
             if (!frm.getClone() && exam!=null) {
                 BackTracker.markForBack(

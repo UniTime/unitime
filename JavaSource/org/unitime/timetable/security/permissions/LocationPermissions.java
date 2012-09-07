@@ -48,7 +48,7 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source);
+			return permissionDepartment.check(user, source) || source.isExternalManager();
 		}
 
 		@Override
@@ -82,11 +82,11 @@ public class LocationPermissions {
 	}
 	
 	@PermissionForRight(Right.RoomEdit)
-	public static class RoomEdit implements Permission<Location> {
+	public static class RoomEdit implements Permission<Room> {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
-		public boolean check(UserContext user, Location source) {
+		public boolean check(UserContext user, Room source) {
 			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
 			boolean allDepts = true;
 			
@@ -100,7 +100,29 @@ public class LocationPermissions {
 		}
 
 		@Override
-		public Class<Location> type() { return Location.class; }
+		public Class<Room> type() { return Room.class; }
+	}
+	
+	@PermissionForRight(Right.NonUniversityLocationEdit)
+	public static class NonUniversityLocationEdit implements Permission<NonUniversityLocation> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, NonUniversityLocation source) {
+			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
+			boolean allDepts = true;
+			
+			for (RoomDept rd: source.getRoomDepts()) {
+				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
+					controls = true;
+				if (!permissionDepartment.check(user, rd.getDepartment()))
+					allDepts = false;
+			}			
+			return controls || allDepts;
+		}
+
+		@Override
+		public Class<NonUniversityLocation> type() { return NonUniversityLocation.class; }
 	}
 	
 	@PermissionForRight(Right.RoomEditChangeControll)

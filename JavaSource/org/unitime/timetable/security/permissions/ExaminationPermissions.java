@@ -24,7 +24,9 @@ import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -36,8 +38,10 @@ public class ExaminationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
+			if (SubjectArea.getUserSubjectAreas(user, false).isEmpty()) return false;
+			
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			else
 				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView);
 		}
@@ -54,7 +58,7 @@ public class ExaminationPermissions {
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
-				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
+				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
 			else
 				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView);
 		}
@@ -84,13 +88,20 @@ public class ExaminationPermissions {
 	@PermissionForRight(Right.ExaminationEdit)
 	public static class EditExamination implements Permission<Exam> {
 		@Autowired PermissionSession permissionSession;
+		
+		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable);
-			else
-				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamEdit);
+			else {
+				for (ExamOwner owner: source.getOwners()) {
+					if (permissionDepartment.check(user, owner.getCourse().getDepartment(), DepartmentStatusType.Status.ExamEdit))
+						return true;
+				}
+				return false;
+			}
 		}
 
 		@Override

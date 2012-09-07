@@ -161,7 +161,15 @@ public class RoomListAction extends Action {
 		}
 		
 		if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-            roomListForm.setRooms(new TreeSet<Location>(Location.findAll(sessionContext.getUser().getCurrentAcademicSessionId())));
+			if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
+	            roomListForm.setRooms(new TreeSet<Location>(Location.findAll(sessionContext.getUser().getCurrentAcademicSessionId())));
+			} else {
+				TreeSet<Location> rooms = new TreeSet<Location>();
+				for (Department department: Department.getUserDepartments(sessionContext.getUser()))
+					for (RoomDept rd: department.getRoomDepts())
+						rooms.add(rd.getRoom());
+				roomListForm.setRooms(rooms);
+			}
 		} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
 		    roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), Exam.sExamTypeFinal));
         } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {

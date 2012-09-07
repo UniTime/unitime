@@ -69,7 +69,7 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title><%=frm.getName()%></tt:section-title>
-					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
+					<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
 						<html:submit property="doit" 
 								accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
 								>
@@ -108,7 +108,7 @@
 								<bean:message key="button.modifyRoomFeatures" />
 						</html:submit>
 					</sec:authorize>
-					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete')">
+					<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
 							<bean:message key="button.delete" />
@@ -364,7 +364,7 @@
 						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
 					</TD>
 				</TR>
-				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
+				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
 					<TR>
 						<TD colspan="2" align="center" style='border-top:black 1px dashed'>
 							<font size='-1'><i>
@@ -386,7 +386,7 @@
 						<bean:write name="<%=frmName%>" property="examEPref" filter="false"/>
 					</TD>
 				</TR>
-				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
+				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
 					<TR>
 						<TD colspan="2" align='center' style='border-top:black 1px dashed'>
 							<font size='-1'><i>
@@ -412,7 +412,7 @@
 		
 		<TR>
 			<TD colspan='2' align='right'>
-				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit')">
+				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
 					<html:submit property="doit" 
 							accesskey="R" styleClass="btn" titleKey="title.modifyRoom"
 							>
@@ -451,7 +451,7 @@
 						<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
 				</sec:authorize>
-				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete')">
+				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 					&nbsp;
 					<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
 						<bean:message key="button.delete" />

@@ -118,7 +118,7 @@ public class ExamListAction extends Action {
             return mapping.findForward("addExam");
         }
         
-        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         if (myForm.getSubjectAreas().size()==1) {
             SubjectArea firstSubjectArea = (SubjectArea)myForm.getSubjectAreas().iterator().next();
             myForm.setSubjectAreaId(firstSubjectArea.getUniqueId().toString());
