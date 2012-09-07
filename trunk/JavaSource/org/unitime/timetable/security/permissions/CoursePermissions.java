@@ -314,7 +314,23 @@ public class CoursePermissions {
 	}
 	
 	@PermissionForRight(Right.InstrOfferingConfigEdit)
-	public static class InstrOfferingConfigEdit extends MultipleClassSetup {
+	public static class InstrOfferingConfigEdit implements Permission<InstrOfferingConfig> {
+		@Autowired PermissionDepartment permissionDepartment;
+		@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
+
+		@Override
+		public boolean check(UserContext user, InstrOfferingConfig source) {
+			if (permissionOfferingLockNeeded.check(user, source.getInstructionalOffering())) return false;
+			
+			if (source.getInstructionalOffering().isNotOffered()) return false;
+			
+			if (permissionDepartment.check(user, source.getInstructionalOffering().getDepartment(), DepartmentStatusType.Status.OwnerEdit)) return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<InstrOfferingConfig> type() { return InstrOfferingConfig.class; }
 	}
 	
 	@PermissionForRight(Right.InstrOfferingConfigAdd)
@@ -522,9 +538,13 @@ public class CoursePermissions {
 		public boolean check(UserContext user, PreferenceGroup source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
 			
-			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqTime())) return false;
-			
-			return permissionDepartment.check(user, source.getDepartment());
+			Department department = source.getDepartment();
+			if (source instanceof Class_)
+				department = ((Class_)source).getManagingDept();
+			if (source instanceof SchedulingSubpart)
+				department = ((SchedulingSubpart)source).getManagingDept();
+
+			return department == null || user.getCurrentAuthority().hasQualifier(department) || source.getDepartment().getAllowReqTime();
 		}
 
 		@Override
@@ -540,9 +560,13 @@ public class CoursePermissions {
 		public boolean check(UserContext user, PreferenceGroup source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
 			
-			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqRoom())) return false;
-			
-			return permissionDepartment.check(user, source.getDepartment());
+			Department department = source.getDepartment();
+			if (source instanceof Class_)
+				department = ((Class_)source).getManagingDept();
+			if (source instanceof SchedulingSubpart)
+				department = ((SchedulingSubpart)source).getManagingDept();
+
+			return department == null || user.getCurrentAuthority().hasQualifier(department) || source.getDepartment().getAllowReqRoom();
 		}
 
 		@Override
@@ -558,9 +582,13 @@ public class CoursePermissions {
 		public boolean check(UserContext user, PreferenceGroup source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) || source.getDepartment() == null) return true;
 			
-			if (Boolean.FALSE.equals(source.getDepartment().getAllowReqDistribution())) return false;
-			
-			return permissionDepartment.check(user, source.getDepartment());
+			Department department = source.getDepartment();
+			if (source instanceof Class_)
+				department = ((Class_)source).getManagingDept();
+			if (source instanceof SchedulingSubpart)
+				department = ((SchedulingSubpart)source).getManagingDept();
+
+			return department == null || user.getCurrentAuthority().hasQualifier(department) || source.getDepartment().getAllowReqDistribution();
 		}
 
 		@Override

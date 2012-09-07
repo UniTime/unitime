@@ -307,7 +307,7 @@
 			<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		</tt:propertyEquals>
 
-		
+		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
 		<logic:notEmpty scope="request" name="PeriodPrefs">
 			<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
 				<TR id='finPref' style='display:null;'>
@@ -335,6 +335,7 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		</sec:authorize>
 		
 		<TR>
 			<TD colspan='2'>

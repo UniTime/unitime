@@ -136,16 +136,17 @@ public class EditRoomAction extends Action {
         if (request.getParameter("id")!=null && request.getParameter("id").length() > 0) {
             //get location information
             Long id = Long.valueOf(request.getParameter("id"));
-            sessionContext.checkPermission(id, "Location", Right.RoomEdit);
             LocationDAO ldao = new LocationDAO();
             Location location = ldao.get(id);
             if (location instanceof Room) {
                 Room r = (Room)location;
+                sessionContext.checkPermission(r, Right.RoomEdit);
                 editRoomForm.setName(r.getRoomNumber());
                 editRoomForm.setBldgName(r.getBuildingAbbv());
                 editRoomForm.setRoom(true);
                 editRoomForm.setExternalId(r.getExternalUniqueId());
             } else {
+            	sessionContext.checkPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit);
                 editRoomForm.setName(((NonUniversityLocation)location).getName());
                 editRoomForm.setBldgName("");
                 editRoomForm.setRoom(false);
@@ -165,17 +166,19 @@ public class EditRoomAction extends Action {
             editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
             editRoomForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
             
-            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
-            px.load(location);
-            px.setAllowRequired(false);
-            RequiredTimeTable rttPx = new RequiredTimeTable(px);
-            rttPx.setName("PeriodPrefs");
-            request.setAttribute("PeriodPrefs", rttPx.print(true, CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(sessionContext.getUser())))); 
+            if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
+                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
+                px.load(location);
+                px.setAllowRequired(false);
+                RequiredTimeTable rttPx = new RequiredTimeTable(px);
+                rttPx.setName("PeriodPrefs");
+                request.setAttribute("PeriodPrefs", rttPx.print(true, CommonValues.VerticalGrid.eq(UserProperty.GridOrientation.get(sessionContext.getUser())))); 
 
-            if (Exam.hasMidtermExams(location.getSession().getUniqueId())) {
-                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-                epx.load(location);
-                request.setAttribute("PeriodEPrefs", epx.print(true));
+                if (Exam.hasMidtermExams(location.getSession().getUniqueId())) {
+                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
+                    epx.load(location);
+                    request.setAttribute("PeriodEPrefs", epx.print(true));
+                }            	
             }
 
             EditRoomAction.setupDepartments(request, sessionContext, location);
@@ -254,14 +257,19 @@ public class EditRoomAction extends Action {
 	private void doUpdate(EditRoomForm editRoomForm, HttpServletRequest request) throws Exception {
 
 		Long id = Long.valueOf(editRoomForm.getId());
-        sessionContext.checkPermission(id, "Location", Right.RoomEdit);
-		LocationDAO ldao = new LocationDAO();
+        LocationDAO ldao = new LocationDAO();
 		org.hibernate.Session hibSession = ldao.getSession();
 		Transaction tx = null;
 		try {
 			tx = hibSession.beginTransaction();
 			
 			Location location = ldao.get(id, hibSession);
+			
+			if (location instanceof Room) {
+				sessionContext.checkPermission((Room)location, Right.RoomEdit);
+			} else {
+				sessionContext.checkPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit);
+			}
 					        
 			if (editRoomForm.getName() != null && !editRoomForm.getName().trim().equalsIgnoreCase("")) {
 				if (location instanceof Room)
@@ -302,24 +310,26 @@ public class EditRoomAction extends Action {
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
 			
-			if (location.isExamEnabled(Exam.sExamTypeFinal)) {
-			    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
-			    RequiredTimeTable rttPx = new RequiredTimeTable(px);
-			    rttPx.setName("PeriodPrefs");
-			    rttPx.update(request);
-			    px.save(location);
-			} else {
-			    location.clearExamPreferences(Exam.sExamTypeFinal);
+			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
+				if (location.isExamEnabled(Exam.sExamTypeFinal)) {
+				    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
+				    RequiredTimeTable rttPx = new RequiredTimeTable(px);
+				    rttPx.setName("PeriodPrefs");
+				    rttPx.update(request);
+				    px.save(location);
+				} else {
+				    location.clearExamPreferences(Exam.sExamTypeFinal);
+				}
+	            
+	            if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm)) {
+	                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
+	                epx.load(request);
+	                request.setAttribute("PeriodEPrefs", epx.print(true));
+	                epx.save(location);
+	            } else {
+	                location.clearExamPreferences(Exam.sExamTypeMidterm);
+	            }
 			}
-            
-            if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm)) {
-                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-                epx.load(request);
-                request.setAttribute("PeriodEPrefs", epx.print(true));
-                epx.save(location);
-            } else {
-                location.clearExamPreferences(Exam.sExamTypeMidterm);
-            }
 			
 			for (Iterator i=location.getRoomDepts().iterator();i.hasNext();) {
 				RoomDept rd = (RoomDept)i.next();

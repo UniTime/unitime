@@ -255,10 +255,14 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 	}
 	
 	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user) {
+		return getUserSubjectAreas(user, true);
+	}
+	
+	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user, boolean allSubjectsIfExternalManager) {
 		TreeSet<SubjectArea> subjectAreas = new TreeSet<SubjectArea>();
 		if (user == null || user.getCurrentAuthority() == null) return subjectAreas;
 		for (Department department: Department.getUserDepartments(user)) {
-			if (department.isExternalManager()) {
+			if (department.isExternalManager() && allSubjectsIfExternalManager) {
 				subjectAreas.addAll(department.getSession().getSubjectAreas());
 				break;
 			} else {

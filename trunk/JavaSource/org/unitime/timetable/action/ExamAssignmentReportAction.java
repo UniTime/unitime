@@ -115,7 +115,7 @@ public class ExamAssignmentReportAction extends Action {
         
         myForm.load(sessionContext);
         
-        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;

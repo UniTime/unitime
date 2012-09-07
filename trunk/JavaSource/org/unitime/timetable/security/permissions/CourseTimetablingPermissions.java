@@ -227,7 +227,7 @@ public class CourseTimetablingPermissions {
 		@Override
 		public boolean check(UserContext user, Solution source) {
 			for (Department department: source.getOwner().getDepartments())
-				if (!permissionDepartment.check(user, department))
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable))
 					return false;
 			return true;
 		}
@@ -246,7 +246,7 @@ public class CourseTimetablingPermissions {
 		@Override
 		public boolean check(UserContext user, SolverGroup source) {
 			for (Department department: source.getDepartments())
-				if (!permissionDepartment.check(user, department))
+				if (!permissionDepartment.check(user, department, DepartmentStatusType.Status.Timetable, DepartmentStatusType.Status.Audit))
 					return false;
 			return true;
 		}
