@@ -470,20 +470,24 @@
 			</condition>
 		</separator>
 		<item name="Events" page="events" type="gwt">
-			<parameter name="tab">1</parameter>
+			<!-- <parameter name="tab">1</parameter> -->
 		</item>
+		<!-- 
 		<item name="Meetings" page="events" type="gwt">
 			<parameter name="tab">2</parameter>
 		</item>
+		-->
 		<item name="Add Event" page="events" type="gwt">
 			<parameter name="event">add</parameter>
 			<condition>
 				<hasPermission name="EventAddSpecial" authority="any"/>
 			</condition>
 		</item>
+		<!-- 
 		<item name="Room Availability" page="events" type="gwt">
 			<parameter name="tab">0</parameter>
 		</item>
+		 -->
 		<separator/>
 		<item name="Timetable" page="timetable" type="gwt"/>
 		<item name="Reports" page="hql" type="gwt">
@@ -493,6 +497,7 @@
 			</condition>
 		</item>
 	</menu>
+	<!-- 
 	<menu name="OLD Events">
 		<condition>
 			<or>
@@ -510,6 +515,7 @@
 		</item>
 		<item name="Room Availability" page="eventGrid.do"/>
 	</menu>
+	-->
 	<item name="Course Requests" page="requests" type="gwt">
 		<condition>
 			<hasPermission name="CourseRequests"/>	
@@ -539,7 +545,7 @@
 			</not>
 		</condition>
 	</item>
-	<item name="Personal Schedule" page="personal" type="gwt">
+	<item name="Personal Timetable" page="personal" type="gwt">
 		<condition>
 			<or>
 				<hasPermission name="PersonalScheduleLookup"/>
