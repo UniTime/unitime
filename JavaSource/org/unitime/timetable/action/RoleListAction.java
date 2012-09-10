@@ -138,7 +138,7 @@ public class RoleListAction extends Action {
     		table.addLine(
     				onClick,
     				new String[] {
-    						authority.getRole(),
+    						authority.getLabel(),
     						session.getAcademicYear()+" "+session.getAcademicTerm(),
     						session.getAcademicInitiative(),
     						(session.getStatusType()==null?"":session.getStatusType().getLabel())},

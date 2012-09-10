@@ -71,6 +71,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -116,7 +117,6 @@ import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.service.SolverService;
@@ -661,7 +661,7 @@ public class SectioningServlet implements SectioningService {
     		SecurityContextHolder.getContext().setAuthentication(authResult);
     		UserContext user = (UserContext)authResult.getPrincipal();
     		if (user.getCurrentAuthority() == null)
-    			for (UserAuthority auth: user.getAuthorities(StudentAuthority.TYPE)) {
+    			for (UserAuthority auth: user.getAuthorities(Roles.ROLE_STUDENT)) {
     				if (getLastSessionId() == null || auth.getAcademicSession().getQualifierId().equals(getLastSessionId())) {
     					user.setCurrentAuthority(auth); break;
     				}
@@ -698,7 +698,7 @@ public class SectioningServlet implements SectioningService {
 			return principal.getStudentId(sessionId);
 		UserContext user = getSessionContext().getUser();
 		if (user == null) return null;
-		for (UserAuthority a: user.getAuthorities(StudentAuthority.TYPE, new SimpleQualifier("Session", sessionId)))
+		for (UserAuthority a: user.getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", sessionId)))
 			return a.getUniqueId();
 		return null;
 	}

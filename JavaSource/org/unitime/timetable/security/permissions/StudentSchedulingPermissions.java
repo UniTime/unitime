@@ -90,7 +90,7 @@ public class StudentSchedulingPermissions {
 		public boolean check(UserContext user, InstructionalOffering source) {
 			if (source.getConsentType() == null) return false;
 			
-			if ("Instructor".equals(user.getCurrentAuthority().getRole())) {
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				if (!"IN".equals(source.getConsentType().getReference())) return false;
 				
 				for (DepartmentalInstructor instructor: source.getCoordinators()) {
@@ -114,7 +114,7 @@ public class StudentSchedulingPermissions {
 
 		@Override
 		public boolean check(UserContext user, InstructionalOffering source) {
-			if ("Instructor".equals(user.getCurrentAuthority().getRole())) {
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				for (DepartmentalInstructor instructor: source.getCoordinators()) {
 					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
 				}
