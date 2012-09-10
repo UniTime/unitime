@@ -169,7 +169,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	
 	public static enum PageType {
 		Timetable("tab", "0", "title", "Event Timetable", "rooms", ""),
-		Events("filter", "events", "rooms", "department:Event", "events", "mode:\"My Events\"", "type", "room", "title", "Events"),
+		Events("filter", "events", "rooms", "department:Event", "events", "mode:\"My Events\"", "type", "room", "title", "Events",
+				"fixedTitle", "true", "fixedType", "true", "tab", "1"),
 		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
