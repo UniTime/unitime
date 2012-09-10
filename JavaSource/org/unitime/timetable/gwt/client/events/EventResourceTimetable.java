@@ -672,10 +672,15 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				iFilter.setWidget(iSessionRow, 1, iSession);
 				final EventInterface modified = iEventAdd.getEvent(), detail = iEventDetail.getEvent(), saved = iEventAdd.getSavedEvent();
 				if (saved != null) {
-					iRootPanel.setWidget(iPanel);
-					UniTimePageLabel.getInstance().setPageName(getPageName());
 					if (iData != null)
 						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved));
+					if (saved.getId() != null) {
+						iEventDetail.setEvent(saved);
+						iEventDetail.show();
+					} else {
+						iRootPanel.setWidget(iPanel);
+						UniTimePageLabel.getInstance().setPageName(getPageName());
+					}
 				} else if (modified != null && detail != null && detail.getId().equals(modified.getId())) {
 					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
 						@Override
