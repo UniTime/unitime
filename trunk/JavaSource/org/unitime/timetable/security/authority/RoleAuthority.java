@@ -23,9 +23,9 @@ import org.unitime.timetable.model.Roles;
 
 public class RoleAuthority extends AbstractAuthority {
 	private static final long serialVersionUID = 1L;
-	
-	public RoleAuthority(Roles role) {
-		super(role.getRoleId(), role.getReference(), role.getAbbv(), role);
+		
+	public RoleAuthority(Long uniqueId, Roles role) {
+		super(uniqueId, role.getReference(), role.getAbbv(), role);
 	}
-	
+
 }

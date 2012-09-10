@@ -43,10 +43,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.model.dao.UserDataDAO;
 import org.unitime.timetable.security.UserAuthority;
-import org.unitime.timetable.security.authority.InstructorAuthority;
-import org.unitime.timetable.security.authority.NoRoleAuthority;
 import org.unitime.timetable.security.authority.RoleAuthority;
-import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.HasRights;
 import org.unitime.timetable.security.rights.Right;
@@ -111,7 +108,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 							if (!role.getRole().hasRight(Right.AllowTestSessions)) continue;
 						}
 						
-						UserAuthority authority = new RoleAuthority(role.getRole());
+						UserAuthority authority = new RoleAuthority(manager.getUniqueId(), role.getRole());
 						authority.addQualifier(session);
 						authority.addQualifier(manager);
 						for (Department department: manager.getDepartments())
@@ -146,10 +143,10 @@ public class UniTimeUserContext extends AbstractUserContext {
 						.setString("id", userId).list()) {
 					if (iName == null) iName = instructor.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = instructor.getEmail();
-					List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, instructor.getDepartment().getSession());
+					List<? extends UserAuthority> authorities = getAuthorities(Roles.ROLE_INSTRUCTOR, instructor.getDepartment().getSession());
 					UserAuthority authority = (authorities.isEmpty() ? null : authorities.get(0));
 					if (authority == null) {
-						authority = new InstructorAuthority(instructor, instructorRole);
+						authority = new RoleAuthority(instructor.getUniqueId(), instructorRole);
 						authority.addQualifier(instructor.getDepartment().getSession());
 						addAuthority(authority);
 						sessions.add(instructor.getDepartment().getSession());
@@ -165,7 +162,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 						.setString("id", userId).list()) {
 					if (iName == null) iName = student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					if (iEmail == null) iEmail = student.getEmail();
-					UserAuthority authority = new StudentAuthority(student, studentRole);
+					UserAuthority authority = new RoleAuthority(student.getUniqueId(), studentRole);
 					authority.addQualifier(student.getSession());
 					addAuthority(authority);
 					sessions.add(student.getSession());
@@ -182,7 +179,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					setCurrentAuthority(authorities.get(0));
 			}
 			if (getCurrentAuthority() == null && sessionId != null) {
-				List<? extends UserAuthority> authorities = getAuthorities(InstructorAuthority.TYPE, new SimpleQualifier("Session", sessionId));
+				List<? extends UserAuthority> authorities = getAuthorities(Roles.ROLE_STUDENT, new SimpleQualifier("Session", sessionId));
 				if (!authorities.isEmpty())
 					setCurrentAuthority(authorities.get(0));
 			}
@@ -193,7 +190,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					if (session.getStatusType() == null || !session.getStatusType().isActive() || session.getStatusType().isTestSession()) continue;
 					List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", session.getUniqueId()));
 					if (authorities.isEmpty()) {
-						UserAuthority authority = new NoRoleAuthority(noRole);
+						UserAuthority authority = new RoleAuthority(-1l, noRole);
 						authority.addQualifier(session);
 						addAuthority(authority);
 						sessions.add(session);

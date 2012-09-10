@@ -53,6 +53,7 @@ import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.shared.MenuException;
 import org.unitime.timetable.gwt.shared.MenuInterface;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
@@ -64,8 +65,6 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.security.authority.InstructorAuthority;
-import org.unitime.timetable.security.authority.StudentAuthority;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -326,9 +325,9 @@ public class MenuServlet implements MenuService {
 			} else if ("isSectioningEnabled".equals(right)) {
 				return OnlineSectioningService.isEnabled();
 			} else if ("isStudent".equals(right)) {
-				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(StudentAuthority.TYPE);
+				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(Roles.ROLE_STUDENT);
 			} else if ("isInstructor".equals(right)) {
-				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(InstructorAuthority.TYPE);
+				return getSessionContext().isAuthenticated() && getSessionContext().getUser().hasRole(Roles.ROLE_INSTRUCTOR);
 			} else if ("isRegistrationEnabled".equals(right)) {
 				return OnlineSectioningService.isRegistrationEnabled();
 			} else {
@@ -384,7 +383,7 @@ public class MenuServlet implements MenuService {
 					}
 		 		ret.put("1Dept", dept);
 		 		
-		 		String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getRole());
+		 		String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getLabel());
 		 		if (role == null) role = "No Role";
 		 		ret.put("2Role", role);
 		 		
