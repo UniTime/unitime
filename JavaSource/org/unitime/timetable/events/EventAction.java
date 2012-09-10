@@ -120,7 +120,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 			
 			if (user != null) {
 				String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getRole()); 
-				for (UserAuthority authority: context.getUser().getAuthorities()) {
+				for (UserAuthority authority: user.getAuthorities()) {
 					if (authority.getAcademicSession() != null && authority.getAcademicSession().getQualifierId().equals(sessionId) && (role == null || role.equals(authority.getRole()))) {
 						iUser = new UniTimePermissionCheck.UserContextWrapper(user, authority); break;
 					}
