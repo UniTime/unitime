@@ -148,19 +148,38 @@ public class LocationPermissions {
 	}
 	
 	@PermissionForRight(Right.RoomEditChangeCapacity)
-	public static class RoomEditChangeCapacity extends RoomEdit {}
+	public static class RoomEditChangeCapacity implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
+			boolean allDepts = true;
+			
+			for (RoomDept rd: source.getRoomDepts()) {
+				if (rd.isControl() && permissionDepartment.check(user, rd.getDepartment()))
+					controls = true;
+				if (!permissionDepartment.check(user, rd.getDepartment()))
+					allDepts = false;
+			}			
+			return controls || allDepts;
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
 
 	@PermissionForRight(Right.RoomEditChangeExaminationStatus)
-	public static class RoomEditChangeExaminationStatus extends RoomEdit {}
+	public static class RoomEditChangeExaminationStatus extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.RoomEditChangeExternalId)
-	public static class RoomEditChangeExternalId extends RoomEdit {}
+	public static class RoomEditChangeExternalId extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.RoomEditChangeRoomProperties)
-	public static class RoomEditChangeRoomProperties extends RoomEdit {}
+	public static class RoomEditChangeRoomProperties extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.RoomEditChangeType)
-	public static class RoomEditChangeType extends RoomEdit {}
+	public static class RoomEditChangeType extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.EditRoomDepartments)
 	public static class EditRoomDepartments implements Permission<Department> {
