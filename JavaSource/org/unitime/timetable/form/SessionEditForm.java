@@ -72,6 +72,7 @@ public class SessionEditForm extends ActionForm {
 	String defaultDatePatternLabel;
 	Integer wkEnroll = 1, wkChange = 1, wkDrop = 4;
 	Long sectStatus;
+	boolean includeTestSession;
 	
 	Hashtable<String,String> roomOptionMessage = new Hashtable();
 	Hashtable<String,Boolean> roomOptionScheduleEvents = new Hashtable();
@@ -264,7 +265,7 @@ public class SessionEditForm extends ActionForm {
 	 */
 	public ReferenceList getStatusOptions() {
 		if (statusOptions==null) 
-			statusOptions = Session.getSessionStatusList();
+			statusOptions = Session.getSessionStatusList(includeTestSession);
 		return statusOptions;
 	}
 	/**
@@ -393,5 +394,7 @@ public class SessionEditForm extends ActionForm {
     		ret.add(new IdValue(status.getUniqueId(), status.getLabel()));
     	return ret;
     }
+    
+    public void setIncludeTestSession(boolean includeTestSession) { this.includeTestSession = includeTestSession; }
 
 }
