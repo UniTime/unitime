@@ -243,6 +243,7 @@ public class MenuServlet implements MenuService {
 			if (menu.getPage() == null) return null;
 		}
 		
+		boolean sep = true;
 		for (Iterator<Element> i = menuElement.elementIterator(); i.hasNext(); ) {
 			Element element = i.next();
 			if ("condition".equals(element.getName())) {
@@ -251,10 +252,16 @@ public class MenuServlet implements MenuService {
 				menu.addParameter(element.attributeValue("name"), element.attributeValue("value", element.getText()));
 			} else {
 				MenuInterface m = getMenu(element);
-				if (m != null) menu.addSubMenu(m);
+				if (m != null) {
+					if (sep && m.isSeparator()) continue;
+					menu.addSubMenu(m);
+					sep = m.isSeparator();
+				}
 			}
 		}
-		return menu;
+		while (menu.hasSubMenus() && menu.getSubMenus().get(menu.getSubMenus().size() - 1).isSeparator())
+			menu.getSubMenus().remove(menu.getSubMenus().size() - 1);
+		return (menu.isSeparator() || menu.hasPage() || menu.hasSubMenus() ? menu : null);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
