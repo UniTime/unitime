@@ -115,7 +115,7 @@ public class TimetableManagerBuilder {
 	        
 		    for (Iterator i=mgrRoles.iterator(); i.hasNext(); ) {
 		        ManagerRole mgrRole = (ManagerRole) i.next();
-                String roleRef = mgrRole.getRole().getReference(); 
+                String roleRef = mgrRole.getRole().getAbbv(); 
 		        String title = roleRef;
 		        boolean receivesEmail = (mgrRole.isReceiveEmails() == null?false:mgrRole.isReceiveEmails().booleanValue());
                 if (roleStr.length()>0) roleStr+=","+(html?"<br>":"\n");
