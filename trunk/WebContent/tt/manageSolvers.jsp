@@ -27,22 +27,30 @@
 
 <html:form action="/manageSolvers">
 
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("ManageSolvers.table") %> 
-</TABLE>
+<logic:notEmpty name="ManageSolvers.table" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.table" scope="request" filter="false"/> 
+	</TABLE>
+	<BR>
+</logic:notEmpty>
+<logic:notEmpty name="ManageSolvers.xtable" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.xtable" scope="request" filter="false"/>
+	</TABLE>
+	<BR>
+</logic:notEmpty>
+<logic:notEmpty name="ManageSolvers.stable" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.stable" scope="request" filter="false"/>
+	</TABLE>
+	<BR>
+</logic:notEmpty>
+<logic:notEmpty name="ManageSolvers.table2" scope="request">
+	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
+		<bean:write name="ManageSolvers.table2" scope="request" filter="false"/>
+	</TABLE>
 <BR>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("ManageSolvers.xtable") %> 
-</TABLE>
-<BR>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("ManageSolvers.stable") %> 
-</TABLE>
-<BR>
-<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
-	<%= request.getAttribute("ManageSolvers.table2") %> 
-</TABLE>
-<BR>
+</logic:notEmpty>
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<TR>
 		<TD colspan='2'><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>

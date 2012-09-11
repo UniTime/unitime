@@ -219,7 +219,8 @@ public class ManageSolversAction extends Action {
         }
 
         getSolvers(request);
-        getServers(request);
+        if (sessionContext.hasPermission(Right.SessionIndependent))
+        	getServers(request);
         getExamSolvers(request);
         getStudentSolvers(request);
         return mapping.findForward("showSolvers");
@@ -278,6 +279,7 @@ public class ManageSolversAction extends Action {
 				if (!ownerName.equals(runnerName))
 					ownerName = runnerName+" as "+ownerName;
 				Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
+				if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
 				String sessionLabel = "N/A";
 				if (session!=null)
 					sessionLabel = session.getLabel();
@@ -605,6 +607,7 @@ public class ManageSolversAction extends Action {
 	                if (runnerName==null)
 	                    runnerName = "N/A";
 	                Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
+	                if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
 	                String sessionLabel = "N/A";
 	                if (session!=null)
 	                    sessionLabel = session.getLabel();
@@ -730,7 +733,7 @@ public class ManageSolversAction extends Action {
                    if (runnerName==null)
                        runnerName = "N/A";
                    Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
-                   if (session==null) continue;
+                   if (session == null || !sessionContext.getUser().getCurrentAuthority().hasQualifier(session)) continue;
                    String sessionLabel = session.getLabel();
                    SolverPredefinedSetting setting = (new SolverPredefinedSettingDAO()).get(properties.getPropertyLong("General.SettingsId",new Long(-1)));
                    String settingLabel = properties.getProperty("Basic.Mode","N/A");
