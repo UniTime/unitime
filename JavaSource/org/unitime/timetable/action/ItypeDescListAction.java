@@ -89,7 +89,7 @@ public class ItypeDescListAction extends Action {
 	            
 	            // Add to web table
 				webTable.addLine(
-				        "onclick=\"document.location='itypeDescEdit.do?op=Edit&id="+itypeDesc.getItype()+"';\"",
+						sessionContext.hasPermission(itypeDesc, Right.InstructionalTypeEdit) ?  "onclick=\"document.location='itypeDescEdit.do?op=Edit&id="+itypeDesc.getItype()+"';\"" : null,
 			        	new String[] {itypeDesc.getItype().toString(),
 			        					itypeDesc.getAbbv(), 
 			        					itypeDesc.getDesc(),
