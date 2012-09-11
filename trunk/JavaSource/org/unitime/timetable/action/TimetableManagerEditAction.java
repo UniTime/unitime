@@ -312,6 +312,10 @@ public class TimetableManagerEditAction extends Action {
     private void setupRoles(HttpServletRequest request, TimetableManagerForm frm ) {
         List<Roles> roles = Roles.findAll(true);
         
+        if (!sessionContext.hasPermission(Right.SessionIndependent))
+        	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )
+        		if (i.next().hasRight(Right.SessionIndependent)) i.remove();
+        
         if (frm.getRoleRefs() != null && !frm.getRoleRefs().isEmpty())
         	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )
         		if (frm.getRoleRefs().contains(i.next().getReference()))
