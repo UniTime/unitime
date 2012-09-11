@@ -224,9 +224,9 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	/**
 	 * @return Returns the sessionStatusMap.
 	 */
-	public static ReferenceList getSessionStatusList() {
+	public static ReferenceList getSessionStatusList(boolean includeTestSessions) {
 		ReferenceList ref = new ReferenceList();
-		ref.addAll(DepartmentStatusType.findAllForSession());
+		ref.addAll(DepartmentStatusType.findAllForSession(includeTestSessions));
 		return ref;
 	}
 

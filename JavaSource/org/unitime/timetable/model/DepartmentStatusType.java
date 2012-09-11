@@ -93,20 +93,24 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
 		return new TreeSet((new DepartmentStatusTypeDAO().findAll()));
 	}
 	
-	public static TreeSet findAll(int apply) {
-		TreeSet ret = findAll();
-		for (Iterator i=ret.iterator();i.hasNext();) {
-			DepartmentStatusType t = (DepartmentStatusType)i.next();
+	public static TreeSet<DepartmentStatusType> findAll(int apply) {
+		TreeSet<DepartmentStatusType> ret = findAll();
+		for (Iterator<DepartmentStatusType> i=ret.iterator();i.hasNext();) {
+			DepartmentStatusType t = i.next();
 			if (!t.apply(apply)) i.remove();
 		}
 		return ret;
 	}
 	
-	public static TreeSet findAllForSession() {
-		return findAll(Apply.Session.toInt());
+	public static TreeSet<DepartmentStatusType> findAllForSession(boolean includeTestSessions) {
+		TreeSet<DepartmentStatusType> ret = findAll(Apply.Session.toInt());
+		if (!includeTestSessions)
+			for (Iterator<DepartmentStatusType> i = ret.iterator(); i.hasNext(); )
+				if (i.next().isTestSession()) i.remove();
+		return ret;
 	}
 
-	public static TreeSet findAllForDepartment() {
+	public static TreeSet<DepartmentStatusType> findAllForDepartment() {
 		return findAll(Apply.Department.toInt());
 	}
 
