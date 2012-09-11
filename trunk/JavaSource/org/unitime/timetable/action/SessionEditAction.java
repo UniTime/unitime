@@ -115,6 +115,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		Session acadSession = Session.getSessionById(id);
 		
 		sessionContext.checkPermission(acadSession, Right.AcademicSessionEdit);
+		sessionEditForm.setIncludeTestSession(sessionContext.hasPermission(Right.AllowTestSessions));
 		
 		sessionEditForm.setSession(acadSession);
 		DatePattern d = acadSession.getDefaultDatePattern();
@@ -194,6 +195,7 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletResponse response) throws Exception {
 		
 		sessionContext.checkPermission(Right.AcademicSessionAdd);
+		((SessionEditForm)form).setIncludeTestSession(sessionContext.hasPermission(Right.AllowTestSessions));
 
 		return mapping.findForward("showAdd");
 	}
