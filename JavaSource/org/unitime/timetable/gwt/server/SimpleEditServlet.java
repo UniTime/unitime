@@ -1122,9 +1122,9 @@ public class SimpleEditServlet implements SimpleEditService {
 		case sectioning:
 			return Right.StudentSchedulingStatusTypes;
 		case roles:
-			return Right.RoleEdit;
+			return Right.Roles;
 		case permissions:
-			return Right.PermissionEdit;
+			return Right.Permissions;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1155,9 +1155,9 @@ public class SimpleEditServlet implements SimpleEditService {
 		case sectioning:
 			return Right.StudentSchedulingStatusTypeEdit;
 		case roles:
-			return Right.Roles;
+			return Right.RoleEdit;
 		case permissions:
-			return Right.Permissions;
+			return Right.PermissionEdit;
 		default:
 			return Right.IsAdmin;
 		}
