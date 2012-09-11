@@ -26,6 +26,7 @@
 				<!-- Only when LDAP is not configured -->
 				<condition>
 					<propertyEquals name="tmtbl.authenticate.ldap.provider" value="" defaultValue=""/>
+					<hasPermission name="Users"/>
 				</condition>
 			</item>
 		</menu>
