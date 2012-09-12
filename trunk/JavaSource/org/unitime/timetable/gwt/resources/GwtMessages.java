@@ -536,6 +536,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Inquiring about {0} ...")
 	String waitForInquiry(String name);
 	
+	@DefaultMessage("Loading room availability...")
+	String waitLoadingRoomAvailability();
+	
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
@@ -601,6 +604,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to hide academic session info: {0}")
 	String failedToHideSessionInfo(String reason);
+	
+	@DefaultMessage("Failed to load room availability: {0}")
+	String failedToLoadRoomAvailability(String reason);
+
+	@DefaultMessage("Failed to update room availability: {0}")
+	String failedToSaveRoomAvailability(String reason);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -871,4 +880,37 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{2}, {0} {1}")
 	String formatName(String first, String middle, String last);
+	
+	@DefaultMessage("from:<br><font color='gray'>to:</font>")
+	String roomSharingCorner();
+	
+	@DefaultMessage("{0}<br><font color='gray'>{1}</font>")
+	String roomSharingTimeHeader(String from, String to);
+	
+	@DefaultMessage("Horizontal")
+	String roomSharingHorizontal();
+	
+	@DefaultMessage("Free For All")
+	String legendFreeForAll();
+	
+	@DefaultMessage("")
+	String codeFreeForAll();
+	
+	@DefaultMessage("Not Available")
+	String legendNotAvailable();
+	
+	@DefaultMessage("N/A")
+	String codeNotAvailable();
+	
+	@DefaultMessage("<u>A</u>dd Department...")
+	String buttonAddDepartment();
+	
+	@DefaultMessage("Add Department...")
+	String dialogAddDepartment();
+	
+	@DefaultMessage("-- Add Department --")
+	String separatorAddDepartment();
+	
+	@DefaultMessage("Add All Departments")
+	String buttonAddAllDepartments();
 }

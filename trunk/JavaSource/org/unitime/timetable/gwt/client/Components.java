@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
 import org.unitime.timetable.gwt.client.page.UniTimeVersion;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 
 import com.google.gwt.user.client.ui.RootPanel;
@@ -50,7 +51,9 @@ public enum Components {
 	back("UniTimeGWT:Back", new ComponentFactory() { public void insert(RootPanel panel) { new UniTimeBack().insert(panel); } }),
 	offeringReservations("UniTimeGWT:OfferingReservations", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(true, true).insert(panel); } }),
 	offeringReservationsReadOnly("UniTimeGWT:OfferingReservationsRO", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(false, true).insert(panel); } }),
-	offeringEnrollments("UniTimeGWT:OfferingEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new EnrollmentTable(true, true).insert(panel); } });
+	offeringEnrollments("UniTimeGWT:OfferingEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new EnrollmentTable(true, true).insert(panel); } }),
+	roomSharing("UniTimeGWT:RoomSharingWidget", new ComponentFactory() { public void insert(RootPanel panel) { new RoomSharingWidget(false).insert(panel); } }),
+	;
 	
 	private String iId;
 	private ComponentFactory iFactory;

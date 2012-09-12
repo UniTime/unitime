@@ -130,7 +130,9 @@ public class RoomDetailAction extends Action {
 			
 			//modify room departments
 			if(doit.equals(rsc.getMessage("button.modifyRoomDepts"))) {
-				return mapping.findForward("showEditRoomDept");
+				// return mapping.findForward("showEditRoomDept");
+				response.sendRedirect(response.encodeURL("gwt.jsp?page=roomavailability&id="+roomDetailForm.getId()));
+				return null;
 			}
 			
 			//modify room groups
