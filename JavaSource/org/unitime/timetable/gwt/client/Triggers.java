@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.page.Refresh;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.client.rooms.RoomSharingHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 
@@ -58,8 +59,13 @@ public enum Triggers {
 		public void execute() {
 			UniTimeNotifications.createTriggers();
 		}
-	});
-	
+	}),
+	roomAvailabilityHint(new Command() {
+		public void execute() {
+			RoomSharingHint.createTriggers();
+		}
+	}),
+	;
 	
 	private Command iCommand;
 	

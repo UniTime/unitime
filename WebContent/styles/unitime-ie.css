@@ -45,3 +45,7 @@
 .unitime-FilterBox {
 	border-radius: 0px;
 }
+
+.unitime-RoomSharingWidget .box {
+	border-spacing: 0px;
+}

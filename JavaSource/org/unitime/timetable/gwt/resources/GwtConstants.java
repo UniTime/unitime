@@ -115,5 +115,14 @@ public interface GwtConstants extends Constants {
 		"Class", "Final Examination", "Midterm Examination", "Course", "Special", "Not Available"
 	})
 	String[] eventTypeAbbv();
-
+	
+	// firstDay|lastDay|firstSlot|lastSlot|step
+	@DefaultStringArrayValue({
+			"Workdays × Daytime|0|4|90|222|6",
+			"All Week × Daytime|0|6|90|222|6",
+			"Workdays × Evening|0|4|222|288|6",
+			"All Week × Evening|0|5|222|288|6",
+			"All Week × All Times|0|6|0|288|6"
+	})
+	String[] roomSharingModes();
 }
