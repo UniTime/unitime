@@ -2481,3 +2481,175 @@ div.gwt-MenuBarPopup {
 	-moz-transform: scale(0.5);
 	-moz-transform-origin: top left;
 }
+
+.unitime-RoomSharingWidget {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-RoomSharingWidget .table {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: top;
+}
+
+
+.unitime-RoomSharingWidget .box {
+	display: table;
+	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .box .row {
+	display: table-row;
+}
+
+.unitime-RoomSharingWidget .box .cell {
+	display: table-cell;
+	width: 38px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .corner {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: right;
+	font-size: xx-small;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .clickable:hover {
+	cursor: pointer;
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-RoomSharingWidget .time {
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	text-align: center;
+	font-size: xx-small;
+	font-weight: bold;
+	padding-left: 1px;
+	padding-right: 1px;
+}
+
+.unitime-RoomSharingWidget .day {
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	text-align: center;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .item {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	font-size: x-small;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-RoomSharingWidget .legend {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: middle;
+}
+
+.unitime-RoomSharingWidget .legend .box {
+	display: table;
+	overflow: hidden;
+		
+}
+
+.unitime-RoomSharingWidget .legend .cell {
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	display: table-cell;
+	width: 38px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-RoomSharingWidget .legend .first {
+	border-top: 1px solid black;
+}
+
+.unitime-RoomSharingWidget .legend .title {
+	display: table-cell;
+	font-weight: bold;
+	vertical-align: middle;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.unitime-RoomSharingWidget .legend .button {
+	display: table-cell;
+	height: 100%;
+	text-align: right;
+	padding-top: 10px;
+}
+
+.unitime-RoomSharingWidget .legend .editable-title {
+	cursor: pointer;
+}
+
+.unitime-RoomSharingWidget .legend .selected-title {
+	text-decoration: underline;
+}
+
+.unitime-RoomSharingWidget .legend .row {
+	display: table-row;
+}
+
+.unitime-RoomSharingWidget .legend .selected {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .legend .remove {
+	vertical-align: middle;
+	cursor: pointer;
+	margin-left: 5px;
+	margin-top: 2px;
+	
+}
+
+unitime-RoomSharingWidget .legend .blank {
+	display: table-cell;
+}
+
+.unitime-RoomSharingWidget .legend .other {
+	display: table-cell;
+	font-weight: bold;
+	font-style: italic;
+	vertical-align: middle;
+	padding-bottom: 2px;
+	padding-left: 5px;
+	padding-top: 5px;
+	text-align: center;
+	color: #9CB0CE; 
+}

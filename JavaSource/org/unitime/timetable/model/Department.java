@@ -308,7 +308,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		list();
 	}
 	
-	public static TreeSet findAllBeingUsed(Long sessionId) {
+	public static TreeSet<Department> findAllBeingUsed(Long sessionId) {
 		TreeSet ret = new TreeSet(
 				(new DepartmentDAO()).
 				getSession().

@@ -580,11 +580,13 @@ public class RoomListAction extends Action {
 	                RequiredTimeTable rtt = location.getRoomSharingTable();
 	                rtt.getModel().setDefaultSelection(timeGridSize);
 	                if (gridAsText) {
-	                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-                        text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+	                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+                        // text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+	                	text[idx] = "<span onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
 	                } else {
-	                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-	                    text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
+	                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                    // text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
+	                	text[idx] = "<img border='0' onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\" src='" +
 	                    		"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&loc=" + location.getUniqueId() + "'>&nbsp;";
 	                }
 	                comp[idx]=null;

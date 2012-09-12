@@ -337,7 +337,8 @@
 
 		<TR>
 			<TD colspan="2">
-				<%=frm.getSharingTable()%>
+				<span id='UniTimeGWT:RoomSharingWidget' style="display: none;"><bean:write name="<%=frmName%>" property="id"/></span>
+				<%-- <%=frm.getSharingTable()%> --%>
 			</TD>
 		</TR>
 		
