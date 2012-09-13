@@ -260,7 +260,7 @@
 						onkeydown="return checkKey(event, this);" 
 						disabled="<%=disabled%>">					
 						<html:option value="-">-</html:option>
-						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
+						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithCapacity" />
 					</html:select>
 					&nbsp;&nbsp;
 					<html:select property='<%= "roomPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
