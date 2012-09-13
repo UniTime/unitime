@@ -54,6 +54,7 @@
 <logic:notEqual name="examPeriodEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="autoSetup"/>
+	<html:hidden property="editable"/>
 	<logic:equal name="examPeriodEditForm" property="autoSetup" value="true">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -282,10 +283,12 @@
 					</tt:section-title>
 					<html:submit property="op">
 						<bean:write name="examPeriodEditForm" property="op" />
-					</html:submit> 
-					<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-						<html:submit property="op" value="Delete"/> 
-					</logic:notEqual>
+					</html:submit>
+					<logic:equal name="examPeriodEditForm" property="editable" value="true"> 
+						<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
+							<html:submit property="op" value="Delete"/> 
+						</logic:notEqual>
+					</logic:equal>
 					<html:submit property="op" value="Back" /> 
 				</tt:section-header>
 			</TD>
@@ -294,9 +297,17 @@
 		<TR>
 			<TD>Type:</TD>
 			<TD>
-				<html:select property="examType" onchange="updateDefaultOffsets(this.value);">
-					<html:options property="examTypes"/>
-				</html:select>
+				<logic:equal name="examPeriodEditForm" property="op" value="Save">
+					<html:select property="examType" onchange="updateDefaultOffsets(this.value);">
+						<html:options property="examTypes"/>
+					</html:select>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
+					<html:select property="examType" disabled="true">
+						<html:options property="examTypes"/>
+					</html:select>
+					<html:hidden property="examType"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 		
@@ -304,41 +315,71 @@
 		<TR>
 			<TD>Date:</TD>
 			<TD>
-				<html:text property="date" size="10" maxlength="10" styleId="date"/>
-				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_date">
-				&nbsp;<html:errors property="date"/>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<html:text property="date" size="10" maxlength="10" styleId="date"/>
+					<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_date">
+					&nbsp;<html:errors property="date"/>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
+					<bean:write name="examPeriodEditForm" property="date"/>
+					<html:hidden property="date"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Start Time:</TD>
 			<TD>
-			<html:text property="start" size="4" maxlength="4"/> (in military format)
-			&nbsp;<html:errors property="start"/>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<html:text property="start" size="4" maxlength="4"/> (in military format)
+					&nbsp;<html:errors property="start"/>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
+					<bean:write name="examPeriodEditForm" property="start"/>  (in military format)
+					<html:hidden property="start"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Length:</TD>
 			<TD>
-			<html:text property="length" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="length"/>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<html:text property="length" size="4" maxlength="4"/> (in minutes)
+					&nbsp;<html:errors property="length"/>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
+					<bean:write name="examPeriodEditForm" property="length"/> minutes
+					<html:hidden property="length"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Event Start Offset:</TD>
 			<TD>
-			<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="startOffset"/>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<html:text property="startOffset" size="4" maxlength="4"/> (in minutes)
+					&nbsp;<html:errors property="startOffset"/>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
+					<bean:write name="examPeriodEditForm" property="startOffset"/> minutes
+					<html:hidden property="startOffset"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 
 		<TR>
 			<TD>Event Stop Offset:</TD>
 			<TD>
-			<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
-			&nbsp;<html:errors property="stopOffset"/>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<html:text property="stopOffset" size="4" maxlength="4"/> (in minutes)
+					&nbsp;<html:errors property="stopOffset"/>
+				</logic:equal>
+				<logic:notEqual name="examPeriodEditForm" property="editable" value="true">
+					<bean:write name="examPeriodEditForm" property="stopOffset"/> minutes
+					<html:hidden property="stopOffset"/>
+				</logic:notEqual>
 			</TD>
 		</TR>
 
@@ -363,13 +404,16 @@
 				<html:submit property="op">
 					<bean:write name="examPeriodEditForm" property="op" />
 				</html:submit> 
-				<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
-					<html:submit property="op" value="Delete"/> 
-				</logic:notEqual>
+				<logic:equal name="examPeriodEditForm" property="editable" value="true">
+					<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
+						<html:submit property="op" value="Delete"/> 
+					</logic:notEqual>
+				</logic:equal>
 				<html:submit property="op" value="Back" /> 
 			</TD>
 		</TR>
 	</TABLE>
+	<logic:equal name="examPeriodEditForm" property="editable" value="true">
 	<script type="text/javascript" language="javascript">
 	
 	Calendar.setup( {
@@ -383,6 +427,7 @@
 	} );
 
 	</script>
+	</logic:equal>
 	</logic:equal>
 <BR>
 </logic:notEqual>
