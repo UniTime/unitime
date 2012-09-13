@@ -64,6 +64,18 @@ public class ItypeDescEditForm extends ActionForm {
                     ItypeDesc itype = new ItypeDescDAO().get(id);
                     if (itype!=null && (iUniqueId==null || iUniqueId<0 || itype.equals(iUniqueId)))
                         errors.add("id", new ActionMessage("errors.exists", iId));
+                    
+                    itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
+                    		"from ItypeDesc x where x.abbv = :abbv and x.id != :id")
+                    		.setString("abbv", iAbbreviation).setInteger("id", id).setMaxResults(1).uniqueResult();
+                    if (itype != null)
+                    	errors.add("abbreviation", new ActionMessage("errors.exists", iAbbreviation));
+                    		
+                    itype = (ItypeDesc)ItypeDescDAO.getInstance().getSession().createQuery(
+                    		"from ItypeDesc x where x.desc = :name and x.id != :id")
+                    		.setString("name", iName).setInteger("id", id).setMaxResults(1).uniqueResult();
+                    if (itype != null)
+                    	errors.add("name", new ActionMessage("errors.exists", iName));
                 }
             } catch (NumberFormatException e) {
                 errors.add("id", new ActionMessage("errors.numeric", iId));
