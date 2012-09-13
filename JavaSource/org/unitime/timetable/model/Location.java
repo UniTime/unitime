@@ -35,6 +35,8 @@ import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseLocation;
 import org.unitime.timetable.model.dao.ExamLocationPrefDAO;
@@ -47,6 +49,7 @@ import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 public abstract class Location extends BaseLocation implements Comparable {
+	public static final CourseMessages MSG = Localization.create(CourseMessages.class); 
 	public static final String AVAILABLE_LOCATIONS_ATTR = "availableLocations";
 	private static final long serialVersionUID = 1L;
 
@@ -939,5 +942,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     
     public int getBreakTime() {
     	return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
+    }
+    
+    public String getLabelWithCapacity() {
+    	return (getCapacity() == null ? getLabel() : MSG.labelLocationLabelWithCapacity(getLabel(), getCapacity()));
     }
 }

@@ -1999,4 +1999,7 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Courses {0} and {1} are locked.")
 	String lockedCourses(String course1, String course2);
+	
+	@DefaultMessage("{0} ({1} seats)")
+	String labelLocationLabelWithCapacity(String label, int capacity);
 }
