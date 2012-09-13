@@ -87,6 +87,7 @@ public class ExamPeriodEditForm extends ActionForm {
     private Integer iDefaultFinalStartOffset;
     private Integer iDefaultFinalStopOffset;
     private Session iSession;
+    private Boolean iEditable;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 	    ActionErrors errors = new ActionErrors();
@@ -287,6 +288,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
 		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
 		iAutoSetup = false;
+		iEditable = false;
 		if (request != null)
 			iSession = SessionDAO.getInstance().get(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
 	}
@@ -329,6 +331,7 @@ public class ExamPeriodEditForm extends ActionForm {
 		    	iStopOffset = iDefaultMidtermStopOffset;
 		    }	
 			iOp = "Save";
+			iEditable = true;
 		} else {
 		    iUniqueId = ep.getUniqueId();
 			iDate = new SimpleDateFormat("MM/dd/yyyy").format(ep.getStartDate());
@@ -339,6 +342,7 @@ public class ExamPeriodEditForm extends ActionForm {
 			iPrefLevel = ep.getPrefLevel().getUniqueId();
 			iType = Exam.sExamTypes[ep.getExamType()];
 			iOp = "Update";
+			iEditable = !ep.isUsed();
 		}
 	}
 	
@@ -630,6 +634,8 @@ public class ExamPeriodEditForm extends ActionForm {
     }
     public boolean getAutoSetup() { return iAutoSetup; }
     public void setAutoSetup(boolean autoSetup) { iAutoSetup = autoSetup; }
+    public boolean getEditable() { return iEditable; }
+    public void setEditable(boolean editable) { iEditable = editable; }
     
 	public String getBorder(int day, int month) {
 		Calendar cal = Calendar.getInstance(Locale.US);
@@ -659,6 +665,8 @@ public class ExamPeriodEditForm extends ActionForm {
 		iType = Exam.sSeatingTypes[Exam.sExamTypeMidterm];
 		for (Iterator i=periods.iterator();i.hasNext();) {
 			ExamPeriod period = (ExamPeriod)i.next();
+			if (period.isUsed()) return false;
+			
 			iDays.add(period.getDateOffset());
 			times.add(period.getStartSlot());
 			Integer length = lengths.get(period.getStartSlot());
