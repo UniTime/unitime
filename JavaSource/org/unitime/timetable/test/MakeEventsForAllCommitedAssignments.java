@@ -71,10 +71,12 @@ public class MakeEventsForAllCommitedAssignments {
                         j.hasNext();) {
                         Assignment a = (Assignment)j.next();
                         ClassEvent event = a.generateCommittedEvent(null,true);
-                        if (event!=null) {
+                        if (event != null && !event.getMeetings().isEmpty()) {
                             System.out.println("  "+a.getClassName()+" "+a.getPlacement().getLongName());
                             hibSession.saveOrUpdate(event);
                         }
+            		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
+            		    	hibSession.delete(event);
                     }
                     
                     tx.commit();

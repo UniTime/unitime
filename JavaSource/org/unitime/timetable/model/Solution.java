@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -115,9 +117,55 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 		hibSession.update(this);
 		
-		deleteObjects(hibSession,
-	              "ClassEvent",
-	              "select e.uniqueId from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId");
+	    if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+			deleteObjects(hibSession,
+		              "ClassEvent",
+		              "select e.uniqueId from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId");
+	    } else {
+			EventContact contact = (sendNotificationPuid == null ? null : EventContact.findByExternalUniqueId(sendNotificationPuid));
+		    if (contact == null && sendNotificationPuid != null) {
+		        TimetableManager manager = TimetableManager.findByExternalId(sendNotificationPuid);
+		        if (manager != null) {
+			        contact = new EventContact();
+			        contact.setFirstName(manager.getFirstName());
+		            contact.setMiddleName(manager.getMiddleName());
+			        contact.setLastName(manager.getLastName());
+			        contact.setExternalUniqueId(manager.getExternalUniqueId());
+			        contact.setEmailAddress(manager.getEmailAddress());
+			        hibSession.save(contact);
+		        }
+		    }
+		    
+			Calendar cal = Calendar.getInstance(Locale.US);
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			Date today = cal.getTime();
+			
+			List<ClassEvent> events = (List<ClassEvent>)hibSession.createQuery(
+					"select e from Solution s inner join s.assignments a, ClassEvent e where e.clazz=a.clazz and s.uniqueId=:solutionId")
+					.setLong("solutionId", getUniqueId()).list();
+			for (ClassEvent event: events) {
+	        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
+	        		if (!i.next().getMeetingDate().before(today)) i.remove();
+	        	if (event.getMeetings().isEmpty()) {
+	        		hibSession.delete(event);
+	        	} else {
+	    			if (event.getNotes() == null)
+	    				event.setNotes(new HashSet<EventNote>());
+					EventNote note = new EventNote();
+					note.setEvent(event);
+					note.setNoteType(EventNote.sEventNoteTypeDeletion);
+					note.setTimeStamp(new Date());
+					note.setUser(contact == null ? "System" : contact.getName());
+					note.setTextNote(getOwner().getName() + " uncommitted");
+					note.setMeetings("N/A");
+					event.getNotes().add(note);
+	        		hibSession.saveOrUpdate(event);
+	        	}
+			}
+	    }
 
 //		removeDivSecNumbers(hibSession);
 		
@@ -312,13 +360,15 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		    contact = EventContact.findByExternalUniqueId(sendNotificationPuid);
 		    if (contact==null) {
 		        TimetableManager manager = TimetableManager.findByExternalId(sendNotificationPuid);
-		        contact = new EventContact();
-		        contact.setFirstName(manager.getFirstName());
-                contact.setMiddleName(manager.getMiddleName());
-		        contact.setLastName(manager.getLastName());
-		        contact.setExternalUniqueId(manager.getExternalUniqueId());
-		        contact.setEmailAddress(manager.getEmailAddress());
-		        hibSession.save(contact);
+		        if (manager != null) {
+		        	contact = new EventContact();
+		        	contact.setFirstName(manager.getFirstName());
+		        	contact.setMiddleName(manager.getMiddleName());
+		        	contact.setLastName(manager.getLastName());
+		        	contact.setExternalUniqueId(manager.getExternalUniqueId());
+		        	contact.setEmailAddress(manager.getEmailAddress());
+		        	hibSession.save(contact);
+		        }
 		    }
 		}
         Hashtable<Long,ClassEvent> classEvents = new Hashtable();
@@ -333,14 +383,57 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		    Assignment a = (Assignment)i.next();
 		    ClassEvent event = a.generateCommittedEvent(classEvents.get(a.getClassId()),true);
 		    classEvents.remove(a.getClassId());
-		    if (event!=null) {
+		    if (event != null && !event.getMeetings().isEmpty()) {
 		        event.setMainContact(contact);
+    			if (event.getNotes() == null)
+    				event.setNotes(new HashSet<EventNote>());
+				EventNote note = new EventNote();
+				note.setEvent(event);
+				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
+				note.setTimeStamp(new Date());
+				note.setUser(contact == null ? "System" : contact.getName());
+				note.setTextNote(getOwner().getName() + " committed");
+				note.setMeetings(a.getPlacement().getLongName());
+				event.getNotes().add(note);
 		        hibSession.saveOrUpdate(event);
 		    }
+		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
+		    	hibSession.delete(event);
 		}
-		for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
-		    ClassEvent event = (ClassEvent)e.nextElement();
-		    hibSession.delete(event);
+		
+		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+			for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
+			    ClassEvent event = (ClassEvent)e.nextElement();
+			    hibSession.delete(event);
+			}
+		} else {
+			Calendar cal = Calendar.getInstance(Locale.US);
+			cal.set(Calendar.HOUR_OF_DAY, 0);
+			cal.set(Calendar.MINUTE, 0);
+			cal.set(Calendar.SECOND, 0);
+			cal.set(Calendar.MILLISECOND, 0);
+			Date today = cal.getTime();
+
+			for (Enumeration e=classEvents.elements();e.hasMoreElements();) {
+			    ClassEvent event = (ClassEvent)e.nextElement();
+	        	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
+	        		if (!i.next().getMeetingDate().before(today)) i.remove();
+	        	if (event.getMeetings().isEmpty()) {
+	        		hibSession.delete(event);
+	        	} else {
+	    			if (event.getNotes() == null)
+	    				event.setNotes(new HashSet<EventNote>());
+					EventNote note = new EventNote();
+					note.setEvent(event);
+					note.setNoteType(EventNote.sEventNoteTypeDeletion);
+					note.setTimeStamp(new Date());
+					note.setUser(contact == null ? "System" : contact.getName());
+					note.setTextNote(getOwner().getName() + " committed, class was removed or unassigned");
+					note.setMeetings("N/A");
+					event.getNotes().add(note);
+	        		hibSession.saveOrUpdate(event);
+	        	}
+			}
 		}
 		
 		if (sendNotificationPuid!=null) sendNotification(uncommittedSolution, this, sendNotificationPuid, true, messages);

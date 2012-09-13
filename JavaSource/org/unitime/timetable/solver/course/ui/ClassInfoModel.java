@@ -100,13 +100,11 @@ public class ClassInfoModel implements Serializable {
     private Collection<ClassAssignment> iDates = null;
     private Collection<ClassAssignment> iTimes = null;
     private Vector<ClassRoomInfo> iRooms = null;
-    private String iManagerExternalId = null;
     private boolean iShowStudentConflicts = "true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.classAssign.showStudentConflicts", "true"));
     private boolean iUnassignConflictingAssignments = false;
     
     public void clear(String userId) {
         iClass = null; iChange = null; iRooms = null; iDates = null; iTimes = null; iUnassignConflictingAssignments = false;
-        iManagerExternalId = userId;
     }
     
     public ClassInfo getClazz() {
@@ -271,7 +269,7 @@ public class ClassInfoModel implements Serializable {
         for (ClassAssignment assignment : iChange.getConflicts()) {
         	try {
                 Class_ clazz = assignment.getClazz(hibSession);
-        		String m = clazz.unassignCommited(iManagerExternalId, hibSession);
+        		String m = clazz.unassignCommited(context.getUser(), hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
                 Long offeringId = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId();
                 List<Long> classIds = touchedOfferingIds.get(offeringId);
@@ -287,7 +285,7 @@ public class ClassInfoModel implements Serializable {
         for (ClassAssignment assignment : iChange.getAssignments()) {
             try {
                 Class_ clazz = assignment.getClazz(hibSession);
-                String m = clazz.assignCommited(getAssignmentInfo(assignment), iManagerExternalId, hibSession);
+                String m = clazz.assignCommited(getAssignmentInfo(assignment), context.getUser(), hibSession);
                 if (m!=null) message = (message==null?"":message+"\n")+m;
                 Long offeringId = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getUniqueId();
                 List<Long> classIds = touchedOfferingIds.get(offeringId);
@@ -1188,9 +1186,11 @@ public class ClassInfoModel implements Serializable {
                 permIds.add(room.getPermanentId());
             }
  			
-            //TODO: This might still be done much faster.
+ 			boolean changePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"));
+ 			boolean ignorePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"));
+
  			Vector <Date>datesToCheck = null;
- 			if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+ 			if (ignorePast || !changePast) {
  				datesToCheck = new Vector<Date>();
  	 			for(Date aDate : period.getDates()){
  	 				if (aDate.compareTo(today) > 0)
@@ -1199,7 +1199,8 @@ public class ClassInfoModel implements Serializable {
  			} else {
  				datesToCheck = period.getDates();
  			}
-            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(), period.getDates());
+            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(),
+            		changePast ? period.getDates() : datesToCheck);
             
             Hashtable<Long,Set<Event>> room2events = null;
             if (RoomAvailability.getInstance()!=null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
@@ -1265,10 +1266,10 @@ public class ClassInfoModel implements Serializable {
                             RoomAvailabilityInterface.sClassType);
             		if (times != null && !times.isEmpty()) {
                 		Collection<TimeBlock> timesToCheck = null;
-                		if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.ignorePastMeetings", "true"))) {
+                		if (!changePast || ignorePast) {
                 			timesToCheck = new Vector();
                 			for (TimeBlock time: times) {
-                				if (time.getEndTime().compareTo(today) > 0) 
+                				if (!time.getEndTime().before(today))
                 					timesToCheck.add(time);
                 			}
                 		} else {

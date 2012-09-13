@@ -335,10 +335,12 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             			" and (select count(e) from ClassEvent e where e.clazz = c) = 0")
             			.setLong("sessionId", sessn.getUniqueId()).list()) {
             		ClassEvent event = assignment.generateCommittedEvent(null,true);
-                    if (event!=null) {
+            		if (event != null && !event.getMeetings().isEmpty()) {
                     	event.setMainContact(contact);
                         hibSession.saveOrUpdate(event);
                     }
+        		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
+        		    	hibSession.delete(event);
             	}
             	for (Exam exam: (List<Exam>)hibSession.createQuery(
             			"from Exam x where x.session.uniqueId = :sessionId and x.assignedPeriod != null and" +
