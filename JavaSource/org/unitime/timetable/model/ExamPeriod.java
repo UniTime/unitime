@@ -551,6 +551,10 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	return(startOffset);
     }
     
+    public boolean isUsed() {
+    	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setLong("id", getUniqueId()).uniqueResult()).intValue() > 0;
+    }
+    
     public int getExamEventStopOffsetForExam(Exam exam){
     	return(exam.getLength()
     			- (Constants.SLOT_LENGTH_MIN*getLength())
