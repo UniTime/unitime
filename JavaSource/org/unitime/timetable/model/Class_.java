@@ -20,12 +20,15 @@
 package org.unitime.timetable.model;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -48,6 +51,7 @@ import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.SectioningInfoDAO;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.CommitedClassAssignmentProxy;
@@ -1037,7 +1041,7 @@ public class Class_ extends BaseClass_ {
     	return iEvent;
     }
     
-    public String unassignCommited(String managerExternalId, org.hibernate.Session hibSession) {
+    public String unassignCommited(UserContext user, org.hibernate.Session hibSession) {
         Transaction tx = null;
         try {
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
@@ -1049,7 +1053,37 @@ public class Class_ extends BaseClass_ {
             	throw new RuntimeException("Class "+getClassLabel()+" does not have an assignment.");
             
             ClassEvent event = getEvent();
-            if (event!=null) hibSession.delete(event);
+            if (event != null) {
+            	if ("true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"))) {
+            		hibSession.delete(event);
+            	} else {
+            		Calendar cal = Calendar.getInstance(Locale.US);
+            		cal.set(Calendar.HOUR_OF_DAY, 0);
+            		cal.set(Calendar.MINUTE, 0);
+            		cal.set(Calendar.SECOND, 0);
+            		cal.set(Calendar.MILLISECOND, 0);
+            		Date today = cal.getTime();
+
+                	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
+                		if (!i.next().getMeetingDate().before(today)) i.remove();
+                	
+                	if (event.getMeetings().isEmpty()) {
+                		hibSession.delete(event);
+                	} else {
+            			if (event.getNotes() == null)
+            				event.setNotes(new HashSet<EventNote>());
+        				EventNote note = new EventNote();
+        				note.setEvent(event);
+        				note.setNoteType(EventNote.sEventNoteTypeDeletion);
+        				note.setTimeStamp(new Date());
+        				note.setUser(user.getName());
+        				note.setTextNote("Unassigned " + oldAssignment.getPlacement().getName());
+        				note.setMeetings("N/A");
+        				event.getNotes().add(note);
+                		hibSession.saveOrUpdate(event);
+                	}
+            	}
+            }
 
             String old = oldAssignment.getPlacement().getName();
             
@@ -1072,7 +1106,7 @@ public class Class_ extends BaseClass_ {
         	hibSession.update(this);
         	
             ChangeLog.addChange(hibSession,
-                    TimetableManager.findByExternalId(managerExternalId),
+                    TimetableManager.findByExternalId(user.getExternalUserId()),
                     getSession(),
                     this,
                     getClassLabel()+" ("+
@@ -1100,7 +1134,7 @@ public class Class_ extends BaseClass_ {
         }   
     }
 
-    public String assignCommited(ClassAssignmentInfo assignment, String managerExternalId, org.hibernate.Session hibSession) {
+    public String assignCommited(ClassAssignmentInfo assignment, UserContext user, org.hibernate.Session hibSession) {
         Transaction tx = null;
         try {
             if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
@@ -1174,14 +1208,27 @@ public class Class_ extends BaseClass_ {
             
             ClassEvent event = getEvent();
             event = a.generateCommittedEvent(event, true);
-            if (event != null)
+            if (event != null && !event.getMeetings().isEmpty()) {
+    			if (event.getNotes() == null)
+    				event.setNotes(new HashSet<EventNote>());
+				EventNote note = new EventNote();
+				note.setEvent(event);
+				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
+				note.setTimeStamp(new Date());
+				note.setUser(user.getName());
+				note.setTextNote((oldAssignment == null ? "Assigned to " : "Reassigned " + oldAssignment.getPlacement().getName() + " → ") + a.getPlacement().getName());
+				note.setMeetings(assignment.getTime().getLongName() + (assignment.getNrRooms() > 0 ? " " + assignment.getRoomNames(", ") : ""));
+				event.getNotes().add(note);
             	hibSession.saveOrUpdate(event);
+            }
+		    if (event != null && event.getMeetings().isEmpty() && event.getUniqueId() != null)
+		    	hibSession.delete(event);
 
             setCommittedAssignment(a);
             hibSession.update(this);
 
             ChangeLog.addChange(hibSession,
-                    TimetableManager.findByExternalId(managerExternalId),
+                    TimetableManager.findByExternalId(user.getExternalUserId()),
                     getSession(),
                     this,
                     getClassLabel()+" ("+

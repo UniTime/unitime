@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -37,6 +38,7 @@ import org.hibernate.Hibernate;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseAssignment;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.AssignmentInfoDAO;
@@ -332,13 +334,27 @@ public class Assignment extends BaseAssignment {
         event.setEventName(getClassName());
         event.setMinCapacity(clazz.getClassLimit());
         event.setMaxCapacity(clazz.getClassLimit());
-        if (event.getMeetings() != null){
-        	event.getMeetings().clear();
-        } else {
-        	event.setMeetings(new HashSet());
+        
+        boolean changePast = "true".equals(ApplicationProperties.getProperty("tmtbl.classAssign.changePastMeetings", "true"));
+		Calendar cal = Calendar.getInstance(Locale.US);
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date today = cal.getTime();
+        
+		if (event.getMeetings() != null) {
+			if (changePast) {
+				event.getMeetings().clear();
+			} else {
+		    	for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); )
+		    		if (!i.next().getMeetingDate().before(today)) i.remove();
+			}
+		} else {
+			event.setMeetings(new HashSet());
         }
+		
         DatePattern dp = getDatePattern();
-        Calendar cal = Calendar.getInstance(Locale.US);
         cal.setTime(dp.getStartDate()); cal.setLenient(true);
         TimeLocation time = getTimeLocation(); 
         for (int idx=0;idx<dp.getPattern().length();idx++) {
@@ -353,7 +369,7 @@ public class Assignment extends BaseAssignment {
                     case Calendar.SATURDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
                     case Calendar.SUNDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
                 }
-                if (offered) {
+                if (offered && (changePast || !cal.getTime().before(today))) {
                     boolean created = false;
                     for (Iterator i=getRooms().iterator();i.hasNext();) {
                         Location location = (Location)i.next();
