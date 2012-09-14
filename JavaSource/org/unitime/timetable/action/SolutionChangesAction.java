@@ -288,7 +288,7 @@ public class SolutionChangesAction extends Action {
     	        	if (i>0) rooms += ", ";
     	        	rooms += (ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getRoom()[i]),(after==null?null:after.getRoom()[i])));
     	        }
-    	        String dates = (before==null?after.getDaysName():before.getDaysName());
+    	        String dates = (before == null ? "not-assigned" : before.getDaysName()) + (after == null ? " -> not-assigned" : before != null && before.getDaysName().equals(after.getDaysName()) ? "" : " -> " + after.getDaysName());
     	        String timesSort = (before==null?after.getTimeName():before.getTimeName());
     	        String roomsSort = (before==null?after.getRoomName():before.getRoomName());
     	        String datesSort = (before==null?after.getDaysName():before.getDaysName());
