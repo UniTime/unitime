@@ -37,6 +37,7 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.AssignmentHistoryForm;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -158,7 +159,9 @@ public class AssignmentHistoryAction extends Action {
         	        	if (i>0) rooms.append(", ");
         	        	rooms.append(ClassAssignmentDetails.dispRoom2((before==null?null:before.getAssignedRoom()[i]),(after==null?null:after.getAssignedRoom()[i])));
         	        }
-        	        dates.append(before==null?after.getDaysHtml():before.getDaysHtml());
+        	        dates.append((before == null || before.getAssignedTime() == null ? "<font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>" : before.getAssignedTime().getDatePatternName()) +
+            	        	(after == null || after.getAssignedTime() == null ? " &rarr; <font color='"+PreferenceLevel.prolog2color("P")+"'><i>not-assigned</i></font>" :
+            	        		before != null && before.getAssignedTime().getDatePatternName().equals(after.getAssignedTime().getDatePatternName()) ? "" : " &rarr; " + after.getAssignedTime().getDatePatternName()));
         	        timesSort.append(before==null?after.getTimeName():before.getTimeName());
         	        roomsSort.append(before==null?after.getRoomName():before.getRoomName());
         	        datesSort.append(before==null?after.getDaysName():before.getDaysName());
@@ -303,7 +306,9 @@ public class AssignmentHistoryAction extends Action {
         	        	if (i>0) rooms.append(", ");
         	        	rooms.append(ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getAssignedRoom()[i]),(after==null?null:after.getAssignedRoom()[i])));
         	        }
-        	        dates.append(before==null?after.getDaysName():before.getDaysName());
+        	        dates.append((before == null || before.getAssignedTime() == null ? "not-assigned" : before.getAssignedTime().getDatePatternName()) +
+        	        		(after == null || after.getAssignedTime() == null ? " -> not-assigned" : before != null &&
+        	        		before.getAssignedTime().getDatePatternName().equals(after.getAssignedTime().getDatePatternName()) ? "" : " -> " + after.getAssignedTime().getDatePatternName()));
         	        timesSort.append(before==null?after.getTimeName():before.getTimeName());
         	        roomsSort.append(before==null?after.getRoomName():before.getRoomName());
         	        datesSort.append(before==null?after.getDaysName():before.getDaysName());
