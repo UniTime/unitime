@@ -151,6 +151,7 @@ public class DatePatternEditAction extends Action {
 	        
             if ("Add Date Pattern".equals(op)) {
                 myForm.load(null);
+                myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
                 myForm.setOp("Save");
             }
 
