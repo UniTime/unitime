@@ -110,6 +110,23 @@
 						<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />				
 					</bean:define>
 				 
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessLockIO() %>" 
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
+							<loc:message name="actionLockIO"/>
+						</html:submit>
+					</sec:authorize>
+					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessUnlockIO() %>" 
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
+							<loc:message name="actionUnlockIO"/>
+						</html:submit>
+					</sec:authorize>
+
 					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 							<html:submit property="op" 
 									styleClass="btn" 
@@ -157,24 +174,7 @@
 								<loc:message name="actionMakeNotOffered" />
 							</html:submit>
 					</sec:authorize>
-					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-							<loc:message name="actionLockIO"/>
-						</html:submit>
-					</sec:authorize>
-					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-							<loc:message name="actionUnlockIO"/>
-						</html:submit>
-					</sec:authorize>
-				
+									
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
 								styleClass="btn" 
@@ -511,6 +511,23 @@
 					<html:hidden property="nextId"/>
 					<html:hidden property="previousId"/>
 					
+					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessLockIO() %>" 
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
+							<loc:message name="actionLockIO"/>
+						</html:submit>
+					</sec:authorize>
+					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessUnlockIO() %>" 
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
+							<loc:message name="actionUnlockIO"/>
+						</html:submit>
+					</sec:authorize>
+				
 					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'InstrOfferingConfigAdd')">
 							<html:submit property="op" 
 									styleClass="btn" 
@@ -559,23 +576,6 @@
 							</html:submit>
 					</sec:authorize>
 					
-					<sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanLock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-							<loc:message name="actionLockIO"/>
-						</html:submit>
-					</sec:authorize>
-					 <sec:authorize access="hasPermission(#instrOfferingId, 'InstructionalOffering', 'OfferingCanUnlock')">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-							<loc:message name="actionUnlockIO"/>
-						</html:submit>
-					</sec:authorize>
-				
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
 								styleClass="btn" 
