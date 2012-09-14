@@ -28,45 +28,189 @@
 	<version>3.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Technology Update</title>
+		<item>
+			<name>Event Management</name>
+			<description>
+				<line>Event management portion of the application was completely rewritten using Google Web Toolkit.</line>
+				<line>All the existing (UniTime 3.3) functionality has remained, a number of new features was implemented (see below).</line>
+			</description>
+		</item>
+		<item>
+			<name>Spring Security</name>
+			<description>
+				<line>New security model is introduced in UniTime 3.4</line>
+				<line>This includes both user authentication and authorization.</line>
+				<line>This allows for better integration of UniTime 3.4 with other systems at a university.</line>
+			</description>
+		</item>
+		<item>
+			<name>Maven Builds</name>
+			<description>
+				<line>UniTime application can now be built using either Apache Ant or Maven.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Event Management</title>
 		<item>
-			<name>Event Timetable</name>
+			<name>Organizational / Database Changes</name>
 			<description>
-				<line>
-					Personal Timetable: Administrators and schedule deputies can see instructor / student  class / examination schedules even when
-					the session does not allow instructors / students to see their schedules (session status does not have the no-role reports flag(s) enabled).
+				<line>Departments that can manage events (event departments) are to be specified on the Departments page.
+					<line>On a department, there is a new Event Management flag.</line>
 				</line>
-				<line>
-					Event grid (all resources): When a range of two or more weeks is selected (but not All Weeks), display dates for events that do not meet every
-					week in the range. This fixes the issue of not showing dates at all when there is a range of two or more weeks selected.
+				<line>There is a new relation between rooms (including non-university locations) and event departments.
+					<line>On the Edit Room page, a room that is to have event management enabled must have an event department selected (in the ).</line>
 				</line>
+				<line>On the update, the relations are automatically populated using the UniTime 3.3 way. That is:
+					<line>An event department is a department that has a manager with an Event Manager role.</line>
+					<line>Room is enabled for events if it is controlled by an event department.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Events Page</name>
+			<description>
+				<line>Events page now contains all the filtering and display functionality that is needed for users to be able to see, request, and approve events.</line>
+				<line>In the Timetable view, events are equally spaced (to see how much each time is used).
+					<line>For room/personal timetable (when there is no or very unlikely overlap between events), events also shift into proper week/room.</line>
+				</line>
+				<line>Selection of time: allow selection of time from a drop down (15 or 30 minute increments) as well as type in (5 minute increments).</line>
+				<line>Room filter: free text box, with a drop down with selections for features / groups / types, also allow for boolean queries.
+					<line>For each selection, number of matching rooms is also provided.</line>
+					<line>Room suggestions are also displayed.</line>
+					<line>All the filtering capabilities are reachable via suggestions by just typing in (with no mouse clicking).</line>
+				</line>
+				<line>Event filter: combines event name, type and display mode into a similar component as the Room filter.</line>
+				<line>Functionality of Events, Meetings, Add Event, and Room Availability is merged into one page.
+					<line>This allows for easy swapping between different views.</line>
+				</line>
+				<line>The Timetable, List of Events, and List of Meetings can be easily filtered by a room or a week or weeks.</line>
+				<line>Event page defaults to "My Events" (events requested by me) in "Event" rooms (rooms with event management enabled),
+					changes in the filters are remembered in browser (session) cookies.
+					<line>But it is possible to see (and query) class / examination events in all the rooms.</line>
+				</line>
+				<line>Users are able to see (and change) event meeting offsets (setup and teardown time).
+					<line>Published Time: the "official" starting and end time of a meeting.</line>
+					<line>Allocated Time: the time during which the room is blocked (start - setup, end + teardown)</line>
+					<line>Setup Time: the offset (positive number in minutes) between allocated start time and published start time</line>
+					<line>Teardown Time: the offset (positive number in minutes) between published end time and allocated end time</line>
+				</line>
+				<line>An event can now have additional contacts entered (not just a set of emails).</line>
+				<line>It is now possible for the event to get automatically approved when it is entered by an event manager or an administrator.
+					<line>Only for meetings that the user has permission to approve.</line>
+					<line>When "Event Location Approve" permission is enabled for the user.</line>
+				</line>
+				<line>It is now possible to make multiple changes (e.g., drop a couple of meetings and add some now ones) within the Edit Event page.
+					<line>Changes are only persisted (and the email notification is sent) at the end (when Save button is pressed).</line>
+				</line>
+				<line>It is now possible to approve / reject / inquire on multiple events at once, directly from the List of Events or List of Meetings.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable page</name>
+			<description>
+				<line>Event Timetable page now contains much of the Events page, but it does not have the "My Events" default and it allows to see
+					<line>Room Timetable: timetable of a room</line>
+					<line>Subject Timetable: timetable of a subject area or a course</line>
+					<line>Curriculum Timetable: timetable of a curriculum or a curriculum classification</line>
+					<line>Department Timetable: timetable of a department.</line>
+					<line>Personal Timetable: timetable of a person, listing all classes, exams, and other requested events.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Localization</name>
+			<description>
+				<line>All event management pages are fully localizable.</line>
+				<line>English and Czech translations are provided.</line>
+			</description>
+		</item>
+		<item>
+			<name>Deprecated Pages</name>
+			<description>
+				<line>Meetings and Room Availability pages are no longer needed -- all the functionality is available on the new Events page.</line>
+				<line>Classes, Examination, Personal schedule pages are no longer needed -- all the functionality is available on the new Event Timetable page.</line>
+			</description>
+		</item>
+	</category>
+	<category>
+		<title>Application Security</title>
+		<item>
+			<name>User Permissions</name>
+			<description>
+				<line>Roles and their permissions can now be edited in UniTime which greatly improves customization possibilities.</line>
+			</description>
+		</item>
+		<item>
+			<name>System Administrator</name>
+			<description>
+				<line>The current Administrator role has been renamed to System Administrator role.</line>
+				<line>New Session Administrator role has been introduced.
+					<line>Very much like the System Administrator, but academic session dependent.</line>
+					<line>Only system administrator is able to create and / or delete an academic session.</line>
+					<line>Session independent entities (like room types) are only editable by system administrator.</line>
+					<line>Chameleon is only available to a system administrator.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Improved Application Security</name>
+			<description>
+				<line>For instance, a course timetabling solution can only be uncommitted when the online student scheduling is NOT enabled.</line>
 			</description>
 		</item>
 	</category>
 	<category>
 		<title>Course Timetabling</title>
 		<item>
-			<name>Precedence Constraint</name>
+			<name>Alternative Date Patterns</name>
 			<description>
-				<line>Precedence constraint now considers date patterns.
-					I.e., if two classes (with a precedence constraint) have different date patterns, it also checks on what dates the first meetings occur.
-				<line>This means that the first meeting of the first class must happen before the first meeting of the second class.</line>
-				<line>Example: If the first class has date pattern Week 1 and the second class has Week 2, first class will always precede the second class.</line>
-				<line>Former behavior (date patterns are ignored) can be enabled by setting the solver property Precedence.ConsiderDatePatterns to false (defaults to true).</line>
+				<line>User interface for alternative date patterns created.
+					<line>A date pattern can be of a new type "Alternative Pattern Set"</line>
+					<line>Such a date pattern does not have any dates selected by itself, but other date patterns can be put into this set (one date pattern can belong into multiple sets).</line>
+				</line>
+				<line>When such a date pattern is assigned to a scheduling subpart or a class, one of the date patterns of the set are to be assigned to the class as a part of the time assignment.
+					<line>An individual preference can be set on each of the alternative date patterns (including required and prohibited).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Travel Times</name>
+			<description>
+				<line>Added ability to override distances computed using room coordinates by individual travel times set between pairs of rooms.
+					<line>These, if set, override the default distances that are computed using room coordinates.</line> 
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Back-To-Back Student Distance Conflicts</name>
+			<description>
+				<line>Added ability to consider student distance conflicts between classes that are not directly back-to-back.
+					<line>Distance conflict is there if room distance (in minutes) is greater than the break time of the first class plus the difference between end of the first and start of the second class.</line>
+					<line>To be enabled if needed by setting the solver parameter Distances.ComputeDistanceConflictsBetweenNonBTBClasses to true (defaults to false).</line>
 				</line>
 			</description>
 		</item>
 	</category>
 	<category>
-		<title>Bug Fixes</title>
+		<title>Other Changes</title>
 		<item>
-			<name>Issue 3: Instructor Detail (Examinations table): exams of a wrong term are visible</name>
-		<description>
-			<line>
-				In the list instructors, all exams of the instructor are visible including exams of previous academic sessions.
-				Only exams of the current academic session should be displayed.
-			</line>
-		</description>
+			<name>Rooms</name>
+			<description>
+				<line>Room availability grid rewritten in GWT.
+					<line>Department code is displayed in each cell.</line>
+					<line>It is now much easier to add / remove a department, add all departments.</line>
+					<line>Localization (e.g., times / dates follow the locale settings)</line>
+					<line>User interface is customizable, however, a lot of code still expects half hours starting on every half an hour.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Designators</name>
+			<description>
+				<line>Designators page and Designator Required toggle (on the offering) removed.</line>
+			</description>
 		</item>
 	</category>
 </release>
