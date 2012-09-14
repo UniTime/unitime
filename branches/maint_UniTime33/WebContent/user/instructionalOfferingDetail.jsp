@@ -113,6 +113,23 @@
 						<bean:write name="instructionalOfferingDetailForm" property="subjectAreaId" />				
 					</bean:define>
 				 
+					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessLockIO() %>" 
+								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
+							<loc:message name="actionLockIO"/>
+						</html:submit> 
+					</logic:equal>
+					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
+						<html:submit property="op" styleClass="btn" 
+								accesskey="<%=MSG.accessUnlockIO() %>" 
+								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
+							<loc:message name="actionUnlockIO"/>
+						</html:submit> 
+					</logic:equal>
+				
 					<!-- Display buttons only if editable by current user -->
 					<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
 					
@@ -179,23 +196,6 @@
 			
 					</logic:equal>
 					
-					<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessLockIO() %>" 
-								title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-								onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-							<loc:message name="actionLockIO"/>
-						</html:submit> 
-					</logic:equal>
-					<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
-						<html:submit property="op" styleClass="btn" 
-								accesskey="<%=MSG.accessUnlockIO() %>" 
-								title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-								onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-							<loc:message name="actionUnlockIO"/>
-						</html:submit> 
-					</logic:equal>
-				
 					<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
 						<html:submit property="op" 
 								styleClass="btn" 
@@ -553,6 +553,24 @@
 					<html:hidden property="canLock"/>
 					<html:hidden property="canUnlock"/>
 					
+
+				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
+					<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessLockIO() %>" 
+							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
+							onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
+						<loc:message name="actionLockIO"/>
+					</html:submit> 
+				</logic:equal>
+				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
+					<html:submit property="op" styleClass="btn" 
+							accesskey="<%=MSG.accessUnlockIO() %>" 
+							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
+							onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
+						<loc:message name="actionUnlockIO"/>
+					</html:submit> 
+				</logic:equal>
+
 				<!-- Display buttons only if editable by current user -->
 				<logic:equal name="instructionalOfferingDetailForm" property="isEditable" value="true">
 				
@@ -618,24 +636,6 @@
 						</html:submit>
 					</logic:notEqual>
 		
-				</logic:equal>
-
-
-				<logic:equal name="instructionalOfferingDetailForm" property="canLock" value="true">
-					<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessLockIO() %>" 
-							title="<%=MSG.titleLockIO(MSG.accessLockIO()) %>"
-							onclick="<%=MSG.jsSubmitLockIO((String)instrOfferingName)%>">
-						<loc:message name="actionLockIO"/>
-					</html:submit> 
-				</logic:equal>
-				<logic:equal name="instructionalOfferingDetailForm" property="canUnlock" value="true">
-					<html:submit property="op" styleClass="btn" 
-							accesskey="<%=MSG.accessUnlockIO() %>" 
-							title="<%=MSG.titleUnlockIO(MSG.accessUnlockIO()) %>"
-							onclick="<%=MSG.jsSubmitUnlockIO((String)instrOfferingName)%>">
-						<loc:message name="actionUnlockIO"/>
-					</html:submit> 
 				</logic:equal>
 
 				<logic:notEmpty name="instructionalOfferingDetailForm" property="previousId">
