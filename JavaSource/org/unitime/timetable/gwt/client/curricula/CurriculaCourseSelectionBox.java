@@ -77,6 +77,7 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.user.client.ui.SuggestBox.DefaultSuggestionDisplay;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -219,6 +220,10 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 					if (iError.isVisible()) iError.setVisible(false);
 					if (iHint!=null) iTextField.setText(iHint);
 					iTextField.setStyleName("unitime-TextBoxHint");
+				}
+				if (iSuggest.getSuggestionDisplay() != null && iSuggest.getSuggestionDisplay() instanceof DefaultSuggestionDisplay) {
+					DefaultSuggestionDisplay disp = (DefaultSuggestionDisplay)iSuggest.getSuggestionDisplay();
+					if (disp.isSuggestionListShowing()) disp.hideSuggestions();
 				}
 			}
 		});
