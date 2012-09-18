@@ -437,6 +437,8 @@ public class UniTimeTable<T> extends FlexTable {
 					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
 				}
 			}
+			if (iHintPanel != null && iHintPanel.isShowing())
+				iHintPanel.hide();
 			for (MouseClickListener<T> listener: iMouseClickListeners)
 				listener.onMouseClick(tableEvent);
 			break;
