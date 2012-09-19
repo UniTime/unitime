@@ -644,7 +644,7 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+			return permissionDepartment.check(user, source, source.isExternalManager() ? DepartmentStatusType.Status.ManagerView : DepartmentStatusType.Status.OwnerView);
 		}
 
 		@Override
@@ -659,7 +659,7 @@ public class CoursePermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+			return permissionDepartment.check(user, source, source.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit);
 		}
 
 		@Override
@@ -695,7 +695,9 @@ public class CoursePermissions {
 	    		    	
 	    	// If my department -> check status
 	    	if (permissionDepartment.check(user, owner)) {
-	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+	    		return permissionDepartment.check(user, owner, owner.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit);
+	    	} else {
+	    		
 	    	}
 	    	
 	    	// Not my department -- check if it is allowed to require
@@ -757,7 +759,7 @@ public class CoursePermissions {
 
 	    	// If my department -> check status
 	    	if (permissionDepartment.check(user, owner)) {
-	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerEdit, DepartmentStatusType.Status.ManagerEdit);
+	    		return permissionDepartment.check(user, owner, owner.isExternalManager() ? DepartmentStatusType.Status.ManagerEdit : DepartmentStatusType.Status.OwnerEdit);
 	    	}
 	    	
 	    	// Not my department -- must be able to edit all classes and subparts
@@ -803,7 +805,7 @@ public class CoursePermissions {
 	    	
 	    	// If my department -> check status
 	    	if (permissionDepartment.check(user, owner)) {
-	    		return permissionDepartment.check(user, owner, DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+	    		return permissionDepartment.check(user, owner, owner.isExternalManager() ? DepartmentStatusType.Status.ManagerView : DepartmentStatusType.Status.OwnerView);
 	    	}
 	    	
 	    	// Not my department -- must be able to view at least one class or subpart
