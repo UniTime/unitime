@@ -79,7 +79,7 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
             q.setFetchSize(5000);
             q.setCacheable(true);
             q.setFlushMode(FlushMode.MANUAL);
-            q.setInteger("acadSessionId", Integer.parseInt(map.get("session").toString()));
+            q.setLong("acadSessionId", Long.parseLong(map.get("session").toString()));
             q.setString("subjectArea", map.get("subjectArea").toString());
             q.setString("courseNbr", map.get("courseNumber").toString() + "%");
     

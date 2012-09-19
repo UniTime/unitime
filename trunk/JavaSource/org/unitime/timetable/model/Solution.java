@@ -89,7 +89,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			getSession().
 			createQuery("select si from SolutionInfo si where si.definition.name=:name and si.solution.uniqueId=:solutionId").
 			setString("name",name).
-			setInteger("solutionId",getUniqueId().intValue()).
+			setLong("solutionId",getUniqueId()).
 			uniqueResult();
 		/*
 		org.hibernate.Session session = (new SolutionInfoDAO()).getSession();
@@ -244,7 +244,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"and xa.solution.commited=true and xa.solution.owner.session.uniqueId=:sessionId and xa.solution.owner.uniqueId!=:ownerId and r in elements(xa.rooms)"
 				);
 		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setInteger("solutionId",getUniqueId().intValue());
+		q.setLong("solutionId",getUniqueId());
 		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
 		Iterator rooms = q.iterate();
 		
@@ -254,14 +254,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			if (room.isIgnoreRoomCheck()!=null && room.isIgnoreRoomCheck().booleanValue()) continue;
 			q = hibSession.createQuery("select distinct a from Location r, Assignment as a "+
 			"where r.uniqueId=:roomId and a in elements(r.assignments) and a.solution.commited=true and a.solution.owner.uniqueId!=:ownerId");
-			q.setInteger("roomId",room.getUniqueId().intValue());
-			q.setLong("ownerId",getOwner().getUniqueId().longValue());
+			q.setLong("roomId",room.getUniqueId());
+			q.setLong("ownerId",getOwner().getUniqueId());
 			List commitedAssignments = q.list();
 			if (commitedAssignments.isEmpty()) continue;
 			q = hibSession.createQuery("select distinct a from Location r, Assignment as a "+
 					"where r.uniqueId=:roomId and a in elements(r.assignments) and a.solution.uniqueId=:solutionId");
-			q.setInteger("roomId",room.getUniqueId().intValue());
-			q.setInteger("solutionId",getUniqueId().intValue());
+			q.setLong("roomId",room.getUniqueId());
+			q.setLong("solutionId",getUniqueId());
 			Iterator assignments = q.iterate();
 			
 			while (assignments.hasNext()) {
@@ -282,7 +282,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"and xa.solution.commited=true and xa.solution.owner.session.uniqueId=:sessionId and xa.solution.owner.uniqueId!=:ownerId and i in elements(xa.instructors)"
 				);
 		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setInteger("solutionId",getUniqueId().intValue());
+		q.setLong("solutionId",getUniqueId());
 		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
 		Iterator instructors = q.iterate();
 		
@@ -290,14 +290,14 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			DepartmentalInstructor instructor = (DepartmentalInstructor)instructors.next();
 			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i, Assignment as a "+
 			"where i.uniqueId=:instructorId and a in elements(i.assignments) and a.solution.commited=true and a.solution.owner.uniqueId!=:ownerId");
-			q.setInteger("instructorId",instructor.getUniqueId().intValue());
+			q.setLong("instructorId",instructor.getUniqueId());
 			q.setLong("ownerId",getOwner().getUniqueId().longValue());
 			List commitedAssignments = q.list();
 			if (commitedAssignments.isEmpty()) continue;
 			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i, Assignment as a "+
 					"where i.uniqueId=:instructorId and a in elements(i.assignments) and a.solution.uniqueId=:solutionId");
-			q.setInteger("instructorId",instructor.getUniqueId().intValue());
-			q.setInteger("solutionId",getUniqueId().intValue());
+			q.setLong("instructorId",instructor.getUniqueId());
+			q.setLong("solutionId",getUniqueId());
 			Iterator assignments = q.iterate();
 			
 			while (assignments.hasNext()) {
@@ -331,7 +331,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"a.clazz=e.clazz and oa.clazz=oe.clazz and a.clazz.schedulingSubpart!=oa.clazz.schedulingSubpart and e.studentId=oe.studentId "+
 				"group by a.uniqueId, oa.uniqueId");
 		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setInteger("solutionId",getUniqueId().intValue());
+		q.setLong("solutionId",getUniqueId());
 		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
 		Iterator otherAssignments = q.iterate();
 		while (otherAssignments.hasNext()) {
@@ -674,7 +674,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 	}
 	
 	private void deleteObjects(org.hibernate.Session hibSession, String objectName, String idQuery) {
-		Iterator idIterator = hibSession.createQuery(idQuery).setInteger("solutionId",getUniqueId().intValue()).iterate();
+		Iterator idIterator = hibSession.createQuery(idQuery).setLong("solutionId",getUniqueId()).iterate();
 		StringBuffer ids = new StringBuffer();
 		int idx = 0;
 		while (idIterator.hasNext()) {
@@ -699,7 +699,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"ConstraintInfo c inner join c.assignments a, Assignment oa "+
 				"where "+
 				"a.solution.uniqueId=:solutionId and oa.solution.uniqueId!=:solutionId and oa in elements ( c.assignments) ")
-				.setInteger("solutionId",getUniqueId().intValue())
+				.setLong("solutionId",getUniqueId())
 				.iterate();
 		while (i.hasNext()) {
 			Object[] next = (Object[])i.next();
@@ -748,7 +748,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.createQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				.setLong("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		deleteObjects(
@@ -768,7 +768,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"ConstraintInfo c inner join c.assignments a, Assignment oa "+
 				"where "+
 				"a.solution.uniqueId=:solutionId and oa.solution.uniqueId!=:solutionId and oa in elements ( c.assignments) ")
-				.setInteger("solutionId",getUniqueId().intValue())
+				.setLong("solutionId",getUniqueId())
 				.iterate();
 		while (i.hasNext()) {
 			Object[] next = (Object[])i.next();
@@ -791,12 +791,12 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 
 		hibSession.createQuery(
 				"delete StudentEnrollment x where x.solution.uniqueId=:solutionId ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				.setLong("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		hibSession.createQuery(
 				"delete JointEnrollment x where x.solution.uniqueId=:solutionId ) ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				.setLong("solutionId", getUniqueId())
 				.executeUpdate();
 
 		deleteObjects(
@@ -819,7 +819,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.createQuery(
 				"delete Assignment x where x.solution.uniqueId=:solutionId ) ")
-				.setInteger("solutionId", getUniqueId().intValue())
+				.setLong("solutionId", getUniqueId())
 				.executeUpdate();
 		
 		deleteObjects(
@@ -903,7 +903,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"a.clazz=e.clazz and oa.clazz=oe.clazz and a.clazz.schedulingSubpart!=oa.clazz.schedulingSubpart and e.studentId=oe.studentId "+
 				"group by a.uniqueId, oa.uniqueId");
 		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setInteger("solutionId",getUniqueId().intValue());
+		q.setLong("solutionId",getUniqueId());
 		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
 		Iterator otherAssignments = q.iterate();
 		while (otherAssignments.hasNext()) {

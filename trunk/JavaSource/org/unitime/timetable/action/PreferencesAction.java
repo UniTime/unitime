@@ -383,7 +383,7 @@ public class PreferencesAction extends Action {
         frm2.setCtrlInstrOfferingId(io.getCtrlCourseId().toString());
         frm2.setIsControl(co.isIsControl());
 
-        request.setAttribute("subjectAreaId", frm2.getSubjectAreaId());
+        request.setAttribute("subjectAreaId", co.getSubjectArea().getUniqueId().toString());
         request.setAttribute("instructionalOfferingListForm", frm2);            
     }
 
