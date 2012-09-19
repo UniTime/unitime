@@ -98,7 +98,7 @@ public class RoomDeptEditAction extends Action {
         	d = new DepartmentDAO().get(myForm.getId());
 
 		TreeSet<Room> rooms = null;
-		if (d != null) {
+		if (d != null && !d.isExternalManager()) {
 			rooms = new TreeSet<Room>();
 			for (RoomDept rd: d.getRoomDepts()) {
 				if (rd.getRoom() instanceof Room)
