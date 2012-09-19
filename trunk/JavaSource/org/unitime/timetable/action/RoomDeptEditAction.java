@@ -97,15 +97,16 @@ public class RoomDeptEditAction extends Action {
         if (d == null && myForm.getId() != null && myForm.getExamType() < 0)
         	d = new DepartmentDAO().get(myForm.getId());
 
-		TreeSet<Room> rooms = null;
-		if (d != null && !d.isExternalManager()) {
-			rooms = new TreeSet<Room>();
-			for (RoomDept rd: d.getRoomDepts()) {
-				if (rd.getRoom() instanceof Room)
-					rooms.add((Room)rd.getRoom());
-			}
+		TreeSet<Room> rooms = new TreeSet<Room>();
+		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
+			rooms.addAll(Location.findAllRooms(sessionContext.getUser().getCurrentAcademicSessionId()));
 		} else {
-		    rooms = new TreeSet(Room.findAllRooms(sessionContext.getUser().getCurrentAcademicSessionId()));
+			for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+				for (RoomDept rd: department.getRoomDepts()) {
+					if (rd.getRoom() instanceof Room)
+						rooms.add((Room)rd.getRoom());
+				}
+			}
 		}
 		
         int examType = myForm.getExamType();

@@ -187,7 +187,7 @@ public class LocationPermissions {
 		@Override
 		public boolean check(UserContext user, Department source) {
 			return user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) ||
-					(source.isExternalManager() && permissionDepartment.check(user, source));
+					(permissionDepartment.check(user, source) && user.getCurrentAuthority().getQualifiers("Department").size() > 1);
 		}
 
 		@Override
