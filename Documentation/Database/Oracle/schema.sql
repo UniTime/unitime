@@ -39,7 +39,7 @@ create table timetable.DATE_PATTERN
   visible    NUMBER(1),
   session_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -53,7 +53,7 @@ tablespace SYSTEM
 alter table timetable.DATE_PATTERN
   add constraint PK_DATE_PATTERN primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -76,7 +76,7 @@ alter table timetable.DATE_PATTERN
   add constraint NN_DATE_PATTERN_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_DATE_PATTERN_SESSION on timetable.DATE_PATTERN (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -100,7 +100,7 @@ create table timetable.DEPT_STATUS_TYPE
   apply     NUMBER(10),
   ord       NUMBER(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -114,7 +114,7 @@ tablespace SYSTEM
 alter table timetable.DEPT_STATUS_TYPE
   add constraint PK_DEPT_STATUS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -164,7 +164,7 @@ create table timetable.SESSIONS
   event_begin_date        DATE,
   event_end_date          DATE
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -178,7 +178,7 @@ tablespace SYSTEM
 alter table timetable.SESSIONS
   add constraint PK_SESSIONS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -225,7 +225,7 @@ alter table timetable.DATE_PATTERN
   add constraint FK_DATE_PATTERN_SESSION foreign key (SESSION_ID)
   references timetable.SESSIONS (UNIQUEID) on delete cascade;
 create index timetable.IDX_SESSIONS_DATE_PATTERN on timetable.SESSIONS (DEF_DATEPATT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -236,7 +236,7 @@ create index timetable.IDX_SESSIONS_DATE_PATTERN on timetable.SESSIONS (DEF_DATE
     maxextents unlimited
   );
 create index timetable.IDX_SESSIONS_STATUS_TYPE on timetable.SESSIONS (STATUS_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -260,7 +260,7 @@ create table timetable.ACADEMIC_AREA
   long_title                 VARCHAR2(100),
   external_uid               VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -274,7 +274,7 @@ tablespace SYSTEM
 alter table timetable.ACADEMIC_AREA
   add constraint PK_ACADEMIC_AREA primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -287,7 +287,7 @@ alter table timetable.ACADEMIC_AREA
 alter table timetable.ACADEMIC_AREA
   add constraint UK_ACADEMIC_AREA unique (SESSION_ID, ACADEMIC_AREA_ABBREVIATION)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -339,7 +339,7 @@ create table timetable.ACADEMIC_CLASSIFICATION
   name         VARCHAR2(50),
   external_uid VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -353,7 +353,7 @@ tablespace SYSTEM
 alter table timetable.ACADEMIC_CLASSIFICATION
   add constraint PK_ACAD_CLASS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -400,7 +400,7 @@ create table timetable.RESERVATION_TYPE
   reference VARCHAR2(20),
   label     VARCHAR2(60)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -414,7 +414,7 @@ tablespace SYSTEM
 alter table timetable.RESERVATION_TYPE
   add constraint PK_RESERVATION_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -427,7 +427,7 @@ alter table timetable.RESERVATION_TYPE
 alter table timetable.RESERVATION_TYPE
   add constraint UK_RESERVATION_TYPE_LABEL unique (LABEL)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -440,7 +440,7 @@ alter table timetable.RESERVATION_TYPE
 alter table timetable.RESERVATION_TYPE
   add constraint UK_RESERVATION_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -476,7 +476,7 @@ create table timetable.ACAD_AREA_RESERVATION
   requested            NUMBER(10),
   last_modified_time   TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -490,7 +490,7 @@ tablespace SYSTEM
 alter table timetable.ACAD_AREA_RESERVATION
   add constraint PK_ACAD_AREA_RESV primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -531,7 +531,7 @@ alter table timetable.ACAD_AREA_RESERVATION
   add constraint NN_ACAD_AREA_RESV_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ACAD_AREA_RESV_ACAD_AREA on timetable.ACAD_AREA_RESERVATION (ACAD_AREA)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -542,7 +542,7 @@ create index timetable.IDX_ACAD_AREA_RESV_ACAD_AREA on timetable.ACAD_AREA_RESER
     maxextents unlimited
   );
 create index timetable.IDX_ACAD_AREA_RESV_ACAD_CLASS on timetable.ACAD_AREA_RESERVATION (ACAD_CLASSIFICATION)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -553,7 +553,7 @@ create index timetable.IDX_ACAD_AREA_RESV_ACAD_CLASS on timetable.ACAD_AREA_RESE
     maxextents unlimited
   );
 create index timetable.IDX_ACAD_AREA_RESV_OWNER on timetable.ACAD_AREA_RESERVATION (OWNER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -564,7 +564,7 @@ create index timetable.IDX_ACAD_AREA_RESV_OWNER on timetable.ACAD_AREA_RESERVATI
     maxextents unlimited
   );
 create index timetable.IDX_ACAD_AREA_RESV_OWNER_CLS on timetable.ACAD_AREA_RESERVATION (OWNER_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -575,7 +575,7 @@ create index timetable.IDX_ACAD_AREA_RESV_OWNER_CLS on timetable.ACAD_AREA_RESER
     maxextents unlimited
   );
 create index timetable.IDX_ACAD_AREA_RESV_TYPE on timetable.ACAD_AREA_RESERVATION (RESERVATION_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -596,7 +596,7 @@ create table timetable.APPLICATION_CONFIG
   value       VARCHAR2(4000),
   description VARCHAR2(100)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -610,7 +610,7 @@ tablespace SYSTEM
 alter table timetable.APPLICATION_CONFIG
   add constraint PK_APPLICATION_CONFIG primary key (NAME)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -634,7 +634,7 @@ create table timetable.OFFR_CONSENT_TYPE
   reference VARCHAR2(20),
   label     VARCHAR2(60)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -648,7 +648,7 @@ tablespace SYSTEM
 alter table timetable.OFFR_CONSENT_TYPE
   add constraint PK_OFFR_CONSENT_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -661,7 +661,7 @@ alter table timetable.OFFR_CONSENT_TYPE
 alter table timetable.OFFR_CONSENT_TYPE
   add constraint UK_OFFR_CONSENT_TYPE_LABEL unique (LABEL)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -674,7 +674,7 @@ alter table timetable.OFFR_CONSENT_TYPE
 alter table timetable.OFFR_CONSENT_TYPE
   add constraint UK_OFFR_CONSENT_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -708,7 +708,7 @@ create table timetable.INSTRUCTIONAL_OFFERING
   uid_rolled_fwd_from    NUMBER(20),
   external_uid           VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -722,7 +722,7 @@ tablespace SYSTEM
 alter table timetable.INSTRUCTIONAL_OFFERING
   add constraint PK_INSTR_OFFR primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -751,7 +751,7 @@ alter table timetable.INSTRUCTIONAL_OFFERING
   add constraint NN_INSTR_OFFR_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_INSTR_OFFR_CONSENT on timetable.INSTRUCTIONAL_OFFERING (CONSENT_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -776,7 +776,7 @@ create table timetable.INSTR_OFFERING_CONFIG
   last_modified_time   TIMESTAMP(6),
   uid_rolled_fwd_from  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -790,7 +790,7 @@ tablespace SYSTEM
 alter table timetable.INSTR_OFFERING_CONFIG
   add constraint PK_INSTR_OFFR_CFG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -803,7 +803,7 @@ alter table timetable.INSTR_OFFERING_CONFIG
 alter table timetable.INSTR_OFFERING_CONFIG
   add constraint UK_INSTR_OFFR_CFG_NAME unique (UNIQUEID, NAME)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -829,7 +829,7 @@ alter table timetable.INSTR_OFFERING_CONFIG
   add constraint NN_INSTR_OFFR_CFG_UNLIM_ENRL
   check ("UNLIMITED_ENROLLMENT" IS NOT NULL);
 create index timetable.IDX_INSTR_OFFR_CFG_INSTR_OFFR on timetable.INSTR_OFFERING_CONFIG (INSTR_OFFR_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -854,7 +854,7 @@ create table timetable.ITYPE_DESC
   parent      NUMBER(2),
   organized   NUMBER(1)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -868,7 +868,7 @@ tablespace SYSTEM
 alter table timetable.ITYPE_DESC
   add constraint PK_ITYPE_DESC primary key (ITYPE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -903,7 +903,7 @@ create table timetable.SCHEDULING_SUBPART
   last_modified_time    TIMESTAMP(6),
   uid_rolled_fwd_from   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -917,7 +917,7 @@ tablespace SYSTEM
 alter table timetable.SCHEDULING_SUBPART
   add constraint PK_SCHED_SUBPART primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -958,7 +958,7 @@ alter table timetable.SCHEDULING_SUBPART
   add constraint NN_SUBPART_STAL_OVERLAP
   check ("STUDENT_ALLOW_OVERLAP" IS NOT NULL);
 create index timetable.IDX_SCHED_SUBPART_CONFIG on timetable.SCHEDULING_SUBPART (CONFIG_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -969,7 +969,7 @@ create index timetable.IDX_SCHED_SUBPART_CONFIG on timetable.SCHEDULING_SUBPART 
     maxextents unlimited
   );
 create index timetable.IDX_SCHED_SUBPART_DATE_PATTERN on timetable.SCHEDULING_SUBPART (DATE_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -980,7 +980,7 @@ create index timetable.IDX_SCHED_SUBPART_DATE_PATTERN on timetable.SCHEDULING_SU
     maxextents unlimited
   );
 create index timetable.IDX_SCHED_SUBPART_ITYPE on timetable.SCHEDULING_SUBPART (ITYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -991,7 +991,7 @@ create index timetable.IDX_SCHED_SUBPART_ITYPE on timetable.SCHEDULING_SUBPART (
     maxextents unlimited
   );
 create index timetable.IDX_SCHED_SUBPART_PARENT on timetable.SCHEDULING_SUBPART (PARENT)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1030,7 +1030,7 @@ create table timetable.CLASS_
   external_uid          VARCHAR2(40),
   enrollment            NUMBER(4)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1044,7 +1044,7 @@ tablespace SYSTEM
 alter table timetable.CLASS_
   add constraint PK_CLASS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1085,7 +1085,7 @@ alter table timetable.CLASS_
   add constraint NN_CLASS_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_CLASS_DATEPATT on timetable.CLASS_ (DATE_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1096,7 +1096,7 @@ create index timetable.IDX_CLASS_DATEPATT on timetable.CLASS_ (DATE_PATTERN_ID)
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_MANAGING_DEPT on timetable.CLASS_ (MANAGING_DEPT)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1107,7 +1107,7 @@ create index timetable.IDX_CLASS_MANAGING_DEPT on timetable.CLASS_ (MANAGING_DEP
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_PARENT on timetable.CLASS_ (PARENT_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1118,7 +1118,7 @@ create index timetable.IDX_CLASS_PARENT on timetable.CLASS_ (PARENT_CLASS_ID)
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_SUBPART_ID on timetable.CLASS_ (SUBPART_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1140,7 +1140,7 @@ create table timetable.SOLVER_GROUP
   abbv       VARCHAR2(50),
   session_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1154,7 +1154,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_GROUP
   add constraint PK_SOLVER_GROUP primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1180,7 +1180,7 @@ alter table timetable.SOLVER_GROUP
   add constraint NN_SOLVER_GROUP_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_SOLVER_GROUP_SESSION on timetable.SOLVER_GROUP (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1207,7 +1207,7 @@ create table timetable.SOLUTION
   owner_id           NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1221,7 +1221,7 @@ tablespace SYSTEM
 alter table timetable.SOLUTION
   add constraint PK_SOLUTION primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1250,7 +1250,7 @@ alter table timetable.SOLUTION
   add constraint NN_SOLUTION_VALID
   check ("VALID" IS NOT NULL);
 create index timetable.IDX_SOLUTION_OWNER on timetable.SOLUTION (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1277,7 +1277,7 @@ create table timetable.TIME_PATTERN
   break_time NUMBER(3),
   session_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1291,7 +1291,7 @@ tablespace SYSTEM
 alter table timetable.TIME_PATTERN
   add constraint PK_TIME_PATTERN primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1311,7 +1311,7 @@ alter table timetable.TIME_PATTERN
   add constraint NN_TIME_PATTERN_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_TIME_PATTERN_SESSION on timetable.TIME_PATTERN (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1337,7 +1337,7 @@ create table timetable.ASSIGNMENT
   class_name         VARCHAR2(100),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1351,7 +1351,7 @@ tablespace SYSTEM
 alter table timetable.ASSIGNMENT
   add constraint PK_ASSIGNMENT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1386,7 +1386,7 @@ alter table timetable.ASSIGNMENT
   add constraint NN_ASSIGNMENT_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ASSIGNMENT_CLASS on timetable.ASSIGNMENT (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1397,7 +1397,7 @@ create index timetable.IDX_ASSIGNMENT_CLASS on timetable.ASSIGNMENT (CLASS_ID)
     maxextents unlimited
   );
 create index timetable.IDX_ASSIGNMENT_SOLUTION_INDEX on timetable.ASSIGNMENT (SOLUTION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1408,7 +1408,7 @@ create index timetable.IDX_ASSIGNMENT_SOLUTION_INDEX on timetable.ASSIGNMENT (SO
     maxextents unlimited
   );
 create index timetable.IDX_ASSIGNMENT_TIME_PATTERN on timetable.ASSIGNMENT (TIME_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1430,7 +1430,7 @@ create table timetable.POSITION_TYPE
   label      VARCHAR2(60),
   sort_order NUMBER(4)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1444,7 +1444,7 @@ tablespace SYSTEM
 alter table timetable.POSITION_TYPE
   add constraint PK_POSITION_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1457,7 +1457,7 @@ alter table timetable.POSITION_TYPE
 alter table timetable.POSITION_TYPE
   add constraint UK_POSITION_TYPE_LABEL unique (LABEL)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1470,7 +1470,7 @@ alter table timetable.POSITION_TYPE
 alter table timetable.POSITION_TYPE
   add constraint UK_POSITION_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1516,7 +1516,7 @@ create table timetable.DEPARTMENT
   allow_req_room     NUMBER(1) default (0),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1530,7 +1530,7 @@ tablespace SYSTEM
 alter table timetable.DEPARTMENT
   add constraint PK_DEPARTMENT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1543,7 +1543,7 @@ alter table timetable.DEPARTMENT
 alter table timetable.DEPARTMENT
   add constraint UK_DEPARTMENT_DEPT_CODE unique (SESSION_ID, DEPT_CODE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1578,7 +1578,7 @@ alter table timetable.DEPARTMENT
   add constraint NN_DEPARTMENT_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_DEPARTMENT_SOLVER_GRP on timetable.DEPARTMENT (SOLVER_GROUP_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1589,7 +1589,7 @@ create index timetable.IDX_DEPARTMENT_SOLVER_GRP on timetable.DEPARTMENT (SOLVER
     maxextents unlimited
   );
 create index timetable.IDX_DEPARTMENT_STATUS_TYPE on timetable.DEPARTMENT (STATUS_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1619,7 +1619,7 @@ create table timetable.DEPARTMENTAL_INSTRUCTOR
   last_modified_time  TIMESTAMP(6),
   email               VARCHAR2(200)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1633,7 +1633,7 @@ tablespace SYSTEM
 alter table timetable.DEPARTMENTAL_INSTRUCTOR
   add constraint PK_DEPT_INSTR primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1659,7 +1659,7 @@ alter table timetable.DEPARTMENTAL_INSTRUCTOR
   add constraint NN_DEPT_INSTR_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_DEPT_INSTR_DEPT on timetable.DEPARTMENTAL_INSTRUCTOR (DEPARTMENT_UNIQUEID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1670,7 +1670,7 @@ create index timetable.IDX_DEPT_INSTR_DEPT on timetable.DEPARTMENTAL_INSTRUCTOR 
     maxextents unlimited
   );
 create index timetable.IDX_DEPT_INSTR_POSITION_TYPE on timetable.DEPARTMENTAL_INSTRUCTOR (POS_CODE_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1691,7 +1691,7 @@ create table timetable.ASSIGNED_INSTRUCTORS
   instructor_id      NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1705,7 +1705,7 @@ tablespace SYSTEM
 alter table timetable.ASSIGNED_INSTRUCTORS
   add constraint PK_ASSIGNED_INSTRUCTORS primary key (ASSIGNMENT_ID, INSTRUCTOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1728,7 +1728,7 @@ alter table timetable.ASSIGNED_INSTRUCTORS
   add constraint NN_ASSIGNED_INSTRS_INSTR_ID
   check ("INSTRUCTOR_ID" IS NOT NULL);
 create index timetable.IDX_ASSIGNED_INSTRUCTORS on timetable.ASSIGNED_INSTRUCTORS (ASSIGNMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1749,7 +1749,7 @@ create table timetable.ASSIGNED_ROOMS
   room_id            NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1763,7 +1763,7 @@ tablespace SYSTEM
 alter table timetable.ASSIGNED_ROOMS
   add constraint PK_ASSIGNED_ROOMS primary key (ASSIGNMENT_ID, ROOM_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1783,7 +1783,7 @@ alter table timetable.ASSIGNED_ROOMS
   add constraint NN_ASSIGNED_ROOMS_ROOM_ID
   check ("ROOM_ID" IS NOT NULL);
 create index timetable.IDX_ASSIGNED_ROOMS on timetable.ASSIGNED_ROOMS (ASSIGNMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1808,7 +1808,7 @@ create table timetable.BUILDING
   coordinate_y FLOAT,
   external_uid VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1822,7 +1822,7 @@ tablespace SYSTEM
 alter table timetable.BUILDING
   add constraint PK_BUILDING primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1835,7 +1835,7 @@ alter table timetable.BUILDING
 alter table timetable.BUILDING
   add constraint UK_BUILDING unique (SESSION_ID, ABBREVIATION)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1872,7 +1872,7 @@ create table timetable.PREFERENCE_LEVEL
   pref_name   VARCHAR2(20),
   uniqueid    NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1886,7 +1886,7 @@ tablespace SYSTEM
 alter table timetable.PREFERENCE_LEVEL
   add constraint PK_PREFERENCE_LEVEL primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1899,7 +1899,7 @@ alter table timetable.PREFERENCE_LEVEL
 alter table timetable.PREFERENCE_LEVEL
   add constraint UK_PREFERENCE_LEVEL_PREF_ID unique (PREF_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1929,7 +1929,7 @@ create table timetable.BUILDING_PREF
   distance_from      NUMBER(5),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -1943,7 +1943,7 @@ tablespace SYSTEM
 alter table timetable.BUILDING_PREF
   add constraint PK_BUILDING_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1969,7 +1969,7 @@ alter table timetable.BUILDING_PREF
   add constraint NN_BUILDING_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_BUILDING_PREF_BLDG on timetable.BUILDING_PREF (BLDG_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1980,7 +1980,7 @@ create index timetable.IDX_BUILDING_PREF_BLDG on timetable.BUILDING_PREF (BLDG_I
     maxextents unlimited
   );
 create index timetable.IDX_BUILDING_PREF_LEVEL on timetable.BUILDING_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -1991,7 +1991,7 @@ create index timetable.IDX_BUILDING_PREF_LEVEL on timetable.BUILDING_PREF (PREF_
     maxextents unlimited
   );
 create index timetable.IDX_BUILDING_PREF_OWNER on timetable.BUILDING_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2019,7 +2019,7 @@ create table timetable.SUBJECT_AREA
   external_uid              VARCHAR2(40),
   last_modified_time        TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2033,7 +2033,7 @@ tablespace SYSTEM
 alter table timetable.SUBJECT_AREA
   add constraint PK_SUBJECT_AREA primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2046,7 +2046,7 @@ alter table timetable.SUBJECT_AREA
 alter table timetable.SUBJECT_AREA
   add constraint UK_SUBJECT_AREA unique (SESSION_ID, SUBJECT_AREA_ABBREVIATION)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2084,7 +2084,7 @@ alter table timetable.SUBJECT_AREA
   add constraint NN_SUBJECT_AREA_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_SUBJECT_AREA_DEPT on timetable.SUBJECT_AREA (DEPARTMENT_UNIQUEID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2109,7 +2109,7 @@ create table timetable.TIMETABLE_MANAGER
   email_address      VARCHAR2(200),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2123,7 +2123,7 @@ tablespace SYSTEM
 alter table timetable.TIMETABLE_MANAGER
   add constraint PK_TIMETABLE_MANAGER primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2136,7 +2136,7 @@ alter table timetable.TIMETABLE_MANAGER
 alter table timetable.TIMETABLE_MANAGER
   add constraint UK_TIMETABLE_MANAGER_PUID unique (EXTERNAL_UID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2178,7 +2178,7 @@ create table timetable.CHANGE_LOG
   operation     VARCHAR2(50),
   detail        BLOB
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2192,7 +2192,7 @@ tablespace SYSTEM
 alter table timetable.CHANGE_LOG
   add constraint PK_CHANGE_LOG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2242,7 +2242,7 @@ alter table timetable.CHANGE_LOG
   add constraint NN_CHANGE_LOG_UID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_CHANGE_LOG_DEPARTMENT on timetable.CHANGE_LOG (DEPARTMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2253,7 +2253,7 @@ create index timetable.IDX_CHANGE_LOG_DEPARTMENT on timetable.CHANGE_LOG (DEPART
     maxextents unlimited
   );
 create index timetable.IDX_CHANGE_LOG_OBJECT on timetable.CHANGE_LOG (OBJ_TYPE, OBJ_UID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2264,7 +2264,7 @@ create index timetable.IDX_CHANGE_LOG_OBJECT on timetable.CHANGE_LOG (OBJ_TYPE, 
     maxextents unlimited
   );
 create index timetable.IDX_CHANGE_LOG_SESSIONMGR on timetable.CHANGE_LOG (SESSION_ID, MANAGER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2275,7 +2275,7 @@ create index timetable.IDX_CHANGE_LOG_SESSIONMGR on timetable.CHANGE_LOG (SESSIO
     maxextents unlimited
   );
 create index timetable.IDX_CHANGE_LOG_SUBJAREA on timetable.CHANGE_LOG (SUBJ_AREA_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2299,7 +2299,7 @@ create table timetable.CLASS_INSTRUCTOR
   is_lead            NUMBER(1),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2313,7 +2313,7 @@ tablespace SYSTEM
 alter table timetable.CLASS_INSTRUCTOR
   add constraint PK_CLASS_INSTRUCTOR_UNIQUEID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2345,7 +2345,7 @@ alter table timetable.CLASS_INSTRUCTOR
   add constraint NN_CLASS_INSTRUCTOR_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_CLASS_INSTRUCTOR_CLASS on timetable.CLASS_INSTRUCTOR (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2356,7 +2356,7 @@ create index timetable.IDX_CLASS_INSTRUCTOR_CLASS on timetable.CLASS_INSTRUCTOR 
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_INSTRUCTOR_INSTR on timetable.CLASS_INSTRUCTOR (INSTRUCTOR_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2377,7 +2377,7 @@ create table timetable.STUDENT_STATUS_TYPE
   abbreviation VARCHAR2(20),
   name         VARCHAR2(50)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2391,7 +2391,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_STATUS_TYPE
   add constraint PK_STUDENT_STATUS_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2429,7 +2429,7 @@ create table timetable.STUDENT
   status_change_date  DATE,
   session_id          NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2443,7 +2443,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT
   add constraint PK_STUDENT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2478,7 +2478,7 @@ alter table timetable.STUDENT
   add constraint NN_STUDENT_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_SESSION on timetable.STUDENT (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2503,7 +2503,7 @@ create table timetable.FREE_TIME
   category   NUMBER(10),
   session_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2517,7 +2517,7 @@ tablespace SYSTEM
 alter table timetable.FREE_TIME
   add constraint PK_FREE_TIME primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2566,7 +2566,7 @@ create table timetable.COURSE_DEMAND
   timestamp      DATE,
   free_time_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2580,7 +2580,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_DEMAND
   add constraint PK_COURSE_DEMAND primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2615,7 +2615,7 @@ alter table timetable.COURSE_DEMAND
   add constraint NN_COURSE_DEMAND_WAITLIST
   check ("WAITLIST" IS NOT NULL);
 create index timetable.IDX_COURSE_DEMAND_FREE_TIME on timetable.COURSE_DEMAND (FREE_TIME_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2626,7 +2626,7 @@ create index timetable.IDX_COURSE_DEMAND_FREE_TIME on timetable.COURSE_DEMAND (F
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_DEMAND_STUDENT on timetable.COURSE_DEMAND (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2661,7 +2661,7 @@ create table timetable.COURSE_OFFERING
   lastlike_demand      NUMBER(10) default 0,
   enrollment           NUMBER(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2675,7 +2675,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_OFFERING
   add constraint PK_COURSE_OFFERING primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2688,7 +2688,7 @@ alter table timetable.COURSE_OFFERING
 alter table timetable.COURSE_OFFERING
   add constraint UK_COURSE_OFFERING_SUBJ_CRS unique (COURSE_NBR, SUBJECT_AREA_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2729,7 +2729,7 @@ alter table timetable.COURSE_OFFERING
   add constraint NN_COURSE_OFFERING_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_COURSE_OFFERING_CONTROL on timetable.COURSE_OFFERING (IS_CONTROL)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2740,7 +2740,7 @@ create index timetable.IDX_COURSE_OFFERING_CONTROL on timetable.COURSE_OFFERING 
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_OFFERING_DEMD_OFFR on timetable.COURSE_OFFERING (DEMAND_OFFERING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2751,7 +2751,7 @@ create index timetable.IDX_COURSE_OFFERING_DEMD_OFFR on timetable.COURSE_OFFERIN
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_OFFERING_INSTR_OFFR on timetable.COURSE_OFFERING (INSTR_OFFR_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2775,7 +2775,7 @@ create table timetable.COURSE_REQUEST
   allow_overlap      NUMBER(1),
   credit             NUMBER(10) default (0)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2789,7 +2789,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_REQUEST
   add constraint PK_COURSE_REQUEST primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2824,7 +2824,7 @@ alter table timetable.COURSE_REQUEST
   add constraint NN_COURSE_REQUEST_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_COURSE_REQUEST_DEMAND on timetable.COURSE_REQUEST (COURSE_DEMAND_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2835,7 +2835,7 @@ create index timetable.IDX_COURSE_REQUEST_DEMAND on timetable.COURSE_REQUEST (CO
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_REQUEST_OFFERING on timetable.COURSE_REQUEST (COURSE_OFFERING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2859,7 +2859,7 @@ create table timetable.CLASS_WAITLIST
   type              NUMBER(10) default (0),
   timestamp         DATE
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2873,7 +2873,7 @@ tablespace SYSTEM
 alter table timetable.CLASS_WAITLIST
   add constraint PK_CLASS_WAITLIST primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2911,7 +2911,7 @@ alter table timetable.CLASS_WAITLIST
   add constraint NN_CLASS_WAITLIST_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_CLASS_WAITLIST_CLASS on timetable.CLASS_WAITLIST (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2922,7 +2922,7 @@ create index timetable.IDX_CLASS_WAITLIST_CLASS on timetable.CLASS_WAITLIST (CLA
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_WAITLIST_REQ on timetable.CLASS_WAITLIST (COURSE_REQUEST_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2933,7 +2933,7 @@ create index timetable.IDX_CLASS_WAITLIST_REQ on timetable.CLASS_WAITLIST (COURS
     maxextents unlimited
   );
 create index timetable.IDX_CLASS_WAITLIST_STUDENT on timetable.CLASS_WAITLIST (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2955,7 +2955,7 @@ create table timetable.SOLVER_INFO_DEF
   description    VARCHAR2(1000),
   implementation VARCHAR2(250)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -2969,7 +2969,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_INFO_DEF
   add constraint PK_SOLVER_INFO_DEF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -2997,7 +2997,7 @@ create table timetable.SOLVER_INFO
   solution_id        NUMBER(20),
   assignment_id      NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3011,7 +3011,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_INFO
   add constraint PK_SOLVER_INFO primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3040,7 +3040,7 @@ alter table timetable.SOLVER_INFO
   add constraint NN_SOLVER_INFO_VALUE
   check ("VALUE" IS NOT NULL);
 create index timetable.IDX_SOLVER_INFO on timetable.SOLVER_INFO (ASSIGNMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3051,7 +3051,7 @@ create index timetable.IDX_SOLVER_INFO on timetable.SOLVER_INFO (ASSIGNMENT_ID)
     maxextents unlimited
   );
 create index timetable.IDX_SOLVER_INFO_SOLUTION on timetable.SOLVER_INFO (SOLUTION_ID, SOLVER_INFO_DEF_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3071,7 +3071,7 @@ create table timetable.CONSTRAINT_INFO
   assignment_id  NUMBER(20),
   solver_info_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3085,7 +3085,7 @@ tablespace SYSTEM
 alter table timetable.CONSTRAINT_INFO
   add constraint UK_CONSTRAINT_INFO_SOLV_ASSGN primary key (SOLVER_INFO_ID, ASSIGNMENT_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3108,7 +3108,7 @@ alter table timetable.CONSTRAINT_INFO
   add constraint NN_CONSTRAINT_INFO_SOL_INFO_ID
   check ("SOLVER_INFO_ID" IS NOT NULL);
 create index timetable.IDX_CONSTRAINT_INFO on timetable.CONSTRAINT_INFO (ASSIGNMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3143,7 +3143,7 @@ create table timetable.COURSE_CATALOG
   max_credit          FLOAT,
   frac_credit_allowed NUMBER(1)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3157,7 +3157,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_CATALOG
   add constraint PK_COURSE_CATALOG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3195,7 +3195,7 @@ alter table timetable.COURSE_CATALOG
   add constraint NN_CRS_CATLOG_TITLE
   check ("TITLE" IS NOT NULL);
 create index timetable.IDX_COURSE_CATALOG on timetable.COURSE_CATALOG (SESSION_ID, SUBJECT, COURSE_NBR)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3218,7 +3218,7 @@ create table timetable.COURSE_CREDIT_TYPE
   abbreviation            VARCHAR2(10),
   legacy_crse_master_code VARCHAR2(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3232,7 +3232,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_CREDIT_TYPE
   add constraint PK_COURSE_CREDIT_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3245,7 +3245,7 @@ alter table timetable.COURSE_CREDIT_TYPE
 alter table timetable.COURSE_CREDIT_TYPE
   add constraint UK_COURSE_CREDIT_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3281,7 +3281,7 @@ create table timetable.COURSE_CREDIT_UNIT_CONFIG
   instr_offr_id                  NUMBER(20),
   last_modified_time             TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3295,7 +3295,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_CREDIT_UNIT_CONFIG
   add constraint PK_CRS_CRDT_UNIT_CFG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3330,7 +3330,7 @@ alter table timetable.COURSE_CREDIT_UNIT_CONFIG
   add constraint NN_CRS_CRDT_UNIT_CFG_UNIT_TYPE
   check ("CREDIT_UNIT_TYPE" IS NOT NULL);
 create index timetable.IDX_CRS_CRDT_UNIT_CFG_CRD_TYPE on timetable.COURSE_CREDIT_UNIT_CONFIG (CREDIT_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3341,7 +3341,7 @@ create index timetable.IDX_CRS_CRDT_UNIT_CFG_CRD_TYPE on timetable.COURSE_CREDIT
     maxextents unlimited
   );
 create index timetable.IDX_CRS_CRDT_UNIT_CFG_IO_OWN on timetable.COURSE_CREDIT_UNIT_CONFIG (INSTR_OFFR_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3352,7 +3352,7 @@ create index timetable.IDX_CRS_CRDT_UNIT_CFG_IO_OWN on timetable.COURSE_CREDIT_U
     maxextents unlimited
   );
 create index timetable.IDX_CRS_CRDT_UNIT_CFG_OWNER on timetable.COURSE_CREDIT_UNIT_CONFIG (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3374,7 +3374,7 @@ create table timetable.COURSE_CREDIT_UNIT_TYPE
   label        VARCHAR2(60),
   abbreviation VARCHAR2(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3388,7 +3388,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_CREDIT_UNIT_TYPE
   add constraint PK_CRS_CRDT_UNIT_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3401,7 +3401,7 @@ alter table timetable.COURSE_CREDIT_UNIT_TYPE
 alter table timetable.COURSE_CREDIT_UNIT_TYPE
   add constraint UK_CRS_CRDT_UNIT_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3429,7 +3429,7 @@ create table timetable.COURSE_REQUEST_OPTION
   option_type       NUMBER(10),
   value             BLOB
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3443,7 +3443,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_REQUEST_OPTION
   add constraint PK_COURSE_REQUEST_OPTION primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3469,7 +3469,7 @@ alter table timetable.COURSE_REQUEST_OPTION
   add constraint NN_COURSE_REQUEST_OPT_VALUE
   check ("VALUE" IS NOT NULL);
 create index timetable.IDX_COURSE_REQUEST_OPTION_REQ on timetable.COURSE_REQUEST_OPTION (COURSE_REQUEST_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3498,7 +3498,7 @@ create table timetable.COURSE_RESERVATION
   requested            NUMBER(10),
   last_modified_time   TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3512,7 +3512,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_RESERVATION
   add constraint PK_COURSE_RESV primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3550,7 +3550,7 @@ alter table timetable.COURSE_RESERVATION
   add constraint NN_COURSE_RESV_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_COURSE_RESV_CRS_OFFR on timetable.COURSE_RESERVATION (COURSE_OFFERING)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3561,7 +3561,7 @@ create index timetable.IDX_COURSE_RESV_CRS_OFFR on timetable.COURSE_RESERVATION 
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_RESV_OWNER on timetable.COURSE_RESERVATION (OWNER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3572,7 +3572,7 @@ create index timetable.IDX_COURSE_RESV_OWNER on timetable.COURSE_RESERVATION (OW
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_RESV_OWNER_CLS on timetable.COURSE_RESERVATION (OWNER_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3583,7 +3583,7 @@ create index timetable.IDX_COURSE_RESV_OWNER_CLS on timetable.COURSE_RESERVATION
     maxextents unlimited
   );
 create index timetable.IDX_COURSE_RESV_TYPE on timetable.COURSE_RESERVATION (RESERVATION_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3610,7 +3610,7 @@ create table timetable.COURSE_SUBPART_CREDIT
   max_credit          FLOAT,
   frac_credit_allowed NUMBER(1)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3624,7 +3624,7 @@ tablespace SYSTEM
 alter table timetable.COURSE_SUBPART_CREDIT
   add constraint PK_COURSE_SUBPART_CREDIT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3667,7 +3667,7 @@ create table timetable.CRSE_CREDIT_FORMAT
   label        VARCHAR2(60),
   abbreviation VARCHAR2(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3681,7 +3681,7 @@ tablespace SYSTEM
 alter table timetable.CRSE_CREDIT_FORMAT
   add constraint PK_CRSE_CREDIT_FORMAT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3694,7 +3694,7 @@ alter table timetable.CRSE_CREDIT_FORMAT
 alter table timetable.CRSE_CREDIT_FORMAT
   add constraint UK_CRSE_CREDIT_FORMAT_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -3962,7 +3962,7 @@ create table timetable.POS_MAJOR
   external_uid VARCHAR2(20),
   session_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -3976,7 +3976,7 @@ tablespace SYSTEM
 alter table timetable.POS_MAJOR
   add constraint PK_POS_MAJOR primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4135,7 +4135,7 @@ create table timetable.DATE_PATTERN_DEPT
   dept_id    NUMBER(20),
   pattern_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4149,7 +4149,7 @@ tablespace SYSTEM
 alter table timetable.DATE_PATTERN_DEPT
   add constraint PK_DATE_PATTERN_DEPT primary key (DEPT_ID, PATTERN_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4182,7 +4182,7 @@ create table timetable.DEMAND_OFFR_TYPE
   reference VARCHAR2(20),
   label     VARCHAR2(60)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4196,7 +4196,7 @@ tablespace SYSTEM
 alter table timetable.DEMAND_OFFR_TYPE
   add constraint PK_DEMAND_OFFR_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4209,7 +4209,7 @@ alter table timetable.DEMAND_OFFR_TYPE
 alter table timetable.DEMAND_OFFR_TYPE
   add constraint UK_DEMAND_OFFR_TYPE_LABEL unique (LABEL)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4222,7 +4222,7 @@ alter table timetable.DEMAND_OFFR_TYPE
 alter table timetable.DEMAND_OFFR_TYPE
   add constraint UK_DEMAND_OFFR_TYPE_REF unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4248,7 +4248,7 @@ create table timetable.DEPT_TO_TT_MGR
   timetable_mgr_id NUMBER(20),
   department_id    NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4262,7 +4262,7 @@ tablespace SYSTEM
 alter table timetable.DEPT_TO_TT_MGR
   add constraint PK_DEPT_TO_TT_MGR_UID primary key (TIMETABLE_MGR_ID, DEPARTMENT_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4297,7 +4297,7 @@ create table timetable.DESIGNATOR
   code               VARCHAR2(3),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4311,7 +4311,7 @@ tablespace SYSTEM
 alter table timetable.DESIGNATOR
   add constraint PK_DESIGNATOR primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4324,7 +4324,7 @@ alter table timetable.DESIGNATOR
 alter table timetable.DESIGNATOR
   add constraint UK_DESIGNATOR_CODE unique (SUBJECT_AREA_ID, INSTRUCTOR_ID, CODE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4370,7 +4370,7 @@ create table timetable.DISTRIBUTION_TYPE
   instructor_pref     NUMBER(1) default (0),
   exam_pref           NUMBER(1) default 0
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4384,7 +4384,7 @@ tablespace SYSTEM
 alter table timetable.DISTRIBUTION_TYPE
   add constraint PK_DISTRIBUTION_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4397,7 +4397,7 @@ alter table timetable.DISTRIBUTION_TYPE
 alter table timetable.DISTRIBUTION_TYPE
   add constraint UK_DISTRIBUTION_TYPE_REQ_ID unique (REQ_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4434,7 +4434,7 @@ create table timetable.DISTRIBUTION_PREF
   last_modified_time  TIMESTAMP(6),
   uid_rolled_fwd_from NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4448,7 +4448,7 @@ tablespace SYSTEM
 alter table timetable.DISTRIBUTION_PREF
   add constraint PK_DISTRIBUTION_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4474,7 +4474,7 @@ alter table timetable.DISTRIBUTION_PREF
   add constraint NN_DISTRIBUTION_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_DISTRIBUTION_PREF_LEVEL on timetable.DISTRIBUTION_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4485,7 +4485,7 @@ create index timetable.IDX_DISTRIBUTION_PREF_LEVEL on timetable.DISTRIBUTION_PRE
     maxextents unlimited
   );
 create index timetable.IDX_DISTRIBUTION_PREF_OWNER on timetable.DISTRIBUTION_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4496,7 +4496,7 @@ create index timetable.IDX_DISTRIBUTION_PREF_OWNER on timetable.DISTRIBUTION_PRE
     maxextents unlimited
   );
 create index timetable.IDX_DISTRIBUTION_PREF_TYPE on timetable.DISTRIBUTION_PREF (DIST_TYPE_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4519,7 +4519,7 @@ create table timetable.DISTRIBUTION_OBJECT
   pref_group_id      NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4533,7 +4533,7 @@ tablespace SYSTEM
 alter table timetable.DISTRIBUTION_OBJECT
   add constraint PK_DISTRIBUTION_OBJECT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4556,7 +4556,7 @@ alter table timetable.DISTRIBUTION_OBJECT
   add constraint NN_DISTRIBUTION_OBJ_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_DISTRIBUTION_OBJECT_PG on timetable.DISTRIBUTION_OBJECT (PREF_GROUP_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4567,7 +4567,7 @@ create index timetable.IDX_DISTRIBUTION_OBJECT_PG on timetable.DISTRIBUTION_OBJE
     maxextents unlimited
   );
 create index timetable.IDX_DISTRIBUTION_OBJECT_PREF on timetable.DISTRIBUTION_OBJECT (DIST_PREF_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4587,7 +4587,7 @@ create table timetable.DIST_TYPE_DEPT
   dist_type_id NUMBER(19),
   dept_id      NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4601,7 +4601,7 @@ tablespace SYSTEM
 alter table timetable.DIST_TYPE_DEPT
   add constraint PK_DIST_TYPE_DEPT primary key (DIST_TYPE_ID, DEPT_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4638,7 +4638,7 @@ create table timetable.EVENT_CONTACT
   middlename  VARCHAR2(100),
   lastname    VARCHAR2(100)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4652,7 +4652,7 @@ tablespace SYSTEM
 alter table timetable.EVENT_CONTACT
   add constraint PK_EVENT_CONTACT_UNIQUEID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4682,7 +4682,7 @@ create table timetable.EXAM_PERIOD
   event_start_offset NUMBER(10) default 0 not null,
   event_stop_offset  NUMBER(10) default 0 not null
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4696,7 +4696,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_PERIOD
   add constraint PK_EXAM_PERIOD primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4752,7 +4752,7 @@ create table timetable.EXAM
   exam_size           NUMBER(10),
   print_offset        NUMBER(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4766,7 +4766,7 @@ tablespace SYSTEM
 alter table timetable.EXAM
   add constraint PK_EXAM primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4808,7 +4808,7 @@ create table timetable.SPONSORING_ORGANIZATION
   name     VARCHAR2(100),
   email    VARCHAR2(200)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4822,7 +4822,7 @@ tablespace SYSTEM
 alter table timetable.SPONSORING_ORGANIZATION
   add constraint PK_SPONSORING_ORGANIZATION primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4858,7 +4858,7 @@ create table timetable.EVENT
   email           VARCHAR2(1000),
   sponsor_org_id  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4872,7 +4872,7 @@ tablespace SYSTEM
 alter table timetable.EVENT
   add constraint PK_EVENT_UNIQUEID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4898,7 +4898,7 @@ alter table timetable.EVENT
   add constraint NN_EVENT_TYPE
   check (event_type is not null);
 create index timetable.IDX_EVENT_CLASS on timetable.EVENT (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4909,7 +4909,7 @@ create index timetable.IDX_EVENT_CLASS on timetable.EVENT (CLASS_ID)
     maxextents unlimited
   );
 create index timetable.IDX_EVENT_EXAM on timetable.EVENT (EXAM_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -4929,7 +4929,7 @@ create table timetable.EVENT_JOIN_EVENT_CONTACT
   event_id         NUMBER(20),
   event_contact_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4967,7 +4967,7 @@ create table timetable.EVENT_NOTE
   uname      VARCHAR2(100),
   meetings   VARCHAR2(2000)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -4981,7 +4981,7 @@ tablespace SYSTEM
 alter table timetable.EVENT_NOTE
   add constraint PK_EVENT_NOTE_UNIQUEID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5019,7 +5019,7 @@ create table timetable.EXACT_TIME_MINS
   nr_slots   NUMBER(4),
   break_time NUMBER(4)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5033,7 +5033,7 @@ tablespace SYSTEM
 alter table timetable.EXACT_TIME_MINS
   add constraint PK_EXACT_TIME_MINS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5059,7 +5059,7 @@ alter table timetable.EXACT_TIME_MINS
   add constraint NN_EXACT_TIME_MINS_UID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_EXACT_TIME_MINS on timetable.EXACT_TIME_MINS (MINS_MIN, MINS_MAX)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5079,7 +5079,7 @@ create table timetable.EXAM_INSTRUCTOR
   exam_id       NUMBER(20),
   instructor_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5093,7 +5093,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_INSTRUCTOR
   add constraint PK_EXAM_INSTRUCTOR primary key (EXAM_ID, INSTRUCTOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5127,7 +5127,7 @@ create table timetable.EXAM_LOCATION_PREF
   pref_level_id NUMBER(20),
   period_id     NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5141,7 +5141,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_LOCATION_PREF
   add constraint PK_EXAM_LOCATION_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5170,7 +5170,7 @@ alter table timetable.EXAM_LOCATION_PREF
   add constraint NN_EXAM_LOCATION_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_EXAM_LOCATION_PREF on timetable.EXAM_LOCATION_PREF (LOCATION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5193,7 +5193,7 @@ create table timetable.EXAM_OWNER
   owner_type NUMBER(10),
   course_id  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5207,7 +5207,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_OWNER
   add constraint PK_EXAM_OWNER primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5239,7 +5239,7 @@ alter table timetable.EXAM_OWNER
   add constraint NN_EXAM_OWNER_UNIQUE_ID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_EXAM_OWNER_COURSE on timetable.EXAM_OWNER (COURSE_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5250,7 +5250,7 @@ create index timetable.IDX_EXAM_OWNER_COURSE on timetable.EXAM_OWNER (COURSE_ID)
     maxextents unlimited
   );
 create index timetable.IDX_EXAM_OWNER_EXAM on timetable.EXAM_OWNER (EXAM_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5261,7 +5261,7 @@ create index timetable.IDX_EXAM_OWNER_EXAM on timetable.EXAM_OWNER (EXAM_ID)
     maxextents unlimited
   );
 create index timetable.IDX_EXAM_OWNER_OWNER on timetable.EXAM_OWNER (OWNER_ID, OWNER_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5283,7 +5283,7 @@ create table timetable.EXAM_PERIOD_PREF
   pref_level_id NUMBER(20),
   period_id     NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5297,7 +5297,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_PERIOD_PREF
   add constraint PK_EXAM_PERIOD_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5335,7 +5335,7 @@ create table timetable.EXAM_ROOM_ASSIGNMENT
   exam_id     NUMBER(20),
   location_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5349,7 +5349,7 @@ tablespace SYSTEM
 alter table timetable.EXAM_ROOM_ASSIGNMENT
   add constraint PK_EXAM_ROOM_ASSIGNMENT primary key (EXAM_ID, LOCATION_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5383,7 +5383,7 @@ create table timetable.EXTERNAL_BUILDING
   coordinate_y FLOAT,
   display_name VARCHAR2(100)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5397,7 +5397,7 @@ tablespace SYSTEM
 alter table timetable.EXTERNAL_BUILDING
   add constraint PK_EXTERNAL_BLDG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5414,7 +5414,7 @@ alter table timetable.EXTERNAL_BUILDING
   add constraint NN_EXTERNAL_BLDG_SESSION_ID
   check ("SESSION_ID" IS NOT NULL);
 create index timetable.IDX_EXTERNAL_BUILDING on timetable.EXTERNAL_BUILDING (SESSION_ID, ABBREVIATION)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5437,7 +5437,7 @@ create table timetable.ROOM_TYPE
   ord       NUMBER(10),
   is_room   NUMBER(1) default 1
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5451,7 +5451,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_TYPE
   add constraint PK_ROOM_TYPE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5496,7 +5496,7 @@ create table timetable.EXTERNAL_ROOM
   exam_capacity    NUMBER(10),
   room_type        NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5510,7 +5510,7 @@ tablespace SYSTEM
 alter table timetable.EXTERNAL_ROOM
   add constraint PK_EXTERNAL_ROOM primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5545,7 +5545,7 @@ alter table timetable.EXTERNAL_ROOM
   add constraint NN_EXTERNAL_ROOM_TYPE
   check (room_type is not null);
 create index timetable.IDX_EXTERNAL_ROOM on timetable.EXTERNAL_ROOM (EXTERNAL_BLDG_ID, ROOM_NUMBER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5568,7 +5568,7 @@ create table timetable.EXTERNAL_ROOM_DEPARTMENT
   percent          NUMBER(10),
   assignment_type  VARCHAR2(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5582,7 +5582,7 @@ tablespace SYSTEM
 alter table timetable.EXTERNAL_ROOM_DEPARTMENT
   add constraint PK_EXTERNAL_ROOM_DEPT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5619,7 +5619,7 @@ create table timetable.EXTERNAL_ROOM_FEATURE
   name             VARCHAR2(20),
   value            VARCHAR2(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5633,7 +5633,7 @@ tablespace SYSTEM
 alter table timetable.EXTERNAL_ROOM_FEATURE
   add constraint PK_EXTERNAL_ROOM_FEATURE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5670,7 +5670,7 @@ create table timetable.HISTORY
   new_number VARCHAR2(20),
   session_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5684,7 +5684,7 @@ tablespace SYSTEM
 alter table timetable.HISTORY
   add constraint PK_HISTORY primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5713,7 +5713,7 @@ alter table timetable.HISTORY
   add constraint NN_HISTORY_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_HISTORY_SESSION on timetable.HISTORY (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5750,7 +5750,7 @@ create table timetable.INDIVIDUAL_RESERVATION
   owner_class_id     VARCHAR2(1),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5764,7 +5764,7 @@ tablespace SYSTEM
 alter table timetable.INDIVIDUAL_RESERVATION
   add constraint PK_INDIVIDUAL_RESV primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5799,7 +5799,7 @@ alter table timetable.INDIVIDUAL_RESERVATION
   add constraint NN_INDIVIDUAL_RESV_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_INDIVIDUAL_RESV_OWNER on timetable.INDIVIDUAL_RESERVATION (OWNER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5810,7 +5810,7 @@ create index timetable.IDX_INDIVIDUAL_RESV_OWNER on timetable.INDIVIDUAL_RESERVA
     maxextents unlimited
   );
 create index timetable.IDX_INDIVIDUAL_RESV_OWNER_CLS on timetable.INDIVIDUAL_RESERVATION (OWNER_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5821,7 +5821,7 @@ create index timetable.IDX_INDIVIDUAL_RESV_OWNER_CLS on timetable.INDIVIDUAL_RES
     maxextents unlimited
   );
 create index timetable.IDX_INDIVIDUAL_RESV_TYPE on timetable.INDIVIDUAL_RESERVATION (RESERVATION_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5844,7 +5844,7 @@ create table timetable.JENRL
   class1_id   NUMBER(20),
   class2_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5858,7 +5858,7 @@ tablespace SYSTEM
 alter table timetable.JENRL
   add constraint PK_JENRL primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5893,7 +5893,7 @@ alter table timetable.JENRL
   add constraint NN_JENRL_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_JENRL on timetable.JENRL (SOLUTION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5904,7 +5904,7 @@ create index timetable.IDX_JENRL on timetable.JENRL (SOLUTION_ID)
     maxextents unlimited
   );
 create index timetable.IDX_JENRL_CLASS1 on timetable.JENRL (CLASS1_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5915,7 +5915,7 @@ create index timetable.IDX_JENRL_CLASS1 on timetable.JENRL (CLASS1_ID)
     maxextents unlimited
   );
 create index timetable.IDX_JENRL_CLASS2 on timetable.JENRL (CLASS2_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5939,7 +5939,7 @@ create table timetable.LASTLIKE_COURSE_DEMAND
   priority        NUMBER(10) default (0),
   course_perm_id  VARCHAR2(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -5953,7 +5953,7 @@ tablespace SYSTEM
 alter table timetable.LASTLIKE_COURSE_DEMAND
   add constraint PK_LASTLIKE_COURSE_DEMAND primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5985,7 +5985,7 @@ alter table timetable.LASTLIKE_COURSE_DEMAND
   add constraint NN_LL_COURSE_DEMAND_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_LL_COURSE_DEMAND_COURSE on timetable.LASTLIKE_COURSE_DEMAND (SUBJECT_AREA_ID, COURSE_NBR)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -5996,7 +5996,7 @@ create index timetable.IDX_LL_COURSE_DEMAND_COURSE on timetable.LASTLIKE_COURSE_
     maxextents unlimited
   );
 create index timetable.IDX_LL_COURSE_DEMAND_PERMID on timetable.LASTLIKE_COURSE_DEMAND (COURSE_PERM_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6007,7 +6007,7 @@ create index timetable.IDX_LL_COURSE_DEMAND_PERMID on timetable.LASTLIKE_COURSE_
     maxextents unlimited
   );
 create index timetable.IDX_LL_COURSE_DEMAND_STUDENT on timetable.LASTLIKE_COURSE_DEMAND (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6030,7 +6030,7 @@ create table timetable.SETTINGS
   allowed_values VARCHAR2(500),
   description    VARCHAR2(100)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6044,7 +6044,7 @@ tablespace SYSTEM
 alter table timetable.SETTINGS
   add constraint PK_SETTINGS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6081,7 +6081,7 @@ create table timetable.MANAGER_SETTINGS
   value         VARCHAR2(100),
   user_uniqueid NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6095,7 +6095,7 @@ tablespace SYSTEM
 alter table timetable.MANAGER_SETTINGS
   add constraint PK_MANAGER_SETTINGS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6124,7 +6124,7 @@ alter table timetable.MANAGER_SETTINGS
   add constraint NN_MANAGER_SETTINGS_VALUE
   check ("VALUE" IS NOT NULL);
 create index timetable.IDX_MANAGER_SETTINGS_KEY on timetable.MANAGER_SETTINGS (KEY_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6135,7 +6135,7 @@ create index timetable.IDX_MANAGER_SETTINGS_KEY on timetable.MANAGER_SETTINGS (K
     maxextents unlimited
   );
 create index timetable.IDX_MANAGER_SETTINGS_MANAGER on timetable.MANAGER_SETTINGS (USER_UNIQUEID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6163,7 +6163,7 @@ create table timetable.MEETING
   class_can_override NUMBER(1),
   approved_date      DATE
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6177,7 +6177,7 @@ tablespace SYSTEM
 alter table timetable.MEETING
   add constraint PK_MEETING_UNIQUEID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6231,7 +6231,7 @@ create table timetable.NON_UNIVERSITY_LOCATION
   exam_type         NUMBER(10) default 0,
   room_type         NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6245,7 +6245,7 @@ tablespace SYSTEM
 alter table timetable.NON_UNIVERSITY_LOCATION
   add constraint PK_NON_UNIV_LOC primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6283,7 +6283,7 @@ alter table timetable.NON_UNIVERSITY_LOCATION
   add constraint NN_NON_UNIV_LOC_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_LOCATION_PERMID on timetable.NON_UNIVERSITY_LOCATION (PERMANENT_ID, SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6294,7 +6294,7 @@ create index timetable.IDX_LOCATION_PERMID on timetable.NON_UNIVERSITY_LOCATION 
     maxextents unlimited
   );
 create index timetable.IDX_NON_UNIV_LOC_SESSION on timetable.NON_UNIVERSITY_LOCATION (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6317,7 +6317,7 @@ create table timetable.OFFR_GROUP
   description   VARCHAR2(200),
   department_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6331,7 +6331,7 @@ tablespace SYSTEM
 alter table timetable.OFFR_GROUP
   add constraint PK_OFFR_GROUP_UID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6357,7 +6357,7 @@ alter table timetable.OFFR_GROUP
   add constraint NN_OFFR_GROUP_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_OFFR_GROUP_DEPT on timetable.OFFR_GROUP (DEPARTMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6368,7 +6368,7 @@ create index timetable.IDX_OFFR_GROUP_DEPT on timetable.OFFR_GROUP (DEPARTMENT_I
     maxextents unlimited
   );
 create index timetable.IDX_OFFR_GROUP_SESSION on timetable.OFFR_GROUP (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6388,7 +6388,7 @@ create table timetable.OFFR_GROUP_OFFERING
   offr_group_id     NUMBER(20),
   instr_offering_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6402,7 +6402,7 @@ tablespace SYSTEM
 alter table timetable.OFFR_GROUP_OFFERING
   add constraint PK_OFFR_GROUP_OFFERING primary key (OFFR_GROUP_ID, INSTR_OFFERING_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6434,7 +6434,7 @@ create table timetable.POSITION_CODE_TO_TYPE
   position_code CHAR(5),
   pos_code_type NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6448,7 +6448,7 @@ tablespace SYSTEM
 alter table timetable.POSITION_CODE_TO_TYPE
   add constraint PK_POS_CODE_TO_TYPE primary key (POSITION_CODE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6468,7 +6468,7 @@ alter table timetable.POSITION_CODE_TO_TYPE
   add constraint NN_POS_CODE_TO_TYPE_POS_CODE
   check ("POSITION_CODE" IS NOT NULL);
 create index timetable.IDX_POS_CODE_TO_TYPE_TYPE on timetable.POSITION_CODE_TO_TYPE (POS_CODE_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6488,7 +6488,7 @@ create table timetable.POS_ACAD_AREA_MAJOR
   academic_area_id NUMBER(20),
   major_id         NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6502,7 +6502,7 @@ tablespace SYSTEM
 alter table timetable.POS_ACAD_AREA_MAJOR
   add constraint PK_POS_ACAD_AREA_MAJOR primary key (ACADEMIC_AREA_ID, MAJOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6537,7 +6537,7 @@ create table timetable.POS_MINOR
   external_uid VARCHAR2(40),
   session_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6551,7 +6551,7 @@ tablespace SYSTEM
 alter table timetable.POS_MINOR
   add constraint PK_POS_MINOR primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6586,7 +6586,7 @@ create table timetable.POS_ACAD_AREA_MINOR
   academic_area_id NUMBER(20),
   minor_id         NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6600,7 +6600,7 @@ tablespace SYSTEM
 alter table timetable.POS_ACAD_AREA_MINOR
   add constraint PK_POS_ACAD_AREA_MINOR primary key (ACADEMIC_AREA_ID, MINOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6642,7 +6642,7 @@ create table timetable.POS_RESERVATION
   requested            NUMBER(10),
   last_modified_time   TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6656,7 +6656,7 @@ tablespace SYSTEM
 alter table timetable.POS_RESERVATION
   add constraint PK_POS_RESV primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6697,7 +6697,7 @@ alter table timetable.POS_RESERVATION
   add constraint NN_POS_RESV_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_POS_RESV_ACAD_CLASS on timetable.POS_RESERVATION (ACAD_CLASSIFICATION)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6708,7 +6708,7 @@ create index timetable.IDX_POS_RESV_ACAD_CLASS on timetable.POS_RESERVATION (ACA
     maxextents unlimited
   );
 create index timetable.IDX_POS_RESV_MAJOR on timetable.POS_RESERVATION (POS_MAJOR)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6719,7 +6719,7 @@ create index timetable.IDX_POS_RESV_MAJOR on timetable.POS_RESERVATION (POS_MAJO
     maxextents unlimited
   );
 create index timetable.IDX_POS_RESV_OWNER on timetable.POS_RESERVATION (OWNER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6730,7 +6730,7 @@ create index timetable.IDX_POS_RESV_OWNER on timetable.POS_RESERVATION (OWNER)
     maxextents unlimited
   );
 create index timetable.IDX_POS_RESV_OWNER_CLS on timetable.POS_RESERVATION (OWNER_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6741,7 +6741,7 @@ create index timetable.IDX_POS_RESV_OWNER_CLS on timetable.POS_RESERVATION (OWNE
     maxextents unlimited
   );
 create index timetable.IDX_POS_RESV_TYPE on timetable.POS_RESERVATION (RESERVATION_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6764,7 +6764,7 @@ create table timetable.RELATED_COURSE_INFO
   owner_type NUMBER(10),
   course_id  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6778,7 +6778,7 @@ tablespace SYSTEM
 alter table timetable.RELATED_COURSE_INFO
   add constraint PK_RELATED_CRS_INFO primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6810,7 +6810,7 @@ alter table timetable.RELATED_COURSE_INFO
   add constraint NN_REL_CRS_INFO_UNIQUE_ID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_EVENT_OWNER_EVENT on timetable.RELATED_COURSE_INFO (EVENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6821,7 +6821,7 @@ create index timetable.IDX_EVENT_OWNER_EVENT on timetable.RELATED_COURSE_INFO (E
     maxextents unlimited
   );
 create index timetable.IDX_EVENT_OWNER_OWNER on timetable.RELATED_COURSE_INFO (OWNER_ID, OWNER_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6842,7 +6842,7 @@ create table timetable.ROLES
   reference VARCHAR2(20),
   abbv      VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6856,7 +6856,7 @@ tablespace SYSTEM
 alter table timetable.ROLES
   add constraint PK_ROLES primary key (ROLE_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6869,7 +6869,7 @@ alter table timetable.ROLES
 alter table timetable.ROLES
   add constraint UK_ROLES_ABBV unique (ABBV)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6882,7 +6882,7 @@ alter table timetable.ROLES
 alter table timetable.ROLES
   add constraint UK_ROLES_REFERENCE unique (REFERENCE)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6927,7 +6927,7 @@ create table timetable.ROOM
   exam_type         NUMBER(10) default 0,
   room_type         NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -6941,7 +6941,7 @@ tablespace SYSTEM
 alter table timetable.ROOM
   add constraint PK_ROOM primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6954,7 +6954,7 @@ alter table timetable.ROOM
 alter table timetable.ROOM
   add constraint UK_ROOM unique (SESSION_ID, BUILDING_ID, ROOM_NUMBER)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -6998,7 +6998,7 @@ alter table timetable.ROOM
   add constraint NN_ROOM_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_BUILDING on timetable.ROOM (BUILDING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7009,7 +7009,7 @@ create index timetable.IDX_ROOM_BUILDING on timetable.ROOM (BUILDING_ID)
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_PERMID on timetable.ROOM (PERMANENT_ID, SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7031,7 +7031,7 @@ create table timetable.ROOM_DEPT
   department_id NUMBER(20),
   is_control    NUMBER(1) default 0
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7045,7 +7045,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_DEPT
   add constraint PK_ROOM_DEPT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7071,7 +7071,7 @@ alter table timetable.ROOM_DEPT
   add constraint NN_ROOM_DEPT_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_DEPT_DEPT on timetable.ROOM_DEPT (DEPARTMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7082,7 +7082,7 @@ create index timetable.IDX_ROOM_DEPT_DEPT on timetable.ROOM_DEPT (DEPARTMENT_ID)
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_DEPT_ROOM on timetable.ROOM_DEPT (ROOM_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7107,7 +7107,7 @@ create table timetable.ROOM_FEATURE
   department_id NUMBER(20),
   abbv          VARCHAR2(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7121,7 +7121,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_FEATURE
   add constraint PK_ROOM_FEATURE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7144,7 +7144,7 @@ alter table timetable.ROOM_FEATURE
   add constraint NN_ROOM_FEATURE_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_FEATURE_DEPT on timetable.ROOM_FEATURE (DEPARTMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7167,7 +7167,7 @@ create table timetable.ROOM_FEATURE_PREF
   room_feature_id    NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7181,7 +7181,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_FEATURE_PREF
   add constraint PK_ROOM_FEAT_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7207,7 +7207,7 @@ alter table timetable.ROOM_FEATURE_PREF
   add constraint NN_ROOM_FEAT_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_FEAT_PREF_LEVEL on timetable.ROOM_FEATURE_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7218,7 +7218,7 @@ create index timetable.IDX_ROOM_FEAT_PREF_LEVEL on timetable.ROOM_FEATURE_PREF (
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_FEAT_PREF_OWNER on timetable.ROOM_FEATURE_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7229,7 +7229,7 @@ create index timetable.IDX_ROOM_FEAT_PREF_OWNER on timetable.ROOM_FEATURE_PREF (
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_FEAT_PREF_ROOM_FEAT on timetable.ROOM_FEATURE_PREF (ROOM_FEATURE_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7255,7 +7255,7 @@ create table timetable.ROOM_GROUP
   department_id NUMBER(20),
   abbv          VARCHAR2(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7269,7 +7269,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_GROUP
   add constraint PK_ROOM_GROUP_UID primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7301,7 +7301,7 @@ alter table timetable.ROOM_GROUP
   add constraint NN_ROOM_GROUP_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_GROUP_DEPT on timetable.ROOM_GROUP (DEPARTMENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7312,7 +7312,7 @@ create index timetable.IDX_ROOM_GROUP_DEPT on timetable.ROOM_GROUP (DEPARTMENT_I
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_GROUP_SESSION on timetable.ROOM_GROUP (SESSION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7335,7 +7335,7 @@ create table timetable.ROOM_GROUP_PREF
   room_group_id      NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7349,7 +7349,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_GROUP_PREF
   add constraint PK_ROOM_GROUP_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7375,7 +7375,7 @@ alter table timetable.ROOM_GROUP_PREF
   add constraint NN_ROOM_GROUP_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_GROUP_PREF_LEVEL on timetable.ROOM_GROUP_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7386,7 +7386,7 @@ create index timetable.IDX_ROOM_GROUP_PREF_LEVEL on timetable.ROOM_GROUP_PREF (P
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_GROUP_PREF_OWNER on timetable.ROOM_GROUP_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7397,7 +7397,7 @@ create index timetable.IDX_ROOM_GROUP_PREF_OWNER on timetable.ROOM_GROUP_PREF (O
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_GROUP_PREF_ROOM_GRP on timetable.ROOM_GROUP_PREF (ROOM_GROUP_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7417,7 +7417,7 @@ create table timetable.ROOM_GROUP_ROOM
   room_group_id NUMBER(20),
   room_id       NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7431,7 +7431,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_GROUP_ROOM
   add constraint PK_ROOM_GROUP_ROOM primary key (ROOM_GROUP_ID, ROOM_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7460,7 +7460,7 @@ create table timetable.ROOM_JOIN_ROOM_FEATURE
   room_id    NUMBER(20),
   feature_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7474,7 +7474,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_JOIN_ROOM_FEATURE
   add constraint UK_ROOM_JOIN_ROOM_FEAT_RM_FEAT unique (ROOM_ID, FEATURE_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7506,7 +7506,7 @@ create table timetable.ROOM_PREF
   room_id            NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7520,7 +7520,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_PREF
   add constraint PK_ROOM_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7543,7 +7543,7 @@ alter table timetable.ROOM_PREF
   add constraint NN_ROOM_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_ROOM_PREF_LEVEL on timetable.ROOM_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7554,7 +7554,7 @@ create index timetable.IDX_ROOM_PREF_LEVEL on timetable.ROOM_PREF (PREF_LEVEL_ID
     maxextents unlimited
   );
 create index timetable.IDX_ROOM_PREF_OWNER on timetable.ROOM_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7576,7 +7576,7 @@ create table timetable.ROOM_TYPE_OPTION
   status     NUMBER(10),
   message    VARCHAR2(200)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7590,7 +7590,7 @@ tablespace SYSTEM
 alter table timetable.ROOM_TYPE_OPTION
   add constraint PK_ROOM_TYPE_OPTION primary key (ROOM_TYPE, SESSION_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7627,7 +7627,7 @@ create table timetable.SECTIONING_INFO
   nbr_exp_students  FLOAT,
   nbr_hold_students FLOAT
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7641,7 +7641,7 @@ tablespace SYSTEM
 alter table timetable.SECTIONING_INFO
   add constraint PK_SECTIONING_INFO primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7735,7 +7735,7 @@ create table timetable.SOLVER_GR_TO_TT_MGR
   solver_group_id  NUMBER(20),
   timetable_mgr_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7749,7 +7749,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_GR_TO_TT_MGR
   add constraint PK_SOLVER_GR_TO_TT_MGR primary key (SOLVER_GROUP_ID, TIMETABLE_MGR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7785,7 +7785,7 @@ create table timetable.SOLVER_PARAMETER_GROUP
   ord         NUMBER(10),
   param_type  NUMBER(10) default 0
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7799,7 +7799,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_PARAMETER_GROUP
   add constraint PK_SOLVER_PARAM_GROUP primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7828,7 +7828,7 @@ create table timetable.SOLVER_PARAMETER_DEF
   visible               NUMBER(1),
   solver_param_group_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7842,7 +7842,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_PARAMETER_DEF
   add constraint PK_SOLV_PARAM_DEF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7862,7 +7862,7 @@ alter table timetable.SOLVER_PARAMETER_DEF
   add constraint NN_SOLV_PARAM_DEF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_SOLV_PARAM_DEF_GR on timetable.SOLVER_PARAMETER_DEF (SOLVER_PARAM_GROUP_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7884,7 +7884,7 @@ create table timetable.SOLVER_PREDEF_SETTING
   description VARCHAR2(1000),
   appearance  NUMBER(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7898,7 +7898,7 @@ tablespace SYSTEM
 alter table timetable.SOLVER_PREDEF_SETTING
   add constraint PK_SOLV_PREDEF_SETTG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7924,7 +7924,7 @@ create table timetable.SOLVER_PARAMETER
   solution_id              NUMBER(20),
   solver_predef_setting_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -7951,7 +7951,7 @@ alter table timetable.SOLVER_PARAMETER
   add constraint NN_SOLVER_PARAM_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_SOLVER_PARAM_DEF on timetable.SOLVER_PARAMETER (SOLVER_PARAM_DEF_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7962,7 +7962,7 @@ create index timetable.IDX_SOLVER_PARAM_DEF on timetable.SOLVER_PARAMETER (SOLVE
     maxextents unlimited
   );
 create index timetable.IDX_SOLVER_PARAM_PREDEF on timetable.SOLVER_PARAMETER (SOLVER_PREDEF_SETTING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7973,7 +7973,7 @@ create index timetable.IDX_SOLVER_PARAM_PREDEF on timetable.SOLVER_PARAMETER (SO
     maxextents unlimited
   );
 create index timetable.IDX_SOLVER_PARAM_SOLUTION on timetable.SOLVER_PARAMETER (SOLUTION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -7999,7 +7999,7 @@ create table timetable.STAFF
   dept         VARCHAR2(50),
   email        VARCHAR2(200)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8013,7 +8013,7 @@ tablespace SYSTEM
 alter table timetable.STAFF
   add constraint PK_STAFF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8040,7 +8040,7 @@ create table timetable.STANDARD_EVENT_NOTE
   reference VARCHAR2(20),
   note      VARCHAR2(1000)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8054,7 +8054,7 @@ tablespace SYSTEM
 alter table timetable.STANDARD_EVENT_NOTE
   add constraint PK_STANDARD_EVENT_NOTE primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8085,7 +8085,7 @@ create table timetable.STUDENT_ACAD_AREA
   acad_clasf_id NUMBER(20),
   acad_area_id  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8099,7 +8099,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_ACAD_AREA
   add constraint PK_STUDENT_ACAD_AREA primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8131,7 +8131,7 @@ alter table timetable.STUDENT_ACAD_AREA
   add constraint NN_ACAD_AREA_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_ACAD_AREA on timetable.STUDENT_ACAD_AREA (STUDENT_ID, ACAD_AREA_ID, ACAD_CLASF_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8142,7 +8142,7 @@ create index timetable.IDX_STUDENT_ACAD_AREA on timetable.STUDENT_ACAD_AREA (STU
     maxextents unlimited
   );
 create unique index timetable.UK_STUDENT_ACAD_AREA on timetable.STUDENT_ACAD_AREA (STUDENT_ID, ACAD_CLASF_ID, ACAD_AREA_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8165,7 +8165,7 @@ create table timetable.STUDENT_ACCOMODATION
   external_uid VARCHAR2(40),
   session_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8179,7 +8179,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_ACCOMODATION
   add constraint PK_STUDENT_ACCOMODATION primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8218,7 +8218,7 @@ create table timetable.STUDENT_CLASS_ENRL
   timestamp          DATE,
   course_offering_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8232,7 +8232,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_CLASS_ENRL
   add constraint PK_STUDENT_CLASS_ENRL primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8267,7 +8267,7 @@ alter table timetable.STUDENT_CLASS_ENRL
   add constraint NN_STUDENT_CLASS_ENRL_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_CLASS_ENRL_CLASS on timetable.STUDENT_CLASS_ENRL (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8278,7 +8278,7 @@ create index timetable.IDX_STUDENT_CLASS_ENRL_CLASS on timetable.STUDENT_CLASS_E
     maxextents unlimited
   );
 create index timetable.IDX_STUDENT_CLASS_ENRL_COURSE on timetable.STUDENT_CLASS_ENRL (COURSE_OFFERING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8289,7 +8289,7 @@ create index timetable.IDX_STUDENT_CLASS_ENRL_COURSE on timetable.STUDENT_CLASS_
     maxextents unlimited
   );
 create index timetable.IDX_STUDENT_CLASS_ENRL_REQ on timetable.STUDENT_CLASS_ENRL (COURSE_REQUEST_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8300,7 +8300,7 @@ create index timetable.IDX_STUDENT_CLASS_ENRL_REQ on timetable.STUDENT_CLASS_ENR
     maxextents unlimited
   );
 create index timetable.IDX_STUDENT_CLASS_ENRL_STUDENT on timetable.STUDENT_CLASS_ENRL (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8323,7 +8323,7 @@ create table timetable.STUDENT_ENRL
   class_id           NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8337,7 +8337,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_ENRL
   add constraint PK_STUDENT_ENRL primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8366,7 +8366,7 @@ alter table timetable.STUDENT_ENRL
   add constraint NN_STUDENT_ENRL_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_ENRL on timetable.STUDENT_ENRL (SOLUTION_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8388,7 +8388,7 @@ create index timetable.IDX_STUDENT_ENRL_ASSIGNMENT on timetable.STUDENT_ENRL (SO
     maxextents unlimited
   );
 create index timetable.IDX_STUDENT_ENRL_CLASS on timetable.STUDENT_ENRL (CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8413,7 +8413,7 @@ create table timetable.STUDENT_ENRL_MSG
   course_demand_id NUMBER(20),
   ord              NUMBER(10)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8427,7 +8427,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_ENRL_MSG
   add constraint PK_STUDENT_ENRL_MSG primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8462,7 +8462,7 @@ alter table timetable.STUDENT_ENRL_MSG
   add constraint NN_STUDENT_ENRL_MSG_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_ENRL_MSG_DEM on timetable.STUDENT_ENRL_MSG (COURSE_DEMAND_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8485,7 +8485,7 @@ create table timetable.STUDENT_GROUP
   group_name         VARCHAR2(90),
   external_uid       VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8499,7 +8499,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_GROUP
   add constraint PK_STUDENT_GROUP primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8512,7 +8512,7 @@ alter table timetable.STUDENT_GROUP
 alter table timetable.STUDENT_GROUP
   add constraint UK_STUDENT_GROUP_SESSION_SIS unique (SESSION_ID, GROUP_ABBREVIATION)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8556,7 +8556,7 @@ create table timetable.STUDENT_GROUP_RESERVATION
   requested            NUMBER(10),
   last_modified_time   TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8570,7 +8570,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_GROUP_RESERVATION
   add constraint PK_STU_GRP_RESV primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8608,7 +8608,7 @@ alter table timetable.STUDENT_GROUP_RESERVATION
   add constraint NN_STU_GRP_RESV_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STU_GRP_RESV_OWNER on timetable.STUDENT_GROUP_RESERVATION (OWNER)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8619,7 +8619,7 @@ create index timetable.IDX_STU_GRP_RESV_OWNER on timetable.STUDENT_GROUP_RESERVA
     maxextents unlimited
   );
 create index timetable.IDX_STU_GRP_RESV_OWNER_CLS on timetable.STUDENT_GROUP_RESERVATION (OWNER_CLASS_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8630,7 +8630,7 @@ create index timetable.IDX_STU_GRP_RESV_OWNER_CLS on timetable.STUDENT_GROUP_RES
     maxextents unlimited
   );
 create index timetable.IDX_STU_GRP_RESV_STUDENT_GROUP on timetable.STUDENT_GROUP_RESERVATION (STUDENT_GROUP)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8641,7 +8641,7 @@ create index timetable.IDX_STU_GRP_RESV_STUDENT_GROUP on timetable.STUDENT_GROUP
     maxextents unlimited
   );
 create index timetable.IDX_STU_GRP_RESV_TYPE on timetable.STUDENT_GROUP_RESERVATION (RESERVATION_TYPE)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8661,7 +8661,7 @@ create table timetable.STUDENT_MAJOR
   student_id NUMBER(20),
   major_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8675,7 +8675,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_MAJOR
   add constraint PK_STUDENT_MAJOR primary key (STUDENT_ID, MAJOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8707,7 +8707,7 @@ create table timetable.STUDENT_MINOR
   student_id NUMBER(20),
   minor_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8721,7 +8721,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_MINOR
   add constraint PK_STUDENT_MINOR primary key (STUDENT_ID, MINOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8756,7 +8756,7 @@ create table timetable.STUDENT_SECT_HIST
   type       NUMBER(10),
   timestamp  DATE
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8770,7 +8770,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_SECT_HIST
   add constraint PK_STUDENT_SECT_HIST primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8799,7 +8799,7 @@ alter table timetable.STUDENT_SECT_HIST
   add constraint NN_STUDENT_SECTH_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_STUDENT_SECT_HIST_STUDENT on timetable.STUDENT_SECT_HIST (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8819,7 +8819,7 @@ create table timetable.STUDENT_TO_ACOMODATION
   student_id      NUMBER(20),
   accomodation_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8833,7 +8833,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_TO_ACOMODATION
   add constraint PK_STUDENT_TO_ACOMODATION primary key (STUDENT_ID, ACCOMODATION_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8865,7 +8865,7 @@ create table timetable.STUDENT_TO_GROUP
   student_id NUMBER(20),
   group_id   NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8879,7 +8879,7 @@ tablespace SYSTEM
 alter table timetable.STUDENT_TO_GROUP
   add constraint PK_STUDENT_TO_GROUP primary key (STUDENT_ID, GROUP_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8912,7 +8912,7 @@ create table timetable.TIME_PATTERN_DAYS
   day_code        NUMBER(10),
   time_pattern_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8926,7 +8926,7 @@ tablespace SYSTEM
 alter table timetable.TIME_PATTERN_DAYS
   add constraint PK_TIME_PATTERN_DAYS primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8943,7 +8943,7 @@ alter table timetable.TIME_PATTERN_DAYS
   add constraint NN_TIME_PATTERN_DAYS_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_TIME_PATTERN_DAYS on timetable.TIME_PATTERN_DAYS (TIME_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -8963,7 +8963,7 @@ create table timetable.TIME_PATTERN_DEPT
   dept_id    NUMBER(20),
   pattern_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -8977,7 +8977,7 @@ tablespace SYSTEM
 alter table timetable.TIME_PATTERN_DEPT
   add constraint PK_TIME_PATTERN_DEPT primary key (DEPT_ID, PATTERN_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9010,7 +9010,7 @@ create table timetable.TIME_PATTERN_TIME
   start_slot      NUMBER(10),
   time_pattern_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9024,7 +9024,7 @@ tablespace SYSTEM
 alter table timetable.TIME_PATTERN_TIME
   add constraint PK_TIME_PATTERN_TIME primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9041,7 +9041,7 @@ alter table timetable.TIME_PATTERN_TIME
   add constraint NN_TIME_PATTERN_TIME_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_TIME_PATTERN_TIME on timetable.TIME_PATTERN_TIME (TIME_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9065,7 +9065,7 @@ create table timetable.TIME_PREF
   time_pattern_id    NUMBER(20),
   last_modified_time TIMESTAMP(6)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9079,7 +9079,7 @@ tablespace SYSTEM
 alter table timetable.TIME_PREF
   add constraint PK_TIME_PREF primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9105,7 +9105,7 @@ alter table timetable.TIME_PREF
   add constraint NN_TIME_PREF_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_TIME_PREF_OWNER on timetable.TIME_PREF (OWNER_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9116,7 +9116,7 @@ create index timetable.IDX_TIME_PREF_OWNER on timetable.TIME_PREF (OWNER_ID)
     maxextents unlimited
   );
 create index timetable.IDX_TIME_PREF_PREF_LEVEL on timetable.TIME_PREF (PREF_LEVEL_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9127,7 +9127,7 @@ create index timetable.IDX_TIME_PREF_PREF_LEVEL on timetable.TIME_PREF (PREF_LEV
     maxextents unlimited
   );
 create index timetable.IDX_TIME_PREF_TIME_PTRN on timetable.TIME_PREF (TIME_PATTERN_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9150,7 +9150,7 @@ create table timetable.TMTBL_MGR_TO_ROLES
   is_primary     NUMBER(1),
   receive_emails NUMBER(1) default 1
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9164,7 +9164,7 @@ tablespace SYSTEM
 alter table timetable.TMTBL_MGR_TO_ROLES
   add constraint PK_TMTBL_MGR_TO_ROLES primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9177,7 +9177,7 @@ alter table timetable.TMTBL_MGR_TO_ROLES
 alter table timetable.TMTBL_MGR_TO_ROLES
   add constraint UK_TMTBL_MGR_TO_ROLES_MGR_ROLE unique (MANAGER_ID, ROLE_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9216,7 +9216,7 @@ create table timetable.USERS
   password     VARCHAR2(25),
   external_uid VARCHAR2(40)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9230,7 +9230,7 @@ tablespace SYSTEM
 alter table timetable.USERS
   add constraint PK_USERS primary key (USERNAME)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9254,7 +9254,7 @@ create table timetable.USER_DATA
   name         VARCHAR2(100),
   value        VARCHAR2(2048)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9268,7 +9268,7 @@ tablespace SYSTEM
 alter table timetable.USER_DATA
   add constraint PK_USER_DATA primary key (EXTERNAL_UID, NAME)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9300,7 +9300,7 @@ create table timetable.WAITLIST
   type               NUMBER(10) default (0),
   timestamp          DATE
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9314,7 +9314,7 @@ tablespace SYSTEM
 alter table timetable.WAITLIST
   add constraint PK_WAITLIST primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9346,7 +9346,7 @@ alter table timetable.WAITLIST
   add constraint NN_WAITLIST_UNIQUEID
   check ("UNIQUEID" IS NOT NULL);
 create index timetable.IDX_WAITLIST_OFFERING on timetable.WAITLIST (COURSE_OFFERING_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9357,7 +9357,7 @@ create index timetable.IDX_WAITLIST_OFFERING on timetable.WAITLIST (COURSE_OFFER
     maxextents unlimited
   );
 create index timetable.IDX_WAITLIST_STUDENT on timetable.WAITLIST (STUDENT_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9378,7 +9378,7 @@ create table timetable.XCONFLICT
   conflict_type NUMBER(10),
   distance      FLOAT
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9392,7 +9392,7 @@ tablespace SYSTEM
 alter table timetable.XCONFLICT
   add constraint PK_XCONFLICT primary key (UNIQUEID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9418,7 +9418,7 @@ create table timetable.XCONFLICT_EXAM
   conflict_id NUMBER(20),
   exam_id     NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9432,7 +9432,7 @@ tablespace SYSTEM
 alter table timetable.XCONFLICT_EXAM
   add constraint PK_XCONFLICT_EXAM primary key (CONFLICT_ID, EXAM_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9455,7 +9455,7 @@ alter table timetable.XCONFLICT_EXAM
   add constraint NN_XCONFLICT_EX_EXAM
   check ("EXAM_ID" IS NOT NULL);
 create index timetable.IDX_XCONFLICT_EXAM on timetable.XCONFLICT_EXAM (EXAM_ID)
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9475,7 +9475,7 @@ create table timetable.XCONFLICT_INSTRUCTOR
   conflict_id   NUMBER(20),
   instructor_id NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9489,7 +9489,7 @@ tablespace SYSTEM
 alter table timetable.XCONFLICT_INSTRUCTOR
   add constraint PK_XCONFLICT_INSTRUCTOR primary key (CONFLICT_ID, INSTRUCTOR_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
@@ -9521,7 +9521,7 @@ create table timetable.XCONFLICT_STUDENT
   conflict_id NUMBER(20),
   student_id  NUMBER(20)
 )
-tablespace SYSTEM
+tablespace USERS
   pctfree 10
   pctused 40
   initrans 1
@@ -9535,7 +9535,7 @@ tablespace SYSTEM
 alter table timetable.XCONFLICT_STUDENT
   add constraint PK_XCONFLICT_STUDENT primary key (CONFLICT_ID, STUDENT_ID)
   using index 
-  tablespace SYSTEM
+  tablespace USERS
   pctfree 10
   initrans 2
   maxtrans 255
