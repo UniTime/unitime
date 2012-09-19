@@ -33,9 +33,6 @@
 
 <TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 	<bean:define id="colspan" name="colspan" scope="request"/>
-	<logic:empty name="colspan">
-		<bean:define id="colspan" value="7"/>
-	</logic:empty>
 
 <!-- Buttons -->
 	<TR>
