@@ -129,7 +129,7 @@ public class CrossListsModifyAction extends Action {
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {
-				return course.getDemand() != null && course.getDemand() > 0;
+				return course.getInstructionalOffering().isNotOffered();
 			}
 		});
         
