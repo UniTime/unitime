@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
+import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -70,8 +71,16 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
 	}
 	
 	@Override
-	protected PdfPCell pdfBuildDatePatternCell(PreferenceGroup prefGroup, boolean isEditable){
-    	DatePattern dp = prefGroup.effectiveDatePattern();
+	protected PdfPCell pdfBuildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
+    	Assignment a = null;
+		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
+			try {
+				a = classAssignment.getAssignment((Class_)prefGroup);
+			} catch (Exception e) {
+				Debug.error(e);
+			}
+    	}
+    	DatePattern dp = (a != null ? a.getDatePattern() : prefGroup.effectiveDatePattern());
     	PdfPCell cell = createCell();
     	if (dp!=null) {
     		Color color = (isEditable?sEnableColor:sDisableColor);

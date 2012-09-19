@@ -599,7 +599,7 @@ public class WebInstructionalOfferingTableBuilder {
     		cell = initNormalCell("<div>"+dp.getName()+"</div>" + text, isEditable);
     	} else {
     		cell = initNormalCell("<div title='"+sDateFormat.format(dp.getStartDate())+" - "+sDateFormat.format(dp.getEndDate())+"' " +
-    				(p == null ? "" : "style='color:" + PreferenceLevel.int2color(p.getDatePatternPref()) + ";'") +
+    				(p == null || !isEditable ? "" : "style='color:" + PreferenceLevel.int2color(p.getDatePatternPref()) + ";'") +
     				">"+dp.getName()+"</div>", isEditable);
     	}
         cell.setAlign("center");
