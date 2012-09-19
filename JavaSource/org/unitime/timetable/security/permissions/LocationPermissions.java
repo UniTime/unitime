@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
@@ -204,7 +203,7 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+			return permissionSession.check(user, source);
 		}
 
 		@Override
@@ -217,7 +216,7 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
+			return permissionSession.check(user, source);
 		}
 
 		@Override
