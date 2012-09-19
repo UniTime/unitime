@@ -105,7 +105,7 @@ public class EditRoomPrefAction extends Action {
 			//Validate input prefs
 			ActionMessages errors = new ActionMessages();
 			errors = editRoomPrefForm.validate(mapping, request);
-			if(errors.size()!=0) {
+			if(errors != null && errors.size()!=0) {
 		       	saveErrors(request, errors);	
 			} else {
 		    	doUpdate(editRoomPrefForm,request);	
