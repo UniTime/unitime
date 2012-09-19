@@ -398,7 +398,7 @@ public class DistributionPrefsAction extends Action {
 	        		Query q = hibSession.createQuery(query.toString());
 	        		q.setFetchSize(200);
 	        		q.setCacheable(true);
-	        		q.setInteger("subjectAreaId", Integer.parseInt(subjectAreaId));
+	        		q.setLong("subjectAreaId", Long.parseLong(subjectAreaId));
 	                
 	        		List result = q.list();
 	                crsNumList = new Vector();
@@ -438,7 +438,7 @@ public class DistributionPrefsAction extends Action {
 		        		q = hibSession.createQuery(query.toString());
 		        		q.setFetchSize(200);
 		        		q.setCacheable(true);
-		        		q.setInteger("courseNbr", Integer.parseInt(courseNbr));
+		        		q.setLong("courseNbr", Long.parseLong(courseNbr));
 		                
 		        		result = new Vector(q.list());
 		        		if(result!=null && result.size()>0) {
@@ -570,7 +570,7 @@ public class DistributionPrefsAction extends Action {
         query.append("   and co.subjectArea.uniqueId=sa.uniqueId ");
 
         Query q = hibSession.createQuery(query.toString());
-        q.setInteger("distPrefId", Integer.parseInt(distPrefId));
+        q.setLong("distPrefId", Long.parseLong(distPrefId));
         List distPrefs1 = q.list();
         
         // Get class Distribution Prefs
@@ -594,7 +594,7 @@ public class DistributionPrefsAction extends Action {
         query2.append("   and co.subjectArea.uniqueId=sa.uniqueId ");
 
         q = hibSession.createQuery(query2.toString());
-        q.setInteger("distPrefId", Integer.parseInt(distPrefId));
+        q.setLong("distPrefId", Long.parseLong(distPrefId));
         List distPrefs2 = q.list();
         
         // Combine subparts and classes
@@ -797,7 +797,7 @@ public class DistributionPrefsAction extends Action {
         String query = "delete DistributionPref dp where dp.uniqueId=:distPrefId";
 
         Query q = hibSession.createQuery(query);
-        q.setInteger("distPrefId", Integer.parseInt(distPrefId));
+        q.setLong("distPrefId", Long.parseLong(distPrefId));
         q.executeUpdate();
         */
         
