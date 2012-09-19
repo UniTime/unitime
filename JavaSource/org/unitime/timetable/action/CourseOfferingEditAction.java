@@ -487,7 +487,7 @@ public class CourseOfferingEditAction extends Action {
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {
-				return course.getInstructionalOffering().isNotOffered(); 
+				return course.getDemand() != null && course.getDemand() > 0;
 			}
 		});
     }
@@ -522,7 +522,7 @@ public class CourseOfferingEditAction extends Action {
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
 			public boolean accept(CourseOffering course) {
-				return course.getInstructionalOffering().isNotOffered();
+				return course.getDemand() != null && course.getDemand() > 0;
 			}
 		});
         
