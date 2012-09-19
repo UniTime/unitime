@@ -193,6 +193,7 @@ public class RoomListAction extends Action {
 		
 		if (roomListForm.getRooms() == null || roomListForm.getRooms().isEmpty()) {
 			errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
+			request.setAttribute("colspan","7"); 
 			saveErrors(request, errors);
 		}
 		
