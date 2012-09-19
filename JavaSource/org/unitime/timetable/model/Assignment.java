@@ -136,7 +136,7 @@ public class Assignment extends BaseAssignment {
 				org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
 				Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 						"c.definition.name=:name and a.uniqueId=:assignmentId");
-				q.setInteger("assignmentId",getUniqueId().intValue());
+				q.setLong("assignmentId",getUniqueId());
 				q.setString("name",name);
 				tInfos = new Vector();
 				for (Iterator i=q.list().iterator();i.hasNext();) {
@@ -166,7 +166,7 @@ public class Assignment extends BaseAssignment {
 			org.hibernate.Session session = (new ConstraintInfoDAO()).getSession();
 			Query q = session.createQuery("select distinct c from ConstraintInfo as c inner join c.assignments as a where " +
 					"c.definition.name=:name and a.uniqueId=:assignmentId");
-			q.setInteger("assignmentId",getUniqueId().intValue());
+			q.setLong("assignmentId",getUniqueId());
 			q.setString("name",name);
 			for (Iterator i=q.list().iterator();i.hasNext();) {
 				ConstraintInfo info = (ConstraintInfo)i.next();

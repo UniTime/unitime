@@ -92,7 +92,7 @@ public class SolutionClassAssignmentProxy extends CommitedClassAssignmentProxy {
     				"select distinct a from Assignment as a inner join a.clazz.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings as o where " +
     				"a.solution.uniqueId=:solutionId and " +
     				"o.isControl=true and o.subjectAreaAbbv=:subjectName");
-    		q.setInteger("solutionId",solutionId.intValue());
+    		q.setLong("solutionId",solutionId);
     		q.setString("subjectName",subjectName);
     		for (Iterator i=q.list().iterator();i.hasNext();) {
     			Assignment a = (Assignment)i.next();

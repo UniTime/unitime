@@ -87,13 +87,13 @@ public class SolutionGridModel extends TimetableGridModel {
 			}
 		}
 		Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.rooms as r where a.solution.uniqueId in ("+solutionIdsStr+") and r.uniqueId=:resourceId");
-		q.setInteger("resourceId", room.getUniqueId().intValue());
+		q.setLong("resourceId", room.getUniqueId());
 		q.setCacheable(true);
 		init(q.list(),hibSession,firstDay,bgMode);
 		
 		q = hibSession.createQuery("select distinct a from Room r inner join r.assignments as a "+
 		"where r.uniqueId=:roomId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
-		q.setInteger("roomId",room.getUniqueId().intValue());
+		q.setLong("roomId",room.getUniqueId());
         q.setLong("sessionId", room.getSession().getUniqueId().longValue());
 		q.setCacheable(true);
 		List commitedAssignments = q.list();
@@ -241,12 +241,12 @@ public class SolutionGridModel extends TimetableGridModel {
 			commitedAssignments = q.list();
 		} else {
 			Query q = hibSession.createQuery("select distinct a from Assignment as a inner join a.instructors as i where a.solution.uniqueId in ("+solutionIdsStr+") and i.uniqueId=:resourceId");
-			q.setInteger("resourceId", instructor.getUniqueId().intValue());
+			q.setLong("resourceId", instructor.getUniqueId());
 			q.setCacheable(true);
 			init(q.list(),hibSession,firstDay,bgMode);
 			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i inner join i.assignments as a "+
 					"where i.uniqueId=:instructorId and a.solution.commited=true and a.solution.owner.session.uniqueId=:sessionId and a.solution.owner.uniqueId not in ("+ownerIds+")");
-			q.setInteger("instructorId",instructor.getUniqueId().intValue());
+			q.setLong("instructorId",instructor.getUniqueId());
             q.setLong("sessionId", instructor.getDepartment().getSession().getUniqueId().longValue());
 			q.setCacheable(true);
 			commitedAssignments = q.list();
