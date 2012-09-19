@@ -427,7 +427,7 @@ public class UniTimeTable<T> extends FlexTable {
 			}
 			break;
 		case Event.ONCLICK:
-			if (isAllowSelection()) {
+			if (isAllowSelection() && hasData) {
 				Element element = DOM.eventGetTarget(event);
 				while (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
