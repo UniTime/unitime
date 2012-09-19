@@ -64,7 +64,7 @@
 						</sec:authorize>
 					</logic:equal>
 					<logic:notEqual name="roomFeatureEditForm" property="global" value="true">
-						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentalRoomFeature', 'DepartmenalRoomFeatureDelete')">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentRoomFeature', 'DepartmenalRoomFeatureDelete')">
 							&nbsp;	
 							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
 									title="Delete Room Feature (Alt+D)">
@@ -288,7 +288,7 @@
 						</sec:authorize>
 					</logic:equal>
 					<logic:notEqual name="roomFeatureEditForm" property="global" value="true">
-						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentalRoomFeature', 'DepartmenalRoomFeatureDelete')">
+						<sec:authorize access="hasPermission(#roomFeatureEditForm.id, 'DepartmentRoomFeature', 'DepartmenalRoomFeatureDelete')">
 							&nbsp;	
 							<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="D" 
 									title="Delete Room Feature (Alt+D)">
