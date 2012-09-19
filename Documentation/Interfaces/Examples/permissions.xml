@@ -20,7 +20,7 @@
  * 
  -->
  
-<permissions created="Tue Sep 11 21:07:56 CEST 2012">
+<permissions created="Wed Sep 19 20:18:39 CEST 2012">
   <role reference="Curriculum Mgr" name="Curriculum Manager" manager="true" enabled="true">
     <right>SessionDefaultCurrent</right>
     <right>DepartmentIndependent</right>
@@ -39,8 +39,6 @@
     <right>CurriculumProjectionRulesDetail</right>
     <right>CurriculumProjectionRulesEdit</right>
     <right>RoomAvailability</right>
-    <right>ExaminationDistributionPreferences</right>
-    <right>ExaminationDistributionPreferenceDetail</right>
     <right>ExaminationSchedule</right>
     <right>Events</right>
     <right>EventAddSpecial</right>
@@ -218,18 +216,12 @@
     <right>RoomsExportPdf</right>
     <right>RoomsExportCsv</right>
     <right>RoomDetail</right>
-    <right>RoomEdit</right>
     <right>RoomEditChangeExternalId</right>
     <right>RoomEditChangeType</right>
     <right>RoomEditChangeCapacity</right>
     <right>RoomEditChangeRoomProperties</right>
-    <right>AddRoom</right>
     <right>AddSpecialUseRoom</right>
     <right>AddSpecialUseRoomExternalRoom</right>
-    <right>RoomEditGroups</right>
-    <right>RoomEditGlobalGroups</right>
-    <right>RoomEditFeatures</right>
-    <right>RoomEditGlobalFeatures</right>
     <right>AddNonUnivLocation</right>
     <right>NonUniversityLocationEdit</right>
     <right>NonUniversityLocationDelete</right>
@@ -278,20 +270,10 @@
     <right>EditRoomDepartmentsFinalExams</right>
     <right>EditRoomDepartmentsMidtermExams</right>
     <right>RoomDetailPeriodPreferences</right>
-    <right>RoomEditGroups</right>
-    <right>RoomEditGlobalGroups</right>
-    <right>RoomEditFeatures</right>
-    <right>RoomEditGlobalFeatures</right>
     <right>RoomFeatures</right>
     <right>RoomFeaturesExportPdf</right>
-    <right>GlobalRoomFeatureAdd</right>
-    <right>GlobalRoomFeatureEdit</right>
-    <right>GlobalRoomFeatureDelete</right>
     <right>RoomGroups</right>
     <right>RoomGroupsExportPdf</right>
-    <right>GlobalRoomGroupAdd</right>
-    <right>GlobalRoomGroupEdit</right>
-    <right>GlobalRoomGroupDelete</right>
     <right>DistributionPreferenceExam</right>
     <right>Examinations</right>
     <right>ExaminationDetail</right>
@@ -301,7 +283,9 @@
     <right>ExaminationClone</right>
     <right>ExaminationAdd</right>
     <right>ExaminationAssignment</right>
+    <right>ExaminationDistributionPreferences</right>
     <right>ExaminationDistributionPreferenceAdd</right>
+    <right>ExaminationDistributionPreferenceDetail</right>
     <right>ExaminationDistributionPreferenceEdit</right>
     <right>ExaminationDistributionPreferenceDelete</right>
     <right>ExaminationSchedule</right>

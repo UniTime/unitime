@@ -6216,20 +6216,10 @@
 			(%R4%, 'EditRoomDepartmentsFinalExams'),
 			(%R4%, 'EditRoomDepartmentsMidtermExams'),
 			(%R4%, 'RoomDetailPeriodPreferences'),
-			(%R4%, 'RoomEditGroups'),
-			(%R4%, 'RoomEditGlobalGroups'),
-			(%R4%, 'RoomEditFeatures'),
-			(%R4%, 'RoomEditGlobalFeatures'),
 			(%R4%, 'RoomFeatures'),
 			(%R4%, 'RoomFeaturesExportPdf'),
-			(%R4%, 'GlobalRoomFeatureAdd'),
-			(%R4%, 'GlobalRoomFeatureEdit'),
-			(%R4%, 'GlobalRoomFeatureDelete'),
 			(%R4%, 'RoomGroups'),
 			(%R4%, 'RoomGroupsExportPdf'),
-			(%R4%, 'GlobalRoomGroupAdd'),
-			(%R4%, 'GlobalRoomGroupEdit'),
-			(%R4%, 'GlobalRoomGroupDelete'),
 			(%R4%, 'DistributionPreferenceExam'),
 			(%R4%, 'Examinations'),
 			(%R4%, 'ExaminationDetail'),
@@ -6239,7 +6229,9 @@
 			(%R4%, 'ExaminationClone'),
 			(%R4%, 'ExaminationAdd'),
 			(%R4%, 'ExaminationAssignment'),
+			(%R4%, 'ExaminationDistributionPreferences'),
 			(%R4%, 'ExaminationDistributionPreferenceAdd'),
+			(%R4%, 'ExaminationDistributionPreferenceDetail'),
 			(%R4%, 'ExaminationDistributionPreferenceEdit'),
 			(%R4%, 'ExaminationDistributionPreferenceDelete'),
 			(%R4%, 'ExaminationSchedule'),
@@ -6274,18 +6266,12 @@
 			(%R5%, 'RoomsExportPdf'),
 			(%R5%, 'RoomsExportCsv'),
 			(%R5%, 'RoomDetail'),
-			(%R5%, 'RoomEdit'),
 			(%R5%, 'RoomEditChangeExternalId'),
 			(%R5%, 'RoomEditChangeType'),
 			(%R5%, 'RoomEditChangeCapacity'),
 			(%R5%, 'RoomEditChangeRoomProperties'),
-			(%R5%, 'AddRoom'),
 			(%R5%, 'AddSpecialUseRoom'),
 			(%R5%, 'AddSpecialUseRoomExternalRoom'),
-			(%R5%, 'RoomEditGroups'),
-			(%R5%, 'RoomEditGlobalGroups'),
-			(%R5%, 'RoomEditFeatures'),
-			(%R5%, 'RoomEditGlobalFeatures'),
 			(%R5%, 'AddNonUnivLocation'),
 			(%R5%, 'NonUniversityLocationEdit'),
 			(%R5%, 'NonUniversityLocationDelete'),
@@ -6327,8 +6313,6 @@
 			(%R6%, 'CurriculumProjectionRulesDetail'),
 			(%R6%, 'CurriculumProjectionRulesEdit'),
 			(%R6%, 'RoomAvailability'),
-			(%R6%, 'ExaminationDistributionPreferences'),
-			(%R6%, 'ExaminationDistributionPreferenceDetail'),
 			(%R6%, 'ExaminationSchedule'),
 			(%R6%, 'Events'),
 			(%R6%, 'EventAddSpecial'),
@@ -7197,20 +7181,10 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'EditRoomDepartmentsFinalExams' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'EditRoomDepartmentsMidtermExams' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomDetailPeriodPreferences' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGroups' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGlobalGroups' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditFeatures' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGlobalFeatures' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomFeatures' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomFeaturesExportPdf' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomFeatureAdd' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomFeatureEdit' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomFeatureDelete' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomGroups' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomGroupsExportPdf' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomGroupAdd' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomGroupEdit' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'GlobalRoomGroupDelete' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'DistributionPreferenceExam' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'Examinations' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDetail' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
@@ -7220,7 +7194,9 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationClone' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationAdd' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationAssignment' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
+		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferences' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferenceAdd' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
+		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferenceDetail' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferenceEdit' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferenceDelete' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationSchedule' as value from %SCHEMA%.roles where reference = 'Exam Mgr')</plsql>
@@ -7255,18 +7231,12 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomsExportPdf' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomsExportCsv' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomDetail' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEdit' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditChangeExternalId' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditChangeType' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditChangeCapacity' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditChangeRoomProperties' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'AddRoom' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'AddSpecialUseRoom' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'AddSpecialUseRoomExternalRoom' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGroups' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGlobalGroups' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditFeatures' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomEditGlobalFeatures' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'AddNonUnivLocation' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'NonUniversityLocationEdit' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'NonUniversityLocationDelete' as value from %SCHEMA%.roles where reference = 'Event Mgr')</plsql>
@@ -7308,8 +7278,6 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'CurriculumProjectionRulesDetail' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'CurriculumProjectionRulesEdit' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'RoomAvailability' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferences' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
-		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationDistributionPreferenceDetail' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'ExaminationSchedule' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'Events' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'EventAddSpecial' as value from %SCHEMA%.roles where reference = 'Curriculum Mgr')</plsql>
