@@ -201,10 +201,7 @@ public class ExamDistributionPrefsAction extends Action {
             Debug.debug("Loading dist pref - " + distPrefId);
             
             frm.reset(mapping, request);
-            
-            frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
-            frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
-            
+                        
             doLoad(frm, distPrefId);
         }
         
@@ -266,6 +263,9 @@ public class ExamDistributionPrefsAction extends Action {
         }
         
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
+            frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+            frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
         	if (frm.getFilterSubjectAreaId()==null) {
         	    if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
