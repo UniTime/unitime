@@ -194,6 +194,18 @@
 		</item>
 	</category>
 	<category>
+		<title>Examination Timetabling</title>
+		<item>
+			<name>Can Share Room</name>
+			<description>
+				<line>Can Share Room distribution constraint was added.
+					<line>Given examinations can share a room (use the same room during the same period) if the room is big enough.</line>
+					<line>If examinations of different seating type are sharing a room, the more restrictive seating type is used to check the room size.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item>
 			<name>Rooms</name>

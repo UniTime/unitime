@@ -56,6 +56,8 @@ import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.solver.exam.ExamModel;
 import org.unitime.timetable.solver.exam.ExamResourceUnavailability;
 
+import net.sf.cpsolver.exam.criteria.StudentBackToBackConflicts;
+import net.sf.cpsolver.exam.criteria.StudentDistanceBackToBackConflicts;
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamDistributionConstraint;
 import net.sf.cpsolver.exam.model.ExamInstructor;
@@ -97,11 +99,12 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 }
             }
             iDirects.addAll(directs.values());
-            double btbDist = model.getBackToBackDistance();
+            double btbDist = ((StudentDistanceBackToBackConflicts)model.getCriterion(StudentDistanceBackToBackConflicts.class)).getBackToBackDistance();
+            boolean dayBreakBackToBack = ((StudentBackToBackConflicts)model.getCriterion(StudentBackToBackConflicts.class)).isDayBreakBackToBack();
             Hashtable<Exam,BackToBackConflict> backToBacks = new Hashtable();
             for (ExamStudent student: exam.getStudents()) {
                 if (placement.getPeriod().prev()!=null) {
-                    if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
+                    if (dayBreakBackToBack || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
                         Set exams = student.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
@@ -118,7 +121,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     }
                 }
                 if (placement.getPeriod().next()!=null) {
-                    if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
+                    if (dayBreakBackToBack || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
                         Set exams = student.getExams(placement.getPeriod().next());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
@@ -176,7 +179,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             Hashtable<Exam,BackToBackConflict> ibackToBacks = new Hashtable();
             for (ExamInstructor instructor: exam.getInstructors()) {
                 if (placement.getPeriod().prev()!=null) {
-                    if (model.isDayBreakBackToBack() || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
+                    if (dayBreakBackToBack || placement.getPeriod().prev().getDay()==placement.getPeriod().getDay()) {
                         Set exams = instructor.getExams(placement.getPeriod().prev());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
@@ -193,7 +196,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                     }
                 }
                 if (placement.getPeriod().next()!=null) {
-                    if (model.isDayBreakBackToBack() || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
+                    if (dayBreakBackToBack || placement.getPeriod().next().getDay()==placement.getPeriod().getDay()) {
                         Set exams = instructor.getExams(placement.getPeriod().next());
                         for (Iterator i=exams.iterator();i.hasNext();) {
                             Exam other = (Exam)i.next();
@@ -539,6 +542,8 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
                 }
                 return true;
             }
+        } else if ("EX_SHARE_ROOM".equals(pref.getDistributionType().getReference())) {
+        	return true;
         }
         return false;
     }

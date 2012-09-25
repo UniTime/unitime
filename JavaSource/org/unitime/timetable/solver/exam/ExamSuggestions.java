@@ -36,6 +36,7 @@ import net.sf.cpsolver.exam.model.ExamModel;
 import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
+import net.sf.cpsolver.exam.model.ExamRoomSharing;
 import net.sf.cpsolver.exam.model.ExamStudent;
 
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -154,6 +155,7 @@ public class ExamSuggestions {
     
     public Set findBestAvailableRooms(Exam exam, ExamPeriodPlacement period, boolean checkConstraints) {
         if (exam.getMaxRooms()==0) return new HashSet();
+        ExamRoomSharing sharing = iModel.getRoomSharing();
         loop: for (int nrRooms=1;nrRooms<=exam.getMaxRooms();nrRooms++) {
             HashSet rooms = new HashSet(); int size = 0;
             while (rooms.size()<nrRooms && size<exam.getSize()) {
@@ -161,7 +163,15 @@ public class ExamSuggestions {
                 ExamRoomPlacement best = null; int bestSize = 0, bestPenalty = 0;
                 for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                     if (!room.isAvailable(period.getPeriod())) continue;
-                    if (checkConstraints && room.getRoom().getPlacement(period.getPeriod())!=null) continue;
+                    if (checkConstraints) {
+                        if (nrRooms == 1 && sharing != null) {
+                            if (sharing.inConflict(exam, room.getRoom().getPlacements(period.getPeriod()), room.getRoom()))
+                                continue;
+                        } else {
+                            if (!room.getRoom().getPlacements(period.getPeriod()).isEmpty())
+                                continue;
+                        }
+                    }
                     if (rooms.contains(room)) continue;
                     if (checkConstraints && !exam.checkDistributionConstraints(room)) continue;
                     int s = room.getSize(exam.hasAltSeating());

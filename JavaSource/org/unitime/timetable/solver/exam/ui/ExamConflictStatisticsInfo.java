@@ -114,7 +114,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 			CBSValue val = new CBSValue(var,
 			        placement.getPeriod().getId(),
 			        placement.getPeriod().getDayStr()+" "+placement.getPeriod().getTimeStr(),
-			        (exam.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:placement.getPeriodPenalty()),
+			        (exam.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:placement.getPeriodPlacement().getPenalty()),
 			        roomIds, roomNames, roomPrefs);
 			var.values().add(val);
 			
@@ -171,7 +171,7 @@ public class ExamConflictStatisticsInfo implements TimetableInfo, Serializable {
 							pr,
 							p.getPeriod().getId(),
 							p.getPeriod().getDayStr()+" "+p.getPeriod().getTimeStr(),
-							(x.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:p.getPeriodPenalty()),
+							(x.getPeriodPlacements().size()==1?PreferenceLevel.sIntLevelRequired:p.getPeriodPlacement().getPenalty()),
 							aroomIds,
 							aroomNames,
 							aroomPrefs);
