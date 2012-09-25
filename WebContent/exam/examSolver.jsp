@@ -212,7 +212,7 @@ try {
 		Transaction tx = null;
 		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 			tx = hibSession.beginTransaction();
-		Map<String,String> info = solver.currentSolutionInfo();
+		Map<String,String> info = solver.bestSolutionInfo();
 		if (info!=null) {
 %>
 			<TR>
