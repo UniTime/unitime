@@ -7613,4 +7613,24 @@
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'HQLReportsAdministration' as value from %SCHEMA%.roles where reference = 'Administrator')</plsql>
 		<plsql>insert into %SCHEMA%.rights (select role_id, 'HQLReportsAdminOnly' as value from %SCHEMA%.roles where reference = 'Administrator')</plsql>
 	</update>
+	<update version="91" date="25-Sep-2012" comment="Exams Can Share Room Constraint">
+		<plsql>
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values 
+			(%SCHEMA%.ref_table_seq.nextval, 'EX_SHARE_ROOM', 'Can Share Room', 0, 48, '2R',
+				'Given examinations can share a room (use the same room during the same period) if the room is big enough.  If examinations of different seating type are sharing a room, the more restrictive seating type is used to check the room size.',
+				'Share Room', 0, 1)
+		</plsql> 
+		<mysql into="ID">
+			select 32767 * next_hi from %SCHEMA%.hibernate_unique_key			
+		</mysql>
+		<mysql>
+			insert into %SCHEMA%.distribution_type (uniqueid, reference, label, sequencing_required, req_id, allowed_pref, description, abbreviation, instructor_pref, exam_pref) values
+			(%ID%, 'EX_SHARE_ROOM', 'Can Share Room', 0, 48, '2R',
+				'Given examinations can share a room (use the same room during the same period) if the room is big enough.  If examinations of different seating type are sharing a room, the more restrictive seating type is used to check the room size.',
+				'Share Room', 0, 1)
+		</mysql>
+		<mysql>
+			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
+		</mysql>
+	</update>
 </dbupdate>

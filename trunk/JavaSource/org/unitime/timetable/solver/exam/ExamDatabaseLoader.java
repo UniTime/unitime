@@ -43,6 +43,7 @@ import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
 import net.sf.cpsolver.exam.model.ExamStudent;
+import net.sf.cpsolver.exam.model.PredefinedExamRoomSharing;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.util.Progress;
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -98,6 +99,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Set<ExamPeriod> iProhibitedPeriods = new HashSet();
     private boolean iLoadEventConflicts = false;
     private boolean iMakeupSameRoom = false;
+    private PredefinedExamRoomSharing iSharing = null;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
     
@@ -821,20 +823,47 @@ public class ExamDatabaseLoader extends ExamLoader {
         for (Iterator i=distPrefs.iterator();i.hasNext();) {
             iProgress.incProgress();
             DistributionPref pref = (DistributionPref)i.next();
-            ExamDistributionConstraint constraint = new ExamDistributionConstraint(pref.getUniqueId(),pref.getDistributionType().getReference(),pref.getPrefLevel().getPrefProlog());
-            for (Iterator j=new TreeSet(pref.getDistributionObjects()).iterator();j.hasNext();) {
-                DistributionObject distObj = (DistributionObject)j.next();
-                Exam exam = (Exam)iExams.get(distObj.getPrefGroup().getUniqueId());
-                if (exam==null) {
-                    iProgress.info("Exam "+getExamLabel(new ExamDAO().get(distObj.getPrefGroup().getUniqueId()))+" not loaded.");
-                    continue;
+            if ("EX_SHARE_ROOM".equals(pref.getDistributionType().getReference())) {
+            	if (iSharing == null) {
+            		if (getModel().hasRoomSharing() && getModel().getRoomSharing() instanceof PredefinedExamRoomSharing) {
+            			iSharing = (PredefinedExamRoomSharing)getModel().getRoomSharing();
+            		} else {
+                		iSharing = new PredefinedExamRoomSharing(getModel(), getModel().getProperties());
+                		getModel().getProperties().setProperty("Exams.RoomSharingClass", PredefinedExamRoomSharing.class.getName());
+                		getModel().setRoomSharing(iSharing);
+            		}
+            	}
+            	List<Exam> exams = new ArrayList<Exam>();
+            	for (Iterator j=new TreeSet(pref.getDistributionObjects()).iterator();j.hasNext();) {
+                    DistributionObject distObj = (DistributionObject)j.next();
+                    Exam exam = (Exam)iExams.get(distObj.getPrefGroup().getUniqueId());
+                    if (exam==null) {
+                        iProgress.info("Exam "+getExamLabel(new ExamDAO().get(distObj.getPrefGroup().getUniqueId()))+" not loaded.");
+                        continue;
+                    }
+                    exams.add(exam);
+            	}
+            	for (int a = 0; a < exams.size(); a++) {
+            		for (int b = a + 1; b < exams.size(); b++) {
+            			iSharing.addPair(exams.get(a), exams.get(b));
+            		}
+            	}
+            } else {
+                ExamDistributionConstraint constraint = new ExamDistributionConstraint(pref.getUniqueId(),pref.getDistributionType().getReference(),pref.getPrefLevel().getPrefProlog());
+                for (Iterator j=new TreeSet(pref.getDistributionObjects()).iterator();j.hasNext();) {
+                    DistributionObject distObj = (DistributionObject)j.next();
+                    Exam exam = (Exam)iExams.get(distObj.getPrefGroup().getUniqueId());
+                    if (exam==null) {
+                        iProgress.info("Exam "+getExamLabel(new ExamDAO().get(distObj.getPrefGroup().getUniqueId()))+" not loaded.");
+                        continue;
+                    }
+                    constraint.addVariable(exam);
                 }
-                constraint.addVariable(exam);
+                if (!constraint.variables().isEmpty()) {
+                    getModel().addConstraint(constraint);
+                    getModel().getDistributionConstraints().add(constraint);
+                }
             }
-            if (!constraint.variables().isEmpty()) {
-                getModel().addConstraint(constraint);
-                getModel().getDistributionConstraints().add(constraint);
-            }       
         }
     }
     
