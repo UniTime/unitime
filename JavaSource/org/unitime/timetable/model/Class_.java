@@ -39,6 +39,8 @@ import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 import org.hibernate.FlushMode;
 import org.hibernate.Transaction;
 import org.unitime.commons.Debug;
+import org.unitime.localization.impl.Localization;
+import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalClassEditAction;
 import org.unitime.timetable.interfaces.ExternalClassNameHelperInterface;
@@ -67,6 +69,7 @@ import org.unitime.timetable.webutil.Navigation;
 public class Class_ extends BaseClass_ {
     private static final long serialVersionUID = 1L;
     private static ExternalClassNameHelperInterface externalClassNameHelper = null;
+    private static CourseMessages MSG = Localization.create(CourseMessages.class); 
 
 	/* [CONSTRUCTOR MARKER BEGIN] */
 	public Class_ () {
@@ -1077,8 +1080,8 @@ public class Class_ extends BaseClass_ {
         				note.setNoteType(EventNote.sEventNoteTypeDeletion);
         				note.setTimeStamp(new Date());
         				note.setUser(user.getName());
-        				note.setTextNote("Unassigned " + oldAssignment.getPlacement().getName());
-        				note.setMeetings("N/A");
+        				note.setTextNote(MSG.classNoteUnassigned(oldAssignment.getPlacement().getName()));
+        				note.setMeetings(MSG.classMeetingsNotApplicable());
         				event.getNotes().add(note);
                 		hibSession.saveOrUpdate(event);
                 	}
@@ -1216,7 +1219,10 @@ public class Class_ extends BaseClass_ {
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(new Date());
 				note.setUser(user.getName());
-				note.setTextNote((oldAssignment == null ? "Assigned to " : "Reassigned " + oldAssignment.getPlacement().getName() + " → ") + a.getPlacement().getName());
+				if (oldAssignment == null)
+					note.setTextNote(MSG.classNoteAssigned(a.getPlacement().getName()));
+				else
+					note.setTextNote(MSG.classNoteReassigned(oldAssignment.getPlacement().getName(), a.getPlacement().getName()));
 				note.setMeetings(assignment.getTime().getLongName() + (assignment.getNrRooms() > 0 ? " " + assignment.getRoomNames(", ") : ""));
 				event.getNotes().add(note);
             	hibSession.saveOrUpdate(event);
