@@ -625,24 +625,18 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setCacheable(true).list());
     }
     
-    public static Hashtable<Long,Long> findExamLocationTable(Long periodId) {
-        Hashtable<Long,Long> table = new Hashtable();
+    public static Hashtable<Long, Set<Long>> findExamLocationTable(Long periodId) {
+        Hashtable<Long,Set<Long>> table = new Hashtable();
         for (Iterator i = (new LocationDAO()).getSession()
                     .createQuery("select distinct r.uniqueId, x.uniqueId from Exam x inner join x.assignedRooms r where x.assignedPeriod.uniqueId=:periodId")
                     .setLong("periodId",periodId)
                     .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
-            table.put((Long)o[0],(Long)o[1]);
+            Set<Long> exams = table.get((Long)o[0]);
+            if (exams == null) { exams = new HashSet<Long>(); table.put((Long)o[0], exams); }
+            exams.add((Long)o[1]);
         }
         return table;
-    }
-
-    public Exam getExam(Long periodId) {
-        return (Exam)new LocationDAO().getSession().createQuery(
-                "select x from Exam x inner join x.assignedRooms r where " +
-                "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId")
-                .setLong("locationId", getUniqueId())
-                .setLong("periodId", periodId).setCacheable(true).uniqueResult();
     }
     
     public Collection<Assignment> getCommitedAssignments() {
@@ -682,7 +676,7 @@ public abstract class Location extends BaseLocation implements Comparable {
         return maxDistance;
     }
     
-    public List getExams(Long periodId) {
+    public List<Exam> getExams(Long periodId) {
         return new LocationDAO().getSession().createQuery(
                 "select x from Exam x inner join x.assignedRooms r where "+
                 "x.assignedPeriod.uniqueId=:periodId and r.uniqueId=:locationId")

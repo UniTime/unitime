@@ -63,6 +63,7 @@ import net.sf.cpsolver.exam.model.ExamPeriodPlacement;
 import net.sf.cpsolver.exam.model.ExamPlacement;
 import net.sf.cpsolver.exam.model.ExamRoom;
 import net.sf.cpsolver.exam.model.ExamRoomPlacement;
+import net.sf.cpsolver.exam.model.ExamRoomSharing;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.Extension;
 import net.sf.cpsolver.ifs.model.Constraint;
@@ -741,9 +742,9 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             if (room==null) return null;
             Vector<ExamAssignmentInfo> ret = new Vector<ExamAssignmentInfo>();
             for (ExamPeriod period: ((ExamModel)currentSolution().getModel()).getPeriods()) {
-                ExamPlacement placement = room.getPlacement(period);
-                if (placement!=null)
-                    ret.add(new ExamAssignmentInfo(placement));
+                for (ExamPlacement placement: room.getPlacements(period)) {
+                	ret.add(new ExamAssignmentInfo(placement));
+                }
             }
             return ret;
         }
@@ -870,12 +871,14 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             Vector<Exam> unassign = new Vector();
             Vector<ExamPlacement> assign = new Vector();
             HashSet<ExamPlacement> conflicts = new HashSet();
+            /*
             for (ExamAssignment assignment: change.getConflicts()) {
                 ExamPlacement placement = getPlacement(assignment);
                 if (placement==null || !placement.equals(placement.variable().getAssignment())) return null;
                 undoAssign.put((Exam)placement.variable(),placement);
                 unassign.add((Exam)placement.variable());
             }
+            */
             for (ExamAssignment assignment: change.getAssignments()) {
                 ExamPlacement placement = getPlacement(assignment);
                 if (placement==null) return null;
@@ -959,6 +962,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 }
             }
             
+            ExamRoomSharing sharing = ((ExamModel)currentSolution().getModel()).getRoomSharing();
+            
             //compute rooms
             for (ExamRoomPlacement room: exam.getRoomPlacements()) {
                 
@@ -968,8 +973,14 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
                 if (!ExamInfoModel.match(room.getName(), filter)) continue;
                 if (!room.isAvailable(period.getPeriod())) continue;
                 
-                boolean conf = !exam.checkDistributionConstraints(room) ||
-                               (room.getRoom().getPlacement(period.getPeriod())!=null && !room.getRoom().getPlacement(period.getPeriod()).variable().equals(exam)); 
+                boolean conf = !exam.checkDistributionConstraints(room);
+                if (sharing == null) {
+                	for (ExamPlacement p: room.getRoom().getPlacements(period.getPeriod()))
+                		if (!p.variable().equals(exam)) conf = true;
+                } else {
+                	if (sharing.inConflict(exam, room.getRoom().getPlacements(period.getPeriod()), room.getRoom()))
+                		conf = true;
+                }
 
                 if (!allowConflicts && conf) continue;
                 
@@ -1087,8 +1098,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
             if (room==null) return null;
             TreeSet<ExamAssignment> ret = new TreeSet();
             for (ExamPeriod period: model.getPeriods()) {
-                if (room.getPlacement(period)!=null)
-                    ret.add(new ExamAssignment(room.getPlacement(period)));
+                for (ExamPlacement placement: room.getPlacements(period))
+                	ret.add(new ExamAssignment(placement));
             }
             return ret;
         }
