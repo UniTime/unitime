@@ -2002,4 +2002,16 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("{0} ({1} seats)")
 	String labelLocationLabelWithCapacity(String label, int capacity);
+	
+	@DefaultMessage("Unassigned {0}")
+	String classNoteUnassigned(String assignment);
+
+	@DefaultMessage("Assigned {0}")
+	String classNoteAssigned(String assignment);
+
+	@DefaultMessage("Reassigned {0} >> {1}")
+	String classNoteReassigned(String oldAssignment, String newAssignment);
+	
+	@DefaultMessage("N/A")
+	String classMeetingsNotApplicable();
 }
