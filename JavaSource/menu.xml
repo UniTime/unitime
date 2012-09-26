@@ -383,49 +383,24 @@
 	<!--  <item name="Classes" page="classes.do">  -->
 	<item name="Classes" page="classes" type="gwt">
 		<condition>
-			<or>
-				<and>
-					<not>
-						<isAuthenticated/>
-					</not>
-					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
-				</and>
-				<and>
-					<isAuthenticated/>
-					<not>
-						<hasPermission name="HasRole"/>
-					</not>
-				</and>
-			</or>
+			<isAuthenticated/>
+			<not>
+				<hasPermission name="HasRole"/>
+			</not>
 		</condition>
 	</item>
 	<item name="Examinations" page="exams" type="gwt">
 		<condition>
-			<or>
-				<and>
-					<not>
-						<isAuthenticated/>
-					</not>
-					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
-				</and>
-				<and>
-					<isAuthenticated/>
-					<not>
-						<hasPermission name="HasRole"/>
-					</not>
-				</and>
-			</or>
+			<isAuthenticated/>
+			<not>
+				<hasPermission name="HasRole"/>
+			</not>
 		</condition>
 	</item>
 	<item name="Timetable" page="timetable" type="gwt">
 		<condition>
 			<or>
-				<and>
-					<not>
-						<isAuthenticated/>
-					</not>
-					<propertyEquals name="unitime.event_timetable.requires_authentication" value="false" defaultValue="true"/>
-				</and>
+				<hasRole name="Anonymous"/>
 				<and>
 					<isAuthenticated/>
 					<not>
@@ -448,6 +423,9 @@
 				<hasPermission name="IsAdmin"/>
 			</or>
 			<hasPermission name="Events" authority="any"/>
+			<not>
+				<hasRole name="Anonymous"/>
+			</not>
 		</condition>
 		<menu name="Rooms" page="roomSearch.do">
 			<condition>
@@ -523,15 +501,7 @@
 	</item>
 	<item name="Scheduling Assistant" page="sectioning" type="gwt">
 		<condition>
-			<or>
-				<and>
-					<not>
-						<isAuthenticated/>
-					</not>
-					<hasRight name="isSectioningEnabled"/>
-				</and>
-				<hasPermission name="SchedulingAssistant"/>	
-			</or>
+			<hasPermission name="SchedulingAssistant"/>	
 			<not>
 				<hasPermission name="StudentScheduling"/>
 			</not>
@@ -826,6 +796,9 @@
 	<menu name="Help">
 		<condition>
 			<isAuthenticated/>
+			<not>
+				<hasRole name="Anonymous"/>
+			</not>
 		</condition>
 		<item name="Event Manual" page="tmtbl.help.manual.events" type="property" target="download">
 			<condition>
@@ -865,13 +838,19 @@
 	<item name="Log Out" page="logOut.do">
 		<condition>
 			<isAuthenticated/>
+			<not>
+				<hasRole name="Anonymous"/>
+			</not>
 		</condition>
 	</item>
 	<item name="Log In" page="login.do">
 		<condition>
-			<not>
-				<isAuthenticated/>
-			</not>
+			<or>
+				<not>
+					<isAuthenticated/>
+				</not>
+				<hasRole name="Anonymous"/>
+			</or>
 		</condition>
 	</item>
 </unitime-menu>

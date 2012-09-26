@@ -913,4 +913,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Add All Departments")
 	String buttonAddAllDepartments();
+	
+	@DefaultMessage("No academic session is available.")
+	String noSessionAvailable();
 }

@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -109,6 +110,10 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			if (prev != null) acadSession.setPreviousId(prev.getUniqueId());
 			ret.add(acadSession);
 		}
+		
+		if (ret.isEmpty())
+			throw new GwtRpcException(MESSAGES.noSessionAvailable());
+
 		return ret;
 	}
 	

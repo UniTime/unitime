@@ -39,7 +39,8 @@
 		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
 		<expression-handler ref="webExpressionHandler"/>
 		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
-		
+		<anonymous enabled="false"/>
+		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
 	</http>
 	
 	<global-method-security pre-post-annotations="enabled">

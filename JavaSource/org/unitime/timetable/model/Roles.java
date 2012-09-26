@@ -56,6 +56,7 @@ public class Roles extends BaseRoles implements HasRights {
 	public static final String ROLE_STUDENT = "Student";
 	public static final String ROLE_INSTRUCTOR = "Instructor";
 	public static final String ROLE_NONE = "No Role";
+	public static final String ROLE_ANONYMOUS = "Anonymous";
 	
     public static String USER_ROLES_ATTR_NAME = "userRoles";
     public static String ROLES_ATTR_NAME = "rolesList";
