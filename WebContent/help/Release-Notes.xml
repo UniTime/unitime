@@ -28,6 +28,20 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Log Cleaner</name>
+			<description>
+				<line>Old records in online sectioning log were not cleaned up (wrong method was called).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.202</version>
+	<release-date>Sat, 15 Sep 2012</release-date>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Configuration Limits</name>
