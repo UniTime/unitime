@@ -7633,4 +7633,16 @@
 			update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1
 		</mysql>
 	</update>
+		<update version="92" date="26-Sep-2012" comment="Anonymous Role">
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql onFail="next">insert into %SCHEMA%.roles (role_id, reference, abbv, manager, enabled) values  (%ID%, 'Anonymous', 'Anonymous', 0, 1)</mysql>
+		<plsql onFail="next">insert into %SCHEMA%.roles (role_id, reference, abbv, manager, enabled) values (%SCHEMA%.ROLE_SEQ.nextval, 'Anonymous', 'Anonymous', 0, 1)</plsql>
+		<mysql>insert into %SCHEMA%.rights (role_id, value) values
+			(%ID%, 'Events'),
+			(%ID%, 'SchedulingAssistant')
+		</mysql>
+		<plsql>insert into %SCHEMA%.rights (select role_id, 'Events' as value from %SCHEMA%.roles where reference = 'Anonymous')</plsql>
+		<plsql>insert into %SCHEMA%.rights (select role_id, 'SchedulingAssistant' as value from %SCHEMA%.roles where reference = 'Anonymous')</plsql>
+	</update>
 </dbupdate>
