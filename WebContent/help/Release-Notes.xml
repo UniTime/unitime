@@ -41,6 +41,12 @@
 				<line>Rows with no data (e.g., header row) cannot be selected.</line>
 			</description>
 		</item>
+		<item>
+			<name>Database Loader</name>
+			<description>
+				<line>Load class instructor assignments directly from classes rather than from the committed solution(s).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Bug Fixes</title>
