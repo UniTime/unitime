@@ -65,6 +65,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.context.AnonymousUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -378,7 +379,7 @@ public class MenuServlet implements MenuService {
 			try {
 				
 				UserContext user = getSessionContext().getUser();
-				if (user == null) return null;
+				if (user == null || user instanceof AnonymousUserContext) return null;
 				
 				ret.put("0Name", user.getName());
 				

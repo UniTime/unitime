@@ -20,7 +20,7 @@
 update roles set abbv='System Administrator' where reference='Administrator';
 update roles set reference='Sysadmin' where reference='Administrator';
 
-insert into roles (role_id, reference, abbv, manager, enabled) values (ROLE_SEQ.nextval, 'Administrator', 'Administrator', 1, 1)
+insert into roles (role_id, reference, abbv, manager, enabled) values (ROLE_SEQ.nextval, 'Administrator', 'Administrator', 1, 1);
 
 delete from rights;
 

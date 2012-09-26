@@ -105,7 +105,7 @@ public class EventPermissions {
 	public static class Events extends EventPermission<Session> {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId()).isEmpty());
+			return source.getStatusType().canNoRoleReport() || (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId()).isEmpty());
 		}
 		
 		@Override
