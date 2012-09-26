@@ -1221,8 +1221,8 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private void loadInstructorAvailabilities(org.hibernate.Session hibSession, String puids) {
-    	Query q = hibSession.createQuery("select distinct i.externalUniqueId, a from DepartmentalInstructor i inner join i.assignments as a " +
-    			"where i.externalUniqueId in ("+puids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
+    	Query q = hibSession.createQuery("select distinct i.externalUniqueId, a from ClassInstructor ci inner join ci.instructor i inner join ci.classInstructing.assignments a " +
+    			"where ci.lead = true and i.externalUniqueId in ("+puids+") and a.solution.owner.session.uniqueId=:sessionId and a.solution.commited=true and a.solution.owner.uniqueId not in ("+iSolverGroupIds+")");
     	q.setLong("sessionId",iSessionId.longValue());
 		for (Iterator i=q.iterate();i.hasNext();) {
 			Object[] x = (Object[])i.next();
