@@ -210,7 +210,6 @@ public class ManageSolversAction extends Action {
                         RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
                         if (solverName.equals(server.toString())) {
                             server.disconnectProxy();
-                            i.remove();
                             break;
                         }
                     }
