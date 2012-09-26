@@ -28,6 +28,21 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Curricula</name>
+			<description>
+				<line>Curricula table: hide the tooltip (showing the numbers broken by classifications) on mouse click (i.e., when going to Curriculum Detail).</line>
+				<line>Course selections: hide suggestions when focus is lost (e.g., when moved to the next line using Alt + down).</line>
+				<line>Move to the next row (Alt + down) and swap with the next row (Ctrl + down) can no longer be combined
+					<line>This means that Ctrl + Alt + down now only moves to the next row.</line>
+					<line>Same with moving up.</line>
+				</line>
+				<line>Rows with no data (e.g., header row) cannot be selected.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Log Cleaner</name>
