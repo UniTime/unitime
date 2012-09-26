@@ -413,7 +413,7 @@ public class UniTimeTable<T> extends FlexTable {
 			}
 			break;
 		case Event.ONCLICK:
-			if (isAllowSelection()) {
+			if (isAllowSelection() && hasData) {
 				Element element = DOM.eventGetTarget(event);
 				while (DOM.getElementProperty(element, "tagName").equalsIgnoreCase("div"))
 					element = DOM.getParent(element);
@@ -423,6 +423,8 @@ public class UniTimeTable<T> extends FlexTable {
 					getRowFormatter().setStyleName(row, "unitime-TableRow" + (selected ? "Selected" : "") + (hover ? "Hover" : ""));
 				}
 			}
+			if (iHintPanel != null && iHintPanel.isShowing())
+				iHintPanel.hide();
 			for (MouseClickListener<T> listener: iMouseClickListeners)
 				listener.onMouseClick(tableEvent);
 			break;
@@ -450,16 +452,7 @@ public class UniTimeTable<T> extends FlexTable {
 				} while (!focus(row, col));
 				event.stopPropagation();
 		    	event.preventDefault();
-			}
-			if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
-				do {
-					row++;
-					if (row >= getRowCount()) break;
-				} while (!focus(row, col));
-				event.stopPropagation();
-		    	event.preventDefault();
-			}
-			if (hasData && event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
+			} else if (hasData && event.getKeyCode() == KeyCodes.KEY_UP && event.getCtrlKey()) {
 				SmartTableRow<T> up = getSmartRow(row - 1);
 				if (up != null && up.getData() != null && canSwapRows(r.getData(), up.getData())) {
 					getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
@@ -478,7 +471,14 @@ public class UniTimeTable<T> extends FlexTable {
 				event.stopPropagation();
 		    	event.preventDefault();
 			}
-			if (hasData && event.getKeyCode() == KeyCodes.KEY_DOWN && event.getCtrlKey()) {
+			if (event.getKeyCode() == KeyCodes.KEY_DOWN && (event.getAltKey() || event.getMetaKey())) {
+				do {
+					row++;
+					if (row >= getRowCount()) break;
+				} while (!focus(row, col));
+				event.stopPropagation();
+		    	event.preventDefault();
+			} else if (hasData && event.getKeyCode() == KeyCodes.KEY_DOWN && event.getCtrlKey()) {
 				SmartTableRow<T> dn = getSmartRow(row + 1);
 				if (dn != null && dn.getData() != null && canSwapRows(r.getData(), dn.getData())) {
 					getRowFormatter().removeStyleName(row, "unitime-TableRowHover");
