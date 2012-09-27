@@ -32,7 +32,7 @@
 		Class_ clazz = (new Class_DAO()).get(Long.valueOf(request.getParameter("class")));
 		if (clazz!=null) 
 			datePattern = clazz.getSchedulingSubpart().effectiveDatePattern();
-	} else if (datePatternIdd < 0) {
+	} else if (datePatternId < 0) {
     	datePattern = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()).getDefaultDatePatternNotNull();
 	} else {
 		datePattern = (new DatePatternDAO()).get(datePatternId);
