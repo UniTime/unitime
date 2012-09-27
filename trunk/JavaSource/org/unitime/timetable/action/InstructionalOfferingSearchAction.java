@@ -116,7 +116,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    }
 
 		    // Set Session Variables
-		    sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, frm.getSubjectAreaId());
+		    sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, frm.getSubjectAreaId().toString());
 		    sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, frm.getCourseNbr());
 	        
 
