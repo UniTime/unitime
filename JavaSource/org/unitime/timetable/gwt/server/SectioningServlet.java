@@ -688,7 +688,7 @@ public class SectioningServlet implements SectioningService {
 		UniTimePrincipal principal = (UniTimePrincipal)getSessionContext().getAttribute("user");
 		if (principal != null) return principal.getName();
 		UserContext user = getSessionContext().getUser();
-		if (user != null) return user.getName();
+		if (user != null) return (user.getName() == null ? user.getUsername() : user.getName());
 		return "Guest";
 	}
 	
@@ -1856,8 +1856,9 @@ public class SectioningServlet implements SectioningService {
 		if (user != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
 				.setExternalId(user.getExternalUserId())
-				.setName(user.getName())
-				.setType(OnlineSectioningLog.Entity.EntityType.MANAGER).build();
+				.setName(user.getName() == null ? user.getUsername() : user.getName())
+				.setType(user.getCurrentAuthority() != null && user.getCurrentAuthority().hasRight(Right.HasRole) ?
+						 OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 		} else if (principal != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
 				.setExternalId(principal.getExternalId())

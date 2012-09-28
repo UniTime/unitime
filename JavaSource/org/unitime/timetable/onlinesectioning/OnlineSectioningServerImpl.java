@@ -596,8 +596,18 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 				throw (SectioningException)e;
 			throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 		} finally {
-			if (h.getAction() != null)
+			if (h.getAction() != null) {
 				h.getAction().setEndTime(System.currentTimeMillis()).setCpuTime(OnlineSectioningHelper.getCpuTime() - c0);
+				if ((!h.getAction().hasStudent() || !h.getAction().getStudent().hasExternalId()) &&
+					user != null && user.hasExternalId() &&
+					user.hasType() && user.getType() == OnlineSectioningLog.Entity.EntityType.STUDENT) {
+					if (h.getAction().hasStudent()) {
+						h.getAction().getStudentBuilder().setExternalId(user.getExternalId());
+					} else {
+						h.getAction().setStudent(OnlineSectioningLog.Entity.newBuilder().setExternalId(user.getExternalId()));
+					}
+				}
+			}
 			iLog.debug("Executed: " + h.getLog() + " (" + h.getLog().toByteArray().length + " bytes)");
 			OnlineSectioningLogger.getInstance().record(h.getLog());
 		}
