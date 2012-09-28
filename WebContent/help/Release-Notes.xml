@@ -49,6 +49,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Student Scheduling Assistant</title>
+		<item>
+			<name>Online Sectioning Log</name>
+			<description>
+				<line>If a student is logged in, fill in the student external id from the authentication to the log.
+					<line>This helps to record actions of students using the scheduling assistant at the time when we do not have the student record yet.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Log Cleaner</name>
