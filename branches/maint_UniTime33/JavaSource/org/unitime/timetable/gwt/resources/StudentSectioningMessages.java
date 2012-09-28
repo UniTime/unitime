@@ -303,7 +303,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("<u>R</u>equests")
 	String buttonRequests();
 	
-	@DefaultMessage("Re-schedule")
+	@DefaultMessage("Re&#8209;schedule")
 	String buttonReset();
 
 	@DefaultMessage("<u>S</u>chedule")
@@ -383,7 +383,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Password:")
 	String password();
 	
-	@DefaultMessage("Log In")
+	@DefaultMessage("Log&nbsp;In")
 	String buttonUserLogin();
 	
 	@DefaultMessage("Guest")
