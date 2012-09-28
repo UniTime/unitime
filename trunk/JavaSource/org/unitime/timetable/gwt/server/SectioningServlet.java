@@ -667,7 +667,7 @@ public class SectioningServlet implements SectioningService {
     				}
     			}
     		LoginManager.loginSuceeded(authResult.getName());
-    		return user.getName();
+    		return (user.getName() == null ? user.getUsername() : user.getName());
     	} catch (Exception e) {
     		LoginManager.addFailedLoginAttempt(userName, new Date());
     		throw new PageAccessException(e.getMessage(), e);
@@ -1857,7 +1857,7 @@ public class SectioningServlet implements SectioningService {
 			return OnlineSectioningLog.Entity.newBuilder()
 				.setExternalId(user.getExternalUserId())
 				.setName(user.getName() == null ? user.getUsername() : user.getName())
-				.setType(user.getCurrentAuthority() != null && user.getCurrentAuthority().hasRight(Right.HasRole) ?
+				.setType(getSessionContext().hasPermission(Right.StudentSchedulingAdvisor) ?
 						 OnlineSectioningLog.Entity.EntityType.MANAGER : OnlineSectioningLog.Entity.EntityType.STUDENT).build();
 		} else if (principal != null) {
 			return OnlineSectioningLog.Entity.newBuilder()
