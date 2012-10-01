@@ -63,15 +63,12 @@
 		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
 	</beans:bean>
 
-	<!-- 
-	<beans:bean id="org.springframework.security.authenticationManager" class="org.springframework.security.authentication.ProviderManager">
-		<beans:property name="providers">
-			<beans:list>
-				<beans:ref local="databaseAuthenticationProvider" />
-			</beans:list>
+	<!-- JAAS (Legacy) Authentication -->
+	<beans:bean id="jaasAuthProvider" class="org.unitime.timetable.authenticate.jaas.JaasAuthenticationProvider">
+		<beans:property name="configuration">
+			<beans:bean class="org.unitime.timetable.authenticate.jaas.LoginConfiguration"/>
 		</beans:property>
 	</beans:bean>
-	-->
  	
 	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication -->
@@ -86,6 +83,8 @@
 			group-search-filter="${unitime.authentication.ldap.group-search-filter}"
 			user-context-mapper-ref="unitimeUserContextMapper"
 		/>
+		<!-- JAAS (Legacy) Authentication -->
+		<authentication-provider ref="jaasAuthProvider"/>
 	</authentication-manager>
 	
 </beans:beans>
