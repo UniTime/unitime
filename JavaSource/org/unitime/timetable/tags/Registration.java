@@ -72,6 +72,13 @@ public class Registration extends BodyTagSupport {
 	
 	private static long sLastRefresh = -1;
 	
+	private static enum Obtrusiveness {
+		high,
+		medium,
+		low,
+		none
+	}
+	
     public SessionContext getSessionContext() {
     	return HttpSessionContext.getSessionContext(pageContext.getServletContext());
     }
@@ -188,6 +195,7 @@ public class Registration extends BodyTagSupport {
 			try {
 				pageContext.getOut().println(sMessage);
 				if (isUpdate()) {
+					Obtrusiveness obtrusiveness = Obtrusiveness.valueOf(ApplicationProperties.getProperty("unitime.registration.obtrusiveness", Obtrusiveness.high.name()));
 					if (getSessionContext().hasPermission(Right.Registration)) {
 						String backUrl = URLEncoder.encode(((HttpServletRequest)pageContext.getRequest()).getRequestURL().toString() + "?refresh=1", "ISO-8859-1");
 						pageContext.getOut().println(
@@ -197,15 +205,26 @@ public class Registration extends BodyTagSupport {
 								"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
 								(sRegistered ? "update the current registration" : "register") + "." +
 								"</span>");
-						pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage +
-								"<br><span style='font-size: x-small;'>Click <a " +
-								"onMouseOver=\\\"this.style.cursor='hand';this.style.cursor='pointer';\\\" " +
-								"onCLick=\\\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\\\" " +
-								"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
-								(sRegistered ? "update the current registration" : "register") + "." +
-								"</span>\"); }</script>");
+						switch (obtrusiveness) {
+						case low:
+							if (sRegistered) break;
+						case high:
+						case medium:
+							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage +
+									"<br><span style='font-size: x-small;'>Click <a " +
+									"onMouseOver=\\\"this.style.cursor='hand';this.style.cursor='pointer';\\\" " +
+									"onCLick=\\\"showGwtDialog('UniTime " + Constants.VERSION + " Registration', 'https://unitimereg.appspot.com?key=" + sKey + "&back=" + backUrl + "', '750px', '75%');\\\" " +
+									"title='UniTime " + Constants.VERSION + " Registration'>here</a> to " +
+									(sRegistered ? "update the current registration" : "register") + "." +
+									"</span>\"); }</script>");							
+						}
 					} else {
-						pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage + "\"); }</script>");
+						switch (obtrusiveness) {
+						case medium:
+							if (sRegistered) break;
+						case high:
+							pageContext.getOut().println("<script>function gwtOnLoad() { gwtShowMessage(\"" + sMessage + "\"); }</script>");
+						}
 					}
 				}
 			} catch (IOException e) {}
