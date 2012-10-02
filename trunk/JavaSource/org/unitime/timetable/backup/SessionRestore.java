@@ -225,7 +225,7 @@ public class SessionRestore {
 					} else if (type instanceof LongType) {
 						value = Long.valueOf(element.getValue(0));
 					} else if (type instanceof ShortType) {
-						value = Long.valueOf(element.getValue(0));
+						value = Short.valueOf(element.getValue(0));
 					}
 				} else if (type instanceof DateType) {
 					value = new DateType().fromStringValue(element.getValue(0));
@@ -286,6 +286,16 @@ public class SessionRestore {
 	}
 	
 	private Object get(Class clazz, String id) {
+		if (clazz.equals(String.class) || clazz.equals(StringType.class)) return id;
+		if (clazz.equals(Character.class) || clazz.equals(CharacterType.class)) return (id == null || id.isEmpty() ? null : id.charAt(0));
+		if (clazz.equals(Byte.class) || clazz.equals(ByteType.class)) return Byte.valueOf(id);
+		if (clazz.equals(Short.class) || clazz.equals(ShortType.class)) return Short.valueOf(id);
+		if (clazz.equals(Integer.class) || clazz.equals(IntegerType.class)) return Integer.valueOf(id);
+		if (clazz.equals(Long.class) || clazz.equals(LongType.class)) return Long.valueOf(id);
+		if (clazz.equals(Float.class) || clazz.equals(FloatType.class)) return Float.valueOf(id);
+		if (clazz.equals(Double.class) || clazz.equals(DoubleType.class)) return Double.valueOf(id);
+		if (clazz.equals(Boolean.class) || clazz.equals(BooleanType.class)) return Boolean.valueOf(id);
+		
 		Map<String, Entity> entities = iEntities.get(clazz.getName());
 		if (entities != null) {
 			Entity entity = entities.get(id);

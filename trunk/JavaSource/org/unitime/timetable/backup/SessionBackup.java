@@ -222,7 +222,7 @@ public class SessionBackup {
                 		if (avoid.contains(item.name() + "." + property)) continue;
                 		
                 		ClassMetadata meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-                		if (item.contains(meta.getEntityName())) continue;
+                		if (meta == null || item.contains(meta.getEntityName())) continue;
 
                 		QueueItem qi = new QueueItem(meta, item, property, Relation.Many);
                 		List<QueueItem> items = data.get(qi.name());
@@ -522,15 +522,22 @@ public class SessionBackup {
 			Map<Serializable, List<Object>> relation = iRelationCache.get(property);
 			if (relation == null) {
 				Type type = meta().getPropertyType(property);
-				ClassMetadata meta = null;
-				if (type instanceof CollectionType)
-					meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
-				else
-					meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+				String idProperty = null;
+				if (!data) {
+					ClassMetadata meta = null;
+					if (type instanceof CollectionType)
+						meta = iHibSessionFactory.getClassMetadata(((CollectionType)type).getElementType((SessionFactoryImplementor)iHibSessionFactory).getReturnedClass());
+					else
+						meta = iHibSessionFactory.getClassMetadata(type.getReturnedClass());
+					if (meta == null) {
+						data = true;
+					} else {
+						idProperty = meta.getIdentifierPropertyName();
+						if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
+							idProperty = "externalUniqueId";
+					}
+				}
 				relation = new HashMap<Serializable, List<Object>>();
-				String idProperty = meta.getIdentifierPropertyName();
-				if (name().equals(LastLikeCourseDemand.class.getName()) && "student".equals(property))
-					idProperty = "externalUniqueId";
 				for (Object[] o: (List<Object[]>)iHibSession.createQuery(
 						"select distinct " + hqlName() + "." + meta().getIdentifierPropertyName() + (data ? ", p" : ", p." + idProperty) + 
 						" from " + hqlFrom() + " inner join " + hqlName() + "." + property + " p where " + hqlWhere()
