@@ -137,7 +137,7 @@
                 name="datePattern"
                 class="DatePattern"
                 column="date_pattern_id"
-                not-null="false"
+                not-null="true"
                 insert="true"
                 update="true"
                 foreign-key="fk_date_pref_date_ptrn"
