@@ -164,14 +164,6 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 			HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 
-        if (Session.getAllSessions().size()==1) {
-            ActionMessages errors = new ActionMessages();
-            errors.add("sessionId", new ActionMessage("errors.generic", "Last academic session cannot be deleted -- there needs to be at least one academic session present."));
-            saveErrors(request, errors);
-            return mapping.findForward("showEdit");
-            
-        }
-        
 		Long id =  new Long(Long.parseLong(request.getParameter("sessionId")));
 		
         if (id.equals(sessionContext.getUser().getCurrentAcademicSessionId())) {
