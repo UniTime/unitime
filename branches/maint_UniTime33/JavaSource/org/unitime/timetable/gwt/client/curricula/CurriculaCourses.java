@@ -1328,11 +1328,11 @@ public class CurriculaCourses extends Composite {
 						if (getText().isEmpty()) {
 							iShare = null;
 						} else if (getText().endsWith("%")) {
-							iShare = Float.valueOf(getText().substring(0, getText().length() - 1)) / 100.0f;
+							iShare = (float)NF.parse(getText().substring(0, getText().length() - 1)) / 100.0f;
 							if (iShare > 1.0f) iShare = 1.0f;
 							if (iShare <= 0.0f) iShare = null;
 						} else {
-							iShare = Float.valueOf(getText()) / iClassifications.getExpected(iColumn);
+							iShare = (float)NF.parse(getText()) / iClassifications.getExpected(iColumn);
 							if (iShare > 1.0f) iShare = 1.0f;
 							if (iShare <= 0.0f) iShare = null;
 						}

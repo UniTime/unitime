@@ -39,6 +39,9 @@
 					<line>Same with moving up.</line>
 				</line>
 				<line>Rows with no data (e.g., header row) cannot be selected.</line>
+				<line>Curriculum / Course Projections: parse entered text using NumberFormat.parse (instead of Float.valueOf).
+					<line>This fixes the issue with different decimal points in different localizations (e.g., in Czech it is a comma instead of a dot).</line>
+				</line>
 			</description>
 		</item>
 		<item>
