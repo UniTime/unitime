@@ -622,9 +622,9 @@ public class CurriculumProjectionRulesPage extends Composite {
 						if (iTextBox.getText().isEmpty()) {
 							iRow.setProjection(iClasf, null);
 						} else if (iTextBox.getText().endsWith("%")) {
-							iRow.setProjection(iClasf, Float.valueOf(iTextBox.getText().substring(0, iTextBox.getText().length() - 1)) / 100.0f);
+							iRow.setProjection(iClasf, (float)NF.parse(iTextBox.getText().substring(0, iTextBox.getText().length() - 1)) / 100.0f);
 						} else {
-							iRow.setProjection(iClasf, Float.valueOf(iTextBox.getText()) / iRow.getLastLike(iClasf));
+							iRow.setProjection(iClasf, (float)NF.parse(iTextBox.getText()) / iRow.getLastLike(iClasf));
 						}
 					} catch (Exception e) {
 						iRow.setProjection(iClasf, null);
@@ -794,14 +794,14 @@ public class CurriculumProjectionRulesPage extends Composite {
 					try {
 						if (iTextBox.getText().isEmpty()) {
 						} else if (iTextBox.getText().endsWith("%")) {
-							projection = Float.valueOf(iTextBox.getText().substring(0, iTextBox.getText().length() - 1)) / 100.0f;
+							projection = (float)NF.parse(iTextBox.getText().substring(0, iTextBox.getText().length() - 1)) / 100.0f;
 						} else {
 							int lastLike = 0;
 							for (MyCell cell: iCells) {
 								if (iVertical && cell.getRow().getParent() == null) continue;
 								lastLike += cell.getRow().getLastLike(cell.getClassification());
 							}
-							projection = Float.valueOf(iTextBox.getText()) / lastLike;
+							projection = (float)NF.parse(iTextBox.getText()) / lastLike;
 						}
 					} catch (Exception e) {
 					}
