@@ -151,6 +151,9 @@ public class RoomListAction extends Action {
 			sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, roomListForm.getDeptCodeX());
 		}
 		
+		//set request attribute for department
+		LookupTables.setupDepartments(request, sessionContext, true);
+
 		// Validate input
 		errors = roomListForm.validate(mapping, request);
 
@@ -212,10 +215,6 @@ public class RoomListAction extends Action {
 		// build web table for university locations
 		buildWebTable(request, roomListForm, CommonValues.Yes.eq(UserProperty.RoomFeaturesInOneColumn.get(sessionContext.getUser())), examType);
 		
-		
-		//set request attribute for department
-		LookupTables.setupDepartments(request, sessionContext, true);
-
 		return mapping.findForward("showRoomList");
 
 	}
