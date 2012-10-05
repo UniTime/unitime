@@ -310,7 +310,7 @@ public class TimetableManagerEditAction extends Action {
      * @param request
      */
     private void setupRoles(HttpServletRequest request, TimetableManagerForm frm ) {
-        List<Roles> roles = Roles.findAll(true);
+        Set<Roles> roles = Roles.findAll(true);
         
         if (!sessionContext.hasPermission(Right.SessionIndependent))
         	for (Iterator<Roles> i = roles.iterator(); i.hasNext(); )

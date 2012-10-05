@@ -32,7 +32,6 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.services.SimpleEditService;
@@ -300,27 +299,31 @@ public class SimpleEditServlet implements SimpleEditService {
 				data = new SimpleEditInterface(type,
 						new Field("Reference", FieldType.text, 160, 20),
 						new Field("Name", FieldType.text, 250, 40),
-						new Field("Enabled", FieldType.toggle, 40)
+						new Field("Enabled", FieldType.toggle, 40),
+						new Field("Sort Order", FieldType.text, 80, 10, false, false)
 						);
-				data.setSortBy(0, 1);
-				for (Roles role: RolesDAO.getInstance().findAll()) {
+				data.setSortBy(3);
+				int idx = 0;
+				for (Roles role: Roles.findAll(false)) {
 					Record r = data.addRecord(role.getRoleId(), role.isManager() && !role.isUsed());
 					r.setField(0, role.getReference(), role.isManager());
 					r.setField(1, role.getAbbv());
 					r.setField(2, role.isEnabled() ? "true" : "false");
+					r.setField(3, String.valueOf(idx++));
 				}
 				break;
 			case permissions:
-				List<Roles> roles = RolesDAO.getInstance().findAll(Order.asc("reference"));
+				List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
 				Field[] fields = new Field[2 + roles.size()];
 				fields[0] = new Field("Name", FieldType.text, 160, 200, false);
 				fields[1] = new Field("Level", FieldType.text, 160, 200, false);
 				for (int i = 0; i < roles.size(); i++) {
-					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40);
+					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40, true, roles.get(i).isEnabled());
 				}
 				data = new SimpleEditInterface(type, fields);
 				data.setSortBy(-1);
 				data.setAddable(false);
+				data.setSaveOrder(false);
 				for (Right right: Right.values()) {
 					Record r = data.addRecord((long)right.ordinal(), false);
 					r.setField(0, right.toString(), false);
@@ -992,7 +995,7 @@ public class SimpleEditServlet implements SimpleEditService {
 							ChangeLog.addChange(hibSession,
 									getSessionContext(),
 									role,
-									role.getAbbv(),
+									role.getAbbv() + " role",
 									Source.SIMPLE_EDIT, 
 									Operation.DELETE,
 									null,
@@ -1011,7 +1014,7 @@ public class SimpleEditServlet implements SimpleEditService {
 								ChangeLog.addChange(hibSession,
 										getSessionContext(),
 										role,
-										role.getAbbv(),
+										role.getAbbv() + " role",
 										Source.SIMPLE_EDIT, 
 										Operation.UPDATE,
 										null,
@@ -1028,7 +1031,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						ChangeLog.addChange(hibSession,
 								getSessionContext(),
 								role,
-								role.getAbbv(),
+								role.getAbbv() + " role",
 								Source.SIMPLE_EDIT, 
 								Operation.CREATE,
 								null,
@@ -1036,7 +1039,7 @@ public class SimpleEditServlet implements SimpleEditService {
 					}	
 					break;
 				case permissions:
-					List<Roles> roles = RolesDAO.getInstance().findAll(Order.asc("reference"));
+					List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
 					Set<Roles> changed = new HashSet<Roles>();
 					for (Record r: data.getRecords()) {
 						Right right = Right.values()[(int)r.getUniqueId().longValue()];
@@ -1055,7 +1058,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						ChangeLog.addChange(hibSession,
 								getSessionContext(),
 								role,
-								role.getAbbv(),
+								role.getAbbv() + " permissions",
 								Source.SIMPLE_EDIT, 
 								Operation.UPDATE,
 								null,
