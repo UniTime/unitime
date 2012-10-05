@@ -342,30 +342,34 @@ public class SimpleEditPage extends Composite {
 				
 				Set<String> ordRequest = new HashSet<String>();
 				ordRequest.add("SimpleEdit.Order[" + iType.toString() + "]");
-				iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
-					@Override
-					public void onSuccess(HashMap<String, String> result) {
-						final String order = "|" + result.get("SimpleEdit.Order[" + iType.toString() + "]") + "|";
-						Collections.sort(iData.getRecords(), new Comparator<Record>() {
-							public int compare(Record r1, Record r2) {
-								int i1 = (r1.getUniqueId() == null ? -1 : order.indexOf("|" + r1.getUniqueId() + "|"));
-								if (i1 >= 0) {
-									int i2 = (r2.getUniqueId() == null ? -1 : order.indexOf("|" + r2.getUniqueId() + "|"));
-									if (i2 >= 0) {
-										return (i1 < i2 ? -1 : i1 > i2 ? 1 : cmp.compare(r1, r2));
+				if (iData.isSaveOrder()) {
+					iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
+						@Override
+						public void onSuccess(HashMap<String, String> result) {
+							final String order = "|" + result.get("SimpleEdit.Order[" + iType.toString() + "]") + "|";
+							Collections.sort(iData.getRecords(), new Comparator<Record>() {
+								public int compare(Record r1, Record r2) {
+									int i1 = (r1.getUniqueId() == null ? -1 : order.indexOf("|" + r1.getUniqueId() + "|"));
+									if (i1 >= 0) {
+										int i2 = (r2.getUniqueId() == null ? -1 : order.indexOf("|" + r2.getUniqueId() + "|"));
+										if (i2 >= 0) {
+											return (i1 < i2 ? -1 : i1 > i2 ? 1 : cmp.compare(r1, r2));
+										}
 									}
+									return cmp.compare(r1, r2);
 								}
-								return cmp.compare(r1, r2);
-							}
-						});
-						refreshTable();
-					}
-					@Override
-					public void onFailure(Throwable caught) {
-						Collections.sort(iData.getRecords(), cmp);
-						refreshTable();
-					}
-				});
+							});
+							refreshTable();
+						}
+						@Override
+						public void onFailure(Throwable caught) {
+							Collections.sort(iData.getRecords(), cmp);
+							refreshTable();
+						}
+					});
+				} else {
+					refreshTable();
+				}
 			}
 			
 			@Override
@@ -420,6 +424,30 @@ public class SimpleEditPage extends Composite {
 					return "Sort by " + field.getName();
 				}
 			});
+			if (col == 0) {
+				cell.addOperation(new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						iTable.sort(iData.getComparator());
+						saveOrder();
+					}
+					
+					@Override
+					public boolean isApplicable() {
+						return true;
+					}
+					
+					@Override
+					public boolean hasSeparator() {
+						return false;
+					}
+					
+					@Override
+					public String getName() {
+						return "Sort by default";
+					}
+				});
+			}
 			col++;
 		}
 		for (UniTimeTableHeader h: header) {
@@ -469,7 +497,7 @@ public class SimpleEditPage extends Composite {
 		
 		if (iVisible == null) {
 			iVisible = new boolean[iData.getFields().length];
-			for (int i = 0; i < iVisible.length; i++) iVisible[i] = true;
+			for (int i = 0; i < iVisible.length; i++) iVisible[i] = iData.getFields()[i].isVisible();
 		}
 		
 		boolean empty = false;
@@ -791,6 +819,7 @@ public class SimpleEditPage extends Composite {
 	}
 
 	public void saveOrder() {
+		if (!iData.isSaveOrder()) return;
 		iHeader.setMessage("Saving order...");
 		String ord = "";
 		for (int i = 0; i < iTable.getRowCount(); i++) {

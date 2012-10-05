@@ -19,10 +19,10 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.hibernate.Criteria;
-import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.timetable.model.base.BaseRoles;
 import org.unitime.timetable.model.dao.RolesDAO;
@@ -32,7 +32,7 @@ import org.unitime.timetable.security.rights.Right;
 
 
 
-public class Roles extends BaseRoles implements HasRights {
+public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
 
 /**
 	 *
@@ -80,11 +80,23 @@ public class Roles extends BaseRoles implements HasRights {
     			.setLong("roleId", getRoleId()).uniqueResult()).intValue() > 0;
     }
     
-    public static List<Roles> findAll(boolean managerOnly) {
-    	Criteria criteria = RolesDAO.getInstance().getSession().createCriteria(Roles.class);
+    public static Set<Roles> findAll(boolean managerOnly) {
+    	return findAll(managerOnly, RolesDAO.getInstance().getSession());
+    }
+    
+    public static Set<Roles> findAll(boolean managerOnly, org.hibernate.Session hibSession) {
+    	Criteria criteria = hibSession.createCriteria(Roles.class);
     	if (managerOnly)
     		criteria = criteria.add(Restrictions.eq("manager", Boolean.TRUE));
-    	return (List<Roles>)criteria.addOrder(Order.asc("abbv")).setCacheable(true).list();
+    	return new TreeSet<Roles>(criteria.setCacheable(true).list());
     }
-    		
+
+	@Override
+	public int compareTo(Roles o) {
+		if (isManager() != o.isManager())
+			return (isManager() ? 1 : -1);
+		if (getRights().size() != o.getRights().size())
+			return (getRights().size() < o.getRights().size() ? -1 : 1); 
+		return getAbbv().compareToIgnoreCase(o.getAbbv());
+	}
 }
