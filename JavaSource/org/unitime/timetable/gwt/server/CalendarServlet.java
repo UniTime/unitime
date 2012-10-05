@@ -119,7 +119,7 @@ public class CalendarServlet extends HttpServlet {
 		if (params.getParameter("sid") != null) {
 			sessionId = Long.valueOf(params.getParameter("sid"));
 		} else {
-			UserContext user = getSessionContext().getUser();
+			UserContext user = (getSessionContext() == null ? null : getSessionContext().getUser());
 			if (user != null)
 				sessionId = (Long)user.getCurrentAcademicSessionId();
 			else
