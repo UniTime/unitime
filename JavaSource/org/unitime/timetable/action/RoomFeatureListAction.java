@@ -121,6 +121,9 @@ public class RoomFeatureListAction extends Action {
 		// Validate input
 		errors = roomFeatureListForm.validate(mapping, request);
 
+		//set request attribute for department
+		LookupTables.setupDepartments(request, sessionContext, true);
+
 		// Validation fails
 		if (errors.size() > 0) {
 			saveErrors(request, errors);
@@ -144,9 +147,6 @@ public class RoomFeatureListAction extends Action {
 
 		buildFeatureTable(request, roomFeatureListForm);
 		
-		//set request attribute for department
-		LookupTables.setupDepartments(request, sessionContext, true);
-
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			sessionContext.checkPermission(Right.RoomFeaturesExportPdf);
 			File file = buildPdfFeatureTable(sessionContext, roomFeatureListForm);

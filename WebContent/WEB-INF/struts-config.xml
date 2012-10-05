@@ -259,7 +259,7 @@
          validate="false"
          type="org.springframework.web.struts.DelegatingActionProxy">
          <forward name="showRoomList" path="roomListTile" />         
-         <forward name="showRoomSearch" path="/roomSearch.do" />
+         <forward name="showRoomSearch" path="roomSearchTile" />
       </action>
 
 	 <action
@@ -318,8 +318,10 @@
          name="roomFeatureListForm"
          parameter="doit"
          scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy">
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
          <forward name="showRoomFeatureList" path="roomFeatureListTile" />         
+         <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />  
          <forward name="showAdd" path="/roomFeatureEdit.do" />
       </action>  
 
@@ -1124,8 +1126,10 @@
       parameter="doit"
       path="/roomGroupList"
       scope="request"
-      type="org.springframework.web.struts.DelegatingActionProxy">
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
       <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
       <forward name="showAdd" path="/roomGroupEdit.do" />
     </action>
 
