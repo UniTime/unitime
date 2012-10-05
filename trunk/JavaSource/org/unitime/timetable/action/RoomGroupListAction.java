@@ -114,6 +114,9 @@ public class RoomGroupListAction extends Action {
 		if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty())
 			sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, roomGroupListForm.getDeptCodeX());
 
+		//set request attribute for department
+		LookupTables.setupDepartments(request, sessionContext, true);
+		
 		// Validate input
 		errors = roomGroupListForm.validate(mapping, request);
 
@@ -124,9 +127,6 @@ public class RoomGroupListAction extends Action {
 		}
 
 		buildGroupTable(request, roomGroupListForm);
-		
-		//set request attribute for department
-		LookupTables.setupDepartments(request, sessionContext, true);
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			sessionContext.checkPermission(Right.RoomGroupsExportPdf);
