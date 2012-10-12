@@ -344,6 +344,9 @@ public class SessionRollForward {
 				toRoom = (Room)fromRoom.clone();
 			}
 			toRoom.setSession(toSession);
+			if (fromRoom.getEventDepartment() != null) {
+				toRoom.setEventDepartment(fromRoom.getEventDepartment().findSameDepartmentInSession(toSession));
+			}
 			toBuilding = fromRoom.getBuilding().findSameBuildingInSession(toSession);
 			if (toBuilding != null) {
 				toRoom.setBuilding(toBuilding);
@@ -496,6 +499,9 @@ public class SessionRollForward {
 			fromNonUniversityLocation = (NonUniversityLocation) location;					
 			toNonUniversityLocation = (NonUniversityLocation)fromNonUniversityLocation.clone();
 			toNonUniversityLocation.setSession(toSession);
+			if (fromNonUniversityLocation.getEventDepartment() != null) {
+				toNonUniversityLocation.setEventDepartment(fromNonUniversityLocation.getEventDepartment().findSameDepartmentInSession(toSession));
+			}
 			if (fromNonUniversityLocation.getManagerIds() != null && fromNonUniversityLocation.getManagerIds().length() != 0){
 				String toManagerStr = "";
 				for (StringTokenizer stk = new StringTokenizer(fromNonUniversityLocation.getManagerIds(),",");stk.hasMoreTokens();) {
