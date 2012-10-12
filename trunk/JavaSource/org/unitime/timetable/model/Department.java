@@ -354,6 +354,7 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 		d.setExternalUniqueId(getExternalUniqueId());
 		d.setName(getName());
 		d.setStatusType(getStatusType());
+		d.setAllowEvents(isAllowEvents());
 		return d;
 	}
 	
