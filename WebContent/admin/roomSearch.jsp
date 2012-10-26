@@ -58,7 +58,7 @@
 					</html:select>
 			</TD>
 		
-			<TD align="right">			
+			<TD align="right" nowrap>			
 				&nbsp;&nbsp;&nbsp;
 				<html:submit property="op" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchRooms">
 					<bean:message key="button.search" />
