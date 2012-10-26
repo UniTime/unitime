@@ -58,7 +58,7 @@
 					</html:select>
 			</TD>
 		
-			<TD align="right">			
+			<TD align="right" nowrap>			
 				&nbsp;&nbsp;&nbsp;
 				<html:submit property="op" value="Search" onclick="displayLoading();" accesskey="S" styleClass="btn"/>
 				<sec:authorize access="hasPermission(null, 'Department', 'RoomGroupsExportPdf')">
