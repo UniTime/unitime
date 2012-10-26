@@ -2653,3 +2653,7 @@ unitime-RoomSharingWidget .legend .blank {
 	text-align: center;
 	color: #9CB0CE; 
 }
+
+.gwt-Button {
+	white-space: nowrap;
+}
