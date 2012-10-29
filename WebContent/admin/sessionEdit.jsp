@@ -294,7 +294,7 @@
 
 			<TABLE>
 				<TR>
-					<TD align="right">
+					<TD align="right" nowrap>
 						<logic:equal name="sessionEditForm" property="sessionId" value="">
 							<html:submit styleClass="btn" property="doit" styleId="save" accesskey="S" titleKey="title.saveSession">
 								<bean:message key="button.saveSession" />
