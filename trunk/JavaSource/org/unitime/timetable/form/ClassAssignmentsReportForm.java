@@ -359,7 +359,7 @@ public class ClassAssignmentsReportForm extends ActionForm implements ClassListF
 		return (new Boolean(false));
 	}
 	public Boolean getLimit() {
-		return (new Boolean(false));
+		return (new Boolean(true));
 	}
 	public Boolean getRoomLimit() {
 		return (new Boolean(false));
