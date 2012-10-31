@@ -375,6 +375,7 @@ public class Suggestion implements Serializable, Comparable {
     	StringBuffer sb = new StringBuffer();
     	for (Enumeration e=iBtbInstructorInfos.elements();e.hasMoreElements();) {
     		BtbInstructorInfo info = (BtbInstructorInfo)e.nextElement();
+    		if (sb.length() > 0) sb.append("<br>");
     		sb.append(info.toHtml(context, solver, link));
     	}
     	return sb.toString();
@@ -437,12 +438,14 @@ public class Suggestion implements Serializable, Comparable {
 		        sb.append(iFirstInfo.getClazz().toHtml(link)+" ");
 		        if (iFirstInfo.getAssignedTime()!=null) {
 		        	sb.append(iFirstInfo.getAssignedTime().toHtml(false,false,true,false)+" ");
+		        	sb.append(iFirstInfo.getAssignedTime().toDatesHtml(false,false,true)+" ");
 		        	for (int i=0;i<iFirstInfo.getAssignedRoom().length;i++) {
 		        		if (i>0) sb.append(", ");
 		        		sb.append(iFirstInfo.getAssignedRoom()[i].toHtml(false,false,false));
 		        	}
 		        } else {
 		        	sb.append(iFirstInfo.getTime().toHtml(false,false,true,false)+" ");
+		        	sb.append(iFirstInfo.getTime().toDatesHtml(false,false,true)+" ");
 		        	for (int i=0;i<iFirstInfo.getRoom().length;i++) {
 		        		if (i>0) sb.append(", ");
 		        		sb.append(iFirstInfo.getRoom()[i].toHtml(false,false,false));
@@ -452,12 +455,14 @@ public class Suggestion implements Serializable, Comparable {
 		        sb.append(iSecondInfo.getClazz().toHtml(link)+" ");
 		        if (iSecondInfo.getAssignedTime()!=null) {
 		        	sb.append(iSecondInfo.getAssignedTime().toHtml(false,false,true,false)+" ");
+		        	sb.append(iSecondInfo.getAssignedTime().toDatesHtml(false,false,true)+" ");
 		        	for (int i=0;i<iSecondInfo.getAssignedRoom().length;i++) {
 		        		if (i>0) sb.append(", ");
 		        		sb.append(iSecondInfo.getAssignedRoom()[i].toHtml(false,false,false));
 		        	}
 		        } else {
 		        	sb.append(iSecondInfo.getTime().toHtml(false,false,true,false)+" ");
+		        	sb.append(iSecondInfo.getTime().toDatesHtml(false,false,true)+" ");
 		        	for (int i=0;i<iSecondInfo.getRoom().length;i++) {
 		        		if (i>0) sb.append(", ");
 		        		sb.append(iSecondInfo.getRoom()[i].toHtml(false,false,false));

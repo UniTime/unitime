@@ -192,6 +192,25 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Back-To-Back Instructor Distance Conflicts</name>
+			<description>
+				<line>
+					Added ability to check travel times between classes that are not back-to-back (there is one or more empty slots in between).
+					<line>A hard conflict is created between two consecutive classes that do not have enough time to travel.
+						<line>Like with student conflicts, travel time in minutes is compared with the break time of the first class and the time between the classes.</line>
+					</line>
+					<line>Discouraged (soft) conflict is created if there is not enough time to travel while the break time of the first class is ignored (i.e., when break time has to be used for travel, not to wrap up the class).</line>
+					<line>Strongly discouraged (soft) conflict is created for two consecutive classes that are too far away (regardless the available time in between).
+						<line>This means that there is a strongly discouraged conflict every time when an instructor has a long travel time between two classes during the day.</line>
+						<line>This is controlled by Instructor.InstructorLongTravelInMinutes solver parameter, defaults to 30 minutes (instructor has to travel for 30 minutes or more).</line>
+						<line>This allows us to minimize long (instructor) travels during the day.</line>
+					</line>
+					<line>To be enabled if needed by setting the solver parameter Distances.ComputeDistanceConflictsBetweenNonBTBClasses to true (defaults to false).</line>
+					<line>The distance check between back-to-back classes remains as before (the change only applies to non back-to-back consecutive classes, when enabled).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

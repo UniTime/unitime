@@ -554,10 +554,10 @@ public class SolutionReportAction extends Action {
 
 	public PdfWebTable getDiscouragedInstructorBtbReportReportTable(HttpServletRequest request, DiscouragedInstructorBtbReport report, boolean noHtml) {
 		WebTable.setOrder(sessionContext,"solutionReports.violInstBtb.ord",request.getParameter("vinbtb_ord"),1);
-		PdfWebTable webTable = new PdfWebTable( 6,
+		PdfWebTable webTable = new PdfWebTable( 7,
    	        	"Instructor Back-to-Back Preferences", "solutionReport.do?vinbtb_ord=%%",
-   				new String[] {"Instructor", "Preference", "Distance", "Class", "Time", "Room"},
-   				new String[] {"left", "left", "left", "left", "left", "left"},
+   				new String[] {"Instructor", "Preference", "Distance", "Class", "Time", "Date", "Room"},
+   				new String[] {"left", "left", "left", "left", "left", "left", "left"},
    				null);
         webTable.setRowStyle("white-space:nowrap");
         
@@ -583,13 +583,15 @@ public class SolutionReportAction extends Action {
         				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
         				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
         				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
+        				(noHtml?g.getFirst().getTime().getDatePatternName()+"\n"+g.getSecond().getTime().getDatePatternName():
+        				g.getFirst().getTime().toDatesHtml(false,false,true)+"<BR>"+g.getSecond().getTime().toDatesHtml(false,false,true)),
         				rSB.toString()
         			},
         			new Comparable[] {
         				g.getInstructorName(),
         				g.getPreference(),
         				new Double(g.getDistance()),
-        				new DuoComparable(g.getFirst(),g.getSecond()), null, null
+        				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null
         			});
         	}
         } catch (Exception e) {

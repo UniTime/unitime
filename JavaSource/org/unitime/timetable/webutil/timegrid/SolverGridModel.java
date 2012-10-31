@@ -123,19 +123,10 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		} else {
 			init(solver, instructor.getResourceOfWeek(firstDay), bgMode);
 		}
-		if (instructor.getAvailableArray()!=null) {
-			HashSet done = new HashSet();
-			for (int i=0;i<Constants.DAY_CODES.length;i++)
-				for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
-                    List<Placement> placements = instructor.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j];
-                    if (placements!=null) {
-                        for (Placement p: placements) {
-                            if (p==null || !done.add(p)) continue;
-                            init(solver, p, sBgModeNotAvailable, firstDay);
-                        }
-                    }
-					//setAvailable(i,j,instructor.isAvailable(i*Constants.SLOTS_PER_DAY+j));
-				}
+		if (instructor.getUnavailabilities()!=null) {
+			for (Placement p: instructor.getUnavailabilities()) {
+				init(solver, p, sBgModeNotAvailable, firstDay);
+			}
 		}
 	}
 	
