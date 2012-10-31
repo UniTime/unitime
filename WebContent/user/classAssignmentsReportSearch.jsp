@@ -173,7 +173,7 @@
 					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
-			<TD align="left" valign="top">
+			<TD align="left" valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;
 				<html:submit property="doit" onclick="displayLoading();" accesskey="S" styleClass="btn" titleKey="title.searchClassAssignments">
 					<bean:message key="button.searchClasses" />
