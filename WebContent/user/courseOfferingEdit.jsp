@@ -227,7 +227,7 @@
 		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
-				<TD>
+				<TD nowrap>
 				<table border='0'>
 				<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
 					<tr><td>
@@ -248,7 +248,6 @@
    				</logic:iterate>
    				<tr><td>
 					<html:submit property="op" 
-						styleId="addInstructor" 
 						styleClass="btn" 
 						accesskey="<%=MSG.accessAddCoordinator() %>" 
 						title="<%=MSG.titleAddCoordinator(MSG.accessAddCoordinator()) %>">
