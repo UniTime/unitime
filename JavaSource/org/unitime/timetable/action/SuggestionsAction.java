@@ -676,6 +676,7 @@ public class SuggestionsAction extends Action {
 				for (Enumeration e=ca.getBtbInstructors().elements();e.hasMoreElements();) {
 					ClassAssignmentDetails.BtbInstructorInfo btb = (ClassAssignmentDetails.BtbInstructorInfo)e.nextElement();
 					sb.append(btb.toHtml(context, solver));
+					if (e.hasMoreElements()) sb.append("<br>");
 				}
 				sb.append("</TD></TR>");
 			}

@@ -21,7 +21,6 @@ package org.unitime.timetable.solver.ui;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.unitime.timetable.model.PreferenceLevel;
@@ -31,6 +30,7 @@ import org.unitime.timetable.util.Constants;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
+import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.solver.Solver;
 
@@ -45,14 +45,13 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 	public DiscouragedInstructorBtbReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
 		for (InstructorConstraint ic: model.getInstructorConstraints()) {
-			HashSet used = new HashSet();
+			HashSet checked = new HashSet();
 	        for (int slot=1;slot<Constants.SLOTS_PER_DAY * Constants.NR_DAYS;slot++) {
 	        	if ((slot%Constants.SLOTS_PER_DAY)==0) continue;
 	            for (Placement placement: ic.getResource(slot)) {
-	            	List<Placement> prevPlacements = ic.getPlacements(slot-1,placement);
-	            	for (Placement prevPlacement: prevPlacements) {
+	            	for (Placement prevPlacement: ic.getPlacements(slot-1,placement)) {
 	            		if (prevPlacement.equals(placement)) continue;
-	            		if (!used.add(prevPlacement+"."+placement)) continue; 
+	            		if (!checked.add(prevPlacement+"."+placement)) continue; 
 	            		double dist = Placement.getDistanceInMeters(model.getDistanceMetric(), prevPlacement,placement);
 	            		if (dist>model.getDistanceMetric().getInstructorNoPreferenceLimit() && dist<=model.getDistanceMetric().getInstructorDiscouragedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sDiscouraged));
@@ -60,8 +59,42 @@ public class DiscouragedInstructorBtbReport implements Serializable {
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sStronglyDiscouraged));
 	            		if (dist>model.getDistanceMetric().getInstructorProhibitedLimit())
 	            			iGroups.add(new DiscouragedBtb(solver, ic, dist, prevPlacement, placement, PreferenceLevel.sProhibited));
-	            			
 	            	}
+	            }
+	        }
+	        if (model.getDistanceMetric().doComputeDistanceConflictsBetweenNonBTBClasses()) {
+	            for (Lecture p1: ic.assignedVariables()) {
+	                TimeLocation t1 = (p1.getAssignment() == null ? null : p1.getAssignment().getTimeLocation());
+	                if (t1 == null) continue;
+	                Placement before = null;
+	                for (Lecture p2: ic.assignedVariables()) {
+	                    if (p2.getAssignment() == null || p2.equals(p1)) continue;
+	                    TimeLocation t2 = p2.getAssignment().getTimeLocation();
+	                    if (t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) continue;
+	                    if (t2.getStartSlot() + t2.getLength() < t1.getStartSlot()) {
+	                        int distanceInMinutes = Placement.getDistanceInMinutes(model.getDistanceMetric(), p1.getAssignment(), p2.getAssignment());
+	                        if (distanceInMinutes >  t2.getBreakTime() + Constants.SLOT_LENGTH_MIN * (t1.getStartSlot() - t2.getStartSlot() - t2.getLength()))
+	                        	iGroups.add(new DiscouragedBtb(solver, ic, Placement.getDistanceInMeters(model.getDistanceMetric(), p1.getAssignment(), p2.getAssignment()), p1.getAssignment(), p2.getAssignment(), ic.isIgnoreDistances() ? PreferenceLevel.sStronglyDiscouraged : PreferenceLevel.sProhibited));
+	                        else if (distanceInMinutes > Constants.SLOT_LENGTH_MIN * (t1.getStartSlot() - t2.getStartSlot() - t2.getLength()))
+	                        	iGroups.add(new DiscouragedBtb(solver, ic, Placement.getDistanceInMeters(model.getDistanceMetric(), p1.getAssignment(), p2.getAssignment()), p1.getAssignment(), p2.getAssignment(), PreferenceLevel.sDiscouraged));
+	                    }
+	                    if (t2.getStartSlot() + t2.getLength() <= t1.getStartSlot()) {
+	                        if (before == null || before.getTimeLocation().getStartSlot() < t2.getStartSlot())
+	                            before = p2.getAssignment();
+	                    }
+	                }
+	                if (ic.getUnavailabilities() != null) {
+	                    for (Placement c: ic.getUnavailabilities()) {
+	                        TimeLocation t2 = c.getTimeLocation();
+	                        if (t1 == null || t2 == null || !t1.shareDays(t2) || !t1.shareWeeks(t2)) continue;
+	                        if (t2.getStartSlot() + t2.getLength() <= t1.getStartSlot()) {
+	                            if (before == null || before.getTimeLocation().getStartSlot() < t2.getStartSlot())
+	                                before = c;
+	                        }
+	                    }
+	                }
+	                if (before != null && Placement.getDistanceInMinutes(model.getDistanceMetric(), before, p1.getAssignment()) > model.getDistanceMetric().getInstructorLongTravelInMinutes())
+	                	iGroups.add(new DiscouragedBtb(solver, ic, Placement.getDistanceInMeters(model.getDistanceMetric(), before, p1.getAssignment()), before, p1.getAssignment(), PreferenceLevel.sStronglyDiscouraged));
 	            }
 	        }
 		}
