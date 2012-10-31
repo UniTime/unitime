@@ -60,9 +60,8 @@ import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 public class WebClassListTableBuilder extends
 		WebInstructionalOfferingTableBuilder {
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
-    public static String STUDENT_SCHEDULE_NOTE = MSG.columnStudentScheduleNote();
     protected String getSchedulePrintNoteLabel(){
-    	return STUDENT_SCHEDULE_NOTE;
+    	return MSG.columnStudentScheduleNote();
     }
 
 	/**
