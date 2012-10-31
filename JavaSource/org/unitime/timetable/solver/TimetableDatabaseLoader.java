@@ -158,6 +158,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iInteractiveMode = false;
     private boolean iSpread = true;
     private boolean iAutoSameStudents = true;
+    private String iAutoPrecedence = null;
     private boolean iLoadCommittedAssignments = false;
 
     private double iFewerSeatsDisouraged = 0.01;
@@ -213,6 +214,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iSubjectBalancing = getModel().getProperties().getPropertyBoolean("General.SubjectBalancing",iSubjectBalancing);
         iSpread = getModel().getProperties().getPropertyBoolean("General.Spread",iSpread);
         iAutoSameStudents = getModel().getProperties().getPropertyBoolean("General.AutoSameStudents",iAutoSameStudents);
+        iAutoPrecedence = getModel().getProperties().getProperty("General.AutoPrecedence");
         iMppAssignment = getModel().getProperties().getPropertyBoolean("General.MPP",iMppAssignment);
         iInteractiveMode = getModel().getProperties().getPropertyBoolean("General.InteractiveMode", iInteractiveMode);
         iAssignSingleton = getModel().getProperties().getPropertyBoolean("General.AssignSingleton", iAssignSingleton);
@@ -1868,6 +1870,50 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		return true;
     }
     
+    private boolean postPrecedenceConstraint(Class_ clazz, String preference) {
+    	boolean posted = false;
+    	if (!clazz.getChildClasses().isEmpty()) {
+    		for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
+    			Class_ c = (Class_)i.next();
+    			if (postPrecedenceConstraint(c, preference))
+    				posted = true;
+    		}
+    	}
+    	
+    	if (posted) return true;
+    	
+    	Lecture lecture = getLecture(clazz);
+		if (lecture==null) return false;
+		
+		List<Lecture> variables = new ArrayList<Lecture>();
+		variables.add(lecture);
+		Set<Integer> itypes = new HashSet<Integer>();
+		itypes.add(clazz.getSchedulingSubpart().getItype().getItype());
+		
+		Class_ parent = clazz;
+		while ((parent=parent.getParentClass())!=null) {
+			Lecture parentLecture = getLecture(parent);
+			if (parentLecture!=null) {
+				variables.add(0, parentLecture);
+				itypes.add(parent.getSchedulingSubpart().getItype().getItype());
+			}
+		}
+
+    	if (variables.size() <= 1 || itypes.size() <= 1) return false;
+    	
+    	GroupConstraint gc = new GroupConstraint(null, GroupConstraint.ConstraintType.PRECEDENCE, preference);
+    	String info = "";
+		for (Lecture var: variables) {
+			gc.addVariable(var);
+			if (!info.isEmpty()) info += ", ";
+			info += getClassLabel(var);
+		}
+		iProgress.info("Posted precedence constraint between " + info + " (" + PreferenceLevel.prolog2string(preference) + ")");
+    	
+    	addGroupConstraint(gc);
+		return true;
+    }
+    
     private void propagateCommittedAssignment(HashSet students, Assignment assignment) {
     	Class_ clazz = assignment.getClazz();
     	Lecture parentLecture = null; Class_ c = clazz;
@@ -2435,6 +2481,20 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			
     			if (!lecture.hasAnyChildren())
     				postSameStudentConstraint(clazz, iAutoSameStudentsConstraint);
+    			
+    			iProgress.incProgress();
+    		}
+		}
+		
+		if (iAutoPrecedence != null && !PreferenceLevel.sNeutral.equals(iAutoPrecedence)) {
+			iProgress.setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
+    		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
+    			Class_ clazz = (Class_)i1.next();
+    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
+    			if (lecture==null) continue;
+    			
+    			if (!lecture.hasAnyChildren())
+    				postPrecedenceConstraint(clazz, iAutoPrecedence);
     			
     			iProgress.incProgress();
     		}
