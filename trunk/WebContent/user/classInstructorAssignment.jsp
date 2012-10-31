@@ -147,6 +147,35 @@
 		</TR>
 		</logic:messagesPresent>
 
+			<TR>
+				<TD valign="top" width="50"><loc:message name="propertyCoordinators"/> </TD>
+				<TD align="left">
+				<table>
+				<logic:iterate name="classInstructorAssignmentForm" property="coordinatorList" id="coordinator" indexId="ctr">
+					<tr><td nowrap>
+					<IMG border="0" src="images/Delete16.gif"
+						onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+						onclick="document.forms[0].elements['hdnOp'].value='Delete Coordinator';
+								document.forms[0].elements['deletedInstrRowNum'].value='<%= ctr.toString() %>';
+								document.forms[0].submit();">
+					<IMG border="0" src="images/Add16.gif"
+						onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
+						onclick="document.forms[0].elements['hdnOp'].value='Add Coordinator';
+								document.forms[0].elements['addInstructorId'].value='<%= ctr.toString() %>';
+								document.forms[0].submit();">
+					<html:select style="width:200;"
+						property='<%= "coordinatorList[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);"
+					>
+						<html:option value="<%= Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						<html:options collection="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameLastFirst" />
+					</html:select>
+					</td></tr>
+   				</logic:iterate>
+				</table>
+				</TD>
+			</TR>
 
 		<TR>
 			<TD colspan="2" align="left">
