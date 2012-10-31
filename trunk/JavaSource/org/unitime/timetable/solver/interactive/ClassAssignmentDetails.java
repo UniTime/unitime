@@ -762,6 +762,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 				sb.append("</font>&nbsp;&nbsp;&nbsp;");
 				sb.append(other.getClazz().toHtml(true)+" ");
 				sb.append(other.getTime().toHtml(false,false,true,false)+" ");
+				sb.append(other.getTime().toDatesHtml(false,false,true)+" ");
 		        for (int i=0;i<other.getRoom().length;i++) {
 		        	if (i>0) sb.append(", ");
 		        	sb.append(other.getRoom()[i].toHtml(false,false,false));
