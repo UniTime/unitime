@@ -211,6 +211,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Automatic Precedence Constraints</name>
+			<description>
+				<line>
+					Added ability to automatically post a precedence constraint between a class and all its parent classes.
+					<line>To be enabled by setting the solver parameter General.AutoPrecedence (value is the preference of the constraint, e.g., R for required, -2 for strongly preferred).</line>
+					<line>Classes have to be of different instructional types (a constraint will not be created between Lec and Lec a).</line>
+					<line>This is to allow lecture before seminar scenario without manually creating a lot of precedence constraints.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
