@@ -83,7 +83,7 @@ public class RoomSearchAction extends Action {
 		}
 		
 		if (deptCode != null && !deptCode.isEmpty() &&
-				("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.Rooms))) {
+				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.Rooms))) {
 			
 			roomListForm.setDeptCodeX(deptCode);
 			return mapping.findForward("roomList");
@@ -95,6 +95,7 @@ public class RoomSearchAction extends Action {
 			}
 			
 			LookupTables.setupDepartments(request, sessionContext, true);
+			LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 			
 			return mapping.findForward("showRoomSearch");
 		}

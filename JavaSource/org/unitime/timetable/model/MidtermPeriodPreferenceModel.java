@@ -46,18 +46,21 @@ public class MidtermPeriodPreferenceModel {
     private ExamPeriod iPeriod = null;
     private Date iExamBeginDate = null;
     private Session iSession = null;
+    private ExamType iExamType = null;
+    private String iName = "mp";
     
     public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
     
-    public MidtermPeriodPreferenceModel(Session session) {
-        this(session, null);
+    public MidtermPeriodPreferenceModel(Session session, ExamType type) {
+        this(session, type, null);
     }
 
-    public MidtermPeriodPreferenceModel(Session session, ExamAssignment assignment) {
+    public MidtermPeriodPreferenceModel(Session session, ExamType type, ExamAssignment assignment) {
         iPeriod = (assignment==null?null:assignment.getPeriod());
         iSession = session;
+        iExamType = type;
         iExamBeginDate = session.getExamBeginDate();
-        iPeriods = ExamPeriod.findAll(session.getUniqueId(), Exam.sExamTypeMidterm);
+        iPeriods = ExamPeriod.findAll(session.getUniqueId(), type);
         for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
            	iStarts.add(period.getStartSlot());
@@ -79,10 +82,12 @@ public class MidtermPeriodPreferenceModel {
         }
     }
     
+    public void setName(String name) { iName = name; }
+    
     public void load(PreferenceGroup pg) {
         for (Iterator i=pg.getPreferences(ExamPeriodPref.class).iterator();i.hasNext();) {
         	ExamPeriodPref pref = (ExamPeriodPref)i.next();
-        	if (pref.getExamPeriod().getExamType() != Exam.sExamTypeMidterm) continue;
+        	if (!iExamType.equals(pref.getExamPeriod().getExamType())) continue;
         	iPreferences.get(pref.getExamPeriod().getDateOffset()).put(pref.getExamPeriod().getStartSlot(), pref.getPrefLevel().getPrefProlog());
         }
         invertIfNeeded();
@@ -132,7 +137,7 @@ public class MidtermPeriodPreferenceModel {
     }
 
     public void save(Location location) {
-        location.clearExamPreferences(Exam.sExamTypeMidterm);
+        location.clearExamPreferences(iExamType);
     	for (Iterator i=iPeriods.iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             String pref = iPreferences.get(period.getDateOffset()).get(period.getStartSlot());
@@ -314,7 +319,7 @@ public class MidtermPeriodPreferenceModel {
                         getPattern(start)+","+
                         legendCode+","+legendText+","+legendColor+",'0',"+
                         getBorderArray(start)+","+editable+","+(editable && legendIdx==idx)+","+
-                        "'mp"+start+"','("+startTime+" - "+endTime+")',6,"+(start==starts.first())+","+(start==starts.last())+");");
+                        "'"+iName+start+"','("+startTime+" - "+endTime+")',6,"+(start==starts.first())+","+(start==starts.last())+");");
             idx++;
         }
         sb.append("</script>");
@@ -329,7 +334,7 @@ public class MidtermPeriodPreferenceModel {
 			for (int d=1;d<=daysOfMonth;d++) {
 			    if (!iDates.contains(getDateOffset(d,m))) continue; 
 			    for (int start:iStarts) {
-			        String pref = request.getParameter("mp"+start+"_val_"+yr+"_"+((12+m)%12)+"_"+d);
+			        String pref = request.getParameter(iName+start+"_val_"+yr+"_"+((12+m)%12)+"_"+d);
 			        if (pref!=null && !"@".equals(pref))
 			            iPreferences.get(getDateOffset(d,m)).put(start, pref);
 			    }

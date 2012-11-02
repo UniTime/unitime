@@ -33,7 +33,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseRequest;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentClassEnrollment;
@@ -271,7 +271,8 @@ public class StudentEnrollmentImport extends BaseImport {
         if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.finalExam.updateConflicts","false"))) {
             try {
                 beginTransaction();
-                new UpdateExamConflicts(this).update(session.getUniqueId(), Exam.sExamTypeFinal, getHibSession());
+                for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeFinal))
+                	new UpdateExamConflicts(this).update(session.getUniqueId(), type.getUniqueId(), getHibSession());
                 commitTransaction();
             } catch (Exception e) {
                 fatal("Exception: " + e.getMessage(), e);
@@ -282,14 +283,15 @@ public class StudentEnrollmentImport extends BaseImport {
         if (session!=null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.midtermExam.updateConflicts","false"))) {
             try {
                 beginTransaction();
-                new UpdateExamConflicts(this).update(session.getUniqueId(), Exam.sExamTypeMidterm, getHibSession());
+                for (ExamType type: ExamType.findAllOfType(ExamType.sExamTypeMidterm))
+                	new UpdateExamConflicts(this).update(session.getUniqueId(), type.getUniqueId(), getHibSession());
                 commitTransaction();
             } catch (Exception e) {
                 fatal("Exception: " + e.getMessage(), e);
                 rollbackTransaction();
             }
         }
-
+        
         /*
         if (session != null && "true".equals(ApplicationProperties.getProperty("tmtbl.data.import.studentEnrl.class.updateEnrollments","true"))){
         	org.hibernate.Session hibSession = new _RootDAO().createNewSession();

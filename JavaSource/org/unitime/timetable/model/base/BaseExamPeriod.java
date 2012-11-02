@@ -22,6 +22,7 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 
@@ -32,18 +33,17 @@ public abstract class BaseExamPeriod implements Serializable {
 	private Integer iDateOffset;
 	private Integer iStartSlot;
 	private Integer iLength;
-	private Integer iExamType;
 	private Integer iEventStartOffset;
 	private Integer iEventStopOffset;
 
 	private Session iSession;
+	private ExamType iExamType;
 	private PreferenceLevel iPrefLevel;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_DATE_OFS = "dateOffset";
 	public static String PROP_START_SLOT = "startSlot";
 	public static String PROP_LENGTH = "length";
-	public static String PROP_EXAM_TYPE = "examType";
 	public static String PROP_EVENT_START_OFFSET = "eventStartOffset";
 	public static String PROP_EVENT_STOP_OFFSET = "eventStopOffset";
 
@@ -70,9 +70,6 @@ public abstract class BaseExamPeriod implements Serializable {
 	public Integer getLength() { return iLength; }
 	public void setLength(Integer length) { iLength = length; }
 
-	public Integer getExamType() { return iExamType; }
-	public void setExamType(Integer examType) { iExamType = examType; }
-
 	public Integer getEventStartOffset() { return iEventStartOffset; }
 	public void setEventStartOffset(Integer eventStartOffset) { iEventStartOffset = eventStartOffset; }
 
@@ -81,6 +78,9 @@ public abstract class BaseExamPeriod implements Serializable {
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
+
+	public ExamType getExamType() { return iExamType; }
+	public void setExamType(ExamType examType) { iExamType = examType; }
 
 	public PreferenceLevel getPrefLevel() { return iPrefLevel; }
 	public void setPrefLevel(PreferenceLevel prefLevel) { iPrefLevel = prefLevel; }

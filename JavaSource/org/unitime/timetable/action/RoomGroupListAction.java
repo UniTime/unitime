@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -42,7 +43,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
@@ -106,7 +107,7 @@ public class RoomGroupListAction extends Action {
 		
 		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null && roomGroupListForm.getDeptCodeX() == null) {
 			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if ("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))
+			if (deptCode != null && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures)))
 				roomGroupListForm.setDeptCodeX((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 
@@ -116,6 +117,7 @@ public class RoomGroupListAction extends Action {
 
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
+		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 		
 		// Validate input
 		errors = roomGroupListForm.validate(mapping, request);
@@ -155,13 +157,19 @@ public class RoomGroupListAction extends Action {
 
 		
 		Set<Department> depts = Department.getUserDepartments(sessionContext.getUser());
-        int examType = -1;
+        Long examType = null;
         Department department = null;
-        if ("Exam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-        else if ("EExam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+        if ("Exam".equals(roomGroupListForm.getDeptCodeX())) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty()) {
+				examType =  types.get(0).getUniqueId();
+				roomGroupListForm.setDeptCodeX("Exam" + examType);
+			}
+        } else if (roomGroupListForm.getDeptCodeX() != null && roomGroupListForm.getDeptCodeX().matches("Exam[0-9]*"))
+        	examType = Long.valueOf(roomGroupListForm.getDeptCodeX().substring(4));
         else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
         	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
-        boolean deptCheck = examType < 0 && !sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+        boolean deptCheck = examType == null && !sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
         if (department != null) {
         	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
         }
@@ -175,7 +183,7 @@ public class RoomGroupListAction extends Action {
 			boolean haveRooms = false;
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+				if (examType != null && !r.isExamEnabled(examType)) continue;
 				if (deptCheck) {
 					boolean skip = true;
 					for (RoomDept rd: r.getRoomDepts())
@@ -231,7 +239,7 @@ public class RoomGroupListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-                if (examType>=0) {
+                if (examType != null) {
                     if (!r.isExamEnabled(examType)) continue;
                 } else {
                     boolean skip = true;
@@ -291,13 +299,13 @@ public class RoomGroupListAction extends Action {
     				new boolean[] { true, true, true, true, true} );
     		
     		Set<Department> depts = Department.getUserDepartments(context.getUser());
-            int examType = -1;
+            Long examType = null;
             Department department = null;
-            if ("Exam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-            if ("EExam".equals(roomGroupListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+            if (roomGroupListForm.getDeptCodeX() != null && roomGroupListForm.getDeptCodeX().matches("Exam[0-9]*"))
+            	examType = Long.valueOf(roomGroupListForm.getDeptCodeX().substring(4));
             else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
             	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), context.getUser().getCurrentAcademicSessionId());
-            boolean deptCheck = examType < 0 && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+            boolean deptCheck = examType == null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
             if (department != null) {
             	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
             }
@@ -314,7 +322,7 @@ public class RoomGroupListAction extends Action {
     			boolean haveRooms = false;
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-    				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+    				if (examType != null && !r.isExamEnabled(examType)) continue;
     				if (deptCheck) {
     					boolean skip = true;
     					for (RoomDept rd: r.getRoomDepts())
@@ -372,7 +380,7 @@ public class RoomGroupListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-                    if (examType>=0) {
+                    if (examType != null) {
                         if (!r.isExamEnabled(examType)) continue;
                     } else {
                         boolean skip = true;

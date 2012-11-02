@@ -48,7 +48,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.action.PersonalizedExamReportAction;
 import org.unitime.timetable.events.EventLookupBackend;
 import org.unitime.timetable.events.QueryEncoderBackend;
@@ -68,6 +67,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -248,11 +248,11 @@ public class CalendarServlet extends HttpServlet {
                 		setLong("sessionId", sessionId).setString("externalId", userId).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(instructor.getDepartment().getSession())) continue;
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
-                    	for (Exam exam: instructor.getExams(Exam.sExamTypeMidterm)) {
+                    	for (Exam exam: instructor.getExams(ExamType.sExamTypeMidterm)) {
                     		printExam(exam, out);
                     	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
-                    	for (Exam exam: instructor.getExams(Exam.sExamTypeFinal)) {
+                    	for (Exam exam: instructor.getExams(ExamType.sExamTypeFinal)) {
                     		printExam(exam, out);
                     	}
                     if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass()) {
@@ -266,11 +266,11 @@ public class CalendarServlet extends HttpServlet {
                 		setLong("sessionId", sessionId).setString("externalId", userId).list()) {
                 	if (!PersonalizedExamReportAction.canDisplay(student.getSession())) continue;
                 	if (student.getSession().getStatusType().canNoRoleReportExamFinal()) {
-                		for (Exam exam: student.getExams(Exam.sExamTypeFinal))
+                		for (Exam exam: student.getExams(ExamType.sExamTypeFinal))
                 			printExam(exam, out);
                 	}
                 	if (student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
-                		for (Exam exam: student.getExams(Exam.sExamTypeMidterm))
+                		for (Exam exam: student.getExams(ExamType.sExamTypeMidterm))
                 			printExam(exam, out);
                 	}
                     if (student.getSession().getStatusType().canNoRoleReportClass()) {
@@ -497,7 +497,7 @@ public class CalendarServlet extends HttpServlet {
         Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
         endTime.add(Calendar.MINUTE, exam.getLength());
         out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-        out.println("SUMMARY:"+exam.getLabel()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
+        out.println("SUMMARY:"+exam.getLabel()+" ("+exam.getExamType().getLabel()+" Exam)");
         if (!exam.getAssignedRooms().isEmpty()) {
             String rooms = "";
             for (Iterator i=new TreeSet(exam.getAssignedRooms()).iterator();i.hasNext();) {

@@ -33,7 +33,7 @@ import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.TimePref;
@@ -140,11 +140,6 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     public static final String REQUEST_OPEN_URL = "RqOpenUrl";
     public static final String REQUEST_WARN = "RqWarn";
     public static final String REQUEST_MSSG = "RqMsg";
-    
-    public static final String MIDTERM_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.midterm";
-    public static final String MIDTERM_DEFAULT_STOP_OFFSET_PROP = "tmtbl.exam.defaultStopOffset.midterm";
-    public static final String FINAL_DEFAULT_START_OFFSET_PROP = "tmtbl.exam.defaultStartOffset.final";
-    public static final String FINAL_DEFAULT_STOP_OFFSET_PROP = "tmtbl.exam.defaultStopOffset.final";
     
     // --------------------------------------------------------- Methods
 
@@ -440,12 +435,12 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	return user != null && CommonValues.NoteAsFullText.value().equals(user.getProperty(UserProperty.CourseOfferingNoteDisplay));
     }
     
-    public static int getDefaultExamStartOffset(int examType){
-      	return(getExamOffset((examType == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_START_OFFSET_PROP:FINAL_DEFAULT_START_OFFSET_PROP));
+    public static int getDefaultExamStartOffset(ExamType examType){
+      	return getExamOffset("tmtbl.exam.defaultStartOffset." + examType.getReference());
     }
     
-    public static int getDefaultExamStopOffset(int examType){
-      	return(getExamOffset((examType == Exam.sExamTypeMidterm)?MIDTERM_DEFAULT_STOP_OFFSET_PROP:FINAL_DEFAULT_STOP_OFFSET_PROP));
+    public static int getDefaultExamStopOffset(ExamType examType){
+    	return getExamOffset("tmtbl.exam.defaultStopOffset." + examType.getReference());
     }
         
     private static int getExamOffset(String offsetParameterName){

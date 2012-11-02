@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -44,7 +45,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomFeatureListForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
@@ -110,7 +111,7 @@ public class RoomFeatureListAction extends Action {
 
 		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null && roomFeatureListForm.getDeptCodeX() == null) {
 			deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if ("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))
+			if (deptCode != null && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures)))
 				roomFeatureListForm.setDeptCodeX((String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom));
 		}
 
@@ -123,6 +124,7 @@ public class RoomFeatureListAction extends Action {
 
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
+		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
 		// Validation fails
 		if (errors.size() > 0) {
@@ -137,8 +139,7 @@ public class RoomFeatureListAction extends Action {
 			if ("All".equals(roomFeatureListForm.getDeptCodeX()) || d.getDeptCode().equals(roomFeatureListForm.getDeptCodeX()))
 				departmentRoomFeatures.addAll(RoomFeature.getAllDepartmentRoomFeatures(d));
 		}
-        if (roomFeatureListForm.getDeptCodeX() != null && !roomFeatureListForm.getDeptCodeX().isEmpty() && !"All".equals(roomFeatureListForm.getDeptCodeX())
-        		&& !"Exam".equals(roomFeatureListForm.getDeptCodeX()) && !"EExam".equals(roomFeatureListForm.getDeptCodeX())) {
+        if (roomFeatureListForm.getDeptCodeX() != null && !roomFeatureListForm.getDeptCodeX().isEmpty() && !"All".equals(roomFeatureListForm.getDeptCodeX()) && !roomFeatureListForm.getDeptCodeX().matches("Exam[0-9]*")) {
         	Department department = Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
         	if (department != null && department.isExternalManager())
         		departmentRoomFeatures.addAll(RoomFeature.getAllDepartmentRoomFeatures(department));
@@ -178,13 +179,19 @@ public class RoomFeatureListAction extends Action {
 				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 		
 		Set<Department> depts = Department.getUserDepartments(sessionContext.getUser());
-        int examType = -1;
+        Long examType = null;
         Department department = null;
-        if ("Exam".equals(roomFeatureListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-        else if ("EExam".equals(roomFeatureListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+        if ("Exam".equals(roomFeatureListForm.getDeptCodeX())) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty()) {
+				examType =  types.get(0).getUniqueId();
+				roomFeatureListForm.setDeptCodeX("Exam" + examType);
+			}
+        } else if (roomFeatureListForm.getDeptCodeX() != null && roomFeatureListForm.getDeptCodeX().matches("Exam[0-9]*"))
+        	examType = Long.valueOf(roomFeatureListForm.getDeptCodeX().substring(4));
         else if (roomFeatureListForm.getDeptCodeX() != null && !roomFeatureListForm.getDeptCodeX().isEmpty() && !"All".equals(roomFeatureListForm.getDeptCodeX()))
         	department = Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
-        boolean deptCheck = examType < 0 && !sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+        boolean deptCheck = examType == null && !sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
         if (department != null) {
         	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
         }
@@ -202,7 +209,7 @@ public class RoomFeatureListAction extends Action {
 			boolean haveRooms = false;
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+				if (examType != null && !r.isExamEnabled(examType)) continue;
 				if (deptCheck) {
 					boolean skip = true;
 					for (RoomDept rd: r.getRoomDepts())
@@ -251,7 +258,7 @@ public class RoomFeatureListAction extends Action {
 			
 			for (Iterator iter = rs.iterator();iter.hasNext();) {
 				Location r = (Location) iter.next();
-                if (examType>=0) {
+                if (examType != null) {
                     if (!r.isExamEnabled(examType)) continue;
                 } else {
                     boolean skip = true;
@@ -308,13 +315,13 @@ public class RoomFeatureListAction extends Action {
     				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
 
     		Set<Department> depts = Department.getUserDepartments(context.getUser());
-            int examType = -1;
+            Long examType = null;
             Department department = null;
-            if ("Exam".equals(roomFeatureListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-            if ("EExam".equals(roomFeatureListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+            if (roomFeatureListForm.getDeptCodeX() != null && roomFeatureListForm.getDeptCodeX().matches("Exam[0-9]*"))
+            	examType = Long.valueOf(roomFeatureListForm.getDeptCodeX().substring(4));
             else if (roomFeatureListForm.getDeptCodeX() != null && !roomFeatureListForm.getDeptCodeX().isEmpty() && !"All".equals(roomFeatureListForm.getDeptCodeX()))
             	department = Department.findByDeptCode(roomFeatureListForm.getDeptCodeX(), context.getUser().getCurrentAcademicSessionId());
-            boolean deptCheck = examType < 0 && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+            boolean deptCheck = examType == null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
             if (department != null) {
             	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
             }
@@ -335,7 +342,7 @@ public class RoomFeatureListAction extends Action {
     			boolean haveRooms = false;
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-    				if (examType >= 0 && !r.isExamEnabled(examType)) continue;
+    				if (examType != null && !r.isExamEnabled(examType)) continue;
     				if (deptCheck) {
     					boolean skip = true;
     					for (RoomDept rd: r.getRoomDepts())
@@ -386,7 +393,7 @@ public class RoomFeatureListAction extends Action {
     			
     			for (Iterator iter = rs.iterator();iter.hasNext();) {
     				Location r = (Location) iter.next();
-                    if (examType>=0) {
+                    if (examType != null) {
                         if (!r.isExamEnabled(examType)) continue;
                     } else {
                         boolean skip = true;

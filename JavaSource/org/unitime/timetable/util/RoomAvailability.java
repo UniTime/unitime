@@ -27,9 +27,10 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.DatePattern;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -49,27 +50,31 @@ public class RoomAvailability {
         }
     }
     
-    public static void setAvailabilityWarning(HttpServletRequest request, Session acadSession, int examType, boolean checkSolver, boolean checkAvailability) {
-        if (acadSession==null || examType<0 || getInstance()==null) return;
+    public static void setAvailabilityWarning(HttpServletRequest request, Session acadSession, Long examType, boolean checkSolver, boolean checkAvailability) {
+        if (acadSession==null || examType==null || getInstance()==null) return;
         if (checkSolver) {
             ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-            if (solver!=null && solver.getExamType()==examType) {
+            if (solver!=null && solver.getExamTypeId().equals(examType)) {
                 String ts = solver.getProperties().getProperty("RoomAvailability.TimeStamp");
+                ExamType type = ExamTypeDAO.getInstance().get(examType);
+                if (type == null) return;
                 if (ts==null)
-                    request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+Exam.sExamTypes[examType].toLowerCase()+" examinations.");
+                    request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+type.getLabel().toLowerCase()+" examinations.");
                 else
-                    request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+Exam.sExamTypes[examType].toLowerCase()+" examination solver was updated on "+ts+".");
+                    request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+type.getLabel().toLowerCase()+" examination solver was updated on "+ts+".");
                 return;
             }
         }
         if (checkAvailability) {
             Date[] bounds = ExamPeriod.getBounds(acadSession, examType);
-            String exclude = (examType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+            ExamType type = ExamTypeDAO.getInstance().get(examType);
+            if (type == null) return;
+            String exclude = (type.getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
             String ts = getInstance().getTimeStamp(bounds[0], bounds[1], exclude);
             if (ts==null)
-                request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+Exam.sExamTypes[examType].toLowerCase()+" examinations.");
+                request.setAttribute(Constants.REQUEST_WARN,"Room availability is not available for "+type.getLabel().toLowerCase()+" examinations.");
             else
-                request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+Exam.sExamTypes[examType].toLowerCase()+" examinations was updated on "+ts+".");
+                request.setAttribute(Constants.REQUEST_MSSG,"Room availability for "+type.getLabel().toLowerCase()+" examinations was updated on "+ts+".");
         }
     }
 

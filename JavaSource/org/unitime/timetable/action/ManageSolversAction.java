@@ -44,11 +44,12 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ManageSolversForm;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
@@ -62,6 +63,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 
 
 /** 
@@ -104,6 +106,7 @@ public class ManageSolversAction extends Action {
             String puid = request.getParameter("examPuid");
             sessionContext.setAttribute(SessionAttribute.ExaminationUser, puid);
             sessionContext.removeAttribute(SessionAttribute.ExaminationSolver);
+            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
             return mapping.findForward("showExamSolver");
         }
 
@@ -602,7 +605,7 @@ public class ManageSolversAction extends Action {
 					DataProperties properties = solver.getProperties();
 					if (properties==null) continue;
 	                String runnerName = getName(properties.getProperty("General.OwnerPuid","N/A"));
-	                int examType = solver.getExamType();
+	                Long examTypeId = solver.getExamTypeId();
 	                if (runnerName==null)
 	                    runnerName = "N/A";
 	                Session session = (new SessionDAO()).get(properties.getPropertyLong("General.SessionId",new Long(-1)));
@@ -653,6 +656,8 @@ public class ManageSolversAction extends Action {
                     	"if (confirm('Do you really want to unload this solver?')) " +
                     	"document.location='manageSolvers.do?op=Unload&examPuid=" + properties.getProperty("General.OwnerPuid")+ "';" +
                     	" event.cancelBubble=true;\">";
+                    
+                    ExamType examType = (examTypeId == null ? null : ExamTypeDAO.getInstance().get(examTypeId));
 	                
 	                webTable.addLine(onClick, new String[] {
 	                            (loaded==null?"N/A":sDF.format(loaded)),
@@ -662,7 +667,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel,
 	                            status,
 	                            runnerName, 
-	                            Exam.sExamTypes[examType],
+	                            (examType==null?"N/A?":examType.getLabel()),
 	                            (assigned==null?"N/A":assigned.indexOf(' ')>=0?assigned.substring(0,assigned.indexOf(' ')):assigned),
 	                            (totVal==null?"N/A":totVal),
 	                            (conf==null?"N/A":conf), 
@@ -683,7 +688,7 @@ public class ManageSolversAction extends Action {
 	                            settingLabel, 
 	                            status,
 	                            runnerName,
-	                            examType,
+	                            examTypeId,
 	                            (assigned==null?"":assigned),
                                 (totVal==null?"":totVal),
                                 (conf==null?"":conf), 

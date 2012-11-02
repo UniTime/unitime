@@ -37,14 +37,12 @@ import org.apache.struts.action.ActionMessage;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverPredefinedSetting;
 import org.unitime.timetable.model.dao.SolverPredefinedSettingDAO;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
@@ -62,8 +60,7 @@ public class ExamSolverForm extends ActionForm {
 	private static Long sSolver = new Long(-3);
 	private Vector iParams = new Vector();
 	private String iHost = null;
-	private int iExamType = 0;
-    private boolean iHasMidtermExams = false;
+	private Long iExamType = null;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -87,10 +84,10 @@ public class ExamSolverForm extends ActionForm {
 		iSettings.clear();
 		iSetting = sEmpty;
 		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
-		iExamType = Exam.sExamTypeFinal;
-		if (solver!=null) iExamType = solver.getExamType();
+		iExamType = null;
+		if (solver!=null) iExamType = solver.getExamTypeId();
 		else if (request.getSession().getAttribute("Exam.Type")!=null) { 
-		    iExamType = (Integer)request.getSession().getAttribute("Exam.Type");
+		    iExamType = (Long)request.getSession().getAttribute("Exam.Type");
 		}
 		Transaction tx = null;
 		iParams.clear(); iDefaults.clear(); iParamValues.clear();
@@ -260,18 +257,7 @@ public class ExamSolverForm extends ActionForm {
 		iHost = host;
 	}
 	
-    public int getExamType() { return iExamType; }
-    public void setExamType(int type) { iExamType = type; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
-            ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
-        }
-    	return ret;
-    }
-    
-    public boolean isHasMidtermExams() { return iHasMidtermExams; }
-    public void setHasMidtermExams(boolean hasMidtermExams) { iHasMidtermExams = hasMidtermExams; }
+    public Long getExamType() { return iExamType; }
+    public void setExamType(Long type) { iExamType = type; }
 }
 

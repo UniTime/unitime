@@ -27,6 +27,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
@@ -40,7 +41,7 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
-    public AbbvExamScheduleByCourseReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public AbbvExamScheduleByCourseReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
     }
 

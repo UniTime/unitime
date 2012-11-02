@@ -63,7 +63,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setSession(getSession());
 		l.setPermanentId(getPermanentId());
 		l.setExamCapacity(getExamCapacity());
-		l.setExamType(getExamType());
+		l.setExamTypes(getExamTypes());
 		l.setRoomType(getRoomType());
 		return l;
 	}

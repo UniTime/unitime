@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -43,7 +44,7 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByPeriodReport.class);
     
-    public ScheduleByPeriodReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public ScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectArea, exams);
     }
 

@@ -30,6 +30,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -46,7 +47,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
-    public ConflictsByCourseAndStudentReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public ConflictsByCourseAndStudentReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "CONFLICTS BY COURSE AND STUDENT", session, examType, subjectArea, exams);
         sLog.debug("  Loading students ...");
         for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {

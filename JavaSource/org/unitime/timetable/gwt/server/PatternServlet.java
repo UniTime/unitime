@@ -61,7 +61,7 @@ public class PatternServlet extends HttpServlet {
 			Location location = LocationDAO.getInstance().get(Long.valueOf(request.getParameter("loc")));
 			if (location != null) {
 				if (request.getParameter("xt") != null) {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Integer.valueOf(request.getParameter("xt")));
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Long.valueOf(request.getParameter("xt")));
                     px.load(location);
                     rtt = new RequiredTimeTable(px);
 				} else {
@@ -74,7 +74,7 @@ public class PatternServlet extends HttpServlet {
 				ExamPeriod p = null;
 				if (request.getParameter("ap") != null)
 					p = ExamPeriodDAO.getInstance().get(Long.valueOf(request.getParameter("ap")));
-				PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), p, exam.getExamType());
+				PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), p, exam.getExamType().getUniqueId());
                 px.load(exam);
                 rtt = new RequiredTimeTable(px);
 			}

@@ -31,9 +31,10 @@ import javax.servlet.http.HttpSession;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.util.ComboBoxLookup;
@@ -52,7 +53,7 @@ public class ExamsForm extends ActionForm {
 	private String iTable = null;
 	private int iNrColumns;
 	private int iNrRows;
-	private int iExamType;
+	private Long iExamType;
 	private String iMessage;
 	private Boolean canRetrieveAllExamForAllSubjects;
 	
@@ -68,7 +69,7 @@ public class ExamsForm extends ActionForm {
 		iOp = null;
 		iTable = null;
 		iNrRows = iNrColumns = 0;
-		iExamType = Exam.sExamTypeFinal;
+		iExamType = null;
 		iSession = null; 
 		iUser = null;
 		iPassword = null;
@@ -114,7 +115,7 @@ public class ExamsForm extends ActionForm {
 	    if (!hasSession) { setSession(null); setSubjectArea(null); }
 	    if (getSession()==null && !iSessions.isEmpty()) setSession(Long.valueOf(((ComboBoxLookup)iSessions.lastElement()).getValue()));
 	    iSubjectAreas = new TreeSet(new SubjectAreaDAO().getSession().createQuery("select distinct sa.subjectAreaAbbreviation from SubjectArea sa").setCacheable(true).list());
-	    setExamType(session.getAttribute("Exams.examType")==null?iExamType:(Integer)session.getAttribute("Exams.examType"));
+	    setExamType(session.getAttribute("Exams.examType")==null?iExamType:(Long)session.getAttribute("Exams.examType"));
 	    setCanRetrieveAllExamForAllSubjects(canDisplayAllSubjectsAtOnce());
 	}
 	    
@@ -137,15 +138,9 @@ public class ExamsForm extends ActionForm {
     public String getTable() { return iTable; }
     public int getNrRows() { return iNrRows; }
     public int getNrColumns() { return iNrColumns; }
-    public int getExamType() { return iExamType; }
-    public void setExamType(int type) { iExamType = type; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-            ret.add(new ComboBoxLookup(ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[i],Exam.sExamTypes[i]), String.valueOf(i)));
-        }
-    	return ret;
-    }
+    public Long getExamType() { return iExamType; }
+    public void setExamType(Long type) { iExamType = type; }
+
     
     public String getUsername() { return iUser; }
     public void setUsername(String user) { iUser = user; }
@@ -155,10 +150,13 @@ public class ExamsForm extends ActionForm {
     public void setMessage(String message) { iMessage = message; }
     
     public String getExamTypeLabel() {
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==getExamType()) return ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[i],Exam.sExamTypes[i]).toLowerCase();
-        }
-        return "";
+    	ExamType type = (iExamType == null ? null : ExamTypeDAO.getInstance().get(iExamType));
+    	return (type == null ? "" : type.getLabel());
+    }
+    
+    public boolean isFinals() {
+    	ExamType type = (iExamType == null ? null : ExamTypeDAO.getInstance().get(iExamType));
+    	return (type == null || type.getType() == ExamType.sExamTypeFinal);
     }
     
     public String getSessionLabel() {

@@ -44,6 +44,7 @@ public class SimpleEditInterface implements IsSerializable {
 		sectioning("Student Scheduling Status Type"),
 		roles("Role"),
 		permissions("Permission"),
+		examType("Examination Type"),
 		;
 	
 		private String iSingular, iPlural;

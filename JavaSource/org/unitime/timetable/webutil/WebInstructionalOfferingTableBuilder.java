@@ -55,6 +55,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Location;
@@ -851,10 +852,10 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='"+MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
+            sb.append("<span "+(ExamType.sExamTypeFinal==exam.getExamType().getType()?"style='font-weight:bold;' ":"")+
+                    "title='"+MSG.tooltipExam(exam.getLabel(), exam.getExamType().getLabel()) + "'>");
             sb.append(exam.getLabel());
-            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
+            if (ExamType.sExamTypeFinal==exam.getExamType().getType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);
@@ -867,9 +868,9 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='"+MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
-            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
+            sb.append("<span "+(ExamType.sExamTypeFinal==exam.getExamType().getType()?"style='font-weight:bold;' ":"")+
+                    "title='"+MSG.tooltipExam(exam.getLabel(), exam.getExamType().getLabel()) + "'>");
+            if (examAssignment!=null && examAssignment.getExamTypeId().equals(exam.getExamType().getUniqueId())) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getPeriodAbbreviationWithPref());
@@ -877,7 +878,7 @@ public class WebInstructionalOfferingTableBuilder {
                 if (exam.getAssignedPeriod()==null && !isShowExamName()) continue;
                 sb.append(exam.getAssignedPeriod()==null?"":exam.getAssignedPeriod().getAbbreviation());
             }
-            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
+            if (ExamType.sExamTypeFinal==exam.getExamType().getType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);
@@ -890,9 +891,9 @@ public class WebInstructionalOfferingTableBuilder {
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            sb.append("<span "+(Exam.sExamTypeFinal==exam.getExamType()?"style='font-weight:bold;' ":"")+
-                    "title='" + MSG.tooltipExam(exam.getLabel(), Exam.sExamTypes[exam.getExamType()]) + "'>");
-            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
+            sb.append("<span "+(ExamType.sExamTypeFinal==exam.getExamType().getType()?"style='font-weight:bold;' ":"")+
+                    "title='" + MSG.tooltipExam(exam.getLabel(), exam.getExamType().getLabel()) + "'>");
+            if (examAssignment!=null && examAssignment.getExamTypeId().equals(exam.getExamType().getUniqueId())) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getRoomsNameWithPref(", "));
@@ -904,7 +905,7 @@ public class WebInstructionalOfferingTableBuilder {
                     if (j.hasNext()) sb.append(", ");
                 }
             }
-            if (Exam.sExamTypeFinal==exam.getExamType()) sb.append("</span>");
+            if (ExamType.sExamTypeFinal==exam.getExamType().getType()) sb.append("</span>");
             if (i.hasNext()) sb.append("<br>");
         }
         TableCell cell = this.initNormalCell(sb.toString() ,isEditable);

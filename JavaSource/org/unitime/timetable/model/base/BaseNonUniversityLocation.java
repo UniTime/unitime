@@ -74,7 +74,6 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 			"\n	DisplayName: " + getDisplayName() +
 			"\n	EventDepartment: " + getEventDepartment() +
 			"\n	ExamCapacity: " + getExamCapacity() +
-			"\n	ExamType: " + getExamType() +
 			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
 			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
 			"\n	ManagerIds: " + getManagerIds() +

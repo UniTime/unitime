@@ -181,7 +181,7 @@
 									<%=r1.getCapacity()%>
 								</TD>
 
-							<% if (r1.isExamEnabled(Exam.sExamTypeMidterm) || r1.isExamEnabled(Exam.sExamTypeFinal)) { %>
+							<% if (r1.hasAnyExamsEnabled()) { %>
 								<TD align="center"><%=r1.getExamCapacity()%></TD>
 							<% } else { %>
 								<TD></TD>
@@ -242,7 +242,7 @@
 								<%=r2.getCapacity()%>
 							</TD>
 							
-							<% if (r2.isExamEnabled(Exam.sExamTypeMidterm) || r2.isExamEnabled(Exam.sExamTypeFinal)) { %>
+							<% if (r2.hasAnyExamsEnabled()) { %>
 								<TD align="center"><%=r2.getExamCapacity()%></TD>
 							<% } else { %>
 								<TD></TD>

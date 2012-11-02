@@ -43,7 +43,7 @@ public class RoomDeptEditForm extends ActionForm {
     private String iTable = null;
     private String iName = null;
 	private Long iId = null;
-	private int iExamType = -1;
+	private Long iExamType = null;
 	private Set<Long> iAssigned = new HashSet<Long>();
 
 	private static final long serialVersionUID = 5225503750129395914L;
@@ -54,15 +54,15 @@ public class RoomDeptEditForm extends ActionForm {
 	}
 	
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
-	    iOp = null; iId = null; iExamType = -1; iAssigned.clear();
+	    iOp = null; iId = null; iExamType = null; iAssigned.clear();
 	}
 
 	public String getOp() { return iOp; }
 	public void setOp(String op) { iOp = op; }
 	public Long getId() { return iId; }
 	public void setId(Long id) { iId = id;}
-	public int getExamType() { return iExamType; }
-	public void setExamType(int examType) { iExamType = examType; }
+	public Long getExamType() { return iExamType; }
+	public void setExamType(Long examType) { iExamType = examType; }
 	public Set<Long> getAssignedSet() { return iAssigned; }
 	public String[] getAssigned() { 
 	    String[] ret = new String[iAssigned.size()];

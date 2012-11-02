@@ -21,15 +21,18 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -44,25 +47,27 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByRoomReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByRoomReport.class);
     
-    public ScheduleByRoomReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public ScheduleByRoomReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "SCHEDULE BY ROOM", session, examType, subjectArea, exams);
     }
 
     public void printReport() throws DocumentException {
         sLog.info("  Computing room table...");
-        Hashtable <ExamRoomInfo,Hashtable<ExamPeriod,ExamAssignmentInfo>> table = new Hashtable();
+        Hashtable <ExamRoomInfo,Hashtable<ExamPeriod,List<ExamAssignmentInfo>>> table = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
             for (ExamRoomInfo room : exam.getRooms()) {
-                Hashtable<ExamPeriod,ExamAssignmentInfo> roomAssignments = table.get(room);
+                Hashtable<ExamPeriod,List<ExamAssignmentInfo>> roomAssignments = table.get(room);
                 if (roomAssignments==null) {
                     roomAssignments = new Hashtable();
                     table.put(room,roomAssignments);
                 }
-                if (roomAssignments.get(exam.getPeriod())!=null) {
-                    sLog.error("Room "+room.getName()+" has two exams assigned in period "+exam.getPeriodName()+" ("+exam.getExamName()+" and "+roomAssignments.get(exam.getPeriod()).getExamName()+").");
+                List<ExamAssignmentInfo> exams = roomAssignments.get(exam.getPeriod());
+                if (exams == null) {
+                	exams = new ArrayList<ExamAssignmentInfo>();
+                	roomAssignments.put(exam.getPeriod(), exams);	
                 }
-                roomAssignments.put(exam.getPeriod(), exam);
+                exams.add(exam);
             }
         }
         TreeSet<ExamRoomInfo> rooms = new TreeSet(new Comparator<ExamRoomInfo>() {
@@ -84,60 +89,62 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
             iPeriodPrinted = false;
             setPageName(room.getName());
             setCont(room.getName());
-            Hashtable<ExamPeriod,ExamAssignmentInfo> roomAssignments = table.get(room);
+            Hashtable<ExamPeriod,List<ExamAssignmentInfo>> roomAssignments = table.get(room);
             ExamPeriod lastPeriod = null;
             boolean somethingPrinted = false;
             for (Iterator j=periods.iterator();j.hasNext();) {
                 ExamPeriod period = (ExamPeriod)j.next();
                 iStudentPrinted = false;
-                ExamAssignmentInfo exam = roomAssignments.get(period);
-                if (exam!=null) {
-                    ExamSectionInfo lastSection = null;
-                    iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
-                    for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                        if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
-                        if (lastSection!=null && iSubjectPrinted) {
-                            iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
-                            if (section.getSubject().equals(lastSection.getSubject())) {
-                                iSubjectPrinted = true;
-                                if (section.getCourseNbr().equals(lastSection.getCourseNbr())) {
-                                    iCoursePrinted = true;
-                                    if (section.getItype().equals(lastSection.getItype())) {
-                                        iITypePrinted = true;
+                List<ExamAssignmentInfo> exams = roomAssignments.get(period);
+                if (exams!=null) {
+                	for (ExamAssignmentInfo exam: exams) {
+                        ExamSectionInfo lastSection = null;
+                        iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
+                        for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
+                            if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                            if (lastSection!=null && iSubjectPrinted) {
+                                iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
+                                if (section.getSubject().equals(lastSection.getSubject())) {
+                                    iSubjectPrinted = true;
+                                    if (section.getCourseNbr().equals(lastSection.getCourseNbr())) {
+                                        iCoursePrinted = true;
+                                        if (section.getItype().equals(lastSection.getItype())) {
+                                            iITypePrinted = true;
+                                        }
                                     }
                                 }
                             }
+                            if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
+                            lastPeriod = period;
+                            println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
+                                    lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
+                                    lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
+                                    lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
+                                    rpad(iStudentPrinted?"":formatPeriod(section.getExamAssignment()),38)+" "+
+                                    rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
+                                    rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
+                                    (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
+                                    lpad(section.getSection(),5)+" "+
+                                    lpad(String.valueOf(section.getNrStudents()),5)
+                                    );
+                            iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
+                            lastSection = section;
+                            somethingPrinted = true;
                         }
+                    }
+                    /*} else {
                         if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
                         lastPeriod = period;
                         println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
                                 lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
                                 lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
-                                lpad(iStudentPrinted?"":String.valueOf(periods.indexOf(period)+1),6)+" "+
-                                rpad(iStudentPrinted?"":formatPeriod(section.getExamAssignment()),38)+" "+
-                                rpad(iSubjectPrinted?"":section.getSubject(),4)+" "+
-                                rpad(iCoursePrinted?"":section.getCourseNbr(), 6)+" "+
-                                (iItype?rpad(iITypePrinted?"":section.getItype(), 6)+" ":"")+
-                                lpad(section.getSection(),5)+" "+
-                                lpad(String.valueOf(section.getNrStudents()),5)
+                                lpad(String.valueOf(periods.indexOf(period)+1),6)+" "+
+                                rpad(formatPeriod(period),38)
                                 );
-                        iPeriodPrinted = iStudentPrinted = iSubjectPrinted = iCoursePrinted = iITypePrinted = !iNewPage;
-                        lastSection = section;
-                        somethingPrinted = true;
-                    }
+                        iPeriodPrinted = !iNewPage;
+                        //println("");
+                    }*/                		
                 }
-                /*} else {
-                    if (lastPeriod!=null && !lastPeriod.getDateOffset().equals(period.getDateOffset()) && !iNewPage) println("");
-                    lastPeriod = period;
-                    println((iPeriodPrinted?rpad("",11):formatRoom(room.getName()))+" "+
-                            lpad(iPeriodPrinted?"":String.valueOf(room.getCapacity()),8)+" "+
-                            lpad(iPeriodPrinted?"":String.valueOf(room.getExamCapacity()),6)+" "+
-                            lpad(String.valueOf(periods.indexOf(period)+1),6)+" "+
-                            rpad(formatPeriod(period),38)
-                            );
-                    iPeriodPrinted = !iNewPage;
-                    //println("");
-                }*/
             }
             setCont(null);
             if (somethingPrinted && i.hasNext()) {

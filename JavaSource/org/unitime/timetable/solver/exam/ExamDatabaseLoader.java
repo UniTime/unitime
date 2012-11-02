@@ -61,6 +61,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -73,6 +74,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
@@ -84,7 +86,7 @@ import org.unitime.timetable.util.RoomAvailability;
 public class ExamDatabaseLoader extends ExamLoader {
     private static Log sLog = LogFactory.getLog(ExamDatabaseLoader.class);
     private Long iSessionId;
-    private int iExamType;
+    private Long iExamTypeId;
     private boolean iLoadSolution;
     private String iInstructorFormat;
     private Progress iProgress = null;
@@ -97,8 +99,6 @@ public class ExamDatabaseLoader extends ExamLoader {
     private Hashtable iStudents = new Hashtable();
     private Set iAllRooms = null;
     private Set<ExamPeriod> iProhibitedPeriods = new HashSet();
-    private boolean iLoadEventConflicts = false;
-    private boolean iMakeupSameRoom = false;
     private PredefinedExamRoomSharing iSharing = null;
     
     private boolean iRoomAvailabilityTimeStampIsSet = false;
@@ -107,11 +107,9 @@ public class ExamDatabaseLoader extends ExamLoader {
         super(model);
         iProgress = Progress.getInstance(model);
         iSessionId = model.getProperties().getPropertyLong("General.SessionId",(Long)null);
-        iExamType = model.getProperties().getPropertyInt("Exam.Type",org.unitime.timetable.model.Exam.sExamTypeFinal);
+        iExamTypeId = model.getProperties().getPropertyLong("Exam.Type", null);
         iLoadSolution = model.getProperties().getPropertyBoolean("General.LoadSolution", true);
         iInstructorFormat = getModel().getProperties().getProperty("General.InstructorFormat", DepartmentalInstructor.sNameFormatLastFist);
-        iLoadEventConflicts = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?"final":"midterm"),"true"));
-        iMakeupSameRoom = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+(iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?"final":"midterm"),"false"));
     }
     
     private String getExamLabel(org.unitime.timetable.model.Exam exam) {
@@ -135,8 +133,9 @@ public class ExamDatabaseLoader extends ExamLoader {
             loadExams();
             loadStudents();
             loadDistributions();
-            if (iLoadEventConflicts) loadAvailabilitiesFromEvents();
-            if (iMakeupSameRoom) makeupSameRoomConstraints();
+            ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId, hibSession);
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) loadAvailabilitiesFromEvents();
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+type.getReference(),"false"))) makeupSameRoomConstraints();
             getModel().init();
             checkConsistency();
             assignInitial();
@@ -162,7 +161,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadPeriods() {
-        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
+        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamTypeId);
         iProgress.setPhase("Loading periods...", periods.size());
         for (Iterator i=periods.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -181,7 +180,7 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     protected void loadRooms() {
-        iAllRooms = Location.findAllExamLocations(iSessionId,iExamType);
+        iAllRooms = Location.findAllExamLocations(iSessionId,iExamTypeId);
         iProgress.setPhase("Loading rooms...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -197,7 +196,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             getModel().getRooms().add(room);
             iRooms.put(room.getId(),room);
             if (location.getPermanentId()!=null) iPermId2Room.put(location.getPermanentId(), room);
-            for (Iterator j=location.getExamPreferences(iExamType).entrySet().iterator();j.hasNext();) {
+            for (Iterator j=location.getExamPreferences(iExamTypeId).entrySet().iterator();j.hasNext();) {
                 Map.Entry entry = (Map.Entry)j.next();
                 ExamPeriod period = iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
                 String pref = ((PreferenceLevel)entry.getValue()).getPrefProlog();
@@ -212,10 +211,9 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     protected void loadExams() {
         if (isRemote()) HibernateUtil.clearCache();
-        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
-        boolean considerLimit = "true".equals(
-                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+org.unitime.timetable.model.Exam.sExamTypes[iExamType],
-                (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?"false":"true")));
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
+        ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
+        boolean considerLimit = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.useLimit."+type.getUniqueId(), (type.getType() == ExamType.sExamTypeFinal?"false":"true")));
         iProgress.setPhase("Loading exams...", exams.size());
         for (Iterator i=exams.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -231,7 +229,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
                     if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
                 }
-                if (iExamType==org.unitime.timetable.model.Exam.sExamTypeMidterm && pref==null) continue;
+                if (type.getType() == ExamType.sExamTypeMidterm && pref==null) continue;
                 if (PreferenceLevel.sProhibited.equals(pref)) continue;
                 if (PreferenceLevel.sRequired.equals(pref)) {
                     if (!hasReqPeriod) periodPlacements.clear(); 
@@ -255,7 +253,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                     0,
                     periodPlacements,
                     findRooms(exam));
-            if (org.unitime.timetable.model.Exam.sExamTypeFinal==iExamType) {
+            if (type.getType() == ExamType.sExamTypeFinal) {
                 if (exam.getAvgPeriod()!=null) x.setAveragePeriod(exam.getAvgPeriod());
                 else x.setAveragePeriod(getModel().getPeriods().size()/2);
             }
@@ -506,9 +504,9 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
-                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
+                "o.ownerId=c.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
                 "class");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
@@ -516,27 +514,27 @@ public class ExamDatabaseLoader extends ExamLoader {
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c " +
                 "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
+                "o.ownerId=ioc.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
                 "config");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
                 "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering co " +
-                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
+                "o.ownerId=co.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
                 "course");
         loadStudents(
                 new ExamDAO().getSession().createQuery(
                 "select x.uniqueId, o.uniqueId, e.student.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
-                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).setInteger("examType", iExamType).list(),
+                "o.ownerId=io.uniqueId").setLong("sessionId", iSessionId).setLong("examTypeId", iExamTypeId).list(),
                 "offering");
     }
     
@@ -624,24 +622,24 @@ public class ExamDatabaseLoader extends ExamLoader {
         List overlappingClassEvents = 
                 new EventDAO().getSession().createQuery(
                         "select distinct e.uniqueId, p.uniqueId, m from ClassEvent e inner join e.meetings m, ExamPeriod p where " +
-                        "p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                        "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and "+
                         "(exists elements(e.clazz.studentEnrollments) or exists elements(e.clazz.classInstructors))"
                         )
                         .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
-                        .setInteger("examType", iExamType)
+                        .setLong("examTypeId", iExamTypeId)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
                         .list();
         List overlappingCourseEvents =
                 new EventDAO().getSession().createQuery(
                         "select distinct e.uniqueId, p.uniqueId, m from CourseEvent e inner join e.meetings m, ExamPeriod p where " +
-                        "e.reqAttendance=true and p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                        "e.reqAttendance=true and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                         .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
-                        .setInteger("examType", iExamType)
+                        .setLong("examTypeId", iExamTypeId)
                         .setLong("sessionId", iSessionId)
                         .setCacheable(true)
                         .list();
@@ -650,11 +648,11 @@ public class ExamDatabaseLoader extends ExamLoader {
         Hashtable<Long, Set<ExamStudent>> students = new Hashtable();
         for (Iterator i=new EventDAO().getSession().createQuery(
                 "select e.uniqueId, s.student.uniqueId from ClassEvent e inner join e.meetings m inner join e.clazz.studentEnrollments s, ExamPeriod p where " +
-                "p.session.uniqueId=:sessionId and p.examType=:examType and "+
+                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
-                .setInteger("examType", iExamType)
+                .setLong("examTypeId", iExamTypeId)
                 .setLong("sessionId", iSessionId)
                 .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
@@ -670,11 +668,11 @@ public class ExamDatabaseLoader extends ExamLoader {
         Hashtable<Long, Set<ExamInstructor>> instructors = new Hashtable();
         for (Iterator i=new EventDAO().getSession().createQuery(
                 "select e.uniqueId, i.instructor from ClassEvent e inner join e.meetings m inner join e.clazz.classInstructors i, ExamPeriod p where " +
-                "p.session.uniqueId=:sessionId and p.examType=:examType and i.lead=true and "+
+                "p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and i.lead=true and "+
                 "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                 HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                 .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
-                .setInteger("examType", iExamType)
+                .setLong("examTypeId", iExamTypeId)
                 .setLong("sessionId", iSessionId)
                 .setCacheable(true).list().iterator();i.hasNext();) {
             Object[] o = (Object[])i.next();
@@ -815,10 +813,10 @@ public class ExamDatabaseLoader extends ExamLoader {
         List distPrefs = new DistributionPrefDAO().getSession().createQuery(
                 "select distinct d from DistributionPref d inner join d.distributionObjects o, Exam x where "+
                 "d.distributionType.examPref=true and "+
-                "o.prefGroup=x and x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "o.prefGroup=x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "d.owner.uniqueId=:sessionId").
                 setLong("sessionId", iSessionId).
-                setInteger("examType", iExamType).list();
+                setLong("examTypeId", iExamTypeId).list();
         iProgress.setPhase("Loading distributions...", distPrefs.size());
         for (Iterator i=distPrefs.iterator();i.hasNext();) {
             iProgress.incProgress();
@@ -931,9 +929,10 @@ public class ExamDatabaseLoader extends ExamLoader {
     }
     
     public void loadRoomAvailability(RoomAvailabilityInterface ra) {
-        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamType);
-        Date[] bounds = org.unitime.timetable.model.ExamPeriod.getBounds(new SessionDAO().get(iSessionId), iExamType);
-        String exclude = (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+        Set periods = org.unitime.timetable.model.ExamPeriod.findAll(iSessionId, iExamTypeId);
+        Date[] bounds = org.unitime.timetable.model.ExamPeriod.getBounds(new SessionDAO().get(iSessionId), iExamTypeId);
+        ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
+        String exclude = (type.getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
         roomAvailabilityActivate(bounds[0],bounds[1],exclude);
         iProgress.setPhase("Loading room availability...", iAllRooms.size());
         for (Iterator i=iAllRooms.iterator();i.hasNext();) {
@@ -941,7 +940,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             Location location = (Location)i.next();
             ExamRoom roomEx = iRooms.get(location.getUniqueId());
             if (roomEx==null) continue;
-            Collection<TimeBlock> times = getRoomAvailability(location, bounds[0], bounds[1]);
+            Collection<TimeBlock> times = getRoomAvailability(location, bounds[0], bounds[1], exclude);
             if (times==null) continue;
             for (TimeBlock time : times) {
                 for (Iterator j=periods.iterator();j.hasNext();) {
@@ -965,10 +964,9 @@ public class ExamDatabaseLoader extends ExamLoader {
         }
     }
     
-    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime) {
+    public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String exclude) {
         Collection<TimeBlock> ret = null;
         String ts = null;
-        String exclude = (iExamType==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
         try {
             if (isRemote()) {
                 ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getRoomAvailability",location.getUniqueId(),startTime,endTime,exclude});
