@@ -215,7 +215,7 @@ public class Exams extends BodyTagSupport {
                             roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                             if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
                             if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
-                                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
+                                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
                                 epx.load(exam);
                                 perPref+=epx.toString();
                             } else if (timeText) {
