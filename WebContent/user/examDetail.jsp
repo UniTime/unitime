@@ -16,7 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
+<%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.form.ExamEditForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
@@ -128,10 +128,10 @@
 		</TR>
 		<TR>
 			<TD>Type:</TD><TD>
-				<logic:iterate name="<%=frmName%>" property="examTypes" id="et">
-					<bean:define name="et" property="value" id="examType"/>
-					<logic:equal name="<%=frmName%>" property="examType" value="<%=(String)examType%>">
-						<bean:write name="et" property="label"/>			
+				<logic:iterate scope="request" name="examTypes" id="et">
+					<bean:define name="et" property="uniqueId" id="examType"/>
+					<logic:equal name="<%=frmName%>" property="examType" value="<%=examType.toString()%>">
+						<bean:write name="et" property="label"/>
 					</logic:equal>
 				</logic:iterate>
 			 </TD>

@@ -21,19 +21,16 @@ package org.unitime.timetable.form;
 
 import java.util.Collection;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
-import org.unitime.timetable.util.ComboBoxLookup;
 
 
 /** 
@@ -48,8 +45,7 @@ public class ExamReportForm extends ActionForm {
 	private String iTable = null;
 	private int iNrColumns;
 	private int iNrRows;
-	private int iExamType;
-    private boolean iHasMidtermExams = false;
+	private Long iExamType;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
@@ -62,13 +58,12 @@ public class ExamReportForm extends ActionForm {
 		iShowSections = false;
 		iTable = null;
 		iNrRows = iNrColumns = 0;
-		iExamType = Exam.sExamTypeFinal;
+		iExamType = null;
 		ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
 		try {
 			if (solver!=null)
-				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
+				iExamType = solver.getProperties().getPropertyLong("Exam.Type", iExamType);
 		} catch (Exception e) {}
-		iHasMidtermExams = false;
 	}
 	
 	public String getOp() { return iOp; }
@@ -84,7 +79,6 @@ public class ExamReportForm extends ActionForm {
 	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }
 	
 	public void load(SessionContext session) {
-		iHasMidtermExams = Exam.hasMidtermExams(session.getUser().getCurrentAcademicSessionId());
 	    setShowSections("1".equals(session.getUser().getProperty("ExamReport.showSections", "1")));
 	    setSubjectArea(session.getAttribute("ExamReport.subjectArea")==null?null:(Long)session.getAttribute("ExamReport.subjectArea"));
 	    try {
@@ -95,7 +89,7 @@ public class ExamReportForm extends ActionForm {
 	                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
 	                        .setCacheable(true).list());
 	    } catch (Exception e) {}
-	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Integer)session.getAttribute("Exam.Type"));
+	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Long)session.getAttribute("Exam.Type"));
 	}
 	    
     public void save(SessionContext session) {
@@ -114,15 +108,7 @@ public class ExamReportForm extends ActionForm {
     public String getTable() { return iTable; }
     public int getNrRows() { return iNrRows; }
     public int getNrColumns() { return iNrColumns; }
-    public int getExamType() { return iExamType; }
-    public void setExamType(int type) { iExamType = type; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
-            ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
-        }
-    	return ret;
-    }
+    public Long getExamType() { return iExamType; }
+    public void setExamType(Long type) { iExamType = type; }
 }
 

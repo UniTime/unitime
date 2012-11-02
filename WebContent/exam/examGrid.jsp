@@ -42,7 +42,7 @@ try {
   			<TD nowrap>Examination Problem:</TD>
 			<TD>
 				<html:select property="examType" onchange="javascript: showDates(this.value);">
-					<html:optionsCollection property="examTypes" label="label" value="value"/>
+					<html:options collection="examTypes" labelProperty="label" property="uniqueId"/>
 				</html:select>
 			</TD>
 		</TR>
@@ -60,37 +60,37 @@ try {
 				<html:text property="filter" maxlength="1000" size="40"/>
 			</TD>
 		</TR>
-		<logic:iterate name="examGridForm" property="examTypes" id="et">
-			<bean:define name="et" property="value" id="examType"/>
+		<script>var rowToExamType = new Array();</script>
+		<logic:iterate scope="request" name="examTypes" id="et" indexId="idx">
+			<bean:define name="et" property="uniqueId" id="examType"/>
+			<script>rowToExamType[<%=idx%>] = <%=examType%>;</script>
 			<TR id='<%="daterow."+examType%>'>
 				<TD>Date:</TD>
 				<TD>
-					<html:select property='<%="date["+examType+"]"%>'>
-						<html:optionsCollection name="examGridForm" property='<%="dates["+examType+"]"%>' label="label" value="value"/>
+					<html:select property='<%="date("+examType+")"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="dates("+examType+")"%>' label="label" value="value"/>
 					</html:select>
 				</TD>
 			</TR>
 			<TR id='<%="timerow."+examType%>'>
 				<TD>Time:</TD>
 				<TD>
-					<html:select property='<%="startTime["+examType+"]"%>'>
-						<html:optionsCollection name="examGridForm" property='<%="startTimes["+examType+"]"%>' label="label" value="value"/>
+					<html:select property='<%="startTime("+examType+")"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="startTimes("+examType+")"%>' label="label" value="value"/>
 					</html:select>
 					-
-					<html:select property='<%="endTime["+examType+"]"%>'>
-						<html:optionsCollection name="examGridForm" property='<%="endTimes["+examType+"]"%>' label="label" value="value"/>
+					<html:select property='<%="endTime("+examType+")"%>'>
+						<html:optionsCollection name="examGridForm" property='<%="endTimes("+examType+")"%>' label="label" value="value"/>
 					</html:select>
 				</TD>
 			</TR>
 		</logic:iterate>
 		<script language="JavaScript" type="text/javascript">
 			function showDates(examType) {
-				var idx = 0;
-				while (document.getElementById("daterow."+idx)!=null) {
-					var disp = (idx==examType?null:"none");
-					document.getElementById("daterow."+idx).style.display=disp;
-					document.getElementById("timerow."+idx).style.display=disp;
-					idx++;
+				for (var x = 0; x < rowToExamType.length; x++) {
+					var disp = (rowToExamType[x] == examType ? null : "none");
+					document.getElementById("daterow."+rowToExamType[x]).style.display=disp;
+					document.getElementById("timerow."+rowToExamType[x]).style.display=disp;
 				}
 			}
 			showDates(document.getElementsByName('examType')[0].value);

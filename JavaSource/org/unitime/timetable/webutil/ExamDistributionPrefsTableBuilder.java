@@ -38,6 +38,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.PdfEventHandler;
@@ -57,7 +58,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class ExamDistributionPrefsTableBuilder {
 	
-	public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Integer examType) throws Exception {
+	public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
 	    Query q = new DistributionPrefDAO().getSession().createQuery(
 	            "select distinct dp from DistributionPref dp " +
 	            "inner join dp.distributionObjects do, Exam x inner join x.owners o " +
@@ -65,9 +66,9 @@ public class ExamDistributionPrefsTableBuilder {
 	            (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
 	            (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
 	            "dp.distributionType.examPref = true and "+
-	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType=:examType")
+	            "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
 	            .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-	    		.setInteger("examType", examType);
+	    		.setLong("examTypeId", examTypeId);
 	    if (subjectAreaId!=null)
 	        q.setLong("subjectAreaId", subjectAreaId);
 	    if (courseNbr!=null && courseNbr.trim().length()!=0)
@@ -76,7 +77,7 @@ public class ExamDistributionPrefsTableBuilder {
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
 
-    public File getDistPrefsTableAsPdf(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Integer examType) throws Exception {
+    public File getDistPrefsTableAsPdf(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
         
         Query q = new DistributionPrefDAO().getSession().createQuery(
                 "select distinct dp from DistributionPref dp " +
@@ -85,16 +86,16 @@ public class ExamDistributionPrefsTableBuilder {
                 (courseNbr==null || courseNbr.trim().length()==0?"":courseNbr.indexOf('*')>=0?"o.course.courseNbr like :courseNbr and ":"o.course.courseNbr=:courseNbr and")+
                 (subjectAreaId==null?"":" o.course.subjectArea.uniqueId=:subjectAreaId and ")+
                 "dp.distributionType.examPref = true and "+
-                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType=:examType")
+                "do.prefGroup = x and x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
                 .setLong("sessionId", context.getUser().getCurrentAcademicSessionId())
-                .setInteger("examType", examType);
+                .setLong("examTypeId", examTypeId);
         if (subjectAreaId!=null)
             q.setLong("subjectAreaId", subjectAreaId);
         if (courseNbr!=null && courseNbr.trim().length()!=0)
             q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
         List distPrefs = q.setCacheable(true).list();
 
-        return toPdfTable(request, context, distPrefs, examType); 
+        return toPdfTable(request, context, distPrefs, examTypeId); 
     }
 
     public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Exam exam) throws Exception {
@@ -188,11 +189,11 @@ public class ExamDistributionPrefsTableBuilder {
         return tbl.printTable(WebTable.getOrder(context,"examDistPrefsTable.ord"));
     }
 
-    public File toPdfTable(HttpServletRequest request, SessionContext context, Collection distPrefs, int examType) {
+    public File toPdfTable(HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) {
         WebTable.setOrder(context,"examDistPrefsTable.ord",request.getParameter("order"),4);
         
         PdfWebTable tbl = new PdfWebTable(4, 
-                Exam.sExamTypes[examType]+" Examination Distribution Preferences",  
+                ExamTypeDAO.getInstance().get(examTypeId).getLabel()+" Examination Distribution Preferences",  
                 null,
                 new String[] {" Preference ", " Type ", " Exam ", " Class/Course " },
                 new String[] { "left", "left", "left", "left"},

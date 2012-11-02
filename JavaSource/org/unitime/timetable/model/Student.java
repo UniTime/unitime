@@ -122,7 +122,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
         HashSet exams = new HashSet();
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.uniqueId and o.exam.examType.type=:examType")
                 .setLong("studentId", getUniqueId())
                 .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
                 .setInteger("examType", examType)
@@ -130,7 +130,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
                 .list());
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.type=:examType")
                 .setLong("studentId", getUniqueId())
                 .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
                 .setInteger("examType", examType)
@@ -138,7 +138,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
                 .list());
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.uniqueId and o.exam.examType.type=:examType")
                 .setLong("studentId", getUniqueId())
                 .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
                 .setInteger("examType", examType)
@@ -146,7 +146,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
                 .list());
         exams.addAll(new StudentDAO().getSession().createQuery(
                 "select distinct o.exam from ExamOwner o, StudentClassEnrollment e "+
-                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                "where e.student.uniqueId=:studentId and o.ownerType=:ownerType and o.ownerId=e.courseOffering.instructionalOffering.uniqueId and o.exam.examType.type=:examType")
                 .setLong("studentId", getUniqueId())
                 .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
                 .setInteger("examType", examType)

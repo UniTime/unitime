@@ -42,6 +42,7 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PositionType;
@@ -174,7 +175,7 @@ public class LookupTables {
         request.setAttribute(DistributionType.DIST_TYPE_ATTR_NAME, DistributionType.findApplicable(context, true, false));
     }
 
-    public static void setupExaminationPeriods(HttpServletRequest request, Long sessionId, Integer examType) throws Exception {
+    public static void setupExaminationPeriods(HttpServletRequest request, Long sessionId, Long examType) throws Exception {
         request.setAttribute(ExamPeriod.PERIOD_ATTR_NAME, ExamPeriod.findAll(sessionId, examType));
     }
 
@@ -366,6 +367,10 @@ public class LookupTables {
     public static void setupTimetableManagers(HttpServletRequest request) {
         Vector v = new Vector(TimetableManager.getManagerList()); 
         request.setAttribute(TimetableManager.MGR_LIST_ATTR_NAME, v);
+    }
+    
+    public static void setupExamTypes(HttpServletRequest request, Long sessionId) {
+    	request.setAttribute("examTypes", sessionId == null ? ExamType.findAll() : ExamType.findAllUsed(sessionId));
     }
 
 }

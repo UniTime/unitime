@@ -82,6 +82,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -120,7 +121,7 @@ public class ExamAssignmentReportAction extends Action {
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
-            if (solver!=null && solver.getExamType()==myForm.getExamType())
+            if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else {
                 if ("true".equals(ApplicationProperties.getProperty("tmtbl.exams.conflicts.cache","true")) && myForm.getSubjectArea()!=null && myForm.getSubjectArea()>0)
@@ -153,37 +154,39 @@ public class ExamAssignmentReportAction extends Action {
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
         return mapping.findForward("show");
 	}
 	
-    public static TreeSet<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId, int examType) throws Exception {
+    public static TreeSet<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long subjectAreaId, Long examTypeId) throws Exception {
         Hashtable<Long, Exam> exams = new Hashtable();
         for (Iterator i=new ExamDAO().getSession().createQuery(
-                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType=:examType"
-                ).setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                "select x from Exam x where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
+                ).setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             exams.put(exam.getUniqueId(), exam);
         }
         new ExamDAO().getSession().createQuery(
-                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
                 .setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
         new ExamDAO().getSession().createQuery(
-                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
                 .setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
         new ExamDAO().getSession().createQuery(
-                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
                 .setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
         new ExamDAO().getSession().createQuery(
-                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
                 .setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
         Hashtable<Long,Set<Long>> owner2students = new Hashtable();
         Hashtable<Long,Set<Exam>> student2exams = new Hashtable();
@@ -193,9 +196,9 @@ public class ExamAssignmentReportAction extends Action {
                 "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                 "Exam x inner join x.owners o, "+
                 "StudentClassEnrollment e inner join e.clazz c "+
-                "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                 "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                "o.ownerId=c.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
                     Object[] o = (Object[])i.next();
                     Long examId = (Long)o[0];
                     Long ownerId = (Long)o[1];
@@ -231,9 +234,9 @@ public class ExamAssignmentReportAction extends Action {
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.clazz c " +
                         "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                        "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                        "o.ownerId=ioc.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
@@ -268,9 +271,9 @@ public class ExamAssignmentReportAction extends Action {
                         "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering co " +
-                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                        "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                        "o.ownerId=co.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
@@ -305,9 +308,9 @@ public class ExamAssignmentReportAction extends Action {
                         "select x.uniqueId, o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                         "Exam x inner join x.owners o, "+
                         "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
-                        "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                        "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                         "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                        "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setInteger("examType", examType).setCacheable(true).list().iterator();i.hasNext();) {
+                        "o.ownerId=io.uniqueId").setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list().iterator();i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long examId = (Long)o[0];
                 Long ownerId = (Long)o[1];
@@ -341,9 +344,9 @@ public class ExamAssignmentReportAction extends Action {
             for (Iterator i=new ExamDAO().getSession().createQuery(
                     "select p.uniqueId, m from ClassEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.classEvent","6")))
-                    .setLong("sessionId", sessionId).setInteger("examType", examType)
+                    .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
@@ -357,9 +360,9 @@ public class ExamAssignmentReportAction extends Action {
             for (Iterator i=new ExamDAO().getSession().createQuery(
                     "select p.uniqueId, m from CourseEvent ce inner join ce.meetings m, ExamPeriod p " +
                     "where ce.reqAttendance=true and p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
-                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType=:examType")
+                    HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId")
                     .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))
-                    .setLong("sessionId", sessionId).setInteger("examType", examType)
+                    .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId)
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
                 Long periodId = (Long)o[0];
@@ -370,15 +373,15 @@ public class ExamAssignmentReportAction extends Action {
                 }
                 meetings.add(meeting);
             }
-            Parameters p = new Parameters(sessionId, examType);
+            Parameters p = new Parameters(sessionId, examTypeId);
         TreeSet<ExamAssignmentInfo> ret = new TreeSet();
         if (subjectAreaId==null || subjectAreaId<0) {
             for (Iterator i = new ExamDAO().getSession().createQuery(
                     "select x from Exam x where " +
-                    "x.examType=:examType and "+
+                    "x.examType.uniqueId=:examTypeId and "+
                     "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
                     setLong("sessionId", sessionId).
-                    setLong("examType", examType).
+                    setLong("examTypeId", examTypeId).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 ExamAssignmentInfo info = new ExamAssignmentInfo(exam, owner2students, owner2course2students, student2exams, period2meetings, p);
@@ -388,10 +391,10 @@ public class ExamAssignmentReportAction extends Action {
             for (Iterator i = new ExamDAO().getSession().createQuery(
                     "select distinct x from Exam x inner join x.owners o where " +
                     "o.course.subjectArea.uniqueId=:subjectAreaId and "+
-                    "x.examType=:examType and "+
+                    "x.examType.uniqueId=:examTypeId and "+
                     "x.session.uniqueId=:sessionId and x.assignedPeriod!=null").
                     setLong("sessionId", sessionId).
-                    setLong("examType", examType).
+                    setLong("examTypeId", examTypeId).
                     setLong("subjectAreaId", subjectAreaId).
                     setCacheable(true).list().iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();

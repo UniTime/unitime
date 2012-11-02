@@ -85,7 +85,7 @@ public class RoomGroupSearchAction extends Action {
 		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
 		if (deptCode != null && !deptCode.isEmpty() &&
-				("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))) {
+				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))) {
 			roomGroupListForm.setDeptCodeX(deptCode);
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {
@@ -105,6 +105,7 @@ public class RoomGroupSearchAction extends Action {
 			}
 			
 			LookupTables.setupDepartments(request, sessionContext, true);
+			LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 			
 			return mapping.findForward("showRoomGroupSearch");
 		}

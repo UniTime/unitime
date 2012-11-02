@@ -106,6 +106,7 @@ public class ExamDistributionPrefsAction extends Action {
 		// Set lookup tables lists
         //LookupTables.setupPrefLevels(request);	 // Preference Levels
         LookupTables.setupExamDistribTypes(request, sessionContext); // Distribution Types
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId()); // Exam Types
 
         // Add / Update distribution pref
         if(op.equals(rsc.getMessage("button.save")) || op.equals(rsc.getMessage("button.update")) ) {
@@ -162,7 +163,7 @@ public class ExamDistributionPrefsAction extends Action {
 	            frm.setExam(0, exam.getUniqueId());
 	            frm.setSubjectArea(0, exam.firstSubjectArea().getUniqueId());
                 frm.setCourseNbr(0, exam.firstCourseOffering().getUniqueId());
-                frm.setExamType(exam.getExamType());
+                frm.setExamType(exam.getExamType().getUniqueId());
 	        }
             frm.getSubjectArea().add(new Long(-1));
             frm.getCourseNbr().add(new Long(-1));
@@ -252,9 +253,8 @@ public class ExamDistributionPrefsAction extends Action {
         
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
         
-        frm.setHasMidtermExams(Exam.hasMidtermExams(sessionContext.getUser().getCurrentAcademicSessionId()));
         if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
-        	frm.setExamType((Integer)sessionContext.getAttribute(SessionAttribute.ExamType));
+        	frm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
         
         frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         if (frm.getFilterSubjectAreas().size()==1) {

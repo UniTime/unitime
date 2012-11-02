@@ -38,13 +38,14 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomDeptEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -60,37 +61,29 @@ public class RoomDeptEditAction extends Action {
 		Department d = null;
 		if (sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom) != null) {
 			String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if ("Exam".equalsIgnoreCase(deptCode)) {
+			if (deptCode != null && deptCode.matches("Exam[0-9]*")) {
 			    myForm.setId(null);
-			    myForm.setExamType(Exam.sExamTypeFinal);
-			    sessionContext.checkPermission(Right.EditRoomDepartmentsFinalExams);
-			} else if ("EExam".equalsIgnoreCase(deptCode)) { 
-                myForm.setId(null);
-                myForm.setExamType(Exam.sExamTypeMidterm);
-                sessionContext.checkPermission(Right.EditRoomDepartmentsMidtermExams);
+			    myForm.setExamType(Long.valueOf(deptCode.substring(4)));
+			    sessionContext.checkPermission(Right.EditRoomDepartmentsExams);
 			} else {
 				sessionContext.checkPermission(deptCode, "Department", Right.EditRoomDepartments);
 			    d = Department.findByDeptCode(deptCode, sessionContext.getUser().getCurrentAcademicSessionId());
 			    myForm.setId(d.getUniqueId());
-			    myForm.setExamType(-1);
+			    myForm.setExamType(null);
 			}
 		}
 
 		if (request.getParameter("deptId") != null) {
 			String id = request.getParameter("deptId");
-            if ("Exam".equalsIgnoreCase(id)) {
-            	sessionContext.checkPermission(Right.EditRoomDepartmentsFinalExams);
+            if (id != null && id.matches("Exam[0-9]*")) {
+            	sessionContext.checkPermission(Right.EditRoomDepartmentsExams);
                 myForm.setId(null);
-                myForm.setExamType(Exam.sExamTypeFinal);
-            } else if ("EExam".equalsIgnoreCase(id)) {
-            	sessionContext.checkPermission(Right.EditRoomDepartmentsMidtermExams);
-                myForm.setId(null);
-                myForm.setExamType(Exam.sExamTypeMidterm);
+                myForm.setExamType(Long.valueOf(id.substring(4)));
             } else {
                 d = new DepartmentDAO().get(Long.valueOf(id));
             	sessionContext.checkPermission(d, Right.EditRoomDepartments);
                 myForm.setId(d.getUniqueId());
-                myForm.setExamType(-1);
+                myForm.setExamType(null);
             }
 		}
 		
@@ -109,14 +102,12 @@ public class RoomDeptEditAction extends Action {
 			}
 		}
 		
-        int examType = myForm.getExamType();
+        ExamType examType = (myForm.getExamType() == null ? null : ExamTypeDAO.getInstance().get(myForm.getExamType()));
         
         if (d != null)
             myForm.setName(d.getDeptCode()+" "+d.getName());
-        else if (examType==Exam.sExamTypeFinal)
-            myForm.setName("Final Examination Rooms");
-        else if (examType==Exam.sExamTypeMidterm)
-            myForm.setName("Midterm Examination Rooms");
+        else if (examType != null)
+            myForm.setName(examType.getLabel() + "Examination Rooms");
         else
             myForm.setName("Unknown");
 

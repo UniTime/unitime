@@ -42,9 +42,11 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
@@ -131,7 +133,7 @@ public class ExamGridTable {
 
 	public ExamGridTable(ExamGridForm form, SessionContext context, ExamSolverProxy solver) throws Exception {
 	    iForm = form;
-	    for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+	    for (Iterator i=iForm.getPeriods(iForm.getExamType().toString()).iterator();i.hasNext();) {
 	        ExamPeriod period = (ExamPeriod)i.next();
 	        iDates.add(period.getDateOffset());
 	        iStartsSlots.add(period.getStartSlot());
@@ -147,7 +149,7 @@ public class ExamGridTable {
 	        for (Iterator i=Location.findAllExamLocations(iForm.getSessionId(), iForm.getExamType()).iterator();i.hasNext();) {
 	            Location location = (Location)i.next();
 	            if (match(location.getLabel())) {
-	                if (solver!=null && solver.getExamType()==iForm.getExamType())
+	                if (solver!=null && solver.getExamTypeId().equals(iForm.getExamType()))
 	                    iModels.add(new RoomExamGridModel(location,
 	                            solver.getAssignedExamsOfRoom(location.getUniqueId()),bounds));
 	                else
@@ -162,7 +164,7 @@ public class ExamGridTable {
                 DepartmentalInstructor instructor = (DepartmentalInstructor)i.next();
                 if (match(instructor.getName(instructorNameFormat))) {
                     Collection<ExamAssignmentInfo> assignments = null;
-                    if (solver!=null  && solver.getExamType()==iForm.getExamType())
+                    if (solver!=null  && solver.getExamTypeId().equals(iForm.getExamType()))
                         assignments = solver.getAssignedExamsOfInstructor(instructor.getUniqueId());
                     else
                         assignments = Exam.findAssignedExamsOfInstructor(instructor.getUniqueId(), iForm.getExamType());
@@ -191,7 +193,7 @@ public class ExamGridTable {
 	        for (Iterator i=SubjectArea.getSubjectAreaList(iForm.getSessionId()).iterator();i.hasNext();) {
 	            SubjectArea subject = (SubjectArea)i.next();
 	            if (match(subject.getSubjectAreaAbbreviation())) {
-                    if (solver!=null && solver.getExamType()==iForm.getExamType())
+                    if (solver!=null && solver.getExamTypeId().equals(iForm.getExamType()))
                         iModels.add(new ExamGridModel(
                                 subject.getUniqueId(),
                                 subject.getSubjectAreaAbbreviation(),
@@ -224,7 +226,7 @@ public class ExamGridTable {
 	
     public int getMaxIdx(ExamGridModel model, int startDay, int endDay, int firstSlot, int lastSlot) {
         int max = 0;
-        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+        for (Iterator i=iForm.getPeriods(iForm.getExamType().toString()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (period.getDateOffset()<startDay || period.getDateOffset()>endDay) continue;
             if (period.getStartSlot()<firstSlot || period.getStartSlot()>lastSlot) continue;
@@ -235,7 +237,7 @@ public class ExamGridTable {
     
     public int getMaxIdx(ExamGridModel model, int dayOfWeek, int firstSlot, int lastSlot) {
         int max = 0;
-        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+        for (Iterator i=iForm.getPeriods(iForm.getExamType().toString()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (getDayOfWeek(period.getDateOffset())!=dayOfWeek) continue;
             if (period.getStartSlot()<firstSlot || period.getStartSlot()>lastSlot) continue;
@@ -246,7 +248,7 @@ public class ExamGridTable {
 
     public int getMaxIdx(ExamGridModel model, int week, int slot) {
         int max = 0;
-        for (Iterator i=iForm.getPeriods(iForm.getExamType()).iterator();i.hasNext();) {
+        for (Iterator i=iForm.getPeriods(iForm.getExamType().toString()).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (getWeek(period.getDateOffset())!=week) continue;
             if (period.getStartSlot()!=slot) continue;
@@ -414,14 +416,14 @@ public class ExamGridTable {
     }
     
     public TreeSet<Integer> days() {
-        if (iForm.isAllDates(iForm.getExamType())) return iDates;
+        if (iForm.isAllDates(iForm.getExamType().toString())) return iDates;
         TreeSet<Integer> days = new TreeSet();
-        if (iForm.getDate(iForm.getExamType())>500) {
+        if (iForm.getDate(iForm.getExamType().toString())>500) {
             for (Integer day:iDates) {
-                if (1000+getWeek(day)==iForm.getDate(iForm.getExamType())) days.add(day);
+                if (1000+getWeek(day)==iForm.getDate(iForm.getExamType().toString())) days.add(day);
             }
         } else {
-            days.add(iForm.getDate(iForm.getExamType()));
+            days.add(iForm.getDate(iForm.getExamType().toString()));
         }
         return days;
     }
@@ -454,7 +456,7 @@ public class ExamGridTable {
     public TreeSet<Integer> slots() {
         TreeSet<Integer> slots = new TreeSet();
         for (Integer slot:iStartsSlots) {
-            if (slot<iForm.getStartTime(iForm.getExamType()) || slot>iForm.getEndTime(iForm.getExamType())) continue;
+            if (slot<iForm.getStartTime(iForm.getExamType().toString()) || slot>iForm.getEndTime(iForm.getExamType().toString())) continue;
             slots.add(slot);
         }
         return slots;
@@ -463,7 +465,7 @@ public class ExamGridTable {
     public Integer prev(int slot) {
         Integer prev = null;
         for (Integer s:iStartsSlots) {
-            if (s<iForm.getStartTime(iForm.getExamType()) || s>=slot) continue;
+            if (s<iForm.getStartTime(iForm.getExamType().toString()) || s>=slot) continue;
             if (prev==null) prev = s;
             else prev = Math.max(prev,s);
         }
@@ -473,7 +475,7 @@ public class ExamGridTable {
     public Integer next(int slot) {
         Integer next = null;
         for (Integer s:iStartsSlots) {
-            if (s<=slot || s>iForm.getEndTime(iForm.getExamType())) continue;
+            if (s<=slot || s>iForm.getEndTime(iForm.getExamType().toString())) continue;
             if (next==null) next = s;
             else next = Math.min(next,s);
         }
@@ -1070,7 +1072,7 @@ public class ExamGridTable {
 	            iUnavailabilities = RoomAvailability.getInstance().getRoomAvailability(
 	                    location, 
 	                    bounds[0], bounds[1], 
-                        (iForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                        (ExamTypeDAO.getInstance().get(iForm.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
 	        }
 	    }
 	    

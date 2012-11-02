@@ -58,14 +58,14 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  */
 public class ExamDatabaseSaver extends ExamSaver {
     private Long iSessionId;
-    private int iExamType;
+    private Long iExamTypeId;
     private Progress iProgress = null;
 
     public ExamDatabaseSaver(Solver solver) {
         super(solver);
         iProgress = Progress.getInstance(getModel());
         iSessionId = getModel().getProperties().getPropertyLong("General.SessionId",(Long)null);
-        iExamType = getModel().getProperties().getPropertyInt("Exam.Type",org.unitime.timetable.model.Exam.sExamTypeFinal);
+        iExamTypeId = getModel().getProperties().getPropertyLong("Exam.Type", null);
     }
     
     public void save() {
@@ -88,12 +88,12 @@ public class ExamDatabaseSaver extends ExamSaver {
 
     protected void saveSolution(org.hibernate.Session hibSession) {
         TimetableManager owner = TimetableManager.findByExternalId(getModel().getProperties().getProperty("General.OwnerPuid"));
-        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamType);
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
         Hashtable<Long,ExamEvent> examEvents = new Hashtable();
         for (Iterator i=hibSession.createQuery(
-                "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType=:examType")
+                "select e from ExamEvent e where e.exam.session.uniqueId=:sessionId and e.exam.examType.uniqueId=:examTypeId")
                 .setLong("sessionId",iSessionId)
-                .setInteger("examType", iExamType)
+                .setLong("examTypeId", iExamTypeId)
                 .iterate(); i.hasNext();) {
             ExamEvent e = (ExamEvent)i.next();
             examEvents.put(e.getExam().getUniqueId(),e);

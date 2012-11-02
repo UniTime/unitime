@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Meeting;
@@ -62,6 +63,7 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
@@ -187,9 +189,8 @@ public class ExamEditAction extends PreferencesAction {
                 }
             }
             
-            if ("true".equals(
-                    ApplicationProperties.getProperty("tmtbl.exam.useLimit."+Exam.sExamTypes[frm.getExamType()],
-                    (frm.getExamType()==Exam.sExamTypeFinal?"false":"true"))))
+            ExamType type = ExamTypeDAO.getInstance().get(frm.getExamType());
+            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.useLimit."+type.getReference(), (type.getType() == ExamType.sExamTypeFinal?"false":"true"))))
                 frm.setSizeNote("A number of enrolled students or a total limit of selected classes/courses (whichever is bigger) is used when blank");
             else
                 frm.setSizeNote("A number of enrolled students is used when blank");
@@ -210,9 +211,9 @@ public class ExamEditAction extends PreferencesAction {
                 request.setAttribute("hash", "objects");
             }
             
-            int deleteId = -1;
+            long deleteId = -1;
             try {
-                deleteId = Integer.parseInt(request.getParameter("deleteId"));
+                deleteId = Long.parseLong(request.getParameter("deleteId"));
             } catch(Exception e) { deleteId = -1; }
            
             if ("instructor".equals(deleteType)  && deleteId>=0) {
@@ -220,7 +221,7 @@ public class ExamEditAction extends PreferencesAction {
             } else if ("examType".equals(deleteType)  && deleteId>=0) {
                 frm.setExamType(deleteId);
             } else if ("objects".equals(deleteType)  && deleteId>=0) {
-                frm.deleteExamOwner(deleteId);
+                frm.deleteExamOwner((int)deleteId);
             }
             
             if(op.equals(rsc.getMessage("button.updateExam")) ||  op.equals(rsc.getMessage("button.saveExam"))
@@ -269,6 +270,8 @@ public class ExamEditAction extends PreferencesAction {
             
             setupInstructors(request, frm, exam);
             
+            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+            
             if (exam!=null) {
                 LookupTables.setupRooms(request, exam);      // Room Prefs
                 LookupTables.setupBldgs(request, exam);      // Building Prefs
@@ -277,7 +280,7 @@ public class ExamEditAction extends PreferencesAction {
             } else {
                 Exam dummy = new Exam(); 
                 dummy.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
-                dummy.setExamType(frm.getExamType());
+                dummy.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
                 LookupTables.setupRooms(request, dummy);      // Room Prefs
                 LookupTables.setupBldgs(request, dummy);      // Building Prefs
                 LookupTables.setupRoomFeatures(request, dummy); // Preference Levels
@@ -307,7 +310,7 @@ public class ExamEditAction extends PreferencesAction {
     protected void doLoad(HttpServletRequest request, ExamEditForm frm, Exam exam) {
         if (exam!=null) {
             frm.setExamId(exam.getUniqueId().toString());
-            frm.setExamType(exam.getExamType());
+            frm.setExamType(exam.getExamType().getUniqueId());
             
             frm.setName(exam.generateName().equals(exam.getName())?null:exam.getName());
             frm.setNote(exam.getNote());
@@ -333,7 +336,7 @@ public class ExamEditAction extends PreferencesAction {
                 frm.addExamOwner((ExamOwner)i.next());
         } else {
             try {
-                TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), (frm.getExamType()==null?Exam.sExamTypeFinal:frm.getExamType()));
+                TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), frm.getExamType());
                 if (!periods.isEmpty())
                     frm.setLength(Constants.SLOT_LENGTH_MIN*((ExamPeriod)periods.first()).getLength());
                 SolverParameterDef maxRoomsParam = SolverParameterDef.findByName("Exams.MaxRooms");
@@ -446,7 +449,7 @@ public class ExamEditAction extends PreferencesAction {
                 i.remove();
         }
 
-        exam.setExamType(frm.getExamType());
+        exam.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
 
         super.doUpdate(request, frm, exam, s, false);
         

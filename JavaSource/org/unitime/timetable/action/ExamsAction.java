@@ -44,6 +44,7 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamsForm;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -55,6 +56,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LoginManager;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 /** 
@@ -91,9 +93,14 @@ public class ExamsAction extends Action {
                 if (session!=null) myForm.setSession(session.getUniqueId());
             }
             if (request.getParameter("type")!=null) {
-                myForm.setExamType("final".equals(request.getParameter("type"))?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
+            	try {
+            		myForm.setExamType(Long.valueOf(request.getParameter("type")));
+            	} catch (NumberFormatException e) {
+            		ExamType type = ExamType.findByReference(request.getParameter("type"));
+            		if (type != null) myForm.setExamType(type.getUniqueId()); 
+            	}
             } else {
-                myForm.setExamType(Exam.sExamTypeFinal);
+                myForm.setExamType(null);
             }
             op = "Apply";
         }
@@ -129,12 +136,12 @@ public class ExamsAction extends Action {
         
         WebTable.setOrder(sessionContext,"exams.order",request.getParameter("ord"),1);
         
-        if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0) {
+        if (myForm.getSession()!=null && myForm.getSubjectArea()!=null && myForm.getSubjectArea().length()>0 && myForm.getExamType() != null) {
             org.unitime.timetable.model.Session session = new SessionDAO().get(myForm.getSession());
-            if ((myForm.getExamType()==Exam.sExamTypeFinal && session.getStatusType().canNoRoleReportExamFinal()) ||
-                (myForm.getExamType()==Exam.sExamTypeMidterm && session.getStatusType().canNoRoleReportExamMidterm())) {
+            if ((myForm.isFinals() && session.getStatusType().canNoRoleReportExamFinal()) ||
+                (!myForm.isFinals() && session.getStatusType().canNoRoleReportExamMidterm())) {
                 List exams = null;
-                if (Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectArea())) 
+                if ("--ALL--".equals(myForm.getSubjectArea())) 
                     exams = Exam.findAll(myForm.getSession(), myForm.getExamType());
                 else {
                     SubjectArea sa = SubjectArea.findByAbbv(myForm.getSession(), myForm.getSubjectArea());
@@ -158,14 +165,16 @@ public class ExamsAction extends Action {
         String msg = ApplicationProperties.getProperty("tmtbl.exams.message");
         if (msg!=null && msg.length()>0)
             request.setAttribute(Constants.REQUEST_MSSG, msg);
+        
+        LookupTables.setupExamTypes(request, null);
 
         return mapping.findForward("show");
 	}
 		
 	private PdfWebTable getTable(boolean html, ExamsForm form, Vector<ExamAssignment> exams) {
 	    PdfWebTable table = new PdfWebTable( 7,
-                form.getSessionLabel()+" "+form.getExamTypeLabel()+" "+ MSG.examinations() + 
-                	(Constants.ALL_OPTION_VALUE.equals(form.getSubjectArea())?"":" ("+
+                form.getSessionLabel()+" "+form.getExamTypeLabel().toLowerCase()+" "+ MSG.examinations() + 
+                	("--ALL--".equals(form.getSubjectArea())?"":" ("+
                 	form.getSubjectArea()+")"), "exams.do?ord=%%",
                 new String[] {
                     MSG.columnExamSubject(),
@@ -181,7 +190,7 @@ public class ExamsAction extends Action {
         String noRoom = ApplicationProperties.getProperty("tmtbl.exam.report.noroom","");
         for (ExamAssignment exam : exams) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (!Constants.ALL_OPTION_VALUE.equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;
+                if (!"--ALL--".equals(form.getSubjectArea()) && !section.getSubject().equals(form.getSubjectArea())) continue;
                 table.addLine(
                         new String[] {
                                 section.getSubject(),

@@ -43,6 +43,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.ItypeDesc;
@@ -74,7 +75,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     private boolean iSkipSuffixSubparts = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.verification.skipSuffixSubparts", "true"));
     private boolean iHasAssignment = false;
     
-    public ExamVerificationReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public ExamVerificationReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
         for (ExamAssignmentInfo exam : exams) {
             if (exam.getPeriod()!=null) { iHasAssignment = true; break; }

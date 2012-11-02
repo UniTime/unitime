@@ -50,6 +50,7 @@ import org.unitime.timetable.model.CourseCreditFormat;
 import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
@@ -66,6 +67,7 @@ import org.unitime.timetable.model.dao.CourseCreditFormatDAO;
 import org.unitime.timetable.model.dao.CourseCreditTypeDAO;
 import org.unitime.timetable.model.dao.CourseCreditUnitTypeDAO;
 import org.unitime.timetable.model.dao.CurriculumDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
@@ -330,6 +332,24 @@ public class SimpleEditServlet implements SimpleEditService {
 					r.setField(1, right.hasType() ? right.type().getSimpleName().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2").replace("_", " ") : "Global", false);
 					for (int i = 0; i < roles.size(); i++)
 						r.setField(2 + i, roles.get(i).getRights().contains(right.name()) ? "true" : "false");
+				}
+				break;
+			case examType:
+				List<ListItem> types = new ArrayList<ListItem>();
+				types.add(new ListItem(String.valueOf(ExamType.sExamTypeFinal), "Final Examinations"));
+				types.add(new ListItem(String.valueOf(ExamType.sExamTypeMidterm), "Midterm Examinations"));
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Type", FieldType.list, 300, types)
+						);
+				data.setSortBy(2, 1);
+				for (ExamType xtype: ExamTypeDAO.getInstance().findAll()) {
+					Record r = data.addRecord(xtype.getUniqueId());
+					r.setField(0, xtype.getReference(), !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
+					r.setField(1, xtype.getLabel());
+					r.setField(2, xtype.getType().toString(), !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
+					r.setDeletable(!xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 				}
 				break;
 			}
@@ -1064,6 +1084,57 @@ public class SimpleEditServlet implements SimpleEditService {
 								null,
 								null);
 					}
+				case examType:
+					for (ExamType type: ExamTypeDAO.getInstance().findAll(hibSession)) {
+						Record r = data.getRecord(type.getUniqueId());
+						if (r == null) {
+							if (type.isUsed(null))
+								throw new SimpleEditException("Attempted to delete an examination type " + type.getReference() + " that is being used.");
+							ChangeLog.addChange(hibSession,
+									getSessionContext(),
+									type,
+									type.getReference(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(type);
+						} else {
+							boolean typeChanged = 
+								!ToolBox.equals(type.getReference(), r.getField(0)) ||
+								!ToolBox.equals(type.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(type.getType(), Integer.valueOf(r.getField(2)));
+							type.setReference(r.getField(0));
+							type.setLabel(r.getField(1));
+							type.setType(Integer.valueOf(r.getField(2)));
+							hibSession.saveOrUpdate(type);
+							if (typeChanged)
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										type,
+										type.getReference(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						ExamType type = new ExamType();
+						type.setReference(r.getField(0));
+						type.setLabel(r.getField(1));
+						type.setType(Integer.valueOf(r.getField(2)));
+						r.setUniqueId((Long)hibSession.save(type));
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								type,
+								type.getReference(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1128,6 +1199,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.Roles;
 		case permissions:
 			return Right.Permissions;
+		case examType:
+			return Right.ExamTypes;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1161,6 +1234,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.RoleEdit;
 		case permissions:
 			return Right.PermissionEdit;
+		case examType:
+			return Right.ExamTypeEdit;
 		default:
 			return Right.IsAdmin;
 		}

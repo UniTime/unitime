@@ -37,6 +37,7 @@ import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
@@ -65,7 +66,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     Hashtable<Long,ClassEvent> iClass2event = null;
     Hashtable<Long,Location> iLocations = null;
     
-    public InstructorExamReport(int mode, File file, Session session, int examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+    public InstructorExamReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
         super(mode, file, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
     }
     

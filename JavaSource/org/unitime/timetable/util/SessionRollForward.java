@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.ExternalRoomDepartment;
@@ -1439,7 +1440,7 @@ public class SessionRollForward {
 		ExamPeriod fromExamPeriod = null;
 		ExamPeriod toExamPeriod = null;
 		ExamPeriodDAO examPeriodDao = new ExamPeriodDAO();
-		TreeSet examPeriods = ExamPeriod.findAll(fromSession.getUniqueId(), null);
+		TreeSet examPeriods = ExamPeriod.findAll(fromSession.getUniqueId(), (Long)null);
 		for(Iterator examPeriodIt = examPeriods.iterator(); examPeriodIt.hasNext();){
 			fromExamPeriod = (ExamPeriod)examPeriodIt.next();
 			toExamPeriod = (ExamPeriod)fromExamPeriod.clone();
@@ -1569,7 +1570,7 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		
 		try {
-			List exams = findExamToRollForward(toSession, Exam.sExamTypeMidterm);
+			List exams = findExamToRollForward(toSession, ExamType.sExamTypeMidterm);
 			for(Iterator examIt = exams.iterator(); examIt.hasNext();){
 				rollForwardExam((Exam) examIt.next(), toSession);
 			}
@@ -1583,7 +1584,7 @@ public class SessionRollForward {
 		Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
 		
 		try {
-			List exams = findExamToRollForward(toSession, Exam.sExamTypeFinal);
+			List exams = findExamToRollForward(toSession, ExamType.sExamTypeFinal);
 			for(Iterator examIt = exams.iterator(); examIt.hasNext();){
 				rollForwardExam((Exam) examIt.next(), toSession);
 			}

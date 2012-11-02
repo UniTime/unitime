@@ -92,12 +92,14 @@
             not-null="false"
             length="350"/>
 
-        <property
-            name="examType"
-            column="exam_type"
-            type="java.lang.Integer"
-            length="10"
-            not-null="false"/>
+        <set name="examTypes" table="room_exam_type">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="location_id"/>
+            <many-to-many
+                class="ExamType"
+                column="exam_type_id"
+                foreign-key="fk_room_exam_type"/>
+        </set>
 
         <property
             name="examCapacity"

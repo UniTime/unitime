@@ -20,13 +20,16 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.unitime.timetable.model.ExamType;
 
 /** 
  * MyEclipse Struts
@@ -58,11 +61,8 @@ public class RoomDetailForm extends ActionForm {
 	private boolean ignoreRoomCheck = false;
 	private String control = null;
 	private boolean nonUniv;
-	private boolean examEnabled = false;
-	private boolean examEEnabled = false;
+    private Map<String,Boolean> examEnabled = new HashMap<String, Boolean>();
 	private Integer examCapacity;
-	private String examPref;
-	private String examEPref;
 	private String eventDepartment;
 	
 	private Long previos, next;
@@ -96,8 +96,7 @@ public class RoomDetailForm extends ActionForm {
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
 		control = null;
-		examEnabled = false; examEEnabled = false;
-		examPref = null; examEPref = null;
+		examEnabled.clear(); 
 		previos = null; next = null;
 		eventDepartment = null;
 	}
@@ -268,38 +267,26 @@ public class RoomDetailForm extends ActionForm {
 	    this.examCapacity = examCapacity;
 	}
 	
-	public boolean isExamEnabled() {
-	    return examEnabled;
+	public boolean getExamEnabled(String type) {
+		Boolean enabled = examEnabled.get(type);
+	    return enabled != null && enabled;
 	}
 	
-	public void setExamEnabled(boolean examEnabled) {
-	    this.examEnabled = examEnabled;
+	public void setExamEnabled(String type, boolean examEnabled) {
+	    this.examEnabled.put(type, examEnabled);
 	}
-	
-    public boolean isExamEEnabled() {
-        return examEEnabled;
-    }
-    
-    public void setExamEEnabled(boolean examEEnabled) {
-        this.examEEnabled = examEEnabled;
-    }
-
-    public void setExamPref(String examPref) {
-	    this.examPref = examPref;
-	}
-	
-	public String getExamPref() {
-	    return examPref;
+		
+	public String getExamEnabledProblems() {
+		String ret = "";
+		for (ExamType type: ExamType.findAll()) {
+			if (getExamEnabled(type.getUniqueId().toString())) {
+				if (!ret.isEmpty()) ret += ", ";
+				ret += type.getLabel();
+			}
+		}
+		return ret; 
 	}
 
-    public void setExamEPref(String examEPref) {
-        this.examEPref = examEPref;
-    }
-    
-    public String getExamEPref() {
-        return examEPref;
-    }
-    
     public Long getNext() {
     	return next;
     }

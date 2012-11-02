@@ -42,7 +42,7 @@
   		<TD width="10%" nowrap>Examination Problem:</TD>
 		<TD>
 			<html:select property="examType">
-				<html:optionsCollection property="examTypes" label="label" value="value"/>
+				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 			</html:select>
 		</TD>
 	</TR>

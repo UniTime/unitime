@@ -45,6 +45,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.queue.PdfExamReportQueueItem;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
@@ -102,6 +103,8 @@ public class ExamPdfReportAction extends Action {
         if (table != null) {
         	request.setAttribute("table", table.printTable(WebTable.getOrder(sessionContext,"examPdfReport.ord")));
         }
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
         
         return mapping.findForward("show");
 	}

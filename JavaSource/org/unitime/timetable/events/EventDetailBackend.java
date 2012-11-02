@@ -198,7 +198,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.addCourseName(related.getName());
     		related.addCourseTitle("");
     		related.setInstruction(e.getEventTypeAbbv());
-    		related.setInstructionType(xe.getExam().getExamType());
+    		related.setInstructionType(xe.getExam().getExamType().getType());
     		related.setSectionNumber(xe.getExam().getLength().toString());
     		if (xe.getExam().getAssignedPeriod() != null) {
     			ExamPeriod period = xe.getExam().getAssignedPeriod();

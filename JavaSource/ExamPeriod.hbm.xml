@@ -58,13 +58,13 @@
             type="java.lang.Integer"
             length="10"
             not-null="true"/>
-
-        <property
-            name="examType"
-            column="exam_type"
-            type="java.lang.Integer"
-            length="10"
-            not-null="true"/>
+            
+        <many-to-one
+        	name="examType"
+        	class="ExamType"
+        	column="exam_type_id"
+        	not-null="true"
+        	foreign-key="fk_exam_period_type"/>
 
         <many-to-one
             name="prefLevel"

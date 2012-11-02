@@ -21,6 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,13 +36,16 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
 
@@ -71,6 +75,12 @@ public class ExamGridAction extends Action {
         
         myForm.load(sessionContext);
         
+        if (myForm.getExamType() == null) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty())
+				myForm.setExamType(types.get(0).getUniqueId());
+        }
+        
         if ("Cbs".equals(op)) {
             if (request.getParameter("resource")!=null)
                 myForm.setResource(Integer.parseInt(request.getParameter("resource")));
@@ -78,10 +88,10 @@ public class ExamGridAction extends Action {
                 myForm.setFilter(request.getParameter("filter"));
         }
         
-        if (RoomAvailability.getInstance()!=null) {
+        if (RoomAvailability.getInstance()!=null && myForm.getExamType() != null) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
-            String exclude = (myForm.getExamType()==org.unitime.timetable.model.Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+            String exclude = ExamTypeDAO.getInstance().get(myForm.getExamType()).getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType;
             if (bounds != null) {
             	RoomAvailability.getInstance().activate(session,bounds[0],bounds[1],exclude,false);
             	RoomAvailability.setAvailabilityWarning(request, session, myForm.getExamType(), true, false);
@@ -99,6 +109,9 @@ public class ExamGridAction extends Action {
         }
 
         myForm.setOp("Change");
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+        
         return mapping.findForward("showGrid");
 	}
 

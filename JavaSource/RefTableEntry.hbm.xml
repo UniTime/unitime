@@ -237,6 +237,16 @@
                 length="200"/>
 
         </union-subclass>
+        
+        <union-subclass name="ExamType"
+        	table="exam_type"
+        	abstract="false">
+            <property
+                name="type"
+                column="xtype"
+                type="java.lang.Integer"
+                not-null="true"/>
+        </union-subclass>
 
     </class>
 </hibernate-mapping>

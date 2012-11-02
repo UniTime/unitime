@@ -46,12 +46,12 @@ import org.unitime.timetable.form.RoomFeatureEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -123,10 +123,8 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			roomFeatureEditForm.setDeptCode(null);
 			roomFeatureEditForm.setDeptName(null);
 			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if ("Exam".equals(dept)) {
-				roomFeatureEditForm.setDeptName("Final Examination Rooms");
-			} else if ("EExam".equals(dept)) {
-				roomFeatureEditForm.setDeptName("Midterm Examination Rooms");
+			if (dept != null && dept.matches("Exam[0-9]*")) {
+				roomFeatureEditForm.setDeptName(ExamTypeDAO.getInstance().get(Long.valueOf(dept.substring(4))).getLabel() + " Examination Rooms");
 			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
 				Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());
 				if (department != null)
@@ -410,10 +408,8 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		} else {
 			Session session = ((GlobalRoomFeature)rf).getSession();
 			String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-			if ("Exam".equals(dept)) {
-				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeFinal));
-			} else if ("EExam".equals(dept)) {
-				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Exam.sExamTypeMidterm));
+			if (dept != null && dept.matches("Exam[0-9]*")) {
+				rooms = new ArrayList<Location>(Location.findAllExamLocations(session.getUniqueId(), Long.valueOf(dept.substring(4))));
 			} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
 				Department department = Department.findByDeptCode(dept, session.getUniqueId());
 				if (department != null) {
@@ -448,13 +444,10 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		List<Location> rooms = new ArrayList<Location>(rf.getRooms());
 		
 		String dept = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-		if ("Exam".equals(dept)) {
+		if (dept != null && dept.matches("Exam[0-9]*")) {
+			Long examType = Long.valueOf(dept.substring(4));
 			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
-				if (!i.next().isExamEnabled(Exam.sExamTypeFinal)) i.remove();
-			}
-		} else if ("EExam".equals(dept)) {
-			for (Iterator<Location> i = rooms.iterator(); i.hasNext(); ) {
-				if (!i.next().isExamEnabled(Exam.sExamTypeMidterm)) i.remove();
+				if (!i.next().isExamEnabled(examType)) i.remove();
 			}
 		} else if (dept != null && !dept.isEmpty() && !"All".equals(dept)) {
 			Department department = Department.findByDeptCode(dept, sessionContext.getUser().getCurrentAcademicSessionId());

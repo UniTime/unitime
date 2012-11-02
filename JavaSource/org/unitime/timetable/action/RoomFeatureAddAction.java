@@ -106,6 +106,7 @@ public class RoomFeatureAddAction extends Action {
 		
 		//get depts owned by user
 		LookupTables.setupDepartments(request, sessionContext, false);
+		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 		
         //set default department
 		TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
@@ -113,11 +114,11 @@ public class RoomFeatureAddAction extends Action {
         	roomFeatureEditForm.setDeptCode(departments.first().getDeptCode());
         } else {
         	String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.equals("Exam") && !deptCode.equals("EExam"))
+        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.matches("Exam[0-9]*"))
         		roomFeatureEditForm.setDeptCode(deptCode);
 		}
 		
-		if (roomFeatureEditForm.getDeptCode() == null || roomFeatureEditForm.getDeptCode().isEmpty() || roomFeatureEditForm.getDeptCode().equals("Exam") || roomFeatureEditForm.getDeptCode().equals("EExam") ||
+		if (roomFeatureEditForm.getDeptCode() == null || roomFeatureEditForm.getDeptCode().isEmpty() || roomFeatureEditForm.getDeptCode().matches("Exam[0-9]*") ||
 				!sessionContext.hasPermission(roomFeatureEditForm.getDeptCode(), "Department", Right.DepartmentRoomFeatureAdd)) {
 			sessionContext.checkPermission(Right.GlobalRoomFeatureAdd);
 			roomFeatureEditForm.setGlobal(true);

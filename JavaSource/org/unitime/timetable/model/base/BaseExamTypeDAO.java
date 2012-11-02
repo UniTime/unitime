@@ -1,8 +1,8 @@
 /*
  * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or
@@ -17,23 +17,22 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.solver.exam;
+package org.unitime.timetable.model.base;
 
-import java.util.TreeSet;
+import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.dao._RootDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 
-import org.unitime.timetable.solver.exam.ui.ExamAssignment;
-import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
-import org.unitime.timetable.solver.exam.ui.ExamInfo;
+public abstract class BaseExamTypeDAO extends _RootDAO<ExamType,Long> {
 
-/**
- * @author Tomas Muller
- */
-public interface ExamAssignmentProxy {
-    public ExamInfo getInfo(long examId);
-    public ExamAssignment getAssignment(long examId);
-    public ExamAssignmentInfo getAssignmentInfo(long examId);
-    public TreeSet<ExamAssignment> getExamsOfRoom(long locationId);
+	private static ExamTypeDAO sInstance;
 
-    public Long getExamTypeId();
-    public Long getSessionId();
+	public static ExamTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new ExamTypeDAO();
+		return sInstance;
+	}
+
+	public Class<ExamType> getReferenceClass() {
+		return ExamType.class;
+	}
 }

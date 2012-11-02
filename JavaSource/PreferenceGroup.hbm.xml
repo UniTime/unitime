@@ -985,13 +985,13 @@
                 not-null="false"
                 length="100"/>
 
-            <property
+			<many-to-one
                 name="examType"
-                column="exam_type"
-                type="java.lang.Integer"
-                length="10"
-                not-null="true"/>
-
+                class="ExamType"
+                column="exam_type_id"
+                not-null="true"
+                foreign-key="fk_exam_type"/>
+                
             <property
                 name="avgPeriod"
                 column="avg_period"

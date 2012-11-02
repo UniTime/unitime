@@ -197,21 +197,8 @@ public class LocationPermissions {
 	@PermissionForRight(Right.RoomDepartments)
 	public static class RoomDepartments extends EditRoomDepartments {}
 	
-	@PermissionForRight(Right.EditRoomDepartmentsFinalExams)
-	public static class EditRoomDepartmentsFinalExams implements Permission<Session> {
-		@Autowired PermissionSession permissionSession;
-
-		@Override
-		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source);
-		}
-
-		@Override
-		public Class<Session> type() { return Session.class; }
-	}
-	
-	@PermissionForRight(Right.EditRoomDepartmentsMidtermExams)
-	public static class EditRoomDepartmentsMidtermExams implements Permission<Session> {
+	@PermissionForRight(Right.EditRoomDepartmentsExams)
+	public static class EditRoomDepartmentsExams implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
 
 		@Override
@@ -287,7 +274,7 @@ public class LocationPermissions {
 		public boolean check(UserContext user, Room source) {
 			if (source.isUsed()) return false;
 			
-			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && source.getExamType() != null && source.getExamType() != 0)
+			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && !source.getExamTypes().isEmpty())
 				return false;
 			
 			boolean controls = (source.getRoomDepts().isEmpty() ? true: false);
@@ -316,7 +303,7 @@ public class LocationPermissions {
 		public boolean check(UserContext user, NonUniversityLocation source) {
 			if (source.isUsed()) return false;
 			
-			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && source.getExamType() != null && source.getExamType() != 0)
+			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && !source.getExamTypes().isEmpty())
 				return false;
 			
 			boolean controls = false;

@@ -178,29 +178,12 @@
 		<TR>
 			<TD>Capacity:</TD><TD width='100%'><%=frm.getCapacity()%></TD>
 		</TR>
-
-		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-			<TR>
-				<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
-					<bean:write name="<%=frmName%>" property="examCapacity"/>
-					<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
-						(Final &amp; Midterm Examinations)
-					</logic:equal>
-					<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
-						(Final Examinations)
-					</logic:notEqual>
-				</TD>
-			</TR>
-		</logic:equal>
-		<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
-			<logic:notEqual name="<%=frmName%>" property="examEnabled" value="true">
-				<TR>
-					<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
-						<bean:write name="<%=frmName%>" property="examCapacity"/> (Midterm Examinations)
-					</TD>
-				</TR>
-			</logic:notEqual>
-		</logic:equal>
+		
+		<logic:notEmpty name="<%=frmName%>" property="examEnabledProblems">
+			<TD nowrap>Exam Seating Capacity:</TD><TD width='100%'>
+				<bean:write name="<%=frmName%>" property="examCapacity"/> (<bean:write name="<%=frmName%>" property="examEnabledProblems"/> Examinations)
+			</TD>
+		</logic:notEmpty>
 		
 		<logic:notEmpty name="<%=frmName%>" property="control"> 
 			<TR>
@@ -354,52 +337,33 @@
 
 		</sec:authorize>
 		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDetailPeriodPreferences')">
-		
-		<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-			<logic:notEmpty name="<%=frmName%>" property="examPref">
-				<TR>
-					<TD colspan='2'><tt:section-title><br>Final Examination Period Preferences</tt:section-title></TD>
-				</TR>
-				<TR>
-					<TD colspan='2'>
-						<bean:write name="<%=frmName%>" property="examPref" filter="false"/>
-					</TD>
-				</TR>
-				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
-					<TR>
-						<TD colspan="2" align="center" style='border-top:black 1px dashed'>
-							<font size='-1'><i>
-								Final Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
-							</i></font>
+		<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+			<logic:equal name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' value="true">
+				<logic:notEmpty scope="request" name='<%="PeriodPrefs" + type.getUniqueId() %>'>
+					<logic:equal name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' value="true">
+						<TR id='<%="exPref" + type.getUniqueId() %>'>
+					</logic:equal>
+					<logic:notEqual name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' value="true">
+						<TR id='<%="exPref" + type.getUniqueId() %>' style='display:none;'>
+					</logic:notEqual>
+						<TD nowrap valign="top"><bean:write name="type" property="label"/> Examination<br>Periods Preferences:</TD>
+						<TD>
+							<bean:write scope="request" name='<%="PeriodPrefs" + type.getUniqueId() %>' filter="false"/>
 						</TD>
 					</TR>
-				</sec:authorize>
-			</logic:notEmpty>
-		</logic:equal>
-		
-		<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
-			<logic:notEmpty name="<%=frmName%>" property="examEPref">
-				<TR>
-					<TD colspan='2'><tt:section-title><br>Midterm Examination Period Preferences</tt:section-title></TD>
-				</TR>
-				<TR>
-					<TD colspan='2'>
-						<bean:write name="<%=frmName%>" property="examEPref" filter="false"/>
-					</TD>
-				</TR>
-				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
-					<TR>
-						<TD colspan="2" align='center' style='border-top:black 1px dashed'>
-							<font size='-1'><i>
-								Midterm Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
-							</i></font>
-						</TD>
-					</TR>
-				</sec:authorize>
-			</logic:notEmpty>
-		</logic:equal>
+					<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationEdit')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomEdit'))">
+						<TR>
+							<TD colspan="2" align="center" style='border-top:black 1px dashed'>
+								<font size='-1'><i>
+									<bean:write name="type" property="label"/> Examination Period Preferences table is read-only. To edit this table, please click Edit Room button.
+								</i></font>
+							</TD>
+						</TR>
+					</sec:authorize>
+				</logic:notEmpty>
+			</logic:equal>
+		</logic:iterate>
 		</sec:authorize>
-
 
 		<tt:last-change type='Location'>
 			<bean:write name="<%=frmName%>" property="id"/>

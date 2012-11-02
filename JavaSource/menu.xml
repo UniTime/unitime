@@ -729,6 +729,12 @@
 					<hasPermission name="StudentSchedulingStatusTypes"/>
 				</condition>
 			</item>
+			<item name="Examination Types" page="admin" type="gwt">
+				<parameter name="type">examType</parameter>
+				<condition>
+					<hasPermission name="ExamTypes"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Roles" page="admin" type="gwt">
 				<parameter name="type">roles</parameter>

@@ -37,7 +37,6 @@ import org.apache.struts.util.MessageResources;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
-import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -54,8 +53,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
     private List subjectArea;
     private List courseNbr;
     private List exam;
-    private int iExamType;
-    private boolean iHasMidtermExams = false;
+    private Long iExamType;
     
 	private String filterSubjectAreaId;
 	private Collection filterSubjectAreas;
@@ -112,8 +110,7 @@ public class ExamDistributionPrefsForm extends ActionForm {
         filterSubjectAreaId = null;
         filterCourseNbr = null; 
         filterSubjectAreas = new ArrayList();
-        iExamType = Exam.sExamTypeFinal;
-        iHasMidtermExams = false;
+        iExamType = null;
     }
 
     
@@ -213,18 +210,6 @@ public class ExamDistributionPrefsForm extends ActionForm {
         return ret;
     }
     
-    public int getExamType() { return iExamType; }
-    public void setExamType(int type) { iExamType = type; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
-    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
-    	}
-    	return ret;
-    }
-    
-    public boolean getHasMidtermExams() { return iHasMidtermExams; }
-    public void setHasMidtermExams(boolean hasMidtermExams) { iHasMidtermExams = hasMidtermExams; }
-    
+    public Long getExamType() { return iExamType; }
+    public void setExamType(Long type) { iExamType = type; }    
 }

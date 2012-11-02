@@ -47,7 +47,7 @@ public class RoomAvailabilityForm extends ExamReportForm {
 	    iIncludeExams = false;
 	    iFilter = null;
 	    iCompare = false;
-	    setExamType(-1);
+	    setExamType(null);
 	}
 	
 	public String getFilter() { return iFilter; }

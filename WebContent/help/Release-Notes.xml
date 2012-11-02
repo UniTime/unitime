@@ -234,6 +234,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Types</name>
+			<description>
+				<line>Allow for multiple final/midterm examination types in one academic session.
+					<line>Examination types are now editable within the application.</line>
+					<line>Only examination types that have examination periods defined are visible within an academic session.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>

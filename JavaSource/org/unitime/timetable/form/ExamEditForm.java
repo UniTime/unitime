@@ -49,7 +49,6 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -76,7 +75,7 @@ public class ExamEditForm extends PreferencesForm {
     private List classNumber;
     private Collection subjectAreas;
     
-    private Integer examType;
+    private Long examType;
     
     private String avgPeriod;
     
@@ -138,9 +137,9 @@ public class ExamEditForm extends PreferencesForm {
         courseNbr = DynamicList.getInstance(new ArrayList(), idfactory);
         itype = DynamicList.getInstance(new ArrayList(), idfactory);
         classNumber = DynamicList.getInstance(new ArrayList(), idfactory);
-        examType = Exam.sExamTypeFinal;
+        examType = null;
         if (request.getSession().getAttribute("Exam.Type")!=null)
-        	examType = (Integer)request.getSession().getAttribute("Exam.Type");
+        	examType = (Long)request.getSession().getAttribute("Exam.Type");
         clone = false;
         super.reset(mapping, request);
     }
@@ -431,14 +430,8 @@ public class ExamEditForm extends PreferencesForm {
         super.addBlankPrefRows();
     }
     
-    public Integer getExamType() { return examType; }
-    public void setExamType(Integer examType) { this.examType = examType; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-    	for (int i=0;i<Exam.sExamTypes.length;i++)
-    		ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
-    	return ret;
-    }
+    public Long getExamType() { return examType; }
+    public void setExamType(Long examType) { this.examType = examType; }
     
     public String getAvgPeriod() { return avgPeriod; }
     public void setAvgPeriod(String avgPeriod) { this.avgPeriod = avgPeriod; }

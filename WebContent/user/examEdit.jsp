@@ -16,7 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp"%>
+<%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.form.ExamEditForm" %>
 <%@ page import="org.unitime.timetable.webutil.JavascriptFunctions" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>
@@ -111,7 +111,7 @@
 		<TR>
 			<TD>Type:</TD><TD>
 				<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
-					<html:optionsCollection name="<%=frmName%>" property="examTypes"/>
+					<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 				</html:select>
 			</TD>
 		</TR>
@@ -145,7 +145,7 @@
 			<TD>	
 				<table border='0'>
 				<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
-					<tr><td>
+					<tr><td nowrap>
 					<html:select style="width:200;"
 						property='<%= "instructors[" + ctr + "]" %>'
 						onfocus="setUp();" 

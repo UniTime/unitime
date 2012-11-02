@@ -308,9 +308,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                 "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                 "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                 .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
-                .setInteger("examType", getExam().getExamType())
+                .setLong("examTypeId", getExam().getExamType().getUniqueId())
                 .setLong("examOwnerId", getOwnerId())
                 .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -323,9 +323,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -338,9 +338,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -353,9 +353,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -370,9 +370,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -385,9 +385,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -400,9 +400,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -415,9 +415,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.clazz c " +
                     "where c.schedulingSubpart.instrOfferingConfig.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -432,9 +432,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -447,9 +447,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -462,9 +462,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and  " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -477,9 +477,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -494,9 +494,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeClass)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -509,9 +509,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.clazz.schedulingSubpart.instrOfferingConfig.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeConfig)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -524,9 +524,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeCourse)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -539,9 +539,9 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
             for (Iterator i=new ExamOwnerDAO().getSession().createQuery(
                     "select e.student.uniqueId, o.exam from ExamOwner o, StudentClassEnrollment f, StudentClassEnrollment e inner join e.courseOffering co " +
                     "where co.instructionalOffering.uniqueId = :examOwnerId and e.student=f.student and " +
-                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType=:examType")
+                    "o.ownerType=:ownerType and o.ownerId=f.courseOffering.instructionalOffering.uniqueId and o.exam.examType.uniqueId=:examTypeId")
                     .setInteger("ownerType", ExamOwner.sOwnerTypeOffering)
-                    .setInteger("examType", getExam().getExamType())
+                    .setLong("examTypeId", getExam().getExamType().getUniqueId())
                     .setLong("examOwnerId", getOwnerId())
                     .setCacheable(true).list().iterator(); i.hasNext();) {
                 Object[] o = (Object[])i.next();
@@ -797,15 +797,15 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
     
     public int getSize() {
         boolean considerLimit = "true".equals(
-                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+Exam.sExamTypes[getExam().getExamType()],
-                (getExam().getExamType()==Exam.sExamTypeFinal?"false":"true")));
+                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+getExam().getExamType().getReference(),
+                (getExam().getExamType().getType()==ExamType.sExamTypeFinal?"false":"true")));
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents());
     }
     
     public int getSize(CourseOffering co) {
         boolean considerLimit = "true".equals(
-                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+Exam.sExamTypes[getExam().getExamType()],
-                (getExam().getExamType()==Exam.sExamTypeFinal?"false":"true")));
+                ApplicationProperties.getProperty("tmtbl.exam.useLimit."+getExam().getExamType().getReference(),
+                (getExam().getExamType().getType()==ExamType.sExamTypeFinal?"false":"true")));
         return (considerLimit?Math.max(countStudents(), getLimit()):countStudents(co));
     }
 
@@ -931,7 +931,7 @@ public class ExamOwner extends BaseExamOwner implements Comparable<ExamOwner> {
         case 'o' :
             return getCourse().getInstructionalOffering().getExternalUniqueId();
         case 't' :
-            return ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[getExam().getExamType()]);
+            return ApplicationProperties.getProperty("tmtbl.exam.name.type."+getExam().getExamType().getReference());
         case 'I' :
             switch (getOwnerType()) {
             case sOwnerTypeClass : return ((Class_)getOwnerObject()).getSchedulingSubpart().getItype().getItype().toString();

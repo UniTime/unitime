@@ -48,6 +48,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.FixedCreditUnitConfig;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -91,13 +92,13 @@ public class CourseOfferingExport extends BaseExport {
             
             if (examsOnly) {
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
-                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeFinal)).iterator();i.hasNext();) {
+                    for (Iterator i=new TreeSet(Exam.findAllFinal(session.getUniqueId())).iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         exportExam(root, null, exam, session);
                     }
                 }
                 if ("all".equals(parameters.getProperty("tmtbl.export.exam.type", "all")) || "midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))) {
-                    for (Iterator i=new TreeSet(Exam.findAll(session.getUniqueId(), Exam.sExamTypeMidterm)).iterator();i.hasNext();) {
+                    for (Iterator i=new TreeSet(Exam.findAllMidterm(session.getUniqueId())).iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         exportExam(root, null, exam, session);
                     }
@@ -121,8 +122,8 @@ public class CourseOfferingExport extends BaseExport {
                     List allExams = getHibSession().createQuery(
                             "select x from Exam x left join fetch x.owners o " +
                             "where x.session.uniqueId=:sessionId"+
-                            ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType="+Exam.sExamTypeMidterm:"")+
-                            ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType="+Exam.sExamTypeFinal:"")
+                            ("midterm".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeMidterm:"")+
+                            ("final".equals(parameters.getProperty("tmtbl.export.exam.type", "all"))?" and x.examType.type="+ExamType.sExamTypeFinal:"")
                             ).
                             setLong("sessionId",session.getUniqueId().longValue()).
                             setFetchSize(1000).list();
@@ -439,7 +440,7 @@ public class CourseOfferingExport extends BaseExport {
         if (exam.getNote()!=null)
             examElement.addAttribute("note", exam.getNote());
         examElement.addAttribute("seatingType", exam.getSeatingType()==Exam.sSeatingTypeExam?"exam":"normal");
-        examElement.addAttribute("type", exam.getExamType()==Exam.sExamTypeFinal?"final":"midterm");
+        examElement.addAttribute("type", exam.getExamType().getReference());
         Element courseElement = null; CourseOffering lastCourse = null;
         for (Iterator i=exam.getOwnerObjects().iterator();i.hasNext();) {
             Object owner = (Object)i.next();

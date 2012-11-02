@@ -50,6 +50,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -90,9 +91,9 @@ public class ExamChangesAction extends Action {
                     changes = new Vector<ExamAssignmentInfo[]>();
                     List exams = null;
                     if (myForm.getSubjectArea()<0)
-                        exams = Exam.findAll(solver.getSessionId(), solver.getExamType());
+                        exams = Exam.findAll(solver.getSessionId(), solver.getExamTypeId());
                     else
-                        exams = Exam.findExamsOfSubjectArea(myForm.getSubjectArea(), solver.getExamType());
+                        exams = Exam.findExamsOfSubjectArea(myForm.getSubjectArea(), solver.getExamTypeId());
                     exams: for (Iterator i=exams.iterator();i.hasNext();) {
                         Exam exam = (Exam)i.next();
                         ExamAssignment assignment = solver.getAssignment(exam.getUniqueId());
@@ -141,6 +142,8 @@ public class ExamChangesAction extends Action {
 		
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
         return mapping.findForward("showReport");
 	}

@@ -16,7 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.form.EditRoomForm" %>
 <%@ page import="org.apache.struts.util.LabelValueBean" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -278,10 +278,11 @@
 		<TR>
 			<TD nowrap>Examination Room:</TD>
 			<TD>
-				Final: <html:checkbox property="examEnabled" onchange="document.getElementById('finPref').style.display=(this.checked?null:'none');"/>
-				<tt:hasMidtermExams>
-				, Midterm: <html:checkbox property="examEEnabled" onchange="document.getElementById('evenPref').style.display=(this.checked?null:'none');"/>
-				</tt:hasMidtermExams>
+				<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+					<html:checkbox name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' onchange="<%=\"document.getElementById('exPref\" + type.getUniqueId() + \"').style.display=(this.checked?null:'none');\"%>"/>
+					<bean:write name="type" property="label"/> Examinations
+					<br>
+				</logic:iterate>
 			</TD>
 		</TR>
 
@@ -293,8 +294,9 @@
 		</TR>
 		</sec:authorize>
 		<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
-			<html:hidden property="examEnabled"/>
-			<html:hidden property="examEEnabled"/>
+			<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+				<html:hidden name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>'/>
+			</logic:iterate>
 			<html:hidden property="examCapacity"/>
 		</sec:authorize>
 		
@@ -308,33 +310,21 @@
 		</tt:propertyEquals>
 
 		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExaminationStatus')">
-		<logic:notEmpty scope="request" name="PeriodPrefs">
-			<logic:equal name="<%=frmName%>" property="examEnabled" value="true">
-				<TR id='finPref' style='display:null;'>
-			</logic:equal>
-			<logic:notEqual name="<%=frmName%>" property="examEnabled" value="true">
-				<TR id='finPref' style='display:none;'>
-			</logic:notEqual>
-				<TD nowrap valign="top">Final Examination<br>Periods Preferences:</TD>
-				<TD>
-					<bean:write scope="request" name="PeriodPrefs" filter="false"/>
-				</TD>
-			</TR>
-		</logic:notEmpty>
-
-		<logic:notEmpty scope="request" name="PeriodEPrefs">
-			<logic:equal name="<%=frmName%>" property="examEEnabled" value="true">
-				<TR id='evenPref' style='display:null;'>
-			</logic:equal>
-			<logic:notEqual name="<%=frmName%>" property="examEEnabled" value="true">
-				<TR id='evenPref' style='display:none;'>
-			</logic:notEqual>
-				<TD nowrap valign="top">Midterm Examination<br>Periods Preferences:</TD>
-				<TD>
-					<bean:write scope="request" name="PeriodEPrefs" filter="false"/>
-				</TD>
-			</TR>
-		</logic:notEmpty>
+			<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+				<logic:notEmpty scope="request" name='<%="PeriodPrefs" + type.getUniqueId() %>'>
+					<logic:equal name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' value="true">
+						<TR id='<%="exPref" + type.getUniqueId() %>'>
+					</logic:equal>
+					<logic:notEqual name="<%=frmName%>" property='<%="examEnabled("+type.getUniqueId()+")"%>' value="true">
+						<TR id='<%="exPref" + type.getUniqueId() %>' style='display:none;'>
+					</logic:notEqual>
+						<TD nowrap valign="top"><bean:write name="type" property="label"/> Examination<br>Periods Preferences:</TD>
+						<TD>
+							<bean:write scope="request" name='<%="PeriodPrefs" + type.getUniqueId() %>' filter="false"/>
+						</TD>
+					</TR>
+				</logic:notEmpty>
+			</logic:iterate>
 		</sec:authorize>
 		
 		<TR>

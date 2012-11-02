@@ -29,13 +29,14 @@ import org.apache.log4j.PropertyConfigurator;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao._RootDAO;
 
 public class ExamResetRoomPrefs {
     private static Log sLog = LogFactory.getLog(ExamResetRoomPrefs.class);
 
-    public static void doUpdate(Long sessionId, Integer examType, boolean override, org.hibernate.Session hibSession) {
+    public static void doUpdate(Long sessionId, Long examType, boolean override, org.hibernate.Session hibSession) {
         for (Iterator i=new TreeSet(Exam.findAll(sessionId, examType)).iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
             sLog.info("Updating "+exam.getLabel());
@@ -73,10 +74,10 @@ public class ExamResetRoomPrefs {
                 sLog.info("Session: "+session);
             }
             
-            int examType = (ApplicationProperties.getProperty("type","final").equalsIgnoreCase("final")?Exam.sExamTypeFinal:Exam.sExamTypeMidterm);
+            ExamType examType = ExamType.findByReference(ApplicationProperties.getProperty("type","final"));
             boolean override = "true".equals(ApplicationProperties.getProperty("override", "false"));
             
-            doUpdate(session.getUniqueId(), examType, override, new _RootDAO().getSession());
+            doUpdate(session.getUniqueId(), examType.getUniqueId(), override, new _RootDAO().getSession());
 
         } catch (Exception e) {
             e.printStackTrace();

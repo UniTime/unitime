@@ -67,11 +67,6 @@ public abstract class Location extends BaseLocation implements Comparable {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
-	public static final int sExamLocationTypeNone = 0;
-	public static final int sExamLocationTypeFinal = 1;
-	public static final int sExamLocationTypeMidterm = 2;
-	public static final int sExamLocationTypeBoth = 3;
-
 	public int compareTo(Object o) {
 		if (o==null || !(o instanceof Location)) return -1;
 		if (this instanceof Room) {
@@ -478,12 +473,16 @@ public abstract class Location extends BaseLocation implements Comparable {
 	}
 	
 	public abstract String getRoomTypeLabel();
+	
+	public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(ExamType examType) {
+		return getExamPreferences(examType.getUniqueId());
+	}
 
-    public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(int examType) {
+    public Hashtable<ExamPeriod,PreferenceLevel> getExamPreferences(Long examTypeId) {
         Hashtable<ExamPeriod,PreferenceLevel> ret = new Hashtable();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (examType==pref.getExamPeriod().getExamType())
+            if (examTypeId.equals(pref.getExamPeriod().getExamType().getUniqueId()))
                 ret.put(pref.getExamPeriod(),pref.getPrefLevel());
         }
         return ret;
@@ -497,11 +496,15 @@ public abstract class Location extends BaseLocation implements Comparable {
         return PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral);
     }
     
-    public void clearExamPreferences(int examType) {
+    public void clearExamPreferences(ExamType examType) {
+    	clearExamPreferences(examType.getUniqueId());
+    }
+    
+    public void clearExamPreferences(Long examTypeId) {
         if (getExamPreferences()==null) setExamPreferences(new HashSet());
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (examType==pref.getExamPeriod().getExamType()) {
+            if (examTypeId.equals(pref.getExamPeriod().getExamType().getUniqueId())) {
                 new ExamLocationPrefDAO().getSession().delete(pref);
                 i.remove();
             }
@@ -542,16 +545,16 @@ public abstract class Location extends BaseLocation implements Comparable {
         new ExamLocationPrefDAO().getSession().save(pref);
     }
 
-    public String getExamPreferencesHtml(int examType) {
-        if (examType==Exam.sExamTypeMidterm) {
-            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
+    public String getExamPreferencesHtml(ExamType examType) {
+        if (examType.getType() == ExamType.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession(), examType);
             epx.load(this);
             return epx.toString(true).replaceAll(", ", "<br>");
         }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            if (!examType.equals(pref.getExamPeriod().getExamType())) continue;
             ret.append(
                     "<span style='color:"+PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog())+";'>"+
                     pref.getPrefLevel().getPrefName()+" "+pref.getExamPeriod().getName()+
@@ -560,16 +563,16 @@ public abstract class Location extends BaseLocation implements Comparable {
         return ret.toString();
     }
     
-    public String getExamPreferencesAbbreviationHtml(int examType) {
-        if (examType==Exam.sExamTypeMidterm) {
-            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
+    public String getExamPreferencesAbbreviationHtml(ExamType examType) {
+    	if (examType.getType() == ExamType.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession(), examType);
             epx.load(this);
             return epx.toString(true).replaceAll(", ", "<br>");
         }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            if (!examType.equals(pref.getExamPeriod().getExamType())) continue;
             if(ret.length()>0){
             	ret.append("<br>");
             }
@@ -581,40 +584,38 @@ public abstract class Location extends BaseLocation implements Comparable {
         return ret.toString();
     }
     
-    public String getExamPreferencesAbbreviation(int examType) {
-        if (examType==Exam.sExamTypeMidterm) {
-            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession());
+    public String getExamPreferencesAbbreviation(ExamType examType) {
+    	if (examType.getType() == ExamType.sExamTypeMidterm) {
+            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(getSession(), examType);
             epx.load(this);
             return epx.toString(false).replaceAll(", ", "\n");
         }
         StringBuffer ret = new StringBuffer();
         for (Iterator i=getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (examType!=pref.getExamPeriod().getExamType()) continue;
+            if (!examType.equals(pref.getExamPeriod().getExamType())) continue;
             if (ret.length()>0) ret.append("\n");
             ret.append(PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.getExamPeriod().getAbbreviation());
         }
         return ret.toString();
     }
+    
+    public static TreeSet findAllExamLocations(Long sessionId, ExamType examType) {
+    	return findAllExamLocations(sessionId, examType == null ? null : examType.getUniqueId());
+    }
 
-    public static TreeSet findAllExamLocations(Long sessionId, int examType) {
-        switch (examType) {
-        case Exam.sExamTypeFinal :
-            return new TreeSet(
+    public static TreeSet findAllExamLocations(Long sessionId, Long examTypeId) {
+    	if (examTypeId == null) {
+    		return new TreeSet(
                     (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeFinal+","+sExamLocationTypeBoth+")")
+                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examTypes is not empty")
                     .setLong("sessionId", sessionId).setCacheable(true).list());
-        case Exam.sExamTypeMidterm :
-            return new TreeSet(
+    	} else {
+    		return new TreeSet(
                     (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType in ("+sExamLocationTypeMidterm+","+sExamLocationTypeBoth+")")
-                    .setLong("sessionId", sessionId).setCacheable(true).list());
-        default :
-            return new TreeSet(
-                    (new LocationDAO()).getSession()
-                    .createQuery("select room from Location as room where room.session.uniqueId = :sessionId and room.examType != "+sExamLocationTypeNone)
-                    .setLong("sessionId", sessionId).setCacheable(true).list());
-        }
+                    .createQuery("select room from Location as room inner join room.examTypes as type where room.session.uniqueId = :sessionId and type.uniqueId = :typeId")
+                    .setLong("sessionId", sessionId).setLong("typeId", examTypeId).setCacheable(true).list());
+    	}
     }
     
     public static TreeSet findNotAvailableExamLocations(Long periodId) {
@@ -685,28 +686,39 @@ public abstract class Location extends BaseLocation implements Comparable {
                 .setCacheable(true).list();
     }
     
-    public boolean isExamEnabled(int examType) {
-        if (getExamType()==null) return false;
-        switch (examType) {
-        case Exam.sExamTypeFinal :
-                return sExamLocationTypeFinal==getExamType() || sExamLocationTypeBoth==getExamType();
-        case Exam.sExamTypeMidterm :
-                return sExamLocationTypeMidterm==getExamType() || sExamLocationTypeBoth==getExamType();
-        }
-        return false;
+    public boolean isExamEnabled(ExamType examType) {
+    	return getExamTypes() != null && getExamTypes().contains(examType);
     }
-    public void setExamEnabled(int examType, boolean enabled) {
-        switch (examType) {
-        case Exam.sExamTypeFinal :
-                setExamType(
-                        (isExamEnabled(Exam.sExamTypeMidterm)?sExamLocationTypeMidterm:0)+
-                        (enabled?sExamLocationTypeFinal:0));
-                break;
-        case Exam.sExamTypeMidterm :
-            setExamType(
-                    (isExamEnabled(Exam.sExamTypeFinal)?sExamLocationTypeFinal:0)+
-                    (enabled?sExamLocationTypeMidterm:0));
-        }
+    
+    public boolean isExamEnabled(Long examTypeId) {
+    	if (getExamTypes() == null) return false;
+    	for (ExamType type: getExamTypes())
+    		if (type.getUniqueId().equals(examTypeId)) return true;
+    	return false;
+    }
+    
+    public boolean hasFinalExamsEnabled() {
+    	for (ExamType type: getExamTypes())
+    		if (type.getType() == ExamType.sExamTypeFinal) return true;
+    	return false;
+    }
+    
+    public boolean hasMidtermExamsEnabled() {
+    	for (ExamType type: getExamTypes())
+    		if (type.getType() == ExamType.sExamTypeMidterm) return true;
+    	return false;
+    }
+    
+    public boolean hasAnyExamsEnabled() {
+    	return getExamTypes() != null && !getExamTypes().isEmpty();
+    }
+
+    public void setExamEnabled(ExamType examType, boolean enabled) {
+    	if (getExamTypes() == null) setExamTypes(new HashSet<ExamType>());
+    	if (enabled) 
+    		getExamTypes().add(examType);
+    	else
+    		getExamTypes().remove(examType);
     }
     
     public static List<Location> findAll(Long sessionId) {
@@ -897,11 +909,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     	}
     	hint += "<table width=\\'300px;\\'>";
     	hint += "<tr><td>Capacity:</td><td width=\\'99%\\'>" + getCapacity();
-    	if (getExamCapacity() != null && getExamCapacity() > 0 && !getExamCapacity().equals(getCapacity()) &&
-    			(isExamEnabled(Exam.sExamTypeFinal) || isExamEnabled(Exam.sExamTypeMidterm))) {
-    		hint += " (" + getExamCapacity() + " for" +
-    				(isExamEnabled(Exam.sExamTypeFinal) ? isExamEnabled(Exam.sExamTypeMidterm) ? "" : " final" : " midterm") +
-    				" examinations)";
+    	if (getExamCapacity() != null && getExamCapacity() > 0 && !getExamCapacity().equals(getCapacity()) && !getExamTypes().isEmpty()) {
+    		String type = (getExamTypes().size() == 1 ? getExamTypes().iterator().next().getLabel().toLowerCase() + " " : "");
+    		hint += " (" + getExamCapacity() + " for " + type + "examinations)";
     	}
     	hint += "</td></tr>";
     	String features = "";
