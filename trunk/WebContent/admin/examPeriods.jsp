@@ -26,31 +26,7 @@
 <tiles:importAttribute />
 
 <html:form action="/examPeriodEdit">
-<script language="JavaScript" type="text/javascript">
-	function updateDefaultOffsets(examType) {
-		if ("<%= Exam.sExamTypes[Exam.sExamTypeFinal] %>" == examType){
-		   if (document.getElementsByName("startOffset")[0].value != null && document.getElementsByName("startOffset")[0].value == document.getElementsByName("defaultMidtermStartOffset")[0].value){
-		      document.getElementsByName("startOffset")[0].value = document.getElementsByName("defaultFinalStartOffset")[0].value;
-		      
-		   }
-		   if (document.getElementsByName("stopOffset")[0].value != null && document.getElementsByName("stopOffset")[0].value == document.getElementsByName("defaultMidtermStopOffset")[0].value){
-		      document.getElementsByName("stopOffset")[0].value = document.getElementsByName("defaultFinalStopOffset")[0].value;
-		   }
-		} else {
-		   if (document.getElementsByName("startOffset")[0].value != null && document.getElementsByName("startOffset")[0].value == document.getElementsByName("defaultFinalStartOffset")[0].value){
-		      document.getElementsByName("startOffset")[0].value = document.getElementsByName("defaultMidtermStartOffset")[0].value;
-		   }
-		   if (document.getElementsByName("stopOffset")[0].value != null && document.getElementsByName("stopOffset")[0].value == document.getElementsByName("defaultFinalStopOffset")[0].value){
-		      document.getElementsByName("stopOffset")[0].value = document.getElementsByName("defaultMidtermStopOffset")[0].value;
-		   }
-		}
-	}
-</script>
 
-<html:hidden property="defaultMidtermStartOffset"/>
-<html:hidden property="defaultMidtermStopOffset"/>
-<html:hidden property="defaultFinalStartOffset"/>
-<html:hidden property="defaultFinalStopOffset"/>
 <logic:notEqual name="examPeriodEditForm" property="op" value="List">
 	<html:hidden property="uniqueId"/><html:errors property="uniqueId"/>
 	<html:hidden property="autoSetup"/>
@@ -75,9 +51,11 @@
 			<TD>Type:</TD>
 			<TD>
 				<html:select property="examType" disabled="true">
-					<html:options property="examTypes"/>
+					<html:option value="">Select...</html:option>
+					<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
 				</html:select>
 				<html:hidden property="examType"/>
+				&nbsp;<html:errors property="examType"/>
 			</TD>
 		</TR>
 		
@@ -298,13 +276,16 @@
 			<TD>Type:</TD>
 			<TD>
 				<logic:equal name="examPeriodEditForm" property="op" value="Save">
-					<html:select property="examType" onchange="updateDefaultOffsets(this.value);">
-						<html:options property="examTypes"/>
+					<input type='hidden' name='op2' value=''>
+					<html:select property="examType" onchange="op2.value='Reload'; submit();">
+						<html:option value="-1">Select...</html:option>
+						<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
 					</html:select>
+					&nbsp;<html:errors property="examType"/>
 				</logic:equal>
 				<logic:notEqual name="examPeriodEditForm" property="op" value="Save">
 					<html:select property="examType" disabled="true">
-						<html:options property="examTypes"/>
+						<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
 					</html:select>
 					<html:hidden property="examType"/>
 				</logic:notEqual>
@@ -438,9 +419,11 @@
 			<tt:section-header>
 				<tt:section-title>Examination Periods</tt:section-title>
 				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
-				<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
-					<html:submit property="op" value="Midterm Periods" title="Setup periods for midterm exams"/>
-				</logic:equal>
+				<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+					<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
+						<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for midterm exams"/>
+					</logic:equal>
+				</logic:iterate>
 			</tt:section-header>
 		</TD>
 	</TR>
@@ -453,9 +436,11 @@
 	<TR>
 		<TD colspan='8' align="right">
 			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
-			<logic:equal name="examPeriodEditForm" property="canAutoSetup" value="true">
-				<html:submit property="op" value="Midterm Periods" title="Setup periods for midterm exams"/>
-			</logic:equal>
+			<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+				<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
+					<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for midterm exams"/>
+				</logic:equal>
+			</logic:iterate>
 		</TD>
 	</TR>
 	<% if (request.getAttribute("hash") != null) { %>

@@ -87,8 +87,8 @@
 							</html:form>
 						</TD>
 					</sec:authorize>
-					<logic:equal value="Exam" name="roomListForm" property="deptCodeX">
-						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsFinalExams')">
+					<% if (frm.getDeptCodeX() != null && frm.getDeptCodeX().matches("Exam[0-9]*")) { %>
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsExams')">
 							<TD nowrap>
 								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
@@ -97,18 +97,7 @@
 								</html:form>
 							</TD>
 						</sec:authorize>
-					</logic:equal>
-					<logic:equal value="EExam" name="roomListForm" property="deptCodeX">
-						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsMidtermExams')">
-							<TD nowrap>
-								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
-									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
-										<bean:message key="button.editRoomSharing" />
-									</html:submit>
-								</html:form>
-							</TD>
-						</sec:authorize>
-					</logic:equal>
+					<% } %>
 				</TR>
 			</TABLE>
 		</tt:section-header>
@@ -197,8 +186,8 @@
 							</html:form>
 						</TD>
 					</sec:authorize>
-					<logic:equal value="Exam" name="roomListForm" property="deptCodeX">
-						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsFinalExams')">
+					<% if (frm.getDeptCodeX() != null && frm.getDeptCodeX().matches("Exam[0-9]*")) { %>
+						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsExams')">
 							<TD nowrap>
 								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
 									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
@@ -207,18 +196,7 @@
 								</html:form>
 							</TD>
 						</sec:authorize>
-					</logic:equal>
-					<logic:equal value="EExam" name="roomListForm" property="deptCodeX">
-						<sec:authorize access="hasPermission(null, 'Session', 'EditRoomDepartmentsMidtermExams')">
-							<TD nowrap>
-								<html:form action="roomDeptEdit" styleClass="FormWithNoPadding">
-									<html:submit property="doit" onclick="displayLoading();" styleClass="btn" accesskey="E" titleKey="title.editRoomSharing">
-										<bean:message key="button.editRoomSharing" />
-									</html:submit>
-								</html:form>
-							</TD>
-						</sec:authorize>
-					</logic:equal>
+					<% } %>
 				</TR>
 			</TABLE>
 		</TD>

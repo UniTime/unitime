@@ -39,6 +39,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
@@ -150,13 +151,13 @@ public class Exams extends BodyTagSupport {
             
             if (exams!=null)  {
                 ExamSolverProxy solver = WebSolver.getExamSolver(pageContext.getSession());
-                int solverType = (solver==null?-1:solver.getExamType());
+                Long solverType = (solver == null ? null : solver.getExamTypeId());
                 
                 boolean hasSolution = false;
                 for (Iterator i=new TreeSet(exams).iterator();i.hasNext();) {
                     Exam exam = (Exam)i.next();
                     ExamAssignment assignment = null;
-                    if (solver!=null && solverType==exam.getExamType())
+                    if (exam.getExamType().getUniqueId().equals(solverType))
                         assignment = solver.getAssignment(exam.getUniqueId());
                     else if (exam.getAssignedPeriod()!=null)
                         assignment = new ExamAssignment(exam);
@@ -184,7 +185,7 @@ public class Exams extends BodyTagSupport {
                         String objects = "", instructors = "", perPref = "", roomPref = "", distPref = "";
                         
                         ExamAssignmentInfo assignment = null;
-                        if (solver!=null && solverType==exam.getExamType())
+                        if (exam.getExamType().getUniqueId().equals(solverType))
                             assignment = solver.getAssignmentInfo(exam.getUniqueId());
                         else if (exam.getAssignedPeriod()!=null)
                             assignment = new ExamAssignmentInfo(exam);
@@ -213,16 +214,14 @@ public class Exams extends BodyTagSupport {
                             if (roomPref.length()>0 && !roomPref.endsWith("<br>")) roomPref+="<br>";
                             roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                             if (roomPref.endsWith("<br>")) roomPref = roomPref.substring(0, roomPref.length()-"<br>".length());
-                            if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
-                                if (Exam.sExamTypeMidterm==exam.getExamType()) {
-                                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
-                                    epx.load(exam);
-                                    perPref+=epx.toString();
-                                } else {
-                                    perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
-                                }
+                            if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
+                                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
+                                epx.load(exam);
+                                perPref+=epx.toString();
+                            } else if (timeText) {
+                            	perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                             } else {
-                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), exam.getExamType());
+                                PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), exam.getExamType().getUniqueId());
                                 px.load(exam);
                                 perPref = "<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId()+"' title='"+px.toString()+"'>";
                             }
@@ -260,7 +259,7 @@ public class Exams extends BodyTagSupport {
                                 (view ? "onClick=\"document.location='examDetail.do?examId="+exam.getUniqueId()+"';\"":null),
                                 new String[] {
                                     objects,
-                                    Exam.sExamTypes[exam.getExamType()],
+                                    exam.getExamType().getLabel(),
                                     exam.getLength().toString(),
                                     (Exam.sSeatingTypeNormal==exam.getSeatingType()?MSG.examSeatingTypeNormal():MSG.examSeatingTypeExam()),
                                     String.valueOf(nrStudents),
@@ -288,7 +287,7 @@ public class Exams extends BodyTagSupport {
                         String objects = "", instructors = "", perPref = "", roomPref = "";
                         
                         ExamAssignmentInfo assignment = null;
-                        if (solver!=null && solverType==exam.getExamType())
+                        if (exam.getExamType().getUniqueId().equals(solverType))
                             assignment = solver.getAssignmentInfo(exam.getUniqueId());
                         else if (exam.getAssignedPeriod()!=null)
                             assignment = new ExamAssignmentInfo(exam);
@@ -328,7 +327,7 @@ public class Exams extends BodyTagSupport {
                                 null,
                                 new String[] {
                                     objects,
-                                    Exam.sExamTypes[exam.getExamType()],
+                                    exam.getExamType().getLabel(),
                                     instructors,
                                     perPref,
                                     roomPref},

@@ -45,19 +45,19 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private boolean iAllowRequired = true;
     
     private ExamPeriod iPeriod = null;
-    private Integer iExamType = null;
+    private Long iExamType = null;
     
     public static SimpleDateFormat[] sDF = new SimpleDateFormat[]{new SimpleDateFormat("EEE"),new SimpleDateFormat("MM/dd")};
     
-    public PeriodPreferenceModel(Session session, Integer examType) {
+    public PeriodPreferenceModel(Session session, Long examType) {
         this(session, (ExamPeriod) null, examType);
     }
     
-    public PeriodPreferenceModel(Session session, ExamAssignment assignment, Integer examType) {
+    public PeriodPreferenceModel(Session session, ExamAssignment assignment, Long examType) {
     	this(session, assignment == null ? null : assignment.getPeriod(), examType);
     }
 
-    public PeriodPreferenceModel(Session session, ExamPeriod assignedPeriod, Integer examType) {
+    public PeriodPreferenceModel(Session session, ExamPeriod assignedPeriod, Long examType) {
         iPeriod = assignedPeriod;
         iFirstDate = session.getExamBeginDate();
         iPeriods = ExamPeriod.findAll(session.getUniqueId(), examType);
@@ -95,7 +95,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     public void load(Location location) {
         for (Iterator i=location.getExamPreferences().iterator();i.hasNext();) {
             ExamLocationPref pref = (ExamLocationPref)i.next();
-            if (!iExamType.equals(pref.getExamPeriod().getExamType())) continue;
+            if (!iExamType.equals(pref.getExamPeriod().getExamType().getUniqueId())) continue;
             iPreferences.put(pref.getExamPeriod(), pref.getPrefLevel().getPrefProlog());
         }
     }

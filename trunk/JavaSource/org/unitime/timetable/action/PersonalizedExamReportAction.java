@@ -67,6 +67,7 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -292,12 +293,12 @@ public class PersonalizedExamReportAction extends Action {
                             setLong("studentId", student.getUniqueId()).setCacheable(true).list());
             if (!student.getSession().getStatusType().canNoRoleReportExamFinal()) {
                 for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
-                    if (i.next().getExam().getExamType()==Exam.sExamTypeFinal) i.remove();
+                    if (i.next().getExam().getExamType().getType() == ExamType.sExamTypeFinal) i.remove();
                 }
             }
             if (!student.getSession().getStatusType().canNoRoleReportExamMidterm()) {
                 for (Iterator<ExamOwner> i=studentExams.iterator();i.hasNext();) {
-                    if (i.next().getExam().getExamType()==Exam.sExamTypeMidterm) i.remove();
+                    if (i.next().getExam().getExamType().getType() == ExamType.sExamTypeMidterm) i.remove();
                 }
             }
         }
@@ -305,9 +306,9 @@ public class PersonalizedExamReportAction extends Action {
         HashSet<Exam> instructorExams = new HashSet<Exam>();
         if (instructor!=null) {
             if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamMidterm())
-                instructorExams.addAll(instructor.getExams(Exam.sExamTypeMidterm));
+                instructorExams.addAll(instructor.getExams(ExamType.sExamTypeMidterm));
             if (instructor.getDepartment().getSession().getStatusType().canNoRoleReportExamFinal())
-                instructorExams.addAll(instructor.getExams(Exam.sExamTypeFinal));
+                instructorExams.addAll(instructor.getExams(ExamType.sExamTypeFinal));
         }
         
         WebTable.setOrder(sessionContext,"exams.o0",request.getParameter("o0"),1);
@@ -376,7 +377,7 @@ public class PersonalizedExamReportAction extends Action {
 
                     InstructorExamReport ir = new InstructorExamReport(
                             InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
-                            -1, null, exams);
+                            null, null, exams);
                     ir.setM2d(true); ir.setDirect(true);
                     ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
                     ir.printHeader();
@@ -395,7 +396,7 @@ public class PersonalizedExamReportAction extends Action {
                     
                     StudentExamReport sr = new StudentExamReport(
                             StudentExamReport.sModeNormal, file, student.getSession(),
-                            -1, null, exams);
+                            null, null, exams);
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                     sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
                     sr.printHeader();
@@ -406,7 +407,7 @@ public class PersonalizedExamReportAction extends Action {
                     if (instructor!=null) {
                         InstructorExamReport ir = new InstructorExamReport(
                                 InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
-                                -1, null, new TreeSet<ExamAssignmentInfo>());
+                                null, null, new TreeSet<ExamAssignmentInfo>());
                         ir.setM2d(true); ir.setDirect(true);
                         ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
                         ir.printHeader();
@@ -416,7 +417,7 @@ public class PersonalizedExamReportAction extends Action {
                     } else if (student!=null) {
                         StudentExamReport sr = new StudentExamReport(
                                 StudentExamReport.sModeNormal, file, student.getSession(),
-                                -1, null, new TreeSet<ExamAssignmentInfo>());
+                                null, null, new TreeSet<ExamAssignmentInfo>());
                         sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                         sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
                         sr.printHeader();
@@ -496,8 +497,8 @@ public class PersonalizedExamReportAction extends Action {
     
     public static boolean canDisplay(Session session) {
         if (session.getStatusType()==null) return false;
-        if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeFinal)) return true;
-        if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),Exam.sExamTypeMidterm)) return true;
+        if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(),ExamType.sExamTypeFinal)) return true;
+        if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(),ExamType.sExamTypeMidterm)) return true;
         if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId())) return true;
         return false;
     }
@@ -633,11 +634,11 @@ public class PersonalizedExamReportAction extends Action {
                                 (exam.getNrRooms()==0 ? noRoom : html ? exam.getRoomsNameWithHint(false, ", ") : exam.getRoomsName(false, ", "))
                         },
                         new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), sectionName, exam),
-                            new MultiComparable(-exam.getExamType(), getMeetingComparable(section), sectionName, exam),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), sectionName, exam),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), sectionName, exam),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), sectionName, exam)
+                            new MultiComparable(-exam.getExamType().getType(), sectionName, exam),
+                            new MultiComparable(-exam.getExamType().getType(), getMeetingComparable(section), sectionName, exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), sectionName, exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), sectionName, exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), sectionName, exam)
                         });
             }
         }
@@ -716,12 +717,12 @@ public class PersonalizedExamReportAction extends Action {
                             room,
                             ""
                         }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 0, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
+                            new MultiComparable(-exam.getExamType().getType(), 0, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -1.0, exam, 0)
                         });
             }
             if (showBackToBack)
@@ -765,12 +766,12 @@ public class PersonalizedExamReportAction extends Action {
                                 room,
                                 (int)(conflict.getDistance()*10.0)+" m"
                             }, new Comparable[] {
-                                new MultiComparable(-exam.getExamType(), 2, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                                new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
+                                new MultiComparable(-exam.getExamType().getType(), 2, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), conflict.getDistance(), exam, 0)
                             });
                 }
             conflicts: for (MoreThanTwoADayConflict conflict : exam.getMoreThanTwoADaysConflicts()) {
@@ -817,12 +818,12 @@ public class PersonalizedExamReportAction extends Action {
                             room,
                             ""
                         }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 1, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
+                            new MultiComparable(-exam.getExamType().getType(), 1, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -1.0, exam, 0)
                         },
                         exam.getExamId().toString());
             }
@@ -871,14 +872,14 @@ public class PersonalizedExamReportAction extends Action {
                                 exam.getRoomsCapacity(false, ", ")
                         },
                         new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), -exam.getNrStudents(), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), exam.getSeatingType(), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), getMeetingComparable(section), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), section.getName(), exam),
-                            new MultiComparable(-exam.getExamType(), -exam.getRoomsCapacity(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), -exam.getNrStudents(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getSeatingType(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), getMeetingComparable(section), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod()==null?-1:exam.getPeriod().getStartSlot(), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), section.getName(), exam),
+                            new MultiComparable(-exam.getExamType().getType(), -exam.getRoomsCapacity(), section.getName(), exam),
                         });
             }
         }
@@ -964,14 +965,14 @@ public class PersonalizedExamReportAction extends Action {
                             room,
                             ""
                         }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 0, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
+                            new MultiComparable(-exam.getExamType().getType(), 0, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -1.0, exam, 0)
                         });
             }
             if (showBackToBack)
@@ -1018,14 +1019,14 @@ public class PersonalizedExamReportAction extends Action {
                                 room,
                                 (int)(conflict.getDistance()*10.0)+" m"
                             }, new Comparable[] {
-                                new MultiComparable(-exam.getExamType(), 2, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                                new MultiComparable(-exam.getExamType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                                new MultiComparable(-exam.getExamType(), conflict.getDistance(), exam, 0)
+                                new MultiComparable(-exam.getExamType().getType(), 2, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), conflict.getDistance(), exam, 0)
                             });
                 }
             conflicts: for (MoreThanTwoADayConflict conflict : exam.getInstructorMoreThanTwoADaysConflicts()) {
@@ -1077,14 +1078,14 @@ public class PersonalizedExamReportAction extends Action {
                             room,
                             ""
                         }, new Comparable[] {
-                            new MultiComparable(-exam.getExamType(), 1, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                            new MultiComparable(-exam.getExamType(), -nrStudents, exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                            new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
-                            new MultiComparable(-exam.getExamType(), -1.0, exam, 0)
+                            new MultiComparable(-exam.getExamType().getType(), 1, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -nrStudents, exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
+                            new MultiComparable(-exam.getExamType().getType(), -1.0, exam, 0)
                         },
                         exam.getExamId().toString());
             }
@@ -1177,14 +1178,14 @@ public class PersonalizedExamReportAction extends Action {
                                 time,
                                 room
                             }, new Comparable[] {
-                                new MultiComparable(-exam.getExamType(), name,id, exam, 0),
-                                new MultiComparable(-exam.getExamType(), 0, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                                new MultiComparable(-exam.getExamType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0)
+                                new MultiComparable(-exam.getExamType().getType(), name,id, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), 0, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0)
                             });
                 }
             }
@@ -1304,14 +1305,14 @@ public class PersonalizedExamReportAction extends Action {
                                 time,
                                 room
                             }, new Comparable[] {
-                                new MultiComparable(-exam.getExamType(), name, id, exam, 0),
-                                new MultiComparable(-exam.getExamType(), 1, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam, exam, 0),
-                                new MultiComparable(-exam.getExamType(), -nrStudents, exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getExamType(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriodOrd(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getPeriod().getStartSlot(), exam, 0),
-                                new MultiComparable(-exam.getExamType(), exam.getRoomsName(":"), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), name, id, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), 1, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), -nrStudents, exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0),
                             });
                 }
             }
@@ -1582,7 +1583,7 @@ public class PersonalizedExamReportAction extends Action {
                         Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
                         endTime.add(Calendar.MINUTE, exam.getLength());
                         out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-                        out.println("SUMMARY:"+section.getName()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
+                        out.println("SUMMARY:"+section.getName()+" ("+exam.getExamType().getLabel()+" Exam)");
                         //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
                         if (!exam.getAssignedRooms().isEmpty()) {
                             String rooms = "";
@@ -1647,7 +1648,7 @@ public class PersonalizedExamReportAction extends Action {
                 Calendar endTime = Calendar.getInstance(); endTime.setTime(exam.getAssignedPeriod().getStartTime());
                 endTime.add(Calendar.MINUTE, exam.getLength());
                 out.println("DTEND:"+df.format(endTime.getTime())+"T"+tf.format(endTime.getTime())+"Z");
-                out.println("SUMMARY:"+exam.getLabel()+" ("+ApplicationProperties.getProperty("tmtbl.exam.name.type."+Exam.sExamTypes[exam.getExamType()],Exam.sExamTypes[exam.getExamType()])+" Exam)");
+                out.println("SUMMARY:"+exam.getLabel()+" ("+exam.getExamType().getLabel()+" Exam)");
                 //out.println("DESCRIPTION:"+exam.getExamName()+" ("+Exam.sExamTypes[exam.getExamType()]+" Exam)");
                 if (!exam.getAssignedRooms().isEmpty()) {
                     String rooms = "";

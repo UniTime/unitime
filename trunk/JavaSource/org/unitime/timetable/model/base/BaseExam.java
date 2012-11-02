@@ -28,6 +28,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamConflict;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.Session;
@@ -43,12 +44,12 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	private Integer iMaxNbrRooms;
 	private Integer iSeatingType;
 	private String iAssignedPreference;
-	private Integer iExamType;
 	private Integer iAvgPeriod;
 	private Long iUniqueIdRolledForwardFrom;
 
 	private Session iSession;
 	private ExamPeriod iAssignedPeriod;
+	private ExamType iExamType;
 	private Set<ExamOwner> iOwners;
 	private Set<Location> iAssignedRooms;
 	private Set<DepartmentalInstructor> iInstructors;
@@ -62,7 +63,6 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	public static String PROP_MAX_NBR_ROOMS = "maxNbrRooms";
 	public static String PROP_SEATING_TYPE = "seatingType";
 	public static String PROP_ASSIGNED_PREF = "assignedPreference";
-	public static String PROP_EXAM_TYPE = "examType";
 	public static String PROP_AVG_PERIOD = "avgPeriod";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
 
@@ -101,9 +101,6 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 	public String getAssignedPreference() { return iAssignedPreference; }
 	public void setAssignedPreference(String assignedPreference) { iAssignedPreference = assignedPreference; }
 
-	public Integer getExamType() { return iExamType; }
-	public void setExamType(Integer examType) { iExamType = examType; }
-
 	public Integer getAvgPeriod() { return iAvgPeriod; }
 	public void setAvgPeriod(Integer avgPeriod) { iAvgPeriod = avgPeriod; }
 
@@ -115,6 +112,9 @@ public abstract class BaseExam extends PreferenceGroup implements Serializable {
 
 	public ExamPeriod getAssignedPeriod() { return iAssignedPeriod; }
 	public void setAssignedPeriod(ExamPeriod assignedPeriod) { iAssignedPeriod = assignedPeriod; }
+
+	public ExamType getExamType() { return iExamType; }
+	public void setExamType(ExamType examType) { iExamType = examType; }
 
 	public Set<ExamOwner> getOwners() { return iOwners; }
 	public void setOwners(Set<ExamOwner> owners) { iOwners = owners; }

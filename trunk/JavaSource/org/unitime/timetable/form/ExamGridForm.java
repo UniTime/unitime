@@ -21,11 +21,12 @@ package org.unitime.timetable.form;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -33,8 +34,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -46,32 +47,31 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 public class ExamGridForm extends ActionForm {
 	private static final long serialVersionUID = 1429431006186003906L;
 	private Long iSessionId;
-    private TreeSet[] iPeriods;
+    private Map<String, TreeSet> iPeriods = new HashMap<String, TreeSet>();
     private int iSessionBeginWeek;
     private Date iSessionBeginDate;
     private Date iExamBeginDate;
     private boolean iShowSections = false;
     
     private String iOp = null;
-    private int iExamType = Exam.sExamTypeFinal;
-    private int[] iDate;
-    private int[] iStartTime;
-    private int[] iEndTime;
+    private Long iExamType;
+    private Map<String, Integer> iDate = new HashMap<String, Integer>();
+    private Map<String, Integer> iStartTime = new HashMap<String, Integer>();
+    private Map<String, Integer> iEndTime = new HashMap<String, Integer>();
     private int iResource = ExamGridTable.sResourceRoom;
     private int iBackground = ExamGridTable.sBgNone;
     private String iFilter = null;
     private int iDispMode = ExamGridTable.sDispModePerWeekVertical;
     private int iOrder = ExamGridTable.sOrderByNameAsc;
     private boolean iBgPreferences = false;
-    private boolean iHasMidtermExams = false;
     
-    public int getDate(int examType) { return iDate[examType]; }
-    public void setDate(int examType, int date) { iDate[examType] = date; }
-    public boolean isAllDates(int examType) { return iDate[examType] == Integer.MIN_VALUE; }
-    public int getStartTime(int examType) { return iStartTime[examType]; }
-    public void setStartTime(int examType, int startTime) { iStartTime[examType] = startTime; }
-    public int getEndTime(int examType) { return iEndTime[examType]; }
-    public void setEndTime(int examType, int endTime) { iEndTime[examType] = endTime; }
+    public int getDate(String examType) { return iDate.get(examType); }
+    public void setDate(String examType, int date) { iDate.put(examType, date); }
+    public boolean isAllDates(String examType) { return iDate.get(examType) == Integer.MIN_VALUE; }
+    public int getStartTime(String examType) { return iStartTime.get(examType); }
+    public void setStartTime(String examType, int startTime) { iStartTime.put(examType, startTime); }
+    public int getEndTime(String examType) { return iEndTime.get(examType); }
+    public void setEndTime(String examType, int endTime) { iEndTime.put(examType, endTime); }
     public int getResource() { return iResource; }
     public void setResource(int resource) { iResource = resource; }
     public int getBackground() { return iBackground; }
@@ -88,11 +88,9 @@ public class ExamGridForm extends ActionForm {
     public void setOp(String op) { iOp = op; }
     
     public void reset(ActionMapping mapping, HttpServletRequest request) {
-        iDate = new int[Exam.sExamTypes.length];
-        iStartTime = new int[Exam.sExamTypes.length];
-        iEndTime = new int[Exam.sExamTypes.length];
-        for (int i=0;i<Exam.sExamTypes.length;i++)
-        	iDate[i] = iStartTime[i] = iEndTime[i] = -1;
+    	iDate.clear();
+        iStartTime.clear();
+        iEndTime.clear();
         iResource = ExamGridTable.sResourceRoom;
         iBackground = ExamGridTable.sBgNone;
         iFilter = null;
@@ -101,20 +99,19 @@ public class ExamGridForm extends ActionForm {
         iBgPreferences = false;
         iOp = null;
         iShowSections = false;
-		iExamType = Exam.sExamTypeFinal;
+		iExamType = null;
 		try {
 			ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
 			if (solver!=null)
-				iExamType = solver.getProperties().getPropertyInt("Exam.Type", iExamType);
+				iExamType = solver.getProperties().getPropertyLong("Exam.Type", null);
 		} catch (Exception e) {}
     }
     
     public Long getSessionId() { return iSessionId; }
     public Date getExamBeginDate() { return iExamBeginDate; }
-    public TreeSet getPeriods(int examType) { return iPeriods[examType]; }
+    public TreeSet getPeriods(String examType) { return iPeriods.get(examType); }
     
     public void load(SessionContext context) throws Exception {
-    	iHasMidtermExams = Exam.hasMidtermExams(context.getUser().getCurrentAcademicSessionId());
         Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
         iSessionId = session.getUniqueId();
         Calendar cal = Calendar.getInstance(Locale.US);
@@ -122,12 +119,12 @@ public class ExamGridForm extends ActionForm {
         iSessionBeginWeek = cal.get(Calendar.WEEK_OF_YEAR);
         iSessionBeginDate = session.getSessionBeginDateTime();
         iExamBeginDate = session.getExamBeginDate();
-        iPeriods = new TreeSet[Exam.sExamTypes.length];
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-        	iPeriods[i] = ExamPeriod.findAll(session.getUniqueId(), i);
-        	setDate(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.date."+i, String.valueOf(Integer.MIN_VALUE))));
-        	setStartTime(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.start."+i, String.valueOf(getFirstStart(i)))));
-        	setEndTime(i, Integer.parseInt(context.getUser().getProperty("ExamGrid.end."+i, String.valueOf(getLastEnd(i)))));
+        iPeriods.clear();
+        for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId())) {
+        	iPeriods.put(type.getUniqueId().toString(), ExamPeriod.findAll(session.getUniqueId(), type.getUniqueId()));
+        	setDate(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.date."+type.getUniqueId(), String.valueOf(Integer.MIN_VALUE))));
+        	setStartTime(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.start."+type.getUniqueId(), String.valueOf(getFirstStart(type.getUniqueId().toString())))));
+        	setEndTime(type.getUniqueId().toString(), Integer.parseInt(context.getUser().getProperty("ExamGrid.end."+type.getUniqueId(), String.valueOf(getLastEnd(type.getUniqueId().toString())))));
         }
         setResource(Integer.parseInt(context.getUser().getProperty("ExamGrid.resource", String.valueOf(ExamGridTable.sResourceRoom))));
         setBackground(Integer.parseInt(context.getUser().getProperty("ExamGrid.background", String.valueOf(ExamGridTable.sBgNone))));
@@ -135,15 +132,15 @@ public class ExamGridForm extends ActionForm {
         setDispMode(Integer.parseInt(context.getUser().getProperty("ExamGrid.dispMode", String.valueOf(ExamGridTable.sDispModePerWeekVertical))));
         setOrder(Integer.parseInt(context.getUser().getProperty("ExamGrid.order", String.valueOf(ExamGridTable.sOrderByNameAsc))));
         setBgPreferences("1".equals(context.getUser().getProperty("ExamGrid.bgPref", "0")));
-        setExamType(context.getAttribute("Exam.Type") == null ? iExamType : (Integer)context.getAttribute("Exam.Type"));
+        setExamType(context.getAttribute("Exam.Type") == null ? iExamType : (Long)context.getAttribute("Exam.Type"));
         setShowSections("1".equals(context.getUser().getProperty("ExamReport.showSections", "1")));
     }
     
     public void save(SessionContext context) throws Exception {
-    	for (int i=0;i<Exam.sExamTypes.length;i++) {
-    		context.getUser().setProperty("ExamGrid.date."+i, String.valueOf(getDate(i)));
-    		context.getUser().setProperty("ExamGrid.start."+i, String.valueOf(getStartTime(i)));
-    		context.getUser().setProperty("ExamGrid.end."+i, String.valueOf(getEndTime(i)));
+    	for (ExamType type: ExamType.findAllUsed(context.getUser().getCurrentAcademicSessionId())) {
+    		context.getUser().setProperty("ExamGrid.date."+type.getUniqueId(), String.valueOf(getDate(type.getUniqueId().toString())));
+    		context.getUser().setProperty("ExamGrid.start."+type.getUniqueId(), String.valueOf(getStartTime(type.getUniqueId().toString())));
+    		context.getUser().setProperty("ExamGrid.end."+type.getUniqueId(), String.valueOf(getEndTime(type.getUniqueId().toString())));
     	}
         context.getUser().setProperty("ExamGrid.resource", String.valueOf(getResource()));
         context.getUser().setProperty("ExamGrid.background", String.valueOf(getBackground()));
@@ -155,12 +152,12 @@ public class ExamGridForm extends ActionForm {
         context.getUser().setProperty("ExamReport.showSections", getShowSections() ? "1" : "0");
     }
 
-    public Vector<ComboBoxLookup> getDates(int examType) {
+    public Vector<ComboBoxLookup> getDates(String examType) {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
         ret.addElement(new ComboBoxLookup("All Dates", String.valueOf(Integer.MIN_VALUE)));
         HashSet added = new HashSet();
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             Calendar cal = Calendar.getInstance(Locale.US);
             cal.setTime(period.getStartDate());
@@ -182,7 +179,7 @@ public class ExamGridForm extends ActionForm {
                         String.valueOf(1000+week)));
             }
         }
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getDateOffset())) {
                 ret.addElement(new ComboBoxLookup(ExamGridTable.sDF.format(period.getStartDate()),period.getDateOffset().toString()));
@@ -191,18 +188,18 @@ public class ExamGridForm extends ActionForm {
         return ret;
     }
     
-    public int getFirstDate(int examType) {
+    public int getFirstDate(String examType) {
         int startDate = Integer.MAX_VALUE;
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             startDate = Math.min(startDate, period.getDateOffset());
         }
         return startDate;
     }
     
-    public int getLastDate(int examType) {
+    public int getLastDate(String examType) {
         int endDate = Integer.MIN_VALUE;
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
         	ExamPeriod period = (ExamPeriod)i.next();
             endDate = Math.max(endDate, period.getDateOffset());
         }
@@ -210,9 +207,9 @@ public class ExamGridForm extends ActionForm {
     }
 
     
-    public int getFirstStart(int examType) {
+    public int getFirstStart(String examType) {
         int startSlot = -1;
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (startSlot<0) startSlot = period.getStartSlot();
             else startSlot = Math.min(startSlot, period.getStartSlot());
@@ -220,9 +217,9 @@ public class ExamGridForm extends ActionForm {
         return startSlot;
     }
     
-    public int getLastEnd(int examType) {
+    public int getLastEnd(String examType) {
         int endSlot = -1;
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (endSlot<0) endSlot = period.getEndSlot();
             else endSlot = Math.max(endSlot, period.getEndSlot());
@@ -230,10 +227,10 @@ public class ExamGridForm extends ActionForm {
         return endSlot;
     }
 
-    public Vector<ComboBoxLookup> getStartTimes(int examType) {
+    public Vector<ComboBoxLookup> getStartTimes(String examType) {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
         HashSet added = new HashSet();
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getStartSlot())) {
                 ret.addElement(new ComboBoxLookup(period.getStartTimeLabel(), period.getStartSlot().toString()));
@@ -242,10 +239,10 @@ public class ExamGridForm extends ActionForm {
         return ret;
     }
     
-    public Vector<ComboBoxLookup> getEndTimes(int examType) {
+    public Vector<ComboBoxLookup> getEndTimes(String examType) {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
         HashSet added = new HashSet();
-        for (Iterator i=iPeriods[examType].iterator();i.hasNext();) {
+        for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             if (added.add(period.getEndSlot())) {
                 ret.addElement(new ComboBoxLookup(period.getEndTimeLabel(), String.valueOf(period.getEndSlot())));
@@ -282,16 +279,8 @@ public class ExamGridForm extends ActionForm {
         return ret;
     }
 
-    public int getExamType() { return iExamType; }
-    public void setExamType(int type) { iExamType = type; }
-    public Collection getExamTypes() {
-    	Vector ret = new Vector(Exam.sExamTypes.length);
-        for (int i=0;i<Exam.sExamTypes.length;i++) {
-            if (i==Exam.sExamTypeMidterm && !iHasMidtermExams) continue;
-            ret.add(new ComboBoxLookup(Exam.sExamTypes[i], String.valueOf(i)));
-        }
-    	return ret;
-    }
+    public Long getExamType() { return iExamType; }
+    public void setExamType(Long type) { iExamType = type; }
     
     public int getSessionBeginWeek() { return iSessionBeginWeek; }
     public Date getSessionBeginDate() { return iSessionBeginDate; }

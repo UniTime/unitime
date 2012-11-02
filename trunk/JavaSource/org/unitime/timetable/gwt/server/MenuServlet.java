@@ -52,13 +52,13 @@ import org.unitime.timetable.form.ListSolutionsForm;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.shared.MenuException;
 import org.unitime.timetable.gwt.shared.MenuInterface;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.UserData;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
@@ -495,7 +495,7 @@ public class MenuServlet implements MenuService {
 						ownerName += getName((new SolverGroupDAO()).get(solverGroupId[i]));
 					}
 				}
-				if (examSolver!=null) ownerName = Exam.sExamTypes[examSolver.getExamType()];
+				if (examSolver!=null) ownerName = ExamTypeDAO.getInstance().get(examSolver.getExamTypeId()).getLabel();
 				if (ownerName==null || ownerName.length()==0)
 					ownerName = "N/A";
 				if (ownerName.equals("N/A"))

@@ -65,8 +65,8 @@ import org.unitime.timetable.form.RoomListForm;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
@@ -78,6 +78,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.DepartmentNameComparator;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -153,6 +154,7 @@ public class RoomListAction extends Action {
 		
 		//set request attribute for department
 		LookupTables.setupDepartments(request, sessionContext, true);
+		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
 		// Validate input
 		errors = roomListForm.validate(mapping, request);
@@ -173,10 +175,15 @@ public class RoomListAction extends Action {
 						rooms.add(rd.getRoom());
 				roomListForm.setRooms(rooms);
 			}
-		} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-		    roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), Exam.sExamTypeFinal));
-        } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-            roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), Exam.sExamTypeMidterm));
+		} else if (roomListForm.getDeptCodeX().equals("Exam")) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty()) {
+				roomListForm.setDeptCodeX("Exam" + types.get(0).getUniqueId());
+				roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), types.get(0)));
+			}
+		} else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
+		    roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(),
+		    		ExamTypeDAO.getInstance().get(Long.valueOf(roomListForm.getDeptCodeX().substring(4)))));
 		} else {
 			Department department = Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
 			TreeSet<Location> rooms = new TreeSet<Location>();
@@ -200,9 +207,9 @@ public class RoomListAction extends Action {
 			saveErrors(request, errors);
 		}
 		
-		int examType = -1;
-		if ("Exam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeFinal;
-		if ("EExam".equals(roomListForm.getDeptCodeX())) examType = Exam.sExamTypeMidterm;
+		ExamType examType = null;
+		if (roomListForm.getDeptCodeX() != null && roomListForm.getDeptCodeX().matches("Exam[0-9]*"))
+			examType = ExamTypeDAO.getInstance().get(Long.valueOf(roomListForm.getDeptCodeX().substring(4)));
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			buildPdfWebTable(request, roomListForm, CommonValues.Yes.eq(UserProperty.RoomFeaturesInOneColumn.get(sessionContext.getUser())), examType);
@@ -225,7 +232,7 @@ public class RoomListAction extends Action {
 	 * @param roomListForm
 	 * @throws Exception 
 	 */
-	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
+	private void buildWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, ExamType examType) throws Exception {
 		
 		ActionMessages errors = new ActionMessages();
 		
@@ -243,10 +250,8 @@ public class RoomListAction extends Action {
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				depts = Department.getUserDepartments(sessionContext.getUser());
-			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			} else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 			    depts = new HashSet(0);
-            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-                depts = new HashSet(0);
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionId));
@@ -290,8 +295,7 @@ public class RoomListAction extends Action {
 									setLong("sessionId",sessionId).
 									list());
 					} 
-	            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	            } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -309,7 +313,7 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-			    (examType>=0?
+			    (examType != null?
 		                (featuresOneColumn? new String[][]
 		                                                 { { "Bldg", "left", "true" },
 		                                                 { "Room", "left", "true" },
@@ -383,7 +387,7 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] =
-			    ( examType>=0 ?
+			    ( examType != null ?
 		                ( featuresOneColumn ? new String[][]
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
@@ -510,7 +514,7 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				if (examType>=0) {
+				if (examType != null) {
 	                if (location.isExamEnabled(examType)) {
 	                    text[idx] = (editable?"":"<font color='gray'>")+df5.format(location.getExamCapacity())+(editable?"":"</font>");
 	                    comp[idx] = location.getExamCapacity();
@@ -524,17 +528,17 @@ public class RoomListAction extends Action {
 	                    if (gridAsText)
 	                        text[idx] = location.getExamPreferencesAbbreviationHtml(examType);
 	                    else {
-	                        if (examType==Exam.sExamTypeMidterm) {
-	                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
+	                        if (examType.getType() == ExamType.sExamTypeMidterm) {
+	                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession(), examType);
 	                            epx.load(location);
 	                            text[idx]=epx.toString(true).replaceAll(", ", "<br>");
 	                        } else {
-	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType);
+	                            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), examType.getUniqueId());
 	                            px.load(location);
 	                            RequiredTimeTable rtt = new RequiredTimeTable(px);
 	                            String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
                                 text[idx] = "<img border='0' src='" +
-                                	"pattern?v=" + (timeVertical ? 1 : 0) + "&loc=" + location.getUniqueId() + "&xt=" + examType + 
+                                	"pattern?v=" + (timeVertical ? 1 : 0) + "&loc=" + location.getUniqueId() + "&xt=" + examType.getUniqueId() + 
                                 	"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
 	                        }
 	                    }
@@ -622,7 +626,7 @@ public class RoomListAction extends Action {
 	                idx++;
 	                
 	                //control column
-	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = "<IMG border='0' title='Selected department is controlling this room.' alt='true' align='absmiddle' src='images/tick.gif'>";
 	                        comp[idx] = new Integer(1);
@@ -659,7 +663,7 @@ public class RoomListAction extends Action {
                 comp[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
+					if (!rg.isGlobal().booleanValue() && (examType != null || !depts.contains(rg.getDepartment()))) continue;
 					if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -684,7 +688,7 @@ public class RoomListAction extends Action {
                         comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.htmlLabel();
 					}
-					if (examType<0)
+					if (examType == null)
 					    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 					        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
 							if (!depts.contains(drf.getDepartment())) continue;
@@ -761,7 +765,7 @@ public class RoomListAction extends Action {
 		}
 	}
 	
-	public void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
+	public void buildPdfWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, ExamType examType) throws Exception {
     	FileOutputStream out = null;
     	try {
     		File file = ApplicationProperties.getTempFile("rooms", "pdf");
@@ -779,9 +783,7 @@ public class RoomListAction extends Action {
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				depts = Department.getUserDepartments(sessionContext.getUser());
-			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
-			    depts = new HashSet(0);
-            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+            } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
                 depts = new HashSet(0);
 			} else {
 				depts = new HashSet(1);
@@ -824,8 +826,7 @@ public class RoomListAction extends Action {
 									setLong("sessionId",sessionId).
 									list());
 					} 
-	            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	            } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -841,7 +842,7 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-			    (examType>=0?
+			    (examType != null?
 			            (featuresOneColumn? new String[][]
 			                                             { { "Bldg", "left", "true" },
 			                                             { "Room", "left", "true" },
@@ -914,7 +915,7 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] = 
-			    (examType>=0 ?
+			    (examType != null ?
 		                ( featuresOneColumn ? new String[][]
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
@@ -1040,7 +1041,7 @@ public class RoomListAction extends Action {
 				comp[idx] = new Long(location.getCapacity().intValue());
 				idx++;
 				
-				if (examType>=0) {
+				if (examType != null) {
 	                if (location.isExamEnabled(examType)) {
 	                    text[idx] = df5.format(location.getExamCapacity());
 	                    comp[idx] = location.getExamCapacity();
@@ -1137,7 +1138,7 @@ public class RoomListAction extends Action {
 	                idx++;
 	                
 	                //control column
-	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = "Yes";
 	                        comp[idx] = new Integer(1);
@@ -1171,7 +1172,7 @@ public class RoomListAction extends Action {
 				text[idx] = "";
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
+					if (!rg.isGlobal().booleanValue() && (examType != null || !depts.contains(rg.getDepartment()))) continue;
                     if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -1195,7 +1196,7 @@ public class RoomListAction extends Action {
                         comp[idx] = comp[idx] + rf.getLabel().trim();
 						text[idx] += rf.getLabel();
 					}
-					if (examType<0)
+					if (examType == null)
 	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 	                        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
 							if (!depts.contains(drf.getDepartment())) continue;
@@ -1276,7 +1277,7 @@ public class RoomListAction extends Action {
     	}
 	}
 
-	public void buildCsvWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, int examType) throws Exception {
+	public void buildCsvWebTable(HttpServletRequest request, RoomListForm roomListForm, boolean featuresOneColumn, ExamType examType) throws Exception {
     	PrintWriter out = null;
     	try {
     		File file = ApplicationProperties.getTempFile("rooms", "csv");
@@ -1294,10 +1295,8 @@ public class RoomListAction extends Action {
 			Set depts = null;
 			if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
 				depts = Department.getUserDepartments(sessionContext.getUser());
-			} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+			} else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 			    depts = new HashSet(0);
-            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-                depts = new HashSet(0);
 			} else {
 				depts = new HashSet(1);
 				depts.add(Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionId));
@@ -1339,8 +1338,7 @@ public class RoomListAction extends Action {
 									setLong("sessionId",sessionId).
 									list());
 					} 
-	            } else if (roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
-				} else if (roomListForm.getDeptCodeX().equalsIgnoreCase("Exam")) {
+	            } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 				} else {
 					deptRoomFeatures.addAll(hibSession.
 						createQuery(
@@ -1356,7 +1354,7 @@ public class RoomListAction extends Action {
 	
 			//build headings for university rooms
 			String fixedHeading1[][] =
-			    (examType>=0?
+			    (examType != null?
 			            (featuresOneColumn? new String[][]
 			                                             { { "Bldg", "left", "true" },
 			                                             { "Room", "left", "true" },
@@ -1421,7 +1419,7 @@ public class RoomListAction extends Action {
 			
 			//build headings for non-univ locations
 			String fixedHeading2[][] = 
-			    (examType>=0 ?
+			    (examType != null ?
 		                ( featuresOneColumn ? new String[][]
 		                                                   {{ "Location", "left", "true" },
 		                                                   { "Capacity", "right", "false" },
@@ -1528,7 +1526,7 @@ public class RoomListAction extends Action {
 				text[idx] = new CSVField(df5.format(location.getCapacity()));
 				idx++;
 				
-				if (examType>=0) {
+				if (examType != null) {
 	                if (location.isExamEnabled(examType)) {
 	                    text[idx] = new CSVField(df5.format(location.getExamCapacity()));
 	                } else {
@@ -1592,7 +1590,7 @@ public class RoomListAction extends Action {
 	                idx++;
 	                
 	                //control column
-	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().equalsIgnoreCase("Exam") && !roomListForm.getDeptCodeX().equalsIgnoreCase("EExam")) {
+	                if (!roomListForm.getDeptCodeX().equalsIgnoreCase("All") && !roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
 	                    if (controlDept!=null && controlDept.getDeptCode().equals(roomListForm.getDeptCodeX())) {
 	                        text[idx] = new CSVField("Yes");
 	                    } else {
@@ -1620,7 +1618,7 @@ public class RoomListAction extends Action {
 				text[idx] = new CSVField("");
 				for (Iterator it = new TreeSet(location.getRoomGroups()).iterator(); it.hasNext();) {
 					RoomGroup rg = (RoomGroup) it.next();
-					if (!rg.isGlobal().booleanValue() && (examType>=0 || !depts.contains(rg.getDepartment()))) continue;
+					if (!rg.isGlobal().booleanValue() && (examType != null || !depts.contains(rg.getDepartment()))) continue;
                     if (!rg.isGlobal().booleanValue()) {
                         boolean skip = true;
                         for (Iterator j=location.getRoomDepts().iterator();j.hasNext();) {
@@ -1641,7 +1639,7 @@ public class RoomListAction extends Action {
                         if (text[idx].toString().length()>0) text[idx] = new CSVField(text[idx].toString() + "\n");
 						text[idx] = new CSVField(text[idx].toString() + " " +rf.getLabel());
 					}
-					if (examType<0)
+					if (examType == null)
 	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
 	                        DepartmentRoomFeature drf = (DepartmentRoomFeature) it.next();
 							if (!depts.contains(drf.getDepartment())) continue;

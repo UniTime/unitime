@@ -147,9 +147,13 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 	    return getStartSlot().compareTo(period.getStartSlot());
 	}
     
-    public static TreeSet findAll(Long sessionId, Integer type) {
+    public static TreeSet findAll(Long sessionId, ExamType type) {
+    	return findAll(sessionId, type == null ? null : type.getUniqueId());
+    }
+    
+    public static TreeSet findAll(Long sessionId, Long examTypeId) {
     	TreeSet ret = new TreeSet();
-    	if (type==null)
+    	if (examTypeId==null)
     		ret.addAll(new ExamPeriodDAO().getSession().
                 createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId").
                 setLong("sessionId", sessionId).
@@ -157,9 +161,9 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 list());
     	else
     		ret.addAll(new ExamPeriodDAO().getSession().
-                    createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType=:type").
+                    createQuery("select ep from ExamPeriod ep where ep.session.uniqueId=:sessionId and ep.examType.uniqueId=:typeId").
                     setLong("sessionId", sessionId).
-                    setInteger("type", type).
+                    setLong("typeId", examTypeId).
                     setCacheable(true).
                     list());
         return ret;
@@ -174,7 +178,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 setInteger("startSlot", startSlot).setCacheable(true).uniqueResult();
     }
     
-    public static ExamPeriod findByIndex(Long sessionId, Integer type, Integer idx) {
+    public static ExamPeriod findByIndex(Long sessionId, ExamType type, Integer idx) {
         if (idx==null || idx<0) return null;
         int x = 0;
         TreeSet periods = findAll(sessionId, type);
@@ -452,13 +456,13 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
 			return(null);
 		}
     	return((ExamPeriod)(new ExamPeriodDAO()).getQuery("select distinct ep from ExamPeriod ep where ep.session.uniqueId = :sessionId" +
-    			" and ep.examType = :examType" +
+    			" and ep.examType.uniqueId = :examTypeId" +
     			" and ep.dateOffset = :dateOffset" +
     			" and ep.length = :length" +
     			" and ep.prefLevel.uniqueId = :prefLevelId" +
     			" and ep.startSlot = :startSlot")
     			.setLong("sessionId", session.getUniqueId().longValue())
-    			.setInteger("examType", getExamType().intValue())
+    			.setLong("examTypeId", getExamType().getUniqueId())
     			.setInteger("dateOffset", getDateOffset().intValue())
     			.setInteger("length", getLength().intValue())
     			.setLong("prefLevelId", getPrefLevel().getUniqueId().longValue())
@@ -502,15 +506,15 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         return getStartTime().compareTo(stop)<0 && start.compareTo(getEndTime()) < 0;
     }
     
-    public static Date[] getBounds(Session session, int examType) {
-        return getBounds(session.getUniqueId(), session.getExamBeginDate(), examType);
+    public static Date[] getBounds(Session session, Long examTypeId) {
+        return getBounds(session.getUniqueId(), session.getExamBeginDate(), examTypeId);
     }
     
-    public static Date[] getBounds(Long sessionId, Date examBeginDate, int examType) {
+    public static Date[] getBounds(Long sessionId, Date examBeginDate, Long examTypeId) {
         Object[] bounds = (Object[])new ExamPeriodDAO().getQuery("select min(ep.dateOffset), min(ep.startSlot - ep.eventStartOffset), max(ep.dateOffset), max(ep.startSlot+ep.length+ep.eventStopOffset) " +
-        		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType = :examType")
+        		"from ExamPeriod ep where ep.session.uniqueId = :sessionId and ep.examType.uniqueId = :examTypeId")
         		.setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setCacheable(true).uniqueResult();
         if (bounds == null || bounds[0] == null) return null;
         int minDateOffset = ((Number)bounds[0]).intValue();

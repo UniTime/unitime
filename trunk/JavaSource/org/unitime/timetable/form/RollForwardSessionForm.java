@@ -31,7 +31,7 @@ import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
@@ -241,14 +241,14 @@ public class RollForwardSessionForm extends ActionForm {
 	public void validateMidtermExamRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardMidtermExams().booleanValue()){
 			ExamDAO eDao = new ExamDAO();
-			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Midterm Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeMidterm).list());			
+			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Midterm Exams", eDao.getQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType.type = " + ExamType.sExamTypeMidterm).list());			
 		}
 	}
 
 	public void validateFinalExamRollForward(Session toAcadSession,ActionErrors errors){
 		if (getRollForwardFinalExams().booleanValue()){
 			ExamDAO epDao = new ExamDAO();
-			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Final Exams", epDao.getQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType = " + Exam.sExamTypeFinal).list());			
+			validateRollForwardSessionHasNoDataOfType(errors, toAcadSession, "Final Exams", epDao.getQuery("from Exam e where e.session.uniqueId = " + toAcadSession.getUniqueId().toString() +" and e.examType.type = " + ExamType.sExamTypeFinal).list());			
 		}
 	}
 

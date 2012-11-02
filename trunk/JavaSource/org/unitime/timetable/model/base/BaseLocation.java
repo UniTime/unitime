@@ -26,6 +26,7 @@ import java.util.Set;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ExamLocationPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
@@ -44,13 +45,13 @@ public abstract class BaseLocation implements Serializable {
 	private Boolean iIgnoreRoomCheck;
 	private String iManagerIds;
 	private String iPattern;
-	private Integer iExamType;
 	private Integer iExamCapacity;
 	private String iDisplayName;
 
 	private Session iSession;
 	private Department iEventDepartment;
 	private Set<RoomFeature> iFeatures;
+	private Set<ExamType> iExamTypes;
 	private Set<ExamLocationPref> iExamPreferences;
 	private Set<Assignment> iAssignments;
 	private Set<RoomGroup> iRoomGroups;
@@ -65,7 +66,6 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_IGNORE_ROOM_CHECK = "ignoreRoomCheck";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
-	public static String PROP_EXAM_TYPE = "examType";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_DISPLAY_NAME = "displayName";
 
@@ -109,9 +109,6 @@ public abstract class BaseLocation implements Serializable {
 	public String getPattern() { return iPattern; }
 	public void setPattern(String pattern) { iPattern = pattern; }
 
-	public Integer getExamType() { return iExamType; }
-	public void setExamType(Integer examType) { iExamType = examType; }
-
 	public Integer getExamCapacity() { return iExamCapacity; }
 	public void setExamCapacity(Integer examCapacity) { iExamCapacity = examCapacity; }
 
@@ -129,6 +126,13 @@ public abstract class BaseLocation implements Serializable {
 	public void addTofeatures(RoomFeature roomFeature) {
 		if (iFeatures == null) iFeatures = new HashSet<RoomFeature>();
 		iFeatures.add(roomFeature);
+	}
+
+	public Set<ExamType> getExamTypes() { return iExamTypes; }
+	public void setExamTypes(Set<ExamType> examTypes) { iExamTypes = examTypes; }
+	public void addToexamTypes(ExamType examType) {
+		if (iExamTypes == null) iExamTypes = new HashSet<ExamType>();
+		iExamTypes.add(examType);
 	}
 
 	public Set<ExamLocationPref> getExamPreferences() { return iExamPreferences; }
@@ -182,7 +186,6 @@ public abstract class BaseLocation implements Serializable {
 			"\n	DisplayName: " + getDisplayName() +
 			"\n	EventDepartment: " + getEventDepartment() +
 			"\n	ExamCapacity: " + getExamCapacity() +
-			"\n	ExamType: " + getExamType() +
 			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
 			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
 			"\n	ManagerIds: " + getManagerIds() +

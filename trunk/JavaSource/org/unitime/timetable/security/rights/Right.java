@@ -172,8 +172,7 @@ public enum Right {
 	RoomAvailability(Session.class),
 	RoomDepartments(Department.class),
 	EditRoomDepartments(Department.class),
-	EditRoomDepartmentsFinalExams(Session.class),
-	EditRoomDepartmentsMidtermExams(Session.class),
+	EditRoomDepartmentsExams(Session.class),
 	AddRoom(Department.class),
 	AddSpecialUseRoom(Department.class),
 	AddSpecialUseRoomExternalRoom(ExternalRoom.class),
@@ -442,6 +441,9 @@ public enum Right {
 
 	Permissions,
 	PermissionEdit,
+	
+	ExamTypes,
+	ExamTypeEdit,
 	
 	/** Administration: Defaults */
 	

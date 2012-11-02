@@ -51,6 +51,7 @@ import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Room;
@@ -110,7 +111,7 @@ public class ExamInfoModel implements Serializable {
     public void update() throws Exception {
         iSuggestions = null;
         if (iChange==null) return;
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+        if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             iChange = getSolver().update(iChange);
         } else {
             Vector<ExamAssignment> assignments = new Vector(iChange.getAssignments());
@@ -162,7 +163,7 @@ public class ExamInfoModel implements Serializable {
     public String assign() {
         if (iChange==null) return "Nothing to assign.";
         System.out.println("About to be assigned: "+iChange);
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+        if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             String message = null;
             for (ExamAssignment assignment : iChange.getConflicts()) {
                 String m = getSolver().unassign(assignment);
@@ -206,7 +207,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public String getAssignConfirm() {
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+    	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             return "Are you sure?";
         } else {
             return "The selected assignment will be done directly in the database. Are you sure?";
@@ -219,7 +220,7 @@ public class ExamInfoModel implements Serializable {
     
     public void setExam(Exam exam) {
         iPeriods = null; iRooms = null; iCbs = null; iSuggestions = null;
-        if (getSolver()!=null && getSolver().getExamType()==exam.getExamType()) {
+        if (getSolver() != null && getSolver().getExamTypeId().equals(exam.getExamType().getUniqueId())) {
             iExam = getSolver().getAssignmentInfo(exam.getUniqueId());
             if (iExam==null) iExam = getSolver().getInfo(exam.getUniqueId());
             if (iExam==null) iExam = new ExamInfo(exam);
@@ -249,9 +250,9 @@ public class ExamInfoModel implements Serializable {
     
     public ExamAssignmentInfo getAssignmentInfo(ExamAssignment assignment) throws Exception {
         if (assignment instanceof ExamAssignmentInfo) return (ExamAssignmentInfo)assignment;
-        if (getSolver()!=null && getSolver().getExamType()==assignment.getExamType())
+        if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             return getSolver().getAssignment(assignment.getExamId(), assignment.getPeriodId(), assignment.getRoomIds());
-        else {
+        } else {
             if (iChange!=null)
                 return new ExamAssignmentInfo(assignment.getExam(), assignment.getPeriod(), assignment.getRooms(), iChange.getAssignmentTable());
             else
@@ -299,7 +300,7 @@ public class ExamInfoModel implements Serializable {
             }
         }
         if (assignment==null) return;
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+        if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             Vector<Long> assignedRooms = new Vector();
             for (StringTokenizer stk=new StringTokenizer(rooms,":");stk.hasMoreTokens();) {
                 String token = stk.nextToken();
@@ -441,13 +442,13 @@ public class ExamInfoModel implements Serializable {
     
     public Collection<ExamAssignmentInfo> getPeriods() {
         if (iPeriods==null) {
-            if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+        	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
                 iPeriods = getSolver().getPeriods(getExam().getExamId(), iChange);
             } else {
                 try {
                     Hashtable<Long, Set<Exam>> studentExams = getExam().getExam().getStudentExams();
                     iPeriods = new Vector<ExamAssignmentInfo>();
-                    for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamType()).iterator();i.hasNext();) {
+                    for (Iterator i=ExamPeriod.findAll(getExam().getExam().getSession().getUniqueId(), getExam().getExamTypeId()).iterator();i.hasNext();) {
                         ExamPeriod period = (ExamPeriod)i.next();
                         try {
                             iPeriods.add(new ExamAssignmentInfo(getExam().getExam(), period, null, studentExams, (iChange==null?null:iChange.getAssignmentTable())));
@@ -464,7 +465,7 @@ public class ExamInfoModel implements Serializable {
         return iPeriods;
     }
     
-    public TreeSet findAllExamLocations(Long sessionId, int examType) {
+    public TreeSet findAllExamLocations(Long sessionId, Long examTypeId) {
 		String a = "", b = "";
 		if (iForm.getRoomFeatures()!=null && iForm.getRoomFeatures().length>0) {
 			for (int i=0;i<iForm.getRoomFeatures().length;i++) {
@@ -489,20 +490,10 @@ public class ExamInfoModel implements Serializable {
             }
             b+=")";
         }    
-        switch (examType) {
-        case Exam.sExamTypeFinal :
-        	b+=" and r.examType in ("+Location.sExamLocationTypeFinal+","+Location.sExamLocationTypeBoth+")";
-        	break;
-        case Exam.sExamTypeMidterm :
-        	b+=" and r.examType in ("+Location.sExamLocationTypeMidterm+","+Location.sExamLocationTypeBoth+")";
-        	break;
-        default :
-        	b+=" and r.examType != "+Location.sExamLocationTypeNone;
-        }
         return new TreeSet(
                 (new LocationDAO()).getSession()
-                .createQuery("select r from Location r"+a+" where r.session.uniqueId = :sessionId "+b)
-                .setLong("sessionId", sessionId).setCacheable(true).list());
+                .createQuery("select r from Location r inner join r.examTypes x "+a+" where r.session.uniqueId = :sessionId and x.uniqueId = :examTypeId "+b)
+                .setLong("sessionId", sessionId).setLong("examTypeId", examTypeId).setCacheable(true).list());
     }
     
     protected void filterRooms() {
@@ -555,7 +546,7 @@ public class ExamInfoModel implements Serializable {
         Set bldgPrefs = exam.getPreferences(BuildingPref.class);
         Set featurePrefs = exam.getPreferences(RoomFeaturePref.class);
         
-        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(), period.getExamType());
+        TreeSet locations = findAllExamLocations(period.getSession().getUniqueId(), period.getExamType().getUniqueId());
         Hashtable<Long, Set<Long>> locationTable = Location.findExamLocationTable(period.getUniqueId());
         
         if (getExamAssignment()!=null) {
@@ -717,7 +708,7 @@ public class ExamInfoModel implements Serializable {
                 Collection<TimeBlock> times = RoomAvailability.getInstance().getRoomAvailability(
                         room,
                         period.getStartTime(), period.getEndTime(), 
-                        (getExam().getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                        period.getExamType().getType() == ExamType.sExamTypeFinal ? RoomAvailabilityInterface.sFinalExamType : RoomAvailabilityInterface.sMidtermExamType);
                 if (times!=null) for (TimeBlock time : times) {
                     if (period.overlap(time)) {
                         System.out.println("Room "+room.getLabel()+" is not avaiable due to "+time);
@@ -865,7 +856,7 @@ public class ExamInfoModel implements Serializable {
         try {
             if (getSelectedAssignment()==null && !isExamAssigned()) return null;
             if (iRooms==null) {
-                if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+            	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
                     iRooms = getSolver().getRooms(getExam().getExamId(), getSelectedAssignment()!=null?getSelectedAssignment().getPeriodId():getExamAssignment().getPeriodId(),
                             iChange, minRoomSize, maxRoomSize, iForm.getRoomFilter(), iForm.getAllowRoomConflict());
                     filterRooms();
@@ -916,7 +907,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public ExamConflictStatisticsInfo getCbs() {
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+    	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             if (iCbs==null) 
                 iCbs = getSolver().getCbsInfo(iExam.getExamId());
             return iCbs;
@@ -925,7 +916,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public ExamSuggestionsInfo getSuggestions() {
-        if (getSolver()!=null && getSolver().getExamType()==getExam().getExamType()) {
+    	if (getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId())) {
             if (iSuggestions==null) {
                 try {
                     iSuggestions = getSolver().getSuggestions(iExam.getExamId(), iChange, iForm.getFilter(), iForm.getDepth(), iForm.getLimit(), iForm.getTimeout());
@@ -937,7 +928,7 @@ public class ExamInfoModel implements Serializable {
     }
     
     public boolean getCanComputeSuggestions() {
-        return getSolver()!=null && getSolver().getExamType()==getExam().getExamType();
+    	return getSolver() != null && getSolver().getExamTypeId().equals(getExam().getExamTypeId());
     }
     
     public String getSuggestionTable() {

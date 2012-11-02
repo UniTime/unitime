@@ -40,7 +40,6 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamSolverForm;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -49,6 +48,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 
 
@@ -67,8 +67,6 @@ public class ExamSolverAction extends Action {
 		
         // Check Access
 		sessionContext.checkPermission(Right.ExaminationSolver);
-		
-		myForm.setHasMidtermExams(Exam.hasMidtermExams(sessionContext.getUser().getCurrentAcademicSessionId()));
 		
 		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.CanSelectSolverServer)) {
 			List<String> hosts = new ArrayList<String>();
@@ -99,7 +97,9 @@ public class ExamSolverAction extends Action {
         ExamSolverProxy solver = examinationSolverService.getSolver();
         Session acadSession = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         
-        RoomAvailability.setAvailabilityWarning(request, acadSession, (solver==null?myForm.getExamType():solver.getExamType()), true, false);
+        RoomAvailability.setAvailabilityWarning(request, acadSession, (solver==null?myForm.getExamType():solver.getExamTypeId()), true, false);
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
         if (op==null) {
         	myForm.init();

@@ -37,10 +37,12 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamOwnerDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 
 /**
  * @author Tomas Muller
@@ -50,7 +52,8 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
 	protected String iExamLabel = null;
     protected Long iExamId = null;
     protected transient Exam iExam = null;
-    protected int iExamType;
+    protected Long iExamTypeId;
+    protected transient ExamType iExamType = null;
     protected int iNrStudents;
     protected int iLength;
     protected int iMaxRooms;
@@ -64,7 +67,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
     }
     
     public ExamInfo(net.sf.cpsolver.exam.model.Exam exam) {
-    	iExamType = ((ExamModel)exam.getModel()).getProperties().getPropertyInt("Exam.Type", Exam.sExamTypeFinal);
+    	iExamTypeId = ((ExamModel)exam.getModel()).getProperties().getPropertyLong("Exam.Type", null);
         iExamId = exam.getId();
         iExamLabel = exam.getName();
         iLength = exam.getLength();
@@ -92,6 +95,7 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
 
     public ExamInfo(Exam exam) {
     	iExamType = exam.getExamType();
+    	iExamTypeId = exam.getExamType().getUniqueId();
         iExamId = exam.getUniqueId();
         iExamLabel = exam.getLabel();
         iMaxRooms = exam.getMaxNbrRooms();
@@ -102,14 +106,24 @@ public class ExamInfo implements Serializable, Comparable<ExamInfo> {
         iPrintOffset = exam.examOffset();
     }
     
-    public int getExamType() {
-    	return iExamType;
+    public Long getExamTypeId() {
+    	return iExamTypeId;
     }
     
     public String getExamTypeLabel() {
-        return Exam.sExamTypes[iExamType];
+    	if (iExamType == null && iExamTypeId != null) {
+    		iExamType = ExamTypeDAO.getInstance().get(iExamTypeId);
+    	}
+    	return (iExamType == null ? "Unknown" : iExamType.getLabel());
     }
     
+    public ExamType getExamType() {
+    	if (iExamType == null && iExamTypeId != null) {
+    		iExamType = ExamTypeDAO.getInstance().get(iExamTypeId);
+    	}
+    	return iExamType;
+    }
+
     public Long getExamId() {
         return iExamId;
     }

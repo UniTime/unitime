@@ -46,12 +46,9 @@
 					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
 					<html:option value="<%=Constants.ALL_OPTION_VALUE%>">All Managed</html:option>
 					<tt:canSeeExams>
-						<tt:hasFinalExams>
-							<html:option value="Exam">All Final Examination Rooms</html:option>
-						</tt:hasFinalExams>
-						<tt:hasMidtermExams>
-							<html:option value="EExam">All Midterm Examination Rooms</html:option>
-						</tt:hasMidtermExams>
+						<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
+							<html:option value='<%="Exam" + type.getUniqueId() %>'>All <bean:write name="type" property="label"/> Examination Rooms</html:option>
+						</logic:iterate>
 					</tt:canSeeExams>
 					<html:options collection="<%=Department.DEPT_ATTR_NAME%>" 
 						property="value" labelProperty="label"/>

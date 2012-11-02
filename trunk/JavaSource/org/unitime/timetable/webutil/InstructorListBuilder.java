@@ -37,6 +37,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
@@ -222,7 +223,7 @@ public class InstructorListBuilder {
 				for (Iterator i=exams.iterator();i.hasNext();) {
 				    Exam exam = (Exam)i.next();
                     String examName = exam.getLabel();
-                    if (exam.getExamType()==Exam.sExamTypeMidterm) {
+                    if (exam.getExamType().getType()==ExamType.sExamTypeMidterm) {
                         examsStr += "<span title='"+examName+" "+MSG.titleMidtermExamination()+"'>"+examName+"</span>";
                     } else {
                         examsStr += "<span style='font-weight:bold;' title='"+examName+" "+MSG.titleFinalExamination()+"'>"+examName+"</span>";
@@ -406,7 +407,7 @@ public class InstructorListBuilder {
             for (Iterator i=exams.iterator();i.hasNext();) {
                 Exam exam = (Exam)i.next();
                 String examName = exam.getLabel();
-                if (exam.getExamType()==Exam.sExamTypeMidterm) {
+                if (exam.getExamType().getType()==ExamType.sExamTypeMidterm) {
                     examsStr += examName;
                 } else {
                     examsStr += "@@BOLD "+examName+"@@END_BOLD ";

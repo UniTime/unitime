@@ -41,14 +41,15 @@ import org.unitime.commons.Email;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ManagerRole;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.exam.InstructorExamReport;
@@ -80,7 +81,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 		iForm = form;
 		iUrl = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+request.getContextPath();
 		iExamSolver = examSolver;
-		iName = Exam.sExamTypes[iForm.getExamType()] + " ";
+		iName = ExamTypeDAO.getInstance().get(iForm.getExamType()).getLabel() + " ";
         for (int i=0;i<iForm.getReports().length;i++) {
         	if (i > 0) iName += ", ";
         	iName += iForm.getReports()[i];
@@ -135,7 +136,7 @@ public class PdfExamReportQueueItem extends QueueItem {
         	iProgress = 0;
             setStatus("Loading exams...");
             TreeSet<ExamAssignmentInfo> exams = null;
-            if (iExamSolver!=null && iExamSolver.getExamType()==iForm.getExamType() && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) {
+            if (iExamSolver!=null && iExamSolver.getExamTypeId().equals(iForm.getExamType()) && "true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.canUseSolution","false"))) {
                     exams = new TreeSet(iExamSolver.getAssignedExams());
                     if (iForm.getIgnoreEmptyExams()) for (Iterator<ExamAssignmentInfo> i=exams.iterator();i.hasNext();) {
                         if (i.next().getStudentIds().isEmpty()) i.remove();
@@ -143,31 +144,31 @@ public class PdfExamReportQueueItem extends QueueItem {
                     if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.pdfReports.useSolution.preloadCrosslistedExams","true"))) {
                 		setStatus("  Fetching exams...");
                 		hibSession.createQuery(
-                                "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType=:examType"
-                                ).setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list();
+                                "select o from Exam x inner join x.owners o where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId"
+                                ).setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list();
                 		setStatus("  Fetching related objects (class)...");
                         hibSession.createQuery(
-                                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:classType and c.uniqueId=o.ownerId")
+                                "select c from Class_ c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:classType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
-                                .setInteger("examType", iExamSolver.getExamType())
+                                .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("classType", ExamOwner.sOwnerTypeClass).setCacheable(true).list();
                         setStatus("  Fetching related objects (config)...");
                         hibSession.createQuery(
-                                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:configType and c.uniqueId=o.ownerId")
+                                "select c from InstrOfferingConfig c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:configType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
-                                .setInteger("examType", iExamSolver.getExamType())
+                                .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("configType", ExamOwner.sOwnerTypeConfig).setCacheable(true).list();
                         setStatus("  Fetching related objects (course)...");
                         hibSession.createQuery(
-                                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:courseType and c.uniqueId=o.ownerId")
+                                "select c from CourseOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:courseType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
-                                .setInteger("examType", iExamSolver.getExamType())
+                                .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("courseType", ExamOwner.sOwnerTypeCourse).setCacheable(true).list();
                         setStatus("  Fetching related objects (offering)...");
                         hibSession.createQuery(
-                                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType=:examType and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
+                                "select c from InstructionalOffering c, ExamOwner o where o.exam.session.uniqueId=:sessionId and o.exam.examType.uniqueId=:examTypeId and o.ownerType=:offeringType and c.uniqueId=o.ownerId")
                                 .setLong("sessionId", iExamSolver.getSessionId())
-                                .setInteger("examType", iExamSolver.getExamType())
+                                .setLong("examTypeId", iExamSolver.getExamTypeId())
                                 .setInteger("offeringType", ExamOwner.sOwnerTypeOffering).setCacheable(true).list();
                         Hashtable<Long,Hashtable<Long,Set<Long>>> owner2course2students = new Hashtable();
                         setStatus("  Loading students (class)...");
@@ -176,9 +177,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                             "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                             "Exam x inner join x.owners o, "+
                             "StudentClassEnrollment e inner join e.clazz c "+
-                            "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                            "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                             "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeClass+" and "+
-                            "o.ownerId=c.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
+                            "o.ownerId=c.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list().iterator();i.hasNext();) {
                                 Object[] o = (Object[])i.next();
                                 Long ownerId = (Long)o[0];
                                 Long studentId = (Long)o[1];
@@ -202,9 +203,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.clazz c " +
                                     "inner join c.schedulingSubpart.instrOfferingConfig ioc " +
-                                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                                    "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig+" and "+
-                                    "o.ownerId=ioc.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
+                                    "o.ownerId=ioc.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
@@ -227,9 +228,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering co " +
-                                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                                    "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeCourse+" and "+
-                                    "o.ownerId=co.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
+                                    "o.ownerId=co.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
@@ -252,9 +253,9 @@ public class PdfExamReportQueueItem extends QueueItem {
                                     "select o.uniqueId, e.student.uniqueId, e.courseOffering.uniqueId from "+
                                     "Exam x inner join x.owners o, "+
                                     "StudentClassEnrollment e inner join e.courseOffering.instructionalOffering io " +
-                                    "where x.session.uniqueId=:sessionId and x.examType=:examType and "+
+                                    "where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId and "+
                                     "o.ownerType="+org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering+" and "+
-                                    "o.ownerId=io.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setInteger("examType", iExamSolver.getExamType()).setCacheable(true).list().iterator();i.hasNext();) {
+                                    "o.ownerId=io.uniqueId").setLong("sessionId", iExamSolver.getSessionId()).setLong("examTypeId", iExamSolver.getExamTypeId()).setCacheable(true).list().iterator();i.hasNext();) {
                             Object[] o = (Object[])i.next();
                             Long ownerId = (Long)o[0];
                             Long studentId = (Long)o[1];
@@ -308,13 +309,13 @@ public class PdfExamReportQueueItem extends QueueItem {
                 for (Map.Entry<String, Class> entry : PdfLegacyExamReport.sRegisteredReports.entrySet())
                     if (entry.getValue().equals(reportClass)) reportName = entry.getKey();
                 if (reportName==null) reportName = "r"+(i+1);
-                String name = session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+reportName;
+                String name = session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
                     File file = ApplicationProperties.getTempFile(name, (iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
                     log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+exams.size()+" exams)");
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
-                        getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
-                        newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), iForm.getExamType(), null, exams);
+                        getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).
+                        newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), null, exams);
                     report.setDirect(iForm.getDirect());
                     report.setM2d(iForm.getM2d());
                     report.setBtb(iForm.getBtb());
@@ -441,7 +442,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                     mail.addRecipientBCC(s.nextToken(), null);
                                 for (Map.Entry<String, File> entry : files.entrySet()) {
-                                	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
+                                	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                                     log("&nbsp;&nbsp;Attaching <a href='temp/"+entry.getValue().getName()+"'>"+entry.getKey()+"</a>");
                                 }
                                 mail.send();
@@ -469,7 +470,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                         if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                             mail.addRecipientBCC(s.nextToken(), null);
                         for (Map.Entry<String, File> entry : output.entrySet()) {
-                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+"_"+entry.getKey());
+                        	mail.addAttachement(entry.getValue(), session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+entry.getKey());
                         }
                         mail.send();
                         log("Email sent.");
@@ -501,7 +502,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+instructor.getName()+"</a>.");
                         } catch (Exception e) {
@@ -534,7 +535,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                                 mail.addRecipientCC(s.nextToken(), null);
                             if (iForm.getBcc()!=null) for (StringTokenizer s=new StringTokenizer(iForm.getBcc(),";,\n\r ");s.hasMoreTokens();) 
                                 mail.addRecipientBCC(s.nextToken(), null);
-                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
+                            mail.addAttachement(report, session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?".txt":".pdf"));
                             mail.send();
                             log("&nbsp;&nbsp;An email was sent to <a href='temp/"+report.getName()+"'>"+student.getName(DepartmentalInstructor.sNameFormatLastFist)+"</a>.");
                         } catch (Exception e) {
@@ -553,8 +554,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                 FileInputStream fis = null;
                 ZipOutputStream zip = null;
                 try {
-                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin"), "zip");
-                    log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+(iForm.getExamType()==Exam.sExamTypeMidterm?"evn":"fin")+".zip</a>...");
+                    File zipFile = ApplicationProperties.getTempFile(session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference(), "zip");
+                    log("Writing <a href='temp/"+zipFile.getName()+"'>"+session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+".zip</a>...");
                     zip = new ZipOutputStream(new FileOutputStream(zipFile));
                     for (Map.Entry<String, File> entry : output.entrySet()) {
                         zip.putNextEntry(new ZipEntry(entry.getKey()));

@@ -44,6 +44,11 @@ public abstract class BaseExamPeriodDAO extends _RootDAO<ExamPeriod,Long> {
 	}
 
 	@SuppressWarnings("unchecked")
+	public List<ExamPeriod> findByExamType(org.hibernate.Session hibSession, Long examTypeId) {
+		return hibSession.createQuery("from ExamPeriod x where x.examType.uniqueId = :examTypeId").setLong("examTypeId", examTypeId).list();
+	}
+
+	@SuppressWarnings("unchecked")
 	public List<ExamPeriod> findByPrefLevel(org.hibernate.Session hibSession, Long prefLevelId) {
 		return hibSession.createQuery("from ExamPeriod x where x.prefLevel.uniqueId = :prefLevelId").setLong("prefLevelId", prefLevelId).list();
 	}

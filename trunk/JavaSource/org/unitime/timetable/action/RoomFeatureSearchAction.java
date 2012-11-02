@@ -86,7 +86,7 @@ public class RoomFeatureSearchAction extends Action {
 		}
 		
 		if (deptCode != null && !deptCode.isEmpty() &&
-				("All".equals(deptCode) || "Exam".equals(deptCode) || "EExam".equals(deptCode) || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))) {
+				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.RoomFeatures))) {
 			roomFeatureListForm.setDeptCodeX(deptCode);
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {
@@ -105,6 +105,7 @@ public class RoomFeatureSearchAction extends Action {
 			}
 			
 			LookupTables.setupDepartments(request, sessionContext, true);
+			LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 			
 			return mapping.findForward("showRoomFeatureSearch");
 		}

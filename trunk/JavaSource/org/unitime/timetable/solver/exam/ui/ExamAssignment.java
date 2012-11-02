@@ -33,6 +33,7 @@ import java.util.Vector;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -181,7 +182,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
                 hasPeriodPref = true;
             }
         }
-        if (getExamType()==Exam.sExamTypeMidterm && !hasPeriodPref) iPeriodPref=PreferenceLevel.sProhibited;
+        if (exam.getExamType().getType() == ExamType.sExamTypeMidterm && !hasPeriodPref) iPeriodPref=PreferenceLevel.sProhibited;
         if (PreferenceLevel.sProhibited.equals(iPeriodPref)) throw new Exception("Given period is prohibited.");
         if (reqPeriod && !PreferenceLevel.sRequired.equals(iPeriodPref)) throw new Exception("Given period is not required.");
         iPeriod = period;
@@ -250,7 +251,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public String getGwtHint() {
     	if (iHint == null) {
     		Exam exam = getExam(ExamDAO.getInstance().getSession());
-        	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), this, getExamType());
+        	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), this, getExamTypeId());
             px.load(exam);
             RequiredTimeTable rtt = new RequiredTimeTable(px);
         	iHint = rtt.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");

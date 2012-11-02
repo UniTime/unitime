@@ -16,7 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
+<%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.form.DistributionPrefsForm" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
 <%@ page import="org.unitime.timetable.model.DistributionType" %>
@@ -147,9 +147,9 @@
 			<TD valign="middle" colspan='3'>
 				<tt:section-header>
 					<tt:section-title>
-						<logic:iterate name="examDistributionPrefsForm" property="examTypes" id="et">
-							<bean:define name="et" property="value" id="examType"/>
-							<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=(String)examType%>">
+						<logic:iterate scope="request" name="examTypes" id="et">
+							<bean:define name="et" property="uniqueId" id="examType"/>
+							<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=examType.toString()%>">
 								<bean:write name="et" property="label"/>			
 							</logic:equal>
 						</logic:iterate>
@@ -216,12 +216,10 @@
 				</logic:equal>
 
 				<!-- Delete button -->
-				<sec:authorize access="hasPermission(#examDistributionPrefsForm.distPrefId, 'DistributionPref', 'ExaminationDistributionPreferenceDelete')">
-					&nbsp;&nbsp;				
-					<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
-						<bean:message key="button.delete" />
-					</html:submit>
-				</sec:authorize> 			
+				&nbsp;&nbsp;				
+				<html:submit styleClass="btn" property="op" onclick="<%= \"javascript: doDel('distObject', '\" + ctr + \"');\" %>">
+					<bean:message key="button.delete" />
+				</html:submit>
 				<!--
 				<IMG src="images/Delete16.gif" border="0" align="middle">	
 				-->
@@ -287,7 +285,7 @@
 				<TD colspan="2">
 					<B>Type: </B>
 					<html:select name="examDistributionPrefsForm" property="examType">
-						<html:optionsCollection property="examTypes" label="label" value="value" />
+						<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 					</html:select>
 					<B>Subject: </B>
 					<html:select name="examDistributionPrefsForm" property="filterSubjectAreaId"
@@ -331,9 +329,9 @@
 				<TD colspan="2">
 					<tt:section-header>
 						<tt:section-title>
-							<logic:iterate name="examDistributionPrefsForm" property="examTypes" id="et">
-								<bean:define name="et" property="value" id="examType"/>
-								<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=(String)examType%>">
+							<logic:iterate scope="request" name="examTypes" id="et">
+								<bean:define name="et" property="uniqueId" id="examType"/>
+								<logic:equal name="examDistributionPrefsForm" property="examType" value="<%=examType.toString()%>">
 									<bean:write name="et" property="label"/>			
 								</logic:equal>
 							</logic:iterate>

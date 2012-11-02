@@ -47,8 +47,8 @@ import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.PeriodPreferenceModel;
@@ -221,24 +221,25 @@ public class RoomDetailAction extends Action {
 		LookupTables.setupPrefLevels(request);
 		
 		//set location information in form
-		roomDetailForm.setExamEnabled(location.isExamEnabled(Exam.sExamTypeFinal));
-		roomDetailForm.setExamEEnabled(location.isExamEnabled(Exam.sExamTypeMidterm));
+        for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId()))
+        	roomDetailForm.setExamEnabled(type.getUniqueId().toString(), location.getExamTypes().contains(type));
 		roomDetailForm.setExamCapacity(location.getExamCapacity());
 		
-        if (location.isExamEnabled(Exam.sExamTypeFinal) && !location.getExamPreferences(Exam.sExamTypeFinal).isEmpty()) {
-            PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), Exam.sExamTypeFinal);
-            px.setAllowRequired(false);
-            px.load(location);
-            RequiredTimeTable rttPx = new RequiredTimeTable(px);
-            rttPx.setName("PeriodPrefs");
-            roomDetailForm.setExamPref(rttPx.print(false, timeVertical, true, false));
-        }
-        
-        if (Exam.hasMidtermExams(location.getSession().getUniqueId()) && location.isExamEnabled(Exam.sExamTypeMidterm) && !location.getExamPreferences(Exam.sExamTypeMidterm).isEmpty()) {
-            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession());
-            epx.load(location);
-            roomDetailForm.setExamEPref(epx.print(false));
-        } 
+    	for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
+    		if (type.getType() == ExamType.sExamTypeMidterm) {
+                MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(location.getSession(), type);
+                epx.load(location);
+                epx.setName("mp" + type.getUniqueId());
+                request.setAttribute("PeriodPrefs" + type.getUniqueId(), epx.print(false));
+    		} else {
+                PeriodPreferenceModel px = new PeriodPreferenceModel(location.getSession(), type.getUniqueId());
+                px.load(location);
+                px.setAllowRequired(false);
+                RequiredTimeTable rttPx = new RequiredTimeTable(px);
+                rttPx.setName("PeriodPrefs" +  type.getUniqueId());
+                request.setAttribute("PeriodPrefs" + type.getUniqueId(), rttPx.print(false, timeVertical, true, false)); 
+    		}
+    	}
 		
 		roomDetailForm.setCapacity(location.getCapacity());
 		roomDetailForm.setCoordinateX(location.getCoordinateX());
@@ -292,6 +293,8 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
 		
 		EditRoomAction.setupDepartments(request, sessionContext, location);
+
+		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
 		return mapping.findForward("showRoomDetail");
 	}

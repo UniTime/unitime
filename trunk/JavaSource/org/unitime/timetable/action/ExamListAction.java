@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -45,6 +46,7 @@ import org.unitime.timetable.form.ExamListForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
@@ -58,12 +60,14 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -89,10 +93,13 @@ public class ExamListAction extends Action {
             myForm.setCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
         }
         if (op==null && sessionContext.getAttribute(SessionAttribute.ExamType)!=null) {
-        	myForm.setExamType((Integer)sessionContext.getAttribute(SessionAttribute.ExamType));
+        	myForm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
         }
-        
-        myForm.setHasMidtermExams(Exam.hasMidtermExams(sessionContext.getUser().getCurrentAcademicSessionId()));
+        if (myForm.getExamType() == null) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty())
+				myForm.setExamType(types.get(0).getUniqueId());
+        }
         
         WebTable.setOrder(sessionContext, "ExamList.ord", request.getParameter("ord"), 1);
 
@@ -149,13 +156,16 @@ public class ExamListAction extends Action {
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
         
-        BackTracker.markForBack(
-                request, 
-                "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(),
-                Exam.sExamTypes[myForm.getExamType()]+" Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
-                    (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr()))+
-                    ")", 
-                true, true);
+        if (myForm.getExamType() != null)
+            BackTracker.markForBack(
+                    request, 
+                    "examList.do?op=Search&examType="+myForm.getExamType()+"&subjectAreaId="+myForm.getSubjectAreaId()+"&courseNbr="+myForm.getCourseNbr(),
+                    ExamTypeDAO.getInstance().get(myForm.getExamType()).getLabel()+" Exams ("+(Constants.ALL_OPTION_VALUE.equals(myForm.getSubjectAreaId())?"All":subjectAreaName+
+                        (myForm.getCourseNbr()==null || myForm.getCourseNbr().length()==0?"":" "+myForm.getCourseNbr()))+
+                        ")", 
+                    true, true);
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
         return mapping.findForward("list");
     }
@@ -169,17 +179,18 @@ public class ExamListAction extends Action {
         
         if (exams==null || exams.isEmpty()) return null;
         
-        if (examAssignment!=null && examAssignment.getExamType()!=form.getExamType()) examAssignment = null;
+        if (examAssignment!=null && !examAssignment.getExamTypeId().equals(form.getExamType())) examAssignment = null;
         
         String nl = (html?"<br>":"\n");
         
         boolean timeVertical = RequiredTimeTable.getTimeGridVertical(sessionContext.getUser());
         boolean timeText = RequiredTimeTable.getTimeGridAsText(sessionContext.getUser());
         String instructorNameFormat = UserProperty.NameFormat.get(sessionContext.getUser());
+        ExamType type = ExamTypeDAO.getInstance().get(form.getExamType());
         
         PdfWebTable table = new PdfWebTable(
                 11,
-                Exam.sExamTypes[form.getExamType()]+" Examinations", "examList.do?ord=%%",
+                type.getLabel()+" Examinations", "examList.do?ord=%%",
                 new String[] {"Classes / Courses", "Length", "Seating"+nl+"Type", "Size", "Max"+nl+"Rooms", 
                         "Instructor", "Period"+nl+"Preferences", "Room"+nl+"Preferences", "Distribution"+nl+"Preferences",
                         "Assigned"+nl+"Period", "Assigned"+nl+"Room"},
@@ -216,8 +227,8 @@ public class ExamListAction extends Action {
                 if (roomPref.length()>0 && !roomPref.endsWith(nl)) roomPref+=nl;
                 roomPref += exam.getEffectivePrefHtmlForPrefType(RoomGroupPref.class);
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
-                if (timeText || Exam.sExamTypeMidterm==exam.getExamType()) {
-                	if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                if (timeText || ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                	if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
                     	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     	epx.load(exam);
                     	perPref+=epx.toString(true);
@@ -225,7 +236,7 @@ public class ExamListAction extends Action {
                 		perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                 	}
                 } else {
-                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType());
+                    PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
                     px.load(exam);
                     String hint = "'" + px.toString() + (ea == null ? "" : ", assigned " + ea.getPeriodName()) + "'";
                     perPref = "<img border='0' src='" +
@@ -254,7 +265,7 @@ public class ExamListAction extends Action {
                     if (roomPref.length()>0) roomPref+=nl;
                     roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
-                if (Exam.sExamTypeMidterm==exam.getExamType()) {
+                if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
                     MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
                     epx.load(exam);
                     perPref+=epx.toString(false);

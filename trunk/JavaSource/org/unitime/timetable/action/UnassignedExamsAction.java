@@ -38,6 +38,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriodPref;
@@ -55,6 +56,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.RequiredTimeTable;
@@ -90,7 +92,7 @@ public class UnassignedExamsAction extends Action {
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamInfo> unassignedExams = null;
         if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
-            if (solver!=null && solver.getExamType()==myForm.getExamType())
+            if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
                 unassignedExams = solver.getUnassignedExams(myForm.getSubjectArea());
             else
                 unassignedExams = Exam.findUnassignedExams(sessionContext.getUser().getCurrentAcademicSessionId(), myForm.getSubjectArea(),myForm.getExamType());
@@ -112,6 +114,8 @@ public class UnassignedExamsAction extends Action {
 
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
         
         return mapping.findForward("showReport");
 	}
@@ -146,12 +150,12 @@ public class UnassignedExamsAction extends Action {
                     if (timeText) {
                         perPref += exam.getExam().getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                     } else {
-                        if (exam.getExamType()==Exam.sExamTypeMidterm) {
-                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
+                        if (exam.getExam().getExamType().getType() == ExamType.sExamTypeMidterm) {
+                            MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession(), exam.getExam().getExamType());
                             epx.load(exam.getExam());
                             perPref += epx.toString(true);
                         } else {
-                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
+                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamTypeId());
                             px.load(exam.getExam());
                             perPref = "<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&x="+ exam.getExamId() +"' title='"+px.toString()+"'>";
                         }
@@ -178,8 +182,8 @@ public class UnassignedExamsAction extends Action {
                         if (roomPref.length()>0) roomPref+=nl;
                         roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
-                    if (exam.getExamType()==Exam.sExamTypeMidterm) {
-                        MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession());
+                    if (exam.getExam().getExamType().getType() == ExamType.sExamTypeMidterm) {
+                        MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession(), exam.getExam().getExamType());
                         epx.load(exam.getExam());
                         perPref += epx.toString();
                     } else {

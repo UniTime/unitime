@@ -110,11 +110,11 @@ public class RoomGroupAddAction extends Action {
         	roomGroupEditForm.setDeptCode(departments.first().getDeptCode());
         } else {
         	String deptCode = (String)sessionContext.getAttribute(SessionAttribute.DepartmentCodeRoom);
-        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.equals("Exam") && !deptCode.equals("EExam"))
+        	if (deptCode != null && !deptCode.isEmpty() && !deptCode.equals("All") && !deptCode.matches("Exam[0-9]*"))
         		roomGroupEditForm.setDeptCode(deptCode);
 		}
 		
-		if (roomGroupEditForm.getDeptCode() == null || roomGroupEditForm.getDeptCode().isEmpty() || roomGroupEditForm.getDeptCode().equals("Exam") || roomGroupEditForm.getDeptCode().equals("EExam") ||
+		if (roomGroupEditForm.getDeptCode() == null || roomGroupEditForm.getDeptCode().isEmpty() || roomGroupEditForm.getDeptCode().matches("Exam[0-9]*") ||
 			!sessionContext.hasPermission(roomGroupEditForm.getDeptCode(), "Department", Right.DepartmentRoomGroupAdd)) {
 			sessionContext.checkPermission(Right.GlobalRoomGroupAdd);
 			roomGroupEditForm.setGlobal(true);

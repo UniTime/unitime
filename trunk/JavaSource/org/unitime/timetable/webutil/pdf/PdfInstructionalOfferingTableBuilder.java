@@ -1000,7 +1000,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
+            if (examAssignment!=null && examAssignment.getExamTypeId().equals(exam.getExamType().getUniqueId())) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getPeriodAbbreviation());
@@ -1020,7 +1020,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         StringBuffer sb = new StringBuffer();
         for (Iterator i=exams.iterator();i.hasNext();) {
             Exam exam = (Exam)i.next();
-            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
+            if (examAssignment!=null && examAssignment.getExamTypeId().equals(exam.getExamType().getUniqueId())) {
                 ExamAssignment ea = examAssignment.getAssignment(exam.getUniqueId());
                 if (ea==null && !isShowExamName()) continue;
                 sb.append(ea==null?"":ea.getRoomsName(", "));

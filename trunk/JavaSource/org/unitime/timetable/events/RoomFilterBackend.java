@@ -44,7 +44,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
@@ -160,9 +159,9 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && eventRoomTypes.contains(location.getRoomType().getLabel()))
 				event.incCount();
 
-			if (location.isExamEnabled(Exam.sExamTypeFinal))
+			if (location.hasFinalExamsEnabled())
 				examFinal.incCount();
-			if (location.isExamEnabled(Exam.sExamTypeMidterm))
+			if (location.hasMidtermExamsEnabled())
 				examMidterm.incCount();
 			if (isManaged)
 				managed.incCount();
@@ -292,9 +291,9 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			}
 			if (department == null || department.isEmpty()) {
 			} else if (department.contains("Final")) {
-				if (!location.isExamEnabled(Exam.sExamTypeFinal)) continue;
+				if (!location.hasFinalExamsEnabled()) continue;
 			} else if (department.contains("Midterm")) {
-				if (!location.isExamEnabled(Exam.sExamTypeMidterm)) continue;
+				if (!location.hasMidtermExamsEnabled()) continue;
 			} else if (!department.contains("Event") && !department.contains("Managed")) {
 				boolean found = false;
 				for (RoomDept rd: location.getRoomDepts())
@@ -354,9 +353,9 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					}
 					if (department == null || department.isEmpty()) {
 					} else if (department.contains("Final")) {
-						if (!location.isExamEnabled(Exam.sExamTypeFinal)) continue;
+						if (!location.hasFinalExamsEnabled()) continue;
 					} else if (department.contains("Midterm")) {
-						if (!location.isExamEnabled(Exam.sExamTypeMidterm)) continue;
+						if (!location.hasMidtermExamsEnabled()) continue;
 					} else if (!department.contains("Event") && !department.contains("Managed")) {
 						boolean found = false;
 						for (RoomDept rd: location.getRoomDepts())

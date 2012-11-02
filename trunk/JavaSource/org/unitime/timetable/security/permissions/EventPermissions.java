@@ -29,6 +29,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RoomDept;
@@ -48,8 +49,8 @@ public class EventPermissions {
 		public boolean check(UserContext user, Session source) {
 			return
 				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportClasses) && Solution.hasTimetable(source.getSessionId())) ||
-				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsFinal) && Exam.hasTimetable(source.getUniqueId(), Exam.sExamTypeFinal)) ||
-				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsMidterm) && Exam.hasTimetable(source.getUniqueId(), Exam.sExamTypeMidterm));
+				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsFinal) && Exam.hasTimetable(source.getUniqueId(), ExamType.sExamTypeFinal)) ||
+				(permissionSession.check(user, source, DepartmentStatusType.Status.ReportExamsMidterm) && Exam.hasTimetable(source.getUniqueId(), ExamType.sExamTypeMidterm));
 		}
 
 		@Override

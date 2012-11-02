@@ -29,14 +29,14 @@
 <html:form action="/examList">
 	<TABLE border='0'>
 		<TR>
-			<TH valign="top">Type:</TH>
-			<TD valign="top">
+			<TH valign="middle">Type:</TH>
+			<TD valign="middle">
 				<html:select name="examListForm" property="examType">
-					<html:optionsCollection property="examTypes" label="label" value="value" />
+					<html:options collection="examTypes" property="uniqueId" labelProperty="label" />
 				</html:select>
 			</TD>
-			<TH valign="top">Subject:</TH>
-			<TD valign="top">
+			<TH valign="middle">Subject:</TH>
+			<TD valign="middle">
 				<html:select name="examListForm" property="subjectAreaId"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
@@ -48,8 +48,8 @@
 					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
 				</html:select>
 			</TD>
-			<TH valign="top">Course Number:</TH>
-			<TD valign="top">
+			<TH valign="middle">Course Number:</TH>
+			<TD valign="middle">
 				<layout:suggest 
 					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
@@ -57,7 +57,7 @@
 					tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
 					onblur="hideSuggestionList('courseNbr');" />
 			</TD>
-			<TD valign="top">
+			<TD valign="middle" nowrap>
 				&nbsp;&nbsp;&nbsp;
 				<html:submit
 					accesskey="S" styleClass="btn" titleKey="title.search" property="op"
@@ -65,8 +65,7 @@
 					<bean:message key="button.search" />
 				</html:submit> 
 			</TD>
-			<TD valign="top">
-				&nbsp;
+			<TD valign="middle">
 				<html:submit
 					accesskey="P" styleClass="btn" titleKey="title.exportPDF" property="op"
 					onclick="displayLoading();">
@@ -74,8 +73,7 @@
 				</html:submit> 
 			</TD>
 			<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
-			<TD valign="top">
-				&nbsp;
+			<TD valign="middle">
 				<html:submit
 					accesskey="A" styleClass="btn" titleKey="title.addExam" property="op"
 					onclick="displayLoading();">

@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,8 +69,7 @@ public class EditRoomForm extends ActionForm {
     private String externalId;
     private Long type;
 	private boolean room;
-    private Boolean examEnabled;
-    private Boolean examEEnabled;
+    private Map<String,Boolean> examEnabled = new HashMap<String, Boolean>();
     private String examCapacity;
 	
 	// --------------------------------------------------------- Methods
@@ -281,24 +282,17 @@ public class EditRoomForm extends ActionForm {
         bldgName=null; capacity=null; coordX=null; coordY=null; doit=null;
         externalId=null; id=null; name=null; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
-		examEnabled=Boolean.FALSE; examEEnabled=Boolean.FALSE;  examCapacity=null;
+		examEnabled.clear();  examCapacity=null;
 	}
 	
-	public Boolean getExamEnabled() {
-	    return examEnabled;
+	public boolean getExamEnabled(String type) {
+		Boolean enabled = examEnabled.get(type);
+	    return enabled != null && enabled;
 	}
 	
-	public void setExamEnabled(Boolean examEnabled) {
-	    this.examEnabled = examEnabled;
+	public void setExamEnabled(String type, boolean examEnabled) {
+	    this.examEnabled.put(type, examEnabled);
 	}
-	
-    public Boolean getExamEEnabled() {
-        return examEEnabled;
-    }
-    
-    public void setExamEEnabled(Boolean examEEnabled) {
-        this.examEEnabled = examEEnabled;
-    }
 
     public String getExamCapacity() {
 	    return examCapacity;

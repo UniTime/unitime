@@ -25,6 +25,7 @@ import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.UserContext;
@@ -39,6 +40,8 @@ public class ExaminationPermissions {
 		@Override
 		public boolean check(UserContext user, Session source) {
 			if (SubjectArea.getUserSubjectAreas(user, false).isEmpty()) return false;
+			
+			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
 			
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);

@@ -50,9 +50,11 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -60,6 +62,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -90,12 +93,12 @@ public class RoomAvailabilityAction extends Action {
         
         Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
         
-        if (myForm.getExamType()>=0) {
+        if (myForm.getExamType() != null && myForm.getExamType() >= 0) {
             
             Date[] bounds = ExamPeriod.getBounds(session, myForm.getExamType());
             String exclude = (myForm.getIncludeExams()?
                     null :
-                    (myForm.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                    (ExamTypeDAO.getInstance().get(myForm.getExamType()).getType() == ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
             
             if (bounds!=null && RoomAvailability.getInstance()!=null) {
                 RoomAvailability.getInstance().activate(session, bounds[0], bounds[1], exclude, "Refresh".equals(op));
@@ -120,6 +123,8 @@ public class RoomAvailabilityAction extends Action {
         
         if (request.getParameter("backId")!=null)
             request.setAttribute("hash", request.getParameter("backId"));
+        
+        LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
 
         return mapping.findForward("showReport");
     }
@@ -173,7 +178,7 @@ public class RoomAvailabilityAction extends Action {
                 if (!match(form, location.getLabel())) continue;
                 String exclude = (form.getIncludeExams()?
                         null :
-                        (form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
+                        (ExamTypeDAO.getInstance().get(form.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType));
                 Collection<TimeBlock> events = ra.getRoomAvailability(location, bounds[0], bounds[1], exclude);
                 if (events==null) continue;
                 if (ts==null) ts = ra.getTimeStamp(bounds[0], bounds[1], exclude);
@@ -242,9 +247,9 @@ public class RoomAvailabilityAction extends Action {
         SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MM/dd");
         SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
         String ts = null;
-        String eventType = (form.getExamType()==Exam.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
+        String eventType = (ExamTypeDAO.getInstance().get(form.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
         ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
-        if (examAssignment!=null && examAssignment.getExamType()!=form.getExamType()) examAssignment = null;
+        if (examAssignment!=null && !examAssignment.getExamTypeId().equals(form.getExamType())) examAssignment = null;
         try {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
                 Location location = (Location)i.next();
@@ -257,8 +262,8 @@ public class RoomAvailabilityAction extends Action {
                 else {
                     exams = new TreeSet();
                     for (Iterator j=new ExamDAO().getSession().createQuery(
-                            "select x from Exam x inner join x.assignedRooms r where x.examType=:examType and r.uniqueId=:locationId").
-                            setInteger("examType", form.getExamType()).
+                            "select x from Exam x inner join x.assignedRooms r where x.examType.uniqueId=:examTypeId and r.uniqueId=:locationId").
+                            setLong("examTypeId", form.getExamType()).
                             setLong("locationId", location.getUniqueId()).
                             setCacheable(true).
                             list().iterator();j.hasNext();) {

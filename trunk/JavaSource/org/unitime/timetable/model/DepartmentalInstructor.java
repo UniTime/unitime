@@ -472,11 +472,11 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		return(newDepartmentalInstructor);
 	}
 	
-    public static List findAllExamInstructors(Long sessionId, Integer examType) {
+    public static List findAllExamInstructors(Long sessionId, Long examTypeId) {
         return (new DepartmentalInstructorDAO()).getSession()
-                .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId and x.examType=:examType")
+                .createQuery("select distinct i from Exam x inner join x.instructors i where x.session.uniqueId=:sessionId and x.examType.uniqueId=:examTypeId")
                 .setLong("sessionId", sessionId)
-                .setInteger("examType", examType)
+                .setLong("examTypeId", examTypeId)
                 .setCacheable(true).list();
     }
     
@@ -485,7 +485,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             return (new DepartmentalInstructorDAO()).getSession()
                 .createQuery("select distinct x from Exam x inner join x.instructors i where " +
                 		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
-                		"and x.examType=:examType")
+                		"and x.examType.type=:examType")
                 .setLong("instructorId", getUniqueId())
                 .setLong("sessionId", getDepartment().getSession().getUniqueId())
                 .setString("externalId", getExternalUniqueId())
@@ -496,6 +496,27 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
             .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType=:examType")
             .setLong("instructorId", getUniqueId())
             .setInteger("examType", examType)
+            .setCacheable(true).list();
+            
+        }
+    }
+    
+    public List<Exam> getExams(ExamType examType) {
+        if (getExternalUniqueId()!=null) {
+            return (new DepartmentalInstructorDAO()).getSession()
+                .createQuery("select distinct x from Exam x inner join x.instructors i where " +
+                		"(i.uniqueId=:instructorId or (i.externalUniqueId=:externalId and i.department.session.uniqueId=:sessionId)) " +
+                		"and x.examType.uniqueId=:examTypeId")
+                .setLong("instructorId", getUniqueId())
+                .setLong("sessionId", getDepartment().getSession().getUniqueId())
+                .setString("externalId", getExternalUniqueId())
+                .setLong("examTypeId", examType.getUniqueId())
+                .setCacheable(true).list();
+        } else {
+            return (new DepartmentalInstructorDAO()).getSession()
+            .createQuery("select distinct x from Exam x inner join x.instructors i where i.uniqueId=:instructorId and x.examType.uniqueId=:examTypeId")
+            .setLong("instructorId", getUniqueId())
+            .setLong("examTypeId", examType.getUniqueId())
             .setCacheable(true).list();
             
         }

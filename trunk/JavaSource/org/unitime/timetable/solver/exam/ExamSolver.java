@@ -772,8 +772,8 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
         }
     }
     
-    public int getExamType() {
-    	return getProperties().getPropertyInt("Exam.Type", org.unitime.timetable.model.Exam.sExamTypeFinal);
+    public Long getExamTypeId() {
+    	return getProperties().getPropertyLong("Exam.Type", null);
     }
     
     public Collection<ExamAssignmentInfo[]> getChangesToInitial(Long subjectAreaId) {

@@ -45,7 +45,7 @@
 		<TD>
 			<html:select property="examType">
 				<html:option value="-1">Select...</html:option>
-				<html:optionsCollection property="examTypes" label="label" value="value"/>
+				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 			</html:select>
 		</TD>
 	</TR>

@@ -39,10 +39,11 @@ import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.timetable.form.ExamPeriodEditForm;
 import org.unitime.timetable.model.ChangeLog;
-import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
@@ -78,10 +79,17 @@ public class ExamPeriodEditAction extends Action {
 	        // Read operation to be performed
 	        String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 	        
+	        if (op == null && request.getParameter("op2") != null) {
+	        	op = request.getParameter("op2");
+	        	myForm.setOp(op);
+	        }
+	        
 	        if (op==null) {
 	            myForm.load(null, sessionContext);
 	            myForm.setOp("List");
 	        }
+	        
+	        request.setAttribute("examTypes", ExamType.findAll());
 
 	        // Reset Form
 	        if ("Back".equals(op)) {
@@ -96,10 +104,12 @@ public class ExamPeriodEditAction extends Action {
                 myForm.setOp("Save");
             }
 
-            if ("Midterm Periods".equals(op) && myForm.getCanAutoSetup()) {
-            	myForm.setAutoSetup(true);
-            	myForm.setExamType(Exam.sExamTypes[Exam.sExamTypeMidterm]);
-                myForm.setOp("Save");
+            for (ExamType type: ExamTypeDAO.getInstance().findAll()) {
+                if ((type.getLabel() + " Periods").equals(op) && myForm.getCanAutoSetup(type.getUniqueId())) {
+                	myForm.setAutoSetup(true);
+                	myForm.setExamType(type.getUniqueId());
+                    myForm.setOp("Save");
+                }
             }
 
             // Add / Update
@@ -203,6 +213,17 @@ public class ExamPeriodEditAction extends Action {
 	            return mapping.findForward("list");
 	        } 
 	        
+	        if ("Reload".equals(myForm.getOp())) {
+	        	if (myForm.getExamType() != null && myForm.getExamType() >= 0) {
+	        		sessionContext.setAttribute("Exam.Type", myForm.getExamType());
+	        		myForm.load(null, sessionContext);
+	        	} else {
+	        		myForm.reset(mapping, request);
+	        		myForm.setEditable(true);
+	        	}
+	        	myForm.setOp("Save");
+	        }
+	        
 	        return mapping.findForward(myForm.getAutoSetup()?"midterm":myForm.getUniqueId().longValue()<0?"add":"edit");
 	        
 		} catch (Exception e) {
@@ -220,7 +241,7 @@ public class ExamPeriodEditAction extends Action {
 			    new String[] {"left","left", "left", "left", "right", "right", "right", "left"},
 			    null );
         
-        TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), null);
+        TreeSet periods = ExamPeriod.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), (Long)null);
 		if(periods.isEmpty()) {
 		    webTable.addLine(null, new String[] {"No examination periods defined for this session."}, null, null );			    
 		}
@@ -232,7 +253,7 @@ public class ExamPeriodEditAction extends Action {
         	ExamPeriod ep = (ExamPeriod)i.next();
         	String onClick = "onClick=\"document.location='examPeriodEdit.do?op=Edit&id=" + ep.getUniqueId() + "';\"";
         	webTable.addLine(onClick, new String[] {
-        			Exam.sExamTypes[ep.getExamType()],
+        			ep.getExamType().getLabel(),
         	        "<a name='"+ep.getUniqueId()+"'>"+sdf.format(ep.getStartDate())+"</a>",
         	        stf.format(ep.getStartTime()),
         	        stf.format(ep.getEndTime()),

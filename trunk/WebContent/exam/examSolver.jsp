@@ -94,7 +94,7 @@ try {
    	<TR><TD>Examination problem:</TD>
 		<TD>
 			<html:select property="examType" disabled="<%=solver!=null%>">
-				<html:optionsCollection name="examSolverForm" property="examTypes" label="label" value="value"/>
+				<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
 			</html:select>
 			&nbsp;<html:errors property="examType"/>
 		</TD>

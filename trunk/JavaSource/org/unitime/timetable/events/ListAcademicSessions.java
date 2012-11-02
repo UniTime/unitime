@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -84,9 +85,9 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 					session.equals(selected));
 			if (session.getStatusType().canNoRoleReportClass() && Solution.hasTimetable(session.getUniqueId()))
 				acadSession.set(AcademicSession.Flag.HasClasses);
-			if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeFinal))
+			if (session.getStatusType().canNoRoleReportExamFinal() && Exam.hasTimetable(session.getUniqueId(), ExamType.sExamTypeFinal))
 				acadSession.set(AcademicSession.Flag.HasFinalExams);
-			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), Exam.sExamTypeMidterm))
+			if (session.getStatusType().canNoRoleReportExamMidterm() && Exam.hasTimetable(session.getUniqueId(), ExamType.sExamTypeMidterm))
 				acadSession.set(AcademicSession.Flag.HasMidtermExams);
 			if (context.hasPermissionAnyAuthority(session, Right.Events, new SimpleQualifier("Session", session.getUniqueId())))
 				acadSession.set(AcademicSession.Flag.HasEvents);

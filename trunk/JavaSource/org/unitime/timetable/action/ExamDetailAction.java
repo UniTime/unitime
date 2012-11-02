@@ -253,7 +253,7 @@ public class ExamDetailAction extends PreferencesAction {
             ExamAssignmentInfo ea = null;
             
             ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());
-            if (examAssignment!=null && examAssignment.getExamType()==exam.getExamType()) {
+            if (examAssignment!=null && examAssignment.getExamTypeId().equals(exam.getExamType().getUniqueId())) {
                 ea = examAssignment.getAssignmentInfo(exam.getUniqueId());
             } else if (exam.getAssignedPeriod()!=null)
                 ea = new ExamAssignmentInfo(exam);
@@ -304,6 +304,8 @@ public class ExamDetailAction extends PreferencesAction {
             LookupTables.setupRoomFeatures(request, exam); // Preference Levels
             LookupTables.setupRoomGroups(request, exam);   // Room Groups
             
+            LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+            
             return mapping.findForward("showExamDetail");
             
         } catch (Exception e) {
@@ -323,7 +325,7 @@ public class ExamDetailAction extends PreferencesAction {
         frm.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0 ? null: (exam.getPrintOffset()>0?"+":"")+exam.getPrintOffset());
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
         frm.setMaxNbrRooms(exam.getMaxNbrRooms());
-        frm.setExamType(exam.getExamType());
+        frm.setExamType(exam.getExamType().getUniqueId());
         
         TreeSet instructors = new TreeSet(exam.getInstructors());
 

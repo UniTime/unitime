@@ -22,9 +22,13 @@ package org.unitime.timetable.form;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -39,6 +43,7 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
+import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.PreferenceLevelDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -79,13 +84,9 @@ public class ExamPeriodEditForm extends ActionForm {
     private Integer iLength5;
     private Integer iStartOffset5;
     private Integer iStopOffset5;
-    private String iType;
+    private Long iType;
     private Long iPrefLevel;
     private boolean iAutoSetup;
-    private Integer iDefaultMidtermStartOffset;
-    private Integer iDefaultMidtermStopOffset;
-    private Integer iDefaultFinalStartOffset;
-    private Integer iDefaultFinalStopOffset;
     private Session iSession;
     private Boolean iEditable;
     
@@ -94,7 +95,10 @@ public class ExamPeriodEditForm extends ActionForm {
 	    
 	    if (!iAutoSetup && !CalendarUtils.isValidDate(iDate, "MM/dd/yyyy"))
 	        errors.add("date", new ActionMessage("errors.invalidDate", "Examination Date"));
-	    
+
+        if (iType==null || iType < 0)
+        	errors.add("examType", new ActionMessage("errors.required", ""));
+
         if (iStart==null || iStart<=0) {
             if (!iAutoSetup) errors.add("start", new ActionMessage("errors.required", ""));
         } else {
@@ -281,12 +285,8 @@ public class ExamPeriodEditForm extends ActionForm {
 		iStart3 = null; iLength3 = null; iStartOffset3 = null; iStopOffset3 = null;
 		iStart4 = null; iLength4 = null; iStartOffset4 = null; iStopOffset4 = null;
 		iStart5 = null; iLength5 = null; iStartOffset5 = null; iStopOffset5 = null;
-		iDefaultMidtermStartOffset = Constants.getDefaultExamStartOffset(Exam.sExamTypeMidterm);
-		iDefaultMidtermStopOffset = Constants.getDefaultExamStopOffset(Exam.sExamTypeMidterm);
-		iDefaultFinalStartOffset = Constants.getDefaultExamStartOffset(Exam.sExamTypeFinal);
-		iDefaultFinalStopOffset = Constants.getDefaultExamStopOffset(Exam.sExamTypeFinal);
 		iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
-		iType = Exam.sExamTypes[Exam.sExamTypeFinal];
+		iType = null;
 		iAutoSetup = false;
 		iEditable = false;
 		if (request != null)
@@ -299,37 +299,47 @@ public class ExamPeriodEditForm extends ActionForm {
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			iDate = new SimpleDateFormat("MM/dd/yyyy").format(session.getExamBeginDate());
 			iLength = 120;
-			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), null);
-			int maxType = 0;
+			iType = (Long)context.getAttribute("Exam.Type");
+			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), iType);
 			if (!periods.isEmpty()) {
-			    TreeSet times = new TreeSet();
+				iType = ((ExamPeriod)periods.last()).getExamType().getUniqueId();
+			    Map<Integer, Integer> times = new HashMap<Integer, Integer>();
+			    Set<Date> dates = new HashSet<Date>();
 			    for (Iterator i=periods.iterator();i.hasNext();) {
 			        ExamPeriod p = (ExamPeriod)i.next();
-			        times.add(p.getStartSlot());
-			        maxType = Math.max(maxType, p.getExamType());
+			        if (p.getExamType().getUniqueId().equals(iType)) {
+			        	times.put(p.getStartSlot(), p.getLength());
+			        	dates.add(p.getStartDate());
+			        }
 			    }
-			    for (Iterator i=times.iterator();i.hasNext();) {
+			    iLength = null;
+			    for (Iterator i=new TreeSet<Integer>(times.keySet()).iterator();i.hasNext();) {
 			        Integer start = (Integer)i.next();
+			        if (iLength == null) {
+			        	if (dates.size() > 1) {
+				        	int time = Constants.SLOT_LENGTH_MIN*start+Constants.FIRST_SLOT_TIME_MIN;
+			        		iStart = 100*(time/60)+(time%60);
+				        	Calendar cal = Calendar.getInstance(); cal.setTime(((ExamPeriod)periods.last()).getStartDate()); cal.add(Calendar.DAY_OF_YEAR, 1);
+						    iDate = new SimpleDateFormat("MM/dd/yyyy").format(cal.getTime());
+			        	} else {
+			        		iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
+			        	}
+			        	iLength = Constants.SLOT_LENGTH_MIN*times.get(start);
+			        }
 			        if (start.equals(((ExamPeriod)periods.last()).getStartSlot()) && i.hasNext()) {
-			            int time = Constants.SLOT_LENGTH_MIN*(Integer)i.next()+Constants.FIRST_SLOT_TIME_MIN;
+			        	int slot = (Integer)i.next();
+			            int time = Constants.SLOT_LENGTH_MIN*slot+Constants.FIRST_SLOT_TIME_MIN;
 			            iStart = 100*(time/60)+(time%60);
+			            iLength = Constants.SLOT_LENGTH_MIN*times.get(slot);
+					    iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
 			            break;
 			        }
 			    }
-			    iLength = ((ExamPeriod)periods.last()).getLength()*Constants.SLOT_LENGTH_MIN;
-			    iDate = new SimpleDateFormat("MM/dd/yyyy").format(((ExamPeriod)periods.last()).getStartDate());
-			    
+				iStartOffset = getDefaultStartOffset(iType);
+				iStopOffset = getDefaultStopOffset(iType);
 			}
 
 			iPrefLevel = PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral).getUniqueId();
-			iType = Exam.sExamTypes[maxType];
-			if (iType != null && iType.equals(Exam.sExamTypes[Exam.sExamTypeFinal])){
-		    	iStartOffset = iDefaultFinalStartOffset;
-		    	iStopOffset = iDefaultFinalStopOffset;
-		    } else {
-		    	iStartOffset = iDefaultMidtermStartOffset;
-		    	iStopOffset = iDefaultMidtermStopOffset;
-		    }	
 			iOp = "Save";
 			iEditable = true;
 		} else {
@@ -340,7 +350,8 @@ public class ExamPeriodEditForm extends ActionForm {
 			iStartOffset = ep.getEventStartOffset() * Constants.SLOT_LENGTH_MIN;
 			iStopOffset = ep.getEventStopOffset() * Constants.SLOT_LENGTH_MIN;
 			iPrefLevel = ep.getPrefLevel().getUniqueId();
-			iType = Exam.sExamTypes[ep.getExamType()];
+			iType = ep.getExamType().getUniqueId();
+			context.setAttribute("Exam.Type", iType);
 			iOp = "Update";
 			iEditable = !ep.isUsed();
 		}
@@ -354,7 +365,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	    ep.setStartSlot(slot);
 	    ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
 	    ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
-	    ep.setExamType(getExamTypeIdx());
+	    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 	    ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 	    ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue()/Constants.SLOT_LENGTH_MIN));
 		hibSession.saveOrUpdate(ep);
@@ -371,7 +382,7 @@ public class ExamPeriodEditForm extends ActionForm {
         ep.setStartSlot(slot);
         ep.setLength(iLength / Constants.SLOT_LENGTH_MIN);
         ep.setPrefLevel(new PreferenceLevelDAO().get(iPrefLevel));
-        ep.setExamType(getExamTypeIdx());
+        ep.setExamType(ExamTypeDAO.getInstance().get(iType));
         ep.setEventStartOffset(iStartOffset == null?new Integer(0):new Integer(iStartOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         ep.setEventStopOffset(iStopOffset == null?new Integer(0):new Integer(iStopOffset.intValue() / Constants.SLOT_LENGTH_MIN));
         hibSession.saveOrUpdate(ep);
@@ -382,7 +393,7 @@ public class ExamPeriodEditForm extends ActionForm {
 	public ExamPeriod saveOrUpdate(HttpServletRequest request, SessionContext context, org.hibernate.Session hibSession) throws Exception {
 		if (getAutoSetup()) {
 			setDays(request);
-			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), Exam.sExamTypeMidterm);
+			TreeSet periods = ExamPeriod.findAll(context.getUser().getCurrentAcademicSessionId(), iType);
 			TreeSet<Integer> slots = new TreeSet();
 			TreeSet oldDays = new TreeSet();
 			for (Iterator i=periods.iterator();i.hasNext();) {
@@ -476,7 +487,7 @@ public class ExamPeriodEditForm extends ActionForm {
 				    ep.setLength(length.get(start) / Constants.SLOT_LENGTH_MIN);
 				    ep.setEventStartOffset(eventStartOffsets.get(start) == null?new Integer(null):new Integer(eventStartOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
 				    ep.setEventStopOffset(eventStopOffsets.get(start) == null?new Integer(null):new Integer(eventStopOffsets.get(start)/Constants.SLOT_LENGTH_MIN));
-				    ep.setExamType(Exam.sExamTypeMidterm);
+				    ep.setExamType(ExamTypeDAO.getInstance().get(iType));
 				    ep.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
 				    hibSession.save(ep);
 				}
@@ -623,15 +634,8 @@ public class ExamPeriodEditForm extends ActionForm {
         }
         return ret;
     }
-    public String getExamType() { return iType; }
-    public void setExamType(String type) { iType = type; }
-    public String[] getExamTypes() { return Exam.sExamTypes; }
-    public int getExamTypeIdx() {
-    	for (int i=0;i<Exam.sExamTypes.length;i++) {
-    		if (Exam.sExamTypes[i].equals(getExamType())) return i;
-    	}
-    	return Exam.sExamTypeFinal;
-    }
+    public Long getExamType() { return iType; }
+    public void setExamType(Long type) { iType = type; }
     public boolean getAutoSetup() { return iAutoSetup; }
     public void setAutoSetup(boolean autoSetup) { iAutoSetup = autoSetup; }
     public boolean getEditable() { return iEditable; }
@@ -655,14 +659,17 @@ public class ExamPeriodEditForm extends ActionForm {
 	}
 	
 	TreeSet<Integer> iDays = null;
-	public boolean getCanAutoSetup() {
+	public boolean getCanAutoSetup(String examType) {
+		return getCanAutoSetup(Long.valueOf(examType));
+	}
+	public boolean getCanAutoSetup(Long examType) {
 		iDays = new TreeSet<Integer>(); 
 		TreeSet<Integer> times = new TreeSet<Integer>(); 
 		Hashtable<Integer, Integer> lengths = new Hashtable<Integer, Integer>(); 
 		Hashtable<Integer, Integer> eventStartOffsets = new Hashtable<Integer, Integer>(); 
 		Hashtable<Integer, Integer> eventStopOffsets = new Hashtable<Integer, Integer>(); 
-		TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(),Exam.sExamTypeMidterm);
-		iType = Exam.sSeatingTypes[Exam.sExamTypeMidterm];
+		TreeSet periods = ExamPeriod.findAll(iSession.getUniqueId(),examType);
+		iType = examType;
 		for (Iterator i=periods.iterator();i.hasNext();) {
 			ExamPeriod period = (ExamPeriod)i.next();
 			if (period.isUsed()) return false;
@@ -690,11 +697,11 @@ public class ExamPeriodEditForm extends ActionForm {
 		}
 		if (periods.size()!=iDays.size()*times.size() || times.size()>5) return false;
 		if (times.isEmpty()) {
-		    iStart = 1830; iLength = 60; iStartOffset = iDefaultMidtermStartOffset; iStopOffset = iDefaultMidtermStopOffset;
-		    iStart2 = 2000; iLength2 = 120; iStartOffset2 = iDefaultMidtermStartOffset; iStopOffset2 = iDefaultMidtermStopOffset;
-		    iStart3 = null; iLength3 = null; iStartOffset3 = iDefaultMidtermStartOffset; iStopOffset3 = iDefaultMidtermStopOffset;
-		    iStart4 = null; iLength4 = null; iStartOffset4 = iDefaultMidtermStartOffset; iStopOffset4 = iDefaultMidtermStopOffset;
-		    iStart5 = null; iLength5 = null; iStartOffset5 = iDefaultMidtermStartOffset; iStopOffset5 = iDefaultMidtermStopOffset;
+		    iStart = 1830; iLength = 60; iStartOffset = getDefaultStartOffset(examType); iStopOffset = getDefaultStopOffset(examType);
+		    iStart2 = 2000; iLength2 = 120; iStartOffset2 = getDefaultStartOffset(examType); iStopOffset2 = getDefaultStopOffset(examType);
+		    iStart3 = null; iLength3 = null; iStartOffset3 = getDefaultStartOffset(examType); iStopOffset3 = getDefaultStopOffset(examType);
+		    iStart4 = null; iLength4 = null; iStartOffset4 = getDefaultStartOffset(examType); iStopOffset4 = getDefaultStopOffset(examType);
+		    iStart5 = null; iLength5 = null; iStartOffset5 = getDefaultStartOffset(examType); iStopOffset5 = getDefaultStopOffset(examType);
 		}
 		Iterator<Integer> it = times.iterator();
         if (it.hasNext()) {
@@ -706,11 +713,6 @@ public class ExamPeriodEditForm extends ActionForm {
             iStopOffset = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
        } else {
             iStart = null; iLength = null; 
-            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
-            	iStartOffset = iDefaultMidtermStartOffset; iStopOffset = iDefaultMidtermStopOffset;
-            } else {
-            	iStartOffset = iDefaultFinalStartOffset; iStopOffset = iDefaultFinalStopOffset;
-            }
         }
         if (it.hasNext()) {
             int slot = it.next();
@@ -721,11 +723,6 @@ public class ExamPeriodEditForm extends ActionForm {
             iStopOffset2 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart2 = null; iLength2 = null;
-            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
-            	iStartOffset2 = iDefaultMidtermStartOffset; iStopOffset2 = iDefaultMidtermStopOffset;
-            } else {
-            	iStartOffset2 = iDefaultFinalStartOffset; iStopOffset2 = iDefaultFinalStopOffset;
-            }
         }
         if (it.hasNext()) {
             int slot = it.next();
@@ -736,11 +733,6 @@ public class ExamPeriodEditForm extends ActionForm {
             iStopOffset3 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart3 = null; iLength3 = null; 
-            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
-            	iStartOffset3 = iDefaultMidtermStartOffset; iStopOffset3 = iDefaultMidtermStopOffset;
-            } else {
-            	iStartOffset3 = iDefaultFinalStartOffset; iStopOffset3 = iDefaultFinalStopOffset;
-            }
         }
         if (it.hasNext()) {
             int slot = it.next();
@@ -751,11 +743,6 @@ public class ExamPeriodEditForm extends ActionForm {
             iStopOffset4 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart4 = null; iLength4 = null;
-            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
-            	iStartOffset4 = iDefaultMidtermStartOffset; iStopOffset4 = iDefaultMidtermStopOffset;
-            } else {
-            	iStartOffset4 = iDefaultFinalStartOffset; iStopOffset4 = iDefaultFinalStopOffset;
-            }
         }
         if (it.hasNext()) {
             int slot = it.next();
@@ -766,11 +753,6 @@ public class ExamPeriodEditForm extends ActionForm {
             iStopOffset5 = Constants.SLOT_LENGTH_MIN * eventStopOffsets.get(slot);
         } else {
             iStart5 = null; iLength5 = null;
-            if (iType.equals(Exam.sSeatingTypes[Exam.sExamTypeMidterm])){
-            	iStartOffset5 = iDefaultMidtermStartOffset; iStopOffset5 = iDefaultMidtermStopOffset;
-            } else {
-            	iStartOffset5 = iDefaultFinalStartOffset; iStopOffset5 = iDefaultFinalStopOffset;
-            }
         }
 		return true;
 	}
@@ -843,35 +825,11 @@ public class ExamPeriodEditForm extends ActionForm {
 		}
 	}
 
-	public Integer getDefaultMidtermStartOffset() {
-		return iDefaultMidtermStartOffset;
+	public Integer getDefaultStartOffset(Long type) {
+		return Constants.getDefaultExamStartOffset(ExamTypeDAO.getInstance().get(type));
 	}
 
-	public void setDefaultMidtermStartOffset(Integer defaultMidtermStartOffset) {
-		iDefaultMidtermStartOffset = defaultMidtermStartOffset;
-	}
-
-	public Integer getDefaultMidtermStopOffset() {
-		return iDefaultMidtermStopOffset;
-	}
-
-	public void setDefaultMidtermStopOffset(Integer defaultMidtermStopOffset) {
-		iDefaultMidtermStopOffset = defaultMidtermStopOffset;
-	}
-
-	public Integer getDefaultFinalStartOffset() {
-		return iDefaultFinalStartOffset;
-	}
-
-	public void setDefaultFinalStartOffset(Integer defaultFinalStartOffset) {
-		iDefaultFinalStartOffset = defaultFinalStartOffset;
-	}
-
-	public Integer getDefaultFinalStopOffset() {
-		return iDefaultFinalStopOffset;
-	}
-
-	public void setDefaultFinalStopOffset(Integer defaultFinalStopOffset) {
-		iDefaultFinalStopOffset = defaultFinalStopOffset;
+	public Integer getDefaultStopOffset(Long type) {
+		return Constants.getDefaultExamStopOffset(ExamTypeDAO.getInstance().get(type));
 	}
 }
