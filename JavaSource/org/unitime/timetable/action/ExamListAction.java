@@ -229,7 +229,7 @@ public class ExamListAction extends Action {
                 if (roomPref.endsWith(nl)) roomPref = roomPref.substring(0, roomPref.length()-nl.length());
                 if (timeText || ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
                 	if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-                    	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), null);
+                    	MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
                     	epx.load(exam);
                     	perPref+=epx.toString(true);
                 	} else {
