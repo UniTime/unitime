@@ -34,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
+import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoleListForm;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
@@ -83,8 +84,11 @@ public class RoleListAction extends Action {
         // Form submitted
         if (roleListForm.getAuthority() != null) {
         	UserAuthority authority = user.getAuthority(roleListForm.getAuthority());
-        	if (authority != null)
+        	if (authority != null) {
         		user.setCurrentAuthority(authority);
+            	for (SessionAttribute s: SessionAttribute.values())
+            		sessionContext.removeAttribute(s);
+        	}
         	return mapping.findForward("success");
         }
 
