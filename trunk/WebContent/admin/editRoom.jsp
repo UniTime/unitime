@@ -110,6 +110,12 @@
 				<TD nowrap>Department:</TD>
 				<TD>
 					<html:select property="controlDept">
+						<logic:empty name="<%=frmName%>" property="controlDept">
+							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						</logic:empty>
+						<logic:equal name="<%=frmName%>" property="controlDept" value="<%=Constants.ALL_OPTION_VALUE%>">
+							<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+						</logic:equal>
 						<html:options collection="<%=Department.DEPT_ATTR_NAME%>" property="value" labelProperty="label"/>
 					</html:select>
 				</TD>
