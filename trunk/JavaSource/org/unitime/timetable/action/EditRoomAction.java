@@ -156,7 +156,7 @@ public class EditRoomAction extends Action {
             }
             editRoomForm.setType(location.getRoomType().getUniqueId());
             editRoomForm.setCapacity(location.getCapacity().toString());
-            if (location.getExamCapacity() != null){
+            if (location.getExamCapacity() != null && (location.hasAnyExamsEnabled() || location.getExamCapacity() != 0)) {
             	editRoomForm.setExamCapacity(location.getExamCapacity().toString());           
             }
             for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId()))
@@ -392,7 +392,7 @@ public class EditRoomAction extends Action {
             room.setEventDepartment(editRoomForm.getEventDepartment() == null || editRoomForm.getEventDepartment().isEmpty() ? null : new DepartmentDAO().get(Long.valueOf(editRoomForm.getEventDepartment())));
             room.getRoomDepts().add(rd);
             room.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
-            room.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
+            room.setExamCapacity(editRoomForm.getExamCapacity() == null || editRoomForm.getExamCapacity().trim().isEmpty() ? 0 : Integer.valueOf(editRoomForm.getExamCapacity().trim()));
             room.setExamTypes(new HashSet<ExamType>());
             for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId()))
             	if (editRoomForm.getExamEnabled(type.getUniqueId().toString()))
