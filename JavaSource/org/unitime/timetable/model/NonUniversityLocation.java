@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
+
 import org.unitime.timetable.model.base.BaseNonUniversityLocation;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 
@@ -63,7 +65,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setSession(getSession());
 		l.setPermanentId(getPermanentId());
 		l.setExamCapacity(getExamCapacity());
-		l.setExamTypes(getExamTypes());
+		l.setExamTypes(new HashSet<ExamType>(getExamTypes()));
 		l.setRoomType(getRoomType());
 		return l;
 	}
