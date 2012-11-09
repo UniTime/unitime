@@ -75,6 +75,7 @@ public class DataImportForm extends ActionForm {
     	RESERVATIONS("reservations", "Reservations"),
     	SESSION("session", "Academic Session"),
     	PERMISSIONS("permissions", "Permissions"),
+    	TRAVELTIMES("traveltimes", "Travel Times"),
     	;
     	
     	private String iType, iLabel;
