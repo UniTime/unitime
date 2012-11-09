@@ -87,7 +87,7 @@ public class ItypeDescEditAction extends Action {
             } else {
         		Transaction tx = null;
         		
-        		if (myForm.getUniqueId() == null)
+        		if (myForm.getUniqueId() == null || myForm.getUniqueId() < 0)
         			sessionContext.checkPermission(Right.InstructionalTypeAdd);
         		else
         			sessionContext.checkPermission(myForm.getUniqueId(), "ItypeDesc", Right.InstructionalTypeEdit);
