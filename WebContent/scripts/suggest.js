@@ -505,8 +505,8 @@ function displaySuggestionList(textFieldId)
 	var textField = document.getElementById(textFieldId);
 	var suggestionList = document.getElementById( textFieldId + "SuggestionList" );
 	
-	suggestionList.style.top = getPositionTop( textField ) + 25;
-	suggestionList.style.left = getPositionLeft( textField );
+	suggestionList.style.top = (getPositionTop( textField ) + 25) + "px";
+	suggestionList.style.left = getPositionLeft( textField ) + "px";
 	suggestionList.style.visibility = "visible";	
 }
 
@@ -516,8 +516,8 @@ function hideSuggestionList(textFieldId)
 	
 	if ( suggestionList )
 	{
-		suggestionList.style.top = 0;
-		suggestionList.style.left = 0;
+		suggestionList.style.top = "0px";
+		suggestionList.style.left = "0px";
 		suggestionList.style.visibility = "hidden";				
 	}
 }
