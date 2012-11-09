@@ -240,8 +240,8 @@ public class ExamInfoModel implements Serializable {
             */
         }
         if (iExam.getMaxRooms()>0) {
-            iForm.setMinRoomSize(String.valueOf(iExam.getNrStudents()/iExam.getMaxRooms()));
-            iForm.setMaxRoomSize(String.valueOf(Math.max(50,2*iExam.getNrStudents())));
+    		iForm.setMinRoomSize(String.valueOf(iExam.getNrStudents()));
+    		iForm.setMaxRoomSize(null);
         }
         iForm.setRoomFilter(null);
         iForm.setDepth(2);
