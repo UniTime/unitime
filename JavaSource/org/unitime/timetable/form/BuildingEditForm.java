@@ -28,6 +28,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
 
 /** 
  * 
@@ -45,6 +47,11 @@ public class BuildingEditForm extends ActionForm {
     private String iCoordX = null, iCoordY = null;
     
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
+		if (iSessionId == null || iSessionId <= 0) {
+			SessionContext context = HttpSessionContext.getSessionContext(request.getSession().getServletContext());
+			iSessionId = (context.isAuthenticated() ? context.getUser().getCurrentAcademicSessionId() : null);
+		}
+		
         ActionErrors errors = new ActionErrors();
         
         try {
@@ -106,6 +113,7 @@ public class BuildingEditForm extends ActionForm {
     public void load(Building building) {
         setOp("Update");
         setUniqueId(building.getUniqueId());
+        setSessionId(building.getSession().getUniqueId());
         setExternalId(building.getExternalUniqueId());
         setName(building.getName());
         setAbbreviation(building.getAbbreviation());
