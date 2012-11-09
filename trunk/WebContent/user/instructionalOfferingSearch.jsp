@@ -252,7 +252,7 @@
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 					minWordLength="2" 
 					tooltip="<%=MSG.tooltipCourseNumber()%>"
-					onblur="hideSuggestionList('courseNbr');" />
+					onblur="hideSuggestionList('courseNbrText');" />
 			</TD>
 			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;

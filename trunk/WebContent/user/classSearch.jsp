@@ -291,7 +291,7 @@
 					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
 				 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-					onblur="hideSuggestionList('courseNbr');" />
+					onblur="hideSuggestionList('courseNbrText');" />
 			</TD>
 			<TD valign="top" nowrap>
 				&nbsp;&nbsp;&nbsp;
