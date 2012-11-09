@@ -132,9 +132,13 @@ public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesReque
 		
 		Session session = SessionDAO.getInstance().get(sessionId);
 		
+		
 		hibSession.createQuery(
 				"delete from TravelTime where session.uniqueId = :sessionId" +
-				(ids.isEmpty() ? "" : " and location1Id in (" + ids + ") and location1Id in (" + ids + ")"));
+				(ids.isEmpty() ? "" : " and location1Id in (" + ids + ") and location2Id in (" + ids + ")"))
+				.setLong("sessionId", sessionId)
+				.executeUpdate();
+		
 		for (TravelTimes.Room room: request.getRooms()) {
 			for (TravelTimes.Room other: request.getRooms()) {
 				if (room.getId().compareTo(other.getId()) < 0) {
