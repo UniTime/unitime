@@ -258,9 +258,14 @@ public class EditRoomForm extends ActionForm {
                     new ActionMessage("errors.required", "Capacity") );
         }
 
-        if(examCapacity==null || examCapacity.equalsIgnoreCase("")) {
-            errors.add("examCapacity", 
-                    new ActionMessage("errors.required", "Examination Seating Capacity") );
+        boolean exams = false;
+        for (Boolean x: examEnabled.values())
+        	if (x) { exams = true; break; }
+        if (exams) {
+            if(examCapacity==null || examCapacity.equalsIgnoreCase("")) {
+                errors.add("examCapacity", 
+                        new ActionMessage("errors.required", "Examination Seating Capacity") );
+            }
         }
 
         /*
@@ -269,6 +274,11 @@ public class EditRoomForm extends ActionForm {
                     new ActionMessage("errors.required", "Coordinates") );
         }
         */
+        
+        if (controlDept==null || controlDept.equalsIgnoreCase("")) {
+        	errors.add("Department", 
+                    new ActionMessage("errors.required", "Department") );
+        }
         
         return errors;
 	}
