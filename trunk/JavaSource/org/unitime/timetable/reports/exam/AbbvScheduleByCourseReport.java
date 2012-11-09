@@ -207,7 +207,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
                 for (int i=0;i<n;i++) {
                     String a = (i+idx+0*n<lines.size()?lines.elementAt(i+idx+0*n):"");
                     String b = (i+idx+1*n<lines.size()?lines.elementAt(i+idx+1*n):"");
-                    println(rpad(a,66)+"| "+b);
+                    println(rpad(a,66)+"| "+rpad(b, 65));
                     if ((i%split)==split-1) println(separator);
                 }
             }
