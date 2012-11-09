@@ -44,9 +44,9 @@ insert into exam_type (uniqueid, reference, label, xtype) values
 update exam set exam_type_id = ref_table_seq.currval where exam_type = 0;
 update exam_period set exam_type_id = ref_table_seq.currval where exam_type = 0;
 insert into room_exam_type (location_id, exam_type_id)
-	select uniqueid, ref_table_seq.currval from room where exam_type in (2, 3);
+	select uniqueid, ref_table_seq.currval from room where exam_type in (1, 3);
 insert into room_exam_type (location_id, exam_type_id)
-	select uniqueid, ref_table_seq.currval from non_university_location where exam_type in (2, 3);
+	select uniqueid, ref_table_seq.currval from non_university_location where exam_type in (1, 3);
 
 insert into exam_type (uniqueid, reference, label, xtype) values
 	(ref_table_seq.nextval, 'midterm', 'Midterm', 1);

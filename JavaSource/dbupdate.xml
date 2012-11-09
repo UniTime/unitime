@@ -7739,11 +7739,11 @@
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.room_exam_type (location_id, exam_type_id)
-			select uniqueid, %SCHEMA%.ref_table_seq.currval from %SCHEMA%.room where exam_type in (2, 3)
+			select uniqueid, %SCHEMA%.ref_table_seq.currval from %SCHEMA%.room where exam_type in (1, 3)
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.room_exam_type (location_id, exam_type_id)
-			select uniqueid, %SCHEMA%.ref_table_seq.currval from %SCHEMA%.non_university_location where exam_type in (2, 3)
+			select uniqueid, %SCHEMA%.ref_table_seq.currval from %SCHEMA%.non_university_location where exam_type in (1, 3)
 		</plsql>
 		<plsql>
 			insert into %SCHEMA%.exam_type (uniqueid, reference, label, xtype) values
