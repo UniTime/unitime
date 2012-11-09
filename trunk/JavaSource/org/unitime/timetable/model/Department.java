@@ -323,6 +323,13 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 				setLong("sessionId", sessionId.longValue()).
 				setCacheable(true).
 				list());
+		ret.addAll(
+				(new DepartmentDAO()).
+				getSession().
+				createQuery("select distinct d from Department as d inner join d.subjectAreas as r where d.session.uniqueId=:sessionId").
+				setLong("sessionId", sessionId.longValue()).
+				setCacheable(true).
+				list());
 		return ret;
 	}
 
