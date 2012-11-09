@@ -86,6 +86,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TimetableManager;
+import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.AcademicAreaDAO;
 import org.unitime.timetable.model.dao.AcademicClassificationDAO;
 import org.unitime.timetable.model.dao.BuildingDAO;
@@ -116,6 +117,7 @@ import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
+import org.unitime.timetable.model.dao.TravelTimeDAO;
 
 
 /**
@@ -184,6 +186,7 @@ public class SessionRollForward {
 		rollRoomGroupsForward(errors, fromSession, toSession);
 		rollBuildingsForward(errors, fromSession, toSession);
 		rollLocationsForward(errors, fromSession, toSession);
+		rollTravelTimesForward(errors, fromSession, toSession);
 		(new SessionDAO()).getSession().clear();
 	}
 
@@ -559,6 +562,56 @@ public class SessionRollForward {
 		if (sessionHasExternalRoomList(toSession)){
 			Room.addNewExternalRoomsToSession(toSession);
 		}
+	}
+	
+	private void rollTravelTimesForward(ActionMessages errors, Session fromSession, Session toSession) {
+		TravelTimeDAO dao = new TravelTimeDAO();
+		dao.getSession().createQuery(
+				"delete from TravelTime where session.uniqueId = :sessionId")
+				.setLong("sessionId", toSession.getUniqueId())
+				.executeUpdate();
+		
+		for (TravelTime travel: (List<TravelTime>)dao.getSession().createQuery(
+    			"from TravelTime where session.uniqueId = :sessionId")
+    			.setLong("sessionId", fromSession.getUniqueId()).list()) {
+			Location from = findLocation(travel.getLocation1Id(), toSession.getUniqueId());
+			if (from == null) continue;
+			Location to = findLocation(travel.getLocation2Id(), toSession.getUniqueId());
+			if (to == null) continue;
+			
+			TravelTime time = new TravelTime();
+			time.setSession(toSession);
+			time.setLocation1Id(Math.min(from.getUniqueId(), to.getUniqueId()));
+			time.setLocation2Id(Math.max(from.getUniqueId(), to.getUniqueId()));
+			time.setDistance(travel.getDistance());
+			
+			dao.saveOrUpdate(time);
+		}
+	}
+
+	private Location findLocation(Long locationId, Long sessionId) {
+		TravelTimeDAO dao = new TravelTimeDAO();
+		
+		Room room = (Room)dao.getSession().createQuery(
+				"select r2 from Room r1, Room r2 where r1.uniqueId = :locationId and r2.building.session.uniqueId=:sessionId and " +
+				"((r1.externalUniqueId is not null and r1.externalUniqueId = r2.externalUniqueId) or " +
+				"(r1.externalUniqueId is null and r1.building.abbreviation = r2.building.abbreviation and r1.roomNumber = r2.roomNumber))")
+				.setLong("sessionId", sessionId)
+				.setLong("locationId", locationId)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
+		
+		if (room != null) return room;
+				
+		return (NonUniversityLocation)dao.getSession().createQuery(
+				"select r2 from NonUniversityLocation r1, NonUniversityLocation r2 where r1.uniqueId = :locationId and r2.session.uniqueId=:sessionId "
+				+"and r1.name = r2.name")
+				.setLong("sessionId", sessionId)
+				.setLong("locationId", locationId)
+				.setCacheable(true)
+				.setMaxResults(1)
+				.uniqueResult();
 	}
 
 
