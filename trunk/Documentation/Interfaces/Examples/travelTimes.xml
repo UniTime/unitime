@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE traveltimes PUBLIC "-//UniTime//UniTime Travel Times DTD/EN" "http://www.unitime.org/interface/TravelTimes.dtd">
+
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<traveltimes campus="woebegon" year="2010" term="Fal" created="Fri Nov 09 18:02:57 CET 2012">
+  <from building="EDUC" roomNbr="107">
+    <to id="THTR101" building="THTR" roomNbr="101">5</to>
+    <to name="MALL">10</to>
+  </from>
+  <from building="EDUC" roomNbr="108">
+    <to building="EDUC" roomNbr="101">0</to>
+    <to id="THTR101" building="THTR" roomNbr="101">5</to>
+    <to name="MALL">10</to>
+  </from>
+  <from id="THTR101" building="THTR" roomNbr="101">
+    <to building="EDUC" roomNbr="101">5</to>
+    <to building="EDUC" roomNbr="102">5</to>
+    <to building="EDUC" roomNbr="103">5</to>
+    <to building="EDUC" roomNbr="104">5</to>
+    <to building="EDUC" roomNbr="105">5</to>
+    <to building="EDUC" roomNbr="106">5</to>
+    <to name="MALL">15</to>
+  </from>
+  <from name="MALL">
+    <to building="EDUC" roomNbr="101">10</to>
+    <to building="EDUC" roomNbr="102">10</to>
+    <to building="EDUC" roomNbr="103">10</to>
+    <to building="EDUC" roomNbr="104">10</to>
+    <to building="EDUC" roomNbr="105">10</to>
+    <to building="EDUC" roomNbr="106">10</to>
+  </from>
+</traveltimes>
