@@ -168,11 +168,11 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	 * @return Returns the label.
 	 */
 	public String getLabel() {
-		return getAcademicTerm() + " " + getSessionStartYear() + " (" + getAcademicInitiative() + ")";
+		return getAcademicTerm() + " " + getAcademicYear() + " (" + getAcademicInitiative() + ")";
 	}
 	
 	public String getReference() {
-		return getAcademicTerm() + getSessionStartYear() + getAcademicInitiative();
+		return getAcademicTerm() + getAcademicYear() + getAcademicInitiative();
 	}
 
 	public String toString() {
