@@ -1605,7 +1605,7 @@ public class SessionRollForward {
 	
 	private List findExamToRollForward(Session toSession, int examType){
 		ExamDAO eDao = new ExamDAO();
-		return(eDao.getQuery("select distinct e from ExamOwner as eo inner join eo.exam as e where e.examType = :examType " +
+		return(eDao.getQuery("select distinct e from ExamOwner as eo inner join eo.exam as e where e.examType.type = :examType " +
 				" and ((eo.ownerType=:ownerTypeClass and eo.ownerId in (select c.uniqueIdRolledForwardFrom from Class_ as c where c.schedulingSubpart.instrOfferingConfig.instructionalOffering.session.uniqueId = :toSessionId)) " +
 				" or (eo.ownerType=:ownerTypeCourse and eo.ownerId in (select co.uniqueIdRolledForwardFrom from CourseOffering as co where co.subjectArea.session.uniqueId = :toSessionId)) " +
 				" or (eo.ownerType=:ownerTypeOffering and eo.ownerId in (select io.uniqueIdRolledForwardFrom from InstructionalOffering as io where io.session.uniqueId = :toSessionId)) " +

@@ -92,7 +92,7 @@ public class Room extends BaseRoom {
 		r.setSession(getSession());
 		r.setPermanentId(getPermanentId());
 		r.setExamCapacity(getExamCapacity());
-		r.setExamTypes(getExamTypes());
+		r.setExamTypes(new HashSet<ExamType>(getExamTypes()));
 		return r;
 	}
 	
