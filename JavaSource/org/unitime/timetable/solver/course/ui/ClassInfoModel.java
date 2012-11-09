@@ -355,7 +355,7 @@ public class ClassInfoModel implements Serializable {
         }
         if (clazz.getNbrRooms()>0) {
             iForm.setMinRoomSize(String.valueOf(clazz.getMinRoomLimit()));
-            iForm.setMaxRoomSize(String.valueOf(Math.max(50,2*clazz.getClassLimit())));
+            iForm.setMaxRoomSize(null);
         }
         iForm.setRoomFilter(null);
     }
