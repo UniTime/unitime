@@ -201,7 +201,7 @@
 	<tag>
 		<name>solver-warnings</name>
 		<tag-class>org.unitime.timetable.tags.SolverWarnings</tag-class>
-		<body-content>empty</body-content>
+		<body-content>JSP</body-content>
 	</tag>
 	
 	<tag>

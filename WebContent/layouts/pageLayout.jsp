@@ -94,7 +94,7 @@
     </logic:equal>
     
     <tt:hasProperty name="tmtbl.global.warn">
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" style='padding-left:10px;'>
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
@@ -106,9 +106,8 @@
 			window.open('<%=url%>');
 		</script>
 		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr>
-			<td class="popupBlocked" width='5'>&nbsp;</td>
 			<td 
-				class="popupBlocked" 
+				class="popupBlocked" style='padding-left:10px;'
 				onMouseOver="this.style.backgroundColor='#BBCDD0';"
 				onMouseOut="this.style.backgroundColor='#DFE7F2';">
 				<a class='noFancyLinks' href="<%=request.getAttribute(Constants.REQUEST_OPEN_URL)%>">
@@ -118,21 +117,21 @@
 		</table>
 	<% } %>
 	<% if (session.getAttribute(Constants.REQUEST_WARN)!=null) { %>
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqWarn" width='5'>&nbsp;</td><td class="reqWarn" >
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqWarn" style='padding-left:10px;'>
 				<%=session.getAttribute(Constants.REQUEST_WARN)%>
 		</td></tr></table>
 	<% session.removeAttribute(Constants.REQUEST_WARN);
 	   } %>
 	<% if (session.getAttribute(Constants.REQUEST_MSSG)!=null) { %>
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqMsg" width='5'>&nbsp;</td><td class="reqMsg" >
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqMsg" style='padding-left:10px;'>
 				<%=session.getAttribute(Constants.REQUEST_MSSG)%>
 		</td></tr></table>
 	<% session.removeAttribute(Constants.REQUEST_MSSG);
 	   } %>
 	<tiles:importAttribute name="showSolverWarnings" scope="request"/>
-	<logic:equal name="showSolverWarnings" value="true">
-		<tt:solver-warnings/>
-	</logic:equal>
+	<logic:notEqual name="showSolverWarnings" value="none">
+		<tt:solver-warnings><bean:write name="showSolverWarnings"/></tt:solver-warnings>
+	</logic:notEqual>
 	<tt:offering-locks/>
 		
 	<tiles:importAttribute/>

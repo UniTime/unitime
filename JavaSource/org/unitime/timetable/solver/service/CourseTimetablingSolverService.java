@@ -264,7 +264,7 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
 						}
 					}
 				}
-				warn += (dept?" departmental":"") +" classes are not considered.";
+				warn += (dept?", departmental":"") +" classes are not considered.";
 				nrWarns++;
 			}
 			if (nrWarns >= 3) {
