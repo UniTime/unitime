@@ -54,7 +54,7 @@
     </tt:propertyEquals>
 
 	<tt:hasProperty name="tmtbl.global.warn">
-		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" width='5'>&nbsp;</td><td class="reqGlobalWarn" >
+		<table width='100%' border='0' cellpadding='3' cellspacing='0'><tr><td class="reqGlobalWarn" style='padding-left:10px;'>
 			<tt:property name="tmtbl.global.warn"/>
 		</td></tr></table>
 	</tt:hasProperty>
