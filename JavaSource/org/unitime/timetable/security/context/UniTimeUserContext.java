@@ -339,6 +339,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 					hibSession.saveOrUpdate(userData);
 				}
 			}
+			hibSession.flush();
 		} finally {
 			hibSession.close();
 		}
