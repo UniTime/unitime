@@ -243,6 +243,42 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Room Size Penalty</name>
+			<description>
+				<line>Added ability to make the difference function polynomial with a new parameter Exams.RoomSizeFactor (defaults to 1.0).</line>
+				<line>New objective value: (room size - number of students) ^ room size factor.</line>
+				<line>This is to be able to favor a room swap between two exams at the same period, in which a smaller exam takes a smaller room.
+					<line>To do this, set Exams.RoomSizeFactor to a number bigger than one that is close to one (e.g., 1.05).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Distance To A Strongly Preferred Room</name>
+			<description>
+				<line>Added an experimental criterion measuring average distance (in meters) to the strongly preferred room (or rooms) of the examination.</line>
+				<line>The idea is to prefer rooms that are close to the strongly preference room (if there is a strongly preferred room but it is not available).</line>
+				<line>A weight of the average distance between the assigned room(s) and the strongly preferred room or rooms can be set using Exams.DistanceToStronglyPreferredRoomWeight property.</line>
+				<line>To enable this criterion add the DistanceToStronglyPreferredRoom class name to Exams.AdditionalCriteria parameter. For instance:
+					<line>Exams.AdditionalCriteria=net.sf.cpsolver.exam.criteria.additional.DistanceToStronglyPreferredRoom</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Placement Penalty</name>
+			<description>
+				<line>Combination of examination room preference (set on an exam) and room period preference (set on a room) changed.</line>
+				<line>Now it is 2x examination room preference PLUS room period preference of the examination period in question.
+					<line>Was: examination room preference if it was set (there was a room, building,
+						group, or feature containing the room set on the exam itself); room period
+						preference otherwise (if there is no examination room preference).</line>
+				</line>
+				<line>This is to be able to distinguish between a preferred room that has no period preference and a preferred room that is discouraged at the given period.
+					<line>While the preferences set on the exam have still higher weights than the period preferences set on the room.</line>
+					<line>Except when the period is prohibited in which case the room cannot be used at that period at all (this did not change).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
