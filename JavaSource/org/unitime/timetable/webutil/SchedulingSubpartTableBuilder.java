@@ -74,7 +74,7 @@ public class SchedulingSubpartTableBuilder {
         
         // Read setting for auto calculation 
         boolean autoCalc = true;
-        if (!CommonValues.No.eq(UserProperty.ConfigAutoCalc.get(context.getUser())))
+        if (!CommonValues.Yes.eq(UserProperty.ConfigAutoCalc.get(context.getUser())))
             autoCalc = false;
         
         // Get external depts
