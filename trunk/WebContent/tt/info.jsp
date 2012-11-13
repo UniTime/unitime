@@ -43,6 +43,9 @@
 			parent.refreshPage();
 		</script>
 	</logic:equal>
+	<script language="JavaScript" type="text/javascript">
+		if (parent) parent.hideGwtHint();
+	</script>
 	<tt:confirm name="confirmAssign"><bean:write name="model" property="assignConfirm"/></tt:confirm>
 	<table border='0' width='100%'>
 		<tr><td colspan='2'>
