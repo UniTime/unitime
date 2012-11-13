@@ -155,6 +155,9 @@
 	parent.refreshPage();
 </script>
 </logic:equal>
+<script language="JavaScript" type="text/javascript">
+	if (parent) parent.hideGwtHint();
+</script>
 <%
 try {
 %>
