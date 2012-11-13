@@ -809,7 +809,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Available {0} out of {1} spaces, reservation required for {2} of them")
 	String availableSomeReservation(int available, int limit, int availableWithReservation);
 	
-	@DefaultMessage("<sup><font color='#9CB0CE'>r)</font></sup>")
+	@DefaultMessage("<sup><font color='#2066CE'>r)</font></sup>")
 	String htmlReservationSign();
 	
 	@DefaultMessage("No results matching filter {0} found.")
@@ -861,7 +861,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String tabChangeLog();
 
-	@DefaultMessage("<sup><font color='#9CB0CE'>({0}p)</font></sup>")
+	@DefaultMessage("<sup><font color='#2066CE'>({0}p)</font></sup>")
 	String firstWaitListedPrioritySign(int priority);
 	
 	@DefaultMessage("r) Space available only with a reservation.")
