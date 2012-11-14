@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -106,5 +109,27 @@ public class PersonInterface implements Comparable<PersonInterface>, IsSerializa
     	if (iDept == null || iDept.isEmpty()) iDept = person.getDepartment();
     	if (!iSource.contains(person.getSource()))
     		iSource += ", " + person.getSource();
+    }
+    
+    public static class LookupRequest implements GwtRpcRequest<GwtRpcResponseList<PersonInterface>> {
+    	private String iQuery, iOptions;
+    	
+    	public LookupRequest() {}
+    	
+    	public LookupRequest(String query, String options) {
+    		iQuery = query; iOptions = options;
+    	}
+    	
+    	public String getQuery() { return iQuery; }
+    	public void setQuery(String query) { iQuery = query; }
+    	
+    	public String getOptions() { return iOptions; }
+    	public void setOptions(String options) { iOptions = options; }
+    	public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
+    	
+    	@Override
+    	public String toString() {
+    		return getQuery() + (hasOptions() ? " (" + getOptions() + ")" : "");
+    	}
     }
 }

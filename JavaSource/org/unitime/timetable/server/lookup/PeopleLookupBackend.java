@@ -17,13 +17,11 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.server;
+package org.unitime.timetable.server.lookup;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
@@ -37,12 +35,13 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.services.LookupService;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
+import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 import org.unitime.timetable.interfaces.ExternalUidTranslation.Source;
 import org.unitime.timetable.model.DepartmentalInstructor;
@@ -57,17 +56,18 @@ import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
 /**
  * @author Tomas Muller
  */
-@Service("lookup.gwt")
-public class LookupServlet implements LookupService {
-	private static Logger sLog = Logger.getLogger(LookupServlet.class);
+@Service("org.unitime.timetable.gwt.shared.PersonInterface$LookupRequest")
+public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>> {
+	private static Logger sLog = Logger.getLogger(PeopleLookupBackend.class);
 	private static ExternalUidTranslation iTranslation;
     
-	public LookupServlet() {
+	public PeopleLookupBackend() {
         if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
             try {
                 iTranslation = (ExternalUidTranslation)Class.forName(ApplicationProperties.getProperty("tmtbl.externalUid.translation")).getConstructor().newInstance();
@@ -77,12 +77,9 @@ public class LookupServlet implements LookupService {
         }
 	}
 	
-	private @Autowired SessionContext sessionContext;
-	private SessionContext getSessionContext() { return sessionContext; }
-
-	private Long getAcademicSessionId() {
-		if (getSessionContext() == null) return null;
-		UserContext user = getSessionContext().getUser();
+	private Long getAcademicSessionId(SessionContext context) {
+		if (context == null) return null;
+		UserContext user = context.getUser();
 		if (user == null) throw new LookupException("not authenticated");
 		if (user.getCurrentAuthority() == null) throw new LookupException("insufficient rights");
 		Long sessionId = user.getCurrentAcademicSessionId();
@@ -90,15 +87,18 @@ public class LookupServlet implements LookupService {
 		return sessionId;
 	}
 
+	
 	@Override
-	public List<PersonInterface> lookupPeople(String query, String options) throws LookupException {
+	public GwtRpcResponseList<PersonInterface> execute(LookupRequest request, SessionContext context) {
 		try {
+			if (context != null) context.checkPermission(Right.HasRole);
+			
 			boolean displayWithoutId = true;
 			int maxResults = -1;
 			boolean ldap = true, students = true, staff = true, managers = true, events = true, instructors = true;
-			Long sessionId = getAcademicSessionId();
-			if (options != null) {
-				for (String option: options.split(",")) {
+			Long sessionId = getAcademicSessionId(context);
+			if (request.hasOptions()) {
+				for (String option: request.getOptions().split(",")) {
 					option = option.trim();
 					if (option.equals("mustHaveExternalId"))
 						displayWithoutId = false;
@@ -125,19 +125,19 @@ public class LookupServlet implements LookupService {
 			}
 			Hashtable<String, PersonInterface> people = new Hashtable<String, PersonInterface>();
 			TreeSet<PersonInterface> peopleWithoutId = new TreeSet<PersonInterface>();
-			String q = query.trim().toLowerCase();
+			String q = request.getQuery().trim().toLowerCase();
 	        if (ldap) findPeopleFromLdap(people, peopleWithoutId, q);
 	        if (students) findPeopleFromStudents(people, peopleWithoutId, q, sessionId);
 	        if (instructors) findPeopleFromInstructors(people, peopleWithoutId, q, sessionId);
 	        if (staff) findPeopleFromStaff(people, peopleWithoutId, q);
 	        if (managers) findPeopleFromTimetableManagers(people, peopleWithoutId, q);
 	        if (events) findPeopleFromEventContact(people, peopleWithoutId, q);
-	        List<PersonInterface> ret = new ArrayList<PersonInterface>(people.values());
+	        GwtRpcResponseList<PersonInterface> ret = new GwtRpcResponseList<PersonInterface>(people.values());
 	        Collections.sort(ret);
 	        if (displayWithoutId)
 	        	ret.addAll(peopleWithoutId);
 	        if (maxResults > 0 && ret.size() > maxResults) {
-	        	return new ArrayList<PersonInterface>(ret.subList(0, maxResults));
+	        	return new GwtRpcResponseList<PersonInterface>(ret.subList(0, maxResults));
 	        }
 			return ret;
 		} catch (Exception e) {

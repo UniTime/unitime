@@ -30,9 +30,10 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtResources;
-import org.unitime.timetable.gwt.services.LookupService;
-import org.unitime.timetable.gwt.services.LookupServiceAsync;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -79,7 +80,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 	private String iLastQuery = null;
 	private PersonInterface iValue = null;
 	
-	private final LookupServiceAsync iLookupService = GWT.create(LookupService.class);
+	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	public Lookup() {
 		super(true, true);
@@ -218,9 +219,9 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		List<Widget> line = new ArrayList<Widget>();
 		line.add(new LoadingImage());
 		iTable.addRow(null, line);
-		iLookupService.lookupPeople(q, iOptions, new AsyncCallback<List<PersonInterface>>() {
+		RPC.execute(new PersonInterface.LookupRequest(q, iOptions), new AsyncCallback<GwtRpcResponseList<PersonInterface>>() {
 			@Override
-			public void onSuccess(List<PersonInterface> result) {
+			public void onSuccess(GwtRpcResponseList<PersonInterface> result) {
 				iLastQuery = q;
 				iTable.clearTable(1);
 				boolean hasId = true;
