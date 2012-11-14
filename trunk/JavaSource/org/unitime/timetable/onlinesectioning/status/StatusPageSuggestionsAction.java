@@ -40,7 +40,6 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
-import org.unitime.timetable.gwt.server.LookupServlet;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -69,6 +68,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.Constants;
 
 public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<String[]>> {
@@ -225,7 +225,8 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			}
 			m = Pattern.compile("^(.*\\W?student:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
 			if (m.matches() && m.group(2).length() > 0) {
-				for (PersonInterface person: new LookupServlet().lookupPeople(m.group(2), "mustHaveExternalId,source=students,session=" + sessionId + ",maxResults=" + iLimit)) {
+				for (PersonInterface person: new PeopleLookupBackend().execute(
+						new PersonInterface.LookupRequest(m.group(2), "mustHaveExternalId,source=students,session=" + sessionId + ",maxResults=" + iLimit), null)) {
 					ret.add(new String[] {
 							m.group(1) + (person.getId().indexOf(' ') >= 0 ? "\"" + person.getId() + "\"" : person.getId()),
 							person.getName()
