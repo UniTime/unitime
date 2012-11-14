@@ -1084,6 +1084,7 @@ public class SimpleEditServlet implements SimpleEditService {
 								null,
 								null);
 					}
+					break;
 				case examType:
 					for (ExamType type: ExamTypeDAO.getInstance().findAll(hibSession)) {
 						Record r = data.getRecord(type.getUniqueId());
