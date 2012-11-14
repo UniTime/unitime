@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.gwt.server.LookupServlet;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -42,6 +41,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventPropertiesRpcRequest")
 public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
@@ -144,7 +144,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			return c;
 		}
 		if (user.getName() != null && !user.getName().isEmpty()) {
-			List<PersonInterface> people = new LookupServlet().lookupPeople(user.getName(), "mustHaveExternalId,session=" + sessionId);
+			List<PersonInterface> people = new PeopleLookupBackend().execute(
+					new PersonInterface.LookupRequest(user.getName(), "mustHaveExternalId,session=" + sessionId), null);
 			if (people != null) {
 				for (PersonInterface person: people) {
 					if (user.getExternalUserId().equals(person.getId())) {
