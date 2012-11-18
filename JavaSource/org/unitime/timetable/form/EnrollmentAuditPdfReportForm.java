@@ -30,7 +30,6 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.unitime.commons.Email;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.reports.enrollment.EnrollmentsViolatingCourseStructureAuditReport;
 import org.unitime.timetable.reports.enrollment.MissingCourseEnrollmentsAuditReport;
@@ -165,7 +164,7 @@ public class EnrollmentAuditPdfReportForm extends ActionForm {
     public void setCc(String cc) { iCc = cc; }
     public String getBcc() { return iBcc; }
     public void setBcc(String bcc) { iBcc = bcc; }
-    public boolean getCanEmail() { return Email.isEnabled(); }
+    public boolean getCanEmail() { return true; }
     public String getReport() { return iReport; }
     public void setReport(String report) { iReport = report; }
     public void log(String message) {

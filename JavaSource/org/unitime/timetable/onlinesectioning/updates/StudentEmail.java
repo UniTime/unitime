@@ -175,7 +175,7 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 					if (emailEnabled) {
 						final String html = generateMessage(dbStudent, server, helper);
 						if (html != null) {
-							Email email = new Email();
+							Email email = Email.createEmail();
 
 							email.addRecipient(dbStudent.getEmail(), dbStudent.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle));
 							

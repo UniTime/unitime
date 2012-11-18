@@ -97,7 +97,7 @@ public abstract class EventRelatedImports extends BaseImport {
 	
 	protected void mailLoadResults(){
     	try {
-    		Email email = new Email();
+    		Email email = Email.createEmail();
     		email.setSubject("UniTime (Data Import): " + getEmailSubject());
            	
            	String mail = "";

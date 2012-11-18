@@ -134,7 +134,7 @@ public class InquiryAction extends Action {
 	            	
                     EventContact c = EventContact.findByExternalUniqueId(sessionContext.getUser().getExternalUserId());
 	            	
-                    Email email = new Email();
+                    Email email = Email.createEmail();
                     email.setSubject("UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
                     email.setText(mail);
                     
@@ -179,7 +179,7 @@ public class InquiryAction extends Action {
                 				myForm.getMessage()+"\n"+
                 				"-- END INQUIRY -------------------------------------------";
                             
-                            email = new Email();
+                            email = Email.createEmail();
                             email.setSubject("RE: UniTime ("+myForm.getTypeMsg(myForm.getType())+"): "+myForm.getSubject());
                             email.setText(mail);
                             

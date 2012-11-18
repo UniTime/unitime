@@ -316,7 +316,7 @@ public class EventEmail {
             message += "</td></tr></table>";
             message += "</body></html>";
             
-            Email mail = new Email();
+            Email mail = Email.createEmail();
             mail.setSubject(subject);
             
             mail.setHTML(message);
