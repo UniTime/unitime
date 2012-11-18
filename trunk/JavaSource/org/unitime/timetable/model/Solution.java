@@ -527,7 +527,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
         	mail += "Version: "+Constants.getVersion()+" ("+Constants.getReleaseDate()+")\r\n";
         	mail += "TimeStamp: "+(new Date());
         	
-        	Email email = new Email();
+        	Email email = Email.createEmail();
         	email.addRecipient(mgr.getEmailAddress(), mgr.getName());
         	email.addNotifyCC();
         	email.setSubject("UniTime (Solution Commit): "+subject);

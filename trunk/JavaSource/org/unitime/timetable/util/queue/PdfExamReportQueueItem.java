@@ -418,7 +418,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             managers.remove(manager);
                             log("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
                             try {
-                                Email mail = new Email();
+                                Email mail = Email.createEmail();
                                 mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
                                 mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
                                         "For an up-to-date report, please visit "+
@@ -455,7 +455,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                     }
                 } else {
                     try {
-                    	Email mail = new Email();
+                    	Email mail = Email.createEmail();
                         mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
                         mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
                                 "For an up-to-date report, please visit "+
@@ -489,7 +489,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             continue;
                         }
                         try {
-                        	Email mail = new Email();
+                        	Email mail = Email.createEmail();
                             mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
                                     "For an up-to-date report, please visit "+
@@ -522,7 +522,7 @@ public class PdfExamReportQueueItem extends QueueItem {
                             continue;
                         }
                         try {
-                            Email mail = new Email();
+                            Email mail = Email.createEmail();
                             mail.setSubject(iForm.getSubject()==null?"Examination Report":iForm.getSubject());
                             mail.setText((iForm.getMessage()==null?"":iForm.getMessage()+"\r\n\r\n")+
                                     "For an up-to-date report, please visit "+

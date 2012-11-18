@@ -283,7 +283,7 @@ public class DataImportAction extends Action {
             	if (address == null || address.isEmpty()) address = getOwnerEmail();
             	if (address != null && !address.isEmpty()) {
                     try {
-                    	Email mail = new Email();
+                    	Email mail = Email.createEmail();
                     	mail.setSubject("Data " + (iImport ? "import" : "export") + " finished.");
                     	mail.setHTML(log()+"<br><br>"+
                                 "This email was automatically generated at "+

@@ -80,7 +80,7 @@ public class EventEmail {
 				return;
 	        }
 			
-			Email email = new Email();
+			Email email = Email.createEmail();
 			if (event().hasContact() && event().getContact().getEmail() != null)
 				email.addRecipient(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			if (event().hasAdditionalContacts()) {
