@@ -530,7 +530,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         managers.remove(manager);
                         sLog.info("Sending email to "+manager.getName()+" ("+manager.getEmailAddress()+")...");
                         try {
-                            Email mail = new Email();
+                            Email mail = Email.createEmail();
                             mail.setSubject(System.getProperty("email.subject","Examination Report"));
                             String message = System.getProperty("email.body");
                             String url = System.getProperty("email.url");
@@ -567,7 +567,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                 }
             } else {
                 try {
-                    Email mail = new Email();
+                    Email mail = Email.createEmail();
                     mail.setSubject(System.getProperty("email.subject","Examination Report"));
                     String message = System.getProperty("email.body");
                     String url = System.getProperty("email.url");
@@ -601,7 +601,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         continue;
                     }
                     try {
-                        Email mail = new Email();
+                        Email mail = Email.createEmail();
                         mail.setSubject(System.getProperty("email.subject","Examination Report"));
                         String message = System.getProperty("email.body");
                         String url = System.getProperty("email.url");
@@ -634,7 +634,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         continue;
                     }
                     try {
-                        Email mail = new Email();
+                        Email mail = Email.createEmail();
                         mail.setSubject(System.getProperty("email.subject","Examination Report"));
                         String message = System.getProperty("email.body");
                         String url = System.getProperty("email.url");

@@ -140,7 +140,7 @@ public class EnrollmentAuditPdfReportAction extends Action {
                 else if (myForm.getEmail()) {
                     myForm.log("Sending email(s)...");
                     try {
-                        Email mail = new Email();
+                        Email mail = Email.createEmail();
                         mail.setSubject(myForm.getSubject()==null?"Enrollment Audit Report":myForm.getSubject());
                         mail.setText((myForm.getMessage()==null?"":myForm.getMessage()+"\r\n\r\n")+
                                 "For an up-to-date report, please visit "+
