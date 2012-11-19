@@ -22,7 +22,6 @@ package org.unitime.timetable.form;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -73,9 +72,6 @@ public class SessionEditForm extends ActionForm {
 	Integer wkEnroll = 1, wkChange = 1, wkDrop = 4;
 	Long sectStatus;
 	boolean includeTestSession;
-	
-	Hashtable<String,String> roomOptionMessage = new Hashtable();
-	Hashtable<String,Boolean> roomOptionScheduleEvents = new Hashtable();
 	
 	// --------------------------------------------------------- Methods
 	
@@ -359,24 +355,7 @@ public class SessionEditForm extends ActionForm {
     public Set<RoomType> getRoomTypes() {
         return RoomType.findAll();
     }
-    
-    public String getRoomOptionMessage(String roomType) {
-        return roomOptionMessage.get(roomType);
-    }
-    public void setRoomOptionMessage(String roomType, String message) {
-        if (message==null)
-            roomOptionMessage.remove(roomType);
-        else
-            roomOptionMessage.put(roomType, message);
-    }
-    public boolean getRoomOptionScheduleEvents(String roomType) {
-        Boolean ret = roomOptionScheduleEvents.get(roomType);
-        return (ret!=null && ret.booleanValue());
-    }
-    public void setRoomOptionScheduleEvents(String roomType, boolean enable) {
-        roomOptionScheduleEvents.put(roomType, enable);
-    }
-    
+        
     public Integer getWkEnroll() { return wkEnroll; }
     public void setWkEnroll(Integer wkEnroll) { this.wkEnroll = wkEnroll; }
 

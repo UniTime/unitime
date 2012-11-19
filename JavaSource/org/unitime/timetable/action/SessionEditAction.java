@@ -46,8 +46,6 @@ import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamEvent;
-import org.unitime.timetable.model.RoomType;
-import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.TimetableManager;
@@ -139,12 +137,6 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
 		sessionEditForm.setExamStart(acadSession.getExamBeginDate()==null?"":sdf.format(acadSession.getExamBeginDate()));
 		sessionEditForm.setEventStart(acadSession.getEventBeginDate()==null?"":sdf.format(acadSession.getEventBeginDate()));
 		sessionEditForm.setEventEnd(acadSession.getEventEndDate()==null?"":sdf.format(acadSession.getEventEndDate()));
-		
-		for (RoomType t : RoomType.findAll()) {
-		    RoomTypeOption o = t.getOption(acadSession);
-		    sessionEditForm.setRoomOptionScheduleEvents(t.getReference(), o.canScheduleEvents());
-		    sessionEditForm.setRoomOptionMessage(t.getReference(), o.getMessage());
-		}
 		
         Session sessn = Session.getSessionById(id);
 		LookupTables.setupDatePatterns(request, sessn, false, Constants.BLANK_OPTION_LABEL, null, null, null);
@@ -260,13 +252,6 @@ public class SessionEditAction extends SpringAwareLookupDispatchAction {
             setSessionData(request, sessionEditForm, sessn);
 
             hibSession.saveOrUpdate(sessn);
-
-            for (RoomType t : RoomType.findAll()) {
-                RoomTypeOption o = t.getOption(sessn);
-                o.setScheduleEvents(sessionEditForm.getRoomOptionScheduleEvents(t.getReference()));
-                o.setMessage(sessionEditForm.getRoomOptionMessage(t.getReference()));
-                hibSession.saveOrUpdate(o);
-            }
 
             ChangeLog.addChange(
                     hibSession, 

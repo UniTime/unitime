@@ -32,7 +32,6 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -80,14 +79,14 @@ public class SessionListAction extends Action {
 		sessionContext.checkPermission(Right.AcademicSessions);
 
 		WebTable webTable = new WebTable(
-				12, "", "sessionList.do?order=%%",					
+				11, "", "sessionList.do?order=%%",					
 				new String[] {
 					"Default", "Academic<br>Session", "Academic<br>Initiative", "Session<br>Begins",
 					"Classes<br>End", "Session<br>Ends", "Exams<br>Begins", "Date<br>Pattern", "Status", "Subject<br>Areas", 
-					"Events<br>Begins", "Events<br>Ends", "Event<br>Management", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
+					"Events<br>Begins", "Events<br>Ends", "<br>Enrollment", "Deadline<br>Change", "<br>Drop", "Sectioning<br>Status" },
 				new String[] { "center", "left", "left", "left", "left",
-					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left", "left" }, 
-				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true, true });
+					"left", "left", "left", "left", "right", "left", "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, false, false, false, true, false, true, true, true, true, true, true, true });
 		
 		DecimalFormat df5 = new DecimalFormat("####0");
 		DateFormat df = DateFormat.getDateInstance();
@@ -96,16 +95,6 @@ public class SessionListAction extends Action {
 		Session defaultSession = UniTimeUserContext.defaultSession(sessions, null);
 
 		for (Session s: SessionDAO.getInstance().findAll()) {
-			String roomTypes = ""; boolean all = true;
-			for (RoomType t : RoomType.findAll()) {
-				if (t.getOption(s).canScheduleEvents()) {
-					if (roomTypes.length()>0) roomTypes+=", ";
-					roomTypes+=t.getLabel();
-				} else all = false;
-			}
-			if (all) roomTypes = "<i>All</i>";
-			if (roomTypes.length()==0) roomTypes = "<i>N/A</i>";
-			
 			Calendar ce = Calendar.getInstance(Locale.US); ce.setTime(s.getSessionBeginDateTime());
 			ce.add(Calendar.WEEK_OF_YEAR, s.getLastWeekToEnroll()); ce.add(Calendar.DAY_OF_YEAR, -1);
 
@@ -130,7 +119,6 @@ public class SessionListAction extends Action {
 						df5.format(s.getSubjectAreas().size()),
 						(s.getEventBeginDate()==null?"N/A":df.format(s.getEventBeginDate()).replace(" ", "&nbsp;")),
 						(s.getEventEndDate()==null?"N/A":df.format(s.getEventEndDate()).replace(" ", "&nbsp;")),
-						roomTypes,
 						df.format(ce.getTime()).replace(" ", "&nbsp;"),
 						df.format(cc.getTime()).replace(" ", "&nbsp;"),
 						df.format(cd.getTime()).replace(" ", "&nbsp;"),
@@ -149,7 +137,6 @@ public class SessionListAction extends Action {
 						df5.format(s.getSubjectAreas().size()),
 						s.getEventBeginDate(),
 						s.getEventEndDate(),
-						roomTypes,
 						ce.getTime(), cc.getTime(), cd.getTime(),
 						(s.getDefaultSectioningStatus() == null ? " " : s.getDefaultSectioningStatus().getReference()) } );
 		}

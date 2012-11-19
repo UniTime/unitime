@@ -97,7 +97,7 @@ public class EventPermissions {
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId " +
 					"from Location l, RoomTypeOption o " +
-					"where l.eventDepartment.allowEvents = true and o.status = 1 and o.roomType = l.roomType and o.session = l.session and l.session.uniqueId = :sessionId")
+					"where l.eventDepartment.allowEvents = true and o.status = 1 and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId")
 					.setLong("sessionId", sessionId).setCacheable(true).list();
 		}
 	}

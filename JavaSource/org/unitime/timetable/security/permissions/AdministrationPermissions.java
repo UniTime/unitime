@@ -77,7 +77,7 @@ public class AdministrationPermissions {
 			int nrOffered = ((Number)DepartmentDAO.getInstance().getSession().
                     createQuery("select count(io) from CourseOffering co inner join co.instructionalOffering io " +
                     		"where co.subjectArea.department.uniqueId=:deptId and io.notOffered = 0").
-                    setLong("deptId", source.getUniqueId()).uniqueResult()).intValue();
+                    setLong("deptId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
             
 			return nrOffered == 0;
 		}
@@ -98,7 +98,7 @@ public class AdministrationPermissions {
 			if (source.isExternalManager()) {
 	            int nrExtManaged = ((Number)DepartmentDAO.getInstance().getSession().
 	                    createQuery("select count(c) from Class_ c where c.managingDept.uniqueId=:deptId").
-	                    setLong("deptId", source.getUniqueId()).uniqueResult()).intValue();
+	                    setLong("deptId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
 	            
 	            return nrExtManaged == 0;
 			} else {
@@ -226,10 +226,12 @@ public class AdministrationPermissions {
 	        int nrUsed = ((Number)ItypeDescDAO.getInstance().getSession().
 	        		createQuery("select count(s) from SchedulingSubpart s where s.itype.itype=:itype").
 	                setInteger("itype", source.getItype()).
+	                setCacheable(true).
 	                uniqueResult()).intValue();
 	        int nrChildren = ((Number)ItypeDescDAO.getInstance().getSession().
 	        		createQuery("select count(i) from ItypeDesc i where i.parent.itype=:itype").
 	        		setInteger("itype", source.getItype()).
+	        		setCacheable(true).
 	                uniqueResult()).intValue();
 	        
 	        return nrUsed == 0 && nrChildren == 0;
@@ -349,4 +351,38 @@ public class AdministrationPermissions {
 
 	@PermissionForRight(Right.StudentGroupEdit)
 	public static class StudentGroupEdit extends StudentGroups {}
+	
+	@PermissionForRight(Right.EventRoomTypes)
+	public static class EventRoomTypes implements Permission<Department> {
+		@Autowired Permission<Department> permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			if (!permissionDepartment.check(user, source))
+				return false;
+			
+			if (!source.isAllowEvents())
+				return false;
+
+			int nrRooms = ((Number)DepartmentDAO.getInstance().getSession().
+                    createQuery("select count(r) from Room r " +
+                    		"where r.eventDepartment.uniqueId=:deptId").
+                    setLong("deptId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
+			
+			if (nrRooms > 0) return true;
+			
+			int nrLocations = ((Number)DepartmentDAO.getInstance().getSession().
+                    createQuery("select count(r) from NonUniversityLocation r " +
+                    		"where r.eventDepartment.uniqueId=:deptId").
+                    setLong("deptId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
+			
+			return nrLocations > 0;
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class;}
+	}
+	
+	@PermissionForRight(Right.EventRoomTypeEdit)
+	public static class EventRoomTypeEdit extends EventRoomTypes {}
 }

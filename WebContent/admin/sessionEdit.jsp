@@ -225,23 +225,6 @@
 
 		<TR>
 			<TD colspan='3'>
-				<tt:section-title><br>Room Types</tt:section-title>
-			</TD>
-		</TR>
-		<TR>
-			<TD><i>Room Type</i></TD><TD><i>Event Management</i></TD><TD><i>Message</i></TD>
-		</TR>
-		<logic:iterate name="sessionEditForm" property="roomTypes" id="roomType">
-			<bean:define name="roomType" property="reference" id="ref"/>
-			<TR>
-				<TD><bean:write name="roomType" property="label"/></TD>
-				<TD><html:checkbox property='<%="roomOptionScheduleEvents("+ref+")"%>'/></TD>
-				<TD><html:text property='<%="roomOptionMessage("+ref+")"%>' maxlength="200" size="100"/></TD>
-			</TR>
-		</logic:iterate>
-
-		<TR>
-			<TD colspan='3'>
 				<tt:section-title><br>Online Student Scheduling Default Settings</tt:section-title>
 			</TD>
 		</TR>

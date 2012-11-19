@@ -73,7 +73,6 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
@@ -495,7 +494,7 @@ public class EventAddForm extends ActionForm {
         buildings: for (Iterator i=ret.iterator();i.hasNext();) {
             Building b = (Building)i.next();
             for (RoomType roomType : RoomType.findAll(true)) {
-                if ((iAdmin || roomType.getOption(b.getSession()).canScheduleEvents()) && roomType.countManagableRoomsOfBuilding(b.getUniqueId())>0) continue buildings;
+                if ((iAdmin || roomType.canScheduleEvents(iSessionId)) && roomType.countManagableRoomsOfBuilding(b.getUniqueId())>0) continue buildings;
             }
             i.remove();
         }
@@ -515,7 +514,7 @@ public class EventAddForm extends ActionForm {
         TreeSet<NonUniversityLocation> locations = new TreeSet<NonUniversityLocation>();
         for (NonUniversityLocation location: Location.findAllNonUniversityLocations(iSessionId)) {
         	if (roomType != null && !roomType.equals(location.getRoomType().getUniqueId())) continue;
-        	if (iAdmin || location.getRoomType().getOption(location.getSession()).canScheduleEvents())
+        	if (iAdmin || location.getRoomType().getOption(location.getEventDepartment()).canScheduleEvents())
         		locations.add(location);
         }
         return locations;
@@ -576,11 +575,10 @@ public class EventAddForm extends ActionForm {
     public Collection<RoomType> getAllRoomTypes() {
         Collection<RoomType> ret = RoomType.findAll();
         if (getSessionId()!=null) {
-            Session session = new SessionDAO().get(getSessionId());
             for (Iterator<RoomType> i=ret.iterator(); i.hasNext();) {
                 RoomType t = (RoomType)i.next();
                 if (t.countManagableRooms(getSessionId())<=0) {i.remove(); continue; }
-                if (!iAdmin && !t.getOption(session).canScheduleEvents()) {i.remove(); continue; }
+                if (!iAdmin && !t.canScheduleEvents(getSessionId())) {i.remove(); continue; }
             }
         }
         return ret;
@@ -924,7 +922,7 @@ public class EventAddForm extends ActionForm {
             query = "select r from Room r " +
                     "inner join r.roomDepts rd inner join rd.department.timetableManagers m inner join m.managerRoles mr" + a + 
                     " where rd.control=true and mr.role.reference=:eventMgr and "+
-                    " 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId)";
+                    " 1 = (select rto.status from RoomTypeOption rto where rto.department.uniqueId = r.eventDepartment.uniqueId and rto.roomType.uniqueId = r.roomType.uniqueId)";
             
         	final double d = Double.parseDouble(ApplicationProperties.getProperty("tmtbl.events.nearByDistance","670"));
         	final DistanceMetric dm = new DistanceMetric(
@@ -942,7 +940,7 @@ public class EventAddForm extends ActionForm {
         } else {
             query = "select r from Room r " + a +
                     " where r.eventDepartment.allowEvents = true" +
-                    " and 1 = (select rto.status from RoomTypeOption rto where rto.session.uniqueId = " + getSessionId().toString() + " and rto.roomType.uniqueId = r.roomType.uniqueId) ";
+                    " and 1 = (select rto.status from RoomTypeOption rto where rto.department.uniqueId = r.eventDepartment.uniqueId and rto.roomType.uniqueId = r.roomType.uniqueId) ";
             if (iBuildingId!=null && iBuildingId>=0) { query += " and r.building.uniqueId=:buildingId"; }   
         }
 			
@@ -1004,9 +1002,8 @@ public class EventAddForm extends ActionForm {
 
 	public boolean isHasOutsideLocations() {
 	    if (getSessionId()==null) return false;
-	    Session s = Session.getSessionById(iSessionId);
         for (RoomType roomType : RoomType.findAll(false)) {
-            if ((iAdmin || roomType.getOption(s).canScheduleEvents()) && roomType.countManagableRooms(iSessionId)>0) return true;
+            if ((iAdmin || roomType.canScheduleEvents(iSessionId)) && roomType.countManagableRooms(iSessionId)>0) return true;
         }
         return false;
 	}

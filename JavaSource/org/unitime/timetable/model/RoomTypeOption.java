@@ -33,9 +33,9 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 
 /*[CONSTRUCTOR MARKER END]*/
 	
-	public RoomTypeOption(RoomType roomType, Session session) {
+	public RoomTypeOption(RoomType roomType, Department department) {
 		setRoomType(roomType);
-		setSession(session);
+		setDepartment(department);
 		initialize();
 	}
 

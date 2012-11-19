@@ -19,9 +19,11 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.List;
 import java.util.TreeSet;
 
 import org.hibernate.criterion.Restrictions;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.base.BaseRoomType;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.RoomTypeOptionDAO;
@@ -66,11 +68,33 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
         return getUniqueId().compareTo(t.getUniqueId());
     }
     
-    public RoomTypeOption getOption(Session session) {
-        RoomTypeOption opt = RoomTypeOptionDAO.getInstance().get(new RoomTypeOption(this, session)); 
-        if (opt==null) opt = new RoomTypeOption(this, session);
-        if (opt.getStatus()==null) opt.setStatus(RoomTypeOption.sStatusNoOptions);
+    public RoomTypeOption getOption(Department department) {
+    	if (department == null) {
+    		RoomTypeOption opt = new RoomTypeOption(this, department);
+    		opt.setStatus(RoomTypeOption.sStatusNoOptions);
+        	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
+    		return opt;
+    	}
+        RoomTypeOption opt = RoomTypeOptionDAO.getInstance().get(new RoomTypeOption(this, department)); 
+        if (opt==null) opt = new RoomTypeOption(this, department);
+        if (opt.getStatus() == null) opt.setStatus(RoomTypeOption.sStatusNoOptions);
+        if (opt.getBreakTime() == null)
+        	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
         return opt;
+    }
+    
+    public boolean canScheduleEvents(Long sessionId) {
+    	for (RoomTypeOption option: (List<RoomTypeOption>)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select distinct o from " + (isRoom() ? "Room" : "NonUniversityLocation") + " r, RoomTypeOption o " +
+                "where r.roomType.uniqueId = :roomTypeId and r.session.uniqueId = :sessionId and "+
+                "r.eventDepartment.allowEvents = true and r.eventDepartment = o.department and r.roomType = o.roomType")
+                .setLong("roomTypeId", getUniqueId())
+                .setLong("sessionId", sessionId)
+    			.setCacheable(true).uniqueResult()) {
+    		if (option.canScheduleEvents()) return true;
+    	}
+    	return false;
+
     }
     
     public int countRooms() {
@@ -92,6 +116,15 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
                 "r.eventDepartment.allowEvents = true"
         ).setLong("roomTypeId", getUniqueId()).setCacheable(true).uniqueResult()).intValue();
     }
+    
+    public List<Location> getManagableRooms(Long sessionId) {
+        return (List<Location>)RoomTypeDAO.getInstance().getSession().createQuery(
+                "select r from "+(isRoom()?"Room":"NonUniversityLocation")+" r " +
+                "where r.roomType.uniqueId=:roomTypeId and r.session.uniqueId=:sessionId and "+
+                "r.eventDepartment.allowEvents = true"
+        ).setLong("roomTypeId", getUniqueId()).setLong("sessionId",sessionId).setCacheable(true).uniqueResult();
+    }
+
 
     public int countManagableRooms(Long sessionId) {
         return ((Number)RoomTypeDAO.getInstance().getSession().createQuery(
