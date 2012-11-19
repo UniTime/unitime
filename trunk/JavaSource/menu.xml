@@ -615,6 +615,13 @@
 					<hasPermission name="ExaminationPeriods"/>
 				</condition>
 			</item>
+			<item name="Event Room Types" page="admin" type="gwt">
+				<parameter name="type">eventRoomType</parameter>
+				<condition>
+					<hasPermission name="EventRoomTypes"/>
+				</condition>
+			</item>
+			<separator/>
 			<item name="Data Exchange" page="dataImport.do">
 				<condition>
 					<hasPermission name="DataExchange"/>
@@ -797,7 +804,16 @@
 				<condition>
 					<hasPermission name="SettingsUser"/>
 				</condition>
-			</item>
+		</item>
+		<item name="Event Room Types" page="admin" type="gwt">
+			<parameter name="type">eventRoomType</parameter>
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="EventRoomTypes"/>
+			</condition>
+		</item>
 	</menu>
 	<menu name="Help">
 		<condition>

@@ -893,6 +893,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				case SHOW_MAIN_CONTACT:
 					return iShowMainContact && getMode().isShowEventDetails();
 				case SHOW_SPONSOR:
+				case SHOW_NOTE:
 					return getMode().isShowEventDetails();
 				case SHOW_TITLE:
 					return isColumnVisible(getHeader(MESSAGES.colSection()).getColumn());

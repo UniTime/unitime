@@ -361,6 +361,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Double iDistance = null;
 		private String iRoomType = null;
 		private int iBreakTime = 0;
+		private String iMessage = null;
 
 		public ResourceInterface() {}
 		public ResourceInterface(FilterRpcResponse.Entity room) {
@@ -375,6 +376,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setDistance(distance == null ? null : Double.valueOf(distance));
 			setRoomType(room.getProperty("type", null));
 			setBreakTime(Integer.parseInt(room.getProperty("breakTime" ,"0")));
+			setMessage(room.getProperty("message", null));
 		}
 		
 		public ResourceType getType() { return iResourceType; }
@@ -403,6 +405,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String getRoomType() { return iRoomType; }
 		public int getBreakTime() { return iBreakTime; }
 		public void setBreakTime(int breakTime) { iBreakTime = breakTime; }
+		public void setMessage(String message) { iMessage = message; }
+		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
+		public String getMessage() { return iMessage; }
 		
 		public String getHint() { return iHint; }
 		public boolean hasHint() { return iHint != null && !iHint.isEmpty(); }

@@ -445,6 +445,9 @@ public enum Right {
 	ExamTypes,
 	ExamTypeEdit,
 	
+	EventRoomTypes(Department.class),
+	EventRoomTypeEdit(Department.class),
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

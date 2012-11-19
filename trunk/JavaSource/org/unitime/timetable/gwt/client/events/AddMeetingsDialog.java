@@ -311,7 +311,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
 					((P)event.getSource()).addStyleName("hover");
-					GwtHint.showHint(p.getElement(), room.getProperty("mouseOver", ""));
+					GwtHint.showHint(p.getElement(), room.getProperty("mouseOver", "").replace("\\'", "'"));
 				}
 			});
 			p.addMouseOutHandler(new MouseOutHandler() {

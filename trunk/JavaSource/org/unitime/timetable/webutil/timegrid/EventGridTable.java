@@ -61,7 +61,7 @@ public class EventGridTable {
         for (Enumeration<Location> e = form.getPossibleLocations().elements();e.hasMoreElements();) {
             Location location = e.nextElement();
             iModel.add(new TableModel(location,  
-                    form.isAdmin() || location.getRoomType().getOption(location.getSession()).canScheduleEvents(), form.getMode(),
+                    form.isAdmin() || location.getRoomType().getOption(location.getEventDepartment()).canScheduleEvents(), form.getMode(),
                     form.isAdmin() || (form.getManagingDepartments()!=null && form.getManagingDepartments().contains(location.getControllingDepartment()))));
         }
     }

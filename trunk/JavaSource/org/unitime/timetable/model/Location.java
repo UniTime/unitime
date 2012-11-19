@@ -926,6 +926,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     		groups += g.getName();
     	}
     	if (!groups.isEmpty()) hint += "<tr><td>Groups:</td><td>" + groups + "</td></tr>";
+    	String message = getEventMessage();
+    	if (message != null && !message.isEmpty())
+    		hint += "<tr><td colspan=\\'2\\'>" + message.replace("'", "\\'") + "</td></tr>";
     	hint += "</table>";
     	return hint;
     }
@@ -945,8 +948,19 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public int getBreakTime() {
-    	return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
+    	if (getEventDepartment() == null)
+    		return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
+    	else
+    		return getRoomType().getOption(getEventDepartment()).getBreakTime();
     }
+    
+    public String getEventMessage() {
+    	if (getEventDepartment() == null)
+    		return null;
+    	else
+    		return getRoomType().getOption(getEventDepartment()).getMessage();
+    }
+
     
     public String getLabelWithCapacity() {
     	return (getCapacity() == null ? getLabel() : MSG.labelLocationLabelWithCapacity(getLabel(), getCapacity()));
