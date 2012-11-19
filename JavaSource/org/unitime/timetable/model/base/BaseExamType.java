@@ -30,7 +30,7 @@ public abstract class BaseExamType extends RefTableEntry implements Serializable
 	private Integer iType;
 
 
-	public static String PROP_TYPE = "type";
+	public static String PROP_XTYPE = "type";
 
 	public BaseExamType() {
 		initialize();

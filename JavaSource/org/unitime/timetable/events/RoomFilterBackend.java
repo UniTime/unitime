@@ -67,14 +67,22 @@ public class RoomFilterBackend extends FilterBoxBackend {
 
 	@Override
 	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
-		Set<String> eventRoomTypes = new HashSet<String>(
-				DepartmentDAO.getInstance().getSession().createQuery(
-						"select o.roomType.label from RoomTypeOption o where o.status = 1 and o.session.uniqueId = :sessionId"
-				)
+		Map<Long, Set<String>> eventRoomTypes = new HashMap<Long, Set<String>>();
+		for (Object[] o: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
+				"select o.department.uniqueId, o.roomType.label from RoomTypeOption o where o.status = 1 and o.department.session.uniqueId = :sessionId")
 				.setLong("sessionId", request.getSessionId())
 				.setCacheable(true)
-				.list());
-		
+				.list()) {
+			Long deptId = (Long)o[0];
+			String type = (String)o[1];
+			Set<String> types = eventRoomTypes.get(deptId);
+			if (types == null) {
+				types = new HashSet<String>();
+				eventRoomTypes.put(deptId, types);
+			}
+			types.add(type);
+		}
+
 		Set<String> departments = request.getOptions("department");
 		
 		Set<String> userDepts = null;
@@ -156,9 +164,11 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				department.incCount();
 				if (userDepts != null && userDepts.contains(rd.getDepartment().getDeptCode())) isManaged = true;
 			}
-			if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents() && eventRoomTypes.contains(location.getRoomType().getLabel()))
-				event.incCount();
-
+			if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
+				Set<String> roomTypes = eventRoomTypes.get(location.getEventDepartment().getUniqueId());
+				if (roomTypes != null && roomTypes.contains(location.getRoomType().getLabel()))
+					event.incCount();
+			}
 			if (location.hasFinalExamsEnabled())
 				examFinal.incCount();
 			if (location.hasMidtermExamsEnabled())
@@ -229,7 +239,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
 				" l.eventDepartment.allowEvents = true and" +
-				" o.status = 1 and o.roomType = l.roomType and o.session = l.session")
+				" o.status = 1 and o.roomType = l.roomType and o.department = l.eventDepartment")
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?
@@ -415,7 +425,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
-			String hint = location.getHtmlHint().replace("\\'", "'");
+			String hint = location.getHtmlHint();
 			if (dist != null)
 				hint = hint.replace("</table>", "<tr><td>Distance:</td><td>" + Math.round(dist) + " m</td></tr></table>");
 			response.addResult(new Entity(
@@ -428,7 +438,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"mouseOver", hint,
 					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
-					"breakTime", String.valueOf(location.getBreakTime())
+					"breakTime", String.valueOf(location.getBreakTime()),
+					"message", location.getEventMessage()
 					));
 		}
 	}

@@ -29,6 +29,9 @@ public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, Fil
 		
 		FilterRpcResponse response = new FilterRpcResponse();
 		
+		if (context.isAuthenticated())
+			request.setOption("user", context.getUser().getExternalUserId());
+		
 		switch (request.getCommand()) {
 			case LOAD:
 				load(request, response, context);

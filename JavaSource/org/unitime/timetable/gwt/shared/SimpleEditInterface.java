@@ -45,6 +45,7 @@ public class SimpleEditInterface implements IsSerializable {
 		roles("Role"),
 		permissions("Permission"),
 		examType("Examination Type"),
+		eventRoomType("Event Room Type")
 		;
 	
 		private String iSingular, iPlural;

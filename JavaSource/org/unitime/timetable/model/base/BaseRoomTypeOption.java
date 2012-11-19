@@ -21,21 +21,23 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
+import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
-import org.unitime.timetable.model.Session;
 
 public abstract class BaseRoomTypeOption implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private RoomType iRoomType;
-	private Session iSession;
+	private Department iDepartment;
 	private Integer iStatus;
 	private String iMessage;
+	private Integer iBreakTime;
 
 
 	public static String PROP_STATUS = "status";
 	public static String PROP_MESSAGE = "message";
+	public static String PROP_BREAK_TIME = "breakTime";
 
 	public BaseRoomTypeOption() {
 		initialize();
@@ -46,8 +48,8 @@ public abstract class BaseRoomTypeOption implements Serializable {
 	public RoomType getRoomType() { return iRoomType; }
 	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
-	public Session getSession() { return iSession; }
-	public void setSession(Session session) { iSession = session; }
+	public Department getDepartment() { return iDepartment; }
+	public void setDepartment(Department department) { iDepartment = department; }
 
 	public Integer getStatus() { return iStatus; }
 	public void setStatus(Integer status) { iStatus = status; }
@@ -55,28 +57,32 @@ public abstract class BaseRoomTypeOption implements Serializable {
 	public String getMessage() { return iMessage; }
 	public void setMessage(String message) { iMessage = message; }
 
+	public Integer getBreakTime() { return iBreakTime; }
+	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof RoomTypeOption)) return false;
 		RoomTypeOption roomTypeOption = (RoomTypeOption)o;
 		if (getRoomType() == null || roomTypeOption.getRoomType() == null || !getRoomType().equals(roomTypeOption.getRoomType())) return false;
-		if (getSession() == null || roomTypeOption.getSession() == null || !getSession().equals(roomTypeOption.getSession())) return false;
+		if (getDepartment() == null || roomTypeOption.getDepartment() == null || !getDepartment().equals(roomTypeOption.getDepartment())) return false;
 		return true;
 	}
 
 	public int hashCode() {
-		if (getRoomType() == null || getSession() == null) return super.hashCode();
-		return getRoomType().hashCode() ^ getSession().hashCode();
+		if (getRoomType() == null || getDepartment() == null) return super.hashCode();
+		return getRoomType().hashCode() ^ getDepartment().hashCode();
 	}
 
 	public String toString() {
-		return "RoomTypeOption[" + getRoomType() + ", " + getSession() + "]";
+		return "RoomTypeOption[" + getRoomType() + ", " + getDepartment() + "]";
 	}
 
 	public String toDebugString() {
 		return "RoomTypeOption[" +
+			"\n	BreakTime: " + getBreakTime() +
+			"\n	Department: " + getDepartment() +
 			"\n	Message: " + getMessage() +
 			"\n	RoomType: " + getRoomType() +
-			"\n	Session: " + getSession() +
 			"\n	Status: " + getStatus() +
 			"]";
 	}
