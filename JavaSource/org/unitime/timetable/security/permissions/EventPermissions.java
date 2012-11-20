@@ -19,10 +19,13 @@
 */
 package org.unitime.timetable.security.permissions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
@@ -32,11 +35,13 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.RoomDept;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 public class EventPermissions {
@@ -92,12 +97,71 @@ public class EventPermissions {
 			return date == null || date.before(today());
 		}
 		
-		protected List<Long> locations(Long sessionId) {
+		protected List<Long> locations(Long sessionId, UserContext user) {
+			String anyRequest = "";
+			String deptRequest = "";
+			String mgrRequest = "";
+			for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
+				if (state.isAuthenticatedUsersCanRequestEvents())
+					anyRequest += (anyRequest.isEmpty() ? "" : ", ") + state.ordinal();
+				else {
+					if (state.isDepartmentalUsersCanRequestEvents())
+						deptRequest += (deptRequest.isEmpty() ? "" : ", ") + state.ordinal();
+					if (state.isEventManagersCanRequestEvents())
+						mgrRequest += (mgrRequest.isEmpty() ? "" : ", ") + state.ordinal();
+				}
+			}
+			Set<Serializable> roleDeptIds = new HashSet<Serializable>(), mgrDeptIds = new HashSet<Serializable>();
+			if (!user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
+				for (UserAuthority a: user.getAuthorities()) {
+					if (!sessionId.equals(a.getAcademicSession().getQualifierId())) continue;
+					for (UserQualifier q: a.getQualifiers("Department")) {
+						roleDeptIds.add(q.getQualifierId());
+						if (a.hasRight(Right.EventMeetingApprove))
+							mgrDeptIds.add(q.getQualifierId());
+					}
+				}
+			}
+			String roleDept = null, mgrDept = null;
+			for (Serializable id: roleDeptIds)
+				roleDept = (roleDept == null ? "" : roleDept + ",") + id;
+			for (Serializable id: mgrDeptIds)
+				mgrDept = (mgrDept == null ? "" : mgrDept + ",") + id;
+			
 			if (sessionId == null) return new ArrayList<Long>();
+			
+			System.out.println("Q:" + "select l.uniqueId " +
+					"from Location l, RoomTypeOption o " +
+					"where l.eventDepartment.allowEvents = true and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId and (" +
+					"o.status in (" + anyRequest + ")" +
+					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)
+							? " or o.status in (" + deptRequest + ")"
+							: roleDept == null ? ""
+							: " or (o.status in (" + deptRequest + ") and o.department.uniqueId in (" + roleDept + "))"
+					) +
+					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && user.getCurrentAuthority().hasRight(Right.EventMeetingApprove)
+							? " or o.status in (" + mgrRequest + ")"
+							: mgrDept == null ? ""
+							: " or (o.status in (" + mgrRequest + ") and o.department.uniqueId in (" + mgrDept + "))"
+					) +
+					")");
+			
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId " +
 					"from Location l, RoomTypeOption o " +
-					"where l.eventDepartment.allowEvents = true and o.status = 1 and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId")
+					"where l.eventDepartment.allowEvents = true and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId and (" +
+					"o.status in (" + anyRequest + ")" +
+					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)
+							? " or o.status in (" + deptRequest + ")"
+							: roleDept == null ? ""
+							: " or (o.status in (" + deptRequest + ") and o.department.uniqueId in (" + roleDept + "))"
+					) +
+					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && user.getCurrentAuthority().hasRight(Right.EventMeetingApprove)
+							? " or o.status in (" + mgrRequest + ")"
+							: mgrDept == null ? ""
+							: " or (o.status in (" + mgrRequest + ") and o.department.uniqueId in (" + mgrDept + "))"
+					) +
+					")")
 					.setLong("sessionId", sessionId).setCacheable(true).list();
 		}
 	}
@@ -106,7 +170,7 @@ public class EventPermissions {
 	public static class Events extends EventPermission<Session> {
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return source.getStatusType().canNoRoleReport() || (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId()).isEmpty());
+			return source.getStatusType().canNoRoleReport() || (user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty());
 		}
 		
 		@Override
@@ -118,7 +182,7 @@ public class EventPermissions {
 		@Override
 		public boolean check(UserContext user, Session source) {
 			return (!isPast(end(source)) || user.getCurrentAuthority().hasRight(Right.EventEditPast)) &&
-					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId()).isEmpty());
+					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty());
 		}
 		
 		@Override
@@ -202,7 +266,7 @@ public class EventPermissions {
 	public static class EventLocation extends EventPermission<Location> {
 		@Override
 		public boolean check(UserContext user, Location source) {
-			return source == null || user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || locations(user.getCurrentAcademicSessionId()).contains(source.getUniqueId());
+			return source == null || user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId());
 		}
 		
 		@Override
@@ -222,10 +286,11 @@ public class EventPermissions {
 			
 			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
 			
-			for (RoomDept rd: source.getRoomDepts())
-				if (permissionDepartment.check(user, rd.getDepartment())) return true;
-
-			return false;
+			if (source.getEventDepartment() == null) return false;
+			
+			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventsManagersCanApprove()) return false;
+			
+			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
 		}
 		
 		@Override
