@@ -8036,7 +8036,7 @@
 		<plsql>alter table %SCHEMA%.event_note modify uname varchar2(100 char)</plsql>
 		<plsql>alter table %SCHEMA%.event_note modify meetings varchar2(2000 char)</plsql>
 		<plsql>alter table %SCHEMA%.event modify event_name varchar2(100 char)</plsql>
-		<plsql>alter table %SCHEMA%.event modify email varchar2(200 char)</plsql>
+		<plsql>alter table %SCHEMA%.event modify email varchar2(1000 char)</plsql>
 		<plsql>alter table %SCHEMA%.room_type_option modify message varchar2(200 char)</plsql>
 		<plsql>alter table %SCHEMA%.curriculum modify abbv varchar2(20 char)</plsql>
 		<plsql>alter table %SCHEMA%.curriculum modify name varchar2(60 char)</plsql>
