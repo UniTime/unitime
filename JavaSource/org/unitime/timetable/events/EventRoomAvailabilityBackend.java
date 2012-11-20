@@ -29,9 +29,11 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
@@ -128,6 +130,13 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				if (!context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocation)) {
 					MeetingConglictInterface conflict = new MeetingConglictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+					Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
+					if (location != null && location.getEventDepartment() != null) {
+						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
+						if (message != null) {
+							conflict.setName(message);
+						}
+					}
 					conflict.setType(EventInterface.EventType.Unavailabile);
 					conflict.setMeetingDate(meeting.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());

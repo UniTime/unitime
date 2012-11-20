@@ -71,18 +71,19 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
     public RoomTypeOption getOption(Department department) {
     	if (department == null) {
     		RoomTypeOption opt = new RoomTypeOption(this, department);
-    		opt.setStatus(RoomTypeOption.sStatusNoOptions);
+    		opt.setStatus(RoomTypeOption.getDefaultStatus());
         	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
     		return opt;
     	}
         RoomTypeOption opt = RoomTypeOptionDAO.getInstance().get(new RoomTypeOption(this, department)); 
         if (opt==null) opt = new RoomTypeOption(this, department);
-        if (opt.getStatus() == null) opt.setStatus(RoomTypeOption.sStatusNoOptions);
+        if (opt.getStatus() == null) opt.setStatus(RoomTypeOption.getDefaultStatus());
         if (opt.getBreakTime() == null)
         	opt.setBreakTime(Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getReference(), "0")));
         return opt;
     }
     
+    @Deprecated
     public boolean canScheduleEvents(Long sessionId) {
     	for (RoomTypeOption option: (List<RoomTypeOption>)RoomTypeDAO.getInstance().getSession().createQuery(
                 "select distinct o from " + (isRoom() ? "Room" : "NonUniversityLocation") + " r, RoomTypeOption o " +

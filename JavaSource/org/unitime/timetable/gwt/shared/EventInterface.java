@@ -95,6 +95,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		Course,
 		Special,
 		Unavailabile,
+		Message,
 		;
 		
 		public String getAbbreviation(GwtConstants constants) { return constants.eventTypeAbbv()[ordinal()]; }

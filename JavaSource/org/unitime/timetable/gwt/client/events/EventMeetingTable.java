@@ -633,7 +633,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		String approval = "";
 		if (meeting != null) {
 			if (conflict != null) {
-				row.add(new HTML(conflict.getType() == EventType.Unavailabile ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
+				row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
 				row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate()), false));
@@ -726,7 +726,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		if (meeting != null) {
 			boolean past = meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast());
 			row.add(new HTML(
-					conflict != null && conflict.getType() == EventType.Unavailabile ? "" :
+					conflict != null && conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? "" :
 					meeting.isDelete() ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
 					meeting.getId() == null ? meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :

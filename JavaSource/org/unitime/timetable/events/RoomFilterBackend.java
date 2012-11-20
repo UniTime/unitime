@@ -69,7 +69,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Map<Long, Set<String>> eventRoomTypes = new HashMap<Long, Set<String>>();
 		for (Object[] o: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
-				"select o.department.uniqueId, o.roomType.label from RoomTypeOption o where o.status = 1 and o.department.session.uniqueId = :sessionId")
+				"select o.department.uniqueId, o.roomType.label from RoomTypeOption o where o.status != 0 and o.department.session.uniqueId = :sessionId")
 				.setLong("sessionId", request.getSessionId())
 				.setCacheable(true)
 				.list()) {
@@ -239,7 +239,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
 				" l.eventDepartment.allowEvents = true and" +
-				" o.status = 1 and o.roomType = l.roomType and o.department = l.eventDepartment")
+				" o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment")
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?

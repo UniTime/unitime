@@ -285,7 +285,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						List<Room> rooms = hibSession.createQuery("select distinct r from Room r, " +
 								"RoomTypeOption o where r.session.uniqueId = :sessionId and " +
 								"r.eventDepartment.allowEvents = true and " + 
-								"o.status = 1 and o.roomType = r.roomType and o.department = r.eventDepartment and (" +
+								"o.status != 0 and o.roomType = r.roomType and o.department = r.eventDepartment and (" +
 								"lower(r.roomNumber) like :name or lower(r.buildingAbbv || ' ' || r.roomNumber) like :name or lower(r.buildingAbbv || r.roomNumber) like :name) " +
 								"order by r.buildingAbbv, r.roomNumber")
 								.setString("name", query.toLowerCase() + "%")
@@ -306,7 +306,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l, " +
 								"RoomTypeOption o where l.eventDepartment.allowEvents = true and " + 
-								"l.session.uniqueId = :sessionId and o.status = 1 and o.roomType = l.roomType and o.department = l.eventDepartment and lower(l.name) like :name " +
+								"l.session.uniqueId = :sessionId and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment and lower(l.name) like :name " +
 								"order by l.name")
 								.setString("name", query.toLowerCase() + "%")
 								.setLong("sessionId", academicSession.getUniqueId())
