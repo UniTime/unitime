@@ -356,10 +356,15 @@ public class SimpleEditServlet implements SimpleEditService {
 				}
 				break;
 			case eventRoomType:
+				List<ListItem> states = new ArrayList<ListItem>();
+				for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
+					states.add(new ListItem(String.valueOf(state.ordinal()), state.toString()));
+				}
+
 				data = new SimpleEditInterface(type,
 						new Field("Department", FieldType.text, 160, false),
 						new Field("Room Type", FieldType.text, 100, false),
-						new Field("Event Management", FieldType.toggle, 40),
+						new Field("Status", FieldType.list, 300, states),
 						new Field("Message", FieldType.text, 500, 200),
 						new Field("Break Time", FieldType.text, 50, 10),
 						new Field("Sort Order", FieldType.text, 80, 10, false, false)
@@ -376,7 +381,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						Record r = data.addRecord(id++, false);
 						r.setField(0, department.getLabel(), false);
 						r.setField(1, roomType.getLabel(), false);
-						r.setField(2, option.canScheduleEvents() ? "true" : "false");
+						r.setField(2, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
 						r.setField(3, option.getMessage() == null ? "" : option.getMessage());
 						r.setField(4, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
 						r.setField(5, roomType.getOrd().toString());
@@ -388,7 +393,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						Record r = data.addRecord(id++, false);
 						r.setField(0, department.getLabel(), false);
 						r.setField(1, roomType.getLabel(), false);
-						r.setField(2, option.canScheduleEvents() ? "true" : "false");
+						r.setField(2, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
 						r.setField(3, option.getMessage() == null ? "" : option.getMessage());
 						r.setField(4, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
 						r.setField(5, roomType.getOrd().toString());
@@ -1189,10 +1194,10 @@ public class SimpleEditServlet implements SimpleEditService {
 							for (Record r: data.getRecords()) {
 								if (r.getField(0).equals(department.getLabel()) && r.getField(1).equals(roomType.getLabel())) {
 									boolean optionChanged = 
-											(option.canScheduleEvents() != "true".equals(r.getField(2))) ||
+											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(2))) ||
 											!ToolBox.equals(option.getMessage(), r.getField(3)) ||
 											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(4));
-									option.setScheduleEvents("true".equals(r.getField(2)));
+									option.setStatus(Integer.parseInt(r.getField(2)));
 									option.setMessage(r.getField(3));
 									try {
 										option.setBreakTime(Integer.parseInt(r.getField(4)));
@@ -1219,10 +1224,10 @@ public class SimpleEditServlet implements SimpleEditService {
 							for (Record r: data.getRecords()) {
 								if (r.getField(0).equals(department.getLabel()) && r.getField(1).equals(roomType.getLabel())) {
 									boolean optionChanged = 
-											(option.canScheduleEvents() != "true".equals(r.getField(2))) ||
+											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(2))) ||
 											!ToolBox.equals(option.getMessage(), r.getField(3)) ||
 											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(4));
-									option.setScheduleEvents("true".equals(r.getField(2)));
+									option.setStatus(Integer.parseInt(r.getField(2)));
 									option.setMessage(r.getField(3));
 									try {
 										option.setBreakTime(Integer.parseInt(r.getField(4)));

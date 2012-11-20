@@ -39,27 +39,50 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 		initialize();
 	}
 
-	public static final int sStatusNoOptions = 0;
-	public static final int sStatusScheduleEvents = 1;
-	
-    public boolean can(int operation) {
-        return (getStatus().intValue() & operation) == operation;
-    }
-    
-    public void set(int operation) {
-        if (!can(operation)) setStatus(getStatus()+operation);
-    }
-	
-    public void reset(int operation) {
-        if (can(operation)) setStatus(getStatus()-operation);
-    }
-
-    public boolean canScheduleEvents() {
-	    return can(sStatusScheduleEvents);
+	public static enum Status {
+		NoEventManagement(false, false, false, false),
+		AuthenticatedUsersCanRequestEventsManagersCanApprove(true, true, true, true),
+		DepartmentalUsersCanRequestEventsManagersCanApprove(false, true, true, true),
+		EventManagersCanRequestOrApproveEvents(false, false, true, true),
+		AuthenticatedUsersCanRequestEventsNoApproval(true, true, true, false),
+		DepartmentalUsersCanRequestEventsNoApproval(false, true, true, false),
+		EventManagersCanRequestEventsNoApproval(false, false, true, false),
+		;
+		
+		private boolean iUserRequest, iDeptRequest, iMgrRequest, iMgrApproval;
+		
+		Status(boolean userRequest, boolean deptRequest, boolean mgrRequest, boolean mgrApproval) {
+			iUserRequest = userRequest;
+			iDeptRequest = deptRequest;
+			iMgrRequest = mgrRequest;
+			iMgrApproval = mgrApproval;
+		}
+		
+		public boolean isAuthenticatedUsersCanRequestEvents() { return iUserRequest; }
+		public boolean isDepartmentalUsersCanRequestEvents() { return iDeptRequest; }
+		public boolean isEventsManagersCanApprove() { return iMgrApproval; }
+		public boolean isEventManagersCanRequestEvents() { return iMgrRequest; }
+		
+		@Override
+		public String toString() { return name().replaceAll("(\\p{Ll})(\\p{Lu})","$1 $2"); }
 	}
 	
-	public void setScheduleEvents(boolean enable) {
-	    if (enable) set(sStatusScheduleEvents); else reset(sStatusScheduleEvents);
+    public static int getDefaultStatus() {
+    	return Status.NoEventManagement.ordinal();
+    }
+    
+    public Status getEventStatus() {
+    	return Status.values()[getStatus() == null ? getDefaultStatus() : getStatus()];
+    }
+
+    @Deprecated
+	public boolean canScheduleEvents() {
+		switch (Status.values()[getStatus() == null ? getDefaultStatus() : getStatus()]) {
+		case NoEventManagement:
+			return false;
+		default:
+			return true;
+		}
 	}
 
 }
