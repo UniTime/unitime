@@ -184,7 +184,7 @@ alter table event_note modify text_note varchar2(1000 char);
 alter table event_note modify uname varchar2(100 char);
 alter table event_note modify meetings varchar2(2000 char);
 alter table event modify event_name varchar2(100 char);
-alter table event modify email varchar2(200 char);
+alter table event modify email varchar2(1000 char);
 alter table room_type_option modify message varchar2(200 char);
 alter table curriculum modify abbv varchar2(20 char);
 alter table curriculum modify name varchar2(60 char);
