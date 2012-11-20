@@ -63,7 +63,7 @@
             column="email"
             type="java.lang.String"
             not-null="false"
-            length="200"/>
+            length="1000"/>
 
         <many-to-one
             name="mainContact"
