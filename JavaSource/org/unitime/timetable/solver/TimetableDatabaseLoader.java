@@ -2290,6 +2290,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 		getModel().setYear(iSession.getSessionStartYear());
 		getModel().getProperties().setProperty("DatePattern.DayOfWeekOffset", String.valueOf(
 				Constants.getDayOfWeek(DateUtils.getDate(1, iSession.getPatternStartMonth(), iSession.getSessionStartYear()))));
+		if (iSession.getDefaultDatePattern() != null) {
+			BitSet pattern = iSession.getDefaultDatePattern().getPatternBitSet();
+			String patternStr = "";
+			for (int i = 0; i < pattern.length(); i++)
+				patternStr += (pattern.get(i) ? "1" : "0");
+			getModel().getProperties().setProperty("DatePattern.Default", patternStr);
+		}
 		
 		iAllClasses = new TreeSet(new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 		for (int i=0;i<iSolverGroup.length;i++) {
