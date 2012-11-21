@@ -106,11 +106,14 @@ public class UniTimeTable<T> extends FlexTable {
 				listener.onDataRemoved(event);
 		}
 		SmartTableRow smartRow = new SmartTableRow(data);
-		int col = 0;
+		int col = 0, x = 0;
 		for (Widget widget: widgets) {
 			SmartTableCell cell = new SmartTableCell(smartRow, widget);
-			if (widget instanceof HasColSpan)
-				getFlexCellFormatter().setColSpan(row, col, ((HasColSpan)widget).getColSpan());
+			int colspan = 1;
+			if (widget instanceof HasColSpan) {
+				colspan = ((HasColSpan)widget).getColSpan();
+				getFlexCellFormatter().setColSpan(row, col, colspan);
+			}
 			if (widget instanceof HasStyleName && ((HasStyleName)widget).getStyleName() != null)
 				getFlexCellFormatter().setStyleName(row, col, ((HasStyleName)widget).getStyleName());
 			if (widget instanceof HasAdditionalStyleNames) {
@@ -126,8 +129,17 @@ public class UniTimeTable<T> extends FlexTable {
 			if (widget instanceof HasColumn)
 				((HasColumn)widget).setColumn(col);
 			setWidget(row, col, cell);
-			if (row > 0 && col < getCellCount(0))
-				getCellFormatter().setVisible(row, col, getCellFormatter().isVisible(0, col));
+			x += colspan;
+			if (row > 0) {
+				if (colspan == 1) {
+					getCellFormatter().setVisible(row, col, getCellFormatter().isVisible(0, x - 1));
+				} else {
+					int span = 0;
+					for (int h = x - colspan; h < x; h++)
+						if (getCellFormatter().isVisible(0, h)) span ++;
+					getCellFormatter().setVisible(row, col, span > 0);
+					getFlexCellFormatter().setColSpan(row, col, Math.max(1, span));				}
+			}
 			col++;
 		}
 		if (data != null) {
@@ -142,8 +154,32 @@ public class UniTimeTable<T> extends FlexTable {
 	}
 	
 	public void setColumnVisible(int col, boolean visible) {
-		for (int r = 0; r < getRowCount(); r++)
-			getCellFormatter().setVisible(r, col, visible);
+		for (int r = 0; r < getRowCount(); r++) {
+			if (r == 0) {
+				// now colspans for the first row
+				getCellFormatter().setVisible(r, col, visible);
+				continue;
+			}
+			int x = 0;
+			for (int c = 0; c < getCellCount(r); c++) {
+				Widget w = getWidget(r, c);
+				int colSpan = (w instanceof HasColSpan ? ((HasColSpan)w).getColSpan() : 1);
+				x += colSpan;
+				if (x > col) {
+					if (colSpan > 1) {
+						// use first row to count the colspan
+						int span = 0;
+						for (int h = x - colSpan; h < x; h++)
+							if (getCellFormatter().isVisible(0, h)) span ++;
+						getCellFormatter().setVisible(r, c, span > 0);
+						getFlexCellFormatter().setColSpan(r, c, Math.max(1, span));
+					} else {
+						getCellFormatter().setVisible(r, c, visible);
+					}
+					break;
+				}
+			}
+		}
 	}
 	
 	public static class SmartTableRow<T> {
