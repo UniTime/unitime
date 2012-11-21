@@ -25,7 +25,7 @@ import java.util.List;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
@@ -74,7 +74,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 				
 				for (Meeting m: (List<Meeting>)query.list()) {
-					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
 
 					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
 
@@ -110,7 +110,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				if (meeting.isDelete()) continue;
 				
 				if (context.isPastOrOutside(meeting.getMeetingDate())) {
-					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictPastOrOutside(session.getLabel()));
 					conflict.setType(EventInterface.EventType.Unavailabile);
 					conflict.setMeetingDate(meeting.getMeetingDate());
@@ -128,7 +128,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				meeting.setCanApprove(context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocationApprove));
 				
 				if (!context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocation)) {
-					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
 					Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
 					if (location != null && location.getEventDepartment() != null) {
@@ -158,7 +158,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						.setLong("meetingId", meeting.getId() == null ? -1 : meeting.getId())
 						.list()) {
 					
-					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					
 					if (request.hasEventId() && m.getEvent().getUniqueId().equals(request.getEventId())) continue;
 

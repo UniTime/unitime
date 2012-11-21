@@ -32,7 +32,7 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Meeting;
@@ -63,7 +63,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 	public abstract R execute(T request, EventContext context);
 	
 	protected static String toString(MeetingInterface meeting) {
-		return (meeting instanceof MeetingConglictInterface ? ((MeetingConglictInterface)meeting).getName() + " " : "") +
+		return (meeting instanceof MeetingConflictInterface ? ((MeetingConflictInterface)meeting).getName() + " " : "") +
 				(meeting.getMeetingDate() == null ? "" : sMeetingDateFormat.format(meeting.getMeetingDate()) + " ") +
 				meeting.getAllocatedTime(CONSTANTS) + (meeting.hasLocation() ? " " + meeting.getLocationName() : "");
 	}

@@ -21,7 +21,7 @@ package org.unitime.timetable.gwt.client.events;
 
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 public class EventComparator {
@@ -132,19 +132,19 @@ public class EventComparator {
 	}
 	
 	protected static int compareByName(MeetingInterface m1, MeetingInterface m2) {
-		return compare(m1 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m1).getName() : null,
-				m2 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m2).getName() : null);
+		return compare(m1 instanceof MeetingConflictInterface ? ((MeetingConflictInterface)m1).getName() : null,
+				m2 instanceof MeetingConflictInterface ? ((MeetingConflictInterface)m2).getName() : null);
 	}
 	
 	protected static int compareByType(MeetingInterface m1, MeetingInterface m2) {
-		EventType t1 = (m1 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m1).getType() : null);
-		EventType t2 = (m2 instanceof MeetingConglictInterface ? ((MeetingConglictInterface)m2).getType() : null);
+		EventType t1 = (m1 instanceof MeetingConflictInterface ? ((MeetingConflictInterface)m1).getType() : null);
+		EventType t2 = (m2 instanceof MeetingConflictInterface ? ((MeetingConflictInterface)m2).getType() : null);
 		return (t1 == null ? t2 == null ? 0 : -1 : t2 == null ? 1 : t1.compareTo(t2));
 	}
 
 	protected static int compareByDate(MeetingInterface m1, MeetingInterface m2) {
-		if (m1 instanceof MeetingConglictInterface && m2 instanceof MeetingConglictInterface) {
-			int cmp = ((MeetingConglictInterface)m1).getName().compareTo(((MeetingConglictInterface)m2).getName());
+		if (m1 instanceof MeetingConflictInterface && m2 instanceof MeetingConflictInterface) {
+			int cmp = ((MeetingConflictInterface)m1).getName().compareTo(((MeetingConflictInterface)m2).getName());
 			if (cmp != 0) return cmp;
 		}
 		return (m1.getMeetingDate() == null ? m2.getMeetingDate() == null ? 0 : 1 :m2.getMeetingDate() == null ? -1 :  m1.getMeetingDate().compareTo(m2.getMeetingDate()));

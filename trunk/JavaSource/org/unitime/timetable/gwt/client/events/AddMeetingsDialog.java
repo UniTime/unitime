@@ -42,7 +42,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -382,7 +382,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			
 			for (int i = iIndex; i < iIndex + iStep && i < getRooms().size(); i++) {
 				final Entity room = getRooms().get(i);
-				final Set<MeetingConglictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+				final Set<MeetingConflictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
 				
 				final P p = new P("cell");
 				
@@ -392,7 +392,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					p.addStyleName("conflict");
 					String conf = "";
 					int count = 0;
-					for (MeetingConglictInterface event: conflicts) {
+					for (MeetingConflictInterface event: conflicts) {
 						if (count == 3) { conf += "<br>..."; break; }
 						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + " (" + event.getType().getAbbreviation(CONSTANTS) + ")";
 						count ++;
@@ -433,7 +433,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 								"<br>" + room.getName() + " (" + hint + ")";
 						if (conflicts != null && !conflicts.isEmpty()) {
 							message += "<br>" + MESSAGES.propConflicts();
-							for (MeetingConglictInterface conflictingEvent: conflicts)
+							for (MeetingConflictInterface conflictingEvent: conflicts)
 								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + " (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + ")";
 						}
 						GwtHint.showHint(p.getElement(), message);
@@ -462,13 +462,13 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		}
 	}
 		
-	public Set<MeetingConglictInterface> getConflicts(Integer date, Entity room) {
+	public Set<MeetingConflictInterface> getConflicts(Integer date, Entity room) {
 		return iResponse.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
 	}
 	
 	public void setSelected(Integer date, Entity room, boolean selected) {
 		if (!"1".equals(room.getProperty("overbook", "0"))) {
-			Set<MeetingConglictInterface> conf = getConflicts(date, room);
+			Set<MeetingConflictInterface> conf = getConflicts(date, room);
 			if (conf != null && !conf.isEmpty()) return;
 		}
 		String selection = date + ":" + room.getUniqueId();
