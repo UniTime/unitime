@@ -2174,6 +2174,12 @@ div.gwt-MenuBarPopup {
 	vertical-align: top;
 }
 
+.unitime-EventMeetings .message-row {
+	font-style: italic;
+	background-color: #FFF0AB;
+	vertical-align: top;
+}
+
 .unitime-EventMeetings .deleted-row {
 	font-style: italic;
 	color: gray;
@@ -2197,6 +2203,12 @@ div.gwt-MenuBarPopup {
 
 @media print {
 	.unitime-EventMeetings .conflict-row {
+		font-style: italic;
+		vertical-align: top;
+		color: gray;
+	}
+
+	.unitime-EventMeetings .message-row {
 		font-style: italic;
 		vertical-align: top;
 		color: gray;

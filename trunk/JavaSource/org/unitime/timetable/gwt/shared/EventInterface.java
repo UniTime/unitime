@@ -585,13 +585,22 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public Date getApprovalDate() { return iApprovalDate; }
 		public void setApprovalDate(Date date) {  iApprovalDate = date; }
 		public boolean isArrangeHours() { return iMeetingDate == null; }
+		public boolean isAllDay() { return iStartSlot == 0 && iEndSlot == 288; }
 		
 		public Long getStopTime() { return iStopTime; }
 		public void setStopTime(Long stopTime) { iStopTime = stopTime; }
 		public Long getStartTime() { return iStartTime; }
 		public void setStartTime(Long startTime) { iStartTime = startTime; }
 		
-		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
+		public boolean hasConflicts() {
+			return iConflicts != null && !iConflicts.isEmpty();
+		}
+		public boolean inConflict() {
+			if (iConflicts == null) return false;
+			for (MeetingConflictInterface conflict: iConflicts)
+				if (conflict.getType() != EventType.Message) return true;
+			return false;
+		}
 		public void addConflict(MeetingConflictInterface conflict) {
 			if (iConflicts == null) iConflicts = new TreeSet<MeetingConflictInterface>();
 			iConflicts.add(conflict);

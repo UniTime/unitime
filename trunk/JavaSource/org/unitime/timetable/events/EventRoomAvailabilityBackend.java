@@ -127,10 +127,11 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				meeting.setCanApprove(context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocationApprove));
 				
+				Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
+
 				if (!context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocation)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
-					Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
 					if (location != null && location.getEventDepartment() != null) {
 						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
 						if (message != null) {
@@ -145,6 +146,33 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setStartSlot(0);
 					conflict.setEndSlot(288);
 					meeting.addConflict(conflict);
+				} else {
+					if (location != null && location.getEventDepartment() != null) {
+						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
+						if (message != null) {
+							MeetingConflictInterface conflict = new MeetingConflictInterface();
+							conflict.setName(message);
+							conflict.setType(EventInterface.EventType.Message);
+							conflict.setMeetingDate(meeting.getMeetingDate());
+							conflict.setDayOfYear(meeting.getDayOfYear());
+							conflict.setStartOffset(0);
+							conflict.setEndOffset(0);
+							conflict.setStartSlot(0);
+							conflict.setEndSlot(288);
+							meeting.addConflict(conflict);
+						}
+					} else if (location != null && location.getEventDepartment() == null) {
+						MeetingConflictInterface conflict = new MeetingConflictInterface();
+						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+						conflict.setType(EventInterface.EventType.Message);
+						conflict.setMeetingDate(meeting.getMeetingDate());
+						conflict.setDayOfYear(meeting.getDayOfYear());
+						conflict.setStartOffset(0);
+						conflict.setEndOffset(0);
+						conflict.setStartSlot(0);
+						conflict.setEndSlot(288);
+						meeting.addConflict(conflict);
+					}
 				}
 				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
