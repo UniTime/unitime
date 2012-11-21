@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -410,6 +411,34 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setBreakTime(m.getLocation().getBreakTime());
 				location.setMessage(m.getLocation().getEventMessage());
 				meeting.setLocation(location);
+				if (e instanceof SpecialEvent || e instanceof CourseEvent) {
+					if (m.getLocation().getEventDepartment() != null) {
+						String message = m.getLocation().getRoomType().getOption(m.getLocation().getEventDepartment()).getMessage();
+						if (message != null) {
+							MeetingConflictInterface conflict = new MeetingConflictInterface();
+							conflict.setName(message);
+							conflict.setType(EventInterface.EventType.Message);
+							conflict.setMeetingDate(meeting.getMeetingDate());
+							conflict.setDayOfYear(meeting.getDayOfYear());
+							conflict.setStartOffset(0);
+							conflict.setEndOffset(0);
+							conflict.setStartSlot(0);
+							conflict.setEndSlot(288);
+							meeting.addConflict(conflict);
+						}
+					} else {
+						MeetingConflictInterface conflict = new MeetingConflictInterface();
+						conflict.setName(MESSAGES.conflictNotEventRoom(location.getName()));
+						conflict.setType(EventInterface.EventType.Message);
+						conflict.setMeetingDate(meeting.getMeetingDate());
+						conflict.setDayOfYear(meeting.getDayOfYear());
+						conflict.setStartOffset(0);
+						conflict.setEndOffset(0);
+						conflict.setStartSlot(0);
+						conflict.setEndSlot(288);
+						meeting.addConflict(conflict);
+					}
+				}
 			}
 			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());
 			if (overlapsThisMeeting != null) {
