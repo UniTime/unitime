@@ -36,7 +36,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -414,7 +414,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			Set<Meeting> overlapsThisMeeting = overlaps.get(m.getUniqueId());
 			if (overlapsThisMeeting != null) {
 				for (Meeting overlap: overlapsThisMeeting) {
-					MeetingConglictInterface conflict = new MeetingConglictInterface();
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
 
 					conflict.setEventId(overlap.getEvent().getUniqueId());
 					conflict.setName(overlap.getEvent().getEventName());

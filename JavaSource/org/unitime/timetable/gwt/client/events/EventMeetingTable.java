@@ -43,7 +43,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 
@@ -548,7 +548,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		EventInterface event = data.getEvent();
 		MeetingInterface meeting = data.getMeeting();
-		MeetingConglictInterface conflict = (meeting instanceof MeetingConglictInterface ? (MeetingConglictInterface) meeting : null );
+		MeetingConflictInterface conflict = (meeting instanceof MeetingConflictInterface ? (MeetingConflictInterface) meeting : null );
 		
 		if (event != null && event.getType() != null) {
 			if (event.hasCourseNames()) {
@@ -769,7 +769,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		if (!data.hasParent()) {
 			if (meeting != null) {
 				if (meeting.hasConflicts()) {
-					for (MeetingConglictInterface cMeeting: meeting.getConflicts())
+					for (MeetingConflictInterface cMeeting: meeting.getConflicts())
 						add(new EventMeetingRow(null, cMeeting, data));
 				} else if (event.hasConflicts()) {
 					for (EventInterface cEvent: event.getConflicts()) {
@@ -1372,8 +1372,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public EventInterface getEvent() { return iEvent; }
 		public Long getEventId() {
 			if (iEvent != null) return iEvent.getId();
-			if (iMeeting != null && iMeeting instanceof MeetingConglictInterface)
-				return ((MeetingConglictInterface)iMeeting).getEventId();
+			if (iMeeting != null && iMeeting instanceof MeetingConflictInterface)
+				return ((MeetingConflictInterface)iMeeting).getEventId();
 			return null;
 		}
 		

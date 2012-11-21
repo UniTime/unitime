@@ -505,7 +505,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private boolean iPast, iCanEdit, iCanApprove, iDelete;
 		private Date iApprovalDate = null;
 		private Long iStartTime, iStopTime;
-		private Set<MeetingConglictInterface> iConflicts;
+		private Set<MeetingConflictInterface> iConflicts;
 		
 		public MeetingInterface() {}
 		
@@ -592,12 +592,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setStartTime(Long startTime) { iStartTime = startTime; }
 		
 		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
-		public void addConflict(MeetingConglictInterface conflict) {
-			if (iConflicts == null) iConflicts = new TreeSet<MeetingConglictInterface>();
+		public void addConflict(MeetingConflictInterface conflict) {
+			if (iConflicts == null) iConflicts = new TreeSet<MeetingConflictInterface>();
 			iConflicts.add(conflict);
 		}
-		public Set<MeetingConglictInterface> getConflicts() { return iConflicts; }
-		public void setConflicts(Set<MeetingConglictInterface> conflicts) {
+		public Set<MeetingConflictInterface> getConflicts() { return iConflicts; }
+		public void setConflicts(Set<MeetingConflictInterface> conflicts) {
 			iConflicts = conflicts;
 		}
 		
@@ -638,12 +638,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 	}
 	
-	public static class MeetingConglictInterface extends MeetingInterface {
+	public static class MeetingConflictInterface extends MeetingInterface {
 		private Long iEventId;
 		private String iEventName;
 		private EventType iEventType;
 		
-		public MeetingConglictInterface() {}
+		public MeetingConflictInterface() {}
 		
 		public Long getEventId() { return iEventId; }
 		public void setEventId(Long id) { iEventId = id; }
@@ -659,9 +659,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (cmp != 0) return cmp;
 			cmp = new Integer(getEndSlot()).compareTo(conflict.getEndSlot());
 			if (cmp != 0) return cmp;
-			cmp = getName().compareTo(((MeetingConglictInterface)conflict).getName());
+			cmp = getName().compareTo(((MeetingConflictInterface)conflict).getName());
 			if (cmp != 0) return cmp;
-			cmp = getType().compareTo(((MeetingConglictInterface)conflict).getType());
+			cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
 			if (cmp != 0) return cmp;
 			return (getId() == null ? new Long(-1) : getId()).compareTo(conflict.getId() == null ? new Long(-1) : conflict.getId());
 		}
@@ -1548,7 +1548,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventRoomAvailabilityRpcResponse implements GwtRpcResponse {
-		private Map<Integer, Map<Long, Set<MeetingConglictInterface>>> iOverlaps = new HashMap<Integer, Map<Long, Set<MeetingConglictInterface>>>();
+		private Map<Integer, Map<Long, Set<MeetingConflictInterface>>> iOverlaps = new HashMap<Integer, Map<Long, Set<MeetingConflictInterface>>>();
 		private List<MeetingInterface> iMeetings;
 		
 		public EventRoomAvailabilityRpcResponse() {}
@@ -1557,15 +1557,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasMeetings() { return iMeetings != null && !iMeetings.isEmpty(); }
 		public List<MeetingInterface> getMeetings() { return iMeetings; }
 		
-		public void addOverlap(Integer date, Long locationId, MeetingConglictInterface conflict) {
-			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
+		public void addOverlap(Integer date, Long locationId, MeetingConflictInterface conflict) {
+			Map<Long, Set<MeetingConflictInterface>> loc2overlaps = iOverlaps.get(date);
 			if (loc2overlaps == null) {
-				loc2overlaps = new HashMap<Long, Set<MeetingConglictInterface>>();
+				loc2overlaps = new HashMap<Long, Set<MeetingConflictInterface>>();
 				iOverlaps.put(date, loc2overlaps);
 			}
-			Set<MeetingConglictInterface> overlaps = loc2overlaps.get(locationId);
+			Set<MeetingConflictInterface> overlaps = loc2overlaps.get(locationId);
 			if (overlaps == null) {
-				overlaps = new TreeSet<MeetingConglictInterface>();
+				overlaps = new TreeSet<MeetingConflictInterface>();
 				loc2overlaps.put(locationId, overlaps);
 			}
 			overlaps.add(conflict);
@@ -1575,12 +1575,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		
 		public boolean isAvailable(Integer date, Long locationId) {
-			Set<MeetingConglictInterface> overlaps = getOverlaps(date, locationId);
+			Set<MeetingConflictInterface> overlaps = getOverlaps(date, locationId);
 			return (overlaps == null || overlaps.isEmpty());
 		}
 		
-		public Set<MeetingConglictInterface> getOverlaps(Integer date, Long locationId) {
-			Map<Long, Set<MeetingConglictInterface>> loc2overlaps = iOverlaps.get(date);
+		public Set<MeetingConflictInterface> getOverlaps(Integer date, Long locationId) {
+			Map<Long, Set<MeetingConflictInterface>> loc2overlaps = iOverlaps.get(date);
 			return (loc2overlaps == null ? null : loc2overlaps.get(locationId));
 		}
 	}

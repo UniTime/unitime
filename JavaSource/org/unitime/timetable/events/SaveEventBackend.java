@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.shared.EventInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.MeetingConglictInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
@@ -200,7 +200,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					if (context.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
 					if (!context.hasPermission(location, Right.EventLocationOverbook)) {
-						List<MeetingConglictInterface> conflicts = computeConflicts(hibSession, m, event.getUniqueId());
+						List<MeetingConflictInterface> conflicts = computeConflicts(hibSession, m, event.getUniqueId());
 						if (!conflicts.isEmpty())
 							throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(conflicts.get(0))));
 					}
@@ -364,8 +364,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		}
 	}
 	
-	private List<MeetingConglictInterface> computeConflicts(org.hibernate.Session hibSession, MeetingInterface meeting, Long eventId) {
-		List<MeetingConglictInterface> conflicts = new ArrayList<EventInterface.MeetingConglictInterface>();
+	private List<MeetingConflictInterface> computeConflicts(org.hibernate.Session hibSession, MeetingInterface meeting, Long eventId) {
+		List<MeetingConflictInterface> conflicts = new ArrayList<EventInterface.MeetingConflictInterface>();
 		for (Meeting m: (List<Meeting>)hibSession.createQuery(
 				"select m from Meeting m, Location l "+
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
@@ -378,7 +378,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				.setLong("eventId", eventId == null ? -1 : eventId)
 				.list()) {
 			
-			MeetingConglictInterface conflict = new MeetingConglictInterface();
+			MeetingConflictInterface conflict = new MeetingConflictInterface();
 
 			conflict.setEventId(m.getEvent().getUniqueId());
 			conflict.setName(m.getEvent().getEventName());
