@@ -743,6 +743,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<span title=\"Selected event\" style=\"font-style:normal;\">&#9745;</span>")
 	String signSelected();
 
+	@DefaultMessage("<span title=\"Warning\" style=\"font-style:normal;\">&#9888;</span>")
+	String signMessage();
+
 	@DefaultMessage("Event name is required.")
 	String reqEventName();
 	
@@ -764,7 +767,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Requested meeting is in the past or outside of {0}.")
 	String conflictPastOrOutside(String academicSessionName);
 	
-	@DefaultMessage("{0} is not managed in UniTime or disabled for events.")
+	@DefaultMessage("{0} is not managed in UniTime or it is disabled for events.")
 	String conflictNotEventRoom(String locationName);
 
 	@DefaultMessage("<i>File {0} attached.</i>")

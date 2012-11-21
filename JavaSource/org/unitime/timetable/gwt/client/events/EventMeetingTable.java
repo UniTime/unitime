@@ -535,8 +535,15 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		List<Widget> row = new ArrayList<Widget>();
 		
+		EventInterface event = data.getEvent();
+		MeetingInterface meeting = data.getMeeting();
+		MeetingConflictInterface conflict = (meeting instanceof MeetingConflictInterface ? (MeetingConflictInterface) meeting : null );
+		
 		if (data.hasParent()) {
-			row.add(new CenterredCell(MESSAGES.signConflict()));
+			if (conflict != null && conflict.getType() == EventType.Message)
+				row.add(new CenterredCell(MESSAGES.signMessage()));
+			else
+				row.add(new CenterredCell(MESSAGES.signConflict()));
 		} else if (!isSelectable()) {
 			row.add(new HTML(MESSAGES.signSelected()));
 		} else if (isSelectable(data)) {
@@ -545,10 +552,6 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
-		
-		EventInterface event = data.getEvent();
-		MeetingInterface meeting = data.getMeeting();
-		MeetingConflictInterface conflict = (meeting instanceof MeetingConflictInterface ? (MeetingConflictInterface) meeting : null );
 		
 		if (event != null && event.getType() != null) {
 			if (event.hasCourseNames()) {
@@ -632,16 +635,21 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 
 		String approval = "";
 		if (meeting != null) {
-			if (conflict != null) {
-				row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
+			if (conflict != null && (conflict.getType() == EventType.Message || conflict.getType() == EventType.Unavailabile) && conflict.isAllDay()) {
+				row.add(new HTMLWithColSpan(conflict.getName(), false, 5));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
-				row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate()), false));
+				if (conflict != null) {
+					row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
+					row.get(row.size() - 1).addStyleName("indent");
+				} else {
+					row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate()), false));
+				}
+				row.add(new Label(meeting.getMeetingTime(CONSTANTS), false));
+				row.add(new Label(meeting.getAllocatedTime(CONSTANTS), false));
+				row.add(new NumberCell(meeting.getStartOffset()));
+				row.add(new NumberCell(- meeting.getEndOffset()));
 			}
-			row.add(new Label(meeting.getMeetingTime(CONSTANTS), false));
-			row.add(new Label(meeting.getAllocatedTime(CONSTANTS), false));
-			row.add(new NumberCell(meeting.getStartOffset()));
-			row.add(new NumberCell(- meeting.getEndOffset()));
 			if (meeting.getLocation() == null) {
 				if (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().getLocation() != null) {
 					row.add(new HTML(data.getParent().getMeeting().getLocationNameWithHint(), false));
@@ -726,7 +734,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		if (meeting != null) {
 			boolean past = meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast());
 			row.add(new HTML(
-					conflict != null && conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? "" :
+					conflict != null && (conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message) ? "" :
 					meeting.isDelete() ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
 					meeting.getId() == null ? meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
@@ -755,9 +763,15 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		if (data.hasParent()) {
 			row.get(1).addStyleName("indent");
-			getRowFormatter().addStyleName(rowNumber, "conflict-row");
-			for (int i = 0; i < getCellCount(rowNumber); i++)
-				getCellFormatter().addStyleName(rowNumber, i, "conflict-cell");
+			if (conflict != null && conflict.getType() == EventType.Message) {
+				getRowFormatter().addStyleName(rowNumber, "message-row");
+				for (int i = 0; i < getCellCount(rowNumber); i++)
+					getCellFormatter().addStyleName(rowNumber, i, "message-cell");
+			} else {
+				getRowFormatter().addStyleName(rowNumber, "conflict-row");
+				for (int i = 0; i < getCellCount(rowNumber); i++)
+					getCellFormatter().addStyleName(rowNumber, i, "conflict-cell");
+			}
 		} else if (meeting != null) {
 			for (int i = 0; i < getCellCount(rowNumber); i++)
 				getCellFormatter().addStyleName(rowNumber, i, "meeting-cell");
@@ -1384,11 +1398,13 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public EventMeetingRow getParent() { return iParent; }
 		
 		public boolean inConflict() {
-			if (iMeeting != null && iMeeting.hasConflicts()) return true;
+			if (iMeeting != null && iMeeting.inConflict()) return true;
 			if (iEvent != null && iEvent.hasConflicts()) {
 				if (iMeeting == null) return true;
-				for (EventInterface conflict: iEvent.getConflicts())
+				for (EventInterface conflict: iEvent.getConflicts()) {
+					if (conflict.getType() == EventType.Message) continue;
 					if (conflict.inConflict(iMeeting)) return true;
+				}
 			}
 			return false;
 		}
@@ -1463,5 +1479,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public boolean isChecked();
 	}
 	
+	public static class HTMLWithColSpan extends HTML implements UniTimeTable.HasColSpan {
+		private int iColspan = 1;
+		public HTMLWithColSpan(String html, boolean wordWrap, int colspan) {
+			super(html, wordWrap);
+			iColspan = colspan;
+		}
+		@Override
+		public int getColSpan() { return iColspan; }
+	}
 	
 }

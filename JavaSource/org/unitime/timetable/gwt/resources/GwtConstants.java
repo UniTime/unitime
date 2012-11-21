@@ -107,12 +107,12 @@ public interface GwtConstants extends Constants {
 	String[] resourceName();
 	
 	@DefaultStringArrayValue({
-		"Class Event", "Final Examination Event", "Midterm Examination Event", "Course Related Event", "Special Event", "Not Available"
+		"Class Event", "Final Examination Event", "Midterm Examination Event", "Course Related Event", "Special Event", "Not Available", "Message"
 	})
 	String[] eventTypeName();
 	
 	@DefaultStringArrayValue({
-		"Class", "Final Examination", "Midterm Examination", "Course", "Special", "Not Available"
+		"Class", "Final Examination", "Midterm Examination", "Course", "Special", "Not Available", "Message"
 	})
 	String[] eventTypeAbbv();
 	
