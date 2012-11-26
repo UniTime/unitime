@@ -77,6 +77,8 @@ public class ExaminationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
+			if (ExamType.findAllUsed(source.getUniqueId()).isEmpty()) return false;
+			
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 				return permissionSession.check(user, source, DepartmentStatusType.Status.ExamTimetable);
 			else
