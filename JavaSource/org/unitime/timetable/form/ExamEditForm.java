@@ -37,6 +37,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamOwner;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
@@ -49,6 +50,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
 import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
+import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 import org.unitime.timetable.util.IdValue;
@@ -140,6 +142,10 @@ public class ExamEditForm extends PreferencesForm {
         examType = null;
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	examType = (Long)request.getSession().getAttribute("Exam.Type");
+        if (examType == null) {
+        	List<ExamType> types = ExamType.findAllUsed(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
+        	if (!types.isEmpty()) examType = types.get(0).getUniqueId();
+        }
         clone = false;
         super.reset(mapping, request);
     }
