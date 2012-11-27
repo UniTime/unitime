@@ -275,10 +275,12 @@ public class EditRoomForm extends ActionForm {
         }
         */
         
+        /*
         if (controlDept==null || controlDept.equalsIgnoreCase("")) {
         	errors.add("Department", 
                     new ActionMessage("errors.required", "Department") );
         }
+        */
         
         return errors;
 	}
