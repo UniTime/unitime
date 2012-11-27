@@ -139,7 +139,7 @@ public class LocationPermissions {
 					allDepts = false;
 			}
 			
-			return controls && allDepts;
+			return controls || allDepts;
 		}
 
 		@Override
