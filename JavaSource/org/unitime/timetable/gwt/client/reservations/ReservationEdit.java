@@ -118,17 +118,17 @@ public class ReservationEdit extends Composite {
 			addEditFinishedHandler(new EditFinishedHandler() {
 				@Override
 				public void onSave(EditFinishedEvent evt) {
-					ToolBox.open("instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
+					ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
 				}
 				
 				@Override
 				public void onDelete(EditFinishedEvent evt) {
-					ToolBox.open("instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
+					ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
 				}
 				
 				@Override
 				public void onBack(EditFinishedEvent evt) {
-					ToolBox.open("instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
+					ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
 				}
 
 				@Override
@@ -136,7 +136,7 @@ public class ReservationEdit extends Composite {
 					new Timer() {
 						@Override
 						public void run() {
-							ToolBox.open("instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
+							ToolBox.open(GWT.getHostPageBaseURL() + "instructionalOfferingDetail.do?io=" + iOffering.getId() + "#reservations");
 						}
 					}.schedule(5000);
 				}
