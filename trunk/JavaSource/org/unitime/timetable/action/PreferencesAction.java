@@ -938,8 +938,7 @@ public class PreferencesAction extends Action {
 		Assignment assignment = null;
 		
 		if (pg instanceof Class_) {
-			Class_ clazz = (Class_)pg;
-			if (sessionContext.hasPermission(clazz.getManagingDept(), Right.ClassAssignments)) {
+			if (sessionContext.hasPermission(Right.ClassAssignments)) {
 				ClassAssignmentDetails ca = ClassAssignmentDetails.createClassAssignmentDetails(sessionContext, courseTimetablingSolverService.getSolver(), pg.getUniqueId(), true);
 				if (ca!=null) {
 					String assignmentTable = SuggestionsAction.getAssignmentTable(sessionContext, courseTimetablingSolverService.getSolver(), ca,false, null, true);

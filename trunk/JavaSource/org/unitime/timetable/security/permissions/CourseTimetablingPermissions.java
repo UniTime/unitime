@@ -137,10 +137,14 @@ public class CourseTimetablingPermissions {
 	public static class ClassAssignments implements Permission<Session> {
 		@Autowired PermissionSession permissionSession;
 		@Autowired PermissionDepartment permissionDepartment;
-
+		@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
+		
 		@Override
 		public boolean check(UserContext user, Session source) {
 			if (!permissionSession.check(user, source)) return false;
+			
+			// Has a solver running -> can see assignments
+			if (courseTimetablingSolverService.getSolver() != null) return true;
 			
 			// Check for a department with a committed solution or for my department with a solution
 			for (Department department: source.getDepartments()) {
