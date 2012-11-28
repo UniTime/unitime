@@ -483,9 +483,10 @@ public class SessionRestore {
 					if (element == null) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
 					if (value != null) {
-						getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value, EntityMode.POJO);
 						if (!iHibSession.contains(value))
 							message("Required " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+						else
+							getMetaData().setPropertyValue(getObject(), getMetaData().getPropertyNames()[i], value, EntityMode.POJO);
 					}
 				}
 			}
@@ -501,9 +502,10 @@ public class SessionRestore {
 					if (element == null) continue;
 					Object value = get(type.getReturnedClass(), element.getValue(0));
 					if (value != null) {
-						getMetaData().setPropertyValue(getObject(), property, value, EntityMode.POJO);
 						if (!iHibSession.contains(value))
 							message("Optional " + getAbbv() + "." + property + " has transient value", getId() + "-" + element.getValue(0));
+						else
+							getMetaData().setPropertyValue(getObject(), property, value, EntityMode.POJO);
 					}
 				} else if (type instanceof CollectionType) {
 					TableData.Element element = getElement(property);
@@ -514,9 +516,10 @@ public class SessionRestore {
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								set.add(v);
-								if (!iHibSession.contains(v))
+								if (!iHibSession.contains(v)) 
 									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+								else
+									set.add(v);
 							}
 						}
 						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
@@ -525,9 +528,10 @@ public class SessionRestore {
 						for (String id: element.getValueList()) {
 							Object v = get(clazz, id);
 							if (v != null) {
-								set.add(v);
 								if (!iHibSession.contains(v))
 									message("Collection " + getAbbv() + "." + property + " has transient value", getId() + "-" + id);
+								else
+									set.add(v);
 							}
 						}
 						getMetaData().setPropertyValue(getObject(), property, set, EntityMode.POJO);
