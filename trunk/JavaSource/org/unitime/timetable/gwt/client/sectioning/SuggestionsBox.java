@@ -58,7 +58,6 @@ import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -92,7 +91,7 @@ public class SuggestionsBox extends DialogBox {
 	private TextBox iFilter;
 	private int iIndex;
 	private CourseRequestInterface iRequest;
-	private HorizontalPanel iFilterPanel;
+	private HorizontalPanelWithHint iFilterPanel;
 	private Button iSearch;
 	private boolean iOnline;
 	
@@ -529,6 +528,7 @@ public class SuggestionsBox extends DialogBox {
 				if (iHint.isShowing()) iHint.hide();
 				iHideHint.cancel();
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+				iFilterPanel.hideHint();
 			}
 		});
 		
