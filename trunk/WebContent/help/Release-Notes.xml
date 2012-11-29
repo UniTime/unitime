@@ -222,6 +222,22 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Hard Conflicts</name>
+			<description>
+				<line>Added ability for the joint enrollment constraint (student conflicts) to be hard based on the number of students in common.</line>
+				<line>This is controlled by the parameter General.JenrlMaxConflicts, the value is the percentage of the smaller class (using class limits) which gives the limit on the join enrollment (number of students in common) to become hard. Examples:
+					<line>1.0 means the constraint is always soft (default)</line>
+					<line>0.0 means the constraint is always hard</line>
+					<line>0.25 means that a join enrollment constraint will be hard if there is at least 25% students of the smaller class in common</line>
+					<line>So, for instance if there are two classes of limit 20, with the value 0.25 these classes can conflict only if there are 5 or less students attending both classes.</line>
+				</line>
+				<line>A hard conflict can weaken over time using the WeakeningConstraint interface.
+					<line>With each unassignment caused by the constraint, the max conflicts parameter is increased by General.JenrlMaxConflictsWeaken parameter (defaults to 0.001).</line>
+				</line>
+				<line>Hard conflicts can be created only between classes that are not committed (otherwise there is a risk of not being able to assign a class in time because of committed conflicts).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

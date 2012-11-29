@@ -90,7 +90,6 @@ import net.sf.cpsolver.coursett.TimetableXMLLoader;
 import net.sf.cpsolver.coursett.TimetableXMLSaver;
 import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
-import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
@@ -413,35 +412,13 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     		return new Placement(lecture,time,rooms);
     	}
     	private void assign(Placement placement) {
-    		if (placement.getNrRooms() > 0) {
-    			if (placement.isMultiRoom())
-    	    		for (RoomLocation room: placement.getRoomLocations()) {
-    	    			if (room.getRoomConstraint() != null && room.getRoomConstraint() instanceof DiscouragedRoomConstraint) {
-    	    				DiscouragedRoomConstraint drc = (DiscouragedRoomConstraint)room.getRoomConstraint();
-    	    				while (drc.isOverLimit(placement))
-    	    					drc.weaken();
-    	    			}
-    	    		}
-    			else if (placement.getRoomLocation() != null && placement.getRoomLocation().getRoomConstraint() != null && placement.getRoomLocation().getRoomConstraint() instanceof DiscouragedRoomConstraint) {
-    				DiscouragedRoomConstraint drc = (DiscouragedRoomConstraint)placement.getRoomLocation().getRoomConstraint();
-    				while (drc.isOverLimit(placement))
-    					drc.weaken();
-    			}
-    		}
-    		for (SpreadConstraint c: placement.variable().getSpreadConstraints()) {
-    			while (c.inConflict(placement))
-    				c.weaken();
-    		}
-    		if (placement.variable().getDeptSpreadConstraint() != null) {
-    			while (placement.variable().getDeptSpreadConstraint().inConflict(placement))
-    				placement.variable().getDeptSpreadConstraint().weaken();
-    		}
+    		((TimetableModel)currentSolution().getModel()).weaken(placement);
     		if (placement.isValid()) {
                 Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = currentSolution().getModel().conflictConstraints(placement);
                 if (conflictConstraints.isEmpty()) {
                 	placement.variable().assign(0,placement);
                 } else {
-                    iProgress.warn("Unable to assign "+placement.variable().getName()+" := "+placement.getName());
+                    iProgress.warn("Unable to assign "+placement.variable().getName()+" &larr; "+placement.getName());
                     iProgress.warn("&nbsp;&nbsp;Reason:");
                     for (Constraint<Lecture, Placement> c: conflictConstraints.keySet()) {
                         Collection vals = (Collection)conflictConstraints.get(c);

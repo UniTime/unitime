@@ -38,6 +38,7 @@ import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
 import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
 import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedRoomsConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
@@ -67,6 +68,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	public static final int sConstraintTypeMinNrRoomUsed = 6;
 	public static final int sConstraintTypeClassLimit = 7;
 	public static final int sConstraintTypeMinNrGroupsOfTime = 8;
+	public static final int sConstraintTypeJoinEnrollment = 9;
 	private Hashtable iVariables = new Hashtable();
 	
 	public Collection getCBS() { return iVariables.values(); } 
@@ -157,6 +159,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 					con = new CBSConstraint(val, sConstraintTypeClassLimit, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
 				} else if (constraint instanceof MinimizeNumberOfUsedGroupsOfTime) {
 					con = new CBSConstraint(val, sConstraintTypeMinNrGroupsOfTime, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
+				} else if (constraint instanceof JenrlConstraint) {
+					con = new CBSConstraint(val, sConstraintTypeJoinEnrollment, constraint.getId(), constraint.toString(), PreferenceLevel.sRequired);
 				} else {
 					con = new CBSConstraint(val, -1, constraint.getId(), constraint.getName(), PreferenceLevel.sRequired);
 				}
