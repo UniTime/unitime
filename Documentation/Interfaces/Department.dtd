@@ -22,6 +22,7 @@
 <!ATTLIST department deptCode CDATA #REQUIRED >
 <!ATTLIST department externalId CDATA #IMPLIED >
 <!ATTLIST department name CDATA #REQUIRED >
+<!ATTLIST department allowEvents (true|false) #IMPLIED >
 
 <!ELEMENT departments ( department+ ) >
 <!ATTLIST departments campus CDATA #REQUIRED >
