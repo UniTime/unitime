@@ -1099,6 +1099,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		iProgress.incProgress();
     		if (lecture.getAssignment()!=null) continue;
     		Placement placement = (Placement)lecture.getInitialAssignment();
+    		getModel().weaken(placement);
     		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(placement);
             if (conflictConstraints.isEmpty()) {
                 lecture.assign(0,placement);
@@ -1239,6 +1240,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
 	    	iProgress.message(msglevel("cannotAssign", Progress.MSGLEVEL_WARN), "Unable to assign "+getClassLabel(lecture)+" &larr; "+initialPlacement.getLongName()+(reason.length()==0?".":":"+reason));
 		} else {
 			if (iMppAssignment) lecture.setInitialAssignment(initialPlacement);
+			getModel().weaken(initialPlacement);
 			Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(initialPlacement);
         	if (conflictConstraints.isEmpty()) {
     	        lecture.assign(0,initialPlacement);
@@ -2140,6 +2142,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	    			getModel().addVariable(lecture);
     	    			
     	    			if (assignCommitted) {
+    	    				getModel().weaken(committedPlacement);
         	        		Map<Constraint<Lecture, Placement>, Set<Placement>> conflictConstraints = getModel().conflictConstraints(committedPlacement);
         	                if (conflictConstraints.isEmpty()) {
         	                    lecture.assign(0,committedPlacement);
