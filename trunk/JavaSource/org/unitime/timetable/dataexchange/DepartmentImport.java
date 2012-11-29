@@ -73,13 +73,13 @@ public class DepartmentImport extends BaseImport {
                 if(department == null) {
                     department = new Department();
                     department.setSession(session);
-                    department.setAllowReqTime(new Boolean(false));
-                    department.setAllowReqRoom(new Boolean(false));
-                    department.setAllowReqDistribution(new Boolean(false));
-                    department.setExternalManager(new Boolean(false));
+                    department.setAllowReqTime(false);
+                    department.setAllowReqRoom(false);
+                    department.setAllowReqDistribution(false);
+                    department.setExternalManager(false);
+                    department.setAllowEvents(false);
                     department.setDistributionPrefPriority(new Integer(0));
-               }
-                else {
+                } else {
                     if("T".equalsIgnoreCase(element.attributeValue("delete"))) {
                         getHibSession().delete(department);
                         continue;
@@ -89,6 +89,7 @@ public class DepartmentImport extends BaseImport {
                 department.setName(element.attributeValue("name"));
                 department.setDeptCode(element.attributeValue("deptCode"));
                 department.setExternalUniqueId(externalId);
+                department.setAllowEvents("true".equals(element.attributeValue("allowEvents", department.isAllowEvents() ? "true" : "false")));
                 getHibSession().saveOrUpdate(department);
                 flushIfNeeded(false);
             }
