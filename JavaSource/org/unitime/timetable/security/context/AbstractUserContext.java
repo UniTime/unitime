@@ -134,6 +134,7 @@ public abstract class AbstractUserContext implements UserContext {
 	}
 
 	protected void addAuthority(UserAuthority authority) {
+		authority.addQualifier(new SimpleQualifier("Role", authority.getRole()));
 		iAuthorities.add(authority);
 	}
 
