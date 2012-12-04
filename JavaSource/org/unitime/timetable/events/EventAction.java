@@ -101,7 +101,10 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 			
 			if (sessionId == null)
 				sessionId = context.getUser().getCurrentAcademicSessionId();
-			iFilter = new Qualifiable[] { new SimpleQualifier("Session", sessionId) };
+			iFilter = new Qualifiable[] {
+					new SimpleQualifier("Session", sessionId),
+					new SimpleQualifier("Role", context.getUser().getCurrentAuthority().getRole())
+			};
 
 			Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 			cal.set(Calendar.HOUR_OF_DAY, 0);
