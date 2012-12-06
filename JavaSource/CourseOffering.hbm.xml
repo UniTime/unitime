@@ -170,7 +170,7 @@
             class="CourseOffering"
             column="demand_offering_id"
             not-null="false"
-            foreign-key="fk_course_offr_demand_offr"/>
+            foreign-key="fk_course_offering_demand_offr"/>
 
         <many-to-one
             name="demandOfferingType"
