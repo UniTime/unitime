@@ -83,6 +83,36 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("all day")
 	String timeAllDay();
 	
+	@DefaultStringValue("pm")
+	String timePm();
+	
+	@DefaultStringValue("am")
+	String timeAm();
+	
+	@DefaultStringValue("p")
+	String timeShortPm();
+	
+	@DefaultStringValue("a")
+	String timeShortAm();
+
+	@DefaultStringArrayValue({ "h", "hr", "hrs", "hour", "hours" })
+	String[] parseTimeHours();
+
+	@DefaultStringArrayValue({ "m", "min", "mins", "minute", "minutes" })
+	String[] parseTimeMinutes();
+
+	@DefaultStringArrayValue({ "am", "a" })
+	String[] parseTimeAm();
+
+	@DefaultStringArrayValue({ "pm", "p" })
+	String[] parseTimePm();
+	
+	@DefaultStringArrayValue({ "noon" })
+	String[] parseTimeNoon();
+
+	@DefaultStringArrayValue({ "midnight" })
+	String[] parseTimeMidnight();
+
 	@DefaultStringValue("Daily")
 	String daily();
 	

@@ -46,9 +46,11 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.WeekSelector;
@@ -464,7 +466,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				table.setEvents(iData);
 				table.setSortBy(iTable.getSortBy());
 				
-				int firstSlot = -1, lastSlot = -1;
+				int firstSlot = 84, lastSlot = 216;
 				boolean skipDays = iEvents.hasChip(new FilterBox.Chip("day", null));
 				boolean hasDay[] = new boolean[] {
 						!skipDays || iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
@@ -477,10 +479,20 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (EventInterface event: iData) {
 					for (MeetingInterface meeting: event.getMeetings()) {
 						if (filter(meeting)) continue;
-						if (firstSlot < 0 || firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
-						if (lastSlot < 0 || lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
+						if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
+						if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
 						hasDay[meeting.getDayOfWeek()] = true;
 					}
+				}
+				Chip after = iEvents.getChip("after");
+				if (after != null) {
+					Integer slot = TimeUtils.parseTime(CONSTANTS, after.getValue(), null);
+					if (slot != null && firstSlot > slot) firstSlot = slot;
+				}
+				Chip before = iEvents.getChip("before");
+				if (before != null) {
+					Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
+					if (slot != null && lastSlot < slot) lastSlot = slot;
 				}
 				int nrDays = 0;
 				for (boolean d: hasDay) if (d) nrDays++;
@@ -1170,13 +1182,23 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iHeader.clearMessage();
 		
 		int nrDays = 4;
-		int firstSlot = -1, lastSlot = -1;
+		int firstSlot = 84, lastSlot = 216;
 		for (EventInterface event: iData) {
 			for (MeetingInterface meeting: event.getMeetings()) {
-				if (firstSlot < 0 || firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
-				if (lastSlot < 0 || lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
+				if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
+				if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
 				nrDays = Math.max(nrDays, meeting.getDayOfWeek());
 			}
+		}
+		Chip after = iEvents.getChip("after");
+		if (after != null) {
+			Integer slot = TimeUtils.parseTime(CONSTANTS, after.getValue(), null);
+			if (slot != null && firstSlot > slot) firstSlot = slot;
+		}
+		Chip before = iEvents.getChip("before");
+		if (before != null) {
+			Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
+			if (slot != null && lastSlot < slot) lastSlot = slot;
 		}
 		nrDays ++;
 		int days[] = new int[nrDays];

@@ -335,8 +335,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 					if (c.getCommand().equals("after")) chStart = c;
 					if (c.getCommand().equals("before")) chStop = c;
 				}
-				Integer start = TimeSelector.TimeUtils.parseTime(text, null);
-				Integer stop = TimeSelector.TimeUtils.parseTime(text, chStart == null ? null : TimeSelector.TimeUtils.parseTime(chStart.getValue(), null));
+				Integer start = TimeSelector.TimeUtils.parseTime(CONSTANTS, text, null);
+				Integer stop = TimeSelector.TimeUtils.parseTime(CONSTANTS, text, chStart == null ? null : TimeSelector.TimeUtils.parseTime(CONSTANTS, chStart.getValue(), null));
 				if (chStart == null) {
 					if (start != null) {
 						suggestions.add(new FilterBox.Suggestion(new Chip("after", TimeUtils.slot2time(start)), chStart));
@@ -430,12 +430,12 @@ public class EventFilterBox extends UniTimeFilterBox {
 						m2.clearSelection();
 					Chip chStart = getChip("after");
 					if (chStart != null)
-						st.setValue(TimeSelector.TimeUtils.parseTime(chStart.getValue(), null));
+						st.setValue(TimeSelector.TimeUtils.parseTime(CONSTANTS, chStart.getValue(), null));
 					else
 						st.setValue(null);
 					Chip chStop = getChip("before");
 					if (chStop != null)
-						et.setValue(TimeSelector.TimeUtils.parseTime(chStop.getValue(), st.getValue()));
+						et.setValue(TimeSelector.TimeUtils.parseTime(CONSTANTS, chStop.getValue(), st.getValue()));
 					else
 						et.setValue(null);
 				}

@@ -276,8 +276,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	}
 	
 	public Integer parseTime(String text) {
-		if (!text.isEmpty() && "midnight".startsWith(text.toLowerCase())) return (iStart == null ? 0 : 288);
-		return TimeUtils.parseTime(text, (iStart == null ? null : iStart.getValue()));
+		return TimeUtils.parseTime(CONSTANTS, text, (iStart == null ? null : iStart.getValue()));
 	}
 	
 	private class TimeMenu extends MenuBar {
@@ -352,21 +351,25 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	
 	
 	public static class TimeUtils {
-		private static String[] HR = new String[] { "h", "hr", "hrs", "hour", "hours" };
-		private static String[] MN = new String[] { "m", "min", "mins", "minute", "minutes" };
-		
-		public static Integer parseTime(String text, Integer start) {
-			if (!text.isEmpty() && "noon".startsWith(text.toLowerCase())) return 144;
-			if (!text.isEmpty() && "midnight".startsWith(text.toLowerCase())) return (start == null ? 0 : 288);
+
+		public static Integer parseTime(GwtConstants constants, String text, Integer start) {
+			if (!text.isEmpty()) {
+				for (String noon: constants.parseTimeNoon()) {
+					if (noon.startsWith(text.toLowerCase())) return 144;
+				}
+				for (String midnight: constants.parseTimeMidnight()) {
+					if (midnight.startsWith(text.toLowerCase())) return (start == null ? 0 : 288);
+				}
+			}
 			if (start != null) {
-				for (String h: HR) {
+				for (String h: constants.parseTimeHours()) {
 					if (text.toLowerCase().endsWith(h)) {
 						try {
 							return start + Math.round(12 * Float.parseFloat(text.substring(0, text.length() - h.length()).trim()));
 						} catch (Exception e) {}
 					}
 				}
-				for (String m: MN) {
+				for (String m: constants.parseTimeMinutes()) {
 					if (text.toLowerCase().endsWith(m)) {
 						try {
 							return start + Integer.parseInt(text.substring(0, text.length() - m.length()).trim()) / 5;
@@ -406,16 +409,20 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 					if (slot > start && slot <= 288) return slot;
 				}
 			}
-			if (token.toLowerCase().startsWith("am")) {
-				token = token.substring(2); hasAmOrPm = true;
-				if (startHour == 12) startHour = 24;
+			for (String am: constants.parseTimeAm()) {
+				if (token.toLowerCase().startsWith(am)) {
+					token = token.substring(2); hasAmOrPm = true;
+					if (startHour == 12) startHour = 24;
+					break;
+				}
 			}
-			if (token.toLowerCase().startsWith("a")) {
-				token = token.substring(1); hasAmOrPm = true;
-				if (startHour == 12) startHour = 24;
+			for (String pm: constants.parseTimePm()) {
+				if (token.toLowerCase().startsWith(pm)) {
+					token = token.substring(2); hasAmOrPm = true;
+					if (startHour<12) startHour += 12;
+					break;
+				}
 			}
-			if (token.toLowerCase().startsWith("pm")) { token = token.substring(2); hasAmOrPm = true; if (startHour<12) startHour += 12; }
-			if (token.toLowerCase().startsWith("p")) { token = token.substring(1); hasAmOrPm = true; if (startHour<12) startHour += 12; }
 			if (!token.isEmpty()) return null;
 			// if (startHour < 7 && !hasAmOrPm) startHour += 12;
 			if (startMin % 5 != 0) startMin = 5 * ((startMin + 2)/ 5);
@@ -423,7 +430,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			int slot = (60 * startHour + startMin) / 5;
 			if (start != null && slot <= start && slot <= 144 && !hasAmOrPm) slot += 144;
 			if (start != null && slot <= start) return null;
-			if (slot < 0 || slot > 288) return parseTime(text + "0", start);
+			if (slot < 0 || slot > 288) return parseTime(constants, text + "0", start);
 			return slot;
 		}
 		
@@ -435,7 +442,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
 	        if (CONSTANTS.useAmPm())
-	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? " am" : h >= 12 ? " pm" : " am");
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + " " + (h == 24 ? CONSTANTS.timeAm() : h >= 12 ? CONSTANTS.timePm() : CONSTANTS.timeAm());
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
@@ -448,7 +455,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			int h = slot / 12;
 	        int m = 5 * (slot % 12);
 	        if (CONSTANTS.useAmPm())
-	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? CONSTANTS.timeShortAm() : h >= 12 ? CONSTANTS.timeShortPm() : CONSTANTS.timeShortAm());
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
