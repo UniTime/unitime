@@ -73,6 +73,8 @@ import org.unitime.timetable.security.rights.Right;
 @Service("/hibernateQueryTest")
 public class HibernateQueryTestAction extends Action {
 	
+	private static Level iOriginalLevel = null;
+	
 	@Autowired SessionContext sessionContext;
 
     // --------------------------------------------------------- Instance Variables
@@ -106,7 +108,8 @@ public class HibernateQueryTestAction extends Action {
         ActionMessages errors =  frm.validate(mapping, request);
         
         Logger sqlLog = Logger.getLogger("org.hibernate.SQL");
-        Level origLevel = sqlLog.getLevel();
+        if (iOriginalLevel == null)
+        	iOriginalLevel = sqlLog.getLevel();
         sqlLog.setLevel(Level.DEBUG);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Appender myAppender = new WriterAppender(new PatternLayout("%m%n"), out);
@@ -160,7 +163,7 @@ public class HibernateQueryTestAction extends Action {
         }
         
         sqlLog.removeAppender(myAppender);
-        sqlLog.setLevel(origLevel);
+        sqlLog.setLevel(iOriginalLevel == null ? Level.INFO : iOriginalLevel);
         out.flush(); out.close();
         String sql = "";
         for (StringTokenizer stk = new StringTokenizer(new String(out.toByteArray()),"\n");stk.hasMoreTokens();) {
