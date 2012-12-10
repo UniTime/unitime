@@ -120,7 +120,7 @@ public class ExamAssignmentReportAction extends Action {
         
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         Collection<ExamAssignmentInfo> assignedExams = null;
-        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
+        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0 && myForm.getExamType() != null) {
             if (solver!=null && solver.getExamTypeId().equals(myForm.getExamType()))
                 assignedExams = solver.getAssignedExams(myForm.getSubjectArea());
             else {
