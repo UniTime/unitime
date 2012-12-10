@@ -60,13 +60,13 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
     	MSG.monday(), MSG.tuesday(), MSG.wednesday(), MSG.thursday(), MSG.friday(), MSG.saturday(), MSG.sunday()
         };
 
-    public static int DAY_MON = 0;
-    public static int DAY_TUE = 1;
-    public static int DAY_WED = 2;
-    public static int DAY_THU = 3;
-    public static int DAY_FRI = 4;
-    public static int DAY_SAT = 5;
-    public static int DAY_SUN = 6;
+    public static final int DAY_MON = 0;
+    public static final int DAY_TUE = 1;
+    public static final int DAY_WED = 2;
+    public static final int DAY_THU = 3;
+    public static final int DAY_FRI = 4;
+    public static final int DAY_SAT = 5;
+    public static final int DAY_SUN = 6;
     
     public static int EVENING_SLOTS_FIRST = DAY_SLOTS_LAST + 1;
     public static int EVENING_SLOTS_LAST = (23*60 + 00)/5 - 1; // evening ends at 23:00

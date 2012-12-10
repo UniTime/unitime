@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -53,6 +54,7 @@ import org.unitime.timetable.util.DateUtils;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$EventFilterRpcRequest")
 public class EventFilterBackend extends FilterBoxBackend {
+	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
 	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
@@ -66,82 +68,84 @@ public class EventFilterBackend extends FilterBoxBackend {
 		Date today = cal.getTime();
 
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
+		Map<Integer, Integer> type2count = new HashMap<Integer, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("e.class, count(distinct e)").group("e.class").order("e.class").exclude("query").exclude("type").query(hibSession).list()) {
 			int type = ((Number)o[0]).intValue();
 			int count = ((Number)o[1]).intValue();
-			Entity e = new Entity(new Long(type), Event.sEventTypesAbbv[type], Event.sEventTypesAbbv[type]);
-			e.setCount(count);
+			type2count.put(type, count);
+		}
+		for (int i = 0; i < Event.sEventTypesAbbv.length; i++) {
+			Entity e = new Entity(new Long(i), Event.sEventTypesAbbv[i], Event.sEventTypesAbbv[i]);
+			Integer count = type2count.get(i);
+			e.setCount(count == null ? 0 : count);
 			response.add("type", e);
 		}
 		
+		Map<Integer, Integer> day2count = new HashMap<Integer, Integer>();
 		for (Object[] o: (List<Object[]>)query.select(HibernateUtil.dayOfWeek("m.meetingDate") + ", count(distinct e)")
 				.order(HibernateUtil.dayOfWeek("m.meetingDate")).group(HibernateUtil.dayOfWeek("m.meetingDate"))
 				.exclude("query").exclude("day").query(hibSession).list()) {
 			int type = Integer.parseInt(o[0].toString());
-			String day = null;
-			switch (type) {
-			case 1: day = Constants.DAY_NAMES_FULL[Constants.DAY_SUN]; break;
-			case 2: day = Constants.DAY_NAMES_FULL[Constants.DAY_MON]; break;
-			case 3: day = Constants.DAY_NAMES_FULL[Constants.DAY_TUE]; break;
-			case 4: day = Constants.DAY_NAMES_FULL[Constants.DAY_WED]; break;
-			case 5: day = Constants.DAY_NAMES_FULL[Constants.DAY_THU]; break;
-			case 6: day = Constants.DAY_NAMES_FULL[Constants.DAY_FRI]; break;
-			case 7: day = Constants.DAY_NAMES_FULL[Constants.DAY_SAT]; break;
-			}
 			int count = ((Number)o[1]).intValue();
+			day2count.put(type, count);
+		}
+		for (int i = 0; i < Constants.DAY_NAMES_FULL.length; i++) {
+			String day = Constants.DAY_NAMES_FULL[i];
+			int type = 0;
+			switch (i) {
+			case Constants.DAY_SUN: type = 1; break;
+			case Constants.DAY_MON: type = 2; break;
+			case Constants.DAY_TUE: type = 3; break;
+			case Constants.DAY_WED: type = 4; break;
+			case Constants.DAY_THU: type = 5; break;
+			case Constants.DAY_FRI: type = 6; break;
+			case Constants.DAY_SAT: type = 7; break;
+			}
+			Integer count = day2count.get(type);
 			Entity e = new Entity(new Long(type), day, day);
-			e.setCount(count);
+			e.setCount(count == null ? 0 : count);
 			response.add("day", e);
 		}
 		
 		Entity all = new Entity(0l, "All", "All Events");
 		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
-		if (context.isAuthenticated()) {
+		if (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null) {
 			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user").set("user", context.getUser().getExternalUserId())
 					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-			if (myCnt > 0) {
-				Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
-				response.add("mode", my);
-			}
+			Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
+			response.add("mode", my);
+			
 			if (context.hasPermission(Right.HasRole)) {
 				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is not null")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
-				if (approvedCnt > 0) {
-					Entity approved = new Entity(2l, "Approved", "Approved Events"); approved.setCount(approvedCnt);
-					response.add("mode", approved);
-				}
+				Entity approved = new Entity(2l, "Approved", "Approved Events"); approved.setCount(approvedCnt);
+				response.add("mode", approved);
 				
 				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				if (notApprovedCnt > 0) {
-					Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
-					response.add("mode", notApproved);
-				}
-
-				int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null and m.meetingDate >= :today").set("today", today)
-						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				if (awaitingCnt > 0) {
-					Entity awaiting = new Entity(4l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
-					response.add("mode", awaiting);
-				}
+				Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
+				response.add("mode", notApproved);
 
 				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx")
 						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-				if (conflictingCnt > 0) {
-					Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
-					response.add("mode", conflicting);
-				}
+				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
+				response.add("mode", conflicting);
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
-					int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-							.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
-							.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-					if (myApprovalCnt > 0) {
-						Entity awaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
-						response.add("mode", awaiting);
-					}					
+					int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null and m.meetingDate >= :today").set("today", today)
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+					Entity awaiting = new Entity(4l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
+					response.add("mode", awaiting);
+
+					if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
+						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
+								.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
+								.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+						Entity myAwaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
+						response.add("mode", myAwaiting);
+					}
 				}
 			}
 		}
@@ -196,13 +200,13 @@ public class EventFilterBackend extends FilterBoxBackend {
 		
 		Integer after = null;
 		if (request.hasOption("after")) {
-			after = TimeSelector.TimeUtils.parseTime(request.getOption("after"), null);
+			after = TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("after"), null);
 			query.addWhere("after", "m.stopPeriod > :Xafter");
 			query.addParameter("after", "Xafter", after);
 		}
 		if (request.hasOption("before")) {
 			query.addWhere("before", "m.startPeriod < :Xbefore");
-			query.addParameter("before", "Xbefore", TimeSelector.TimeUtils.parseTime(request.getOption("before"), after));
+			query.addParameter("before", "Xbefore", TimeSelector.TimeUtils.parseTime(CONSTANTS, request.getOption("before"), after));
 		}
 		if (request.hasOptions("day")) {
 			String dow = "";
