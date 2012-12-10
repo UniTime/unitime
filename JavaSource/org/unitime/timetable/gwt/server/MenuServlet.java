@@ -296,7 +296,10 @@ public class MenuServlet implements MenuService {
 			if (user == null) return false;
 			String role = conditionElement.attributeValue("name");
 			if (role == null) return sessionContext.hasPermission(Right.HasRole);; // has any role
-			return user.getCurrentAuthority() != null && role.equalsIgnoreCase(user.getCurrentAuthority().getRole());
+			if (user.getCurrentAuthority() == null)
+				return Roles.ROLE_ANONYMOUS.equals(role);
+			else
+				return role.equalsIgnoreCase(user.getCurrentAuthority().getRole());
 		} else if ("propertyEquals".equals(cond)) {
 			return conditionElement.attributeValue("value", "true").equalsIgnoreCase(ApplicationProperties.getProperty(
 					conditionElement.attributeValue("name", "dummy"),
