@@ -81,7 +81,7 @@ public class ExamChangesAction extends Action {
         ExamSolverProxy solver = WebSolver.getExamSolver(request.getSession());
         myForm.setNoSolver(solver==null);
         Collection<ExamAssignmentInfo[]> changes = null;
-        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0) {
+        if (myForm.getSubjectArea()!=null && myForm.getSubjectArea()!=0 && myForm.getExamType() != null) {
             if (solver!=null) {
                 if (ExamChangesForm.sChangeInitial.equals(myForm.getChangeType()))
                     changes = solver.getChangesToInitial(myForm.getSubjectArea());
