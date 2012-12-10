@@ -620,6 +620,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No resource type selected.")
 	String warnNoResourceType();
 
+	@DefaultMessage("Please, enter a {0}.")
+	String warnNoResourceName(String resourceName);
+
 	@DefaultMessage("Waiting for the academic session {0} to load...")
 	String warnNoEventProperties(String session);
 	
