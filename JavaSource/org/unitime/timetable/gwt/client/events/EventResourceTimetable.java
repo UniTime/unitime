@@ -174,13 +174,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
-				"rooms", "", "title", "Class Events", "fixedTitle", "true", "addEvent", "false"),
+				"rooms", "", "title", "Classes", "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
 		Exams(
 				"type", "subject", "fixedType", "true", "events", "type:\"Final Exam\" type:\"Midterm Exam\"",
-				"tab", "1", "filter", "exams", "rooms", "", "title", "Examination Events", "fixedTitle", "true", "addEvent", "false"),
+				"tab", "1", "filter", "exams", "rooms", "", "title", "Examinations", "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
 		Personal(
 				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", "Personal Timetable",
-				"addEvent", "false", "fixedTitle", "true"
+				"addEvent", "false", "fixedTitle", "true", "showFilter", "false"
 				);
 		
 		
@@ -258,11 +258,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iSessionRow = iFilter.addRow(MESSAGES.propAcademicSession(), iSession);
 		
 		iEvents = new EventFilterBox(iSession);
-		
-		iFilter.addRow(MESSAGES.propEventFilter(), iEvents);
+		if ("true".equals(iHistoryToken.getParameter("showFilter", "true")))
+			iFilter.addRow(MESSAGES.propEventFilter(), iEvents);
 		
 		iRooms = new RoomFilterBox(iSession);
-		iFilter.addRow(MESSAGES.propRoomFilter(), iRooms);
+		if ("true".equals(iHistoryToken.getParameter("showFilter", "true")))
+			iFilter.addRow(MESSAGES.propRoomFilter(), iRooms);
 		
 		iResourceTypes = new ListBox();
 		for (ResourceType resource: ResourceType.values()) {
@@ -1052,7 +1053,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						}
 					}, MESSAGES.waitLoading(type.getName(CONSTANTS) + (type != ResourceType.PERSON ? " " + getResourceName() : "")));
 				}
-			}				
+			} else if (getResourceName() == null && loadData) {
+				UniTimeNotifications.warn(MESSAGES.warnNoResourceName(CONSTANTS.resourceName()[getResourceType().ordinal()].toLowerCase()));
+				iResources.setFocus(true);
+			}
 		}
 		if (!loadData) {
 			iData = null;

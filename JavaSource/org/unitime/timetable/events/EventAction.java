@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -103,7 +104,7 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 				sessionId = context.getUser().getCurrentAcademicSessionId();
 			iFilter = new Qualifiable[] {
 					new SimpleQualifier("Session", sessionId),
-					new SimpleQualifier("Role", context.getUser().getCurrentAuthority().getRole())
+					new SimpleQualifier("Role", context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getRole() : Roles.ROLE_ANONYMOUS)
 			};
 
 			Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
