@@ -137,7 +137,7 @@ public class ExamPdfReportForm extends ExamReportForm {
     }
     
     public void load(SessionContext session) {
-        super.load(session);
+    	super.load(session, true);
         setAll(session.getAttribute("ExamPdfReport.all")==null?true:(Boolean)session.getAttribute("ExamPdfReport.all"));
         setReports((String[])session.getAttribute("ExamPdfReport.reports"));
         setMode(session.getAttribute("ExamPdfReport.mode")==null?sModes[0]:(String)session.getAttribute("ExamPdfReport.mode"));
