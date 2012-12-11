@@ -105,7 +105,7 @@ public class ExamListAction extends Action {
         
         WebTable.setOrder(sessionContext, "ExamList.ord", request.getParameter("ord"), 1);
 
-        if ("Search".equals(op) || "Export PDF".equals(op)) {
+        if ("Search".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
             if (myForm.getSubjectAreaId()!=null) {
             	sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, myForm.getSubjectAreaId());
                 sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, myForm.getCourseNbr());
@@ -113,13 +113,22 @@ public class ExamListAction extends Action {
             }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getExamTable(myForm, false);
+                PdfWebTable table = getExamTable(myForm, false, true);
                 if (table!=null) {
                     File file = ApplicationProperties.getTempFile("exams", "pdf");
                     table.exportPdf(file, WebTable.getOrder(sessionContext, "ExamList.ord"));
                     request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
                 }
 
+            }
+
+            if ("Export CSV".equals(op)) {
+            	PdfWebTable table = getExamTable(myForm, false, false);
+            	if (table!=null) {
+                    File file = ApplicationProperties.getTempFile("exams", "csv");
+            		table.exportCsv(file, WebTable.getOrder(sessionContext, "ExamList.ord"));
+                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+                }
             }
         }
         
@@ -134,7 +143,7 @@ public class ExamListAction extends Action {
         }
         
         if (myForm.getSubjectAreaId()!=null && myForm.getSubjectAreaId().length()!=0) {
-            PdfWebTable table = getExamTable(myForm, true);
+            PdfWebTable table = getExamTable(myForm, true, false);
             if (table!=null) {
                 request.setAttribute("ExamList.table", table.printTable(WebTable.getOrder(sessionContext, "ExamList.ord")));
                 Vector ids = new Vector();
@@ -172,7 +181,7 @@ public class ExamListAction extends Action {
         return mapping.findForward("list");
     }
     
-    public PdfWebTable getExamTable(ExamListForm form, boolean html) {
+    public PdfWebTable getExamTable(ExamListForm form, boolean html, boolean color) {
     	ExamAssignmentProxy examAssignment = examinationSolverService.getSolver();
     	
         Collection exams = (form.getSubjectAreaId()==null || form.getSubjectAreaId().trim().length()==0 || "null".equals(form.getSubjectAreaId())
@@ -215,12 +224,12 @@ public class ExamListAction extends Action {
             
             ExamAssignment ea = (examAssignment!=null?examAssignment.getAssignment(exam.getUniqueId()):exam.getAssignedPeriod()!=null?new ExamAssignment(exam):null);
             if (ea!=null) {
-                per = (html?ea.getPeriodAbbreviationWithPref():(ea.getPeriodPref() == null ? "" : "@@COLOR " + PreferenceLevel.prolog2color(ea.getPeriodPref()) + " ") + ea.getPeriodAbbreviation());
+                per = (html?ea.getPeriodAbbreviationWithPref():(ea.getPeriodPref() == null || !color ? "" : "@@COLOR " + PreferenceLevel.prolog2color(ea.getPeriodPref()) + " ") + ea.getPeriodAbbreviation());
                 perCmp = ea.getPeriodOrd();
                 rooms = "";
                 for (ExamRoomInfo room : ea.getRooms()) {
                     if (rooms.length()>0) rooms += nl;
-                    rooms += (html ? room.toString(): "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " " + room.getName());
+                    rooms += (html ? room.toString(): (color ? "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " " : "") + room.getName());
                 }
             }
             
@@ -254,33 +263,33 @@ public class ExamListAction extends Action {
                 for (Iterator j=exam.effectivePreferences(RoomPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(BuildingPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(RoomFeaturePref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 for (Iterator j=exam.effectivePreferences(RoomGroupPref.class).iterator();j.hasNext();) {
                     Preference pref = (Preference)j.next();
                     if (roomPref.length()>0) roomPref+=nl;
-                    roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                    roomPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
                     MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
                     epx.load(exam);
-                    perPref+=epx.toString(false, true);
+                    perPref+=epx.toString(false, color);
                 } else {
-                	if (timeText) {
+                	if (timeText || !color) {
 						for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
 	                        Preference pref = (Preference)j.next();
 	                        if (perPref.length()>0) perPref+=nl;
-	                        perPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
 						}
                 	} else {
                         PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
@@ -294,7 +303,7 @@ public class ExamListAction extends Action {
     						for (Iterator j=exam.effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
     	                        Preference pref = (Preference)j.next();
     	                        if (perPref.length()>0) perPref+=nl;
-    	                        perPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+    	                        perPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
     						}
                         }
                 	}
@@ -302,7 +311,7 @@ public class ExamListAction extends Action {
                 for (Iterator j=exam.effectivePreferences(DistributionPref.class).iterator();j.hasNext();) {
                     DistributionPref pref = (DistributionPref)j.next();
                     if (distPref.length()>0) distPref+=nl;
-                    distPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
+                    distPref += (color ? "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " : "") +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
                 }
             }
             

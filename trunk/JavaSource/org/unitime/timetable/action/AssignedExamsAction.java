@@ -68,7 +68,7 @@ public class AssignedExamsAction extends Action {
         
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
 
-        if ("Export PDF".equals(op) || "Apply".equals(op)) {
+        if ("Export CSV".equals(op) || "Export PDF".equals(op) || "Apply".equals(op)) {
             myForm.save(sessionContext);
         } else if ("Refresh".equals(op)) {
             myForm.reset(mapping, request);
@@ -90,15 +90,22 @@ public class AssignedExamsAction extends Action {
         
         WebTable.setOrder(sessionContext, "assignedExams.ord",request.getParameter("ord"),1);
         
-        WebTable table = getTable(true, myForm, assignedExams);
+        WebTable table = getTable(true, false, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(false, myForm, assignedExams);
+            PdfWebTable pdfTable = getTable(false, true, myForm, assignedExams);
             File file = ApplicationProperties.getTempFile("assigned", "pdf");
             pdfTable.exportPdf(file, WebTable.getOrder(sessionContext, "assignedExams.ord"));
         	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
         }
         
+        if ("Export CSV".equals(op) && table!=null) {
+            PdfWebTable pdfTable = getTable(false, false, myForm, assignedExams);
+            File file = ApplicationProperties.getTempFile("assigned", "csv");
+            pdfTable.exportCsv(file, WebTable.getOrder(sessionContext, "assignedExams.ord"));
+        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        }
+
         if (table!=null)
             myForm.setTable(table.printTable(WebTable.getOrder(sessionContext, "assignedExams.ord")), 10, assignedExams.size());
 		
@@ -110,7 +117,7 @@ public class AssignedExamsAction extends Action {
         return mapping.findForward("showReport");
 	}
 	
-    public PdfWebTable getTable(boolean html, ExamReportForm form, Collection<ExamAssignmentInfo> exams) {
+    public PdfWebTable getTable(boolean html, boolean color, ExamReportForm form, Collection<ExamAssignmentInfo> exams) {
         if (exams==null || exams.isEmpty()) return null;
         String nl = (html?"<br>":"\n");
 		PdfWebTable table =
@@ -126,31 +133,31 @@ public class AssignedExamsAction extends Action {
 
         	    int dc = exam.getNrDirectConflicts();
                 int edc = exam.getNrNotAvailableDirectConflicts(); dc -= edc;
-                String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("P") + " " +String.valueOf(dc));
-                String edcStr = (edc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+edc+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("P") + " " + String.valueOf(edc));
+                String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":(color ? "@@COLOR " + PreferenceLevel.prolog2color("P") + " " : "") +String.valueOf(dc));
+                String edcStr = (edc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+edc+"</font>":(color ? "@@COLOR " + PreferenceLevel.prolog2color("P") + " " : "") + String.valueOf(edc));
                 int m2d = exam.getNrMoreThanTwoConflicts();
-                String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("2") + " " + String.valueOf(m2d));
+                String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":(color ?"@@COLOR " + PreferenceLevel.prolog2color("2") + " " : "") + String.valueOf(m2d));
                 int btb = exam.getNrBackToBackConflicts();
                 int dbtb = exam.getNrDistanceBackToBackConflicts();
-                String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("1") + " " +btb+(dbtb>0?" (d:"+dbtb+")":""));
+                String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":(color ?"@@COLOR " + PreferenceLevel.prolog2color("1") + " " : "") +btb+(dbtb>0?" (d:"+dbtb+")":""));
                 
                 String rooms = "";
                 for (ExamRoomInfo room : exam.getRooms()) {
-                    if (rooms.length()>0) rooms += (html ? ", " : "@@COLOR 000000 , ");
-                    rooms += (html ? room.toString(): "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " " + room.getName());
+                    if (rooms.length()>0) rooms += (html || !color ? ", " : "@@COLOR 000000 , ");
+                    rooms += (html ? room.toString(): (color ? "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " ": "") + room.getName());
                 }
                 
                 String distConfs = "";
                 for (DistributionConflict dist: exam.getDistributionConflicts()) {
-                	if (distConfs.length()>0) distConfs += (html ? ", " : "@@COLOR 000000 , ");
-                	distConfs += (html ? dist.getTypeHtml() : "@@COLOR " + PreferenceLevel.prolog2color(dist.getPreference()) + " " + dist.getType());
+                	if (distConfs.length()>0) distConfs += (html || !color ? ", " : "@@COLOR 000000 , ");
+                	distConfs += (html ? dist.getTypeHtml() : (color ? "@@COLOR " + PreferenceLevel.prolog2color(dist.getPreference()) + " ": "") + dist.getType());
                 }
                 
         	    table.addLine(
         	            "onClick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
-                            (html?exam.getPeriodAbbreviationWithPref():"@@COLOR " + PreferenceLevel.prolog2color(exam.getPeriodPref()) + " " + exam.getPeriodAbbreviation()),
+                            (html?exam.getPeriodAbbreviationWithPref():(color ? "@@COLOR " + PreferenceLevel.prolog2color(exam.getPeriodPref()) + " " : "" ) + exam.getPeriodAbbreviation()),
                             rooms,
                             (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                             String.valueOf(exam.getNrStudents()),
