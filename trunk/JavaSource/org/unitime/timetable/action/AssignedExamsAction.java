@@ -44,6 +44,8 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DistributionConflict;
+import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
@@ -124,24 +126,36 @@ public class AssignedExamsAction extends Action {
 
         	    int dc = exam.getNrDirectConflicts();
                 int edc = exam.getNrNotAvailableDirectConflicts(); dc -= edc;
-                String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":String.valueOf(dc));
-                String edcStr = (edc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+edc+"</font>":String.valueOf(edc));
+                String dcStr = (dc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+dc+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("P") + " " +String.valueOf(dc));
+                String edcStr = (edc<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("P")+"'>"+edc+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("P") + " " + String.valueOf(edc));
                 int m2d = exam.getNrMoreThanTwoConflicts();
-                String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":String.valueOf(m2d));
+                String m2dStr = (m2d<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("2")+"'>"+m2d+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("2") + " " + String.valueOf(m2d));
                 int btb = exam.getNrBackToBackConflicts();
                 int dbtb = exam.getNrDistanceBackToBackConflicts();
-                String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":btb+(dbtb>0?" (d:"+dbtb+")":""));
+                String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":"@@COLOR " + PreferenceLevel.prolog2color("1") + " " +btb+(dbtb>0?" (d:"+dbtb+")":""));
+                
+                String rooms = "";
+                for (ExamRoomInfo room : exam.getRooms()) {
+                    if (rooms.length()>0) rooms += (html ? ", " : "@@COLOR 000000 , ");
+                    rooms += (html ? room.toString(): "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " " + room.getName());
+                }
+                
+                String distConfs = "";
+                for (DistributionConflict dist: exam.getDistributionConflicts()) {
+                	if (distConfs.length()>0) distConfs += (html ? ", " : "@@COLOR 000000 , ");
+                	distConfs += (html ? dist.getTypeHtml() : "@@COLOR " + PreferenceLevel.prolog2color(dist.getPreference()) + " " + dist.getType());
+                }
                 
         	    table.addLine(
         	            "onClick=\"showGwtDialog('Examination Assignment', 'examInfo.do?examId="+exam.getExamId()+"','900','90%');\"",
                         new String[] {
                             (html?"<a name='"+exam.getExamId()+"'>":"")+(form.getShowSections()?exam.getSectionName(nl):exam.getExamName())+(html?"</a>":""),
-                            (html?exam.getPeriodAbbreviationWithPref():exam.getPeriodAbbreviation()),
-                            (html?exam.getRoomsNameWithPref(", "):exam.getRoomsName(", ")),
+                            (html?exam.getPeriodAbbreviationWithPref():"@@COLOR " + PreferenceLevel.prolog2color(exam.getPeriodPref()) + " " + exam.getPeriodAbbreviation()),
+                            rooms,
                             (Exam.sSeatingTypeNormal==exam.getSeatingType()?"Normal":"Exam"),
                             String.valueOf(exam.getNrStudents()),
                             exam.getInstructorName(", "),
-                            (html?exam.getDistributionConflictsHtml(", "):exam.getDistributionConflictsList(", ")),
+                            distConfs,
                             dcStr,
                             edcStr,
                             m2dStr,

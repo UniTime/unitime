@@ -272,7 +272,7 @@ public class ExamListAction extends Action {
                     roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                 }
                 if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
-                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), ExamTypeDAO.getInstance().get(form.getExamType()));
+                    MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
                     epx.load(exam);
                     perPref+=epx.toString(false, true);
                 } else {
