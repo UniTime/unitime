@@ -346,8 +346,8 @@ public class PdfExamReportQueueItem extends QueueItem {
                         }
                         log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+nrExams+" exams)");
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
-                            getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).
-                            newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), iForm.getExamType(), subject, exams);
+                            getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).
+                            newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subject, exams);
                         report.setDirect(iForm.getDirect());
                         report.setM2d(iForm.getM2d());
                         report.setBtb(iForm.getBtb());
