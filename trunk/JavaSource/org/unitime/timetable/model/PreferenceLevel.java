@@ -305,6 +305,13 @@ public class PreferenceLevel extends BasePreferenceLevel {
     		ret = (Color)sAwtPref2color.get(sNeutral);
     	return ret;
 	}
+	
+	public static Color int2awtColor(int intPref, Color neutralPref) {
+		String prologPref = int2prolog(intPref);
+		if (prologPref == null || prologPref.equals(sNeutral))
+			return neutralPref;
+		return prolog2awtColor(prologPref);
+	}
 
 	public static String int2prolog(int intPref) {
         return Constants.preferenceLevel2preference(intPref);
