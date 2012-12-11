@@ -835,7 +835,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    				case ExamOwner.sOwnerTypeClass:
 				    					Class_ clazz = (Class_)owner.getOwnerObject();
 				    					if (clazz.getClassSuffix(course) == null) {
-				    						event.addExternalId(clazz.getClassLabel(course));
+				    						event.addExternalId(clazz.getItypeDesc().trim() + " " + clazz.getSectionNumberString(hibSession));
 				    						name = course.getCourseName() + " " + clazz.getClassLabel(course);
 				    					} else {
 				    						event.addExternalId(clazz.getClassSuffix(course));
@@ -1470,6 +1470,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								"select c from StudentClassEnrollment e inner join e.clazz c where c.committedAssignment is null and e.student.session.uniqueId = :sessionId and e.student.externalUniqueId = :externalId")
 								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
 								.setCacheable(true).list();
+						
+						arrageHourClasses.addAll(
+								hibSession.createQuery("select c from ClassInstructor ci inner join ci.classInstructing c where c.committedAssignment is null and ci.instructor.department.session.uniqueId = :sessionId and  ci.instructor.externalUniqueId = :externalId")
+								.setString("externalId", request.getResourceExternalId()).setLong("sessionId", request.getSessionId())
+								.setCacheable(true).list());
+
 					}
 					
 					if (arrageHourClasses != null) {
