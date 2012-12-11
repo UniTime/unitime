@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.awt.Image;
 import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
@@ -165,38 +166,55 @@ public class UnassignedExamsAction extends Action {
                     for (Iterator j=exam.getExam().effectivePreferences(RoomPref.class).iterator();j.hasNext();) {
                         Preference pref = (Preference)j.next();
                         if (roomPref.length()>0) roomPref+=nl;
-                        roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                        roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
                     for (Iterator j=exam.getExam().effectivePreferences(BuildingPref.class).iterator();j.hasNext();) {
                         Preference pref = (Preference)j.next();
                         if (roomPref.length()>0) roomPref+=nl;
-                        roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                        roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
                     for (Iterator j=exam.getExam().effectivePreferences(RoomFeaturePref.class).iterator();j.hasNext();) {
                         Preference pref = (Preference)j.next();
                         if (roomPref.length()>0) roomPref+=nl;
-                        roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                        roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
                     for (Iterator j=exam.getExam().effectivePreferences(RoomGroupPref.class).iterator();j.hasNext();) {
                         Preference pref = (Preference)j.next();
                         if (roomPref.length()>0) roomPref+=nl;
-                        roomPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+                        roomPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
                     }
-                    if (exam.getExam().getExamType().getType() == ExamType.sExamTypeMidterm) {
-                        MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession(), exam.getExam().getExamType());
+                    if (ExamType.sExamTypeMidterm==exam.getExamType().getType()) {
+                        MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType());
                         epx.load(exam.getExam());
-                        perPref += epx.toString();
+                        perPref+=epx.toString(false, true);
                     } else {
-                        for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
-                            Preference pref = (Preference)j.next();
-                            if (perPref.length()>0) perPref+=nl;
-                            perPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
-                        }
+                    	if (timeText) {
+    						for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
+    	                        Preference pref = (Preference)j.next();
+    	                        if (perPref.length()>0) perPref+=nl;
+    	                        perPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+    						}
+                    	} else {
+                            PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getExam().getSession(), exam.getExamType().getUniqueId());
+                            px.load(exam.getExam());
+                            RequiredTimeTable rtt = new RequiredTimeTable(px);
+                            Image image = rtt.createBufferedImage(timeVertical);
+        					if (image != null) {
+        						table.addImage(exam.getExamId().toString(), image);
+        						perPref += "@@IMAGE "+exam.getExamId().toString()+" ";
+        					} else {
+        						for (Iterator j=exam.getExam().effectivePreferences(ExamPeriodPref.class).iterator();j.hasNext();) {
+        	                        Preference pref = (Preference)j.next();
+        	                        if (perPref.length()>0) perPref+=nl;
+        	                        perPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " +PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText();
+        						}
+                            }
+                    	}
                     }
                     for (Iterator j=exam.getExam().effectivePreferences(DistributionPref.class).iterator();j.hasNext();) {
                         DistributionPref pref = (DistributionPref)j.next();
                         if (distPref.length()>0) distPref+=nl;
-                        distPref += PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
+                        distPref += "@@COLOR " + PreferenceLevel.prolog2color(pref.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">");
                     }
                 }
                 
