@@ -72,6 +72,13 @@
 					<bean:message key="button.exportPDF" />
 				</html:submit> 
 			</TD>
+			<TD valign="middle">
+				<html:submit
+					accesskey="C" styleClass="btn" titleKey="title.exportCSV" property="op"
+					onclick="displayLoading();">
+					<bean:message key="button.exportCSV" />
+				</html:submit> 
+			</TD>
 			<sec:authorize access="hasPermission(null, 'Session', 'ExaminationAdd')">
 			<TD valign="middle">
 				<html:submit
