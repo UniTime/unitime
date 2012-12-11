@@ -79,15 +79,27 @@ public class ExamReportForm extends ActionForm {
 	public void setSubjectAreas(Collection subjectAreas) { iSubjectAreas = subjectAreas; }
 	
 	public void load(SessionContext session) {
+		load(session, false);
+	}
+	
+	public void load(SessionContext session, boolean allSubjects) {
 	    setShowSections("1".equals(session.getUser().getProperty("ExamReport.showSections", "1")));
 	    setSubjectArea(session.getAttribute("ExamReport.subjectArea")==null?null:(Long)session.getAttribute("ExamReport.subjectArea"));
 	    try {
-	        iSubjectAreas = new TreeSet(
-	                new SubjectAreaDAO().getSession().createQuery(
-	                        "select distinct o.course.subjectArea from Exam x inner join x.owners o where "+
-	                        "x.session.uniqueId=:sessionId")
-	                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
-	                        .setCacheable(true).list());
+	    	if (allSubjects) {
+		        iSubjectAreas = new TreeSet(
+		                new SubjectAreaDAO().getSession().createQuery(
+		                        "from SubjectArea where session.uniqueId=:sessionId")
+		                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
+		                        .setCacheable(true).list());
+	    	} else {
+		        iSubjectAreas = new TreeSet(
+		                new SubjectAreaDAO().getSession().createQuery(
+		                        "select distinct o.course.subjectArea from Exam x inner join x.owners o where "+
+		                        "x.session.uniqueId=:sessionId")
+		                        .setLong("sessionId", session.getUser().getCurrentAcademicSessionId())
+		                        .setCacheable(true).list());
+	    	}
 	    } catch (Exception e) {}
 	    setExamType(session.getAttribute("Exam.Type")==null?iExamType:(Long)session.getAttribute("Exam.Type"));
 	}
