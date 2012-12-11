@@ -21,10 +21,14 @@ package org.unitime.commons.web;
 
 
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
@@ -622,5 +626,99 @@ public class WebTable {
     
     public static interface WebTableTweakStyle {
     	public String getStyleHtml(WebTableLine currentLine, WebTableLine nextLine, int orderBy);
+    }
+    
+	protected CSVField csvField(String text) {
+		if (text == null) return new CSVField("");
+		if (text.indexOf("@@")<0) return new CSVField(text); 
+		
+		String cell = "";
+		boolean first = true;
+		for (StringTokenizer s = new StringTokenizer(text,"\n"); s.hasMoreTokens();) {
+			String line = s.nextToken();
+			int pos = 0;
+			while (true) {
+				int idx = line.indexOf("@@", pos);
+				if (idx < 0) {
+					cell += (!first && pos==0?"\n":"") + line.substring(pos);
+					break;
+				} else {
+					cell += (!first && pos==0?"\n":"") + line.substring(pos, idx);
+				}
+				pos+=2; //for @@
+				String cmd = line.substring(pos, line.indexOf(' ',pos));
+				pos+=cmd.length()+1;
+				if ("COLOR".equals(cmd)) {
+					String hex = line.substring(pos, line.indexOf(' ',pos));
+					pos+=hex.length()+1;
+					if (hex.startsWith("#")) hex = hex.substring(1);
+				}
+                if ("BGCOLOR".equals(cmd)) {
+                    String hex = line.substring(pos, line.indexOf(' ',pos));
+                    pos+=hex.length()+1;
+					if (hex.startsWith("#")) hex = hex.substring(1);
+                }
+				if ("IMAGE".equals(cmd)) {
+					String name = line.substring(pos, line.indexOf(' ',pos));
+					pos+=name.length()+1;
+				}
+				if ("BORDER_ALL".equals(cmd) 
+						|| "BORDER_TOP".equals(cmd)	|| "BORDER_BOTTOM".equals(cmd) 
+						|| "BORDER_LEFT".equals(cmd) || "BORDER_RIGHT".equals(cmd) ) {
+					
+					String hex = line.substring(pos, line.indexOf(' ',pos));
+					pos+=hex.length()+1;
+					if (hex.startsWith("#")) hex = hex.substring(1);
+				}
+			}
+			first=false;
+		}
+		
+		return new CSVField(cell);
+	}
+	
+	/**
+	 * Prints csv table.
+	 * @param ordCol
+	 * @return
+	 */
+	public CSVFile printCsvTable(int ordCol) {
+		CSVFile csv = new CSVFile();
+    	
+        boolean asc = (ordCol == 0 || iAsc == null || iAsc.length <= Math.abs(ordCol) - 1 ? true : iAsc[Math.abs(ordCol) - 1]);
+        if (ordCol < 0) asc = !asc;
+
+        String lastLine[] = new String[Math.max(iColumns,(iHeaders==null?0:iHeaders.length))];
+        
+        if (iHeaders != null) {
+        	List<CSVField> line = new ArrayList<CSVField>();
+            for (int i = 0; i < iColumns; i++) {
+                if (isFiltered(i)) continue;
+                line.add(csvField(iHeaders[i]));
+            }
+            csv.addLine(line);
+        }
+        if (ordCol != 0) {
+            Collections.sort(iLines, new WebTableComparator(Math.abs(ordCol) - 1, asc));
+        }
+        for (int el = 0 ; el < iLines.size(); el++) {
+            WebTableLine wtline = (WebTableLine) iLines.elementAt(el);
+            List<CSVField> line = new ArrayList<CSVField>();
+            boolean blank = iBlankWhenSame;
+            for (int i = 0; i < iColumns; i++) {
+                if (isFiltered(i)) continue;
+                if (blank && wtline.getLine()[i]!=null && !wtline.getLine()[i].equals(lastLine[i])) blank=false;
+                line.add(csvField(wtline.getLine()[i]));
+            	lastLine[i] = wtline.getLine()[i];
+            }
+            csv.addLine(line);
+        }
+        
+        return csv;
+    }
+	
+    public void exportCsv(File file, int ordCol) throws Exception {
+		CSVFile csv = printCsvTable(ordCol);
+		csv.save(file);
     }
 }
