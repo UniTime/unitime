@@ -74,6 +74,7 @@ import org.unitime.timetable.solver.CachedClassAssignmentProxy;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
+import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -497,9 +498,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     
     protected PdfPCell pdfBuildDatePatternCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, boolean isEditable){
     	Assignment a = null;
+    	AssignmentPreferenceInfo p = null;
 		if (getDisplayTimetable() && isShowTimetable() && classAssignment!=null && prefGroup instanceof Class_) {
 			try {
 				a = classAssignment.getAssignment((Class_)prefGroup);
+				p = classAssignment.getAssignmentInfo((Class_)prefGroup);
 			} catch (Exception e) {
 				Debug.error(e);
 			}
@@ -520,7 +523,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     			for (Iterator i=prefGroup.effectivePreferences(DatePatternPref.class).iterator(); i.hasNext();) {
     				Preference pref = (Preference)i.next();
     				if (!hasReq || PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
-    					addText(cell,PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_CENTER, color, true);
+    					addText(cell,PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_CENTER, (!isEditable ? color : p == null ? pref.getPrefLevel().awtPrefcolor() : PreferenceLevel.int2awtColor(p.getDatePatternPref(), color)), true);
     			}
     		}
     	}
@@ -591,7 +594,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     }
     private PdfPCell pdfBuildPreferenceCell(ClassAssignmentProxy classAssignment, PreferenceGroup prefGroup, Class prefType, boolean isEditable){
     	if (!isEditable) return createCell();
-   		Color color = (isEditable?sEnableColor:sDisableColor);
+    	Color color = (isEditable?sEnableColor:sDisableColor);
 
     	if (TimePref.class.equals(prefType)) {
     		return pdfBuildTimePrefCell(classAssignment, prefGroup, isEditable);
@@ -599,14 +602,14 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	PdfPCell cell = createCell();
         	for (Iterator i=prefGroup.effectivePreferences(prefType).iterator();i.hasNext();) {
         		DistributionPref pref = (DistributionPref)i.next();
-        		addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">"), false, false, Element.ALIGN_LEFT, color, true);
+        		addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(true, true, " (", ", ",")").replaceAll("&lt;","<").replaceAll("&gt;",">"), false, false, Element.ALIGN_LEFT, (!isEditable ? color : pref.getPrefLevel().awtPrefcolor()), true);
         	}
     		return cell ;
     	} else {
         	PdfPCell cell = createCell();
         	for (Iterator i=prefGroup.effectivePreferences(prefType).iterator();i.hasNext();) {
         		Preference pref = (Preference)i.next();
-        		addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_LEFT, color, true);
+        		addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_LEFT, (!isEditable ? color : pref.getPrefLevel().awtPrefcolor()), true);
         	}
     		return cell ;
     	}
@@ -635,7 +638,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		}
     		for (Iterator j=prefGroup.effectivePreferences(prefType).iterator();j.hasNext();) {
     			Preference pref = (Preference)j.next();
-    			addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_LEFT, color, true);
+    			addText(cell, PreferenceLevel.prolog2abbv(pref.getPrefLevel().getPrefProlog())+" "+pref.preferenceText(), false, false, Element.ALIGN_LEFT, (!isEditable ? color : pref.getPrefLevel().awtPrefcolor()), true);
     		}
     	}
     	if (noRoomPrefs && cell.getPhrase()==null)
@@ -905,8 +908,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
+    		AssignmentPreferenceInfo p = null;
     		try {
     			a = classAssignment.getAssignment(aClass);
+    			p = classAssignment.getAssignmentInfo((Class_)prefGroup);
     		} catch (Exception e) {
     			Debug.error(e);
     		}
@@ -920,7 +925,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
    				sb.append(a.getTimeLocation().getStartTimeHeader());
    				sb.append("-");
    				sb.append(a.getTimeLocation().getEndTimeHeader());
-   				addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
+   				addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, (p == null || !isEditable ? color : PreferenceLevel.int2awtColor(p.getTimePreference(), color)), true);
     		} 
     	}
     	
@@ -934,8 +939,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (classAssignment!=null && prefGroup instanceof Class_) {
     		Class_ aClass = (Class_) prefGroup;
     		Assignment a = null;
+    		AssignmentPreferenceInfo p = null;
     		try {
     			a= classAssignment.getAssignment(aClass);
+    			p = classAssignment.getAssignmentInfo((Class_)prefGroup);
     		} catch (Exception e) {
     			Debug.error(e);
     		}
@@ -949,7 +956,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	        			sb.append("\n");
 	        		} 
 	    		}
-	    		addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, color, true);
+	    		addText(cell, sb.toString(), false, false, Element.ALIGN_LEFT, (p == null || !isEditable ? color : PreferenceLevel.int2awtColor(p.getTimePreference(), color)), true);
     		}
     	}
     	
