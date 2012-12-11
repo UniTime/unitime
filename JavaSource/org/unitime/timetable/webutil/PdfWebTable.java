@@ -249,6 +249,7 @@ public class PdfWebTable extends WebTable {
 				if ("COLOR".equals(cmd)) {
 					String hex = line.substring(pos, line.indexOf(' ',pos));
 					pos+=hex.length()+1;
+					if (hex.startsWith("#")) hex = hex.substring(1);
 					color = new Color(Integer.parseInt(hex,16));
 				}
 				if ("END_COLOR".equals(cmd)) {

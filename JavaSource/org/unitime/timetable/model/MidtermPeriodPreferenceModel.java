@@ -346,7 +346,7 @@ public class MidtermPeriodPreferenceModel {
 	    return toString(false);
 	}
 	
-    private String getLabel(int fDate, int lDate, Hashtable<Integer,String> prefs, boolean html) {
+    private String getLabel(int fDate, int lDate, Hashtable<Integer,String> prefs, boolean html, boolean color) {
         SimpleDateFormat df = new SimpleDateFormat("MM/dd");
         String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
         String lastPref = null; int fStart = -1, lStart = -1;
@@ -371,6 +371,8 @@ public class MidtermPeriodPreferenceModel {
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";
                     } else {
+                    	if (color)
+                    		ret += "@@COLOR " + PreferenceLevel.prolog2color(lastPref) + " ";
                         ret+=PreferenceLevel.prolog2abbv(lastPref)+" "+
                             dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime);
                     }
@@ -394,6 +396,8 @@ public class MidtermPeriodPreferenceModel {
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+"</span>";
                     } else {
+                    	if (color)
+                    		ret += "@@COLOR " + PreferenceLevel.prolog2color(lastPref) + " ";
                         ret+=PreferenceLevel.prolog2abbv(lastPref)+" "+dates;
                     }
                 } else {
@@ -404,6 +408,8 @@ public class MidtermPeriodPreferenceModel {
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";
                     } else {
+                    	if (color)
+                    		ret += "@@COLOR " + PreferenceLevel.prolog2color(lastPref) + " ";
                         ret+=PreferenceLevel.prolog2abbv(lastPref)+" "+
                             dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime);
                     }
@@ -413,8 +419,11 @@ public class MidtermPeriodPreferenceModel {
         return ret;
     }
     
-    
     public String toString(boolean html) {
+    	return toString(html, false);
+    }
+    
+    public String toString(boolean html, boolean color) {
         if (iStarts.isEmpty()) return "";
         String ret = "";
         Hashtable<Integer,String> fPref = null; 
@@ -424,7 +433,7 @@ public class MidtermPeriodPreferenceModel {
         	if (fPref==null) {
         	    fPref = pref; fDate = date;
         	} else if (!fPref.equals(pref)) {
-        	    String label = getLabel(fDate, lDate, fPref, html);
+        	    String label = getLabel(fDate, lDate, fPref, html, color);
         	    if (label.length()>0) {
         	        if (ret.length()>0) ret+=", ";
         	        ret+=label;
@@ -434,7 +443,7 @@ public class MidtermPeriodPreferenceModel {
         	lDate = date;
         }
         if (fPref!=null) {
-            String label = getLabel(fDate, lDate, fPref, html);
+            String label = getLabel(fDate, lDate, fPref, html, color);
             if (label.length()>0) {
                 if (ret.length()>0) ret+=", ";
                 ret+=label;
