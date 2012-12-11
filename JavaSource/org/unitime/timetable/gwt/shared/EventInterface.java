@@ -1192,7 +1192,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				if (hasOption("user")) extra ++;
 				if (hasOption("role")) extra ++;
 				return getOptions().size() == extra; 
-			} else return false;
+			} else return true;
 		}
 		
 		@Override
