@@ -644,6 +644,7 @@ public class WebTable {
 					break;
 				} else {
 					cell += (!first && pos==0?"\n":"") + line.substring(pos, idx);
+					pos = idx;
 				}
 				pos+=2; //for @@
 				String cmd = line.substring(pos, line.indexOf(' ',pos));
