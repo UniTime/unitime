@@ -1035,4 +1035,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Mass cancellation is an irreversible operation that will delete all class enrollments and course requests for the selected student(s). Are you sure to do that?")
 	String massCancelConfirmation();
+	
+	@DefaultMessage("<i>Arrange Hours</i>")
+	String arrageHours();
 }
