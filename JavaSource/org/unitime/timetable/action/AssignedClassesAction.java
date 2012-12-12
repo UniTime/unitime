@@ -20,8 +20,10 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -43,6 +45,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.AssignedClassesForm;
 import org.unitime.timetable.model.Assignment;
+import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SolutionDAO;
@@ -62,6 +65,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/assignedClasses")
 public class AssignedClassesAction extends Action {
+	public static DecimalFormat sDF = new DecimalFormat("0.###",new java.text.DecimalFormatSymbols(Locale.US));
 	
 	@Autowired SessionContext sessionContext;
 	
@@ -82,7 +86,7 @@ public class AssignedClassesAction extends Action {
         	request.getSession().setAttribute("Suggestions.model", model);
         }
 
-        if ("Apply".equals(op) || "Export PDF".equals(op)) {
+        if ("Apply".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
         	myForm.save(model);
         	model.save(sessionContext.getUser());
         }
@@ -95,7 +99,7 @@ public class AssignedClassesAction extends Action {
         	myForm.setSubjectAreas(new TreeSet(SubjectArea.getSubjectAreaList(sessionContext.getUser().getCurrentAcademicSessionId())));
         } catch (Exception e) {}
         
-        if ("Apply".equals(op) || "Export PDF".equals(op)) {
+        if ("Apply".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
         	if (myForm.getSubjectArea() == null)
         		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	else if (myForm.getSubjectArea() < 0)
@@ -165,16 +169,46 @@ public class AssignedClassesAction extends Action {
         	request.setAttribute("AssignedClasses.message","No assigned class.");
         
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
-        	if (f!=null)
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
-        		//response.sendRedirect("temp/"+f.getName());
+        	PdfWebTable table = exportPdf(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
+        	if (table != null) {
+        		File file = ApplicationProperties.getTempFile("assigned", "pdf");
+        		table.exportPdf(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
+        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	}
+        }
+        if ("Export CSV".equals(op)) {
+        	PdfWebTable table = exportPdf(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
+        	if (table != null) {
+        		File file = ApplicationProperties.getTempFile("assigned", "csv");
+        		table.exportCsv(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
+        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	}
         }
 		
         return mapping.findForward("showAssignedClasses");
 	}
 	
-	public File exportPdf(boolean simple, HttpServletRequest request, String name, Vector assignedClasses) {
+	private static String dispNumberPdf(int number) {
+		return dispNumberPdf("", number);
+	}
+	
+	private static String dispNumberPdf(String prefix, int number) {
+		if (number>0) return "@@COLOR FF0000 " + prefix + "+" + number + " @@END_COLOR ";
+	    if (number<0) return "@@COLOR 00FF00 " + prefix + number  + " @@END_COLOR ";
+	    return prefix + "0";
+	}
+	
+	private static String dispNumberPdf(double number) {
+		return dispNumberPdf("", number);
+	}
+	
+	private static String dispNumberPdf(String prefix, double number) {
+		if (number>0) return "@@COLOR FF0000 " + prefix + "+" + sDF.format(number) + " @@END_COLOR ";
+	    if (number<0) return "@@COLOR 00FF00 " + prefix + sDF.format(number)  + " @@END_COLOR ";
+	    return prefix + sDF.format(0.0);
+	}
+	
+	public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, String name, Vector assignedClasses) {
     	if (assignedClasses==null || assignedClasses.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -197,34 +231,44 @@ public class AssignedClassesAction extends Action {
         		StringBuffer sb = new StringBuffer();
         	    if (ci.getNrCommitedStudentConflicts()!=0) {
         	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("c",ci.getNrCommitedStudentConflicts()));
+        	    	sb.append(dispNumberPdf("c",ci.getNrCommitedStudentConflicts()));
         	    }
         	    if (ci.getNrDistanceStudentConflicts()!=0) {
         	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("d",ci.getNrDistanceStudentConflicts()));
+        	    	sb.append(dispNumberPdf("d",ci.getNrDistanceStudentConflicts()));
         	    }
         	    if (ci.getNrHardStudentConflicts()!=0) {
         	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("h",ci.getNrHardStudentConflicts()));
+        	    	sb.append(dispNumberPdf("h",ci.getNrHardStudentConflicts()));
         	    }
         	    if (sb.length()>0) sb.append(")");
         	    
         	    String rooms = "";
-        	    if (ca.getRoom()!=null)
-        	    	for (int i=0;i<ca.getRoom().length;i++) {
-        	    		if (i>0) rooms += ", ";
-        	    		rooms += ca.getRoom()[i].getName();
+        	    if (ca.getAssignedRoom() != null) {
+        	    	for (int i=0;i<ca.getAssignedRoom().length;i++) {
+        	    		if (i>0) rooms += "@@COLOR 000000 , ";
+        	    		rooms += "@@COLOR " + PreferenceLevel.int2color(ca.getAssignedRoom()[i].getPref()) + " " + ca.getAssignedRoom()[i].getName();
         	    	}
+        	    } else if (ca.getRoom()!=null) {
+        	    	for (int i=0;i<ca.getRoom().length;i++) {
+        	    		if (i>0) rooms += "@@COLOR 000000 , ";
+        	    		rooms += "@@COLOR " + PreferenceLevel.int2color(ca.getRoom()[i].getPref()) + " " + ca.getRoom()[i].getName();
+        	    	}
+        	    }
         	    
         	    if (simple)
             	    webTable.addLine(null,
             	    		new String[] {
-            	    			ca.getClazz().getName(),
-            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":ca.getAssignedTime().getDatePatternName():ca.getTime().getDatePatternName()),
-            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
+            	    			"@@COLOR " + PreferenceLevel.prolog2color(ca.getClazz().getPref()) + " " + ca.getClazz().getName(),
+            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getDatePatternPreference()) + " " + ca.getAssignedTime().getDatePatternName():
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getDatePatternPreference()) + " " +	ca.getTime().getDatePatternName()),
+            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getPref()) + " " + ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getPref()) + " " +	ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
             	    			rooms,
             	    			ca.getInstructorHtml(),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(ci.getNrStudentConflicts())+sb
+            	    			dispNumberPdf(ci.getNrStudentConflicts())+sb
             	    			},
             	             new Comparable[] {
             	             	ca,
@@ -237,21 +281,25 @@ public class AssignedClassesAction extends Action {
         	    else
             	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",
             	    		new String[] {
-    	    					ca.getClazz().getName(),
-    	    					(ca.getTime()==null?ca.getAssignedTime()==null?"":ca.getAssignedTime().getDatePatternName():ca.getTime().getDatePatternName()),
-    	    					(ca.getTime()==null?ca.getAssignedTime()==null?"":ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
+            	    			"@@COLOR " + PreferenceLevel.prolog2color(ca.getClazz().getPref()) + " " + ca.getClazz().getName(),
+            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getDatePatternPreference()) + " " + ca.getAssignedTime().getDatePatternName():
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getDatePatternPreference()) + " " +	ca.getTime().getDatePatternName()),
+            	    			(ca.getTime()==null?ca.getAssignedTime()==null?"":
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getPref()) + " " + ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():
+            	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getPref()) + " " +	ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
     	    					rooms,
     	    					ca.getInstructorHtml(),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getNrStudentConflicts())+sb,
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getTimePreference()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.sumRoomPreference()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getGroupConstraintPref()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getBtbInstructorPreference()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getUselessHalfHours()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getTooBigRoomPreference()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getDeptBalancPenalty()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getSpreadPenalty()),
-    	    					ClassAssignmentDetails.dispNumberNoHtml(ci.getPerturbationPenalty())
+    	    					dispNumberPdf(ci.getNrStudentConflicts())+sb,
+    	    					dispNumberPdf(ci.getTimePreference()),
+    	    					dispNumberPdf(ci.sumRoomPreference()),
+    	    					dispNumberPdf(ci.getGroupConstraintPref()),
+    	    					dispNumberPdf(ci.getBtbInstructorPreference()),
+    	    					dispNumberPdf(ci.getUselessHalfHours()),
+    	    					dispNumberPdf(ci.getTooBigRoomPreference()),
+    	    					dispNumberPdf(ci.getDeptBalancPenalty()),
+    	    					dispNumberPdf(ci.getSpreadPenalty()),
+    	    					dispNumberPdf(ci.getPerturbationPenalty())
             	             },
             	             new Comparable[] {
     	             			ca,
@@ -271,9 +319,7 @@ public class AssignedClassesAction extends Action {
             	                new Double(ci.getPerturbationPenalty())
             	             });
         	}
-        	File file = ApplicationProperties.getTempFile("assigned", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
-        	return file;
+        	return webTable;
         } catch (Exception e) {
         	Debug.error(e);
         }
@@ -317,11 +363,17 @@ public class AssignedClassesAction extends Action {
         	    if (sb.length()>0) sb.append(")");
         	    
         	    String rooms = "";
-        	    if (ca.getRoom()!=null)
+        	    if (ca.getAssignedRoom() != null) {
+        	    	for (int i=0;i<ca.getAssignedRoom().length;i++) {
+        	    		if (i>0) rooms += ", ";
+        	    		rooms += ca.getAssignedRoom()[i].toHtml(false,false,true);
+        	    	}
+        	    } else if (ca.getRoom()!=null) {
         	    	for (int i=0;i<ca.getRoom().length;i++) {
         	    		if (i>0) rooms += ", ";
         	    		rooms += ca.getRoom()[i].toHtml(false,false,true);
         	    	}
+        	    }
         	    
         	    if (simple)
             	    webTable.addLine("onClick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+ca.getClazz().getClassId()+"&op=Reset','900','90%');\"",

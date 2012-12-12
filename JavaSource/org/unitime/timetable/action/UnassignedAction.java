@@ -77,7 +77,7 @@ public class UnassignedAction extends Action {
         	myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
         } catch (Exception e) {}
         
-        if ("Apply".equals(op) || "Export PDF".equals(op)) {
+        if ("Apply".equals(op) || "Export PDF".equals(op) || "Export CSV".equals(op)) {
         	if (myForm.getSubjectArea() == null)
         		sessionContext.removeAttribute(SessionAttribute.OfferingsSubjectArea);
         	else if (myForm.getSubjectArea() < 0)
@@ -98,10 +98,21 @@ public class UnassignedAction extends Action {
         }
         
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(request, myForm.getSubjectArea());
-        	if (f!=null)
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
-        		//response.sendRedirect("temp/"+f.getName());
+        	PdfWebTable table = exportPdf(request, myForm.getSubjectArea());
+        	if (table != null) {
+        		File file = ApplicationProperties.getTempFile("unassigned", "pdf");
+            	table.exportPdf(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
+            	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	}
+        }
+
+        if ("Export CSV".equals(op)) {
+        	PdfWebTable table = exportPdf(request, myForm.getSubjectArea());
+        	if (table != null) {
+        		File file = ApplicationProperties.getTempFile("unassigned", "csv");
+            	table.exportCsv(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
+            	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	}
         }
 
         getUnassigned(request, myForm.getSubjectArea());
@@ -183,7 +194,7 @@ public class UnassignedAction extends Action {
 	    }
 	}	
 
-    private File exportPdf(HttpServletRequest request, Long subjectArea) throws Exception {
+    private PdfWebTable exportPdf(HttpServletRequest request, Long subjectArea) throws Exception {
 		UnassignedClassesModel model = null;
 		boolean noSubject = false;
 		String prefix = null;
@@ -241,9 +252,7 @@ public class UnassignedAction extends Action {
 			}
 		}
 		
-		File file = ApplicationProperties.getTempFile("unassigned", "pdf");
-    	webTable.exportPdf(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
-    	return file;
+    	return webTable;
 	}	
 
 }
