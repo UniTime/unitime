@@ -580,7 +580,9 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						else if (clazz.isFreeTime())
 							ftParam += clazz.getDaysString(CONSTANTS.shortDays()) + "-" + clazz.getStart() + "-" + clazz.getLength() + ",";
 						String style = "unitime-ClassRow" + (firstClazz && !rows.isEmpty() ? "First": "");
-						final WebTable.Row row = new WebTable.Row(
+						WebTable.Row row = null;
+						if (clazz.isAssigned()) {
+							row = new WebTable.Row(
 								new WebTable.CheckboxCell(clazz.isPinned()),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
 								new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
@@ -599,12 +601,31 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : 
 								 clazz.isFreeTime() || !result.isCanEnroll() ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null)),
 								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						} else {
+							row = new WebTable.Row(
+									new WebTable.CheckboxCell(clazz.isPinned()),
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
+									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), MESSAGES.saved(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : 
+									 clazz.isFreeTime() || !result.isCanEnroll() ? new WebTable.Cell("") : new WebTable.IconCell(RESOURCES.assignment(), MESSAGES.assignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null)),
+									(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						}
+						final WebTable.Row finalRow = row;
 						final ArrayList<TimeGrid.Meeting> meetings = (clazz.isFreeTime() ? null : iAssignmentGrid.addClass(clazz, rows.size()));
 						// row.setId(course.isFreeTime() ? "Free " + clazz.getDaysString() + " " +clazz.getStartString() + " - " + clazz.getEndString() : course.getCourseId() + ":" + clazz.getClassId());
 						final int index = rows.size();
 						((CheckBox)row.getCell(0).getWidget()).addClickHandler(new ClickHandler() {
 							public void onClick(ClickEvent event) {
-								Boolean checked = Boolean.valueOf(row.getCell(0).getValue());
+								Boolean checked = Boolean.valueOf(finalRow.getCell(0).getValue());
 								if (meetings == null) {
 									iLastResult.get(index).setPinned(checked);
 								} else {
@@ -645,21 +666,36 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						unassignedMessage = MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr());
 					}
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						row = new WebTable.Row(
-								new WebTable.Cell(null),
-								new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-								new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
-								new WebTable.Cell(clazz.getSubpart()),
-								new WebTable.Cell(clazz.getSection()),
-								new WebTable.Cell(clazz.getLimitString()),
-								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-								new WebTable.Cell(clazz.getDatePattern()),
-								new WebTable.Cell(unassignedMessage, 4, null),
-								new WebTable.NoteCell(clazz.getNote()),
-								new WebTable.AbbvTextCell(clazz.getCredit()),
-								(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
+						if (clazz.isAssigned()) {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getDatePattern()),
+									new WebTable.Cell(unassignedMessage, 4, null),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
+						} else {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+									new WebTable.Cell(course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+									new WebTable.Cell(unassignedMessage, 4, null),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : new WebTable.Cell("")));
+						}
 						row.setId(course.isFreeTime() ? CONSTANTS.freePrefix() + clazz.getDaysString(CONSTANTS.shortDays()) + " " +clazz.getStartString(CONSTANTS.useAmPm()) + " - " + clazz.getEndString(CONSTANTS.useAmPm()) : course.getCourseId() + ":" + clazz.getClassId());
 						iLastResult.add(clazz);
 						break;
@@ -686,24 +722,43 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
 								if (clazz.getClassId().equals(x.getClassId())) continue classes;
 							String style = "unitime-ClassRowUnused";
-							WebTable.Row row = new WebTable.Row(
-									new WebTable.Cell(null),
-									new WebTable.Cell(""),
-									new WebTable.Cell(""),
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getDatePattern()),
-									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
-									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-									new WebTable.NoteCell(clazz.getNote()),
-									new WebTable.AbbvTextCell(clazz.getCredit()),
-									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
-									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+							WebTable.Row row = null;
+							if (clazz.isAssigned()) {
+								row = new WebTable.Row(
+										new WebTable.Cell(null),
+										new WebTable.Cell(""),
+										new WebTable.Cell(""),
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+										new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getDatePattern()),
+										(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+										new WebTable.NoteCell(clazz.getNote()),
+										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+										(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));								
+							} else {
+								row = new WebTable.Row(
+										new WebTable.Cell(null),
+										new WebTable.Cell(""),
+										new WebTable.Cell(""),
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+										(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+										new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+										new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+										new WebTable.NoteCell(clazz.getNote()),
+										new WebTable.AbbvTextCell(clazz.getCredit()),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+										(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+							}
 							rows.add(row);
 							row.setSelectable(false);
 							iLastResult.add(null);
@@ -721,24 +776,43 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					boolean firstClazz = true;
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
 						String style = "unitime-ClassRowUnused" + (firstClazz && !rows.isEmpty() ? "First": "");
-						WebTable.Row row = new WebTable.Row(
-								new WebTable.Cell(null),
-								new WebTable.Cell(firstClazz ? course.getSubject() : ""),
-								new WebTable.Cell(firstClazz ? course.getCourseNbr() : ""),
-								new WebTable.Cell(clazz.getSubpart()),
-								new WebTable.Cell(clazz.getSection()),
-								new WebTable.Cell(clazz.getLimitString()),
-								new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-								new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-								new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-								new WebTable.Cell(clazz.getDatePattern()),
-								(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
-								new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
-								new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
-								new WebTable.NoteCell(clazz.getNote()),
-								new WebTable.AbbvTextCell(clazz.getCredit()),
-								(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
-								(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						WebTable.Row row = null;
+						if (clazz.isAssigned()) {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(firstClazz ? course.getSubject() : ""),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr() : ""),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+									new WebTable.Cell(clazz.getDatePattern()),
+									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						} else {
+							row = new WebTable.Row(
+									new WebTable.Cell(null),
+									new WebTable.Cell(firstClazz ? course.getSubject() : ""),
+									new WebTable.Cell(firstClazz ? course.getCourseNbr() : ""),
+									new WebTable.Cell(clazz.getSubpart()),
+									new WebTable.Cell(clazz.getSection()),
+									new WebTable.Cell(clazz.getLimitString()),
+									new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+									(clazz.hasDistanceConflict() ? new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()), clazz.getRooms(", ")) : new WebTable.Cell(clazz.getRooms(", "))),
+									new WebTable.InstructorCell(clazz.getInstructors(), clazz.getInstructorEmails(), ", "),
+									new WebTable.Cell(clazz.getParentSection(), clazz.getParentSection() == null || clazz.getParentSection().length() > 10),
+									new WebTable.NoteCell(clazz.getNote()),
+									new WebTable.AbbvTextCell(clazz.getCredit()),
+									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.unassignment(), MESSAGES.unassignment(course.getSubject() + " " + course.getCourseNbr() + " " + clazz.getSubpart() + " " + clazz.getSection()), null) : new WebTable.Cell("")),
+									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")));
+						}
 						rows.add(row);
 						row.setSelectable(false);
 						iLastResult.add(null);
