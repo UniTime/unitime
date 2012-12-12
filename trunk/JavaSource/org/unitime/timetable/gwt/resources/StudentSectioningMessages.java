@@ -1037,5 +1037,5 @@ public interface StudentSectioningMessages extends Messages {
 	String massCancelConfirmation();
 	
 	@DefaultMessage("<i>Arrange Hours</i>")
-	String arrageHours();
+	String arrangeHours();
 }
