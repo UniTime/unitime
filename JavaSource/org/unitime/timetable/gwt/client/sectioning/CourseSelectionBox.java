@@ -902,7 +902,7 @@ public class CourseSelectionBox extends Composite {
 										new WebTable.Cell(clazz.getSubpart()),
 										new WebTable.Cell(clazz.getSection()),
 										new WebTable.Cell(clazz.getLimitString()),
-										new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+										new WebTable.Cell(MESSAGES.arrangeHours(), 4, null),
 										new WebTable.Cell(clazz.getRooms(", ")),
 										new WebTable.Cell(clazz.getInstructors(", ")),
 										new WebTable.Cell(clazz.getParentSection()),

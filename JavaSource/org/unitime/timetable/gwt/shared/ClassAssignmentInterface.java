@@ -265,7 +265,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		}
 		
 		public String getTimeString(String[] shortDays, boolean useAmPm, String arrangeHours) {
-			if (!isAssigned()) return arrangeHours;
+			if (!isAssigned()) return (iClassId == null ? "" : arrangeHours);
 			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
 		}
 		
@@ -317,6 +317,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iRooms.add(room);
 		}
 		public ArrayList<String> getRooms() { return iRooms; }
+		
 		public String getRooms(String delim) {
 			if (iRooms == null) return "";
 			String ret = "";

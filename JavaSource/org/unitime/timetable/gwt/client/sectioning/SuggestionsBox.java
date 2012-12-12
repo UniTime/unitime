@@ -256,19 +256,19 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
 											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
 											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
-											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
-											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
-											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
+											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, selected, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, selected, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_OLD, selected, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_NEW, selected, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD, selected, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW, selected, clazz == null)),
 											(clazz != null && clazz.hasDistanceConflict() ? 
 													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(clazz.getBackToBackRooms(), clazz.getBackToBackDistance()),
-															compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD)) : 
-													new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD))),
-											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW)),													
+															compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, selected, clazz == null)) : 
+													new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, selected, clazz == null))),
+											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW, selected, clazz == null)),
 											new WebTable.InstructorCell(clazz == null ? null : clazz.getInstructors(), clazz == null ? null : clazz.getInstructorEmails(), ", "),
-											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE)),
+											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, selected, clazz == null)),
 											(clazz != null && clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) :
 											(clazz != null && clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell(""))),
@@ -321,21 +321,21 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
 											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
 											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
-											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
-											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
+											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, false, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, false, clazz == null)),
 											//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
-											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_OLD, false, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_NEW, false, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD, false, clazz == null)),
+											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW, false, clazz == null)),
 											(old != null && old.hasDistanceConflict() ? 
 													new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
-															compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD)) : 
-													new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD))),
-											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW)),
+															compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, false, clazz == null)) : 
+													new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, false, clazz == null))),
+											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW, false, clazz == null)),
 											//new WebTable.Cell(compare(old == null ? null : old.getInstructors(", "), clazz == null ? null : clazz.getInstructors(", "), true)),
 											new WebTable.InstructorCell(old == null ? null : old.getInstructors(), old == null ? null : old.getInstructorEmails(), ", "),
-											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE)),
+											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, false, clazz == null)),
 											(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : 
 											(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell(""))),
@@ -360,21 +360,21 @@ public class SuggestionsBox extends DialogBox {
 									new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
 									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeSubject() : old.getSubject()),
 									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeCourse() : old.getCourseNbr()),
-									new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
-									new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
+									new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, false, clazz == null)),
+									new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, false, clazz == null)),
 									//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
-									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
-									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
-									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
+									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_OLD, false, clazz == null)),
+									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_NEW, false, clazz == null)),
+									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD, false, clazz == null)),
+									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW, false, clazz == null)),
 									(old != null && old.hasDistanceConflict() ? 
 											new WebTable.IconCell(RESOURCES.distantConflict(), MESSAGES.backToBackDistance(old.getBackToBackRooms(), old.getBackToBackDistance()),
-													compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD)) : 
-											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD))),
-									new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW)),
+													compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, false, clazz == null)) : 
+											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_OLD, false, clazz == null))),
+									new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW, false, clazz == null)),
 									//new WebTable.Cell(compare(old == null ? null : old.getInstructors(", "), clazz == null ? null : clazz.getInstructors(", "), true)),
 									new WebTable.InstructorCell(old == null ? null : old.getInstructors(), old == null ? null : old.getInstructorEmails(), ", "),
-									new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE)),
+									new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, false, clazz == null)),
 									(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
 									(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell("")),
 									(old != null && old.hasNote() ? new WebTable.IconCell(RESOURCES.note(), old.getNote(), "") : new WebTable.Cell("")));
@@ -547,14 +547,14 @@ public class SuggestionsBox extends DialogBox {
 		BOTH_NEW
 	};
 	
-	private String compare(String oldVal, String newVal, CmpMode mode) {
+	private String compare(String oldVal, String newVal, CmpMode mode, boolean selected, boolean conflict) {
 		switch (mode) {
 		case SINGLE:
-			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='red'>" + oldVal + "</font>" : null);
+			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='"+ (conflict ? "red" : selected ? "#9999FF" : "#999999") +"'>" + oldVal + "</font>" : null);
 		case BOTH_OLD:
-			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<font color='red'>" + oldVal + "</font>" : oldVal);
+			return (oldVal == null || oldVal.isEmpty() ? newVal : newVal == null || newVal.isEmpty() ? "<font color='" + (conflict ? "red" : selected ? "#9999FF" : "#999999") + "'>" + oldVal + "</font>" : oldVal.equals(newVal) ? oldVal : "<font color='" + ( selected ? "#9999FF" : "#999999" ) + "'>" + oldVal + "</font>");
 		case BOTH_NEW:
-			return (oldVal != null && !oldVal.isEmpty() && newVal != null && !newVal.isEmpty() && !newVal.equals(oldVal) ? "&rarr; " + newVal : null);
+			return (oldVal != null && !oldVal.isEmpty() && newVal != null && !newVal.isEmpty() && !newVal.equals(oldVal) ? "<font color='#" + ( selected ? "#9999FF" : "#999999" ) + "'>&rarr;</font> " + newVal : null);
 		default:
 			return newVal;
 		}
