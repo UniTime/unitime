@@ -882,19 +882,34 @@ public class CourseSelectionBox extends Composite {
 						int idx = 0;
 						Long lastSubpartId = null;
 						for (ClassAssignmentInterface.ClassAssignment clazz: result) {
-							WebTable.Row row = new WebTable.Row(
-									new WebTable.Cell(clazz.getSubpart()),
-									new WebTable.Cell(clazz.getSection()),
-									new WebTable.Cell(clazz.getLimitString()),
-									new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
-									new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
-									new WebTable.Cell(clazz.getDatePattern()),
-									new WebTable.Cell(clazz.getRooms(", ")),
-									new WebTable.Cell(clazz.getInstructors(", ")),
-									new WebTable.Cell(clazz.getParentSection()),
-									(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
-									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
+							WebTable.Row row = null;
+							if (clazz.isAssigned()) {
+								row = new WebTable.Row(
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(clazz.getDaysString(CONSTANTS.shortDays())),
+										new WebTable.Cell(clazz.getStartString(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getEndString(CONSTANTS.useAmPm())),
+										new WebTable.Cell(clazz.getDatePattern()),
+										new WebTable.Cell(clazz.getRooms(", ")),
+										new WebTable.Cell(clazz.getInstructors(", ")),
+										new WebTable.Cell(clazz.getParentSection()),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
+										clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
+							} else {
+								row = new WebTable.Row(
+										new WebTable.Cell(clazz.getSubpart()),
+										new WebTable.Cell(clazz.getSection()),
+										new WebTable.Cell(clazz.getLimitString()),
+										new WebTable.Cell(MESSAGES.arrageHours(), 4, null),
+										new WebTable.Cell(clazz.getRooms(", ")),
+										new WebTable.Cell(clazz.getInstructors(", ")),
+										new WebTable.Cell(clazz.getParentSection()),
+										(clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
+										clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
+
+							}
 							row.setId(clazz.getClassId().toString());
 							String styleName = "unitime-ClassRow";
 							if (lastSubpartId != null && !clazz.getSubpartId().equals(lastSubpartId))

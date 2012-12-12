@@ -258,8 +258,8 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_NEW)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
 											(clazz != null && clazz.hasDistanceConflict() ? 
@@ -324,8 +324,8 @@ public class SuggestionsBox extends DialogBox {
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
 											//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_OLD)),
-											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_NEW)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
+											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
 											new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
 											(old != null && old.hasDistanceConflict() ? 
@@ -363,8 +363,8 @@ public class SuggestionsBox extends DialogBox {
 									new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE)),
 									new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE)),
 									//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_OLD)),
-									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm()), CmpMode.BOTH_NEW)),
+									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_OLD)),
+									new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrageHours()), CmpMode.BOTH_NEW)),
 									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_OLD)),
 									new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), CmpMode.BOTH_NEW)),
 									(old != null && old.hasDistanceConflict() ? 
