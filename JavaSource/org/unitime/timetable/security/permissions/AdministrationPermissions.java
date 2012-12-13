@@ -199,7 +199,8 @@ public class AdministrationPermissions {
 			if (!super.check(user, source)) return false;
 			
 			return !source.hasOfferedCourses() || source.getDepartment() == null || source.getDepartment().getSolverGroup() == null ||
-					source.getDepartment().getSolverGroup().getCommittedSolution() == null;
+					source.getDepartment().getSolverGroup().getSolutions() == null || 
+					source.getDepartment().getSolverGroup().getSolutions().isEmpty();
 		}
 	}
 	
