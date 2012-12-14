@@ -89,6 +89,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
@@ -314,7 +315,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iForm.addRow(MESSAGES.propSponsor(), iSponsors);
 		
 		iEventType = new UniTimeWidget<ListBox>(new ListBox());
-		iEventType.getWidget().addItem(EventInterface.EventType.Special.getName(CONSTANTS));
+		iEventType.getWidget().addItem(EventInterface.EventType.Special.getName(CONSTANTS), EventInterface.EventType.Special.name());
 		iForm.addRow(MESSAGES.propEventType(), iEventType);
 		
 		iLimit = new NumberBox();
@@ -520,18 +521,22 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEventType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				int row = iForm.getRow(MESSAGES.propAttendance());
-				if (iEventType.isReadOnly()) {
-					iCoursesForm.setVisible(false);
-					iForm.getRowFormatter().setVisible(row, false);
-				} else if (iEventType.getWidget().getSelectedIndex() == 1) {
-					iCoursesForm.setVisible(true);
-					iForm.getRowFormatter().setVisible(row, false);
-				} else {
-					iCoursesForm.setVisible(false);
-					iForm.getRowFormatter().setVisible(row, true);
-				}
+				EventType type = getEventType();
+				iCoursesForm.setVisible(type == EventType.Course);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile);
 				checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
+				for (int i = 0; i < iMeetings.getRowCount(); i++) {
+					EventMeetingRow em = iMeetings.getData(i);
+					if (em != null && em.getParent() == null && em.getMeeting().getId() == null) {
+						HTML approval = (HTML)iMeetings.getWidget(i, iMeetings.getCellCount(i) - 1);
+						if (type == EventType.Unavailabile) {
+							approval.setHTML("<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>");
+						} else {
+							approval.setHTML(em.getMeeting().isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>");
+						}
+					}
+				}
 			}
 		});
 		
@@ -614,12 +619,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public boolean isEventAdd() { return iEvent == null || iEvent.getId() == null; }
 	public Long getEventId() { return iEvent == null ? null : iEvent.getId(); }
 	
+	public EventInterface.EventType getEventType() {
+		return (iEventType.isReadOnly() ? iEvent.getType() : EventType.valueOf(iEventType.getWidget().getValue(iEventType.getWidget().getSelectedIndex())));
+	}
+	
 	public EventInterface getEvent() {
 		iEvent.setName(iName.getWidget().getText());
-		if (!iEventType.isReadOnly()) {
-			iEvent.setType(iEventType.getWidget().getSelectedIndex() == 0 ? EventType.Special : EventType.Course);
-			iEvent.setMaxCapacity(iLimit.toInteger());
-		}
+		if (!iEventType.isReadOnly())
+			iEvent.setType(getEventType());
+		iEvent.setMaxCapacity(iLimit.toInteger());
 		if (iEvent.getContact() == null) { iEvent.setContact(new ContactInterface()); }
 		iEvent.getContact().setExternalId(iMainExternalId);
 		iEvent.getContact().setFirstName(iMainFName.getText());
@@ -667,10 +675,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			for (RelatedObjectInterface related: iCourses.getValue())
 				iEvent.addRelatedObject(related);
 			iEvent.setRequiredAttendance(iReqAttendance.getValue());
-		} else if (iEvent.getType() == EventType.Special) {
+		} else if (iEvent.getType() == EventType.Special || iEvent.getType() == EventType.Unavailabile) {
 			if (iEvent.hasRelatedObjects())
 				iEvent.getRelatedObjects().clear();
 			iEvent.setRequiredAttendance(false);
+		}
+		
+		if (iEvent.getType() == EventType.Unavailabile) {
+			iEvent.setSponsor(null);
+			iEvent.setMaxCapacity(null);
 		}
 		
 		return iEvent;
@@ -682,6 +695,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	
 	protected void addMeetings(List<MeetingInterface> meetings) {
 		List<MeetingInterface> existingMeetings = iMeetings.getMeetings();
+		if (!iEventType.isReadOnly())
+			iEvent.setType(getEventType());
 		if (meetings != null && !meetings.isEmpty())
 			meetings: for (MeetingInterface meeting: meetings) {
 				for (MeetingInterface existing: existingMeetings) {
@@ -751,13 +766,13 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		
 		boolean canAddCourseEvent = (getProperties() == null ? false : getProperties().isCanAddCourseEvent());
-		if (canAddCourseEvent) {
-			if (iEventType.getWidget().getItemCount() == 1)
-				iEventType.getWidget().addItem(EventInterface.EventType.Course.getName(CONSTANTS));
-		} else {
-			if (iEventType.getWidget().getItemCount() == 2)
-				iEventType.getWidget().removeItem(1);
-		}
+		boolean canAddUnavailableEvent = (getProperties() == null ? false : getProperties().isCanAddUnavailableEvent());
+		while (iEventType.getWidget().getItemCount() > 1)
+			iEventType.getWidget().removeItem(1);
+		if (canAddCourseEvent)
+			iEventType.getWidget().addItem(EventInterface.EventType.Course.getName(CONSTANTS), EventInterface.EventType.Course.name());
+		if (canAddUnavailableEvent)
+			iEventType.getWidget().addItem(EventInterface.EventType.Unavailabile.getName(CONSTANTS), EventInterface.EventType.Unavailabile.name());
 		
 		if (iEvent.getType() == null) {
 			iEventType.getWidget().setSelectedIndex(0);
@@ -826,7 +841,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iMainPhone.setText(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "");
 			iMainEmail.getWidget().setText(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "");
 		} else {
-			ContactInterface mainContact = (getProperties() == null ? null : getProperties().getMainContact());
+			ContactInterface mainContact = (getProperties() == null || getProperties().isCanLookupContacts() ? null : getProperties().getMainContact());
 			if (mainContact != null) {
 				iMainExternalId = mainContact.getExternalId();
 				iMainFName.setText(mainContact.getFirstName() == null ? "" : mainContact.getFirstName());
@@ -941,7 +956,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private List<RelatedObjectInterface> iLastRelatedObjects = null;
 	private List<MeetingInterface> iLastMeetings = null;
 	public void checkEnrollments(final List<RelatedObjectInterface> relatedObjects, final List<MeetingInterface> meetings) {
-		if (relatedObjects == null || relatedObjects.isEmpty() || iEventType.isReadOnly() || iEventType.getWidget().getSelectedIndex() != 1) {
+		if (relatedObjects == null || relatedObjects.isEmpty() || getEventType() != EventType.Course) {
 			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
 			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
 		} else {
@@ -1283,7 +1298,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	public void validate(final AsyncCallback<Boolean> callback) {
 		iHeader.clearMessage();
 		boolean valid = true;
-		if (iName.getWidget().getText().isEmpty()) {
+		if (iName.getWidget().getText().isEmpty() && getEventType() != EventType.Unavailabile) {
 			iName.setErrorHint(MESSAGES.reqEventName());
 			UniTimeNotifications.error(MESSAGES.reqEventName());
 			iHeader.setErrorMessage(MESSAGES.reqEventName());

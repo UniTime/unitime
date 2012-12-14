@@ -53,6 +53,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
+import org.unitime.timetable.model.UnavailableEvent;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -66,7 +67,7 @@ import org.unitime.timetable.util.Constants;
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {
-		if (request.getEvent().hasContact() && !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId()))
+		if (request.getEvent().hasContact() && (request.getEvent().getContact().getExternalId() == null || !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId())))
 			context.checkPermission(Right.EventLookupContact);
 		if (request.getEvent().getId() == null) { // new even
 			switch (request.getEvent().getType()) {
@@ -75,6 +76,9 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				break;
 			case Course:
 				context.checkPermission(Right.EventAddCourseRelated);
+				break;
+			case Unavailabile:
+				context.checkPermission(Right.EventAddUnavailable);
 				break;
 			default:
 				throw context.getException();
@@ -99,6 +103,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					event = new SpecialEvent(); break;
 				case Course:
 					event = new CourseEvent(); break;
+				case Unavailabile:
+					event = new UnavailableEvent(); break;
 				default:
 					throw new GwtRpcException(MESSAGES.failedSaveEventWrongType(request.getEvent().getType().getName(CONSTANTS)));
 				}
@@ -107,9 +113,12 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			SaveOrApproveEventRpcResponse response = new SaveOrApproveEventRpcResponse();
 			
 			event.setEventName(request.getEvent().getName());
+			if (event.getEventName() == null || event.getEventName().isEmpty() && request.getEvent().getType() == EventType.Unavailabile)
+				event.setEventName(MESSAGES.unavailableEventDefaultName());
 			event.setEmail(request.getEvent().getEmail());
 			event.setSponsoringOrganization(request.getEvent().hasSponsor() ? SponsoringOrganizationDAO.getInstance().get(request.getEvent().getSponsor().getUniqueId()) : null);
-			if (event instanceof SpecialEvent) {
+			if (event instanceof UnavailableEvent) {
+			} else if (event instanceof SpecialEvent) {
 				event.setMinCapacity(request.getEvent().getMaxCapacity());
 				event.setMaxCapacity(request.getEvent().getMaxCapacity());
 			}
@@ -214,6 +223,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
                     event.getMeetings().add(meeting);
                     created.add(meeting);
 				}
+				if (request.getEvent().getType() == EventType.Unavailabile && meeting.getApprovedDate() == null)
+					meeting.setApprovedDate(now);
 			}
 			
 			if (!remove.isEmpty()) {
