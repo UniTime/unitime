@@ -98,6 +98,10 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	public UniTimeTableHeader(String title, int colSpan) {
 		this(title, colSpan, HasHorizontalAlignment.ALIGN_LEFT);
 	}
+	
+	public UniTimeTableHeader() {
+		this(" ", 1, HasHorizontalAlignment.ALIGN_LEFT);
+	}
 
 	
 	public UniTimeTableHeader(String title, HorizontalAlignmentConstant align) {
