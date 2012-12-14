@@ -384,7 +384,7 @@ public class SimpleEditPage extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		int col = 0;
 		for (final Field field: iData.getFields()) {
-			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName(), col + 1 == iData.getFields().length && iData.isEditable() && iEditable ? 3 : 1);
+			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName());
 			if (!top) { cell.addStyleName("unitime-TopLineDash"); cell.getElement().getStyle().setPaddingTop(2, Unit.PX); }
 			header.add(cell);
 			final int index = col;
@@ -485,6 +485,10 @@ public class SimpleEditPage extends Composite {
 				}
 				col ++;
 			}
+		}
+		if (iData.isEditable() && iEditable) {
+			header.add(new UniTimeTableHeader());
+			header.add(new UniTimeTableHeader());
 		}
 		return header;
 	}

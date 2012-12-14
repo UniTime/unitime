@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -132,13 +134,14 @@ public class UniTimeTable<T> extends FlexTable {
 			x += colspan;
 			if (row > 0) {
 				if (colspan == 1) {
-					getCellFormatter().setVisible(row, col, getCellFormatter().isVisible(0, x - 1));
+					getCellFormatter().setVisible(row, col, isColumnVisible(x - 1));
 				} else {
 					int span = 0;
 					for (int h = x - colspan; h < x; h++)
-						if (getCellFormatter().isVisible(0, h)) span ++;
+						if (isColumnVisible(h)) span ++;
 					getCellFormatter().setVisible(row, col, span > 0);
-					getFlexCellFormatter().setColSpan(row, col, Math.max(1, span));				}
+					getFlexCellFormatter().setColSpan(row, col, Math.max(1, span));
+				}
 			}
 			col++;
 		}
@@ -150,7 +153,12 @@ public class UniTimeTable<T> extends FlexTable {
 	}
 	
 	public boolean isColumnVisible(int col) {
-		return getCellFormatter().isVisible(0, col);
+		if (getRowCount() <= 0) return true;
+		for (int c = 0; c < getCellCount(0); c++) {
+			col -= getFlexCellFormatter().getColSpan(0, c);
+			if (col < 0) return getCellFormatter().isVisible(0, c);
+		}
+		return true;
 	}
 	
 	public void setColumnVisible(int col, boolean visible) {
@@ -170,7 +178,7 @@ public class UniTimeTable<T> extends FlexTable {
 						// use first row to count the colspan
 						int span = 0;
 						for (int h = x - colSpan; h < x; h++)
-							if (getCellFormatter().isVisible(0, h)) span ++;
+							if (isColumnVisible(h)) span ++;
 						getCellFormatter().setVisible(r, c, span > 0);
 						getFlexCellFormatter().setColSpan(r, c, Math.max(1, span));
 					} else {
@@ -680,16 +688,21 @@ public class UniTimeTable<T> extends FlexTable {
 				if (h.getHTML().equals(name)) return h;
 			}
 		}
-		Window.alert("Header named " + name + " does not exist!");
+		UniTimeNotifications.warn("Header named " + name + " does not exist!");
 		return null;
 	}
 	
 	public UniTimeTableHeader getHeader(int col) {
 		if (getRowCount() <= 0 || getCellCount(0) <= col) return null;
-		Widget w = getWidget(0, col);
-		return (w != null && w instanceof UniTimeTableHeader ? (UniTimeTableHeader)w : null);
+		for (int c = 0; c < getCellCount(0); c++) {
+			col -= getFlexCellFormatter().getColSpan(0, c);
+			if (col < 0) {
+				Widget w = getWidget(0, c);
+				return (w != null && w instanceof UniTimeTableHeader ? (UniTimeTableHeader)w : null);
+			}
+		}
+		return null;
 	}
-
 	
 	public static interface HasFocus {
 		public boolean focus();
