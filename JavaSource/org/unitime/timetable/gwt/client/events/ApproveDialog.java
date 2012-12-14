@@ -10,6 +10,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -184,8 +185,8 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		}
 		iTable.setMeetingFilter(new MeetingFilter() {
 			@Override
-			public boolean filter(MeetingInterface meeting) {
-				return !meeting.isCanApprove() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(meeting));
+			public boolean filter(EventInterface event, MeetingInterface meeting) {
+				return !meeting.isCanApprove() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(event, meeting));
 			}
 		});
 		switch (operation) {

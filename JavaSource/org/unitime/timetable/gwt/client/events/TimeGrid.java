@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.DateInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -305,7 +306,7 @@ public class TimeGrid extends Composite {
 	public void addPrintEvent(EventInterface event, Collection<MeetingInterface> meetings) {
 		for (Meeting m : addEvent(event, meetings)) {
 			m.setDummy();
-			m.addStyleName("meeting-selected-noshadow");
+			m.addStyleName(event.getType() == EventType.Unavailabile ? "unavailability-selected-noshadow" :"meeting-selected-noshadow");
 		}
 	}
 	
@@ -475,6 +476,8 @@ public class TimeGrid extends Composite {
 	}
 	
 	public String getColor(EventInterface event) {
+		if (event.getType() == EventType.Unavailabile)
+			return null;
 		String color = iColors.get(event.getId());
 		if (color == null) {
 			color = CONSTANTS.meetingColors()[iColors.size() % CONSTANTS.meetingColors().length];
@@ -628,6 +631,9 @@ public class TimeGrid extends Composite {
 	}
 	
 	public ArrayList<Meeting> addEvent(EventInterface event, Collection<MeetingInterface> eventMeetings) {
+		if (event.getType() == EventType.Unavailabile && (iMode != Mode.OVERLAP || iResourceType != ResourceType.ROOM)) {
+			return new ArrayList<Meeting>();
+		}
 		String color = getColor(event);
 		final ArrayList<Meeting> done = new ArrayList<Meeting>();
 		ArrayList<MeetingInterface> meetings = new ArrayList<MeetingInterface>(eventMeetings);
@@ -703,14 +709,15 @@ public class TimeGrid extends Composite {
 					notes.add(instructor.getName(MESSAGES));
 			if (event.hasSponsor())
 				notes.add(event.getSponsor().getName());
-			done.add(addMeeting(
+			Meeting m = addMeeting(
 					event,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					meeting.getStartOffset(), meeting.getEndOffset(),
-					(meeting.isApproved() ? "" : "<i>") + event.getName() + " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>"), 
+					(meeting.isApproved() ? "" : "<i>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>")), 
 					notes, (event.hasInstruction() ? event.getInstruction() : event.getType()) + " " + event.getName() + ": " + 
-					dateString + " " + meeting.getMeetingTime(CONSTANTS) + " " + roomString, color, weekIndex(meeting), days.size(), done));
+					dateString + " " + meeting.getMeetingTime(CONSTANTS) + " " + roomString, color, weekIndex(meeting), days.size(), done);
+			if (m != null) done.add(m);
 		}
 		iMeetings.add(done);
 		return done;
@@ -754,7 +761,7 @@ public class TimeGrid extends Composite {
 			iNrMeetings = nrMeetings;
 			iNrColumns = nrColumns;
 			
-	        setStyleName("meeting");
+	        setStyleName(event.getType() == EventType.Unavailabile ? "unavailability" : "meeting");
 	    	P header = new P("header", "label");
 	    	header.setHTML(name);
 	        add(header);
@@ -799,7 +806,7 @@ public class TimeGrid extends Composite {
 			getElement().getStyle().setLeft(iLeft, Unit.PX);
 			getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart + setupHeight, Unit.PX);
 			
-			if (iShowShadows && (startOffset != 0 || endOffset != 0)) {
+			if (iShowShadows && (startOffset != 0 || endOffset != 0) && event.getType() != EventType.Unavailabile) {
 		        iShadow = new P("meeting-shadow");
 		        iShadow.getElement().getStyle().setHeight(totalHeight, Unit.PX);
 		        iShadow.getElement().getStyle().setTop(1 + iCellHeight * start / 12 - iCellHeight * iStart, Unit.PX);
@@ -815,8 +822,10 @@ public class TimeGrid extends Composite {
 		}
 		
 		public void setColor(String color) {
-			addStyleName(color);
-			if (hasShadow()) iShadow.addStyleName(color);
+			if (color != null) {
+				addStyleName(color);
+				if (hasShadow()) iShadow.addStyleName(color);
+			}
 		}
 		
 		public EventInterface getEvent() {
@@ -842,7 +851,7 @@ public class TimeGrid extends Composite {
 				getElement().getStyle().setZIndex(1001);
 				if (hasShadow()) iShadow.getElement().getStyle().setZIndex(1000);
 				for (Meeting meeting: iMeetings) {
-					meeting.addStyleName("meeting-selected");
+					meeting.addStyleName(meeting.getEvent().getType() == EventType.Unavailabile ? "unavailability-selected" : "meeting-selected");
 					meeting.getElement().getStyle().setCursor(iEvent.isCanView() ? Cursor.POINTER : Cursor.AUTO);
 				}
 			} else {
@@ -855,7 +864,7 @@ public class TimeGrid extends Composite {
 				getElement().getStyle().clearZIndex();
 				if (hasShadow()) iShadow.getElement().getStyle().clearZIndex();
 				for (Meeting meeting: iMeetings) {
-					meeting.removeStyleName("meeting-selected");
+					meeting.removeStyleName(meeting.getEvent().getType() == EventType.Unavailabile ? "unavailability-selected" : "meeting-selected");
 					meeting.getElement().getStyle().clearCursor();
 				}
 			}

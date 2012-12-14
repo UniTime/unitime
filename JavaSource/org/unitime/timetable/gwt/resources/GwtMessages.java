@@ -283,6 +283,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("deleted meeting")
 	String approvalDeleted();
+	
+	@DefaultMessage("new unavailability")
+	String approvalNewUnavailabiliyMeeting();
 
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
@@ -922,4 +925,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No academic session is available.")
 	String noSessionAvailable();
+	
+	@DefaultMessage("N/A")
+	String unavailableEventDefaultName();
 }

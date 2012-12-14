@@ -46,6 +46,7 @@ import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.MidtermExamEvent;
 import org.unitime.timetable.model.SpecialEvent;
+import org.unitime.timetable.model.UnavailableEvent;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -194,6 +195,8 @@ public class EventFilterBackend extends FilterBoxBackend {
 					type += FinalExamEvent.class.getName();
 				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeMidtermExam]))
 					type += MidtermExamEvent.class.getName();
+				if (t.equals(Event.sEventTypesAbbv[Event.sEventTypeUnavailable]))
+					type += UnavailableEvent.class.getName();
 			}
 			query.addWhere("type", "e.class in (" + type + ")");
 		}

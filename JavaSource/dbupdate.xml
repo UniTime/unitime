@@ -8060,4 +8060,11 @@
 				references %SCHEMA%.course_offering (uniqueid) on delete set null
 		</sql>
 	</update>
+	<update version="97" date="14-Dec-2012" comment="Unavailability Events">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventAddUnavailable'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventLocationOverbook'
+		</sql>
+	</update>
 </dbupdate>

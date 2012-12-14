@@ -312,6 +312,7 @@ public enum Right {
     Events(Session.class),
     EventAddSpecial(Session.class),
     EventAddCourseRelated(Session.class),
+    EventAddUnavailable(Session.class),
     EventLookupContact,
     EventLookupSchedule,
     EventDetail(Event.class),

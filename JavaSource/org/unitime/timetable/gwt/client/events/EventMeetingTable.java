@@ -737,7 +737,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					conflict != null && (conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message) ? "" :
 					meeting.isDelete() ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
-					meeting.getId() == null ? meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
+					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
+					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
 							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
 							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
@@ -1345,7 +1346,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			for (EventInterface event: events) {
 				if (getMode().isShowMeetings()) {
 					for (MeetingInterface meeting: event.getMeetings())
-						if (getMeetingFilter() == null || !getMeetingFilter().filter(meeting))
+						if (getMeetingFilter() == null || !getMeetingFilter().filter(event, meeting))
 							rows.add(new EventMeetingRow(event, meeting));
 				} else {
 					rows.add(new EventMeetingRow(event, null));
@@ -1424,10 +1425,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public List<MeetingInterface> getMeetings(MeetingFilter filter) {
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 			if (iMeeting != null) {
-				if (filter == null || !filter.filter(iMeeting)) meetings.add(iMeeting);
+				if (filter == null || !filter.filter(iEvent, iMeeting)) meetings.add(iMeeting);
 			} else if (iEvent != null) {
 				for (MeetingInterface meeting: iEvent.getMeetings())
-					if (filter == null || !filter.filter(meeting)) meetings.add(meeting);
+					if (filter == null || !filter.filter(iEvent, meeting)) meetings.add(meeting);
 			}
 			return meetings;
 		}
@@ -1468,7 +1469,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public interface MeetingFilter {
-		public boolean filter(MeetingInterface meeting);
+		public boolean filter(EventInterface event, MeetingInterface meeting);
 	}
 	
 	public interface Implementation {

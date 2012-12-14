@@ -1185,6 +1185,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			options.add(value);
 		}
 		
+		public void setOptions(String command, Collection<String> values) {
+			if (iOptions == null) iOptions = new HashMap<String, Set<String>>();
+			Set<String> options = iOptions.get(command);
+			if (options == null) {
+				options = new HashSet<String>();
+				iOptions.put(command, options);
+			} else {
+				options.clear();
+			}
+			options.addAll(values);
+		}
+		
 		public boolean isEmpty() {
 			if (hasText()) return false;
 			if (hasOptions()) {
@@ -1438,7 +1450,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanExportCSV;
+		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 		private List<String> iStandardNotes = null;
@@ -1460,6 +1472,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isCanAddCourseEvent() { return iCanAddCourseEvent; }
 		public void setCanAddCourseEvent(boolean canAddEvent) { iCanAddCourseEvent = canAddEvent; }
 		
+		public boolean isCanAddUnavailableEvent() { return iCanAddUnavailableEvent; }
+		public void setCanAddUnavailableEvent(boolean canAddEvent) { iCanAddUnavailableEvent = canAddEvent; }
+
 		public boolean hasSponsoringOrganizations() { return iSponsoringOrganizations != null && !iSponsoringOrganizations.isEmpty(); }
 		public List<SponsoringOrganizationInterface> getSponsoringOrganizations() { return iSponsoringOrganizations; }
 		public void addSponsoringOrganization(SponsoringOrganizationInterface sponsor) {
