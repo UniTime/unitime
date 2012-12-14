@@ -120,6 +120,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Room Availability</name>
+			<description>
+				<line>Not Available event type added.
+					<line>Only event manager and administrator can create (Event Add Unavailable permission), no approval process.</line>
+					<line>Not available events only show up in the timetable grid when showing a timetable of a room (or rooms), and they display differently than ordinary events (grayed out and without a shade).</line>
+					<line>Not available events only show up in the events or meetings if the Not Available type is explicitly selected in the event filter, or when they are shown on the timetable grid.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Localization</name>
 			<description>
 				<line>All event management pages are fully localizable.</line>

@@ -175,7 +175,15 @@
         <subclass
             name="SpecialEvent"
             abstract="false"
-            discriminator-value="4"/>
+            discriminator-value="4">
+
+	        <subclass
+    	        name="UnavailableEvent"
+        	    abstract="false"
+            	discriminator-value="5"/>
+
+        </subclass>
+
 
     </class>
 

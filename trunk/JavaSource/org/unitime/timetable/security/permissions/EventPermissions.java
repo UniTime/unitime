@@ -176,6 +176,9 @@ public class EventPermissions {
 	@PermissionForRight(Right.EventAddCourseRelated)
 	public static class EventAddCourseRelated extends EventAddSpecial { }
 	
+	@PermissionForRight(Right.EventAddUnavailable)
+	public static class EventAddUnavailable extends EventAddSpecial { }
+
 	@PermissionForRight(Right.EventDetail)
 	public static class EventDetail implements Permission<Event> {
 		
@@ -202,6 +205,8 @@ public class EventPermissions {
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
 				return false;
+			case Event.sEventTypeUnavailable:
+				if (!user.getCurrentAuthority().hasRight(Right.EventAddUnavailable)) return false;
 			}
 			
 			// Must be the owner or an event admin
@@ -308,6 +313,7 @@ public class EventPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Meeting source) {
+			if (source.getEvent().getEventType() == Event.sEventTypeUnavailable) return false;
 			return permissionEventEdit.check(user, source.getEvent()) &&
 					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
 					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate())) &&

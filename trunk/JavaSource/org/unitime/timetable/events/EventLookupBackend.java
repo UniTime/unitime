@@ -148,6 +148,9 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 					}
 				}
+				if (request.getResourceType() == ResourceType.ROOM && request.getEventFilter().hasOptions("type") && !request.getEventFilter().getOptions("type").contains(Event.sEventTypesAbbv[Event.sEventTypeUnavailable])) {
+					request.getEventFilter().addOption("type", Event.sEventTypesAbbv[Event.sEventTypeUnavailable]);
+				}
 				EventFilterBackend.EventQuery query = EventFilterBackend.getQuery(request.getEventFilter(), context);
 				int limit = request.getLimit();
 				
@@ -167,6 +170,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							.set("resourceId", request.getResourceId())
 							.limit(1 + limit)
 							.query(hibSession).list();
+					
 					break;
 				case SUBJECT:
 				case COURSE:
@@ -627,7 +631,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 
 					if (limit <= 0 || meetings.size() < limit)
 						meetings.addAll(query.select("distinct m")
-                    		.where("e.class in (CourseEvent, SpecialEvent)")
+                    		.where("e.class in (CourseEvent, SpecialEvent, UnavailableEvent)")
                     		.where("e.mainContact.externalUniqueId = :externalId")
                     		.set("externalId", request.getResourceExternalId())
                     		.limit(limit <= 0 ? -1 : 1 + limit - meetings.size())

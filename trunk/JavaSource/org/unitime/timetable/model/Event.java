@@ -60,19 +60,22 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	public static final int sEventTypeMidtermExam = 2;
 	public static final int sEventTypeCourse = 3;
 	public static final int sEventTypeSpecial = 4;
+	public static final int sEventTypeUnavailable = 5;
 	public static final String[] sEventTypes = new String[] {
 	    "Class Event",
 	    "Final Examination Event",
 	    "Midterm Examination Event",
 	    "Course Related Event",
-	    "Special Event"
+	    "Special Event",
+	    "Not Available Event"
 	};
     public static final String[] sEventTypesAbbv = new String[] {
         "Class",
         "Final Exam",
         "Midterm Exam",
         "Course",
-        "Special"
+        "Special",
+        "Not Available"
     };
 
 	public abstract int getEventType();

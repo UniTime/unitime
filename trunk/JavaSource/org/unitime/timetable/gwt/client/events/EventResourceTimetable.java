@@ -70,6 +70,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcRequest;
@@ -477,8 +478,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[5])),
 						iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[6])) };
 				for (EventInterface event: iData) {
+					if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 					for (MeetingInterface meeting: event.getMeetings()) {
-						if (filter(meeting)) continue;
+						if (filter(event, meeting)) continue;
 						if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 						if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
 						hasDay[meeting.getDayOfWeek()] = true;
@@ -515,7 +517,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (EventInterface event: sortedEvents()) {
 					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 					for (MeetingInterface meeting: event.getMeetings()) {
-						if (meeting.getMeetingDate() != null && !filter(meeting))
+						if (meeting.getMeetingDate() != null && !filter(event, meeting))
 							meetings.add(meeting);
 					}
 					if (!meetings.isEmpty())
@@ -801,7 +803,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (meetings == null) {
 						meetings = new ArrayList<MeetingInterface>();
 						for (MeetingInterface meeting: event.getMeetings()) {
-                            if (meeting.isCanApprove() && !filter(meeting)) meetings.add(meeting);
+                            if (meeting.isCanApprove() && !filter(event, meeting)) meetings.add(meeting);
 						}
 					}
 					if (meetings.isEmpty()) {
@@ -871,6 +873,39 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
 		if (iTable != null) iTable.clearHover();
 		if (getSelectedTab() == 0) {
+			int nrDays = 4;
+			int firstSlot = 84, lastSlot = 216;
+			for (EventInterface event: iData) {
+				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
+				for (MeetingInterface meeting: event.getMeetings()) {
+					if (filter(event, meeting)) continue;
+					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
+					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
+					nrDays = Math.max(nrDays, meeting.getDayOfWeek());
+				}
+			}
+			Chip after = iEvents.getChip("after");
+			if (after != null) {
+				Integer slot = TimeUtils.parseTime(CONSTANTS, after.getValue(), null);
+				if (slot != null && firstSlot > slot) firstSlot = slot;
+			}
+			Chip before = iEvents.getChip("before");
+			if (before != null) {
+				Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
+				if (slot != null && lastSlot < slot) lastSlot = slot;
+			}
+			nrDays ++;
+			int days[] = new int[nrDays];
+			for (int i = 0; i < days.length; i++) days[i] = i;
+			int firstHour = firstSlot / 12;
+			int lastHour = 1 + (lastSlot - 1) / 12;
+			if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
+			HashMap<Long, String> colors = new HashMap<Long, String>();
+			
+			if (iTimeGrid != null) iTimeGrid.destroy();
+			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
+
 			iTimeGrid.clear();
 			iTimeGrid.setResourceType(getResourceType());
 			iTimeGrid.setSelectedWeeks(iWeekPanel.getSelected());
@@ -880,7 +915,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			for (EventInterface event: sortedEvents()) {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
-					if (meeting.getMeetingDate() != null && !filter(meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
+					if (meeting.getMeetingDate() != null && !filter(event, meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
 						meetings.add(meeting);
 				}
 				if (!meetings.isEmpty())
@@ -1182,38 +1217,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iHeader.setErrorMessage(MESSAGES.warnTooManyMeetings(CONSTANTS.maxMeetings()));
 		else
 			iHeader.clearMessage();
-		
-		int nrDays = 4;
-		int firstSlot = 84, lastSlot = 216;
-		for (EventInterface event: iData) {
-			for (MeetingInterface meeting: event.getMeetings()) {
-				if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
-				if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
-				nrDays = Math.max(nrDays, meeting.getDayOfWeek());
-			}
-		}
-		Chip after = iEvents.getChip("after");
-		if (after != null) {
-			Integer slot = TimeUtils.parseTime(CONSTANTS, after.getValue(), null);
-			if (slot != null && firstSlot > slot) firstSlot = slot;
-		}
-		Chip before = iEvents.getChip("before");
-		if (before != null) {
-			Integer slot = TimeUtils.parseTime(CONSTANTS, before.getValue(), firstSlot);
-			if (slot != null && lastSlot < slot) lastSlot = slot;
-		}
-		nrDays ++;
-		int days[] = new int[nrDays];
-		for (int i = 0; i < days.length; i++) days[i] = i;
-		int firstHour = firstSlot / 12;
-		int lastHour = 1 + (lastSlot - 1) / 12;
-		if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
-		HashMap<Long, String> colors = new HashMap<Long, String>();
-		
-		if (iTimeGrid != null) iTimeGrid.destroy();
-		iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
-		iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
-		
+				
 		tabOrDataChanged();
 							
 		showResults();
@@ -1246,7 +1250,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	}
 	
 	@Override
-	public boolean filter(MeetingInterface meeting) {
+	public boolean filter(EventInterface event, MeetingInterface meeting) {
+		if (event != null && event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) {
+			if (getResourceType() != ResourceType.ROOM || gridMode() != TimeGrid.Mode.OVERLAP) return true;
+		}
 		if (iWeekPanel.getValue() != null && !iWeekPanel.getValue().isAll()) {
 			int firstDayOfYear = iWeekPanel.getValue().getFirst().getDayOfYear();
 			int lastDayOfYear = (iWeekPanel.getValue().isOne() ? iWeekPanel.getValue().getFirst() : iWeekPanel.getValue().getLast()).getDayOfYear() + 6;
@@ -1347,6 +1354,9 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			query += "&sort=" + iTable.getSortBy();
 		
 		if (extra != null && !extra.isEmpty()) query += "&" + extra;
+		
+		if (iEvents.hasChip(new Chip("type", "Not Available")) || (getResourceType() == ResourceType.ROOM && gridMode() == TimeGrid.Mode.OVERLAP))
+			query += "&ua=1";
 		
 		return query;
 	}

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -136,6 +137,7 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	}
 	
 	public void selectSession(String sessionAbbreviation, AsyncCallback<Boolean> callback) {
+		UniTimeNotifications.info("Select session " + sessionAbbreviation);
 		if (sessionAbbreviation != null && sessionAbbreviation.equals(getAcademicSessionAbbreviation())) {
 			if (callback != null) callback.onSuccess(true);
 			return;

@@ -821,8 +821,7 @@ h1 {
 }
 
 .unitime-TimeGrid .meeting-selected-noshadow {
-	filter: alpha(opacity=100)  
-		progid:DXImageTransform.Microsoft.dropshadow(OffX=3, OffY=3,Color='#C7C7C7', Positive='true');
+	filter: alpha(opacity=100);
 	opacity: 1;
     -moz-opacity:1;
 }
@@ -2668,4 +2667,63 @@ unitime-RoomSharingWidget .legend .blank {
 
 .gwt-Button {
 	white-space: nowrap;
+}
+
+.unitime-TimeGrid .unavailability {
+	position: absolute;
+	font-size: x-small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+	color: #222;
+	z-index: 499;
+	background: #ddd;
+	border: 1px solid #ccc;
+}
+
+.unitime-TimeGrid .unavailability .header {
+	padding: 0px 2px 0px 2px;
+	font-size: x-small;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #222;
+	width: 100%;
+	background: #ccc;
+}
+
+.unitime-TimeGrid .unavailability .footer {
+	font-size: x-small;
+	padding-left: 2px;
+	white-space: wrap;
+}
+
+@media print {
+	.unitime-TimeGrid .unavailability {
+		color: #ddd;
+		background-color: #fff;
+		filter: alpha(opacity = 100);
+		opacity: 1.00;
+		-moz-opacity: 1.00;
+		border: 1px solid #eee;
+	}
+	.unitime-TimeGrid .unavailability .header {
+		padding-bottom: 0px;
+		color: #ddd;
+		background-color: #fff;
+	}
+}
+
+.unitime-TimeGrid .unavailability-selected {
+	filter: alpha(opacity=100);
+	opacity: 1;
+    -moz-opacity:1;
+	cursor: pointer;
+}
+
+.unitime-TimeGrid .unavailability-selected-noshadow {
+	filter: alpha(opacity=100);
+	opacity: 1;
+    -moz-opacity:1;
 }

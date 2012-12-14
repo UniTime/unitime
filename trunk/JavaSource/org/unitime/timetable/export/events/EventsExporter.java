@@ -124,6 +124,13 @@ public abstract class EventsExporter implements Exporter {
     		eventCookieFlags = EventFlag.SHOW_MAIN_CONTACT.clear(eventCookieFlags);
     	eventCookieFlags = EventFlag.SHOW_SECTION.set(eventCookieFlags);
     	
+    	if (!"1".equals(helper.getParameter("ua"))) {
+    		for (Iterator<EventInterface> i = events.iterator(); i.hasNext();) {
+    			EventInterface event = i.next();
+    			if (event.getType() == EventType.Unavailabile) i.remove();
+    		}
+    	}
+    	
     	print(helper, events, eventCookieFlags, sort);
 	}
 	
