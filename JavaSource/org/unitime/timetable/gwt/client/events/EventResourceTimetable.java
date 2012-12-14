@@ -856,6 +856,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (iInitialized) {
 					iHistoryToken.reset(event.getValue());
 					setup(false);
+					if (LoadingWidget.getInstance().isShowing())
+						LoadingWidget.getInstance().hide();
 				}
 			}
 		});
