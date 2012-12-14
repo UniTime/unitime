@@ -455,8 +455,7 @@
 			<parameter name="tab">2</parameter>
 		</item>
 		-->
-		<item name="Add Event" page="events" type="gwt">
-			<parameter name="event">add</parameter>
+		<item name="Add Event" page="events#event=add" type="gwt">
 			<condition>
 				<hasPermission name="EventAddSpecial" authority="any"/>
 			</condition>
