@@ -54,6 +54,18 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 				).setLong("sessionId", sessionId).setCacheable(true).list();
 	}
 
+	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Long sessionId, Long featureTypeId) throws HibernateException {
+		if (featureTypeId == null || featureTypeId < 0) {
+			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
+					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType is null order by label"
+					).setLong("sessionId", sessionId).setCacheable(true).list();
+		} else {
+			return (List<GlobalRoomFeature>)RoomFeatureDAO.getInstance().getSession().createQuery(
+					"from GlobalRoomFeature rf where rf.session.uniqueId = :sessionId and rf.featureType = :featureTypeId order by label"
+					).setLong("sessionId", sessionId).setLong("featureTypeId", featureTypeId).setCacheable(true).list();
+		}
+	}
+
 	public static List<GlobalRoomFeature> getAllGlobalRoomFeatures(Session session) throws HibernateException {
 		return getAllGlobalRoomFeatures(session.getUniqueId());
 	}
@@ -118,7 +130,7 @@ public class RoomFeature extends BaseRoomFeature implements Comparable {
 	 * @return Room feature label
 	 */
 	public String getLabelWithType() {
-	    return getLabel();
+	    return getLabel() + (getFeatureType() == null ? "" : " (" + getFeatureType().getReference() + ")");
 	}
     
     public String getAbbv() {

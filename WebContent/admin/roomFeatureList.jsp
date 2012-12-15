@@ -28,7 +28,7 @@
 
 	<!-- Buttons -->
 	<TR>
-		<TD valign="middle" colspan="4">
+		<TD valign="middle" colspan="5">
 			<tt:section-header>
 				<tt:section-title>
 					<span style='font-weight:normal;'>
@@ -59,7 +59,7 @@
 
 	<logic:messagesPresent>
 	<TR>
-		<TD colspan="4" align="left" class="errorCell">
+		<TD colspan="5" align="left" class="errorCell">
 			<B><U>ERRORS</U></B><BR>
 			<BLOCKQUOTE>
 			<UL>
@@ -77,7 +77,7 @@
 <!-- room features list -->
 	<% if (request.getAttribute("roomFeaturesGlobal") != null) {%>
 		<TR>
-			<TD valign="middle" colspan="4">
+			<TD valign="middle" colspan="5">
 				&nbsp;<A name="roomFeaturesGlobal"></A>
 			</TD>
 		</TR>
@@ -86,7 +86,7 @@
 
 	<% if (request.getAttribute("roomFeaturesDepartment") != null) {%>
 		<TR>
-			<TD valign="middle" colspan="4">
+			<TD valign="middle" colspan="5">
 				&nbsp;<A name="roomFeaturesDepartment"></A>
 			</TD>
 		</TR>
@@ -95,18 +95,18 @@
 	
 	<% if (request.getAttribute("roomFeaturesDepartment") == null && request.getAttribute("roomFeaturesGlobal") == null) {%>
 		<TR>
-			<TD valign="middle" colspan="4">
+			<TD valign="middle" colspan="5">
 				<i>There are no room features available for the selected department.</i>
 			</TD>
 		</TR>
 	<% } %>
 
 	<TR>
-		<TD valign="middle" colspan="4">&nbsp;</TD>
+		<TD valign="middle" colspan="5">&nbsp;</TD>
 	</TR>
 
 	<TR>
-		<TD valign="middle" colspan="4">
+		<TD valign="middle" colspan="5">
 			<tt:section-header>
 			<tt:section-title>
 				<% if (request.getAttribute("roomFeaturesGlobal") != null) {%>
@@ -122,7 +122,7 @@
 
 <!-- Buttons -->
 	<TR>
-		<TD valign="middle" colspan="4">
+		<TD valign="middle" colspan="5">
 			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
 					<TR>
 						<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomFeatureAdd') or hasPermission(#roomFeatureListForm.deptCodeX, 'Department', 'DepartmentRoomFeatureAdd')">

@@ -55,8 +55,8 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		return "<span "+
 		"style='color:#"+getDepartment().getRoomSharingColor(null)+";font-weight:bold;' "+
 		"title='"+getLabel()+
-		" ("+(getDepartment().isExternalManager().booleanValue()?getDepartment().getExternalMgrLabel():getDepartment().getName())+")'>"+
-		getLabel() +
+		" ("+(getDepartment().isExternalManager().booleanValue()?getDepartment().getExternalMgrLabel():getDepartment().getName())+(getFeatureType() == null ? "" : " " + getFeatureType().getReference())+")'>"+
+		getLabel() + (getFeatureType() == null ? "" : " (" + getFeatureType().getReference() + ")") + 
 		"</span>";
 	}
 	
@@ -64,7 +64,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 	 * @return Room feature label with the word (Department) appended to it
 	 */
 	public String getLabelWithType() {
-	    return getLabel() + " (Department)";
+	    return getLabel() + (getFeatureType() == null ? " (Department)" : " (Department " + getFeatureType().getReference() + ")");
 	}
     
     public String toString() {
@@ -89,6 +89,7 @@ public class DepartmentRoomFeature extends BaseDepartmentRoomFeature {
 		newFeature.setLabel(getLabel());
 		newFeature.setAbbv(getAbbv());
 		newFeature.setDepartment(getDepartment());
+		newFeature.setFeatureType(getFeatureType());
 		return(newFeature);
 	}
 	

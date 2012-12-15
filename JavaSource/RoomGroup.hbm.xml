@@ -43,14 +43,14 @@
             column="name"
             type="java.lang.String"
             not-null="true"
-            length="20"/>
+            length="60"/>
 
         <property
             name="abbv"
             column="abbv"
             type="java.lang.String"
             not-null="true"
-            length="20"/>
+            length="60"/>
 
         <property
             name="description"

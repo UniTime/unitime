@@ -53,7 +53,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
-	private UniTimeWidget<FilterBox> iFilter;
+	protected UniTimeWidget<FilterBox> iFilter;
 	private boolean iInitialized = false;
 	
 	public UniTimeFilterBox(AcademicSessionProvider session) {
@@ -134,6 +134,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 				public void onSuccess(FilterRpcResponse result) {
 					iFilter.clearHint();
 					if (!value.equals(iFilter.getWidget().getValue())) return;
+					onLoad(result);
 					for (FilterBox.Filter filter: iFilter.getWidget().getFilters())
 						populateFilter(filter, result.getEntities(filter.getCommand()));
 					if (onSuccess != null) onSuccess.execute();
@@ -145,6 +146,8 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 			});
 		}
 	}
+	
+	protected void onLoad(FilterRpcResponse result) {}
 	
 	public boolean isInitialized() { return iInitialized; }
 	

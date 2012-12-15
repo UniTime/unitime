@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
 
 public abstract class BaseRoomFeature implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -33,6 +34,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	private String iLabel;
 	private String iAbbv;
 
+	private RoomFeatureType iFeatureType;
 	private Set<Location> iRooms;
 
 	public static String PROP_UNIQUEID = "uniqueId";
@@ -59,6 +61,9 @@ public abstract class BaseRoomFeature implements Serializable {
 	public String getAbbv() { return iAbbv; }
 	public void setAbbv(String abbv) { iAbbv = abbv; }
 
+	public RoomFeatureType getFeatureType() { return iFeatureType; }
+	public void setFeatureType(RoomFeatureType featureType) { iFeatureType = featureType; }
+
 	public Set<Location> getRooms() { return iRooms; }
 	public void setRooms(Set<Location> rooms) { iRooms = rooms; }
 	public void addTorooms(Location location) {
@@ -84,6 +89,7 @@ public abstract class BaseRoomFeature implements Serializable {
 	public String toDebugString() {
 		return "RoomFeature[" +
 			"\n	Abbv: " + getAbbv() +
+			"\n	FeatureType: " + getFeatureType() +
 			"\n	Label: " + getLabel() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";

@@ -74,14 +74,14 @@
 		<TR>
 			<TD>Name: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="name" maxlength="20" size="20" />
+				<html:text property="name" maxlength="60" size="60" />
 			</TD>
 		</TR>
 			
 		<TR>
 			<TD>Abbreviation: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="abbv" maxlength="20" size="20" />
+				<html:text property="abbv" maxlength="60" size="60" />
 			</TD>
 		</TR>
 

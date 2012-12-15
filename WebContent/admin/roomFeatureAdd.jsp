@@ -16,7 +16,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.form.RoomFeatureEditForm" %>
 <%@ page import="org.unitime.timetable.model.Department" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
@@ -74,16 +73,28 @@
 		<TR>
 			<TD>Name: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="name" maxlength="20" size="20" />
+				<html:text property="name" maxlength="60" size="60" />
 			</TD>
 		</TR>
 			
 		<TR>
 			<TD>Abbreviation: <font class="reqField">*</font></TD>
 			<TD>
-				<html:text property="abbv" maxlength="20" size="20" />
+				<html:text property="abbv" maxlength="60" size="60" />
 			</TD>
 		</TR>
+		
+		<logic:notEmpty scope="request" name="featureTypes">
+			<TR>
+				<TD>Type:</TD>
+				<TD>
+				<html:select property="featureTypeId">
+					<html:option value="-1">No Type</html:option>
+					<html:options collection="featureTypes" property="uniqueId" labelProperty="label"/>
+				</html:select>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<sec:authorize access="hasPermission(null, 'Session', 'GlobalRoomFeatureAdd') and hasPermission(null, 'Department', 'DepartmentRoomFeatureAdd')">
 			<TR>

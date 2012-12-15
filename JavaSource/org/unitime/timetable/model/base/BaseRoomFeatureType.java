@@ -21,34 +21,42 @@ package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
 
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.RoomFeatureType;
 
-public abstract class BaseDepartmentRoomFeature extends RoomFeature implements Serializable {
+public abstract class BaseRoomFeatureType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Department iDepartment;
+	private Boolean iVisible;
+	private Boolean iShowInEventManagement;
 
 
-	public BaseDepartmentRoomFeature() {
+	public static String PROP_VISIBLE = "visible";
+	public static String PROP_EVENTS = "showInEventManagement";
+
+	public BaseRoomFeatureType() {
 		initialize();
 	}
 
-	public BaseDepartmentRoomFeature(Long uniqueId) {
+	public BaseRoomFeatureType(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
 
 	protected void initialize() {}
 
-	public Department getDepartment() { return iDepartment; }
-	public void setDepartment(Department department) { iDepartment = department; }
+	public Boolean isVisible() { return iVisible; }
+	public Boolean getVisible() { return iVisible; }
+	public void setVisible(Boolean visible) { iVisible = visible; }
+
+	public Boolean isShowInEventManagement() { return iShowInEventManagement; }
+	public Boolean getShowInEventManagement() { return iShowInEventManagement; }
+	public void setShowInEventManagement(Boolean showInEventManagement) { iShowInEventManagement = showInEventManagement; }
 
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof DepartmentRoomFeature)) return false;
-		if (getUniqueId() == null || ((DepartmentRoomFeature)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((DepartmentRoomFeature)o).getUniqueId());
+		if (o == null || !(o instanceof RoomFeatureType)) return false;
+		if (getUniqueId() == null || ((RoomFeatureType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((RoomFeatureType)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -57,16 +65,16 @@ public abstract class BaseDepartmentRoomFeature extends RoomFeature implements S
 	}
 
 	public String toString() {
-		return "DepartmentRoomFeature["+getUniqueId()+" "+getLabel()+"]";
+		return "RoomFeatureType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "DepartmentRoomFeature[" +
-			"\n	Abbv: " + getAbbv() +
-			"\n	Department: " + getDepartment() +
-			"\n	FeatureType: " + getFeatureType() +
+		return "RoomFeatureType[" +
 			"\n	Label: " + getLabel() +
+			"\n	Reference: " + getReference() +
+			"\n	ShowInEventManagement: " + getShowInEventManagement() +
 			"\n	UniqueId: " + getUniqueId() +
+			"\n	Visible: " + getVisible() +
 			"]";
 	}
 }

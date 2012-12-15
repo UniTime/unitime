@@ -45,14 +45,14 @@
             column="label"
             type="java.lang.String"
             not-null="true"
-            length="20"/>
+            length="60"/>
 
         <property
             name="abbv"
             column="abbv"
             type="java.lang.String"
             not-null="false"
-            length="20"/>
+            length="60"/>
 
         <set
             name="rooms"
@@ -62,6 +62,13 @@
             <key column="feature_id"/>
             <many-to-many class="Location" column="room_id"/>
         </set>
+        
+        <many-to-one
+        	name="featureType"
+            class="RoomFeatureType"
+            column="feature_type_id"
+            not-null="false"
+            foreign-key="fk_feature_type"/>
 
         <subclass
             name="GlobalRoomFeature"

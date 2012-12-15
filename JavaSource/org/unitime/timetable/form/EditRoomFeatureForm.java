@@ -190,14 +190,14 @@ public class EditRoomFeatureForm extends ActionForm {
 	
 	public void addToGlobalRoomFeatures(GlobalRoomFeature rf, Boolean editable, Boolean assigned) {
 		this.globalRoomFeatureIds.add(rf.getUniqueId().toString());
-		this.globalRoomFeatureNames.add(rf.getLabel());
+		this.globalRoomFeatureNames.add(rf.getLabel() + (rf.getFeatureType() == null ? "" : " (" + rf.getFeatureType().getLabel() + ")"));
 		this.globalRoomFeaturesEditable.add(editable);
 		this.globalRoomFeaturesAssigned.add(assigned);
 	}
 	
 	public void addToDepartmentRoomFeatures(DepartmentRoomFeature rf, Boolean editable, Boolean assigned) {
 		this.departmentRoomFeatureIds.add(rf.getUniqueId().toString());
-		this.departmentRoomFeatureNames.add(rf.getLabel()+" ("+(rf.getDepartment().isExternalManager().booleanValue()?rf.getDepartment().getExternalMgrLabel():rf.getDepartment().getDeptCode()+" - "+rf.getDepartment().getName())+")");
+		this.departmentRoomFeatureNames.add(rf.getLabel()+" ("+(rf.getDepartment().isExternalManager().booleanValue()?rf.getDepartment().getExternalMgrLabel():rf.getDepartment().getDeptCode()+" - "+rf.getDepartment().getName())+(rf.getFeatureType() == null ? "" : ", " + rf.getFeatureType().getLabel())+")");
 		this.departmentRoomFeaturesEditable.add(editable);
 		this.departmentRoomFeaturesAssigned.add(assigned);
 	}
