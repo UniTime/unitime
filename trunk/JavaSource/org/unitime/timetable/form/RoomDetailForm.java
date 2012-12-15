@@ -64,6 +64,7 @@ public class RoomDetailForm extends ActionForm {
     private Map<String,Boolean> examEnabled = new HashMap<String, Boolean>();
 	private Integer examCapacity;
 	private String eventDepartment;
+	private String area;
 	
 	private Long previos, next;
 
@@ -310,5 +311,9 @@ public class RoomDetailForm extends ActionForm {
     public void setEventDepartment(String eventDepartment) {
     	this.eventDepartment = eventDepartment;
     }
+    
+    public String getArea() { return area; }
+    
+    public void setArea(String area) { this.area = area; }
 }
 

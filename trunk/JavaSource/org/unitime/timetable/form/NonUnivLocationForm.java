@@ -53,6 +53,7 @@ public class NonUnivLocationForm extends ActionForm {
 	private int deptSize;
     private Long type;
 	private String coordX, coordY;
+	private String area;
 	
 	// --------------------------------------------------------- Methods
 
@@ -121,6 +122,7 @@ public class NonUnivLocationForm extends ActionForm {
 		ignoreTooFar = false;
 		ignoreRoomCheck = false;
 		coordX=null; coordY=null;
+		area = null;
 	}
 
 	public String getCapacity() {
@@ -204,5 +206,9 @@ public class NonUnivLocationForm extends ActionForm {
 	public void setCoordY(String coordY) {
 		this.coordY = coordY;
 	}
+	
+    public String getArea() { return area; }
+    
+    public void setArea(String area) { this.area = area; }
 }
 

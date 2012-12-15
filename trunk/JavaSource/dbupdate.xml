@@ -8111,4 +8111,12 @@
 		<mysql>alter table %SCHEMA%.room_group modify name varchar(60) binary null</mysql>
 		<mysql>alter table %SCHEMA%.room_group modify abbv varchar(60) binary null</mysql>
 	</update>
+	<update version="99" date="15-Dec-2012" comment="Room Square Footage">
+		<plsql>alter table %SCHEMA%.room add area double precision</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add area double precision</plsql>
+		<mysql>alter table %SCHEMA%.room add area double null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add area double null</mysql>
+		<plsql>alter table %SCHEMA%.external_room add area double precision</plsql>
+		<mysql>alter table %SCHEMA%.external_room add area double null</mysql>
+	</update>
 </dbupdate>

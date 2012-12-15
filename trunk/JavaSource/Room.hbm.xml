@@ -69,6 +69,12 @@
             type="java.lang.Boolean"
             not-null="true"/>
 
+        <property
+            name="area"
+            column="area"
+            type="java.lang.Double"
+            not-null="false"/>
+
         <set name="features" table="room_join_room_feature">
             <cache include="non-lazy" usage="read-write"/>
             <key column="room_id"/>

@@ -33,6 +33,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <%
@@ -59,6 +60,7 @@
 <tiles:importAttribute />
 
 <html:form action="/roomDetail">
+	<loc:bundle name="CourseMessages">
 	<html:hidden property="id"/>
 	<html:hidden property="next"/>
 	<html:hidden property="previous"/>
@@ -219,6 +221,12 @@
 				</TD>
 			</TR>
 		<% } %>
+		
+		<logic:notEmpty name="<%=frmName%>" property="area">
+			<TR>
+				<TD><loc:message name="propertyRoomArea"/></TD><TD><bean:write name="<%=frmName%>" property="area"/> <loc:message name="roomAreaUnitsLong"/></TD>
+			</TR>
+		</logic:notEmpty>
 
 		<TR>
 			<TD nowrap>Ignore Too Far Distances:</TD><TD><%=frm.getIgnoreTooFar()%></TD>
@@ -446,5 +454,5 @@
 		</TR>
 
 	</TABLE>
-			
+	</loc:bundle>			
 </html:form>

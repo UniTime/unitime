@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.model;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -916,6 +917,9 @@ public abstract class Location extends BaseLocation implements Comparable {
     		hint += " (" + getExamCapacity() + " for " + type + "examinations)";
     	}
     	hint += "</td></tr>";
+    	if (getArea() != null) {
+    		hint += "<tr><td>" + MSG.propertyRoomArea() + "</td><td width=\\'99%\\'>" + new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(getArea()) + " " + MSG.roomAreaUnitsShort() + "</td></tr>";
+    	}
     	Map<String, String> features = new HashMap<String, String>();
     	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {
     		String type = (f.getFeatureType() == null ? "Features" : f.getFeatureType().getReference());

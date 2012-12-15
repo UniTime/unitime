@@ -27,6 +27,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 
 <%		
 	// Get Form 
@@ -36,6 +37,7 @@
 
 <tiles:importAttribute />
 <html:form action="/addNonUnivLocation" focus="name">
+	<loc:bundle name="CourseMessages">
 	
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
@@ -111,6 +113,14 @@
 			</TR>
 			
 			<TR>
+				<TD><loc:message name="propertyRoomArea"/></TD>
+				<TD>
+					<html:text property="area" maxlength="12" size="12"/> <loc:message name="roomAreaUnitsLong"/>
+				</TD>
+			</TR>
+
+			
+			<TR>
 				<TD nowrap>Ignore Too Far Distances:</TD>
 				<TD>
 					<html:checkbox property="ignoreTooFar" />
@@ -168,6 +178,7 @@
 			</TD>
 		</TR>
 	</TABLE>
+	</loc:bundle>
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">

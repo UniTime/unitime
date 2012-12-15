@@ -68,6 +68,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 
 	public String toDebugString() {
 		return "NonUniversityLocation[" +
+			"\n	Area: " + getArea() +
 			"\n	Capacity: " + getCapacity() +
 			"\n	CoordinateX: " + getCoordinateX() +
 			"\n	CoordinateY: " + getCoordinateY() +
