@@ -456,6 +456,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Ignore<BR>Too Far")
 	String columnInstructorIgnoreTooFar();
 	
+	@DefaultMessage("Ignore\nToo Far")
+	String columnInstructorIgnoreTooFarPDF();
+	
 	@DefaultMessage("Classes / Courses")
 	String columnExamClassesCourses();
 	
@@ -1949,6 +1952,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Only students meeting reservations are allowed to enroll into this offering.")
 	String descriptionByReservationOnly2();
 	
+	@DefaultMessage("Yes")
+	String yes();
+
 	@DefaultMessage("No")
 	String no();
 	
