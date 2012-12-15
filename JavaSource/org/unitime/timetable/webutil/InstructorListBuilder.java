@@ -278,9 +278,10 @@ public class InstructorListBuilder {
 						"\n"+MSG.columnRoomPref(),
 						"\n"+MSG.columnDistributionPref(),
 						MSG.columnInstructorClassAssignmentsPDF(),
-						MSG.columnInstructorExamAssignmentsPDF()},
-				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left"},
-				new boolean[] { true, true, true, true, true, true, true, true, true});
+						MSG.columnInstructorExamAssignmentsPDF(),
+						MSG.columnInstructorIgnoreTooFarPDF()},
+				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
+				new boolean[] { true, true, true, true, true, true, true, true, true, true});
 
 		// Loop through Instructor class
 		List list = null;
@@ -333,25 +334,25 @@ public class InstructorListBuilder {
 			for (Iterator i=di.effectivePreferences(RoomPref.class).iterator();i.hasNext();) {
 				RoomPref rp = (RoomPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += PreferenceLevel.prolog2abbv(rp.getPrefLevel().getPrefProlog())+" "+rp.getRoom().getLabel();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rp.getPrefLevel().getPrefProlog())+" "+rp.getRoom().getLabel();
 			}
 			
 			for (Iterator i=di.effectivePreferences(BuildingPref.class).iterator();i.hasNext();) {
 				BuildingPref bp = (BuildingPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += PreferenceLevel.prolog2abbv(bp.getPrefLevel().getPrefProlog())+" "+bp.getBuilding().getAbbreviation();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(bp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(bp.getPrefLevel().getPrefProlog())+" "+bp.getBuilding().getAbbreviation();
 			}
 			
 			for (Iterator i=di.effectivePreferences(RoomFeaturePref.class).iterator();i.hasNext();) {
 				RoomFeaturePref rfp = (RoomFeaturePref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += PreferenceLevel.prolog2abbv(rfp.getPrefLevel().getPrefProlog())+" "+rfp.getRoomFeature().getLabel();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rfp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rfp.getPrefLevel().getPrefProlog())+" "+rfp.getRoomFeature().getLabel();
 			}
 
 			for (Iterator i=di.effectivePreferences(RoomGroupPref.class).iterator();i.hasNext();) {
 				RoomGroupPref rgp = (RoomGroupPref)i.next();
 				if (rmPref.length()>0) rmPref += "\n";
-				rmPref += PreferenceLevel.prolog2abbv(rgp.getPrefLevel().getPrefProlog())+" "+rgp.getRoomGroup().getName();
+				rmPref += "@@COLOR " + PreferenceLevel.prolog2color(rgp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(rgp.getPrefLevel().getPrefProlog())+" "+rgp.getRoomGroup().getName();
 			}
 
 			//get time preference
@@ -380,7 +381,7 @@ public class InstructorListBuilder {
 			for (Iterator i=di.effectivePreferences(DistributionPref.class).iterator();i.hasNext();) {
 				DistributionPref dp = (DistributionPref)i.next();
 				if (distPref.length()>0) distPref += "\n";
-				distPref += PreferenceLevel.prolog2abbv(dp.getPrefLevel().getPrefProlog())+" "+dp.getDistributionType().getAbbreviation();
+				distPref += "@@COLOR " + PreferenceLevel.prolog2color(dp.getPrefLevel().getPrefProlog()) + " " + PreferenceLevel.prolog2abbv(dp.getPrefLevel().getPrefProlog())+" "+dp.getDistributionType().getAbbreviation();
 			}
 			
 			TreeSet classes = new TreeSet(new ClassInstructorComparator(new ClassComparator(ClassComparator.COMPARE_BY_LABEL)));
@@ -428,8 +429,9 @@ public class InstructorListBuilder {
 				        rmPref,
 				        distPref,
 				        classesStr,
-				        examsStr}, 
-					new Comparable[] { puid, nameOrd, posType, null, null, null, null, null, null });
+				        examsStr,
+				        di.isIgnoreToFar() != null && di.isIgnoreToFar() ? "@@ITALIC " + MSG.yes() : "@@ITALIC " + MSG.no()}, 
+					new Comparable[] { puid, nameOrd, posType, null, null, null, null, null, null, di.isIgnoreToFar() });
 
 		}
 		
