@@ -98,6 +98,12 @@
             not-null="false"
             length="100"/>
 
+        <property
+            name="area"
+            column="area"
+            type="java.lang.Double"
+            not-null="false"/>
+
         <set name="roomDepartments">
             <cache include="non-lazy" usage="read-write"/>
             <key column="external_room_id"/>

@@ -42,6 +42,7 @@
 <!ATTLIST room instructional ( false | False | true | True ) #REQUIRED >
 <!ATTLIST room locationX CDATA #IMPLIED >
 <!ATTLIST room locationY CDATA #IMPLIED >
+<!ATTLIST room area CDATA #IMPLIED >
 <!ATTLIST room roomClassification CDATA #REQUIRED >
 <!ATTLIST room roomNumber CDATA #REQUIRED >
 <!ATTLIST room scheduledRoomType ( computingLab | departmental | genClassroom ) #IMPLIED >

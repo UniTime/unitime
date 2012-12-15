@@ -35,7 +35,7 @@
 	     scheduledRoomType = genClassroom, computingLab or departmental
 	     instructional = T or F  {T ==> typically used for instruction}.
 	-->
-<buildingsRooms campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+<buildingsRooms campus="woebegon" term="Fal" year="2007">
 	<building externalId="14Q07A1C11FQD1GNDC1U" abbreviation="113" locationX="339" locationY="404" name="Purdue Village Apts #113"/>
 	<building externalId="14Q07S1C11GP31GNDC1W" abbreviation="114" locationX="344" locationY="404" name="Purdue Village Apts #114"/>
 	<building externalId="14Q0BS1C12Q3I1GNDC5A" abbreviation="ABE" locationX="449" locationY="392" name="Agricultural and Biological Engineering">
@@ -44,7 +44,8 @@
       			<assigned departmentNumber="1146" percent="100"/>
    			</roomDepartments>
   		</room>
-  		<room externalId="14P3G41C10IRK1GNDDEB" locationX="447" locationY="392" roomNumber="204" roomClassification="classroom" capacity="58" instructional="True" scheduledRoomType="genClassroom">
+  		<!-- area (square footage) since UniTime 3.4.128 -->
+  		<room externalId="14P3G41C10IRK1GNDDEB" locationX="447" locationY="392" area="1265.3" roomNumber="204" roomClassification="classroom" capacity="58" instructional="True" scheduledRoomType="genClassroom">
    			<roomDepartments>
       			<assigned departmentNumber="1979" percent="100"/>
       			<scheduling departmentNumber="1128" percent="50"/>

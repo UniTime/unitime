@@ -43,6 +43,7 @@ public abstract class BaseLocation implements Serializable {
 	private Double iCoordinateY;
 	private Boolean iIgnoreTooFar;
 	private Boolean iIgnoreRoomCheck;
+	private Double iArea;
 	private String iManagerIds;
 	private String iPattern;
 	private Integer iExamCapacity;
@@ -64,6 +65,7 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_COORDINATE_Y = "coordinateY";
 	public static String PROP_IGNORE_TOO_FAR = "ignoreTooFar";
 	public static String PROP_IGNORE_ROOM_CHECK = "ignoreRoomCheck";
+	public static String PROP_AREA = "area";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
@@ -102,6 +104,9 @@ public abstract class BaseLocation implements Serializable {
 	public Boolean isIgnoreRoomCheck() { return iIgnoreRoomCheck; }
 	public Boolean getIgnoreRoomCheck() { return iIgnoreRoomCheck; }
 	public void setIgnoreRoomCheck(Boolean ignoreRoomCheck) { iIgnoreRoomCheck = ignoreRoomCheck; }
+
+	public Double getArea() { return iArea; }
+	public void setArea(Double area) { iArea = area; }
 
 	public String getManagerIds() { return iManagerIds; }
 	public void setManagerIds(String managerIds) { iManagerIds = managerIds; }
@@ -180,6 +185,7 @@ public abstract class BaseLocation implements Serializable {
 
 	public String toDebugString() {
 		return "Location[" +
+			"\n	Area: " + getArea() +
 			"\n	Capacity: " + getCapacity() +
 			"\n	CoordinateX: " + getCoordinateX() +
 			"\n	CoordinateY: " + getCoordinateY() +

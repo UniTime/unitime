@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
@@ -165,6 +167,7 @@ public class EditRoomAction extends Action {
             editRoomForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck());
             editRoomForm.setCoordX(location.getCoordinateX()==null ? null : location.getCoordinateX().toString());
             editRoomForm.setCoordY(location.getCoordinateY()==null ? null : location.getCoordinateY().toString());
+            editRoomForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(location.getArea()));
             editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
             editRoomForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
             
@@ -318,6 +321,15 @@ public class EditRoomAction extends Action {
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
 			location.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
+            Double area = null;
+            if (editRoomForm.getArea() != null && !editRoomForm.getArea().isEmpty()) {
+            	try {
+            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(editRoomForm.getArea()).doubleValue();
+            	} catch (NumberFormatException e) {
+            		area = location.getArea();
+            	}
+            }
+            location.setArea(area);
 			
 			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
 				
@@ -403,6 +415,14 @@ public class EditRoomAction extends Action {
             room.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
             room.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));
             room.setCoordinateY(editRoomForm.getCoordY()==null || editRoomForm.getCoordY().length()==0 ? null : Double.valueOf(editRoomForm.getCoordY()));
+            Double area = null;
+            if (editRoomForm.getArea() != null && !editRoomForm.getArea().isEmpty()) {
+            	try {
+            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(editRoomForm.getArea()).doubleValue();
+            	} catch (NumberFormatException e) {
+            	}
+            }
+            room.setArea(area);
             room.setSession(room.getControllingDepartment() == null ?
             		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession) : room.getControllingDepartment().getSession());
             

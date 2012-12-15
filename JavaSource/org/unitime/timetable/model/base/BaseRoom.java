@@ -87,6 +87,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	public String toDebugString() {
 		return "Room[" +
+			"\n	Area: " + getArea() +
 			"\n	Building: " + getBuilding() +
 			"\n	Capacity: " + getCapacity() +
 			"\n	Classification: " + getClassification() +

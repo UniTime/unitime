@@ -99,6 +99,7 @@ public class BuildingRoomImport extends BaseImport {
 		room.setExternalUniqueId(element.attributeValue("externalId"));
 		room.setCoordinateX(element.attributeValue("locationX") == null ? building.getCoordinateX() : Double.valueOf(element.attributeValue("locationX")));
 		room.setCoordinateY(element.attributeValue("locationY") == null ? building.getCoordinateY() : Double.valueOf(element.attributeValue("locationY")));
+		room.setArea(element.attributeValue("area") == null ? null : Double.valueOf(element.attributeValue("area")));
 		room.setRoomNumber(element.attributeValue("roomNumber"));
 		room.setClassification(element.attributeValue("roomClassification", ""));
 		if (room.getClassification().length() > 20) {

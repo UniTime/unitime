@@ -333,6 +333,7 @@ public class SessionRollForward {
 					toRoom.setClassification(toExternalRoom.getClassification());
 					toRoom.setCoordinateX(toExternalRoom.getCoordinateX());
 					toRoom.setCoordinateY(toExternalRoom.getCoordinateY());
+					toRoom.setArea(toExternalRoom.getArea());
 					toRoom.setDisplayName(toExternalRoom.getDisplayName());
 					toRoom.setExternalUniqueId(toExternalRoom.getExternalUniqueId());
 					toRoom.setIgnoreRoomCheck(fromRoom.isIgnoreRoomCheck());
