@@ -1194,7 +1194,7 @@ public class RoomListAction extends Action {
 						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
                         if (text[idx].length()>0) text[idx] += "\n";
                         comp[idx] = comp[idx] + rf.getLabel().trim();
-						text[idx] += rf.getLabel();
+						text[idx] += rf.getLabelWithType();
 					}
 					if (examType == null)
 	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
@@ -1208,7 +1208,7 @@ public class RoomListAction extends Action {
 	                        if (skip) continue;
 	                        if (text[idx].length()>0) text[idx] += "\n";
 	                        comp[idx] = comp[idx] + drf.getLabel().trim();
-	                        text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabel();
+	                        text[idx] +="@@COLOR "+drf.getDepartment().getRoomSharingColor(null)+" "+drf.getLabelWithType();
 	                    }
 					idx++;
 				} else {
@@ -1637,7 +1637,7 @@ public class RoomListAction extends Action {
 					for (Iterator it = new TreeSet(location.getGlobalRoomFeatures()).iterator(); it.hasNext();) {
 						GlobalRoomFeature rf = (GlobalRoomFeature) it.next();
                         if (text[idx].toString().length()>0) text[idx] = new CSVField(text[idx].toString() + "\n");
-						text[idx] = new CSVField(text[idx].toString() + " " +rf.getLabel());
+						text[idx] = new CSVField(text[idx].toString() + " " +rf.getLabelWithType());
 					}
 					if (examType == null)
 	                    for (Iterator it = new TreeSet(location.getDepartmentRoomFeatures()).iterator(); it.hasNext();) {
@@ -1649,7 +1649,7 @@ public class RoomListAction extends Action {
 	                            if (drf.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
 	                        }
 	                        if (skip) continue;
-	                        text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") +drf.getLabel());
+	                        text[idx] = new CSVField(text[idx].toString() + (text[idx].toString().isEmpty() ? "" : "\n") +drf.getLabelWithType());
 	                    }
 					idx++;
 				} else {

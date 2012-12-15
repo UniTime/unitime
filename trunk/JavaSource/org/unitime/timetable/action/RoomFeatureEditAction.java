@@ -38,6 +38,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
@@ -53,6 +54,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
@@ -117,6 +119,8 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		
 		roomFeatureEditForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
 		
+		roomFeatureEditForm.setFeatureTypeId(rf.getFeatureType() == null ? -1 : rf.getFeatureType().getUniqueId());
+		
 		//set global
 		if (rf instanceof GlobalRoomFeature) {
 			roomFeatureEditForm.setGlobal(true);
@@ -156,6 +160,8 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 		roomFeatureEditForm.setNotAssignedRooms(sortedAvailableRooms);
 		
 		roomFeatureEditForm.setRooms();
+		
+		request.setAttribute("featureTypes", RoomFeatureTypeDAO.getInstance().findAll(Order.asc("label")));
 		
 		return mapping.findForward("showEdit");
 	}
@@ -282,6 +288,10 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			Collection assignedRooms = getAssignedRooms(roomFeature);
 			Collection notAssignedRooms = getAvailableRooms(roomFeature);
 		
+            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            	roomFeature.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
+            else
+            	roomFeature.setFeatureType(null);
 			
 			String s1 = null;
 			String s2 = null;

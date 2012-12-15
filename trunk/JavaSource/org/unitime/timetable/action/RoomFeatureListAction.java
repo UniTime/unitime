@@ -50,6 +50,7 @@ import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
@@ -170,13 +171,15 @@ public class RoomFeatureListAction extends Action {
         WebTable.setOrder(sessionContext,"roomFeatureList.gord",request.getParameter("gord"),1);
         WebTable.setOrder(sessionContext,"roomFeatureList.mord",request.getParameter("mord"),1);
         
-		WebTable globalWebTable = new WebTable(4, "Global Room Features", "roomFeatureList.do?gord=%%", new String[] {
-				"Name", "Abbreviation", "", "Rooms" },
-				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
+        boolean hasTypes = RoomFeatureType.hasFeatureTypes(sessionContext.getUser().getCurrentAcademicSessionId());
+        
+		WebTable globalWebTable = new WebTable(5, "Global Room Features", "roomFeatureList.do?gord=%%", new String[] {
+				"Name", "Abbreviation", hasTypes ? "Type" : "", "", "Rooms" },
+				new String[] { "left", "left", "left", "left", "left" }, new boolean[] { true, true, true, true, true});
 
-		WebTable departmentWebTable = new WebTable(4, "Department Room Features", "roomFeatureList.do?mord=%%", new String[] {
-				"Name", "Abbreviation", "Department", "Rooms" },
-				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
+		WebTable departmentWebTable = new WebTable(5, "Department Room Features", "roomFeatureList.do?mord=%%", new String[] {
+				"Name", "Abbreviation", hasTypes ? "Type" : "", "Department", "Rooms" },
+				new String[] { "left", "left", "left", "left", "left" }, new boolean[] { true, true, true, true, true});
 		
 		Set<Department> depts = Department.getUserDepartments(sessionContext.getUser());
         Long examType = null;
@@ -231,12 +234,14 @@ public class RoomFeatureListAction extends Action {
 							"<A name=\"A"+gr.getUniqueId()+"\"></A>"+
 							(editable?"":"<font color=gray>")+gr.getLabel().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
                             (editable?"":"<font color=gray>")+gr.getAbbv().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
+                            gr.getFeatureType() == null ? "" : ((editable?"":"<font color=gray>")+gr.getFeatureType().getLabel().replaceAll(" ","&nbsp;")+(editable?"":"</font>")),
 							"",
 							(editable?"":"<font color=gray>")+assignedRoom+(editable?"":"</font>") 
 							 }, 
 					new Comparable[] {
 							gr.getLabel(),
                             gr.getAbbv(),
+                            gr.getFeatureType() == null ? "" : gr.getFeatureType().getLabel(),
 							"",
 							null});
 			haveGlobalRoomFeature = true;
@@ -278,11 +283,13 @@ public class RoomFeatureListAction extends Action {
 							"<A name=\"A"+drf.getUniqueId()+"\"></A>"+
 							(editable?"":"<font color=gray>")+drf.getLabel().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
                             (editable?"":"<font color=gray>")+drf.getAbbv().replaceAll(" ","&nbsp;")+(editable?"":"</font>"),
+                            drf.getFeatureType() == null ? "" :  ((editable?"":"<font color=gray>")+drf.getFeatureType().getLabel().replaceAll(" ","&nbsp;")+(editable?"":"</font>")),
 							(editable?"":"<font color=gray>")+ownerName+(editable?"":"</font>"),
 							(editable?"":"<font color=gray>")+assignedRoom+(editable?"":"</font>")},
 						new Comparable[] {
 								drf.getLabel(),
                                 drf.getAbbv(),
+                                drf.getFeatureType() == null ? "" : drf.getFeatureType().getLabel(),
 								ownerName,
 								null}
 						);
@@ -306,13 +313,15 @@ public class RoomFeatureListAction extends Action {
     		
     		out = new FileOutputStream(file);
     		
-            PdfWebTable globalWebTable = new PdfWebTable(4, "Global Room Features", null, new String[] {
-    				"Name", "Abbreviation", "", "Rooms" },
-    				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
+    		boolean hasTypes = RoomFeatureType.hasFeatureTypes(context.getUser().getCurrentAcademicSessionId());
+    		
+            PdfWebTable globalWebTable = new PdfWebTable(5, "Global Room Features", null, new String[] {
+    				"Name", "Abbreviation", hasTypes ? "Type" : "", "", "Rooms" },
+    				new String[] { "left", "left", "left", "left", "left" }, new boolean[] { true, true, true, true, true});
 
-    		PdfWebTable departmentWebTable = new PdfWebTable(4, "Department Room Features", null, new String[] {
-    				"Name", "Abbreviation", "Department ", "Rooms" },
-    				new String[] { "left", "left", "left", "left" }, new boolean[] { true, true, true, true});
+    		PdfWebTable departmentWebTable = new PdfWebTable(5, "Department Room Features", null, new String[] {
+    				"Name", "Abbreviation", hasTypes ? "Type" : "", "Department ", "Rooms" },
+    				new String[] { "left", "left", "left", "left", "left" }, new boolean[] { true, true, true, true, true});
 
     		Set<Department> depts = Department.getUserDepartments(context.getUser());
             Long examType = null;
@@ -367,12 +376,14 @@ public class RoomFeatureListAction extends Action {
     					new String[] {
     							gr.getLabel(),
                                 gr.getAbbv(),
+                                gr.getFeatureType() == null ? "" : gr.getFeatureType().getLabel(),
     							"",
     							assignedRoom.toString() 
     							 }, 
     					new Comparable[] {
     							gr.getLabel(),
                                 gr.getAbbv(),
+                                gr.getFeatureType() == null ? "" : gr.getFeatureType().getLabel(),
     							"",
     							null});
     			haveGlobalRoomFeature = true;
@@ -414,11 +425,13 @@ public class RoomFeatureListAction extends Action {
     						new String[] {
     							drf.getLabel(),
                                 drf.getAbbv(),
+                                drf.getFeatureType() == null ? "" : drf.getFeatureType().getLabel(),
     							ownerName,
     							assignedRoom.toString()},
     						new Comparable[] {
     								drf.getLabel(),
                                     drf.getAbbv(),
+                                    drf.getFeatureType() == null ? "" : drf.getFeatureType().getLabel(),
     								ownerName,
     								null}
     						);

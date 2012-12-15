@@ -303,6 +303,20 @@ public class RoomFilterBox extends UniTimeFilterBox {
 	}
 	
 	@Override
+	protected void onLoad(FilterRpcResponse result) {
+		if (!result.hasEntities()) return;
+		boolean added = false;
+		types: for (String type: result.getTypes()) {
+			for (FilterBox.Filter filter: iFilter.getWidget().getFilters()) {
+				if (filter.getCommand().equals(type)) continue types;
+			}
+			iFilter.getWidget().getFilters().add(iFilter.getWidget().getFilters().size() - 5, new FilterBox.StaticSimpleFilter(type));
+			added = true;
+		}
+		if (added) setValue(getValue(), false);
+	}
+	
+	@Override
 	protected boolean populateFilter(FilterBox.Filter filter, List<FilterRpcResponse.Entity> entities) {
 		if ("building".equals(filter.getCommand())) {
 			iBuildings.clear();
@@ -330,7 +344,8 @@ public class RoomFilterBox extends UniTimeFilterBox {
 						break;
 					}
 			return true;
-		} else return super.populateFilter(filter, entities);
+		} else 
+			return super.populateFilter(filter, entities);
 	}
 	
 	@Override

@@ -248,5 +248,15 @@
                 not-null="true"/>
         </union-subclass>
 
+        <union-subclass name="RoomFeatureType"
+        	table="feature_type"
+        	abstract="false">
+            <property
+                name="showInEventManagement"
+                column="events"
+                type="java.lang.Boolean"
+                not-null="true"/>
+        </union-subclass>
+
     </class>
 </hibernate-mapping>

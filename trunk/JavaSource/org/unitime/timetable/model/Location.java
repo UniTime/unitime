@@ -21,10 +21,12 @@ package org.unitime.timetable.model;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -914,12 +916,20 @@ public abstract class Location extends BaseLocation implements Comparable {
     		hint += " (" + getExamCapacity() + " for " + type + "examinations)";
     	}
     	hint += "</td></tr>";
-    	String features = "";
+    	Map<String, String> features = new HashMap<String, String>();
     	for (GlobalRoomFeature f: getGlobalRoomFeatures()) {
-    		if (!features.isEmpty()) features += ", ";
-    		features += f.getLabel();
+    		String type = (f.getFeatureType() == null ? "Features" : f.getFeatureType().getReference());
+    		String featuresThisType = features.get(type);
+    		if (featuresThisType == null) {
+    			featuresThisType = "";
+    		} else {
+    			featuresThisType += ", ";
+    		}
+    		featuresThisType += f.getLabel();
+			features.put(type, featuresThisType);
     	}
-    	if (!features.isEmpty()) hint += "<tr><td>Features:</td><td>" + features + "</td></tr>";
+    	for (String type: new TreeSet<String>(features.keySet()))
+    		hint += "<tr><td>" + type + ":</td><td>" + features.get(type) + "</td></tr>";
     	String groups = "";
     	for (RoomGroup g: getGlobalRoomGroups()) {
     		if (!groups.isEmpty()) groups += ", ";

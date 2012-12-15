@@ -449,6 +449,9 @@ public enum Right {
 	EventRoomTypes(Department.class),
 	EventRoomTypeEdit(Department.class),
 	
+	RoomFeatureTypes,
+	RoomFeatureTypeEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

@@ -16,7 +16,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.form.ClassEditForm" %>
 <%@ page import="org.unitime.timetable.model.DepartmentalInstructor" %>

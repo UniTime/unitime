@@ -102,6 +102,7 @@ public class ExamInfoAction extends Action {
         
         sessionContext.checkPermission(model.getExam().getExam(), Right.ExaminationAssignment);
         myForm.setSessionId(sessionContext.getUser().getCurrentAcademicSessionId());
+        myForm.setExamTypeId(model.getExam().getExamTypeId());
         
         if (RoomAvailability.getInstance()!=null && op==null) {
             Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());

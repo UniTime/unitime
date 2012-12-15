@@ -162,7 +162,6 @@
 	</logic:notEmpty>
 	
 <!-- Room Group -->
-	
 	<logic:notEqual value="false" parameter="roomGroupPref">
 		<TR><TD colspan='2'>&nbsp;</TD></TR>
 		<TR>
