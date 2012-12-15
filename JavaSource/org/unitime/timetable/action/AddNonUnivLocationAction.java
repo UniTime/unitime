@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.NonUnivLocationForm;
 import org.unitime.timetable.model.ChangeLog;
@@ -161,6 +163,15 @@ public class AddNonUnivLocationAction extends Action {
 				
 			nonUniv.setCoordinateX(nonUnivLocationForm.getCoordX()==null || nonUnivLocationForm.getCoordX().length()==0 ? null : Double.valueOf(nonUnivLocationForm.getCoordX()));
 			nonUniv.setCoordinateY(nonUnivLocationForm.getCoordY()==null || nonUnivLocationForm.getCoordY().length()==0 ? null : Double.valueOf(nonUnivLocationForm.getCoordY()));
+
+            Double area = null;
+            if (nonUnivLocationForm.getArea() != null && !nonUnivLocationForm.getArea().isEmpty()) {
+            	try {
+            		area = new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).parse(nonUnivLocationForm.getArea()).doubleValue();
+            	} catch (NumberFormatException e) {
+            	}
+            }
+            nonUniv.setArea(area);
 			
 			nonUniv.setFeatures(new HashSet());
 			nonUniv.setAssignments(new HashSet());

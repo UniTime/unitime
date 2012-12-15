@@ -82,6 +82,7 @@ public class Room extends BaseRoom {
 		r.setClassification(getClassification());
 		r.setCoordinateX(getCoordinateX());
 		r.setCoordinateY(getCoordinateY());
+		r.setArea(getArea());
 		r.setDisplayName(getDisplayName());
 		r.setExternalUniqueId(getExternalUniqueId());
 		r.setIgnoreRoomCheck(isIgnoreRoomCheck());
@@ -191,6 +192,7 @@ public class Room extends BaseRoom {
 				r.setClassification(er.getClassification());
 				r.setCoordinateX(er.getCoordinateX());
 				r.setCoordinateY(er.getCoordinateY());
+				r.setArea(er.getArea());
 				r.setDisplayName(er.getDisplayName());
 				r.setExternalUniqueId(er.getExternalUniqueId());
 				r.setIgnoreRoomCheck(new Boolean(false));
@@ -218,6 +220,7 @@ public class Room extends BaseRoom {
 				r.setClassification(er.getClassification());
 				r.setCoordinateX(er.getCoordinateX());
 				r.setCoordinateY(er.getCoordinateY());
+				r.setArea(er.getArea());
 				r.setDisplayName(er.getDisplayName());
 				r.setRoomNumber(er.getRoomNumber());
 				r.setRoomType(er.getRoomType());

@@ -335,6 +335,17 @@
 			</description>
 		</item>
 		<item>
+			<name>Room Area (Square Footage)</name>
+			<description>
+				<line>Rooms and Non-University Locations have a new property called Area (double precision).
+					<line>Room area can be edited on the Edit Room page (requires Room Edit Change Room Properties permission).</line>
+					<line>It is displayed on the Room Detail and the Rooms pages, and also in the room tooltip (if present).</line>
+					<line>Default units are square feet, but they can be changed through the localization.</line>
+					<line>External rooms and the appropriate XML import can include room area as well.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Designators</name>
 			<description>
 				<line>Designators page and Designator Required toggle (on the offering) removed.</line>

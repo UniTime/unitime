@@ -42,6 +42,7 @@ public abstract class BaseExternalRoom implements Serializable {
 	private String iClassification;
 	private Boolean iIsInstructional;
 	private String iDisplayName;
+	private Double iArea;
 
 	private RoomType iRoomType;
 	private ExternalBuilding iBuilding;
@@ -58,6 +59,7 @@ public abstract class BaseExternalRoom implements Serializable {
 	public static String PROP_CLASSIFICATION = "classification";
 	public static String PROP_INSTRUCTIONAL = "isInstructional";
 	public static String PROP_DISPLAY_NAME = "displayName";
+	public static String PROP_AREA = "area";
 
 	public BaseExternalRoom() {
 		initialize();
@@ -101,6 +103,9 @@ public abstract class BaseExternalRoom implements Serializable {
 	public String getDisplayName() { return iDisplayName; }
 	public void setDisplayName(String displayName) { iDisplayName = displayName; }
 
+	public Double getArea() { return iArea; }
+	public void setArea(Double area) { iArea = area; }
+
 	public RoomType getRoomType() { return iRoomType; }
 	public void setRoomType(RoomType roomType) { iRoomType = roomType; }
 
@@ -138,6 +143,7 @@ public abstract class BaseExternalRoom implements Serializable {
 
 	public String toDebugString() {
 		return "ExternalRoom[" +
+			"\n	Area: " + getArea() +
 			"\n	Building: " + getBuilding() +
 			"\n	Capacity: " + getCapacity() +
 			"\n	Classification: " + getClassification() +

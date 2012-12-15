@@ -28,6 +28,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
@@ -39,6 +40,7 @@
 
 <tiles:importAttribute />
 <html:form action="/editRoom" focus="name">
+	<loc:bundle name="CourseMessages">
 	<html:hidden property="id"/>
 	<html:hidden property="room"/>
 
@@ -260,6 +262,19 @@
 				&nbsp;&nbsp;&nbsp;<i><%=ellipsoid.getEclipsoindName()%></i>
 			</TD>
 		</TR>
+		
+		<TR>
+			<TD><loc:message name="propertyRoomArea"/></TD>
+			<TD>
+				<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+					<html:text property="area" maxlength="12" size="12"/> <loc:message name="roomAreaUnitsLong"/>
+				</sec:authorize>
+				<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
+					<bean:write name="<%=frmName%>" property="area"/> <loc:message name="roomAreaUnitsLong"/>
+					<html:hidden property="area"/>
+				</sec:authorize>
+			</TD>
+		</TR>
 
 		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 			<TR>
@@ -358,7 +373,7 @@
 			</TD>
 		</TR>
 	</TABLE>
-	
+	</loc:bundle>
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">

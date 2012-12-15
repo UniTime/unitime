@@ -2020,4 +2020,20 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("N/A")
 	String classMeetingsNotApplicable();
+	
+	@DefaultMessage("Area:")
+	String propertyRoomArea();
+	
+	@DefaultMessage("square feet")
+	String roomAreaUnitsLong();
+
+	@DefaultMessage("ft&sup2;")
+	String roomAreaUnitsShort();
+
+	@DefaultMessage("Area [ft&sup2;]")
+	String columnArea();
+	
+	@DefaultMessage("Area [ft2]")
+	String columnAreaPDF();
+
 }

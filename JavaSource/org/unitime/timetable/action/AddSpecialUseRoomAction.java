@@ -210,6 +210,7 @@ public class AddSpecialUseRoomAction extends Action {
 			room.setIgnoreRoomCheck(Boolean.FALSE);
 			room.setCoordinateX(extRoom.getCoordinateX());
 			room.setCoordinateY(extRoom.getCoordinateY());
+			room.setArea(extRoom.getArea());
 			room.setCapacity(extRoom.getCapacity());
 			room.setExamCapacity(0);
 			room.setRoomNumber(roomNum);

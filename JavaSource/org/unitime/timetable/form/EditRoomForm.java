@@ -71,6 +71,7 @@ public class EditRoomForm extends ActionForm {
 	private boolean room;
     private Map<String,Boolean> examEnabled = new HashMap<String, Boolean>();
     private String examCapacity;
+    private String area;
 	
 	// --------------------------------------------------------- Methods
 
@@ -325,5 +326,9 @@ public class EditRoomForm extends ActionForm {
     public void setEventDepartment(String eventDepartment) {
     	this.eventDepartment = eventDepartment;
     }
+
+    public String getArea() { return area; }
+    
+    public void setArea(String area) { this.area = area; }
 }
 

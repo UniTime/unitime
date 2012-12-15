@@ -57,6 +57,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setCapacity(getCapacity());
 		l.setCoordinateX(getCoordinateX());
 		l.setCoordinateY(getCoordinateY());
+		l.setArea(getArea());
 		l.setDisplayName(getDisplayName());
 		l.setName(getName());
 		l.setIgnoreRoomCheck(isIgnoreRoomCheck());

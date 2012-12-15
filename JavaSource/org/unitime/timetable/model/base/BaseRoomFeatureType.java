@@ -27,11 +27,9 @@ import org.unitime.timetable.model.RoomFeatureType;
 public abstract class BaseRoomFeatureType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Boolean iVisible;
 	private Boolean iShowInEventManagement;
 
 
-	public static String PROP_VISIBLE = "visible";
 	public static String PROP_EVENTS = "showInEventManagement";
 
 	public BaseRoomFeatureType() {
@@ -44,10 +42,6 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 	}
 
 	protected void initialize() {}
-
-	public Boolean isVisible() { return iVisible; }
-	public Boolean getVisible() { return iVisible; }
-	public void setVisible(Boolean visible) { iVisible = visible; }
 
 	public Boolean isShowInEventManagement() { return iShowInEventManagement; }
 	public Boolean getShowInEventManagement() { return iShowInEventManagement; }
@@ -74,7 +68,6 @@ public abstract class BaseRoomFeatureType extends RefTableEntry implements Seria
 			"\n	Reference: " + getReference() +
 			"\n	ShowInEventManagement: " + getShowInEventManagement() +
 			"\n	UniqueId: " + getUniqueId() +
-			"\n	Visible: " + getVisible() +
 			"]";
 	}
 }
