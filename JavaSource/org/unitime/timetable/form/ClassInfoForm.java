@@ -20,6 +20,7 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -29,6 +30,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.security.context.HttpSessionContext;
@@ -181,8 +183,18 @@ public class ClassInfoForm extends ActionForm {
     public Long[] getRoomFeatures() { return iRoomFeatures; }
     public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
     
-    public Collection<GlobalRoomFeature> getAllRoomFeatures() {
-    	return RoomFeature.getAllGlobalRoomFeatures(iSessionId);
+    public Collection<RoomFeatureType> getRoomFeatureTypes() {
+    	Set<RoomFeatureType> types = RoomFeatureType.getRoomFeatureTypes(iSessionId, false);
+    	if (RoomFeatureType.hasRoomFeatureWithNoType(iSessionId, false)) {
+    		RoomFeatureType f = new RoomFeatureType();
+    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel("Room Features");
+    		types.add(f);
+    	}
+    	return types;
+    }
+    
+    public Collection<GlobalRoomFeature> getAllRoomFeatures(String featureType) {
+    	return RoomFeature.getAllGlobalRoomFeatures(iSessionId, featureType == null || featureType.isEmpty() ? null : Long.valueOf(featureType));
     }
     
     public Collection<RoomGroup> getAllRoomGroups() {

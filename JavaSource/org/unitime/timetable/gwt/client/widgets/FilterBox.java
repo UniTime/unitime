@@ -283,7 +283,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				@Override
 				public void onFailure(Throwable caught) {
 					if (filter.getCommand().length() > 0) {
-						Label label = new Label(filter.getCommand(), false);
+						Label label = new Label(filter.getCommand().replace('_', ' '), false);
 						label.addStyleName("command");
 						filterPanel.add(label);
 					}
@@ -360,7 +360,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			};
 			if (suggestion.getDisplayString() == null ) {
 				Chip chip = (suggestion.getChipToAdd() == null ? suggestion.getChipToRemove() : suggestion.getChipToAdd()); 
-				item = new MenuItem(chip.getValue() + " <span class='item-command'>" + chip.getCommand() + "</span>", true, command);
+				item = new MenuItem(chip.getValue() + " <span class='item-command'>" + chip.getCommand().replace('_', ' ') + "</span>", true, command);
 			} else {
 				item = new MenuItem(SafeHtmlUtils.htmlEscape(suggestion.getDisplayString()) + (suggestion.getHint() == null ? "" : " " + suggestion.getHint()), true, command);
 			}
@@ -772,7 +772,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 						return;
 					}
 					AbsolutePanel popup = new AbsolutePanel();
-					Label label = new Label(getCommand(), false);
+					Label label = new Label(getCommand().replace('_', ' '), false);
 					label.addStyleName("command");
 					popup.add(label);
 					for (final Chip value: values) {
@@ -888,7 +888,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iPanel == null) {
 				iPanel = new AbsolutePanel();
 				iPanel.addStyleName("filter");
-				Label label = new Label(getCommand(), false);
+				Label label = new Label(getCommand().replace('_', ' '), false);
 				label.addStyleName("command");
 				iPanel.add(label);
 				AbsolutePanel other = new AbsolutePanel();
@@ -1021,12 +1021,12 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		}
 		
 		public Suggestion(String displayString, Chip add) {
-			iDisplay = displayString; iReplacement = ""; iAdd = add; iHint = "<span class='item-command'>" + add.getCommand() + "</span>";
+			iDisplay = displayString; iReplacement = ""; iAdd = add; iHint = "<span class='item-command'>" + add.getCommand().replace('_', ' ') + "</span>";
 		}
 		
 		public Suggestion(String displayString, Chip add, Chip remove) {
 			iDisplay = displayString; iReplacement = ""; iAdd = add; iRemove = remove;
-			iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand() + "</span>";
+			iHint = "<span class='item-command'>" + (add != null ? add : remove).getCommand().replace('_', ' ') + "</span>";
 		}
 		
 		public void setDisplayString(String display) { iDisplay = display; }

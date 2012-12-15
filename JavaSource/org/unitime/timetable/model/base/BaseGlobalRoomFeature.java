@@ -74,6 +74,7 @@ public abstract class BaseGlobalRoomFeature extends RoomFeature implements Seria
 	public String toDebugString() {
 		return "GlobalRoomFeature[" +
 			"\n	Abbv: " + getAbbv() +
+			"\n	FeatureType: " + getFeatureType() +
 			"\n	Label: " + getLabel() +
 			"\n	Session: " + getSession() +
 			"\n	SisReference: " + getSisReference() +

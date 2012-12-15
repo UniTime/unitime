@@ -31,6 +31,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
+import org.hibernate.criterion.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
@@ -43,6 +44,7 @@ import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.dao.DepartmentRoomFeatureDAO;
 import org.unitime.timetable.model.dao.GlobalRoomFeatureDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -107,6 +109,7 @@ public class RoomFeatureAddAction extends Action {
 		//get depts owned by user
 		LookupTables.setupDepartments(request, sessionContext, false);
 		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());
+		request.setAttribute("featureTypes", RoomFeatureTypeDAO.getInstance().findAll(Order.asc("label")));
 		
         //set default department
 		TreeSet<Department> departments = Department.getUserDepartments(sessionContext.getUser());
@@ -157,6 +160,9 @@ public class RoomFeatureAddAction extends Action {
 			rf.setLabel(roomFeatureEditForm.getName());
             rf.setAbbv(roomFeatureEditForm.getAbbv());
             rf.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
+            
+            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            	rf.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
 
 			try {
 				tx = hibSession.beginTransaction();				
@@ -193,6 +199,9 @@ public class RoomFeatureAddAction extends Action {
             rf.setAbbv(roomFeatureEditForm.getAbbv());
 			
 	        rf.setDepartment(department);	
+	        
+            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            	rf.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
 
 			try {
 				tx = hibSession.beginTransaction();				

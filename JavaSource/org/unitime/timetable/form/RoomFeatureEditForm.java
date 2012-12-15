@@ -70,6 +70,8 @@ public class RoomFeatureEditForm extends ActionForm {
 	private String[] notAssignedSelected = {};
 	
 	private Long iSessionId;
+	
+	private Long featureTypeId;
 
 	public Collection getAssignedRooms() {
 		return assignedRooms;
@@ -267,9 +269,14 @@ public class RoomFeatureEditForm extends ActionForm {
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		name = ""; abbv = "";
 		iSessionId = null;
+		featureTypeId = null;
 	}
 	
 	public Long getSessionId() { return iSessionId; }
 	
 	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	
+	public Long getFeatureTypeId() { return featureTypeId; }
+	
+	public void setFeatureTypeId(Long featureTypeId) { this.featureTypeId = featureTypeId; }
 }

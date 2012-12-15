@@ -320,6 +320,21 @@
 			</description>
 		</item>
 		<item>
+			<name>Room Feature Types</name>
+			<description>
+				<line>Room features can have a type (optional, to be defined on the page Administration > Other > Room Feature Types).
+					<line>Room feature type can be enabled or disabled for event management, room features of a disabled feature type are not available in event management (Room Filter box).</line>
+					<line>Rooms Features: if there are room feature types defined, each room feature (global or departmental) can have none (No Type) or one feature type assigned.</line>
+					<line>Room feature preferences: feature type abbreviation is added to the room feature name in the dropdowns (next to the feature name, in brackets).</line>
+					<line>Room tooltip: features are split by room feature type, only applicable feature types are displayed.</line>
+					<line>Class Assignment: room features are split by type in the Available Rooms section.</line>
+					<line>Examination Assignment: room features are split by type in the Available Rooms section, only room features with at least one examination room (of the same type as the exam) are displayed.</line>
+					<line>Room Filter box (event management): features are split by type in the dropdown (+), they can also be searched by feature type (features of the type that is being typed in are suggested).</line>
+					<line>The same rules as before still apply -- if two room features are selected, a room has to have both to match (regardless their type).</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Designators</name>
 			<description>
 				<line>Designators page and Designator Required toggle (on the offering) removed.</line>

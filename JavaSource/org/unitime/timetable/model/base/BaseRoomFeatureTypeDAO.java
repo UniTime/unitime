@@ -19,27 +19,20 @@
 */
 package org.unitime.timetable.model.base;
 
-import java.util.List;
-
-import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.dao._RootDAO;
-import org.unitime.timetable.model.dao.RoomFeatureDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 
-public abstract class BaseRoomFeatureDAO extends _RootDAO<RoomFeature,Long> {
+public abstract class BaseRoomFeatureTypeDAO extends _RootDAO<RoomFeatureType,Long> {
 
-	private static RoomFeatureDAO sInstance;
+	private static RoomFeatureTypeDAO sInstance;
 
-	public static RoomFeatureDAO getInstance() {
-		if (sInstance == null) sInstance = new RoomFeatureDAO();
+	public static RoomFeatureTypeDAO getInstance() {
+		if (sInstance == null) sInstance = new RoomFeatureTypeDAO();
 		return sInstance;
 	}
 
-	public Class<RoomFeature> getReferenceClass() {
-		return RoomFeature.class;
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<RoomFeature> findByFeatureType(org.hibernate.Session hibSession, Long featureTypeId) {
-		return hibSession.createQuery("from RoomFeature x where x.featureType.uniqueId = :featureTypeId").setLong("featureTypeId", featureTypeId).list();
+	public Class<RoomFeatureType> getReferenceClass() {
+		return RoomFeatureType.class;
 	}
 }

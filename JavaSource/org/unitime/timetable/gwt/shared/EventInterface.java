@@ -1226,9 +1226,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public FilterRpcResponse() {}
 		
+		public boolean hasEntities() {
+			return iEntities != null && !iEntities.isEmpty();
+		}
+		
 		public boolean hasEntities(String type) {
 			List<Entity> entities = getEntities(type);
 			return entities != null && !entities.isEmpty();
+		}
+		
+		public Set<String> getTypes() {
+			return iEntities == null ? null : new TreeSet<String>(iEntities.keySet());
 		}
 		
 		public List<Entity> getEntities(String type) {

@@ -191,21 +191,24 @@
 							</tr><tr><td></td>
 						<% } %>
 					</logic:iterate>
-				</tr><tr>
-					<td nowrap>Room Features:</td>
-					<logic:iterate name="classInfoForm" property="allRoomFeatures" id="rf" indexId="rfIdx">
-						<td nowrap>
-							<html:multibox property="roomFeatures">
-								<bean:write name="rf" property="uniqueId"/>
-							</html:multibox>
-							<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
-						</td>
-						<% if (rfIdx%3==2) { %>
-							</tr><tr><td></td>
-						<% } %>
-					</logic:iterate>
-				</tr></table>
-			</td></tr>
+				</tr>
+				<logic:iterate name="classInfoForm" property="roomFeatureTypes" id="ft" type="org.unitime.timetable.model.RoomFeatureType">
+					<tr>
+						<td nowrap><bean:write name="ft" property="label"/>:</td>
+						<logic:iterate name="classInfoForm" property='<%="allRoomFeatures("+ft.getUniqueId()+")"%>' id="rf" indexId="rfIdx">
+							<td nowrap>
+								<html:multibox property="roomFeatures">
+									<bean:write name="rf" property="uniqueId"/>
+								</html:multibox>
+								<bean:write name="rf" property="label"/>&nbsp;&nbsp;&nbsp;
+							</td>
+							<% if (rfIdx%3==2) { %>
+								</tr><tr><td></td>
+							<% } %>
+						</logic:iterate>
+					</tr>
+				</logic:iterate>
+			</table></td></tr>
 			<logic:empty name="model" property="roomTable">
 				<tr><td colspan='2'><i>No room matching the above criteria was found.</i></td></tr>
 			</logic:empty>

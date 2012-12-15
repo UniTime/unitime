@@ -57,6 +57,7 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Student;
@@ -76,6 +77,7 @@ import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
 import org.unitime.timetable.model.dao.PositionTypeDAO;
 import org.unitime.timetable.model.dao.RolesDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
@@ -398,6 +400,25 @@ public class SimpleEditServlet implements SimpleEditService {
 						r.setField(4, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
 						r.setField(5, roomType.getOrd().toString());
 					}
+				}
+				break;
+			case featureType:
+				data = new SimpleEditInterface(type,
+						new Field("Abbreviation", FieldType.text, 160, 20),
+						new Field("Name", FieldType.text, 300, 60),
+						new Field("Event Management", FieldType.toggle, 40)
+						);
+				data.setSortBy(2, 1);
+				for (RoomFeatureType ftype: RoomFeatureTypeDAO.getInstance().findAll()) {
+					Record r = data.addRecord(ftype.getUniqueId());
+					r.setField(0, ftype.getReference());
+					r.setField(1, ftype.getLabel());
+					r.setField(2, ftype.isShowInEventManagement() ? "true" : "false");
+					int used =
+							((Number)hibSession.createQuery(
+									"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId")
+									.setLong("uniqueId", ftype.getUniqueId()).uniqueResult()).intValue();
+					r.setDeletable(used == 0);
 				}
 				break;
 			}
@@ -1249,6 +1270,55 @@ public class SimpleEditServlet implements SimpleEditService {
 						}
 					}
 					break;					
+				case featureType:
+					for (RoomFeatureType type: RoomFeatureTypeDAO.getInstance().findAll(hibSession)) {
+						Record r = data.getRecord(type.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getSessionContext(),
+									type,
+									type.getReference(),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(type);
+						} else {
+							boolean typeChanged = 
+								!ToolBox.equals(type.getReference(), r.getField(0)) ||
+								!ToolBox.equals(type.getLabel(), r.getField(1)) ||
+								!ToolBox.equals(type.getShowInEventManagement(), "true".equals(r.getField(2)));
+							type.setReference(r.getField(0));
+							type.setLabel(r.getField(1));
+							type.setShowInEventManagement("true".equals(r.getField(2)));
+							hibSession.saveOrUpdate(type);
+							if (typeChanged)
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										type,
+										type.getReference(),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						RoomFeatureType type = new RoomFeatureType();
+						type.setReference(r.getField(0));
+						type.setLabel(r.getField(1));
+						type.setShowInEventManagement("true".equals(r.getField(2)));
+						r.setUniqueId((Long)hibSession.save(type));
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								type,
+								type.getReference(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}	
+					break;
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1317,6 +1387,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.ExamTypes;
 		case eventRoomType:
 			return Right.EventRoomTypes;
+		case featureType:
+			return Right.RoomFeatures;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1354,6 +1426,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.ExamTypeEdit;
 		case eventRoomType:
 			return Right.EventRoomTypeEdit;
+		case featureType:
+			return Right.RoomFeatureTypeEdit;
 		default:
 			return Right.IsAdmin;
 		}

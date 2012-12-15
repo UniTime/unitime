@@ -175,7 +175,7 @@ public class ClassInfoModel implements Serializable {
 		            		if (ci.equals(instructor.getInstructor())) continue;
 		            		Assignment a = ci.getClassInstructing().getCommittedAssignment();
 		            		if (a == null) continue;
-		            		if (assignment.getTime().overlaps(new ClassTimeInfo(a))) {
+		            		if (assignment.getTime() != null && assignment.getTime().overlaps(new ClassTimeInfo(a))) {
 		            			if (iChange.getCurrent(a.getClassId())==null && iChange.getConflict(a.getClassId())==null)
 		            				iChange.getConflicts().add(new ClassAssignment(a));
 		            		}

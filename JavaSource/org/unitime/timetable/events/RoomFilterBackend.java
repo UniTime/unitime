@@ -49,10 +49,12 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
+import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.security.rights.Right;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$RoomFilterRpcRequest")
@@ -92,6 +94,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				userDepts.add(d.getDeptCode());
 		}
 		
+		fixRoomFeatureTypes(request);
+		
 		Map<Long, Entity> types = new HashMap<Long, Entity>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type")) {
 			Entity type = types.get(location.getRoomType().getUniqueId());
@@ -103,20 +107,30 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 		response.add("type", new TreeSet<Entity>(types.values()));
 		
-		Map<Long, Entity> features = new HashMap<Long, Entity>();
+		Map<String, Map<Long, Entity>> featuresByType = new HashMap<String, Map<Long, Entity>>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, null)) {
 			for (RoomFeature rf: location.getFeatures()) {
 				if (rf instanceof GlobalRoomFeature || (rf instanceof DepartmentRoomFeature && departments != null && departments.contains(((DepartmentRoomFeature)rf).getDepartment().getDeptCode()))) {
-					Entity feature = features.get(rf.getUniqueId());
-					if (feature == null) {
-						feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel());
-						features.put(feature.getUniqueId(), feature);
+					if (rf.getFeatureType() == null || rf.getFeatureType().isShowInEventManagement()) {
+						String type = (rf.getFeatureType() == null ? "feature" : rf.getFeatureType().getReference());
+						Map<Long, Entity> features = featuresByType.get(type);
+						if (features == null) {
+							features = new HashMap<Long, Entity>();
+							featuresByType.put(type, features);
+						}
+						Entity feature = features.get(rf.getUniqueId());
+						if (feature == null) {
+							feature = new Entity(rf.getUniqueId(), rf.getAbbv(), rf.getLabel());
+							features.put(feature.getUniqueId(), feature);
+						}
+						feature.incCount();
 					}
-					feature.incCount();
 				}
 			}
 		}
-		response.add("feature", new TreeSet<Entity>(features.values()));
+		for (String type: new TreeSet<String>(featuresByType.keySet())) {
+			response.add(type.replace(' ', '_'), new TreeSet<Entity>(featuresByType.get(type).values()));
+		}
 		
 		Map<Long, Entity> groups = new HashMap<Long, Entity>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "group")) {
@@ -187,7 +201,19 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		response.add("department", new TreeSet<Entity>(depts.values()));
 	}
 	
-	public List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand) {
+	private void fixRoomFeatureTypes(FilterRpcRequest request) {
+		for (RoomFeatureType type: RoomFeatureTypeDAO.getInstance().findAll())
+			if (type.isShowInEventManagement() && request.hasOptions(type.getReference().replace(' ', '_')))
+				for (String option: request.getOptions(type.getReference().replace(' ', '_')))
+					request.addOption("feature", option);
+	}
+	
+	public List<Location> locations(Long sessionId, FilterRpcRequest filter, int limit, Map<Long, Double> room2distance) {
+		fixRoomFeatureTypes(filter);
+		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), 1000, room2distance, null);
+	}
+	
+	private List<Location> locations(Long sessionId, Map<String, Set<String>> options, Query query, int limit, Map<Long, Double> room2distance, String ignoreCommand) {
 		org.hibernate.Session hibSession = RoomDAO.getInstance().getSession();
 
 		Set<String> type = (options == null || "type".equals(ignoreCommand) ? null : options.get("type"));
@@ -269,11 +295,15 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				.setCacheable(true)
 				.list());
 		
+		Set<String> featureTypes = new HashSet<String>();
+		for (RoomFeatureType ft: RoomFeatureTypeDAO.getInstance().findAll())
+			if (ft.isShowInEventManagement()) featureTypes.add(ft.getReference().toLowerCase().replace(' ', '_'));
+		
 		List<Location> ret = new ArrayList<Location>();
 		locations: for (Location location: locations) {
 			if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
 			if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
-			if (query != null && !query.match(new LocationMatcher(location))) continue;
+			if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
 			if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
 			if (building != null && !building.isEmpty() && (!(location instanceof Room) || !building.contains(((Room)location).getBuilding().getAbbreviation()))) continue;
 			if (feature != null && !feature.isEmpty()) {
@@ -336,7 +366,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					if (ids != null && !ids.isEmpty() && !ids.contains(location.getUniqueId().toString())) continue;
 					if (building != null && !building.isEmpty() && (location instanceof Room) && building.contains(((Room)location).getBuilding().getAbbreviation())) continue;
 					if (size != null && !size.isEmpty() && (location.getCapacity() < min || location.getCapacity() > max)) continue;
-					if (query != null && !query.match(new LocationMatcher(location))) continue;
+					if (query != null && !query.match(new LocationMatcher(location, featureTypes))) continue;
 					if (type != null && !type.isEmpty() && !type.contains(location.getRoomType().getLabel())) continue;
 					if (feature != null && !feature.isEmpty()) {
 						for (String f: feature) {
@@ -411,6 +441,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	
 	@Override
 	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+		fixRoomFeatureTypes(request);
+
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), 20, distances, null)) {
 			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
@@ -422,6 +454,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	
 	@Override
 	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+		fixRoomFeatureTypes(request);
+
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
@@ -492,9 +526,11 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	
 	public class LocationMatcher implements TermMatcher {
 		private Location iLocation;
+		private Set<String> iFeatureTypes = null;
 		
-		LocationMatcher(Location location) {
+		LocationMatcher(Location location, Set<String> featureTypes) {
 			iLocation = location;
+			iFeatureTypes = featureTypes;
 		}
 		
 		public Location getLocation() { return iLocation; }
@@ -505,7 +541,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				return (has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term) ||
 						getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || 
 						(getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase())));
-			} else if ("feature".equals(attr)) {
+			} else if ("feature".equals(attr) || (iFeatureTypes != null && iFeatureTypes.contains(attr.toLowerCase()))) {
 				for (RoomFeature rf: getLocation().getFeatures())
 					if (rf instanceof GlobalRoomFeature && (eq(rf.getAbbv(), term) || has(rf.getLabel(), term))) return true;
 				return false;
@@ -567,5 +603,21 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 
 		
+	}
+	
+	public static String toCommand(String label) {
+		String ret = "";
+		for (String word: label.toLowerCase().split(" ")) {
+			if (ret.isEmpty() || word.length() <= 1)
+				ret += word;
+			else
+				ret += word.substring(0,1).toUpperCase() + word.substring(1);
+		}
+		return ret;
+	}
+	
+	public static void main(String[] args) {
+		String s = "TOto je divny Test ale mOOC d iv  n y T es T 5";
+		System.out.println(toCommand(s));
 	}
 }

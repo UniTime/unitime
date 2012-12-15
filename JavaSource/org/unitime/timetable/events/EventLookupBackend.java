@@ -33,7 +33,6 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
-import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
@@ -144,7 +143,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			try {
 				Map<Long, Double> distances = new HashMap<Long, Double>();
 				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty()) {
-					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter().getOptions(), new Query(request.getRoomFilter().getText()), 1000, distances, null)) {
+					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances)) {
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
 					}
 				}

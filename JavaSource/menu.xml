@@ -688,6 +688,12 @@
 					<hasPermission name="RoomTypes"/>
 				</condition>
 			</item>
+			<item name="Room Feature Types" page="admin" type="gwt">
+				<parameter name="type">featureType</parameter>
+				<condition>
+					<hasPermission name="RoomFeatureTypes"/>
+				</condition>
+			</item>
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do">
 				<condition>
 					<hasPermission name="SponsoringOrganizations"/>

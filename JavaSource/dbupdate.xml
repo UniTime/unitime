@@ -8067,4 +8067,48 @@
 			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventLocationOverbook'
 		</sql>
 	</update>
+	<update version="98" date="15-Dec-2012" comment="Room Feature Types">
+		<plsql>
+			create table %SCHEMA%.feature_type (
+				uniqueid number(20,0) constraint nn_feature_type_uniqueid not null,
+				reference varchar2(20) constraint nn_feature_type_reference not null,
+				label varchar2(60) constraint nn_feature_type_label not null,
+				events number(1,0) constraint nn_feature_type_events not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.feature_type add constraint pk_feature_type primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.feature_type (
+				uniqueid decimal(20,0) primary key not null,
+				reference varchar(20) not null,
+				label varchar(60) not null,
+				events int(1) not null
+			) engine = INNODB
+		</mysql>
+		<plsql>alter table %SCHEMA%.room_feature add feature_type_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.room_feature add feature_type_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.room_feature
+  			add constraint fk_feature_type foreign key (feature_type_id)
+  			references %SCHEMA%.feature_type (uniqueid) on delete set null
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomFeatureTypes'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'ExamTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomFeatureTypeEdit'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'ExamTypeEdit'
+		</sql>
+		<plsql>alter table %SCHEMA%.room_feature modify label varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_feature modify abbv varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_group modify name varchar2(60 char)</plsql>
+		<plsql>alter table %SCHEMA%.room_group modify abbv varchar2(60 char)</plsql>
+		<mysql>alter table %SCHEMA%.room_feature modify label varchar(60) binary null</mysql>
+		<mysql>alter table %SCHEMA%.room_feature modify abbv varchar(60) binary null</mysql>
+		<mysql>alter table %SCHEMA%.room_group modify name varchar(60) binary null</mysql>
+		<mysql>alter table %SCHEMA%.room_group modify abbv varchar(60) binary null</mysql>
+	</update>
 </dbupdate>

@@ -145,7 +145,7 @@ public class Class_ extends BaseClass_ {
 		return (this.getSchedulingSubpart().getSessionId());
 	}
 
-    private Set classInstructorPrefsOfType(Class type) {
+    public Set classInstructorPrefsOfType(Class type) {
     	List<DepartmentalInstructor> instructors = getLeadInstructors();
     	if (instructors.isEmpty()) return null;
     	Set ret = null;

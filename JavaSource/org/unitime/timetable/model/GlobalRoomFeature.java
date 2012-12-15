@@ -94,8 +94,8 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 
 	public String htmlLabel() {
         return "<span "+
-            "title='"+getLabel()+" (global)'>"+
-            getLabel() +
+            "title='"+getLabel()+" (" + (getFeatureType() == null ? "global" : getFeatureType().getReference()) + ")'>"+
+            getLabel() + (getFeatureType() == null ? "" : " (" + getFeatureType().getReference() + ")")+
             "</span>";
     }
 
@@ -106,6 +106,7 @@ public class GlobalRoomFeature extends BaseGlobalRoomFeature {
 		newFeature.setSession(getSession());
 		newFeature.setSisReference(getSisReference());
 		newFeature.setSisValue(getSisValue());
+		newFeature.setFeatureType(getFeatureType());
 		return(newFeature);
 	}
 

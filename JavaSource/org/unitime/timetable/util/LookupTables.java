@@ -372,5 +372,4 @@ public class LookupTables {
     public static void setupExamTypes(HttpServletRequest request, Long sessionId) {
     	request.setAttribute("examTypes", sessionId == null ? ExamType.findAll() : ExamType.findAllUsed(sessionId));
     }
-
 }
