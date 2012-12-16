@@ -840,20 +840,6 @@
 		<put name="body" value="/exam/roomAvailability.jsp" />
   	</definition>
   	
- 	<definition	name="eventDetailTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Event Detail"/>
-		<put name="body" value="/user/eventDetail.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="checkRole" value="false" />
-  	</definition> 	
-  	
- 	<definition	name="eventListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Events"/>
-		<put name="body" value="/user/eventList.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="checkRole" value="false" />
-  	</definition> 	
- 	
  	<definition	name="personalizedExamReportTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Personal Schedule"/>
 		<put name="body" value="/exam/personalizedReport.jsp" />
@@ -874,30 +860,6 @@
 		<put name="checkRole" value="false" />
   	</definition> 	
 
- 	<definition	name="eventAddTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Add Event"/>
-		<put name="body" value="/user/eventAdd.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition> 	  	
-
-  	<definition name="eventAddMtgsTile" extends="eventAddTile">
-  		<put name="title" type="string" value="Add Event Meetings"/>
-  	</definition>
-
- 	<definition	name="eventRoomAvailabilityTile" extends="eventAddTile">
-		<put name="title" type="string" value="Event Room Selection"/>
-		<put name="body" value="/user/eventRoomAvailability.jsp" />
-  	</definition> 	  	
-
- 	<definition	name="eventAddInfoTile" extends="eventAddTile">
-		<put name="title" type="string" value="Add Event Info"/>
-		<put name="body" value="/user/eventAddInfo.jsp" />
-  	</definition> 	  	
-
- 	<definition	name="eventUpdateMeetingsTile" extends="eventAddInfoTile">
-		<put name="title" type="string" value="Update Meetings"/>
-  	</definition> 	  	
-  	
   	<definition	name="studentSolverTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Student Sectioning Solver"/>
 		<put name="body" value="/sct/studentSolver.jsp" />
@@ -920,12 +882,6 @@
 
  	<definition	name="sponsoringOrgAddTile" extends="sponsoringOrgEditTile">
 		<put name="title" type="string" value="Add Sponsoring Organization"/>
-  	</definition>
-  	
- 	<definition	name="eventGridTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Event Room Availability"/>
-		<put name="body" value="/user/eventGrid.jsp" />
-		<put name="checkRole" value="false" />
   	</definition>
   	
    	<definition	name="roomTypeListTile" extends="pageLayoutDef">
@@ -955,19 +911,6 @@
 		<put name="title" type="string" value="Add Standard Event Note"/>
   	</definition>
    	
-   	<definition	name="eventEditTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Edit Event"/>
-		<put name="body" value="/user/eventEdit.jsp" />
-		<put name="checkRole" value="false" />
-  	</definition>
-   	
- 	<definition	name="meetingListTile" extends="pageLayoutDef">
-		<put name="title" type="string" value="Meetings"/>
-		<put name="body" value="/user/meetingList.jsp" />
-		<put name="showNavigation" value="true" />
-		<put name="checkRole" value="false" />
-  	</definition> 	
-  	
 	<definition	name="classInfoTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Class Assignment"/>
 		<put name="body" value="/tt/info.jsp" />
