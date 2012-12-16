@@ -111,27 +111,19 @@
 	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
 	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
 	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
-	  <form-bean name="eventDetailForm" type="org.unitime.timetable.form.EventDetailForm" />
 	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
 	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
 	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
 	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
-	  <form-bean name="eventListForm" type="org.unitime.timetable.form.EventListForm" />
 	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
 	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
-	  <form-bean name="eventAddForm" type="org.unitime.timetable.form.EventAddForm" />	
-	  <form-bean name="eventRoomAvailabilityForm" type="org.unitime.timetable.form.EventRoomAvailabilityForm" />
-	  <form-bean name="eventAddInfoForm" type="org.unitime.timetable.form.EventAddInfoForm" />
       <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
 	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
-  	  <form-bean name="eventGridForm" type="org.unitime.timetable.form.EventGridForm"/>
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
   	  <form-bean name="eventStandardNotesForm" type="org.unitime.timetable.form.EventStandardNotesForm" />
   	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
-  	  <form-bean name="eventEditForm" type="org.unitime.timetable.form.EventEditForm" />
-  	  <form-bean name="meetingListForm" type="org.unitime.timetable.form.MeetingListForm" />
 	  <form-bean name="classInfoForm" type="org.unitime.timetable.form.ClassInfoForm" />
 	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
    </form-beans>
@@ -1940,58 +1932,6 @@
     </action>
 
     <action
-    	path="/eventDetail"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventDetailForm"
-    	input="eventDetailTile"
-    	name="eventDetailForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventDetailTile"
-    		redirect="true" />
-    	<forward 
-    		name="showEventList"
-    		path="/eventList.do"
-    		redirect="true" />
-    </action>
-
-    <action
-    	path="/eventList"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventListForm"
-    	input="eventListTile"
-    	name="eventListForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventListTile"
-    		redirect="true" />
-    	<forward
-    		name="addEvent"
-    		path="/eventAdd.do"/>
-    </action>    
-    
-    <action
-    	path="/meetingList"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="meetingListForm"
-    	input="meetingListTile"
-    	name="meetingListForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="meetingListTile"
-    		redirect="true" />
-    	<forward
-    		name="addEvent"
-    		path="/eventAdd.do"/>
-    </action>    
-
-    <action
     	path="/personalSchedule"
     	type="org.springframework.web.struts.DelegatingActionProxy"
     	attribute="personalizedExamReportForm"
@@ -2015,80 +1955,6 @@
     		name="classes"
     		path="/classes.do"/>
     </action>    
-
-    <action
-    	path="/eventAdd"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventAddForm"
-    	input="eventAddTile"
-    	name="eventAddForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventAddTile"
-    		redirect="true" />
-    	<forward
-    		name="showEventRoomAvailability"
-    		path="/eventRoomAvailability.do"
-			redirect="true" />
-		<forward
-			name="back"
-			path="/eventList.do"
-			redirect="true"/>
-		<forward
-			name="update"
-			path="eventAddMtgsTile"
-			redirect="true"/>
-    </action>
-    
-    <action
-    	path="/eventRoomAvailability"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventRoomAvailabilityForm"
-    	input="eventRoomAvailabilityTile"
-    	name="eventRoomAvailabilityForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventRoomAvailabilityTile"
-    		redirect="true" />
-    	<forward
-    		name="back"
-    		path="/eventAdd.do" />
-		<forward
-			name="eventAddInfo"
-			path="/eventAddInfo.do"
-			redirect="true"/>
-		<forward
-			name="eventUpdateMeetings"
-			path="eventUpdateMeetingsTile"
-			redirect="true"/>
-    </action>
-
-    <action
-    	path="/eventAddInfo"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventAddInfoForm"
-    	input="eventAddInfoTile"
-    	name="eventAddInfoForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventAddInfoTile"
-    		redirect="true" />
-    	<forward 
-    		name="back"
-    		path="/eventRoomAvailability.do"/>
-    	<forward
-    		name="eventList"
-    		path="/eventList.do"/>
-    	<forward
-    		name="eventGrid"
-    		path="/eventGrid.do"/>
-    </action>
 
     <action
     	path="/studentSolver"
@@ -2163,24 +2029,6 @@
     </action>
     
     <action
-    	path="/eventGrid"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventGridForm"
-    	input="eventGridTile"
-    	name="eventGridForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventGridTile"
-    		redirect="true" />
-    	<forward
-    		name="add"
-    		path="/eventAddInfo.do"
-    		redirect="true" />
-    </action>
-    
-    <action
        path="/roomTypeEdit"
        type="org.springframework.web.struts.DelegatingActionProxy"
        attribute="roomTypeEditForm"
@@ -2234,20 +2082,6 @@
     	<forward 
     		name="list"
     		path="/eventStandardNotes.do"
-    		redirect="true" />
-    </action>
-
-    <action
-    	path="/eventEdit"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventEditForm"
-    	input="eventEditTile"
-    	name="eventEditForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventEditTile"
     		redirect="true" />
     </action>
 
