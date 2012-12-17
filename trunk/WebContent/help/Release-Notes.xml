@@ -160,6 +160,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Event Attachments</name>
+			<description>
+				<line>A file can be attached to an event (or a list of meetings) during its approval (approve / inquire / cancel / reject) as well as on the Add / Edit Event page (during creation or update of an event).</line>
+				<line>An attached file gets included in the appropriate event email, but it is also persisted (within event notes) and can be accessed from the Event Detail page.
+					<line>Only people that can access the detail page can get to the attached file.</line>
+				</line>
+				<line>This allows the approval process to be extended with the ability to attach a filled form with the request of an event.</line>
+			</description>
+		</item>
+		<item>
 			<name>Deprecated Pages</name>
 			<description>
 				<line>Meetings and Room Availability pages are no longer needed -- all the functionality is available on the new Events page.</line>

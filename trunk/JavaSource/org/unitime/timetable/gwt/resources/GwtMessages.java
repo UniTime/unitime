@@ -275,6 +275,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Note")
 	String colNote();
 
+	@DefaultMessage("Attachment")
+	String colAttachment();
+
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
 	
@@ -419,8 +422,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Standard Notes:")
 	String propStandardNotes();
 	
-	@DefaultMessage("Attachement:")
-	String propAttachement();
+	@DefaultMessage("Attachment:")
+	String propAttachment();
 	
 	@DefaultMessage("Meetings:")
 	String propMeetings();

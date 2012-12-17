@@ -91,7 +91,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iForm.addRow(MESSAGES.propNotes(), iNotes);
 		
 		iFileUpload = new UniTimeFileUpload();
-		iForm.addRow(MESSAGES.propAttachement(), iFileUpload);
+		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
 		
 		iFooter = new UniTimeHeaderPanel();
 		iFooter.addButton("approve", MESSAGES.opApprove(), new ClickHandler() {

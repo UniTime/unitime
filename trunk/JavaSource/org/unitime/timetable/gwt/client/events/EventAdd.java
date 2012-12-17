@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -146,6 +147,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private EventInterface iEvent, iSavedEvent;
 	private EventPropertiesProvider iProperties;
 	private int iSessionRow = -1;
+	
+	private UniTimeFileUpload iFileUpload;
 			
 	public EventAdd(AcademicSessionSelectionBox session, EventPropertiesProvider properties) {
 		iSession = session;
@@ -556,6 +559,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		 
 		iForm.addRow(MESSAGES.propAdditionalInformation(), notesPanel);
 		
+		iFileUpload = new UniTimeFileUpload();
+		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
+		
 		iCoursesForm = new SimpleForm();
 		iCoursesForm.addHeaderRow(MESSAGES.sectRelatedCourses());
 		iCoursesForm.removeStyleName("unitime-NotPrintableBottomLine");
@@ -769,6 +775,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iSession.setFilter(this);
 			iForm.setWidget(iSessionRow, 1, iSession);
 		}
+		iFileUpload.check();
 	}
 	
 	public void hide() {
@@ -797,6 +804,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	public void setEvent(EventInterface event) {
+		iFileUpload.reset();
 		iForm.getRowFormatter().setVisible(iSessionRow, event == null);
 		iEvent = (event == null ? new EventInterface() : event);
 		iSavedEvent = null;

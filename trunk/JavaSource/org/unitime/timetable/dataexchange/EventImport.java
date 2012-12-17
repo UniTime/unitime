@@ -490,6 +490,7 @@ public class EventImport extends EventRelatedImports {
 		String noteTypeStr = getRequiredStringAttribute(noteElement, "noteType", noteElementName);
 		String noteTimestampStr = getOptionalStringAttribute(noteElement, "timestamp");
 		String userName = getOptionalStringAttribute(noteElement, "userName");
+		String userId = getOptionalStringAttribute(noteElement, "userId");
 		
 		
 		EventNote note = new EventNote();
@@ -515,6 +516,7 @@ public class EventImport extends EventRelatedImports {
 		}
 		
 		note.setUser(userName);
+		note.setUserId(userId);
 		
 		note.setEvent(event);
 		event.addTonotes(note);

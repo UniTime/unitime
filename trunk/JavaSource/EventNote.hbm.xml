@@ -64,6 +64,13 @@
             type="java.lang.String"
             length="100"
             not-null="false"/>
+            
+		<property
+            name="userId"
+            column="user_id"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
         <property
             name="meetings"
@@ -71,6 +78,38 @@
             type="java.lang.String"
             length="2000"
             not-null="false"/>
+
+        <property
+            name="attachedFile"
+            column="attached_file"
+            type="byte[]"
+            not-null="false"
+            lazy="true"/>
+            
+        <property
+            name="attachedName"
+            column="attached_name"
+            type="java.lang.String"
+            length="260"
+            not-null="false"/>
+
+        <property
+            name="attachedContentType"
+            column="attached_content"
+            type="java.lang.String"
+            length="260"
+            not-null="false"/>
+
+		<set
+			name="affectedMeetings"
+			table="event_note_meeting"
+			inverse="false"
+	        lazy="true">
+	        
+	        <cache include="non-lazy" usage="read-write"/>
+	        <key column="note_id" foreign-key="fk_event_note_note"/>
+	        <many-to-many class="Meeting" column="meeting_id" foreign-key="fk_event_note_mtg"/>
+	    </set>
 
     </class>
 </hibernate-mapping>

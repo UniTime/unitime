@@ -22,6 +22,8 @@ package org.unitime.timetable.gwt.client.widgets;
 import com.google.gwt.dom.client.AnchorElement; 
 import com.google.gwt.dom.client.Document; 
 import com.google.gwt.dom.client.SpanElement;
+import com.google.gwt.dom.client.Style.VerticalAlign;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event; 
 import com.google.gwt.user.client.ui.Image; 
 import com.google.gwt.user.client.ui.Widget; 
@@ -30,11 +32,13 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class ImageLink extends Widget { 
-    private Image iImage; 
+    private Image iImage;
     private String iUrl; 
     private String iTarget; 
     private SpanElement iElement; 
     private AnchorElement iAnchor;
+    private Element iImageElement = null;
+    private SpanElement iTextElement = null;
     
     public ImageLink(Image img, String url){ 
         initElements(); 
@@ -66,10 +70,14 @@ public class ImageLink extends Widget {
         return iImage; 
     } 
 
-    public void setImage(Image img) { 
+    public void setImage(Image img) {
+    	if (iImageElement != null)
+    		iAnchor.removeChild(iImageElement);
     	if (img == null) return;
         iImage = img; 
-        iAnchor.appendChild(img.getElement()); 
+        iImageElement = img.getElement();
+        iImageElement.getStyle().setVerticalAlign(VerticalAlign.MIDDLE);
+        iAnchor.insertFirst(iImageElement); 
     } 
 
     public String getUrl() { 
@@ -89,4 +97,16 @@ public class ImageLink extends Widget {
         iTarget = target; 
         iAnchor.setTarget(target); 
     } 
+    
+    public void setText(String text) {
+    	if (iTextElement == null) {
+    		iTextElement = Document.get().createSpanElement();
+    		iAnchor.appendChild(iTextElement);
+    	}
+    	iTextElement.setInnerText(text);
+    }
+    
+    public String getText() {
+    	return (iTextElement == null ? null : iTextElement.getInnerText());
+    }
 } 
