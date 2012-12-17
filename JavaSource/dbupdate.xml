@@ -8148,4 +8148,36 @@
 			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingApprove'
 		</sql>
 	</update>
+	<update version="101" date="17-Dec-2012" comment="Event Attachments">
+		<mysql>alter table %SCHEMA%.event_note add attached_file longblob null</mysql>
+		<plsql>alter table %SCHEMA%.event_note add attached_file blob</plsql>
+		<mysql>alter table %SCHEMA%.event_note add attached_name varchar(260) binary null</mysql>
+		<plsql>alter table %SCHEMA%.event_note add attached_name varchar2(260 char)</plsql>
+		<mysql>alter table %SCHEMA%.event_note add attached_content varchar(260) binary null</mysql>
+		<plsql>alter table %SCHEMA%.event_note add attached_content varchar2(260 char)</plsql>
+		<mysql>alter table %SCHEMA%.event_note add user_id varchar(40) binary null</mysql>
+		<plsql>alter table %SCHEMA%.event_note add user_id varchar2(40 char)</plsql>
+		<plsql>
+			create table %SCHEMA%.event_note_meeting (
+				note_id number(20,0) constraint nn_event_note_note not null,
+				meeting_id number(20,0) constraint nn_event_note_mtg not null
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.event_note_meeting add constraint pk_event_note_meeting primary key (note_id, meeting_id)</plsql>
+		<mysql>
+			create table %SCHEMA%.event_note_meeting (
+				note_id decimal(20,0) not null,
+				meeting_id decimal(20,0) not null,
+				primary key (note_id, meeting_id)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.event_note_meeting add constraint fk_event_note_note foreign key (note_id)
+			references %SCHEMA%.event_note (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.event_note_meeting add constraint fk_event_note_mtg foreign key (meeting_id)
+			references %SCHEMA%.meeting (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

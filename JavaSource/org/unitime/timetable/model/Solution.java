@@ -159,6 +159,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setNoteType(EventNote.sEventNoteTypeDeletion);
 					note.setTimeStamp(new Date());
 					note.setUser(contact == null ? "System" : contact.getName());
+					note.setUserId(sendNotificationPuid);
 					note.setTextNote(getOwner().getName() + " uncommitted");
 					note.setMeetings("N/A");
 					event.getNotes().add(note);
@@ -392,6 +393,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(new Date());
 				note.setUser(contact == null ? "System" : contact.getName());
+				note.setUserId(sendNotificationPuid);
 				note.setTextNote(getOwner().getName() + " committed");
 				note.setMeetings(a.getPlacement().getLongName());
 				event.getNotes().add(note);
@@ -428,6 +430,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 					note.setNoteType(EventNote.sEventNoteTypeDeletion);
 					note.setTimeStamp(new Date());
 					note.setUser(contact == null ? "System" : contact.getName());
+					note.setUserId(sendNotificationPuid);
 					note.setTextNote(getOwner().getName() + " committed, class was removed or unassigned");
 					note.setMeetings("N/A");
 					event.getNotes().add(note);

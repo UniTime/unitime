@@ -29,10 +29,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
@@ -177,7 +179,9 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						
 			if (event.getMeetings() == null) event.setMeetings(new HashSet<Meeting>());
 			Set<Meeting> remove = new HashSet<Meeting>(event.getMeetings());
-			TreeSet<Meeting> created = new TreeSet<Meeting>();
+			TreeSet<Meeting> createdMeetings = new TreeSet<Meeting>();
+			Set<Meeting> cancelledMeetings = new TreeSet<Meeting>();
+			Set<Meeting> updatedMeetings = new TreeSet<Meeting>();
 			for (MeetingInterface m: request.getEvent().getMeetings()) {
 				Meeting meeting = null; 
 				if (m.getApprovalStatus() == ApprovalStatus.Deleted) {
@@ -202,6 +206,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							meeting.setStatus(Meeting.Status.CANCELLED);
 							meeting.setApprovalDate(now);
 							hibSession.update(meeting);
+							cancelledMeetings.add(meeting);
 							response.addDeletedMeeting(m);
 						}
 					} else {
@@ -212,6 +217,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							meeting.setStopOffset(m.getEndOffset());
 							hibSession.update(meeting);
 							response.addUpdatedMeeting(m);
+							updatedMeetings.add(meeting);
 						}
 					}
 				} else {
@@ -245,7 +251,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					meeting.setClassCanOverride(true);
                     meeting.setMeetingDate(m.getMeetingDate());
                     event.getMeetings().add(meeting);
-                    created.add(meeting);
+                    createdMeetings.add(meeting);
 				}
 				if (request.getEvent().getType() == EventType.Unavailabile && meeting.getApprovalDate() == null) {
 					meeting.setStatus(Meeting.Status.APPROVED);
@@ -301,16 +307,20 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				}
 			};
 			
+			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			boolean attached = false;
 			if (response.hasCreatedMeetings()) {
 				EventNote note = new EventNote();
 				note.setEvent(event);
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeAddMeetings);
 				note.setTimeStamp(now);
 				note.setUser(uname);
+				note.setUserId(context.getUser().getExternalUserId());
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getCreatedMeetings(),
 						CONSTANTS, "\n", df));
+				note.setAffectedMeetings(createdMeetings);
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();
 				n.setDate(now);
@@ -318,6 +328,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				n.setUser(uname);
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
+				if (attachment != null) {
+					note.setAttachedName(attachment.getName());
+					note.setAttachedFile(attachment.get());
+					note.setAttachedContentType(attachment.getContentType());
+					attached = true;
+					n.setAttachment(attachment.getName());
+				}
 				response.addNote(n);
 			}
 			if (response.hasUpdatedMeetings() || (!response.hasCreatedMeetings() && !response.hasDeletedMeetings())) {
@@ -326,6 +343,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setNoteType(EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(now);
 				note.setUser(uname);
+				note.setUserId(context.getUser().getExternalUserId());
+				note.setAffectedMeetings(updatedMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				if (response.hasUpdatedMeetings())
 					note.setMeetings(EventInterface.toString(
@@ -338,6 +357,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				n.setUser(uname);
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
+				if (attachment != null && !attached) {
+					note.setAttachedName(attachment.getName());
+					note.setAttachedFile(attachment.get());
+					note.setAttachedContentType(attachment.getContentType());
+					attached = true;
+					n.setAttachment(attachment.getName());
+				}
 				response.addNote(n);
 			}
 			if (response.hasDeletedMeetings()) {
@@ -346,6 +372,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setNoteType(EventNote.sEventNoteTypeDeletion);
 				note.setTimeStamp(now);
 				note.setUser(uname);
+				note.setUserId(context.getUser().getExternalUserId());
+				note.setAffectedMeetings(cancelledMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getDeletedMeetings(),
@@ -357,6 +385,13 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				n.setUser(uname);
 				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 				n.setNote(note.getTextNote());
+				if (attachment != null && !attached) {
+					note.setAttachedName(attachment.getName());
+					note.setAttachedFile(attachment.get());
+					note.setAttachedContentType(attachment.getContentType());
+					attached = true;
+					n.setAttachment(attachment.getName());
+				}
 				response.addNote(n);
 			}
 			

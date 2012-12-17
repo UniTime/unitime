@@ -1080,6 +1080,7 @@ public class Class_ extends BaseClass_ {
         				note.setNoteType(EventNote.sEventNoteTypeDeletion);
         				note.setTimeStamp(new Date());
         				note.setUser(user.getName());
+        				note.setUserId(user.getExternalUserId());
         				note.setTextNote(MSG.classNoteUnassigned(oldAssignment.getPlacement().getName()));
         				note.setMeetings(MSG.classMeetingsNotApplicable());
         				event.getNotes().add(note);
@@ -1219,6 +1220,7 @@ public class Class_ extends BaseClass_ {
 				note.setNoteType(event.getUniqueId() == null ? EventNote.sEventNoteTypeCreateEvent : EventNote.sEventNoteTypeEditEvent);
 				note.setTimeStamp(new Date());
 				note.setUser(user.getName());
+				note.setUserId(user.getExternalUserId());
 				if (oldAssignment == null)
 					note.setTextNote(MSG.classNoteAssigned(a.getPlacement().getName()));
 				else

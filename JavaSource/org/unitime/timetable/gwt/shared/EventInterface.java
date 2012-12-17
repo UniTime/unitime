@@ -933,11 +933,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     }
     
     public static class NoteInterface implements IsSerializable, Comparable<NoteInterface> {
+    	private Long iId = null;
     	private Date iDate;
     	private String iUser;
     	private NoteType iType;
     	private String iMeetings;
     	private String iNote;
+    	private String iAttachment;
     	
     	public static enum NoteType {
     		Create("Create"),
@@ -958,7 +960,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	}
     	
     	public NoteInterface() {}
-    	
+    	    	
+    	public Long getId() { return iId; }
+    	public void setId(Long id) { iId = id; }
+
     	public Date getDate() { return iDate; }
     	public void setDate(Date date) { iDate = date; }
     	
@@ -973,7 +978,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	
     	public String getNote() { return iNote; }
     	public void setNote(String note) { iNote = note; }
-
+    	
+    	public boolean hasAttachment() { return iAttachment != null && !iAttachment.isEmpty(); }
+    	public String getAttachment() { return iAttachment; }
+    	public void setAttachment(String attachment) { iAttachment = attachment; }
+    	
 		@Override
 		public int compareTo(NoteInterface note) {
 			int cmp = getDate() == null ? 1 : note.getDate() == null ? -1 : getDate().compareTo(note.getDate());

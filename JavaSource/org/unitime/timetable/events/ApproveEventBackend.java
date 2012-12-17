@@ -22,7 +22,9 @@ package org.unitime.timetable.events;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
@@ -66,11 +68,13 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			Date now = new Date();
 	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), context.getUser()).getShortName();
 	        
+	        Set<Meeting> affectedMeetings = new HashSet<Meeting>();
 	        meetings: for (Iterator<Meeting> i = event.getMeetings().iterator(); i.hasNext(); ) {
         		Meeting meeting = i.next();
     			for (MeetingInterface m: request.getMeetings()) {
     				if (meeting.getUniqueId().equals(m.getId())) {
     					response.addUpdatedMeeting(m);
+    					affectedMeetings.add(meeting);
     					
     					switch (request.getOperation()) {
     					case REJECT:
@@ -116,8 +120,6 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     			}
 	        }
 	        
-			final FileItem uploaded = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
-			
 			EventNote note = new EventNote();
 			note.setEvent(event);
 			switch (request.getOperation()) {
@@ -135,6 +137,8 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			}
 			note.setTimeStamp(now);
 			note.setUser(uname);
+			note.setUserId(context.getUser().getExternalUserId());
+			note.setAffectedMeetings(affectedMeetings);
 			note.setMeetings(EventInterface.toString(
 					response.getUpdatedMeetings(),
 					CONSTANTS,
@@ -152,18 +156,26 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 						}
 					}));
 			if (request.hasMessage())
-				note.setTextNote(request.getMessage() + (uploaded == null ? "" : "\n\n" + MESSAGES.noteAttachement(uploaded.getName())));
-			else if (uploaded != null)
-				note.setTextNote(MESSAGES.noteAttachement(uploaded.getName()));
+				note.setTextNote(request.getMessage());
+			
+			FileItem attachment = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+			if (attachment != null) {
+				note.setAttachedName(attachment.getName());
+				note.setAttachedFile(attachment.get());
+				note.setAttachedContentType(attachment.getContentType());
+			}
+			
 			event.getNotes().add(note);
 			hibSession.saveOrUpdate(note);
 			
 			NoteInterface n = new NoteInterface();
+			n.setId(note.getUniqueId());
 			n.setDate(now);
 			n.setMeetings(note.getMeetings());
 			n.setUser(uname);
 			n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 			n.setNote(request.getMessage());
+			n.setAttachment(attachment == null ? null : attachment.getName());
 			response.addNote(n);
 			
 			if (event.getMeetings().isEmpty()) {
