@@ -220,6 +220,7 @@ public class SuggestionsModel implements Serializable {
     	if (iCompute==false) return true;
     	if (solver==null) return false;
     	Suggestions suggestions = solver.getSuggestions(this);
+    	if (suggestions == null) return false;
     	//solver.getSuggestions(iDepth,iTimeOut,iAllTheSame,iFilter==sFilterSameTime,iFilter==sFilterSameRoom,iAllowBreakHard,iClassId,iHints,iDisplayPlacements,iLimit,iFilterText,iMinRoomSize,iMaxRoomSize,iDisplaySuggestions,iDisplayConfTable);
    		iSuggestions = suggestions.getSuggestions();
    		iTimeoutReached = suggestions.getTimeoutReached();
