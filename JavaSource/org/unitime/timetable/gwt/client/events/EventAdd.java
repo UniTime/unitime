@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.Lookup;
@@ -47,6 +48,7 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -267,6 +269,49 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						LoadingWidget.getInstance().hide();
 						iHeader.setErrorMessage(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
 						UniTimeNotifications.error(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
+					}
+
+					@Override
+					public void onSuccess(SaveOrApproveEventRpcResponse result) {
+						LoadingWidget.getInstance().hide();
+						iSavedEvent = result.getEvent();
+						if (result.hasMessages())
+							for (MessageInterface m: result.getMessages()) {
+								if (m.isError())
+									UniTimeNotifications.warn(m.getMessage());
+								else if (m.isWarning())
+									UniTimeNotifications.error(m.getMessage());
+								else
+									UniTimeNotifications.info(m.getMessage());
+							}
+						hide();
+					}
+				});
+			}
+		});
+		iHeader.addButton("cancel", MESSAGES.buttonCancel(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent clickEvent) {
+				final EventInterface event = getEvent();
+				if (event.hasMeetings()) {
+					for (Iterator<MeetingInterface> i = event.getMeetings().iterator(); i.hasNext(); ) {
+						MeetingInterface m = i.next();
+						if (m.getId() == null)
+							i.remove();
+						else if (m.isCanCancel())
+							m.setApprovalStatus(ApprovalStatus.Cancelled);
+						else if (m.isCanDelete() && (m.getApprovalStatus() == ApprovalStatus.Pending || m.getApprovalStatus() == ApprovalStatus.Approved))
+							i.remove();
+					}
+				}
+				LoadingWidget.getInstance().show(MESSAGES.waitCancel(event.getName()));
+				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						LoadingWidget.getInstance().hide();
+						iHeader.setErrorMessage(MESSAGES.failedCancel(event.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedCancel(event.getName(), caught.getMessage()));
 					}
 
 					@Override
@@ -699,8 +744,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEvent.setType(getEventType());
 		if (meetings != null && !meetings.isEmpty())
 			meetings: for (MeetingInterface meeting: meetings) {
+				if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue; 
 				for (MeetingInterface existing: existingMeetings) {
-					if (existing.inConflict(meeting) && !existing.isDelete()) {
+					if (existing.getApprovalStatus() != ApprovalStatus.Pending && existing.getApprovalStatus() != ApprovalStatus.Approved) continue;
+					if (existing.inConflict(meeting)) {
 						UniTimeNotifications.warn(MESSAGES.warnNewMeetingOverlaps(meeting.toString(), existing.toString()));
 						continue meetings;
 					}
@@ -904,10 +951,19 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		boolean canDelete = (iEvent.getId() != null);
 		if (canDelete && iEvent.hasMeetings()) {
 			for (MeetingInterface meeting: iEvent.getMeetings()) {
-				if (!meeting.isCanEdit()) { canDelete = false; break; }
+				if (!meeting.isCanDelete()) { canDelete = false; break; }
+			}
+		}
+		boolean canCancel = (iEvent.getId() != null);
+		if (canCancel && iEvent.hasMeetings()) {
+			for (MeetingInterface meeting: iEvent.getMeetings()) {
+				if (!meeting.isCanDelete() && !meeting.isCanCancel() && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
+					canCancel = false; break;
+				}
 			}
 		}
 		iHeader.setEnabled("delete", canDelete);
+		iHeader.setEnabled("cancel", canCancel);
 		iHeader.setEnabled("create", iEvent.getId() == null);
 		iHeader.setEnabled("update", iEvent.getId() != null);
 	}

@@ -67,6 +67,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EncodeQueryRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventDetailRpcRequest;
@@ -481,6 +482,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 					for (MeetingInterface meeting: event.getMeetings()) {
 						if (filter(event, meeting)) continue;
+						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 						if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 						if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
 						hasDay[meeting.getDayOfWeek()] = true;
@@ -517,6 +519,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (EventInterface event: sortedEvents()) {
 					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 					for (MeetingInterface meeting: event.getMeetings()) {
+						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 						if (meeting.getMeetingDate() != null && !filter(event, meeting))
 							meetings.add(meeting);
 					}
@@ -803,7 +806,11 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (meetings == null) {
 						meetings = new ArrayList<MeetingInterface>();
 						for (MeetingInterface meeting: event.getMeetings()) {
-                            if (meeting.isCanApprove() && !filter(event, meeting)) meetings.add(meeting);
+							if (operation == ApproveEventRpcRequest.Operation.CANCEL) {
+								if (meeting.isCanCancel() && !filter(event, meeting)) meetings.add(meeting);
+							} else {
+								if (meeting.isCanApprove() && !filter(event, meeting)) meetings.add(meeting);
+							}
 						}
 					}
 					if (meetings.isEmpty()) {
@@ -813,6 +820,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(event.getName())); break;
 						case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(event.getName())); break;
 						case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
+						case CANCEL: LoadingWidget.getInstance().show(MESSAGES.waitForCancellation(event.getName())); break;
 						}
 						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 							@Override
@@ -836,6 +844,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 								switch (operation) {
 								case APPROVE:
 								case REJECT:
+								case CANCEL:
 									tinker(data, event.getId(), result.getEvent());
 								}
 								onSubmit(operation, events, event2meetings, message, data);
@@ -851,6 +860,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iTable.setOperation(EventMeetingTable.OperationType.Approve, iApproveDialog);
 		iTable.setOperation(EventMeetingTable.OperationType.Reject, iApproveDialog);
 		iTable.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);
+		iTable.setOperation(EventMeetingTable.OperationType.Cancel, iApproveDialog);
 		
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -879,6 +889,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 				for (MeetingInterface meeting: event.getMeetings()) {
 					if (filter(event, meeting)) continue;
+					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
 					nrDays = Math.max(nrDays, meeting.getDayOfWeek());
@@ -915,6 +926,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			for (EventInterface event: sortedEvents()) {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
+					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (meeting.getMeetingDate() != null && !filter(event, meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
 						meetings.add(meeting);
 				}
@@ -1650,9 +1662,15 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			setParameter(key, value == null ? null : value.toString());
 		}
 		
+		@Override
 		public String toString() {
+			return toString(null);
+		}
+		
+		public String toString(String skip) {
 			String ret = "";
 			for (String key: new TreeSet<String>(iParams.keySet())) {
+				if (key.equals(skip)) continue;
 				if (!ret.isEmpty()) ret += "&";
 				ret += key + "=" + URL.encodeQueryString(iParams.get(key));
 			}
@@ -1687,7 +1705,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			String token = toString();
 			if (!History.getToken().equals(token))
 				History.newItem(token, false);
-			EventCookie.getInstance().setHash(iType, token);
+			EventCookie.getInstance().setHash(iType, toString("event"));
 		}
 	}
 	

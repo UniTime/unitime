@@ -32,6 +32,7 @@ import net.sf.cpsolver.coursett.model.TimeLocation;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
@@ -368,7 +369,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		for (Object[] o: (List<Object[]>)EventDAO.getInstance().getSession().createQuery(
     				"select m.uniqueId, o from Event e inner join e.meetings m, Meeting o " +
     				"where e.uniqueId = :eventId and m.uniqueId != o.uniqueId and " +
-    				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and " +
+    				"o.startPeriod < m.stopPeriod and o.stopPeriod > m.startPeriod and m.approvalStatus <= 1 and o.approvalStatus <= 1 and " +
     				"m.locationPermanentId = o.locationPermanentId and m.meetingDate = o.meetingDate")
     				.setLong("eventId", e.getUniqueId())
     				.list()) {
@@ -396,10 +397,13 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 			meeting.setPast(context.isPastOrOutside(m.getStartTime()));
-			if (m.isApproved())
-				meeting.setApprovalDate(m.getApprovedDate());
+			meeting.setApprovalDate(m.getApprovalDate());
+			meeting.setApprovalStatus(m.getApprovalStatus());
 			meeting.setCanEdit(context.hasPermission(m, Right.EventMeetingEdit));
+			meeting.setCanInquire(context.hasPermission(m, Right.EventMeetingInquire));
 			meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
+			meeting.setCanDelete(context.hasPermission(m, Right.EventMeetingDelete));
+			meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel));
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);
@@ -411,7 +415,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setBreakTime(m.getLocation().getBreakTime());
 				location.setMessage(m.getLocation().getEventMessage());
 				meeting.setLocation(location);
-				if (e instanceof SpecialEvent || e instanceof CourseEvent) {
+				if ((e instanceof SpecialEvent || e instanceof CourseEvent) && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					if (m.getLocation().getEventDepartment() != null) {
 						String message = m.getLocation().getRoomType().getOption(m.getLocation().getEventDepartment()).getMessage();
 						if (message != null) {
@@ -456,8 +460,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					conflict.setEndSlot(overlap.getStopPeriod());
 					conflict.setStartOffset(overlap.getStartOffset() == null ? 0 : overlap.getStartOffset());
 					conflict.setEndOffset(overlap.getStopOffset() == null ? 0 : overlap.getStopOffset());
-					if (overlap.isApproved())
-						conflict.setApprovalDate(overlap.getApprovedDate());
+					conflict.setApprovalDate(overlap.getApprovalDate());
+					conflict.setApprovalStatus(overlap.getApprovalStatus());
 					conflict.setLocation(meeting.getLocation());
 					
 					EventInterface confEvent = conflictingEvents.get(overlap.getEvent().getUniqueId());

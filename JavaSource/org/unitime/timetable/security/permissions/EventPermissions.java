@@ -216,14 +216,14 @@ public class EventPermissions {
 			// Check academic session
 			Session session = source.getSession();
 			if (session != null) {
-				return permissionSession.check(user, session);
+				return permissionSession.check(user, session) && (!isPast(end(session)) || user.getCurrentAuthority().hasRight(Right.EventEditPast));
 			} else {
 				boolean noLocation = true, hasDate = false;
 				for (Meeting meeting: source.getMeetings()) {
 					Location location = meeting.getLocation();
 					if (location != null) {
 						noLocation = false;
-						if (permissionSession.check(user, location.getSession())) return true;
+						if (permissionSession.check(user, location.getSession()) && permissionEventDate.check(user, meeting.getMeetingDate())) return true;
 					} else {
 						if (!hasDate && permissionEventDate.check(user, meeting.getMeetingDate()))
 							hasDate = true;
@@ -299,7 +299,55 @@ public class EventPermissions {
 		public boolean check(UserContext user, Meeting source) {
 			return  permissionEventEdit.check(user, source.getEvent()) &&
 					permissionEventDate.check(user, source.getMeetingDate()) &&
-					permissionEventLocation.check(user, source.getLocation());
+					permissionEventLocation.check(user, source.getLocation()) &&
+					(source.getStatus() == Meeting.Status.PENDING || source.getStatus() == Meeting.Status.APPROVED);
+		}
+		
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
+	@PermissionForRight(Right.EventMeetingDelete)
+	public static class EventMeetingDelete extends EventPermission<Meeting> {
+		@Autowired Permission<Event> permissionEventEdit;
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired Permission<Location> permissionEventLocation;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (!permissionEventEdit.check(user, source.getEvent())) return false;
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+			if (!permissionEventLocation.check(user, source.getLocation())) return false;
+			
+			if (source.getEvent().getEventType() == Event.sEventTypeUnavailable) {
+				return source.getStatus() == Meeting.Status.APPROVED;
+			} else { 
+				return source.getStatus() == Meeting.Status.PENDING;
+			}
+		}
+		
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
+	@PermissionForRight(Right.EventMeetingCancel)
+	public static class EventMeetingCancel extends EventPermission<Meeting> {
+		@Autowired Permission<Event> permissionEventEdit;
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired Permission<Location> permissionEventLocation;
+		@Autowired Permission<Location> permissionEventLocationApprove;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+			
+			if (!permissionEventEdit.check(user, source.getEvent())) return false;
+			
+			if (permissionEventLocation.check(user, source.getLocation()) && permissionEventDate.check(user, source.getMeetingDate())) return true;
+			
+			return permissionEventLocationApprove.check(user, source.getLocation()) && 
+					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
+					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate()));
 		}
 		
 		@Override
@@ -314,6 +362,28 @@ public class EventPermissions {
 		@Override
 		public boolean check(UserContext user, Meeting source) {
 			if (source.getEvent().getEventType() == Event.sEventTypeUnavailable) return false;
+			
+			if (source.getStatus() != Meeting.Status.PENDING) return false;
+			
+			return permissionEventEdit.check(user, source.getEvent()) &&
+					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
+					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate())) &&
+					permissionEventLocationApprove.check(user, source.getLocation());
+		}
+		
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
+	@PermissionForRight(Right.EventMeetingInquire)
+	public static class EventMeetingInquire extends EventPermission<Meeting> {
+		@Autowired Permission<Event> permissionEventEdit;
+		@Autowired Permission<Location> permissionEventLocationApprove;
+		
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+			
 			return permissionEventEdit.check(user, source.getEvent()) &&
 					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
 					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate())) &&

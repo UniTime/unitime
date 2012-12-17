@@ -103,6 +103,19 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int getType() { return ordinal(); }
 		public String toString() { return name(); }
 	}
+	
+	public static enum ApprovalStatus implements IsSerializable {
+		Pending,
+		Approved,
+		Rejected,
+		Cancelled,
+		Deleted,
+		;
+		
+		public String getName(GwtConstants constants) { return constants.eventApprovalStatus()[ordinal()]; }
+		public int getType() { return ordinal(); }
+		public String toString() { return name(); }
+	}
 
 	public EventInterface() {}
 	
@@ -499,11 +512,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Date iMeetingDate;
 		private int iStartSlot;
 		private int iEndSlot;
-		private int iStartOffset, iEndOffset;
+		private int iStartOffset = 0, iEndOffset = 0;
 		private int iDayOfWeek;
 		private int iDayOfYear;
-		private boolean iPast, iCanEdit, iCanApprove, iDelete;
+		private boolean iPast = false, iCanEdit = false, iCanDelete = false, iCanCancel = false, iCanApprove = false, iCanInquire = false;
 		private Date iApprovalDate = null;
+		private ApprovalStatus iApprovalStatus = ApprovalStatus.Pending;
 		private Long iStartTime, iStopTime;
 		private Set<MeetingConflictInterface> iConflicts;
 		
@@ -575,13 +589,20 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setLocation(ResourceInterface resource) { iLocation = resource; }
 		public boolean isPast() { return iPast; }
 		public void setPast(boolean past) { iPast = past; }
-		public boolean isDelete() { return iDelete; }
-		public void setDelete(boolean delete) { iDelete = delete; }
 		public boolean isCanEdit() { return iCanEdit; }
 		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
+		public boolean isCanDelete() { return iCanDelete; }
+		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
+		public boolean isCanCancel() { return iCanCancel; }
+		public void setCanCancel(boolean canCancel) { iCanCancel = canCancel; }
 		public boolean isCanApprove() { return iCanApprove; }
 		public void setCanApprove(boolean canApprove) { iCanApprove = canApprove; }
-		public boolean isApproved() { return iApprovalDate != null; }
+		public boolean isApproved() { return iApprovalStatus == ApprovalStatus.Approved; }
+		public boolean isCanInquire() { return iCanInquire; }
+		public void setCanInquire(boolean canInquire) { iCanInquire = canInquire; }
+		public ApprovalStatus getApprovalStatus() { return iApprovalStatus == null ? ApprovalStatus.Pending : iApprovalStatus; }
+		public void setApprovalStatus(ApprovalStatus status) { iApprovalStatus = status; }
+		public void setApprovalStatus(Integer status) { iApprovalStatus = (status == null ? ApprovalStatus.Pending : ApprovalStatus.values()[status]); }
 		public Date getApprovalDate() { return iApprovalDate; }
 		public void setApprovalDate(Date date) {  iApprovalDate = date; }
 		public boolean isArrangeHours() { return iMeetingDate == null; }
@@ -768,26 +789,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    public Date getApprovalDate() {
 	    	Date date = null;
 	    	for (MeetingInterface m: iMeetings) {
-	    		if (!m.isApproved()) return null;
+	    		if (m.getApprovalDate() == null) continue;
 	    		if (date == null || date.after(m.getApprovalDate())) date = m.getApprovalDate();
 	    	}
 	    	return date;
 	    }
 	    
-	    public boolean isApproved() {
-	    	for (MeetingInterface m: iMeetings)
-	    		if (!m.isApproved()) return false;
-	    	return true;
-	    }
-	    
-	    public boolean isDelete() {
-	    	for (MeetingInterface m: iMeetings)
-	    		if (!m.isDelete()) return false;
-	    	return true;
+	    public ApprovalStatus getApprovalStatus() {
+	    	return iMeetings.first().getApprovalStatus();
 	    }
 	}
 	
-    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkApproval, boolean checkPast) {
+    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast) {
         TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();
         HashSet<MeetingInterface> meetingSet = new HashSet<MeetingInterface>(meetings);
         while (!meetingSet.isEmpty()) {
@@ -802,8 +815,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             	if (m.getMeetingTime(null).equals(meeting.getMeetingTime(null)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
-            		(m.isDelete() == meeting.isDelete()) &&
-            		(!checkApproval || m.isApproved() == meeting.isApproved())) {
+            		(m.getApprovalStatus() == meeting.getApprovalStatus())) {
             		if (m.getDayOfYear() - meeting.getDayOfYear() < 7)
             			dow.add(m.getDayOfWeek());
                     similar.put(m.getDayOfYear(),m);
@@ -934,7 +946,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		Reject("Reject"),
     		Delete("Delete"),
     		Edit("Edit"),
-    		Inquire("Inquire");
+    		Inquire("Inquire"),
+    		Cancel("Cancel");
     		
     		private String iName;
     		
@@ -1777,7 +1790,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			INQUIRE,
 			CREATE,
 			UPDATE,
-			DELETE
+			DELETE,
+			CANCEL
 		}
 		private EventInterface iEvent;
 		private String iMessage;
@@ -1936,7 +1950,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     
     public static String toString(Collection<MeetingInterface> meetings, GwtConstants constants, String separator, DateFormatter df) {
     	String ret = "";
-    	for (MultiMeetingInterface m: getMultiMeetings(meetings, false, false)) {
+    	for (MultiMeetingInterface m: getMultiMeetings(meetings, false)) {
     		if (!ret.isEmpty()) ret += separator;
     		ret += (m.getDays(constants.shortDays(), constants.shortDays(), "") + " " +
     				(m.isArrangeHours() ? constants.arrangeHours() : m.getNrMeetings() == 1 ? df.formatLastDate(m.getFirstMeetingDate()) : df.formatFirstDate(m.getFirstMeetingDate()) + " - " + df.formatLastDate(m.getLastMeetingDate())) + " " +

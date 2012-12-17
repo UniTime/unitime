@@ -289,7 +289,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             if (nrStudents==1000) {
                 for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
-                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
                         .setDate("meetingDate", getStartDate())
@@ -306,7 +306,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 }
                 for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
-                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
                         .setDate("meetingDate", getStartDate())
@@ -323,7 +323,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 }
                 for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
-                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
                         .setDate("meetingDate", getStartDate())
@@ -340,7 +340,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
                 }
                 for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                         "select m, s.student.uniqueId from "+
-                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                         "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
                         .setDate("meetingDate", getStartDate())
@@ -362,7 +362,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
         if (nrStudents > 0 && students.trim().length() > 0) {
             for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
-                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:classType and s.clazz.uniqueId=o.ownerId")
                     .setDate("meetingDate", getStartDate())
@@ -379,7 +379,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             }
             for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
-                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId")
                     .setDate("meetingDate", getStartDate())
@@ -396,7 +396,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             }
             for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
-                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:courseType and s.courseOffering.uniqueId=o.ownerId")
                     .setDate("meetingDate", getStartDate())
@@ -413,7 +413,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
             }
             for (Iterator i=EventDAO.getInstance().getSession().createQuery(
                     "select m, s.student.uniqueId from "+
-                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                    "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                     "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId in ("+students+") and "+
                     "o.ownerType=:offeringType and s.courseOffering.instructionalOffering.uniqueId=o.ownerId")
                     .setDate("meetingDate", getStartDate())

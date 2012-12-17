@@ -146,6 +146,11 @@ public interface GwtConstants extends Constants {
 	})
 	String[] eventTypeAbbv();
 	
+	@DefaultStringArrayValue({
+		"Pending", "Approved", "Rejected", "Cancelled"
+	})
+	String[] eventApprovalStatus();
+
 	// firstDay|lastDay|firstSlot|lastSlot|step
 	@DefaultStringArrayValue({
 			"Workdays \u00d7 Daytime|0|4|90|222|6",

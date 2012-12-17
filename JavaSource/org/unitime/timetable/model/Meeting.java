@@ -50,6 +50,14 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 
 /*[CONSTRUCTOR MARKER END]*/
+	
+	public static enum Status {
+		PENDING,
+		APPROVED,
+		REJECTED,
+		CANCELLED,
+		;
+	}
 
 	@Override
 	public Object clone()  {
@@ -61,6 +69,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		newMeeting.setStartPeriod(getStartPeriod());
 		newMeeting.setStopOffset(getStopOffset());
 		newMeeting.setStopPeriod(getStopPeriod());
+        newMeeting.setStatus(Meeting.Status.PENDING);
 		
 		return(newMeeting);
 	}
@@ -135,7 +144,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	    if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
 		return (MeetingDAO.getInstance()).getSession().createQuery(
 		        "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+		        "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1")
 		        .setDate("meetingDate", getMeetingDate())
 		        .setInteger("stopPeriod", getStopPeriod())
 		        .setInteger("startPeriod", getStartPeriod())
@@ -148,7 +157,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         if (getLocationPermanentId()==null) return new ArrayList<Meeting>();
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvedDate != null")
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus = 1")
                 .setDate("meetingDate", getMeetingDate())
                 .setInteger("stopPeriod", getStopPeriod())
                 .setInteger("startPeriod", getStartPeriod())
@@ -160,7 +169,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     public static List<Meeting> findOverlaps(Date meetingDate, int startPeriod, int stopPeriod, Long locationPermId){
         return (MeetingDAO.getInstance()).getSession().createQuery(
                 "from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId")
+                "m.locationPermanentId = :locPermId and m.approvalStatus <= 1")
                 .setDate("meetingDate", meetingDate)
                 .setInteger("stopPeriod", stopPeriod)
                 .setInteger("startPeriod", startPeriod)
@@ -171,7 +180,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     public boolean hasTimeRoomOverlaps(){
         return ((Number)MeetingDAO.getInstance().getSession().createQuery(
                 "select count(m) from Meeting m where m.meetingDate=:meetingDate and m.startPeriod < :stopPeriod and m.stopPeriod > :startPeriod and " +
-                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId")
+                "m.locationPermanentId = :locPermId and m.uniqueId != :uniqueId and m.approvalStatus <= 1")
                 .setDate("meetingDate", getMeetingDate())
                 .setInteger("stopPeriod", getStopPeriod())
                 .setInteger("startPeriod", getStartPeriod())
@@ -255,7 +264,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.get(Calendar.DAY_OF_WEEK);
     }
     
-    public boolean isApproved() { return getApprovedDate()!=null; }
+    public boolean isApproved() { return getApprovalStatus() != null && getApprovalStatus().equals(Status.APPROVED.ordinal()); }
     
     public boolean overlaps(Meeting meeting) {
         if (getMeetingDate().getTime()!=meeting.getMeetingDate().getTime()) return false;
@@ -264,5 +273,13 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
     
     public boolean isAllDay() {
         return getStartPeriod()==0 && getStopPeriod()==Constants.SLOTS_PER_DAY;
+    }
+    
+    public void setStatus(Status status) {
+    	setApprovalStatus(status.ordinal());
+    }
+    
+    public Status getStatus() {
+    	return (getApprovalStatus() == null ? Status.PENDING : Status.values()[getApprovalStatus()]);
     }
 }

@@ -87,10 +87,16 @@
             column="class_can_override"
             type="java.lang.Boolean"
             not-null="true"/>
+            
+        <property
+        	name="approvalStatus"
+        	column="approval_status"
+        	type="java.lang.Integer"
+        	not-null="true"/>
 
         <property
-            name="approvedDate"
-            column="approved_date"
+            name="approvalDate"
+            column="approval_date"
             type="java.sql.Timestamp"
             not-null="false"/>
 

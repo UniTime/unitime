@@ -1868,7 +1868,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 	private Vector<Meeting> getMeetings(Date startDate, Date stopDate, String pattern, TimeObject meetingTime, Vector<Room> rooms, Vector<NonUniversityLocation> locations){
 		if (meetingTime != null){
 			Meeting meeting = meetingTime.asMeeting();
-			meeting.setApprovedDate(Calendar.getInstance().getTime());
+            meeting.setStatus(Meeting.Status.APPROVED);
+			meeting.setApprovalDate(Calendar.getInstance().getTime());
 			
 			Calendar startDateCal = Calendar.getInstance();
 			startDateCal.setTime(startDate);
@@ -1990,7 +1991,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 			for(Iterator<Meeting> mIt = meetings.iterator(); mIt.hasNext(); ){
 				Meeting meeting = (Meeting) mIt.next();
 				meeting.setEvent(newEvent);
-				meeting.setApprovedDate(approvedTime);
+				meeting.setStatus(Meeting.Status.APPROVED);
+				meeting.setApprovalDate(approvedTime);
 				newEvent.addTomeetings(meeting);
 			}
 			getHibSession().save(newEvent);
@@ -2035,7 +2037,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
                     if (!found){
                         addNote("\tdid not find matching meeting, adding new meeting to event: " + c.getClassLabel());
                         newMeeting.setEvent(origEvent);
-                        newMeeting.setApprovedDate(approvedTime);
+                        newMeeting.setStatus(Meeting.Status.APPROVED);
+                        newMeeting.setApprovalDate(approvedTime);
                         origEvent.addTomeetings(newMeeting);
                         changed = true;
                     }

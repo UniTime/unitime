@@ -1597,7 +1597,7 @@ public class ExamAssignmentInfo extends ExamAssignment implements Serializable  
             	}
             	for (Iterator i=ExamDAO.getInstance().getSession().createQuery(
                         "select m from "+
-                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and "+
+                        "CourseEvent e inner join e.meetings m inner join e.relatedCourses o, StudentClassEnrollment s where e.reqAttendance=true and m.approvalStatus = 1 and "+
                         "m.meetingDate=:meetingDate and m.startPeriod < :endSlot and m.stopPeriod > :startSlot and s.student.uniqueId=:studentId and ("+
                         "(o.ownerType=:classType and s.clazz.uniqueId=o.ownerId) or "+
                         "(o.ownerType=:configType and s.clazz.schedulingSubpart.instrOfferingConfig.uniqueId=o.ownerId) or "+

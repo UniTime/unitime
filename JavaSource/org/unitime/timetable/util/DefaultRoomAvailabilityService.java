@@ -77,7 +77,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             }
             Query q = new _RootDAO().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId=:locPermId and "+
-                    "m.approvedDate is not null and "+
+                    "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot"+
                     (exclude!=null?" and m.event.class!="+exclude:""))
@@ -168,7 +168,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             }
             Query q = new _RootDAO().getSession().createQuery(
                     "select m from Meeting m where m.locationPermanentId!=null and "+
-                    "m.approvedDate is not null and "+
+                    "m.approvalStatus = 1 and "+
                     "m.meetingDate>=:startDate and m.meetingDate<=:endDate and "+
                     "m.startPeriod<:endSlot and m.stopPeriod>:startSlot" + 
                     (exclude==null?"":" and m.event.class!="+exclude))

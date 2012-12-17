@@ -118,35 +118,40 @@ public class EventFilterBackend extends FilterBoxBackend {
 			response.add("mode", my);
 			
 			if (context.hasPermission(Right.HasRole)) {
-				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is not null")
+				int approvedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 1")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue(); 
 				Entity approved = new Entity(2l, "Approved", "Approved Events"); approved.setCount(approvedCnt);
 				response.add("mode", approved);
 				
-				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null")
+				int notApprovedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				Entity notApproved = new Entity(3l, "Unapproved", "Not Approved Events"); notApproved.setCount(notApprovedCnt);
 				response.add("mode", notApproved);
 
 				int conflictingCnt = ((Number)query.select("count(distinct e)").from("Meeting mx")
-						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId")
+						.where("mx.uniqueId!=m.uniqueId and m.meetingDate=mx.meetingDate and m.startPeriod < mx.stopPeriod and m.stopPeriod > mx.startPeriod and m.locationPermanentId = mx.locationPermanentId and m.approvalStatus <= 1 and mx.approvalStatus <= 1")
 						.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 				Entity conflicting = new Entity(5l, "Conflicting", "Conflicting Events"); conflicting.setCount(conflictingCnt);
 				response.add("mode", conflicting);
 				
 				if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
-					int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvedDate is null and m.meetingDate >= :today").set("today", today)
+					int awaitingCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and m.meetingDate >= :today").set("today", today)
 							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 					Entity awaiting = new Entity(4l, "Awaiting", "Awaiting Events"); awaiting.setCount(awaitingCnt);
 					response.add("mode", awaiting);
 
 					if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
 						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-								.where("m.approvedDate is null and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
+								.where("m.approvalStatus = 0 and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
 								.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 						Entity myAwaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
 						response.add("mode", myAwaiting);
 					}
+					
+					int rejectedCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus >= 2")
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+					Entity rejected = new Entity(7l, "Cancelled", "Cancelled / Rejected"); rejected.setCount(rejectedCnt);
+					response.add("mode", rejected);
 				}
 			}
 		}
@@ -290,21 +295,28 @@ public class EventFilterBackend extends FilterBoxBackend {
 			if ("My Events".equals(mode) && context.isAuthenticated()) {
 				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + context.getUser().getExternalUserId() + "'");
 			} else if ("Approved Events".equals(mode)) {
-				query.addWhere("mode", "m.approvedDate is not null");
+				query.addWhere("mode", "m.approvalStatus = 1");
 			} else if ("Not Approved Events".equals(mode)) {
-				query.addWhere("mode", "m.approvedDate is null");
+				query.addWhere("mode", "m.approvalStatus = 0");
 			} else if ("Awaiting Events".equals(mode)) {
-				query.addWhere("mode", "m.approvedDate is null and m.meetingDate >= :Xtoday");
+				query.addWhere("mode", "m.approvalStatus = 0 and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Awaiting My Approval".equals(mode) && context.isAuthenticated()) {
 				query.addFrom("mode", "Location Xl inner join Xl.roomDepts Xrd inner join Xrd.department.timetableManagers Xg");
-				query.addWhere("mode", "m.approvedDate is null and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
+				query.addWhere("mode", "m.approvalStatus = 0 and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xuser", context.getUser().getExternalUserId());
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Conflicting Events".equals(mode)) {
 				query.addFrom("mode", "Meeting Xm");
-				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId");
+				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId and m.approvalStatus <= 1 and Xm.approvalStatus <= 1");
+			} else if ("Cancelled / Rejected".equals(mode)) {
+				query.addWhere("mode", "m.approvalStatus >= 2");
+			} else {
+				query.addWhere("mode", "m.approvalStatus <= 1");
 			}
+		} else {
+			if (!request.hasOption("requested"))
+				query.addWhere("mode", "m.approvalStatus <= 1");
 		}
 		
 		if (request.hasOption("requested") ) {
