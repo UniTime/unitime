@@ -309,7 +309,8 @@ public class EventImport extends EventRelatedImports {
 			if (approvedDate == null){
 				approvedDate = CalendarUtils.getDate(approvedDateStr, dateFormat);
 			}
-			meeting.setApprovedDate(approvedDate);
+			meeting.setStatus(Meeting.Status.APPROVED);
+			meeting.setApprovalDate(approvedDate);
 		}
 
 		meeting.setEvent(event);

@@ -41,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
@@ -92,7 +93,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public static enum OperationType {
-		Approve, Reject, Inquire, AddMeetings
+		Approve, Reject, Inquire, AddMeetings, Cancel
 	}
 	
 	private Mode iMode = null;
@@ -236,7 +237,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public boolean isApplicable(EventMeetingRow row) {
-				return isEditable() && row.isEditable();
+				return isEditable() && row.isCanDelete();
 			}
 			@Override
 			public void execute(int row, EventMeetingRow event) {
@@ -245,7 +246,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				if (getData(row).getMeeting().getId() == null)
 					removeRow(row);
 				else {
-					getData(row).getMeeting().setDelete(true);
+					getData(row).getMeeting().setApprovalStatus(ApprovalStatus.Deleted);
 					getRowFormatter().addStyleName(row, "deleted-row");
 					setWidget(row, 0, new HTML("&nbsp;"));
 					HTML approval = (HTML)getWidget(row, getHeader(MESSAGES.colApproval()).getColumn());
@@ -259,6 +260,35 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			@Override
 			public boolean hasSeparator() {
 				return true;
+			}
+			@Override
+			public boolean allMustMatch(boolean hasSelection) {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return (hasSelection() ? MESSAGES.opInquireSelectedMeetings() : MESSAGES.opInquireAllMeetings());
+			}
+			@Override
+			public boolean isApplicable(EventMeetingRow row) {
+				return hasOperation(OperationType.Inquire) && row.isCanInquire();
+			}
+			@Override
+			public void execute(int row, EventMeetingRow event) {
+			}
+			@Override
+			public void execute() {
+				getOperation(OperationType.Inquire).execute(EventMeetingTable.this, OperationType.Inquire, data());
+			}
+			@Override
+			public boolean allowNoSelection() {
+				return getMode().isAllowApproveAll();
+			}
+		});
+		hTimes.addOperation(new EventMeetingOperation() {
+			@Override
+			public boolean hasSeparator() {
+				return false;
 			}
 			@Override
 			public String getName() {
@@ -286,23 +316,36 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				return false;
 			}
 			@Override
-			public boolean allMustMatch(boolean hasSelection) {
-				return false;
-			}
-			@Override
 			public String getName() {
-				return (hasSelection() ? MESSAGES.opInquireSelectedMeetings() : MESSAGES.opInquireAllMeetings());
+				return (hasSelection() ? MESSAGES.opCancelSelectedMeetings() : MESSAGES.opCancelAllMeetings());
 			}
 			@Override
 			public boolean isApplicable(EventMeetingRow row) {
-				return hasOperation(OperationType.Inquire) && row.isCanApprove();
+				return (hasOperation(OperationType.Cancel) && row.isCanCancel()) || (isEditable() && row.isCanCancel());
 			}
 			@Override
 			public void execute(int row, EventMeetingRow event) {
+				if (!hasOperation(OperationType.Cancel)) {
+					while (row + 1 < getRowCount() && getData(row + 1).hasParent())
+						removeRow(row + 1);
+					if (getData(row).getMeeting().getId() == null)
+						removeRow(row);
+					else {
+						getData(row).getMeeting().setApprovalStatus(ApprovalStatus.Cancelled);
+						getRowFormatter().addStyleName(row, "cancelled-row");
+						setWidget(row, 0, new HTML("&nbsp;"));
+						HTML approval = (HTML)getWidget(row, getHeader(MESSAGES.colApproval()).getColumn());
+						approval.setStyleName("cancelled-meeting");
+						approval.setText(MESSAGES.approvalCancelled());
+						ValueChangeEvent.fire(EventMeetingTable.this, getValue());
+					}					
+				}
 			}
 			@Override
 			public void execute() {
-				getOperation(OperationType.Approve).execute(EventMeetingTable.this, OperationType.Inquire, data());
+				if (hasOperation(OperationType.Cancel))
+					getOperation(OperationType.Cancel).execute(EventMeetingTable.this, OperationType.Cancel, data());
+
 			}
 			@Override
 			public boolean allowNoSelection() {
@@ -327,7 +370,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public void execute() {
-				getOperation(OperationType.Approve).execute(EventMeetingTable.this, OperationType.Reject, data());
+				getOperation(OperationType.Reject).execute(EventMeetingTable.this, OperationType.Reject, data());
 			}
 			@Override
 			public boolean allowNoSelection() {
@@ -527,7 +570,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	public boolean hasOperation(OperationType operation) { return getOperation(operation) != null; }
 	
 	protected boolean isSelectable(EventMeetingRow data) {
-		return (hasOperation(OperationType.Approve) && data.isCanApprove()) || (isEditable() && data.isEditable());
+		return (hasOperation(OperationType.Approve) && data.isCanApprove()) || (isEditable() && data.isEditable()) || (hasOperation(OperationType.Cancel) && data.isCanCancel()) || (hasOperation(OperationType.Inquire) && data.isCanInquire());
 	}
 	
 	public void add(EventMeetingRow data) {
@@ -634,6 +677,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 
 		String approval = "";
+		boolean allCancelledOrRejected = false;
 		if (meeting != null) {
 			if (conflict != null && (conflict.getType() == EventType.Message || conflict.getType() == EventType.Unavailabile) && conflict.isAllDay()) {
 				row.add(new HTMLWithColSpan(conflict.getName(), false, 5));
@@ -670,7 +714,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			String prevApproval = null;
 			String[] prev = null;
 			boolean prevPast = false;
-			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, true)) {
+			allCancelledOrRejected = true;
+			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true)) {
 				String[] mtg = new String[] {
 						m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
 						m.getMeetings().first().getMeetingTime(CONSTANTS),
@@ -683,18 +728,28 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				for (int i = 0; i < mtgs.length; i++) {
 					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
 				}
-				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "") ? "" : 
-						(m.isApproved() ?
+				String thisApproval = (
+						m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
+						m.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
+						m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
+						"");
+							
+				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(thisApproval) ? "" : 
+						(m.getApprovalStatus() == ApprovalStatus.Approved ?
 						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
+						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
+						m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
-				prev = mtg; prevPast = m.isPast(); prevApproval = (m.isApproved() ? sDateFormat.format(m.getApprovalDate()) : "");
+				prev = mtg; prevPast = m.isPast(); prevApproval = thisApproval;
+				if (m.getApprovalStatus() != ApprovalStatus.Cancelled && m.getApprovalStatus() != ApprovalStatus.Rejected)
+					allCancelledOrRejected = false;
 			}
 			for (int i = 0; i < mtgs.length; i++) {
 				if (i == 3 || i == 4 || i == 6)
 					row.add(new NumberCell(mtgs[i]));
 				else
 					row.add(new HTML(mtgs[i], false));
-			}			
+			}		
 		}
 		
 		if (event != null && event.hasEnrollment() && iShowMainContact) {
@@ -735,7 +790,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			boolean past = meeting.isPast() || (data.hasParent() && data.getParent().hasMeeting() && data.getParent().getMeeting().isPast());
 			row.add(new HTML(
 					conflict != null && (conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message) ? "" :
-					meeting.isDelete() ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
+					meeting.getApprovalStatus() == ApprovalStatus.Deleted ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
+					meeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
+					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
 					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
 					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
@@ -758,9 +815,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		int rowNumber = addRow(data, row);
 		
 		if (meeting != null)
-			getRowFormatter().addStyleName(rowNumber, meeting.isDelete() ? "deleted-row" : "meeting-row");
+			getRowFormatter().addStyleName(rowNumber,
+					meeting.getApprovalStatus() == ApprovalStatus.Deleted ? "deleted-row" :
+					meeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "cancelled-row" :
+					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? "rejected-row" : "meeting-row");
 		else if (event != null)
-			getRowFormatter().addStyleName(rowNumber, "event-row");
+			getRowFormatter().addStyleName(rowNumber, allCancelledOrRejected ? "event-cancelled-row" : "event-row");
 		
 		if (data.hasParent()) {
 			row.get(1).addStyleName("indent");
@@ -1411,15 +1471,39 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		public boolean isCanApprove() {
-			if (iMeeting != null) return iMeeting.isCanApprove() && !iMeeting.isDelete();
+			if (iMeeting != null) return iMeeting.isCanApprove() && iMeeting.getApprovalStatus() == ApprovalStatus.Pending;
 			if (iEvent != null && iEvent.hasMeetings())
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (meeting.isCanApprove()) return true;
 			return false;
 		}
 		
+		public boolean isCanInquire() {
+			if (iMeeting != null) return iMeeting.isCanInquire() && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
+			if (iEvent != null && iEvent.hasMeetings())
+				for (MeetingInterface meeting: iEvent.getMeetings())
+					if (meeting.isCanInquire()) return true;
+			return false;
+		}
+
+		public boolean isCanCancel() {
+			if (iMeeting != null) return iMeeting.isCanCancel() && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
+			if (iEvent != null && iEvent.hasMeetings())
+				for (MeetingInterface meeting: iEvent.getMeetings())
+					if (meeting.isCanCancel()) return true;
+			return false;
+		}
+		
+		public boolean isCanDelete() {
+			if (iMeeting != null) return iMeeting.isCanDelete() && iMeeting.getApprovalStatus() == ApprovalStatus.Pending;
+			if (iEvent != null && iEvent.hasMeetings())
+				for (MeetingInterface meeting: iEvent.getMeetings())
+					if (meeting.isCanDelete()) return true;
+			return false;
+		}
+
 		public boolean isEditable() {
-			return iMeeting != null && (iMeeting.getId() == null || iMeeting.isCanEdit()) && !iMeeting.isDelete();
+			return iMeeting != null && (iMeeting.getId() == null || iMeeting.isCanEdit()) && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
 		}
 		
 		public List<MeetingInterface> getMeetings(MeetingFilter filter) {

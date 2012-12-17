@@ -939,9 +939,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					meeting.setPast(context.isPastOrOutside(m.getStartTime()));
 					meeting.setCanEdit(context.hasPermission(m, Right.EventMeetingEdit));
+					meeting.setCanInquire(context.hasPermission(m, Right.EventMeetingInquire));
 					meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
-					if (m.isApproved())
-						meeting.setApprovalDate(m.getApprovedDate());
+					meeting.setCanDelete(context.hasPermission(m, Right.EventMeetingDelete));
+					meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel));
+					meeting.setApprovalDate(m.getApprovalDate());
+					meeting.setApprovalStatus(m.getApprovalStatus());
 					if (m.getLocation() != null) {
 						ResourceInterface location = new ResourceInterface();
 						location.setType(ResourceType.ROOM);
@@ -1423,8 +1426,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 							meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 							meeting.setPast(context.isPastOrOutside(m.getStartTime()));
-							if (m.isApproved())
-								meeting.setApprovalDate(m.getApprovedDate());
+							meeting.setApprovalDate(m.getApprovalDate());
+							meeting.setApprovalStatus(m.getApprovalStatus());
 							if (m.getLocation() != null) {
 								ResourceInterface location = new ResourceInterface();
 								location.setType(ResourceType.ROOM);
@@ -1539,8 +1542,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    				if (request.getEventFilter().hasOptions("room") && !request.getEventFilter().getOptions("room").contains(rp.getRoom().getUniqueId().toString())) continue;
 				    				MeetingInterface meeting = new MeetingInterface();
 									meeting.setPast(true);
-									meeting.setCanEdit(false);
-									meeting.setCanApprove(false);
 									ResourceInterface location = new ResourceInterface();
 									location.setType(ResourceType.ROOM);
 									location.setId(rp.getRoom().getUniqueId());
@@ -1558,8 +1559,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    				if (request.getEventFilter().hasOptions("room")) continue;
 				    				MeetingInterface meeting = new MeetingInterface();
 									meeting.setPast(true);
-									meeting.setCanEdit(false);
-									meeting.setCanApprove(false);
 									event.addMeeting(meeting);
 				    			}
 				    			if (request.getEventFilter().hasText() && !event.getName().startsWith(request.getEventFilter().getText())) continue;

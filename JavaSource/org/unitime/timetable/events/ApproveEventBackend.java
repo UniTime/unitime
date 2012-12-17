@@ -35,7 +35,6 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest.Operation;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventNote;
@@ -78,18 +77,37 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						if (!context.hasPermission(meeting, Right.EventMeetingApprove))
     							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
     						
-    						hibSession.delete(meeting);
-    						i.remove();
+    						// hibSession.delete(meeting);
+    						// i.remove();
+    						meeting.setStatus(Meeting.Status.REJECTED);
+    						meeting.setApprovalDate(now);
+    						m.setApprovalDate(now);
+    						m.setApprovalStatus(meeting.getApprovalStatus());
+    						hibSession.saveOrUpdate(meeting);
     						
     						break;
     					case APPROVE:
     						if (!context.hasPermission(meeting, Right.EventMeetingApprove))
     							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToApprove(toString(meeting)));
     						
-    						meeting.setApprovedDate(now);
+    						meeting.setStatus(Meeting.Status.APPROVED);
+    						meeting.setApprovalDate(now);
     						m.setApprovalDate(now);
+    						m.setApprovalStatus(meeting.getApprovalStatus());
     						hibSession.saveOrUpdate(meeting);
     						
+    						break;
+    					case CANCEL:
+    						
+    						if (!context.hasPermission(meeting, Right.EventMeetingCancel))
+    							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
+    						
+    						meeting.setStatus(Meeting.Status.CANCELLED);
+    						meeting.setApprovalDate(now);
+    						m.setApprovalDate(now);
+    						m.setApprovalStatus(meeting.getApprovalStatus());
+    						hibSession.saveOrUpdate(meeting);
+
     						break;
     					}
     					
@@ -102,7 +120,19 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			
 			EventNote note = new EventNote();
 			note.setEvent(event);
-			note.setNoteType(request.getOperation() == Operation.APPROVE ? EventNote.sEventNoteTypeApproval : request.getOperation() == Operation.REJECT ? EventNote.sEventNoteTypeRejection : EventNote.sEventNoteTypeInquire);
+			switch (request.getOperation()) {
+			case APPROVE:
+				note.setNoteType(EventNote.sEventNoteTypeApproval);
+				break;
+			case REJECT:
+				note.setNoteType(EventNote.sEventNoteTypeRejection);
+				break;
+			case CANCEL:
+				note.setNoteType(EventNote.sEventNoteTypeCancel);
+				break;
+			default:
+				note.setNoteType(EventNote.sEventNoteTypeInquire);
+			}
 			note.setTimeStamp(now);
 			note.setUser(uname);
 			note.setMeetings(EventInterface.toString(

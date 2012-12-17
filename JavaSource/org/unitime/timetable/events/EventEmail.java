@@ -192,6 +192,8 @@ public class EventEmail {
 			return MESSAGES.emailSubjectInquire(event().getName());
 		case REJECT:
 			return MESSAGES.emailSubjectReject(event().getName());
+		case CANCEL:
+			return MESSAGES.emailSubjectCancel(event().getName());
 		default:
 			return MESSAGES.emailSubjectUpdate(event().getName());
 		}
@@ -221,13 +223,13 @@ public class EventEmail {
 		if (response().hasCreatedMeetings()) {
 			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCreatedMeetings() + "</td></tr>");
 			out.println("		<tr><td>");
-			generateMeetings(out, response().getCreatedMeetings(), true);
+			generateMeetings(out, response().getCreatedMeetings(), true, false);
 			out.println("       </td></tr>");
 		}
 		if (response().hasDeletedMeetings()) {
 			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailDeletedMeetings() + "</td></tr>");
 			out.println("		<tr><td>");
-			generateMeetings(out, response().getDeletedMeetings(), false);
+			generateMeetings(out, response().getDeletedMeetings(), true, false);
 			out.println("       </td></tr>");
 		}
 		if (response().hasUpdatedMeetings()) {
@@ -236,11 +238,12 @@ public class EventEmail {
 			case APPROVE: out.println(MESSAGES.emailApprovedMeetings()); break;
 			case REJECT: out.println(MESSAGES.emailRejectedMeetings()); break;
 			case INQUIRE: out.println(MESSAGES.emailInquiredMeetings()); break;
+			case CANCEL: out.println(MESSAGES.emailCancelledMeetings()); break;
 			default: out.println(MESSAGES.emailUpdatedMeetings()); break;
 			}
 			out.println("       </td></tr>");
 			out.println("		<tr><td>");
-			generateMeetings(out, response().getUpdatedMeetings(), true);
+			generateMeetings(out, response().getUpdatedMeetings(), true, false);
 			out.println("       </td></tr>");
 		}
 		if (request().hasMessage()) {
@@ -252,6 +255,7 @@ public class EventEmail {
 			case CREATE: out.println(MESSAGES.emailMessageCreate()); break;
 			case UPDATE: out.println(MESSAGES.emailMessageUpdate()); break;
 			case DELETE: out.println(MESSAGES.emailMessageDelete()); break;
+			case CANCEL: out.println(MESSAGES.emailMessageCancel()); break;
 			default: out.println(MESSAGES.emailMessageUpdate()); break;
 			}
 			out.println("       </td></tr>");
@@ -264,7 +268,7 @@ public class EventEmail {
 					MESSAGES.emailAllMeetings(event().getName()) + "</td></tr>");
 			out.println("		<tr><td>");
 			if (event().hasMeetings()) {
-				generateMeetings(out, event().getMeetings(), true);
+				generateMeetings(out, event().getMeetings(), true, true);
 			} else {
 				out.println(MESSAGES.emailEventDeleted(event().getName()));
 			}
@@ -336,7 +340,7 @@ public class EventEmail {
 		out.println("</table>");
 	}
 	
-	private void generateMeetings(PrintWriter out, Collection<MeetingInterface> meetings, boolean approval) {
+	private void generateMeetings(PrintWriter out, Collection<MeetingInterface> meetings, boolean approval, boolean skipDeleted) {
 		out.println("<table width=\"100%\">");
 		out.println("<tr>");
 		String style = "white-space: nowrap; font-weight: bold;";
@@ -344,23 +348,57 @@ public class EventEmail {
 		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPublishedTime() + "</td>");
 		out.println("	<td style=\"" + style + "\">" + MESSAGES.colAllocatedTime() + "</td>");
 		out.println("	<td style=\"" + style + "\">" + MESSAGES.colLocation() + "</td>");
-		if (approval) out.println("	<td style=\"" + style + "\">" + MESSAGES.colApproval() + "</td>");
+		if (approval) {
+			if (skipDeleted)
+				out.println("	<td style=\"" + style + "\">" + MESSAGES.colApproval() + "</td>");
+			else
+				out.println("	<td style=\"" + style + "\">" + MESSAGES.colStatus() + "</td>");
+		}
 		out.println("</tr>");
 		DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
 		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
 		DateFormat dfApproval = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-		for (MultiMeetingInterface meeting: EventInterface.getMultiMeetings(meetings, approval, approval)) {
-			if (meeting.isDelete()) continue;
+		boolean empty = true;
+		meetings: for (MultiMeetingInterface meeting: EventInterface.getMultiMeetings(meetings, approval)) {
+			if (skipDeleted)
+				switch (meeting.getApprovalStatus()) {
+				case Rejected:
+				case Cancelled:
+				case Deleted:
+					continue meetings;
+				}
+			empty = false;
 			out.println("<tr>");
 			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + (meeting.getNrMeetings() <= 1 ? dfLong.format(meeting.getFirstMeetingDate()) : dfShort.format(meeting.getFirstMeetingDate()) + " - " + dfLong.format(meeting.getLastMeetingDate())) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getMeetingTime(CONSTANTS) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getAllocatedTime(CONSTANTS) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getLocationName() + "</td>");
-			if (approval)
-				out.println("  <td>" + (!meeting.getMeetings().first().isApproved() ? "<i>" + (meeting.getMeetings().first().isPast() ? 
-						MESSAGES.approvalNotApprovedPast() : MESSAGES.approvalWaiting()) + "</i>" : dfApproval.format(meeting.getMeetings().first().getApprovalDate())) + "</td>");
+			if (approval) {
+				switch (meeting.getApprovalStatus()) {
+				case Pending :
+					out.println("  <td><i>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() : MESSAGES.approvalNotApproved()) + "</i></td>");
+					break;
+				case Approved:
+					if (skipDeleted)
+						out.println("  <td><i>" + MESSAGES.approvalApproved() + "<i></td>");
+					else
+						out.println("  <td>" + dfApproval.format(meeting.getMeetings().first().getApprovalDate()) + "</td>");
+					break;
+				case Rejected:
+					out.println("  <td><i>" + MESSAGES.approvalRejected() + "</i></td>");
+					break;
+				case Cancelled:
+					out.println("  <td><i>" + MESSAGES.approvalCancelled() + "</i></td>");
+					break;
+				case Deleted:
+					out.println("  <td><i>" + MESSAGES.approvalDeleted() + "</i></td>");
+					break;
+				}
+			}
 			out.println("</tr>");
 		}
+		if (empty && skipDeleted)
+			out.println("<tr><td colspan='" + (approval ? 5 : 4) + "'><i>" + MESSAGES.emailEventNoMeetings() + "</i></td></tr>");
 		out.println("</table>");
 	}
 	

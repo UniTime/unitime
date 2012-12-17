@@ -132,6 +132,7 @@ public class EventDetail extends Composite {
 				case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName())); break;
 				case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName())); break;
 				case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(iEvent.getName())); break;
+				case CANCEL: LoadingWidget.getInstance().show(MESSAGES.waitForCancellation(iEvent.getName())); break;
 				}
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (EventMeetingRow item: items)
@@ -161,6 +162,7 @@ public class EventDetail extends Composite {
 							setEvent(result.getEvent());
 							break;
 						case REJECT:
+						case CANCEL:
 							onApprovalOrReject(iEvent.getId(), result.getEvent());
 							if (result.hasEventWithId())
 								setEvent(result.getEvent());
@@ -180,6 +182,7 @@ public class EventDetail extends Composite {
 		iMeetings.setOperation(EventMeetingTable.OperationType.Approve, iApproveDialog);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Reject, iApproveDialog);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Cancel, iApproveDialog);
 		iMeetings.setEditable(false);
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();

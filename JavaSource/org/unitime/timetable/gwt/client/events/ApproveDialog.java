@@ -115,7 +115,15 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 				hide();
 			}
 		});
-		iFooter.addButton("cancel", MESSAGES.onCancel(), new ClickHandler() {
+		iFooter.addButton("cancel", MESSAGES.opCancel(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				onSubmit(ApproveEventRpcRequest.Operation.CANCEL, iTable.getValue(), iNotes.getText());
+				hide();
+			}
+		});
+
+		iFooter.addButton("back", MESSAGES.opBack(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				hide();
@@ -153,10 +161,12 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		case APPROVE: setText(MESSAGES.dialogApprove());
 		case REJECT: setText(MESSAGES.dialogReject());
 		case INQUIRE: setText(MESSAGES.dialogInquire());
+		case CANCEL: setText(MESSAGES.dialogCancel());
 		}
 		iFooter.setEnabled("approve", operation == ApproveEventRpcRequest.Operation.APPROVE);
 		iFooter.setEnabled("reject", operation == ApproveEventRpcRequest.Operation.REJECT);
 		iFooter.setEnabled("inquire", operation == ApproveEventRpcRequest.Operation.INQUIRE);
+		iFooter.setEnabled("cancel", operation == ApproveEventRpcRequest.Operation.CANCEL);
 		iFileUpload.check();
 		center();
 		if (iStandardNotes.getItemCount() == 0)
@@ -183,18 +193,42 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 			iTable.setMode(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings);
 			break;
 		}
-		iTable.setMeetingFilter(new MeetingFilter() {
-			@Override
-			public boolean filter(EventInterface event, MeetingInterface meeting) {
-				return !meeting.isCanApprove() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(event, meeting));
-			}
-		});
+		switch (operation) {
+		case Approve:
+		case Reject:
+			iTable.setMeetingFilter(new MeetingFilter() {
+				@Override
+				public boolean filter(EventInterface event, MeetingInterface meeting) {
+					return !meeting.isCanApprove() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(event, meeting));
+				}
+			});
+			break;
+		case Inquire:
+			iTable.setMeetingFilter(new MeetingFilter() {
+				@Override
+				public boolean filter(EventInterface event, MeetingInterface meeting) {
+					return !meeting.isCanInquire() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(event, meeting));
+				}
+			});
+			break;
+		case Cancel:
+			iTable.setMeetingFilter(new MeetingFilter() {
+				@Override
+				public boolean filter(EventInterface event, MeetingInterface meeting) {
+					return !meeting.isCanCancel() || (source.getMeetingFilter() != null && source.getMeetingFilter().filter(event, meeting));
+				}
+			});
+			break;
+		}			
 		switch (operation) {
 		case Approve:
 			show(selection, ApproveEventRpcRequest.Operation.APPROVE);
 			break;
 		case Reject:
 			show(selection, ApproveEventRpcRequest.Operation.REJECT);
+			break;
+		case Cancel:
+			show(selection, ApproveEventRpcRequest.Operation.CANCEL);
 			break;
 		case Inquire:
 			show(selection, ApproveEventRpcRequest.Operation.INQUIRE);

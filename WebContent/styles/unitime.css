@@ -2189,6 +2189,33 @@ div.gwt-MenuBarPopup {
 	color: gray;
 }
 
+.unitime-EventMeetings .cancelled-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .cancelled-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .rejected-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .rejected-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .event-cancelled-row {
+	page-break-inside: avoid;
+	vertical-align: top;
+	font-style: italic;
+	color: gray;
+}
+
 .unitime-EventMeetings .indent {
 	padding-left: 10px;
 }

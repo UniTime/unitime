@@ -382,7 +382,8 @@ public class Assignment extends BaseAssignment {
                             m.setStopOffset(-time.getBreakTime());
                             m.setClassCanOverride(false);
                             m.setLocationPermanentId(location.getPermanentId());
-                            m.setApprovedDate(getSolution().getCommitDate());
+                            m.setStatus(Meeting.Status.APPROVED);
+                            m.setApprovalDate(getSolution().getCommitDate());
                             m.setEvent(event);
                             event.getMeetings().add(m);
                             created = true;
@@ -397,7 +398,8 @@ public class Assignment extends BaseAssignment {
                         m.setStopOffset(-time.getBreakTime());
                         m.setClassCanOverride(false);
                         m.setLocationPermanentId(null);
-                        m.setApprovedDate(getSolution().getCommitDate());
+                        m.setStatus(Meeting.Status.APPROVED);
+                        m.setApprovalDate(getSolution().getCommitDate());
                         m.setEvent(event);
                         event.getMeetings().add(m);
                     }

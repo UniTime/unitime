@@ -25,6 +25,7 @@ import java.util.List;
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
@@ -61,7 +62,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				Query query = EventDAO.getInstance().getSession().createQuery(
 						"select m from Meeting m " +
-						"where m.startPeriod<:stopTime and m.stopPeriod>:startTime and " +
+						"where m.startPeriod<:stopTime and m.stopPeriod>:startTime and m.approvalStatus <= 1 and " +
 						"m.locationPermanentId in (" + locations + ") and m.meetingDate in ("+dates+")");
 				
 				query.setInteger("startTime", request.getStartSlot());
@@ -89,8 +90,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					conflict.setStartSlot(m.getStartPeriod());
 					conflict.setEndSlot(m.getStopPeriod());
-					if (m.isApproved())
-						conflict.setApprovalDate(m.getApprovedDate());
+					conflict.setApprovalDate(m.getApprovalDate());
+					conflict.setApprovalStatus(m.getApprovalStatus());
 					
 					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), m.getLocationPermanentId(), conflict);
 				}
@@ -107,7 +108,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					meeting.setDayOfWeek(Constants.getDayOfWeek(meeting.getMeetingDate()));
 				}
 				
-				if (meeting.isDelete()) continue;
+				if (meeting.getApprovalStatus() == ApprovalStatus.Deleted || meeting.getApprovalStatus() == ApprovalStatus.Cancelled || meeting.getApprovalStatus() == ApprovalStatus.Rejected) continue;
 				
 				if (context.isPastOrOutside(meeting.getMeetingDate())) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
@@ -177,7 +178,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
 						"select m from Meeting m, Location l "+
-						"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
+						"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and m.approvalStatus <= 1 and " +
 						"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId")
 						.setInteger("startTime", meeting.getStartSlot())
 						.setInteger("stopTime", meeting.getEndSlot())
@@ -201,8 +202,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEndSlot(m.getStopPeriod());
 					conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-					if (m.isApproved())
-						conflict.setApprovalDate(m.getApprovedDate());
+					conflict.setApprovalDate(m.getApprovalDate());
+					conflict.setApprovalStatus(m.getApprovalStatus());
 					
 					meeting.addConflict(conflict);
 				}

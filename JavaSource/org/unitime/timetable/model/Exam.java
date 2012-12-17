@@ -969,7 +969,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 m.setStopOffset(period.getExamEventStopOffsetForExam(this));
                 m.setClassCanOverride(false);
                 m.setLocationPermanentId(location.getPermanentId());
-                m.setApprovedDate(new Date());
+                m.setStatus(Meeting.Status.APPROVED);
+                m.setApprovalDate(new Date());
                 m.setEvent(event);
                 event.getMeetings().add(m);
                 created = true;
@@ -984,7 +985,8 @@ public class Exam extends BaseExam implements Comparable<Exam> {
             m.setStopOffset(period.getExamEventStopOffsetForExam(this));
             m.setClassCanOverride(false);
             m.setLocationPermanentId(null);
-            m.setApprovedDate(new Date());
+            m.setStatus(Meeting.Status.APPROVED);
+            m.setApprovalDate(new Date());
             m.setEvent(event);
             event.getMeetings().add(m);
         }
