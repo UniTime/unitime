@@ -575,11 +575,13 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	
     	for (EventNote n: e.getNotes()) {
     		NoteInterface note = new NoteInterface();
+    		note.setId(n.getUniqueId());
     		note.setDate(n.getTimeStamp());
     		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
     		note.setMeetings(n.getMeetingsHtml());
     		note.setNote(n.getTextNote() == null ? null : n.getTextNote().replace("\n", "<br>"));
     		note.setUser(n.getUser());
+    		note.setAttachment(n.getAttachedName());
     		event.addNote(note);
     	}
     	

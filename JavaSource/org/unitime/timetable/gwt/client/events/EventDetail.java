@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
+import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -38,6 +39,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -59,6 +61,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -69,6 +72,7 @@ public class EventDetail extends Composite {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
 	private EventInterface iEvent = null;
 	
@@ -213,6 +217,7 @@ public class EventDetail extends Composite {
 		notesHeader.add(new UniTimeTableHeader(MESSAGES.colAction()));
 		notesHeader.add(new UniTimeTableHeader(MESSAGES.colMeetings()));
 		notesHeader.add(new UniTimeTableHeader(MESSAGES.colNote()));
+		notesHeader.add(new UniTimeTableHeader(MESSAGES.colAttachment()));
 		iNotes.addRow(null, notesHeader);
 		
 		iFooter = iHeader.clonePanel();
@@ -345,6 +350,14 @@ public class EventDetail extends Composite {
 				row.add(new Label(note.getType().getName()));
 				row.add(new HTML(note.getMeetings() == null ? "<i>N/A</i>" : note.getMeetings(), false));
 				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>"), true));
+				if (note.hasAttachment()) {
+					ImageLink link = new ImageLink(new Image(RESOURCES.download()), GWT.getHostPageBaseURL() + "upload?event=" + iEvent.getId() + "&name=" + note.getAttachment() + (note.getId() == null ? "" : "&note=" + note.getId()));
+					link.setTitle(note.getAttachment());
+					link.setText(note.getAttachment());
+					row.add(link);
+				} else {
+					row.add(new HTML(""));
+				}
 				int r = iNotes.addRow(note, row);
 				iNotes.getRowFormatter().addStyleName(r, note.getType().getName().toLowerCase());
 			}

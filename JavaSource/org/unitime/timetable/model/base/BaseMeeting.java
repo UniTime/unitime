@@ -49,7 +49,7 @@ public abstract class BaseMeeting implements Serializable {
 	public static String PROP_STOP_OFFSET = "stopOffset";
 	public static String PROP_LOCATION_PERM_ID = "locationPermanentId";
 	public static String PROP_CLASS_CAN_OVERRIDE = "classCanOverride";
-	public static String PROP_APPROVAL_STAUTS = "approvalStatus";
+	public static String PROP_APPROVAL_STATUS = "approvalStatus";
 	public static String PROP_APPROVAL_DATE = "approvalDate";
 
 	public BaseMeeting() {

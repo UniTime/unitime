@@ -20,8 +20,10 @@
 package org.unitime.timetable.gwt.server;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,12 +35,58 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventNote;
+import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.security.rights.Right;
 
 public class UploadServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final int DEFAULT_MAX_SIZE = 4096 * 1024;
 	
 	public static final String SESSION_LAST_FILE = "LAST_FILE";
+	
+	protected SessionContext getSessionContext() {
+		return HttpSessionContext.getSessionContext(getServletContext());
+	}
+	
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		Long eventId = (request.getParameter("event") == null ? null : Long.parseLong(request.getParameter("event")));
+		String fileName = request.getParameter("name");
+		Long noteId = (request.getParameter("note") == null ? null : Long.valueOf(request.getParameter("note")));
+		
+		if (eventId != null) {
+			getSessionContext().checkPermissionAnyAuthority(Long.valueOf(eventId), "Event", Right.EventDetail);
+			Event event = EventDAO.getInstance().get(eventId);
+			TreeSet<EventNote> notes = new TreeSet<EventNote>();
+			for (EventNote note: event.getNotes()) {
+				if (note.getAttachedName() == null || note.getAttachedName().isEmpty()) continue;
+				if (fileName != null) {
+					if (fileName.equals(note.getAttachedName()) && (noteId == null || noteId.equals(note.getUniqueId()))) notes.add(note);
+				} else if (noteId != null) {
+					if (noteId.equals(note.getUniqueId())) notes.add(note);
+				} else {
+					notes.add(note);
+				}
+			}
+			if (!notes.isEmpty()) {
+				EventNote note = notes.last();
+				
+				response.setContentType(note.getAttachedContentType());
+				response.setHeader( "Content-Disposition", "attachment; filename=\"" + note.getAttachedName() + "\"" );
+		        OutputStream out = response.getOutputStream();
+		        out.write(note.getAttachedFile());
+		        out.flush();
+		        out.close();
+		        
+		        return;
+			}
+		}
+		
+		throw new ServletException("Nothing to download.");
+	}
 	
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
