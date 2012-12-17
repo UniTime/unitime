@@ -36,7 +36,8 @@ public abstract class BaseMeeting implements Serializable {
 	private Integer iStopOffset;
 	private Long iLocationPermanentId;
 	private Boolean iClassCanOverride;
-	private Date iApprovedDate;
+	private Integer iApprovalStatus;
+	private Date iApprovalDate;
 
 	private Event iEvent;
 
@@ -48,7 +49,8 @@ public abstract class BaseMeeting implements Serializable {
 	public static String PROP_STOP_OFFSET = "stopOffset";
 	public static String PROP_LOCATION_PERM_ID = "locationPermanentId";
 	public static String PROP_CLASS_CAN_OVERRIDE = "classCanOverride";
-	public static String PROP_APPROVED_DATE = "approvedDate";
+	public static String PROP_APPROVAL_STAUTS = "approvalStatus";
+	public static String PROP_APPROVAL_DATE = "approvalDate";
 
 	public BaseMeeting() {
 		initialize();
@@ -86,8 +88,11 @@ public abstract class BaseMeeting implements Serializable {
 	public Boolean getClassCanOverride() { return iClassCanOverride; }
 	public void setClassCanOverride(Boolean classCanOverride) { iClassCanOverride = classCanOverride; }
 
-	public Date getApprovedDate() { return iApprovedDate; }
-	public void setApprovedDate(Date approvedDate) { iApprovedDate = approvedDate; }
+	public Integer getApprovalStatus() { return iApprovalStatus; }
+	public void setApprovalStatus(Integer approvalStatus) { iApprovalStatus = approvalStatus; }
+
+	public Date getApprovalDate() { return iApprovalDate; }
+	public void setApprovalDate(Date approvalDate) { iApprovalDate = approvalDate; }
 
 	public Event getEvent() { return iEvent; }
 	public void setEvent(Event event) { iEvent = event; }
@@ -109,7 +114,8 @@ public abstract class BaseMeeting implements Serializable {
 
 	public String toDebugString() {
 		return "Meeting[" +
-			"\n	ApprovedDate: " + getApprovedDate() +
+			"\n	ApprovalDate: " + getApprovalDate() +
+			"\n	ApprovalStatus: " + getApprovalStatus() +
 			"\n	ClassCanOverride: " + getClassCanOverride() +
 			"\n	Event: " + getEvent() +
 			"\n	LocationPermanentId: " + getLocationPermanentId() +

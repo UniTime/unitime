@@ -209,10 +209,10 @@ public class EventEmail {
                     message += "</td><td>";
                     if (m.isPast()) {
                         message += "";
-                    } else if (m.getMeetings().first().getApprovedDate()==null) {
+                    } else if (m.getMeetings().first().getApprovalDate()==null) {
                         message += "<i>Waiting Approval</i>";
                     } else {
-                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
+                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovalDate());
                     }
                     message += "</td></tr>";
                 }
@@ -238,10 +238,10 @@ public class EventEmail {
                     message += "</td><td>";
                     if (m.isPast()) {
                         message += "";
-                    } else if (m.getMeetings().first().getApprovedDate()==null) {
+                    } else if (m.getMeetings().first().getApprovalDate()==null) {
                         message += "<i>Waiting Approval</i>";
                     } else {
-                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
+                        message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovalDate());
                     }
                     message += "</td></tr>";
                 }
@@ -281,10 +281,10 @@ public class EventEmail {
                         message += "</td><td>";
                         if (m.isPast()) {
                             message += "";
-                        } else if (m.getMeetings().first().getApprovedDate()==null) {
+                        } else if (m.getMeetings().first().getApprovalDate()==null) {
                             message += "<i>Waiting Approval</i>";
                         } else {
-                            message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovedDate());
+                            message += new SimpleDateFormat("MM/dd/yyyy").format(m.getMeetings().first().getApprovalDate());
                         }
                         message += "</td></tr>";
                     }

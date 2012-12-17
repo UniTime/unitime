@@ -30,6 +30,7 @@ import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
@@ -98,8 +99,14 @@ public class EventsExportEventsToCSV extends EventsExporter {
 		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
 		
 		for (EventInterface event: events) {
-			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), true, false)) {
+			meetings: for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false)) {
 				MeetingInterface meeting = multi.getMeetings().first();
+				switch (multi.getApprovalStatus()) {
+				case Deleted:
+				case Rejected:
+				case Cancelled:
+					continue meetings;
+				}
 				out.printLine(
 					getName(event),
 					getSection(event),
@@ -123,7 +130,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
 					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
-					multi.isArrangeHours() ? "" : multi.isApproved() ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					multi.isArrangeHours() ? "" : multi.getApprovalStatus() == ApprovalStatus.Approved ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
 					);
 			}
 			out.flush();

@@ -8119,4 +8119,33 @@
 		<plsql>alter table %SCHEMA%.external_room add area double precision</plsql>
 		<mysql>alter table %SCHEMA%.external_room add area double null</mysql>
 	</update>
+	<update version="100" date="16-Dec-2012" comment="Event Approval Status">
+		<mysql>
+			alter table %SCHEMA%.meeting add approval_status bigint(10) not null default 0
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.meeting add approval_status number(10) default 0
+		</plsql>
+		<plsql>
+			alter table %SCHEMA%.meeting add constraint nn_meeting_approval_status check (approval_status is not null)
+		</plsql>
+		<plsql>alter table %SCHEMA%.meeting rename column approved_date to approval_date</plsql>
+		<mysql>alter table %SCHEMA%.meeting change column approved_date approval_date date null</mysql>
+		<sql>update %SCHEMA%.meeting set approval_status = 1 where approval_date is not null</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventMeetingDelete'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventMeetingCancel'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventMeetingInquire'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingApprove'
+		</sql>
+	</update>
 </dbupdate>

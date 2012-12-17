@@ -232,7 +232,8 @@ public abstract class EventRelatedImports extends BaseImport {
 			meeting.setStartPeriod(this.getStartPeriod());
 			meeting.setStopOffset(new Integer(0));
 			meeting.setStopPeriod(this.getEndPeriod());
-	
+            meeting.setStatus(Meeting.Status.PENDING);
+
 			return(meeting);
 		}
 		public Integer str2Slot(String timeString) throws Exception {

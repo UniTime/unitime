@@ -98,6 +98,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&#10008; Reject All ...")
 	String opRejectAllMeetings();
 
+	@DefaultMessage("&#10007; Cancel ...")
+	String opCancelSelectedMeetings();
+
+	@DefaultMessage("&#10008; Cancel All ...")
+	String opCancelAllMeetings();
+
 	@DefaultMessage("<i>?</i> Inquire ...")
 	String opInquireSelectedMeetings();
 
@@ -114,8 +120,11 @@ public interface GwtMessages extends Messages {
 	String opInquire();
 
 	@DefaultMessage("<u>C</u>ancel")
-	String onCancel();
+	String opCancel();
 	
+	@DefaultMessage("<u>B</u>ack")
+	String opBack();
+
 	@DefaultMessage("Export PDF")
 	String opExportPDF();
 
@@ -182,6 +191,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Approved")
 	String colApproval();
 	
+	@DefaultMessage("Status")
+	String colStatus();
+
 	@DefaultMessage("Name")
 	String colName();
 	
@@ -266,7 +278,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
 	
-	@DefaultMessage("not approved")
+	@DefaultMessage("pending")
 	String approvalNotApproved();
 
 	@DefaultMessage("not approved")
@@ -278,12 +290,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("new approval")
 	String approvelNewApprovedMeeting();
 	
-	@DefaultMessage("waiting approval")
-	String approvalWaiting();
+	@DefaultMessage("cancelled")
+	String approvalCancelled();
 	
-	@DefaultMessage("deleted meeting")
+	@DefaultMessage("deleted")
 	String approvalDeleted();
 	
+	@DefaultMessage("rejected")
+	String approvalRejected();
+
+	@DefaultMessage("approved")
+	String approvalApproved();
+
 	@DefaultMessage("new unavailability")
 	String approvalNewUnavailabiliyMeeting();
 
@@ -518,6 +536,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Deleting {0}...")
 	String waitDelete(String name);
 
+	@DefaultMessage("Cancelling {0}...")
+	String waitCancel(String name);
+
 	@DefaultMessage("Loading data for {0} ...")
 	String waitLoadingData(String session);
 	
@@ -536,6 +557,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Rejecting meetings of {0} ...")
 	String waitForRejection(String name);
 	
+	@DefaultMessage("Cancelling meetings of {0} ...")
+	String waitForCancellation(String name);
+
 	@DefaultMessage("Inquiring about {0} ...")
 	String waitForInquiry(String name);
 	
@@ -553,6 +577,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Failed to delete {0}: {1}")
 	String failedDelete(String name, String reason);
+
+	@DefaultMessage("Failed to cancel {0}: {1}")
+	String failedCancel(String name, String reason);
 
 	@DefaultMessage("Failed to load academic sessions: {0}")
 	String failedLoadSessions(String reason);
@@ -592,6 +619,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Meeting {0} cannot be deleted by the user.")
 	String failedSaveEventCanNotDeleteMeeting(String meeting);
+
+	@DefaultMessage("Meeting {0} cannot be cancelled by the user.")
+	String failedSaveEventCanNotCancelMeeting(String meeting);
 
 	@DefaultMessage("The event does no longer exist.")
 	String failedApproveEventNoEvent();
@@ -701,6 +731,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Reject Meetings...")
 	String dialogReject();
 
+	@DefaultMessage("Cancel Meetings...")
+	String dialogCancel();
+
 	@DefaultMessage("Inquire...")
 	String dialogInquire();
 	
@@ -797,6 +830,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event {0} rejected.")
 	String emailSubjectReject(String eventName);
 
+	@DefaultMessage("Event {0} cancelled.")
+	String emailSubjectCancel(String eventName);
+
 	@DefaultMessage("Event {0} inquiry.")
 	String emailSubjectInquire(String eventName);
 	
@@ -809,7 +845,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Following meetings were requested by you or on your behalf")
 	String emailCreatedMeetings();
 	
-	@DefaultMessage("Following meetings were deleted by you or on your behalf")
+	@DefaultMessage("Following meetings were cancelled or deleted by you or on your behalf")
 	String emailDeletedMeetings();
 	
 	@DefaultMessage("Following meetings are in question")
@@ -821,6 +857,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Following meetings were rejected")
 	String emailRejectedMeetings();
 	
+	@DefaultMessage("Following meetings were cancelled")
+	String emailCancelledMeetings();
+
 	@DefaultMessage("Following meetings were updated by you or on your behalf")
 	String emailUpdatedMeetings();
 	
@@ -834,6 +873,9 @@ public interface GwtMessages extends Messages {
 	String emailMessageDelete();
 
 	@DefaultMessage("Notes")
+	String emailMessageCancel();
+
+	@DefaultMessage("Notes")
 	String emailMessageApproval();
 
 	@DefaultMessage("Notes")
@@ -842,11 +884,14 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Inquiry")
 	String emailMessageInquiry();
 	
-	@DefaultMessage("History of {0}")
+	@DefaultMessage("Current status of {0}")
 	String emailAllMeetings(String eventName);
 
 	@DefaultMessage("No meeting left, the event {0} was deleted as well.")
 	String emailEventDeleted(String eventName);
+	
+	@DefaultMessage("There are no pending or approved meetings in the event.")
+	String emailEventNoMeetings();
 
 	@DefaultMessage("All Notes of {0}")
 	String emailNotes(String eventName);
@@ -926,6 +971,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No academic session is available.")
 	String noSessionAvailable();
 	
-	@DefaultMessage("N/A")
+	@DefaultMessage("Not Available")
 	String unavailableEventDefaultName();
 }

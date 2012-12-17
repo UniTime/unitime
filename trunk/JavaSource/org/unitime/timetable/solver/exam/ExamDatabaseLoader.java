@@ -635,7 +635,7 @@ public class ExamDatabaseLoader extends ExamLoader {
         List overlappingCourseEvents =
                 new EventDAO().getSession().createQuery(
                         "select distinct e.uniqueId, p.uniqueId, m from CourseEvent e inner join e.meetings m, ExamPeriod p where " +
-                        "e.reqAttendance=true and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
+                        "e.reqAttendance=true and m.approvalStatus = 1 and p.session.uniqueId=:sessionId and p.examType.uniqueId=:examTypeId and "+
                         "p.startSlot - :travelTime < m.stopPeriod and m.startPeriod < p.startSlot + p.length + :travelTime and "+
                         HibernateUtil.addDate("p.session.examBeginDate","p.dateOffset")+" = m.meetingDate")
                         .setInteger("travelTime", Integer.parseInt(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts.travelTime.courseEvent","0")))

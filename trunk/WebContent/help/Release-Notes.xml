@@ -137,6 +137,29 @@
 			</description>
 		</item>
 		<item>
+			<name>Event Approval Workflow Changes</name>
+			<description>
+				<line>Requested meeting is in a pending state.
+					<line>A requested meeting is approved automatically when requested by an event manager with the Event Location Approve permission if in a room of the event department of the manager.</line>
+				</line>
+				<line>Pending meeting can be approved, rejected (Event Meeting Approve permission), cancelled (Event Meeting Cancel permission), or inquired (Event Meeting Inquire permission) by an event manager.</line>
+				<line>Pending meeting can be deleted (Event Meeting Delete permission) or cancelled (Event Meeting Cancel permission) by the requester or an event manager. </line>
+				<line>Approved meeting cannot be deleted or rejected, it can only be cancelled (by the requester or an event manager).</line>
+				<line>Cancelled and rejected meetings are kept in the database, but their status can no longer be changed.
+					<line>Deleted meetings are also deleted from the database.</line>
+				</line>
+				<line>Cancelled and rejected meetings are only visible on the Event Detail and Edit Event page, and on the Events page with the following Event Filter settings:
+					<line>Mode: Cancelled / Rejected</line>
+					<line>Mode: My Events</line>
+					<line>Requested By: ...</line>
+				</line>
+				<line>Meetings in the past can be requested or deleted only with the Event Edit Past permission. They can be approved, rejected, or cancelled only with the Event Approve Past permission.</line>
+				<line>Events in a room that is not managed in UniTime (it does not have an event department defined) can be only requested by a user with permission Event Any Location.</line>
+				<line>Rooms can be overbooked only by a user with the Event Location Overbook permission (for an event manager the room also has to be from the appropriate event department).</line>
+				<line>Special events can be requested by someone with Event Add Special permission, course related events by Event Add Course Related and unavailabilities by Event Add Unavailable.</line>
+			</description>
+		</item>
+		<item>
 			<name>Deprecated Pages</name>
 			<description>
 				<line>Meetings and Room Availability pages are no longer needed -- all the functionality is available on the new Events page.</line>

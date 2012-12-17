@@ -34,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -179,20 +180,39 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			TreeSet<Meeting> created = new TreeSet<Meeting>();
 			for (MeetingInterface m: request.getEvent().getMeetings()) {
 				Meeting meeting = null; 
-				if (m.isDelete()) continue;
+				if (m.getApprovalStatus() == ApprovalStatus.Deleted) {
+					if (!context.hasPermission(meeting, Right.EventMeetingDelete) && context.hasPermission(meeting, Right.EventMeetingCancel)) {
+						// Cannot delete, but can cancel --> cancel the meeting instead
+						m.setApprovalStatus(ApprovalStatus.Cancelled);
+					} else {
+						continue;
+					}
+				}
 				if (m.getId() != null)
 					for (Iterator<Meeting> i = remove.iterator(); i.hasNext(); ) {
 						Meeting x = i.next();
 						if (m.getId().equals(x.getUniqueId())) { meeting = x; i.remove(); break; }
 					}
 				if (meeting != null) {
-					if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
-						if (!context.hasPermission(meeting, Right.EventMeetingEdit))
-							throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
-						meeting.setStartOffset(m.getStartOffset());
-						meeting.setStopOffset(m.getEndOffset());
-						hibSession.update(meeting);
-						response.addUpdatedMeeting(m);
+					if (m.getApprovalStatus().ordinal() != meeting.getApprovalStatus()) {
+						switch (m.getApprovalStatus()) {
+						case Cancelled:
+							if (!context.hasPermission(meeting, Right.EventMeetingCancel))
+								throw new GwtRpcException(MESSAGES.failedSaveEventCanNotCancelMeeting(toString(meeting)));
+							meeting.setStatus(Meeting.Status.CANCELLED);
+							meeting.setApprovalDate(now);
+							hibSession.update(meeting);
+							response.addDeletedMeeting(m);
+						}
+					} else {
+						if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
+							if (!context.hasPermission(meeting, Right.EventMeetingEdit))
+								throw new GwtRpcException(MESSAGES.failedSaveEventCanNotEditMeeting(toString(meeting)));
+							meeting.setStartOffset(m.getStartOffset());
+							meeting.setStopOffset(m.getEndOffset());
+							hibSession.update(meeting);
+							response.addUpdatedMeeting(m);
+						}
 					}
 				} else {
 					response.addCreatedMeeting(m);
@@ -201,11 +221,14 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					Location location = (m.hasLocation() ? LocationDAO.getInstance().get(m.getLocation().getId(), hibSession) : null);
 					if (location == null) throw new GwtRpcException(MESSAGES.failedSaveEventNoLocation(toString(m)));
 					meeting.setLocationPermanentId(location.getPermanentId());
-					meeting.setApprovedDate(null);
+					meeting.setStatus(Meeting.Status.PENDING);
+					meeting.setApprovalDate(null);
 					if (!context.hasPermission(location, Right.EventLocation))
 						throw new GwtRpcException(MESSAGES.failedSaveEventWrongLocation(m.getLocationName()));
-					if (context.hasPermission(location, Right.EventLocationApprove))
-						meeting.setApprovedDate(now);
+					if (context.hasPermission(location, Right.EventLocationApprove)) {
+						meeting.setStatus(Meeting.Status.APPROVED);
+						meeting.setApprovalDate(now);
+					}
 					if (context.isPastOrOutside(m.getMeetingDate()))
 						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
 					if (!context.hasPermission(location, Right.EventLocationOverbook)) {
@@ -213,7 +236,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						if (!conflicts.isEmpty())
 							throw new GwtRpcException(MESSAGES.failedSaveEventConflict(toString(m), toString(conflicts.get(0))));
 					}
-					m.setApprovalDate(meeting.getApprovedDate());
+					m.setApprovalDate(meeting.getApprovalDate());
+					m.setApprovalStatus(meeting.getApprovalStatus());
 					meeting.setStartPeriod(m.getStartSlot());
 					meeting.setStopPeriod(m.getEndSlot());
 					meeting.setStartOffset(m.getStartOffset());
@@ -223,13 +247,15 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
                     event.getMeetings().add(meeting);
                     created.add(meeting);
 				}
-				if (request.getEvent().getType() == EventType.Unavailabile && meeting.getApprovedDate() == null)
-					meeting.setApprovedDate(now);
+				if (request.getEvent().getType() == EventType.Unavailabile && meeting.getApprovalDate() == null) {
+					meeting.setStatus(Meeting.Status.APPROVED);
+					meeting.setApprovalDate(now);
+				}
 			}
 			
 			if (!remove.isEmpty()) {
 				for (Meeting m: remove) {
-					if (!context.hasPermission(m, Right.EventMeetingEdit))
+					if (!context.hasPermission(m, Right.EventMeetingDelete))
 						throw new GwtRpcException(MESSAGES.failedSaveEventCanNotDeleteMeeting(toString(m)));
 					MeetingInterface meeting = new MeetingInterface();
 					meeting.setId(m.getUniqueId());
@@ -243,7 +269,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 					meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
 					meeting.setPast(context.isPastOrOutside(m.getStartTime()));
-					if (m.isApproved()) meeting.setApprovalDate(m.getApprovedDate());
+					meeting.setApprovalDate(m.getApprovalDate());
+					meeting.setApprovalStatus(m.getApprovalStatus());
 					if (m.getLocation() != null) {
 						ResourceInterface location = new ResourceInterface();
 						location.setType(ResourceType.ROOM);
@@ -380,7 +407,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		for (Meeting m: (List<Meeting>)hibSession.createQuery(
 				"select m from Meeting m, Location l "+
 				"where m.startPeriod < :stopTime and m.stopPeriod > :startTime and " +
-				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId")
+				"m.locationPermanentId = l.permanentId and l.uniqueId = :locationdId and m.meetingDate = :meetingDate and m.uniqueId != :meetingId and m.event.uniqueId != :eventId and m.approvalStatus <= 1")
 				.setInteger("startTime", meeting.getStartSlot())
 				.setInteger("stopTime", meeting.getEndSlot())
 				.setDate("meetingDate", meeting.getMeetingDate())
@@ -402,8 +429,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			conflict.setEndSlot(m.getStopPeriod());
 			conflict.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			conflict.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-			if (m.isApproved())
-				conflict.setApprovalDate(m.getApprovedDate());
+			conflict.setApprovalDate(m.getApprovalDate());
+			conflict.setApprovalStatus(m.getApprovalStatus());
 			
 			conflicts.add(conflict);
 		}
