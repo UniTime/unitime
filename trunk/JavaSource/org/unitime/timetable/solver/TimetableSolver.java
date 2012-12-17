@@ -698,6 +698,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     }
     
     public Suggestions getSuggestions(SuggestionsModel model) {
+    	if (iWorking) return null;
     	synchronized (currentSolution()) {
     		return new Suggestions(this,model);
     	}
