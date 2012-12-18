@@ -643,6 +643,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true); iMeetings.setEditable(true);
 		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Delete, this);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Cancel, this);
 		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<EventMeetingRow>>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<EventMeetingRow>> event) {
@@ -1433,6 +1434,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEventAddMeetings.showDialog(getEventId());
 			break;
 		case Delete:
+		case Cancel:
 			checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
 			break;
 		}
