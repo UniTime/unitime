@@ -231,6 +231,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					meeting.setApprovalDate(null);
 					if (!context.hasPermission(location, Right.EventLocation))
 						throw new GwtRpcException(MESSAGES.failedSaveEventWrongLocation(m.getLocationName()));
+					if (request.getEvent().getType() == EventType.Unavailabile && !context.hasPermission(location, Right.EventLocationUnavailable))
+						throw new GwtRpcException(MESSAGES.failedSaveCannotMakeUnavailable(m.getLocationName()));
 					if (context.hasPermission(location, Right.EventLocationApprove)) {
 						meeting.setStatus(Meeting.Status.APPROVED);
 						meeting.setApprovalDate(now);
