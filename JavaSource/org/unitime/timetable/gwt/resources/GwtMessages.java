@@ -854,9 +854,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Following meetings were requested by you or on your behalf")
 	String emailCreatedMeetings();
 	
-	@DefaultMessage("Following meetings were cancelled or deleted by you or on your behalf")
+	@DefaultMessage("Following meetings were deleted by you or on your behalf")
 	String emailDeletedMeetings();
 	
+	@DefaultMessage("Following meetings were cancelled by you or on your behalf")
+	String emailCancelledMeetingsInEdit();
+
 	@DefaultMessage("Following meetings are in question")
 	String emailInquiredMeetings();
 

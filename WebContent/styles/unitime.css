@@ -2259,6 +2259,10 @@ div.gwt-MenuBarPopup {
 	background-color: #FFD7D7;
 }
 
+.unitime-EventNotes .cancel {
+	background-color: #FFF0AB;
+}
+
 .unitime-EventOwners {
 	width: 100%;
 }
