@@ -207,7 +207,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 							meeting.setApprovalDate(now);
 							hibSession.update(meeting);
 							cancelledMeetings.add(meeting);
-							response.addDeletedMeeting(m);
+							response.addCancelledMeeting(m);
 						}
 					} else {
 						if (m.getStartOffset() != (meeting.getStartOffset() == null ? 0 : meeting.getStartOffset()) || m.getEndOffset() != (meeting.getStopOffset() == null ? 0 : meeting.getStopOffset())) {
@@ -375,10 +375,37 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				note.setTimeStamp(now);
 				note.setUser(uname);
 				note.setUserId(context.getUser().getExternalUserId());
-				note.setAffectedMeetings(cancelledMeetings);
 				if (request.hasMessage()) note.setTextNote(request.getMessage());
 				note.setMeetings(EventInterface.toString(
 						response.getDeletedMeetings(),
+						CONSTANTS, "\n", df));
+				event.getNotes().add(note);
+				NoteInterface n = new NoteInterface();
+				n.setDate(now);
+				n.setMeetings(note.getMeetings());
+				n.setUser(uname);
+				n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
+				n.setNote(note.getTextNote());
+				if (attachment != null && !attached) {
+					note.setAttachedName(attachment.getName());
+					note.setAttachedFile(attachment.get());
+					note.setAttachedContentType(attachment.getContentType());
+					attached = true;
+					n.setAttachment(attachment.getName());
+				}
+				response.addNote(n);
+			}
+			if (response.hasCancelledMeetings()) {
+				EventNote note = new EventNote();
+				note.setEvent(event);
+				note.setNoteType(EventNote.sEventNoteTypeCancel);
+				note.setTimeStamp(now);
+				note.setUser(uname);
+				note.setUserId(context.getUser().getExternalUserId());
+				note.setAffectedMeetings(cancelledMeetings);
+				if (request.hasMessage()) note.setTextNote(request.getMessage());
+				note.setMeetings(EventInterface.toString(
+						response.getCancelledMeetings(),
 						CONSTANTS, "\n", df));
 				event.getNotes().add(note);
 				NoteInterface n = new NoteInterface();

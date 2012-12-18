@@ -232,6 +232,12 @@ public class EventEmail {
 			generateMeetings(out, response().getDeletedMeetings(), true, false);
 			out.println("       </td></tr>");
 		}
+		if (response().hasCancelledMeetings()) {
+			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCancelledMeetingsInEdit() + "</td></tr>");
+			out.println("		<tr><td>");
+			generateMeetings(out, response().getCancelledMeetings(), true, false);
+			out.println("       </td></tr>");
+		}
 		if (response().hasUpdatedMeetings()) {
 			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">");
 			switch (request().getOperation()) {

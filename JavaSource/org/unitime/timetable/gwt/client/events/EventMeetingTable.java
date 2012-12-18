@@ -331,7 +331,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public void execute(int row, EventMeetingRow event) {
-				if (!hasOperation(OperationType.Cancel)) {
+				if (isEditable()) {
 					while (row + 1 < getRowCount() && getData(row + 1).hasParent())
 						removeRow(row + 1);
 					if (getData(row).getMeeting().getId() == null)
@@ -349,9 +349,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public void execute() {
+				super.execute();
 				if (hasOperation(OperationType.Cancel))
 					getOperation(OperationType.Cancel).execute(EventMeetingTable.this, OperationType.Cancel, data());
-
 			}
 			@Override
 			public boolean allowNoSelection() {

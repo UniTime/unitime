@@ -1875,7 +1875,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private EventInterface iEvent;
 		private List<MessageInterface> iMessages = null;
 		private List<NoteInterface> iNotes = null;
-		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null;
+		private TreeSet<MeetingInterface> iUpdatedMeetings = null, iCreatedMeetings = null, iDeletedMeetings = null, iCancelledMeetings = null;
 		
 		public SaveOrApproveEventRpcResponse() {}
 		
@@ -1921,7 +1921,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			iDeletedMeetings.add(meeting);
 		}
 		public TreeSet<MeetingInterface> getDeletedMeetings() { return iDeletedMeetings; }
-	}
+
+		public boolean hasCancelledMeetings() { return iCancelledMeetings != null && !iCancelledMeetings.isEmpty(); }
+		public void addCancelledMeeting(MeetingInterface meeting) {
+			if (iCancelledMeetings == null) iCancelledMeetings = new TreeSet<MeetingInterface>();
+			iCancelledMeetings.add(meeting);
+		}
+		public TreeSet<MeetingInterface> getCancelledMeetings() { return iCancelledMeetings; }
+}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.ApproveEventBackend")
 	public static class ApproveEventRpcRequest extends SaveOrApproveEventRpcRequest {
