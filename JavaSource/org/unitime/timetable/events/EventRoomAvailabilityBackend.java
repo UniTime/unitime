@@ -26,6 +26,7 @@ import org.hibernate.Query;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
@@ -129,8 +130,9 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				meeting.setCanApprove(context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocationApprove));
 				
 				Location location = LocationDAO.getInstance().get(meeting.getLocation().getId());
-
-				if (!context.hasPermission(meeting.getLocation().getId(), "Location", Right.EventLocation)) {
+				boolean available = true;
+				
+				if (location == null || !context.hasPermission(location, Right.EventLocation)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
 					if (location != null && location.getEventDepartment() != null) {
@@ -147,33 +149,19 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setStartSlot(0);
 					conflict.setEndSlot(288);
 					meeting.addConflict(conflict);
-				} else {
-					if (location != null && location.getEventDepartment() != null) {
-						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
-						if (message != null) {
-							MeetingConflictInterface conflict = new MeetingConflictInterface();
-							conflict.setName(message);
-							conflict.setType(EventInterface.EventType.Message);
-							conflict.setMeetingDate(meeting.getMeetingDate());
-							conflict.setDayOfYear(meeting.getDayOfYear());
-							conflict.setStartOffset(0);
-							conflict.setEndOffset(0);
-							conflict.setStartSlot(0);
-							conflict.setEndSlot(288);
-							meeting.addConflict(conflict);
-						}
-					} else if (location != null && location.getEventDepartment() == null) {
-						MeetingConflictInterface conflict = new MeetingConflictInterface();
-						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
-						conflict.setType(EventInterface.EventType.Message);
-						conflict.setMeetingDate(meeting.getMeetingDate());
-						conflict.setDayOfYear(meeting.getDayOfYear());
-						conflict.setStartOffset(0);
-						conflict.setEndOffset(0);
-						conflict.setStartSlot(0);
-						conflict.setEndSlot(288);
-						meeting.addConflict(conflict);
-					}
+					available = false;
+				} else if (request.getEventType() == EventType.Unavailabile && !context.hasPermission(location, Right.EventLocationUnavailable)) {
+					MeetingConflictInterface conflict = new MeetingConflictInterface();
+					conflict.setName(MESSAGES.conflictCannotMakeUnavailable(meeting.getLocationName()));
+					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setMeetingDate(meeting.getMeetingDate());
+					conflict.setDayOfYear(meeting.getDayOfYear());
+					conflict.setStartOffset(0);
+					conflict.setEndOffset(0);
+					conflict.setStartSlot(0);
+					conflict.setEndSlot(288);
+					meeting.addConflict(conflict);
+					available = false;
 				}
 				
 				for (Meeting m: (List<Meeting>)EventDAO.getInstance().getSession().createQuery(
@@ -206,6 +194,35 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setApprovalStatus(m.getApprovalStatus());
 					
 					meeting.addConflict(conflict);
+				}
+				
+				if (available) {
+					if (location.getEventDepartment() == null) { // no event department
+						MeetingConflictInterface conflict = new MeetingConflictInterface();
+						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+						conflict.setType(EventInterface.EventType.Message);
+						conflict.setMeetingDate(meeting.getMeetingDate());
+						conflict.setDayOfYear(meeting.getDayOfYear());
+						conflict.setStartOffset(0);
+						conflict.setEndOffset(0);
+						conflict.setStartSlot(0);
+						conflict.setEndSlot(288);
+						meeting.addConflict(conflict);
+					} else { // has a message?
+						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
+						if (message != null) {
+							MeetingConflictInterface conflict = new MeetingConflictInterface();
+							conflict.setName(message);
+							conflict.setType(EventInterface.EventType.Message);
+							conflict.setMeetingDate(meeting.getMeetingDate());
+							conflict.setDayOfYear(meeting.getDayOfYear());
+							conflict.setStartOffset(0);
+							conflict.setEndOffset(0);
+							conflict.setStartSlot(0);
+							conflict.setEndSlot(288);
+							meeting.addConflict(conflict);
+						}
+					}
 				}
 			}
 		}

@@ -625,6 +625,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Meeting {0} cannot be cancelled by the user.")
 	String failedSaveEventCanNotCancelMeeting(String meeting);
+	
+	@DefaultMessage("Not enough permissions to make {0} not available.")
+	String failedSaveCannotMakeUnavailable(String location);
 
 	@DefaultMessage("The event does no longer exist.")
 	String failedApproveEventNoEvent();
@@ -811,6 +814,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} is not managed in UniTime or it is disabled for events.")
 	String conflictNotEventRoom(String locationName);
+	
+	@DefaultMessage("Not enough permissions to make {0} not available.")
+	String conflictCannotMakeUnavailable(String locationName);
 
 	@DefaultMessage("<i>File {0} attached.</i>")
 	String noteAttachement(String fileName);

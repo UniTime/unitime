@@ -92,7 +92,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Image;
@@ -576,17 +575,23 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile);
-				checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
-				for (int i = 0; i < iMeetings.getRowCount(); i++) {
-					EventMeetingRow em = iMeetings.getData(i);
-					if (em != null && em.getParent() == null && em.getMeeting().getId() == null) {
-						HTML approval = (HTML)iMeetings.getWidget(i, iMeetings.getCellCount(i) - 1);
-						if (type == EventType.Unavailabile) {
-							approval.setHTML("<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>");
-						} else {
-							approval.setHTML(em.getMeeting().isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>");
+				iEvent.setType(type);
+				if (iMeetings.getRowCount() > 1) {
+					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
+					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							LoadingWidget.getInstance().hide();
+							UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
 						}
-					}
+
+						@Override
+						public void onSuccess(EventRoomAvailabilityRpcResponse result) {
+							LoadingWidget.getInstance().hide();
+							iMeetings.setMeetings(iEvent, result.getMeetings());
+							checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
+						}
+					});
 				}
 			}
 		});
@@ -600,7 +605,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onSuccess(List<MeetingInterface> result) {
 				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(result, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
@@ -865,6 +870,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 							meeting.setEndOffset(-room.getBreakTime());
 							meeting.setDayOfYear(day);
 							meeting.setLocation(room);
+							meeting.setCanDelete(true);
 							meetings.add(meeting);
 						}
 					}
@@ -872,7 +878,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 			if (!meetings.isEmpty()) {
 				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
-				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(meetings, getEventId(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
+				RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(meetings, getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
