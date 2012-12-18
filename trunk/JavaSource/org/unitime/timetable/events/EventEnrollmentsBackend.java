@@ -33,6 +33,7 @@ import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Conflict;
@@ -74,7 +75,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 				if (request.hasMeetings()) {
 					conflicts = new HashMap<Long, List<Meeting>>();
 					for (MeetingInterface meeting: request.getMeetings())
-						computeConflicts(conflicts, meeting, related, request.getEventId());
+						if (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending) 
+							computeConflicts(conflicts, meeting, related, request.getEventId());
 				}
 			}				
 
