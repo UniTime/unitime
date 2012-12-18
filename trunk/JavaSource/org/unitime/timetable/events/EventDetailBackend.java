@@ -516,7 +516,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			    			for (CourseOffering co: courses) {
 					    		confEvent.addCourseName(co.getCourseName());
 					    		confEvent.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
-					    		if (clazz.getSectionNumberString(hibSession) != null)
+					    		if (clazz.getClassSuffix(co) != null)
 					    			confEvent.addExternalId(clazz.getClassSuffix(co));
 			    			}
 				    	} else if (Event.sEventTypeFinalExam == overlap.getEvent().getEventType() || Event.sEventTypeMidtermExam == overlap.getEvent().getEventType()) {

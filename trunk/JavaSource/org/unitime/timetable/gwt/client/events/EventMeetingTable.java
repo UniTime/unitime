@@ -576,7 +576,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	public boolean hasOperation(OperationType operation) { return getOperation(operation) != null; }
 	
 	protected boolean isSelectable(EventMeetingRow data) {
-		return (hasOperation(OperationType.Approve) && data.isCanApprove()) || (isEditable() && data.isEditable()) || (hasOperation(OperationType.Cancel) && data.isCanCancel()) || (hasOperation(OperationType.Inquire) && data.isCanInquire());
+		return (hasOperation(OperationType.Approve) && data.isCanApprove()) ||
+				(hasOperation(OperationType.Cancel) && data.isCanCancel() && (!getMode().isShowEventDetails() || isShowMainContact())) ||
+				(hasOperation(OperationType.Inquire) && data.isCanInquire()) ||
+				(isEditable() && (data.isEditable() || data.isCanCancel() || data.isCanDelete()));
 	}
 	
 	public void add(EventMeetingRow data) {
