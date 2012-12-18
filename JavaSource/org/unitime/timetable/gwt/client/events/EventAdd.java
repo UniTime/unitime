@@ -575,7 +575,6 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile);
-				iEvent.setType(type);
 				if (iMeetings.getRowCount() > 1) {
 					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -643,6 +642,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true); iMeetings.setEditable(true);
 		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
+		iMeetings.setOperation(EventMeetingTable.OperationType.Delete, this);
 		iMeetings.addValueChangeHandler(new ValueChangeHandler<List<EventMeetingRow>>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<List<EventMeetingRow>> event) {
@@ -1419,6 +1419,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		switch (operation) {
 		case AddMeetings:
 			iEventAddMeetings.showDialog(getEventId());
+			break;
+		case Delete:
+			checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
 			break;
 		}
 	}
