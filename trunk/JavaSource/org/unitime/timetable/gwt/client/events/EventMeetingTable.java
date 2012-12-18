@@ -93,7 +93,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public static enum OperationType {
-		Approve, Reject, Inquire, AddMeetings, Cancel
+		Approve, Reject, Inquire, AddMeetings, Cancel, Delete
 	}
 	
 	private Mode iMode = null;
@@ -254,6 +254,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					approval.setText(MESSAGES.approvalDeleted());
 					ValueChangeEvent.fire(EventMeetingTable.this, getValue());
 				}
+			}
+			@Override
+			public void execute() {
+				super.execute();
+				if (hasOperation(OperationType.Delete))
+					getOperation(OperationType.Delete).execute(EventMeetingTable.this, OperationType.Delete, null);
 			}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
