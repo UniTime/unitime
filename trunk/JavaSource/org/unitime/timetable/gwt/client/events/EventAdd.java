@@ -692,6 +692,18 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEvent.getContact().setEmail(iMainEmail.getWidget().getText());
 		iEvent.getContact().setPhone(iMainPhone.getText());
 		
+		if (getEventType() == EventType.Unavailabile && (!iEvent.getContact().hasLastName() || !iEvent.getContact().hasEmail())) {
+			ContactInterface mainContact = getProperties().getMainContact();
+			if (mainContact != null) {
+				iEvent.getContact().setExternalId(mainContact.getExternalId());
+				iEvent.getContact().setFirstName(mainContact.getFirstName());
+				iEvent.getContact().setMiddleName(mainContact.getMiddleName());
+				iEvent.getContact().setLastName(mainContact.getLastName());
+				iEvent.getContact().setEmail(mainContact.getEmail());
+				iEvent.getContact().setPhone(mainContact.getPhone());
+			}
+		}
+
 		if (iEvent.hasAdditionalContacts()) iEvent.getAdditionalContacts().clear();
 		for (ContactInterface contact: iContacts.getData())
 			iEvent.addAdditionalContact(contact);
@@ -1376,7 +1388,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iName.clearHint();
 		}
-		if (iMainLName.getWidget().getText().isEmpty()) {
+		if (iMainLName.getWidget().getText().isEmpty() && getEventType() != EventType.Unavailabile) {
 			UniTimeNotifications.error(MESSAGES.reqMainContactLastName());
 			if (valid)
 				iHeader.setErrorMessage(MESSAGES.reqMainContactLastName());
@@ -1384,7 +1396,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		} else {
 			iMainLName.clearHint();
 		}
-		if (iMainEmail.getWidget().getText().isEmpty()) {
+		if (iMainEmail.getWidget().getText().isEmpty() && getEventType() != EventType.Unavailabile) {
 			UniTimeNotifications.error(MESSAGES.reqMainContactEmail());
 			if (valid)
 				iHeader.setErrorMessage(MESSAGES.reqMainContactEmail());
