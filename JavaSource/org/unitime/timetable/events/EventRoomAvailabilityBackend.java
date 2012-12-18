@@ -104,6 +104,8 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 			response.setMeetings(request.getMeetings());
 			
 			for (MeetingInterface meeting: response.getMeetings()) {
+				if (meeting.hasConflicts()) meeting.getConflicts().clear();
+				
 				if (meeting.getMeetingDate() == null) {
 					meeting.setMeetingDate(CalendarUtils.dateOfYear2date(session.getSessionStartYear(), meeting.getDayOfYear()));
 					meeting.setDayOfWeek(Constants.getDayOfWeek(meeting.getMeetingDate()));
@@ -114,7 +116,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				if (context.isPastOrOutside(meeting.getMeetingDate())) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictPastOrOutside(session.getLabel()));
-					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setType(meeting.getId() == null ? EventInterface.EventType.Unavailabile : EventInterface.EventType.Message);
 					conflict.setMeetingDate(meeting.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());
 					conflict.setStartOffset(0);
@@ -141,7 +143,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 							conflict.setName(message);
 						}
 					}
-					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setType(meeting.getId() == null ? EventInterface.EventType.Unavailabile : EventInterface.EventType.Message);
 					conflict.setMeetingDate(meeting.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());
 					conflict.setStartOffset(0);
@@ -153,7 +155,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				} else if (request.getEventType() == EventType.Unavailabile && !context.hasPermission(location, Right.EventLocationUnavailable)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictCannotMakeUnavailable(meeting.getLocationName()));
-					conflict.setType(EventInterface.EventType.Unavailabile);
+					conflict.setType(meeting.getId() == null ? EventInterface.EventType.Unavailabile : EventInterface.EventType.Message);
 					conflict.setMeetingDate(meeting.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());
 					conflict.setStartOffset(0);

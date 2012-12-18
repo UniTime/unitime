@@ -983,11 +983,15 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		boolean canCancel = (iEvent.getId() != null);
 		if (canCancel && iEvent.hasMeetings()) {
+			boolean hasAMeetingToCancel = false;
 			for (MeetingInterface meeting: iEvent.getMeetings()) {
 				if (!meeting.isCanDelete() && !meeting.isCanCancel() && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					canCancel = false; break;
 				}
+				if (meeting.isCanCancel() || meeting.isCanDelete())
+					hasAMeetingToCancel = true;
 			}
+			if (!hasAMeetingToCancel) canCancel = false;
 		}
 		iHeader.setEnabled("delete", canDelete);
 		iHeader.setEnabled("cancel", canCancel);

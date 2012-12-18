@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
@@ -38,6 +39,8 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
+import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
@@ -178,11 +181,11 @@ public class EventPermissions {
 	
 	@PermissionForRight(Right.EventAddUnavailable)
 	public static class EventAddUnavailable extends EventPermission<Session> {
+		@Autowired Permission<Session> permissionEventAddSpecial;
+		
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return (!isPast(end(source)) || user.getCurrentAuthority().hasRight(Right.EventEditPast)) &&
-					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty()) &&
-					user.getCurrentAuthority().hasRight(Right.EventLocationUnavailable);
+			return user.getCurrentAuthority().hasRight(Right.EventLocationUnavailable) && permissionEventAddSpecial.check(user, source);
 		}
 		
 		@Override
@@ -191,10 +194,30 @@ public class EventPermissions {
 
 	@PermissionForRight(Right.EventDetail)
 	public static class EventDetail implements Permission<Event> {
+		@Autowired Permission<Class_> permissionClassDetail;
+		@Autowired Permission<Exam> permissionExaminationDetail;
 		
 		@Override
 		public boolean check(UserContext user, Event source) {
-			return user.getCurrentAuthority().hasRight(Right.EventLookupContact) || user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId());
+			// Owner can always see
+			if (user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId())) return true;
+			
+			// Event manager can see all events.
+			// FIXME: Really?
+			if (user.getCurrentAuthority().hasRight(Right.EventLookupContact)) return true;
+			
+			switch (source.getEventType()) {
+			case Event.sEventTypeClass:
+				// Class event -- can see Class Detail page?
+				return user.getCurrentAuthority().hasRight(Right.ClassDetail) && permissionClassDetail.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz());
+			case Event.sEventTypeFinalExam:
+			case Event.sEventTypeMidtermExam:
+				// Examination event -- can see ExaminationDetail page?
+				return user.getCurrentAuthority().hasRight(Right.ExaminationDetail) && permissionExaminationDetail.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()).getExam());
+			default:
+				// Event managers can see other events
+				return user.getCurrentAuthority().hasRight(Right.EventLookupContact);
+			}
 		}
 		
 		@Override
@@ -209,43 +232,29 @@ public class EventPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Event source) {
-			// Examination and class events cannot be edited just yet
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
+				// Examination and class events cannot be edited just yet
 				return false;
 			case Event.sEventTypeUnavailable:
 				if (!user.getCurrentAuthority().hasRight(Right.EventAddUnavailable)) return false;
+				break;
+			case Event.sEventTypeCourse:
+				if (!user.getCurrentAuthority().hasRight(Right.EventAddCourseRelated)) return false;
+				break;
+			case Event.sEventTypeSpecial:
+				if (!user.getCurrentAuthority().hasRight(Right.EventAddSpecial)) return false;
+				break;
 			}
 			
 			// Must be the owner or an event admin
-			if (!user.getCurrentAuthority().hasRight(Right.EventLookupContact) && !user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId()))
-				return false;
-			
-			// Check academic session
-			Session session = source.getSession();
-			if (session != null) {
-				return permissionSession.check(user, session) && (!isPast(end(session)) || user.getCurrentAuthority().hasRight(Right.EventEditPast));
-			} else {
-				boolean noLocation = true, hasDate = false;
-				for (Meeting meeting: source.getMeetings()) {
-					Location location = meeting.getLocation();
-					if (location != null) {
-						noLocation = false;
-						if (permissionSession.check(user, location.getSession()) && permissionEventDate.check(user, meeting.getMeetingDate())) return true;
-					} else {
-						if (!hasDate && permissionEventDate.check(user, meeting.getMeetingDate()))
-							hasDate = true;
-					}
-				}
-				return noLocation && hasDate;
-			}
+			return user.getCurrentAuthority().hasRight(Right.EventLookupContact) || user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId());
 		}
 
 		@Override
 		public Class<Event> type() { return Event.class; }
-
 	}
 	
 	@PermissionForRight(Right.EventDate)
@@ -253,7 +262,8 @@ public class EventPermissions {
 
 		@Override
 		public boolean check(UserContext user, Date source) {
-			return (!isPast(source) || user.getCurrentAuthority().hasRight(Right.EventEditPast)) &&
+			// Must be inside of the academic session, and cannot be in the past (or must have the EventEditPast override)
+			return (user.getCurrentAuthority().hasRight(Right.EventEditPast) || !isPast(source)) &&
 					!isOutside(source, SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()));
 		}
 		
@@ -265,6 +275,7 @@ public class EventPermissions {
 	public static class EventLocation extends EventPermission<Location> {
 		@Override
 		public boolean check(UserContext user, Location source) {
+			// Must be within user's locations (or must have the EventAnyLocation override)
 			return source == null || user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId());
 		}
 		
@@ -279,17 +290,17 @@ public class EventPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Location source) {
-			if (source == null) return true;
-			
-			if (!permissionEventLocation.check(user, source)) return false;
-			
+			// Has the EventAnyLocation override? 
 			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
 			
-			if (source.getEventDepartment() == null) return false;
+			// Must be within user's locations
+			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
 			
+			// Can manager approve? 
 			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanApprove()) return false;
 			
-			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
+			// Has event department?
+			return permissionDepartment.check(user, source.getEventDepartment());
 		}
 		
 		@Override
@@ -303,16 +314,16 @@ public class EventPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Location source) {
-			if (source == null) return true;
-			
-			if (!permissionEventLocation.check(user, source)) return false;
-			
+			// Has the EventAnyLocation override? 
 			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
-			
-			if (source.getEventDepartment() == null) return false;
-			
+
+			// Must be within user's locations
+			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
+
+			// Can manager request?
 			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
 			
+			// Has event department?
 			return permissionDepartment.check(user, source.getEventDepartment());
 		}
 		
@@ -327,17 +338,17 @@ public class EventPermissions {
 		
 		@Override
 		public boolean check(UserContext user, Location source) {
-			if (source == null) return true;
-			
-			if (!permissionEventLocation.check(user, source)) return false;
-			
+			// Has the EventAnyLocation override? 
 			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
-			
-			if (source.getEventDepartment() == null) return false;
-			
+
+			// Must be within user's locations
+			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
+
+			// Can manager request?
 			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
 			
-			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
+			// Has event department?
+			return permissionDepartment.check(user, source.getEventDepartment());
 		}
 		
 		@Override
@@ -352,10 +363,19 @@ public class EventPermissions {
 
 		@Override
 		public boolean check(UserContext user, Meeting source) {
-			return  permissionEventEdit.check(user, source.getEvent()) &&
-					permissionEventDate.check(user, source.getMeetingDate()) &&
-					permissionEventLocation.check(user, source.getLocation()) &&
-					(source.getStatus() == Meeting.Status.PENDING || source.getStatus() == Meeting.Status.APPROVED);
+			// Only pending and approved meetings can be edited
+			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+			
+			// Is the event editable?
+			if (!permissionEventEdit.check(user, source.getEvent())) return false;
+			
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+			
+			// Is the location ok?
+			if (!permissionEventLocation.check(user, source.getLocation())) return false;
+			
+			return true;
 		}
 		
 		@Override
@@ -364,21 +384,36 @@ public class EventPermissions {
 	
 	@PermissionForRight(Right.EventMeetingDelete)
 	public static class EventMeetingDelete extends EventPermission<Meeting> {
-		@Autowired Permission<Event> permissionEventEdit;
 		@Autowired Permission<Date> permissionEventDate;
 		@Autowired Permission<Location> permissionEventLocation;
 
 		@Override
 		public boolean check(UserContext user, Meeting source) {
-			if (!permissionEventEdit.check(user, source.getEvent())) return false;
-			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
-			if (!permissionEventLocation.check(user, source.getLocation())) return false;
-			
-			if (source.getEvent().getEventType() == Event.sEventTypeUnavailable) {
-				return source.getStatus() == Meeting.Status.APPROVED;
-			} else { 
-				return source.getStatus() == Meeting.Status.PENDING;
+			switch (source.getEvent().getEventType()) {
+			case Event.sEventTypeClass:
+			case Event.sEventTypeFinalExam:
+			case Event.sEventTypeMidtermExam:
+				// Examination and class events cannot be deleted through the event management
+				return false;
+			case Event.sEventTypeSpecial:
+			case Event.sEventTypeCourse:
+				// Only pending meetings can be deleted
+				if (source.getStatus() != Meeting.Status.PENDING) return false;
+				break;
+			case Event.sEventTypeUnavailable:
+				// Only approved meetings can be deleted
+				if (source.getStatus() != Meeting.Status.APPROVED) return false;
+				break;
 			}
+			
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+
+			// Owner can delete
+			if (user.getExternalUserId().equals(source.getEvent().getMainContact().getExternalUniqueId())) return true;
+			
+			// Otherwise check location too
+			return permissionEventLocation.check(user, source.getLocation());
 		}
 		
 		@Override
@@ -387,22 +422,47 @@ public class EventPermissions {
 	
 	@PermissionForRight(Right.EventMeetingCancel)
 	public static class EventMeetingCancel extends EventPermission<Meeting> {
-		@Autowired Permission<Event> permissionEventEdit;
 		@Autowired Permission<Date> permissionEventDate;
-		@Autowired Permission<Location> permissionEventLocation;
 		@Autowired Permission<Location> permissionEventLocationApprove;
 
 		@Override
 		public boolean check(UserContext user, Meeting source) {
-			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+			switch (source.getEvent().getEventType()) {
+			case Event.sEventTypeClass:
+			case Event.sEventTypeFinalExam:
+			case Event.sEventTypeMidtermExam:
+				// Examination and class events cannot be cancelled through the event management
+				return false;
+			case Event.sEventTypeSpecial:
+			case Event.sEventTypeCourse:
+				// Only pending meetings can be cancelled
+				if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+				break;
+			case Event.sEventTypeUnavailable:
+				// Only approved meetings can be cancelled
+				if (source.getStatus() != Meeting.Status.APPROVED) return false;
+				break;
+			}
 			
-			if (!permissionEventEdit.check(user, source.getEvent())) return false;
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+
+			// Owner can delete if date is ok
+			if (user.getExternalUserId().equals(source.getEvent().getMainContact().getExternalUniqueId())) {
+				if (permissionEventDate.check(user, source.getMeetingDate())) return true;
+			}
 			
-			if (permissionEventLocation.check(user, source.getLocation()) && permissionEventDate.check(user, source.getMeetingDate())) return true;
+			// Otherwise must be a manager
+			if (!user.getCurrentAuthority().hasRight(Right.EventLookupContact)) return false;
 			
-			return permissionEventLocationApprove.check(user, source.getLocation()) && 
-					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
-					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate()));
+			// Correct academic session?
+			if (isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()))) return false;
+			
+			// Is in the past?
+			if (!user.getCurrentAuthority().hasRight(Right.EventApprovePast) && isPast(source.getMeetingDate())) return false;
+
+			// Check the location
+			return permissionEventLocationApprove.check(user, source.getLocation());
 		}
 		
 		@Override
@@ -411,19 +471,30 @@ public class EventPermissions {
 	
 	@PermissionForRight(Right.EventMeetingApprove)
 	public static class EventMeetingApprove extends EventPermission<Meeting> {
-		@Autowired Permission<Event> permissionEventEdit;
 		@Autowired Permission<Location> permissionEventLocationApprove;
 		
 		@Override
 		public boolean check(UserContext user, Meeting source) {
-			if (source.getEvent().getEventType() == Event.sEventTypeUnavailable) return false;
-			
+			// Only pending meetings can be approved
 			if (source.getStatus() != Meeting.Status.PENDING) return false;
 			
-			return permissionEventEdit.check(user, source.getEvent()) &&
-					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
-					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate())) &&
-					permissionEventLocationApprove.check(user, source.getLocation());
+			// Following events are implicitly approved
+			switch (source.getEvent().getEventType()) {
+			case Event.sEventTypeClass:
+			case Event.sEventTypeFinalExam:
+			case Event.sEventTypeMidtermExam:
+			case Event.sEventTypeUnavailable:
+				return false;
+			}
+			
+			// Correct academic session?
+			if (isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()))) return false;
+			
+			// Is in the past?
+			if (!user.getCurrentAuthority().hasRight(Right.EventApprovePast) && isPast(source.getMeetingDate())) return false;
+
+			// Check the location
+			return permissionEventLocationApprove.check(user, source.getLocation());
 		}
 		
 		@Override
@@ -432,17 +503,29 @@ public class EventPermissions {
 	
 	@PermissionForRight(Right.EventMeetingInquire)
 	public static class EventMeetingInquire extends EventPermission<Meeting> {
-		@Autowired Permission<Event> permissionEventEdit;
-		@Autowired Permission<Location> permissionEventLocationApprove;
+		@Autowired Permission<Location> permissionEventLocation;
 		
 		@Override
 		public boolean check(UserContext user, Meeting source) {
+			// Only pending and approved meetings can be inquired
 			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
 			
-			return permissionEventEdit.check(user, source.getEvent()) &&
-					!isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId())) &&
-					(user.getCurrentAuthority().hasRight(Right.EventApprovePast) || !isPast(source.getMeetingDate())) &&
-					permissionEventLocationApprove.check(user, source.getLocation());
+			// Following events cannot be inquired
+			switch (source.getEvent().getEventType()) {
+			case Event.sEventTypeClass:
+			case Event.sEventTypeFinalExam:
+			case Event.sEventTypeMidtermExam:
+				return false;
+			}
+			
+			// Correct academic session?
+			if (isOutside(source.getMeetingDate(), SessionDAO.getInstance().get(user.getCurrentAcademicSessionId()))) return false;
+			
+			// Is in the past?
+			if (!user.getCurrentAuthority().hasRight(Right.EventApprovePast) && isPast(source.getMeetingDate())) return false;
+
+			// Check the location
+			return permissionEventLocation.check(user, source.getLocation());
 		}
 		
 		@Override
