@@ -177,7 +177,17 @@ public class EventPermissions {
 	public static class EventAddCourseRelated extends EventAddSpecial { }
 	
 	@PermissionForRight(Right.EventAddUnavailable)
-	public static class EventAddUnavailable extends EventAddSpecial { }
+	public static class EventAddUnavailable extends EventPermission<Session> {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			return (!isPast(end(source)) || user.getCurrentAuthority().hasRight(Right.EventEditPast)) &&
+					(user.getCurrentAuthority().hasRight(Right.EventAnyLocation) || !locations(source.getUniqueId(), user).isEmpty()) &&
+					user.getCurrentAuthority().hasRight(Right.EventLocationUnavailable);
+		}
+		
+		@Override
+		public Class<Session> type() { return Session.class; }
+	}
 
 	@PermissionForRight(Right.EventDetail)
 	public static class EventDetail implements Permission<Event> {
@@ -277,7 +287,7 @@ public class EventPermissions {
 			
 			if (source.getEventDepartment() == null) return false;
 			
-			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventsManagersCanApprove()) return false;
+			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanApprove()) return false;
 			
 			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
 		}
@@ -285,9 +295,54 @@ public class EventPermissions {
 		@Override
 		public Class<Location> type() { return Location.class; }
 	}
+	
+	@PermissionForRight(Right.EventLocationUnavailable)
+	public static class EventLocationUnavailable extends EventPermission<Location> {
+		@Autowired Permission<Location> permissionEventLocation;
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source == null) return true;
+			
+			if (!permissionEventLocation.check(user, source)) return false;
+			
+			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
+			
+			if (source.getEventDepartment() == null) return false;
+			
+			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
+			
+			return permissionDepartment.check(user, source.getEventDepartment());
+		}
+		
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
 
 	@PermissionForRight(Right.EventLocationOverbook)
-	public static class EventLocationOverbook extends EventLocationApprove { }
+	public static class EventLocationOverbook extends EventPermission<Location> {
+		@Autowired Permission<Location> permissionEventLocation;
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, Location source) {
+			if (source == null) return true;
+			
+			if (!permissionEventLocation.check(user, source)) return false;
+			
+			if (user.getCurrentAuthority().hasRight(Right.EventAnyLocation)) return true;
+			
+			if (source.getEventDepartment() == null) return false;
+			
+			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
+			
+			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
+		}
+		
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
 	
 	@PermissionForRight(Right.EventMeetingEdit)
 	public static class EventMeetingEdit extends EventPermission<Meeting> {

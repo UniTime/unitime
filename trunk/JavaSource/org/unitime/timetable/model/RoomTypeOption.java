@@ -60,7 +60,7 @@ public class RoomTypeOption extends BaseRoomTypeOption {
 		
 		public boolean isAuthenticatedUsersCanRequestEvents() { return iUserRequest; }
 		public boolean isDepartmentalUsersCanRequestEvents() { return iDeptRequest; }
-		public boolean isEventsManagersCanApprove() { return iMgrApproval; }
+		public boolean isEventManagersCanApprove() { return iMgrApproval; }
 		public boolean isEventManagersCanRequestEvents() { return iMgrRequest; }
 		
 		@Override

@@ -321,6 +321,7 @@ public enum Right {
     EventLocation(Location.class),
     EventLocationApprove(Location.class),
     EventLocationOverbook(Location.class),
+    EventLocationUnavailable(Location.class),
     EventMeetingEdit(Meeting.class),
     EventMeetingDelete(Meeting.class),
     EventMeetingInquire(Meeting.class),

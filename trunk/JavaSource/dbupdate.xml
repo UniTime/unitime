@@ -8180,4 +8180,11 @@
 			references %SCHEMA%.meeting (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="102" date="18-12-2012" comment="Event Location Unavailable">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventLocationUnavailable'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventAddUnavailable'
+		</sql>
+	</update>
 </dbupdate>

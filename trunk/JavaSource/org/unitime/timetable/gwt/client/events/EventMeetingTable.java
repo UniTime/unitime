@@ -1471,7 +1471,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		public boolean isCanApprove() {
-			if (iMeeting != null) return iMeeting.isCanApprove() && iMeeting.getApprovalStatus() == ApprovalStatus.Pending;
+			if (iMeeting != null) return iMeeting.isCanApprove();
 			if (iEvent != null && iEvent.hasMeetings())
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (meeting.isCanApprove()) return true;
@@ -1479,7 +1479,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		public boolean isCanInquire() {
-			if (iMeeting != null) return iMeeting.isCanInquire() && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
+			if (iMeeting != null) return iMeeting.isCanInquire();
 			if (iEvent != null && iEvent.hasMeetings())
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (meeting.isCanInquire()) return true;
@@ -1487,7 +1487,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 
 		public boolean isCanCancel() {
-			if (iMeeting != null) return iMeeting.isCanCancel() && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
+			if (iMeeting != null) return iMeeting.isCanCancel();
 			if (iEvent != null && iEvent.hasMeetings())
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (meeting.isCanCancel()) return true;
@@ -1495,7 +1495,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		public boolean isCanDelete() {
-			if (iMeeting != null) return iMeeting.isCanDelete() && iMeeting.getApprovalStatus() == ApprovalStatus.Pending;
+			if (iMeeting != null) return iMeeting.isCanDelete();
 			if (iEvent != null && iEvent.hasMeetings())
 				for (MeetingInterface meeting: iEvent.getMeetings())
 					if (meeting.isCanDelete()) return true;
@@ -1503,7 +1503,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 
 		public boolean isEditable() {
-			return iMeeting != null && (iMeeting.getId() == null || iMeeting.isCanEdit()) && (iMeeting.getApprovalStatus() == ApprovalStatus.Pending || iMeeting.getApprovalStatus() == ApprovalStatus.Approved);
+			return iMeeting != null && (iMeeting.getId() == null || iMeeting.isCanEdit());
 		}
 		
 		public List<MeetingInterface> getMeetings(MeetingFilter filter) {

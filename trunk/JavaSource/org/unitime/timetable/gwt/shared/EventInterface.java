@@ -591,7 +591,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setPast(boolean past) { iPast = past; }
 		public boolean isCanEdit() { return iCanEdit; }
 		public void setCanEdit(boolean canEdit) { iCanEdit = canEdit; }
-		public boolean isCanDelete() { return iCanDelete; }
+		public boolean isCanDelete() { return iCanDelete || iMeetingId == null; }
 		public void setCanDelete(boolean canDelete) { iCanDelete = canDelete; }
 		public boolean isCanCancel() { return iCanCancel; }
 		public void setCanCancel(boolean canCancel) { iCanCancel = canCancel; }
@@ -1546,6 +1546,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventRoomAvailabilityBackend")
 	public static class EventRoomAvailabilityRpcRequest extends EventRpcRequest<EventRoomAvailabilityRpcResponse> {
 		private Long iEventId;
+		private EventType iEventType;
 		private Integer iStartSlot, iEndSlot;
 		private List<Integer> iDates;
 		private List<Long> iLocations;
@@ -1575,6 +1576,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public Long getEventId() { return iEventId; }
 		public void setEventId(Long eventId) { iEventId = eventId; }
 		
+		public boolean hasEventType() { return iEventType != null; }
+		public EventType getEventType() { return iEventType; }
+		public void setEventType(EventType type) { iEventType = type; }
+		
 		public static EventRoomAvailabilityRpcRequest checkAvailability(int startSlot, int endSlot, List<Integer> dates, List<FilterRpcResponse.Entity> locations, Long eventId, Long sessionId) {
 			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
 			request.setStartSlot(startSlot);
@@ -1589,10 +1594,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			return request;
 		}
 		
-		public static EventRoomAvailabilityRpcRequest checkAvailability(List<MeetingInterface> meetings, Long eventId, Long sessionId) {
+		public static EventRoomAvailabilityRpcRequest checkAvailability(List<MeetingInterface> meetings, Long eventId, EventType eventType, Long sessionId) {
 			EventRoomAvailabilityRpcRequest request = new EventRoomAvailabilityRpcRequest();
 			request.setMeetings(meetings);
 			request.setEventId(eventId);
+			request.setEventType(eventType);
 			request.setSessionId(sessionId);
 			return request;
 		}
