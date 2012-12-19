@@ -669,13 +669,13 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 									(clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell("")),
 									clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell(""));
 							row.setId(clazz.getClassId().toString());
-							String styleName = "unitime-ClassRow";
+							String styleName = "";
 							if (lastSubpartId != null && !clazz.getSubpartId().equals(lastSubpartId))
-								styleName += "First";
+								styleName += " .top-border-dashed";
 							if (!clazz.isAvailable())
-								styleName += "Unavail";
+								styleName += " .text-gray";
 							for (WebTable.Cell cell: row.getCells())
-								cell.setStyleName(styleName);
+								cell.setStyleName(styleName.trim());
 							rows[idx++] = row;
 							lastSubpartId = clazz.getSubpartId();
 						}
