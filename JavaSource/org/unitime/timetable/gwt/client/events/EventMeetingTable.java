@@ -1054,7 +1054,61 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	public void sort() {
 		if (getSortBy() != null) {
-			sort(new Comparator<EventMeetingRow>() {
+			UniTimeTableHeader header = null;
+			switch (EventComparator.EventMeetingSortBy.values()[getSortBy()]) {
+			case NAME:
+				header = getHeader(MESSAGES.colName()); 
+				break;
+			case SECTION:
+				header = getHeader(MESSAGES.colSection()); 
+				break;
+			case TYPE:
+				header = getHeader(MESSAGES.colType()); 
+				break;
+			case DATE:
+				header = getHeader(MESSAGES.colDate()); 
+				break;
+			case PUBLISHED_TIME:
+				header = getHeader(MESSAGES.colPublishedTime()); 
+				break;
+			case ALLOCATED_TIME:
+				header = getHeader(MESSAGES.colAllocatedTime()); 
+				break;
+			case SETUP_TIME:
+				header = getHeader(MESSAGES.colSetupTimeShort()); 
+				break;
+			case TEARDOWN_TIME:
+				header = getHeader(MESSAGES.colTeardownTimeShort()); 
+				break;
+			case LOCATION:
+				header = getHeader(MESSAGES.colLocation()); 
+				break;
+			case CAPACITY:
+				header = getHeader(MESSAGES.colCapacity()); 
+				break;
+			case SPONSOR:
+				header = getHeader(MESSAGES.colSponsorOrInstructor()); 
+				break;
+			case MAIN_CONTACT:
+				header = getHeader(MESSAGES.colMainContact()); 
+				break;
+			case APPROVAL:
+				header = getHeader(MESSAGES.colApproval()); 
+				break;
+			case LIMIT:
+				header = getHeader(MESSAGES.colLimit()); 
+				break;
+			case ENROLLMENT:
+				header = getHeader(MESSAGES.colEnrollment()); 
+				break;
+			case TITLE:
+				header = getHeader(MESSAGES.colTitle()); 
+				break;
+			case NOTE:
+				header = getHeader(MESSAGES.colNote()); 
+				break;
+			}
+			sort(header, new Comparator<EventMeetingRow>() {
 				@Override
 				public int compare(EventMeetingRow o1, EventMeetingRow o2) {
 					int cmp = compareRows(o1.hasParent() ? o1.getParent() : o1, o2.hasParent() ? o2.getParent() : o2);

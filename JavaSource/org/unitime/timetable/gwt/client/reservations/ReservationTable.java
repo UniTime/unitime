@@ -197,13 +197,13 @@ public class ReservationTable extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		if (iOfferingId == null) {
-			UniTimeTableHeader hOffering = new UniTimeTableHeader("Instructional<br>Offering");
+			final UniTimeTableHeader hOffering = new UniTimeTableHeader("Instructional<br>Offering");
 			hOffering.setWidth("100px");
 			header.add(hOffering);
 			hOffering.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iReservations.sort(new Comparator<ReservationInterface>() {
+					iReservations.sort(hOffering, new Comparator<ReservationInterface>() {
 						@Override
 						public int compare(ReservationInterface r1, ReservationInterface r2) {
 							return r1.compareTo(r2);
@@ -225,12 +225,12 @@ public class ReservationTable extends Composite {
 			});
 		}
 
-		UniTimeTableHeader hType = new UniTimeTableHeader("Reservation<br>Type");
+		final UniTimeTableHeader hType = new UniTimeTableHeader("Reservation<br>Type");
 		hType.setWidth("100px");
 		hType.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hType, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
@@ -254,13 +254,13 @@ public class ReservationTable extends Composite {
 		});
 		header.add(hType);
 		
-		UniTimeTableHeader hOwner = new UniTimeTableHeader("Owner");
+		final UniTimeTableHeader hOwner = new UniTimeTableHeader("Owner");
 		hOwner.setWidth("250px");
 		header.add(hOwner);
 		hOwner.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hOwner, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getPriority()).compareTo(r2.getPriority());
@@ -285,12 +285,12 @@ public class ReservationTable extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hRestrict = new UniTimeTableHeader("Restrictions");
+		final UniTimeTableHeader hRestrict = new UniTimeTableHeader("Restrictions");
 		hRestrict.setWidth("160px");
 		hRestrict.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hRestrict, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = r1.getOffering().getAbbv().compareTo(r2.getOffering().getAbbv());
@@ -318,13 +318,13 @@ public class ReservationTable extends Composite {
 		});
 		header.add(hRestrict);
 
-		UniTimeTableHeader hLimit = new UniTimeTableHeader("Reserved<br>Space");
+		final UniTimeTableHeader hLimit = new UniTimeTableHeader("Reserved<br>Space");
 		hLimit.setWidth("80px");
 		header.add(hLimit);
 		hLimit.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hLimit, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getLimit() == null ? Integer.MAX_VALUE : r1.getLimit()).compareTo(r2.getLimit() == null ? Integer.MAX_VALUE : r2.getLimit());
@@ -347,13 +347,13 @@ public class ReservationTable extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
+		final UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
 		hLastLike.setWidth("80px");
 		header.add(hLastLike);
 		hLastLike.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hLastLike, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getLastLike() == null ? -1 : r1.getLastLike()).compareTo(r2.getLastLike() == null ? -1 : r2.getLastLike());
@@ -376,13 +376,13 @@ public class ReservationTable extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by Rule");
+		final UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by Rule");
 		hProjected.setWidth("80px");
 		header.add(hProjected);
 		hProjected.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hProjected, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getProjection() == null ? -1 : r1.getProjection()).compareTo(r2.getProjection() == null ? -1 : r2.getProjection());
@@ -405,13 +405,13 @@ public class ReservationTable extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hEnrollment = new UniTimeTableHeader("Current<br>Enrollment");
+		final UniTimeTableHeader hEnrollment = new UniTimeTableHeader("Current<br>Enrollment");
 		hEnrollment.setWidth("80px");
 		header.add(hEnrollment);
 		hEnrollment.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hEnrollment, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Integer(r1.getEnrollment() == null ? -1 : r1.getEnrollment()).compareTo(r2.getEnrollment() == null ? -1 : r2.getEnrollment());
@@ -434,13 +434,13 @@ public class ReservationTable extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hExpiration = new UniTimeTableHeader("Expiration<br>Date");
+		final UniTimeTableHeader hExpiration = new UniTimeTableHeader("Expiration<br>Date");
 		hExpiration.setWidth("80px");
 		header.add(hExpiration);
 		hExpiration.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iReservations.sort(new Comparator<ReservationInterface>() {
+				iReservations.sort(hExpiration, new Comparator<ReservationInterface>() {
 					@Override
 					public int compare(ReservationInterface r1, ReservationInterface r2) {
 						int cmp = new Long(r1.getExpirationDate() == null ? Long.MAX_VALUE : r1.getExpirationDate().getTime()).compareTo(r2.getExpirationDate() == null ? Long.MAX_VALUE : r2.getExpirationDate().getTime());

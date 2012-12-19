@@ -321,7 +321,25 @@ public class UniTimeTable<T> extends FlexTable {
 		}
 	}
 	
-	public void sort(final Comparator<T> rowComparator) {
+	public void sort(int column, final Comparator<T> rowComparator) {
+		sort(getHeader(column), rowComparator);
+	}
+	
+	public void sort(String columnName, final Comparator<T> rowComparator) {
+		sort(getHeader(columnName), rowComparator);
+	}
+
+	public void sort(UniTimeTableHeader header, final Comparator<T> rowComparator) {
+		if (header != null) {
+			for (int i = 0; i < getCellCount(0); i++) {
+				Widget w = getWidget(0, i);
+				if (w != null && w instanceof UniTimeTableHeader) {
+					UniTimeTableHeader h = (UniTimeTableHeader)w;
+					h.setOrder(null);
+				}
+			}
+			header.setOrder(true);
+		}
 		Element body = getBodyElement();
 		ArrayList<Object[]> rows = new ArrayList<Object[]>();
 		for (int row = 0; row < getRowCount(); row++) {
@@ -350,7 +368,25 @@ public class UniTimeTable<T> extends FlexTable {
 			listener.onDataSorted(changeEvents);
 	}
 	
-	public void sortByRow(final Comparator<Integer> rowComparator) {
+	public void sortByRow(int column, final Comparator<Integer> rowComparator) {
+		sortByRow(getHeader(column), rowComparator);
+	}
+	
+	public void sortByRow(String columnName, final Comparator<Integer> rowComparator) {
+		sortByRow(getHeader(columnName), rowComparator);
+	}
+	
+	public void sortByRow(UniTimeTableHeader header, final Comparator<Integer> rowComparator) {
+		if (header != null) {
+			for (int i = 0; i < getCellCount(0); i++) {
+				Widget w = getWidget(0, i);
+				if (w != null && w instanceof UniTimeTableHeader) {
+					UniTimeTableHeader h = (UniTimeTableHeader)w;
+					h.setOrder(null);
+				}
+			}
+			header.setOrder(true);
+		}
 		Element body = getBodyElement();
 		ArrayList<Object[]> rows = new ArrayList<Object[]>();
 		for (int row = 0; row < getRowCount(); row++) {

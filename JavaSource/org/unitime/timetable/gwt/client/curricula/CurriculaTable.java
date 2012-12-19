@@ -88,6 +88,7 @@ public class CurriculaTable extends Composite {
 	private List<CurriculumClickHandler> iCurriculumClickHandlers = new ArrayList<CurriculumClickHandler>();
 	
 	private Comparator<CurriculumInterface> iLastSort = null;
+	private UniTimeTableHeader iLastSortHeader = null;
 	
 	private Long iLastCurriculumId = null;
 	
@@ -493,7 +494,7 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
+		final UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
 		header.add(hCurriculum);
 		hCurriculum.setWidth("100px");
 		hCurriculum.addOperation(new Operation() {
@@ -543,12 +544,13 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hCurriculum;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 
 		
-		UniTimeTableHeader hArea = new UniTimeTableHeader("Academic Area");
+		final UniTimeTableHeader hArea = new UniTimeTableHeader("Academic Area");
 		header.add(hArea);
 		hArea.setWidth("100px");
 		hArea.addOperation(new Operation() {
@@ -599,11 +601,12 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hArea;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 		
-		UniTimeTableHeader hMajor = new UniTimeTableHeader("Major(s)");
+		final UniTimeTableHeader hMajor = new UniTimeTableHeader("Major(s)");
 		header.add(hMajor);
 		hMajor.setWidth("100px");
 		hMajor.addOperation(new Operation() {
@@ -656,11 +659,12 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hMajor;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 		
-		UniTimeTableHeader hDept = new UniTimeTableHeader("Department");
+		final UniTimeTableHeader hDept = new UniTimeTableHeader("Department");
 		header.add(hDept);
 		hDept.setWidth("100px");
 		for (final DeptMode m: DeptMode.values()) {
@@ -712,11 +716,12 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hDept;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 		
-		UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
+		final UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
 		header.add(hLastLike);
 		hLastLike.setWidth("90px");
 		hLastLike.addOperation(new Operation() {
@@ -743,11 +748,12 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hLastLike;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 		
-		UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by&nbsp;Rule");
+		final UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by&nbsp;Rule");
 		header.add(hProjected);
 		hProjected.setWidth("90px");
 		hProjected.addOperation(new Operation() {
@@ -792,12 +798,13 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hProjected;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 
 
-		UniTimeTableHeader hExpected = new UniTimeTableHeader("Requested<br>Enrollment");
+		final UniTimeTableHeader hExpected = new UniTimeTableHeader("Requested<br>Enrollment");
 		header.add(hExpected);
 		hExpected.setWidth("90px");
 		hExpected.addOperation(new Operation() {
@@ -824,11 +831,12 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hExpected;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 		
-		UniTimeTableHeader hEnrolled = new UniTimeTableHeader("Current<br>Enrollment");
+		final UniTimeTableHeader hEnrolled = new UniTimeTableHeader("Current<br>Enrollment");
 		header.add(hEnrolled);
 		hEnrolled.setWidth("90px");
 		hEnrolled.addOperation(new Operation() {
@@ -855,7 +863,8 @@ public class CurriculaTable extends Composite {
 						return a.compareTo(b);
 					}
 				};
-				iTable.sort(iLastSort);
+				iLastSortHeader = hEnrolled;
+				iTable.sort(iLastSortHeader, iLastSort);
 			}
 		});
 
@@ -942,7 +951,7 @@ public class CurriculaTable extends Composite {
 				if (!noEnrl.isEmpty())
 					iService.loadClassifications(noEnrl, iLoadClassifications);
 				else if (iLastSort != null)
-					iTable.sort(iLastSort);
+					iTable.sort(iLastSortHeader, iLastSort);
 			}
 		};
 		

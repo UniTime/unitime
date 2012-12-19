@@ -566,7 +566,7 @@ public class SavedHQLPage extends Composite {
 						h.addOperation(new UniTimeTableHeader.Operation() {
 							@Override
 							public void execute() {
-								iTable.sort(new Comparator<String[]>() {
+								iTable.sort(col, new Comparator<String[]>() {
 									@Override
 									public int compare(String[] o1, String[] o2) {
 										return SavedHQLPage.compare(o1, o2, col);
@@ -611,7 +611,7 @@ public class SavedHQLPage extends Composite {
 			iTableHeader.setEnabled("next", result.size() > 101);
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
 			if (iLastSort >= 0) {
-				iTable.sort(new Comparator<String[]>() {
+				iTable.sort(iLastSort, new Comparator<String[]>() {
 					@Override
 					public int compare(String[] o1, String[] o2) {
 						return SavedHQLPage.compare(o1, o2, iLastSort);

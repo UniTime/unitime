@@ -180,7 +180,7 @@ public class CurriculaCourses extends Composite {
 		
 		// header
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		UniTimeTableHeader hGroup = new UniTimeTableHeader("Group") {
+		final UniTimeTableHeader hGroup = new UniTimeTableHeader("Group") {
 			@Override
 			public List<Operation> getOperations() {
 				List<Operation> ret = new ArrayList<Operation>();
@@ -226,7 +226,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public void execute() {
-				iTable.sortByRow(new Comparator<Integer>() {
+				iTable.sortByRow(hGroup, new Comparator<Integer>() {
 					public int compare(Integer a, Integer b) {
 						return compareTwoRows(0, a, b);
 					}
@@ -234,7 +234,7 @@ public class CurriculaCourses extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hCourse = new UniTimeTableHeader("Course");
+		final UniTimeTableHeader hCourse = new UniTimeTableHeader("Course");
 		header.add(hCourse);
 		hCourse.addOperation(new Operation() {
 			@Override
@@ -539,7 +539,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public void execute() {
-				iTable.sortByRow(new Comparator<Integer>() {
+				iTable.sortByRow(hCourse, new Comparator<Integer>() {
 					public int compare(Integer a, Integer b) {
 						return compareTwoRows(1, a, b);
 					}
@@ -556,7 +556,7 @@ public class CurriculaCourses extends Composite {
 		
 		int col = 2;
 		for (final AcademicClassificationInterface clasf: iClassifications.getClassifications()) {
-			UniTimeTableHeader hExp = new UniTimeTableHeader(clasf.getCode(), HasHorizontalAlignment.ALIGN_RIGHT);
+			final UniTimeTableHeader hExp = new UniTimeTableHeader(clasf.getCode(), HasHorizontalAlignment.ALIGN_RIGHT);
 			header.add(hExp);
 			final int expCol = col++;
 			hExp.addOperation(new Operation() {
@@ -754,7 +754,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public void execute() {
-					iTable.sortByRow(new Comparator<Integer>() {
+					iTable.sortByRow(hExp, new Comparator<Integer>() {
 						public int compare(Integer a, Integer b) {
 							return compareTwoRows(expCol, a, b);
 						}
@@ -762,7 +762,7 @@ public class CurriculaCourses extends Composite {
 				}
 			});
 			
-			UniTimeTableHeader hCmp = new UniTimeTableHeader(CurriculumCookie.getInstance().getCurriculaCoursesMode().getAbbv(), HasHorizontalAlignment.ALIGN_CENTER);
+			final UniTimeTableHeader hCmp = new UniTimeTableHeader(CurriculumCookie.getInstance().getCurriculaCoursesMode().getAbbv(), HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hCmp);
 			final int cmpCol = col++;
 			hCmp.addOperation(new Operation() {
@@ -856,7 +856,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public void execute() {
-					iTable.sortByRow(new Comparator<Integer>() {
+					iTable.sortByRow(hCmp, new Comparator<Integer>() {
 						public int compare(Integer a, Integer b) {
 							return compareTwoRows(cmpCol, a, b);
 						}
