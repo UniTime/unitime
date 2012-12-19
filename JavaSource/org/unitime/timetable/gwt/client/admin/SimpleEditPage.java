@@ -391,7 +391,7 @@ public class SimpleEditPage extends Composite {
 			cell.addOperation(new UniTimeTableHeader.Operation() {
 				@Override
 				public void execute() {
-					iTable.sort(new Comparator<Record>() {
+					iTable.sort(index, new Comparator<Record>() {
 						RecordComparator iComparator = iData.getComparator();
 						public int compare(Record a, Record b) {
 							String f = a.getField(index);
@@ -428,7 +428,7 @@ public class SimpleEditPage extends Composite {
 				cell.addOperation(new UniTimeTableHeader.Operation() {
 					@Override
 					public void execute() {
-						iTable.sort(iData.getComparator());
+						iTable.sort(index, iData.getComparator());
 						saveOrder();
 					}
 					

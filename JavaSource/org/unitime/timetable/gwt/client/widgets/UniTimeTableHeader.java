@@ -47,11 +47,14 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	private HorizontalAlignmentConstant iAlign;
 	private List<Operation> iOperations = new ArrayList<Operation>();
 	private List<String> iStyleNames = new ArrayList<String>();
+	private String iTitle = null;
+	private Boolean iOrder = null;
 	
 	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align) {
 		super(title, false);
 		iColSpan = colSpan;
 		iAlign = align;
+		iTitle = title;
 		
 		addClickHandler(new ClickHandler() {
 			@Override
@@ -155,5 +158,25 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	@Override
 	public void setColumn(int column) {
 		iColumn = column;
+	}
+	
+	@Override
+	public void setHTML(String html) {
+		iTitle = html;
+		super.setHTML(html);
+	}
+	
+	@Override
+	public String getHTML() {
+		return iTitle;
+	}
+	
+	public void setOrder(Boolean order) {
+		iOrder = order;
+		super.setHTML(order == null ? iTitle : order ? "&uarr; " + iTitle : "&darr; " + iTitle);
+	}
+	
+	public Boolean getOrder() {
+		return iOrder;
 	}
 }
