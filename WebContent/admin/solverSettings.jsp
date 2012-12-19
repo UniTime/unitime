@@ -260,10 +260,10 @@
  				} else { 
 %>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="false">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="100" disabled="false"/>
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="2048" disabled="false"/>
 				</logic:equal>
 				<logic:equal name="solverSettingsForm" property='<%="useDefault["+def.getUniqueId()+"]"%>' value="true">
-					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="100" disabled="true"/>
+					<html:text property='<%="parameter["+def.getUniqueId()+"]"%>' size="30" maxlength="2048" disabled="true"/>
 				</logic:equal>
   				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
