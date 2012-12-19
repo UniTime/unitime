@@ -71,8 +71,8 @@
 	<!-- 
 	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.4.0.jar" sourcepath="3rd_party/sources/gwt-dev-2.4.0-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/gwt-user-2.4.0.jar" sourcepath="3rd_party/sources/gwt-user-2.4.0-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/jsp-api-2.2.jar" sourcepath="3rd_party/sources/jsp-api-2.2-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/servlet-api-2.4.jar" sourcepath="3rd_party/sources/servlet-api-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="3rd_party/jsp-api-2.1.jar" sourcepath="3rd_party/sources/jsp-api-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="3rd_party/servlet-api-2.5.jar" sourcepath="3rd_party/sources/servlet-api-2.5-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/validation-api-1.0.0.GA.jar" sourcepath="3rd_party/sources/validation-api-1.0.0.GA-sources.jar"/>
 	 -->
 	
