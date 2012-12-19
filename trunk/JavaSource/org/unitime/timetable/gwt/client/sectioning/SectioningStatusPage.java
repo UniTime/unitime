@@ -859,12 +859,12 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hOperations = new UniTimeTableHeader("");
 		header.add(hOperations);
 
-		UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>&nbsp;&nbsp;" + MESSAGES.colSubpart());
+		final UniTimeTableHeader hSubject = new UniTimeTableHeader(MESSAGES.colSubject() + "<br>&nbsp;&nbsp;" + MESSAGES.colSubpart());
 		header.add(hSubject);
 		hSubject.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.SUBJECT));
+				iCourseTable.sort(hSubject, new EnrollmentComparator(EnrollmentComparator.SortBy.SUBJECT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -880,12 +880,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hCourse = new UniTimeTableHeader(MESSAGES.colCourse() + "<br>" + MESSAGES.colClass());
+		final UniTimeTableHeader hCourse = new UniTimeTableHeader(MESSAGES.colCourse() + "<br>" + MESSAGES.colClass());
 		header.add(hCourse);
 		hCourse.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.COURSE));
+				iCourseTable.sort(hCourse, new EnrollmentComparator(EnrollmentComparator.SortBy.COURSE));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -901,12 +901,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hTitleSubpart = new UniTimeTableHeader(MESSAGES.colTitle() + "<br>" + MESSAGES.colTime());
+		final UniTimeTableHeader hTitleSubpart = new UniTimeTableHeader(MESSAGES.colTitle() + "<br>" + MESSAGES.colTime());
 		header.add(hTitleSubpart);
 		hTitleSubpart.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.TITLE));
+				iCourseTable.sort(hTitleSubpart, new EnrollmentComparator(EnrollmentComparator.SortBy.TITLE));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -925,12 +925,12 @@ public class SectioningStatusPage extends Composite {
 		UniTimeTableHeader hStart = new UniTimeTableHeader("<br>" + MESSAGES.colDate());
 		header.add(hStart);
 
-		UniTimeTableHeader hRoom = new UniTimeTableHeader(MESSAGES.colConsent() + "<br>" + MESSAGES.colRoom());
+		final UniTimeTableHeader hRoom = new UniTimeTableHeader(MESSAGES.colConsent() + "<br>" + MESSAGES.colRoom());
 		header.add(hRoom);
 		hRoom.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.CONSENT));
+				iCourseTable.sort(hRoom, new EnrollmentComparator(EnrollmentComparator.SortBy.CONSENT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -947,12 +947,12 @@ public class SectioningStatusPage extends Composite {
 		});
 
 
-		UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colAvailable());
+		final UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colAvailable());
 		header.add(hLimit);
 		hLimit.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.LIMIT));
+				iCourseTable.sort(hLimit, new EnrollmentComparator(EnrollmentComparator.SortBy.LIMIT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -968,12 +968,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hProjection = new UniTimeTableHeader(MESSAGES.colProjection());
+		final UniTimeTableHeader hProjection = new UniTimeTableHeader(MESSAGES.colProjection());
 		header.add(hProjection);
 		hProjection.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.PROJECTION));
+				iCourseTable.sort(hProjection, new EnrollmentComparator(EnrollmentComparator.SortBy.PROJECTION));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -989,12 +989,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+		final UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 		header.add(hEnrollment);
 		hEnrollment.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.ENROLLMENT));
+				iCourseTable.sort(hEnrollment, new EnrollmentComparator(EnrollmentComparator.SortBy.ENROLLMENT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1010,12 +1010,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hWaitListed = new UniTimeTableHeader(MESSAGES.colWaitListed());
+		final UniTimeTableHeader hWaitListed = new UniTimeTableHeader(MESSAGES.colWaitListed());
 		header.add(hWaitListed);
 		hWaitListed.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.WAITLIST));
+				iCourseTable.sort(hWaitListed, new EnrollmentComparator(EnrollmentComparator.SortBy.WAITLIST));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1031,12 +1031,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
+		final UniTimeTableHeader hReserved = new UniTimeTableHeader(MESSAGES.colReserved());
 		header.add(hReserved);
 		hReserved.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.RESERVATION));
+				iCourseTable.sort(hReserved, new EnrollmentComparator(EnrollmentComparator.SortBy.RESERVATION));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1052,12 +1052,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 
-		UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
+		final UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colNeedConsent());
 		header.add(hConsent);
 		hConsent.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iCourseTable.sort(new EnrollmentComparator(EnrollmentComparator.SortBy.NEED_CONSENT));
+				iCourseTable.sort(hConsent, new EnrollmentComparator(EnrollmentComparator.SortBy.NEED_CONSENT));
 			}
 			@Override
 			public boolean isApplicable() {
@@ -1328,12 +1328,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		}
 		
-		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
+		final UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
 		hStudent.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+				iStudentTable.sort(hStudent, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 					@Override
 					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 						if (e1.getStudent() == null) return 1;
@@ -1378,13 +1378,13 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasArea) {
-			UniTimeTableHeader hArea = new UniTimeTableHeader(MESSAGES.colArea());
+			final UniTimeTableHeader hArea = new UniTimeTableHeader(MESSAGES.colArea());
 			//hArea.setWidth("100px");
 			header.add(hArea);
 			hArea.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hArea, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1413,13 +1413,13 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 			
-			UniTimeTableHeader hClasf = new UniTimeTableHeader(MESSAGES.colClassification());
+			final UniTimeTableHeader hClasf = new UniTimeTableHeader(MESSAGES.colClassification());
 			//hClasf.setWidth("100px");
 			header.add(hClasf);
 			hClasf.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hClasf, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1452,13 +1452,13 @@ public class SectioningStatusPage extends Composite {
 		}
 
 		if (hasMajor) {
-			UniTimeTableHeader hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
+			final UniTimeTableHeader hMajor = new UniTimeTableHeader(MESSAGES.colMajor());
 			//hMajor.setWidth("100px");
 			header.add(hMajor);
 			hMajor.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hMajor, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1489,13 +1489,13 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasGroup) {
-			UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
+			final UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup());
 			//hGroup.setWidth("100px");
 			header.add(hGroup);
 			hGroup.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hGroup, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1526,13 +1526,13 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		iStatusColumn = header.size() - 1;
-		UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
+		final UniTimeTableHeader hStatus = new UniTimeTableHeader(MESSAGES.colStatus());
 		//hMajor.setWidth("100px");
 		header.add(hStatus);
 		hStatus.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+				iStudentTable.sort(hStatus, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 					@Override
 					public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 						if (e1.getStudent() == null) return 1;
@@ -1560,12 +1560,12 @@ public class SectioningStatusPage extends Composite {
 		});
 		
 		if (hasEnrollment) {
-			UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
+			final UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colEnrollment());
 			header.add(hEnrollment);
 			hEnrollment.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hEnrollment, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1596,12 +1596,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasWaitList) {
-			UniTimeTableHeader hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
+			final UniTimeTableHeader hWaitlist = new UniTimeTableHeader(MESSAGES.colWaitListed());
 			header.add(hWaitlist);
 			hWaitlist.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hWaitlist, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1634,12 +1634,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasReservation) {
-			UniTimeTableHeader hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
+			final UniTimeTableHeader hReservation = new UniTimeTableHeader(MESSAGES.colReservation());
 			header.add(hReservation);
 			hReservation.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hReservation, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1670,12 +1670,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasConsent) {
-			UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
+			final UniTimeTableHeader hConsent = new UniTimeTableHeader(MESSAGES.colConsent());
 			header.add(hConsent);
 			hConsent.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hConsent, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1706,12 +1706,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasRequestedDate) {
-			UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
+			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colRequestTimeStamp());
 			//hTimeStamp.setWidth("100px");
 			hTimeStamp.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1741,12 +1741,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (hasEnrolledDate) {
-			UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
+			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEnrollmentTimeStamp());
 			//hTimeStamp.setWidth("100px");
 			hTimeStamp.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1776,12 +1776,12 @@ public class SectioningStatusPage extends Composite {
 		}
 		
 		if (iOnline) {
-			UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
+			final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colEmailTimeStamp());
 			//hTimeStamp.setWidth("100px");
 			hTimeStamp.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iStudentTable.sort(new Comparator<ClassAssignmentInterface.StudentInfo>() {
+					iStudentTable.sort(hTimeStamp, new Comparator<ClassAssignmentInterface.StudentInfo>() {
 						@Override
 						public int compare(ClassAssignmentInterface.StudentInfo e1, ClassAssignmentInterface.StudentInfo e2) {
 							if (e1.getStudent() == null) return 1;
@@ -1909,12 +1909,12 @@ public class SectioningStatusPage extends Composite {
 	public void populateChangeLog(List<SectioningAction> result) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
-		UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
+		final UniTimeTableHeader hStudent = new UniTimeTableHeader(MESSAGES.colStudent());
 		header.add(hStudent);
 		hStudent.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hStudent, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
@@ -1937,12 +1937,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hOp = new UniTimeTableHeader(MESSAGES.colOperation());
+		final UniTimeTableHeader hOp = new UniTimeTableHeader(MESSAGES.colOperation());
 		header.add(hOp);
 		hOp.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hOp, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						int cmp = e1.getOperation().compareTo(e2.getOperation());
@@ -1965,12 +1965,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colTimeStamp());
+		final UniTimeTableHeader hTimeStamp = new UniTimeTableHeader(MESSAGES.colTimeStamp());
 		header.add(hTimeStamp);
 		hTimeStamp.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hTimeStamp, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						return - e1.getTimeStamp().compareTo(e2.getTimeStamp());
@@ -1991,12 +1991,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
+		final UniTimeTableHeader hResult = new UniTimeTableHeader(MESSAGES.colResult());
 		header.add(hResult);
 		hResult.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hResult, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						int cmp = (e1.getResult() == null ? "" : e1.getResult()).compareTo(e2.getResult() == null ? "" : e2.getResult());
@@ -2019,12 +2019,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hUser = new UniTimeTableHeader(MESSAGES.colUser());
+		final UniTimeTableHeader hUser = new UniTimeTableHeader(MESSAGES.colUser());
 		header.add(hUser);
 		hUser.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hUser, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						int cmp = (e1.getUser() == null ? "" : e1.getUser()).compareTo(e2.getUser() == null ? "" : e2.getUser());
@@ -2047,12 +2047,12 @@ public class SectioningStatusPage extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hMessage = new UniTimeTableHeader(MESSAGES.colMessage());
+		final UniTimeTableHeader hMessage = new UniTimeTableHeader(MESSAGES.colMessage());
 		header.add(hMessage);
 		hMessage.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iLogTable.sort(new Comparator<SectioningAction>() {
+				iLogTable.sort(hMessage, new Comparator<SectioningAction>() {
 					@Override
 					public int compare(SectioningAction e1, SectioningAction e2) {
 						int cmp = (e1.getMessage() == null ? "" : e1.getMessage()).compareTo(e2.getMessage() == null ? "" : e2.getMessage());

@@ -215,13 +215,13 @@ public class ClassificationsEdit extends Composite {
 			}
 		});
 		
-		UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
+		final UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
 		header.add(hCurriculum);
 		hCurriculum.getOperations().addAll(operations);
 		hCurriculum.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iTable.sort(new Comparator<CurriculumInterface>() {
+				iTable.sort(hCurriculum, new Comparator<CurriculumInterface>() {
 					@Override
 					public int compare(CurriculumInterface a, CurriculumInterface b) {
 						return a.compareTo(b);
@@ -247,13 +247,13 @@ public class ClassificationsEdit extends Composite {
 		
 		Mode m = CurriculumCookie.getInstance().getCurriculaCoursesMode();
 		for (final AcademicClassificationInterface clasf: academicClassifications) {
-			UniTimeTableHeader hClasf = new UniTimeTableHeader(clasf.getCode() + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
+			final UniTimeTableHeader hClasf = new UniTimeTableHeader(clasf.getCode() + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hClasf);
 			hClasf.getOperations().addAll(operations);
 			hClasf.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iTable.sort(new Comparator<CurriculumInterface>() {
+					iTable.sort(hClasf, new Comparator<CurriculumInterface>() {
 						@Override
 						public int compare(CurriculumInterface a, CurriculumInterface b) {
 							CurriculumClassificationInterface f = null, g = null;
@@ -290,7 +290,7 @@ public class ClassificationsEdit extends Composite {
 			hClasf.addOperation(new Operation() {
 				@Override
 				public void execute() {
-					iTable.sort(new Comparator<CurriculumInterface>() {
+					iTable.sort(hClasf, new Comparator<CurriculumInterface>() {
 						@Override
 						public int compare(CurriculumInterface a, CurriculumInterface b) {
 							CurriculumClassificationInterface f = null, g = null;
@@ -338,13 +338,13 @@ public class ClassificationsEdit extends Composite {
 				}
 			});
 		}
-		UniTimeTableHeader hTotal = new UniTimeTableHeader("Total" + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
+		final UniTimeTableHeader hTotal = new UniTimeTableHeader("Total" + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
 		header.add(hTotal);
 		hTotal.getOperations().addAll(operations);
 		hTotal.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iTable.sort(new Comparator<CurriculumInterface>() {
+				iTable.sort(hTotal, new Comparator<CurriculumInterface>() {
 					@Override
 					public int compare(CurriculumInterface a, CurriculumInterface b) {
 						int t1 = 0, t2 = 0;
@@ -377,7 +377,7 @@ public class ClassificationsEdit extends Composite {
 		hTotal.addOperation(new Operation() {
 			@Override
 			public void execute() {
-				iTable.sort(new Comparator<CurriculumInterface>() {
+				iTable.sort(hTotal, new Comparator<CurriculumInterface>() {
 					@Override
 					public int compare(CurriculumInterface a, CurriculumInterface b) {
 						int t1 = 0, t2 = 0;
