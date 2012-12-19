@@ -217,7 +217,21 @@ h1 {
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
-  	background: #e3e8f3 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+  	background-color: #e3e8f3;
   	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -368,82 +382,37 @@ h1 {
 	padding: 0px 2px 0px 2px;
 }
 
-.unitime-ClassRow {
+.unitime-WebTable {
 }
 
-.unitime-ClassRowFirst {
+.unitime-WebTable td {
+	padding-left: 10px;
+}
+
+.unitime-WebTable .top-border-dashed {
 	border-top: 1px dashed #9CB0CE;
 }
 
-.unitime-ClassRowFirst2 {
+.unitime-WebTable .top-border-solid {
 	border-top: 1px solid #9CB0CE;
 }
 
-.unitime-ClassRowRed {
+.unitime-WebTable .text-red {
 	color: red;
 }
 
-.unitime-ClassRowRedFirst {
-	border-top: 1px dashed #9CB0CE;
-	color: red;
-}
-
-.unitime-ClassRowRedFirst2 {
-	border-top: 1px solid #9CB0CE;
-	color: red;
-}
-
-.unitime-ClassRowBlue {
+.unitime-WebTable .text-blue {
 	color: blue;
 }
 
-.unitime-ClassRowBlueFirst {
-	border-top: 1px dashed #9CB0CE;
-	color: blue;
-}
-
-.unitime-ClassRowBlueFirst2 {
-	border-top: 1px solid #9CB0CE;
-	color: blue;
-}
-
-.unitime-ClassRowUnused {
+.unitime-WebTable .text-gray {
 	color: gray;
 	font-style: italic;
 }
 
-.unitime-ClassRowUnusedFirst {
-	color: gray;
-	font-style: italic;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowUnavail {
-	color: #AAAAAA;
-	font-style: italic;;
-}
-
-.unitime-ClassRowFirstUnavail {
-	color: #AAAAAA;
-	font-style: italic;;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowProblem {
+.unitime-WebTable .text-red-centered {
 	color: red;
 	text-align: center;
-}
-
-.unitime-ClassRowProblemFirst {
-	color: red;
-	text-align: center;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowProblemFirst2 {
-	color: red;
-	text-align: center;
-	border-top: 1px solid #9CB0CE;
 }
 
 .gwt-TabPanelBottom {
@@ -1157,7 +1126,21 @@ h1 {
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
-  	background: #e3e8f3 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+	background-color: #e3e8f3;
   	cursor: pointer;
   	border-bottom: 1px dashed #9CB0CE;
 }
@@ -1429,6 +1412,10 @@ h1 {
 
 .gwt-DialogBox {
 	z-index: 490000;
+}
+
+.gwt-PopupPanel {
+	z-index: 495000;
 }
 
 .gwt-DialogBox .dialogContainer {
@@ -2427,6 +2414,8 @@ div.gwt-MenuBarPopup {
 		color-stop(0, rgb(138,169,230)),
 		color-stop(1, rgb(232,240,255))
 	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8f0ff', EndColorStr='#8aa9e6');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8f0ff', EndColorStr='#8aa9e6')";
 	border: 1px solid #2952A3;
 	-moz-box-shadow:    2px 2px 3px rgb(164,193,245);
   	-webkit-box-shadow: 2px 2px 3px rgb(164,193,245);
@@ -2447,6 +2436,8 @@ div.gwt-MenuBarPopup {
 		color-stop(0, rgb(209,179,111)),
 		color-stop(1, rgb(250,242,208))
 	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#faf2d0', EndColorStr='#d1b36f');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#faf2d0', EndColorStr='#d1b36f')";
 	border: 1px solid #A39329;
 	-moz-box-shadow:    2px 2px 3px rgb(224,200,148);
   	-webkit-box-shadow: 2px 2px 3px rgb(224,200,148);
@@ -2467,6 +2458,8 @@ div.gwt-MenuBarPopup {
 		color-stop(0, rgb(209,138,138)),
 		color-stop(1, rgb(247,225,225))
 	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#F7E1E1', EndColorStr='#D18A8A');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#F7E1E1', EndColorStr='#D18A8A')";
 	border: 1px solid #A32929;
 	-moz-box-shadow:    2px 2px 3px rgb(232,162,162);
   	-webkit-box-shadow: 2px 2px 3px rgb(232,162,162);

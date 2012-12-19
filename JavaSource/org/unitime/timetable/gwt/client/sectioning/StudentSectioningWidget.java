@@ -579,7 +579,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 							calendarUrl += clazz.getCourseId() + "-" + clazz.getClassId() + ",";
 						else if (clazz.isFreeTime())
 							ftParam += clazz.getDaysString(CONSTANTS.shortDays()) + "-" + clazz.getStart() + "-" + clazz.getLength() + ",";
-						String style = "unitime-ClassRow" + (firstClazz && !rows.isEmpty() ? "First": "");
+						String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
 						WebTable.Row row = null;
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
@@ -643,7 +643,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						firstClazz = false;
 					}
 				} else {
-					String style = "unitime-ClassRowRed" + (!rows.isEmpty() ? "First": "");
+					String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 					WebTable.Row row = null;
 					String unassignedMessage = MESSAGES.courseNotAssigned();
 					if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
@@ -712,7 +712,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 					}
 					for (WebTable.Cell cell: row.getCells())
 						cell.setStyleName(style);
-					row.getCell(row.getNrCells() - 1).setStyleName("unitime-ClassRowProblem" + (!rows.isEmpty() ? "First": ""));
+					row.getCell(row.getNrCells() - 1).setStyleName("text-red-centered" + (!rows.isEmpty() ? " top-border-dashed": ""));
 					rows.add(row);
 				}
 				if (iSavedAssignment != null && !course.isFreeTime() && iShowUnassignments.getValue()) {
@@ -721,7 +721,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						classes: for (ClassAssignmentInterface.ClassAssignment clazz: saved.getClassAssignments()) {
 							for (ClassAssignmentInterface.ClassAssignment x: course.getClassAssignments())
 								if (clazz.getClassId().equals(x.getClassId())) continue classes;
-							String style = "unitime-ClassRowUnused";
+							String style = "text-gray";
 							WebTable.Row row = null;
 							if (clazz.isAssigned()) {
 								row = new WebTable.Row(
@@ -775,7 +775,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 						if (course.getCourseId().equals(x.getCourseId())) continue courses;
 					boolean firstClazz = true;
 					for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-						String style = "unitime-ClassRowUnused" + (firstClazz && !rows.isEmpty() ? "First": "");
+						String style = "text-gray" + (firstClazz && !rows.isEmpty() ? " top-border-dashed": "");
 						WebTable.Row row = null;
 						if (clazz.isAssigned()) {
 							row = new WebTable.Row(
