@@ -95,7 +95,7 @@
 		<TR>
 			<TD>Default:</TD>
 			<TD>
-				<html:text property="default" size="50" maxlength="250"/>
+				<html:text property="default" size="50" maxlength="2048"/>
 				&nbsp;<html:errors property="default"/>
 			</TD>
 		</TR>
