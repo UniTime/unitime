@@ -288,7 +288,7 @@ public class RoomFeatureEditAction extends SpringAwareLookupDispatchAction {
 			Collection assignedRooms = getAssignedRooms(roomFeature);
 			Collection notAssignedRooms = getAvailableRooms(roomFeature);
 		
-            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            if (roomFeatureEditForm.getFeatureTypeId() != null && roomFeatureEditForm.getFeatureTypeId() >= 0)
             	roomFeature.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
             else
             	roomFeature.setFeatureType(null);
