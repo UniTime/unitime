@@ -514,15 +514,26 @@
 				<include name="*.jar" />
 			</fileset>
         </path>
-		<javac source="1.5" target="1.5" destdir="${build.dir}" includes="org/unitime/commons/ant/CreateBaseModelFromXml.java" debug="true" includeantruntime="false">
+		<javac source="1.5" target="1.5" destdir="${build.dir}" debug="true" includeantruntime="false">
 			<src path="${src.dir}" />
 			<classpath refid="build.classpath"/>
 		</javac>
-		<java classname="org.apache.jasper.JspC" fork="yes" failonerror="true">
-			<arg line="-uriroot ${jsp.dir} -d ${temp.dir} -p org.apache.jsp -webapp ${jsp.dir} -v -compile" />
+		<taskdef classname="org.apache.jasper.JspC" name="jasper">
 			<classpath refid="build.classpath"/>
 			<classpath path="${build.dir}"/>
-		</java>
+			<classpath path="${src.dir}"/>
+		</taskdef>
+		<jasper
+			validatexml="false"
+			uriroot="${jsp.dir}"
+			outputDir="${temp.dir}/jsp"
+			webxmlfragment="${temp.dir}/jsp/generated_web.xml"
+			/>
+		<javac source="1.5" target="1.5" destdir="${temp.dir}/jsp" debug="true" includeantruntime="false">
+			<src path="${temp.dir}/jsp" />
+			<classpath refid="build.classpath"/>
+			<classpath path="${build.dir}"/>
+		</javac>
 	</target>
 
 	<target name="create-model" depends="init">
