@@ -161,7 +161,7 @@ public class RoomFeatureAddAction extends Action {
             rf.setAbbv(roomFeatureEditForm.getAbbv());
             rf.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
             
-            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            if (roomFeatureEditForm.getFeatureTypeId() != null && roomFeatureEditForm.getFeatureTypeId() >= 0)
             	rf.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
 
 			try {
@@ -200,7 +200,7 @@ public class RoomFeatureAddAction extends Action {
 			
 	        rf.setDepartment(department);	
 	        
-            if (roomFeatureEditForm.getFeatureTypeId() != null || roomFeatureEditForm.getFeatureTypeId() >= 0)
+            if (roomFeatureEditForm.getFeatureTypeId() != null && roomFeatureEditForm.getFeatureTypeId() >= 0)
             	rf.setFeatureType(RoomFeatureTypeDAO.getInstance().get(roomFeatureEditForm.getFeatureTypeId()));
 
 			try {
