@@ -31,6 +31,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.PreferenceGroup;
+import org.unitime.timetable.model.Roles;
 
 public abstract class BaseDepartmentalInstructor extends PreferenceGroup implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -46,6 +47,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 
 	private PositionType iPositionType;
 	private Department iDepartment;
+	private Roles iRole;
 	private Set<ClassInstructor> iClasses;
 	private Set<Exam> iExams;
 	private Set<Assignment> iAssignments;
@@ -102,6 +104,9 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 	public Department getDepartment() { return iDepartment; }
 	public void setDepartment(Department department) { iDepartment = department; }
 
+	public Roles getRole() { return iRole; }
+	public void setRole(Roles role) { iRole = role; }
+
 	public Set<ClassInstructor> getClasses() { return iClasses; }
 	public void setClasses(Set<ClassInstructor> classes) { iClasses = classes; }
 	public void addToclasses(ClassInstructor classInstructor) {
@@ -157,6 +162,7 @@ public abstract class BaseDepartmentalInstructor extends PreferenceGroup impleme
 			"\n	MiddleName: " + getMiddleName() +
 			"\n	Note: " + getNote() +
 			"\n	PositionType: " + getPositionType() +
+			"\n	Role: " + getRole() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

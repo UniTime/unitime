@@ -995,7 +995,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		iHeader.setEnabled("delete", canDelete);
 		iHeader.setEnabled("cancel", canCancel);
-		iHeader.setEnabled("create", iEvent.getId() == null);
+		iHeader.setEnabled("create", iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent());
+		if (iEvent.getId() == null && (getProperties() == null || !getProperties().isCanAddEvent()))
+			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
 		iHeader.setEnabled("update", iEvent.getId() != null);
 	}
 	

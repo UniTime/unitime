@@ -122,16 +122,6 @@
 					</html:select>
 				</TD>
 			</TR>
-			
-			<TR>
-				<TD nowrap>Event Department:</TD>
-				<TD>
-					<html:select property="eventDepartment">
-						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
-						<html:options collection="eventDepts" property="value" labelProperty="label"/>
-					</html:select>
-				</TD>
-			</TR>
 		</logic:empty>
 		
 		
@@ -222,31 +212,8 @@
 					</TD>
 				</TR>
 			</logic:notEmpty>
-			
-			<logic:notEmpty name="eventDepts" scope="request">
-				
-				<TR>
-					<TD nowrap>Event Department:</TD>
-					<TD>
-						<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
-							<html:select property="eventDepartment">
-								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
-								<html:options collection="eventDepts" property="value" labelProperty="label"/>
-							</html:select>
-						</sec:authorize>
-						<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
-							<html:hidden property="eventDepartment"/>
-							<logic:iterate scope="request" name="eventDepts" id="d">
-								<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
-									<bean:write name="d" property="label"/>
-								</logic:equal>
-							</logic:iterate>
-						</sec:authorize>
-					</TD>
-				</TR>				
-			</logic:notEmpty>
 		</logic:notEmpty>
-			
+		
 		<TR>
 			<TD>Coordinates:</TD>
 			<TD>
@@ -320,6 +287,95 @@
 			</logic:iterate>
 			<html:hidden property="examCapacity"/>
 		</sec:authorize>
+
+		<logic:notEmpty name="<%=frmName%>" property="id">			
+			<logic:notEmpty name="eventDepts" scope="request">
+				
+				<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeEventProperties')">
+					<TR>
+						<TD nowrap>Event Department:</TD>
+						<TD>
+							<html:select property="eventDepartment" onchange="eventDepartmentChanged();">
+								<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
+								<html:options collection="eventDepts" property="value" labelProperty="label"/>
+							</html:select>
+						</TD>
+					</TR>
+					<TR id="rowEventStatus">
+						<TD nowrap>Event Status:</TD>
+						<TD>
+							<html:select property="eventStatus">
+								<html:optionsCollection property="eventStates" value="id" label="value"/>
+							</html:select>
+						</TD>
+					</TR>
+					<TR id="rowBreakTime">
+						<TD nowrap>Break Time:</TD>
+						<TD>
+							<html:text property="breakTime" maxlength="10" size="10"/> <i>Default break time is used when left empty.</i>
+						</TD>
+					</TR>
+				</sec:authorize>
+
+				<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeEventProperties')">
+					<TR>
+						<TD nowrap>Event Department:</TD>
+						<TD>
+							<html:hidden property="eventDepartment"/>
+							<logic:iterate scope="request" name="eventDepts" id="d">
+								<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
+									<bean:write name="d" property="label"/>
+								</logic:equal>
+							</logic:iterate>
+						</TD>
+					</TR>
+					<html:hidden property="eventStatus"/>
+					<html:hidden property="breakTime"/>
+				</sec:authorize>
+								
+			</logic:notEmpty>
+		</logic:notEmpty>
+
+		<logic:empty name="<%=frmName%>" property="id">		
+			<TR>
+				<TD nowrap>Event Department:</TD>
+				<TD>
+					<html:select property="eventDepartment">
+						<html:option value="<%=Constants.BLANK_OPTION_VALUE%>">No event management</html:option>
+						<html:options collection="eventDepts" property="value" labelProperty="label"/>
+					</html:select>
+				</TD>
+			</TR>
+			
+			<TR>
+				<TD nowrap>Note:</TD>
+				<TD>
+					<html:textarea property="note" rows="5" cols="70"/>
+				</TD>
+			</TR>
+		</logic:empty>
+		
+		<logic:notEmpty name="<%=frmName%>" property="id">	
+			<sec:authorize access="hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties') or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeEventProperties')">
+				<TR>
+					<TD nowrap>Note:</TD>
+					<TD>
+						<html:textarea property="note" rows="5" cols="70"/>
+					</TD>
+				</TR>
+			</sec:authorize>
+			<sec:authorize access="!hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties') and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeEventProperties')">
+				<logic:notEmpty name="<%=frmName%>" property="note">
+					<TR>
+						<TD nowrap>Note:</TD>
+						<TD>
+							<bean:write name="<%=frmName%>" property="note" filter="false"/>
+						</TD>
+					</TR>
+				</logic:notEmpty>
+				<html:hidden property="note"/>
+			</sec:authorize>
+		</logic:notEmpty>
 		
 		<tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
 					</table>
@@ -374,6 +430,16 @@
 		</TR>
 	</TABLE>
 	</loc:bundle>
+	<script type="text/javascript" language="javascript">
+		function eventDepartmentChanged() {
+			var ed = document.editRoomForm['eventDepartment'];
+			if (ed != null) {
+				document.getElementById('rowBreakTime').style.display = (ed.selectedIndex == 0 ? 'none' : '');
+				document.getElementById('rowEventStatus').style.display = (ed.selectedIndex == 0 ? 'none' : '');
+			}
+		}
+		eventDepartmentChanged();
+	</script>	
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">

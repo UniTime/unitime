@@ -171,6 +171,10 @@ public class EditRoomAction extends Action {
             editRoomForm.setControlDept(location.getControllingDepartment() == null ? null : location.getControllingDepartment().getUniqueId().toString());
             editRoomForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
             
+            editRoomForm.setEventStatus(location.getEventStatus() == null ? -1 : location.getEventStatus());
+            editRoomForm.setBreakTime(location.getBreakTime() == null ? "" : location.getBreakTime().toString());
+            editRoomForm.setNote(location.getNote() == null ? "" : location.getNote());
+            
             if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
             	for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
             		if (type.getType() == ExamType.sExamTypeMidterm) {
@@ -222,10 +226,12 @@ public class EditRoomAction extends Action {
 		
     	Collection eventDepts = new Vector();
     	
-		for (Department d: Department.getUserDepartments(context.getUser()))
+    	TreeSet<Department>  userDepartments = Department.getUserDepartments(context.getUser());
+    	if (location.getEventDepartment() != null) userDepartments.add(location.getEventDepartment());
+		for (Department d: userDepartments)
 			if (d.isAllowEvents())
 				eventDepts.add(new LabelValueBean(d.getDeptCode() + " - " + d.getName(), d.getUniqueId().toString()));
-
+		
 		request.setAttribute("eventDepts", eventDepts);
     }
     
@@ -330,6 +336,14 @@ public class EditRoomAction extends Action {
             	}
             }
             location.setArea(area);
+            
+            if (sessionContext.hasPermission(location, Right.RoomEditChangeEventProperties)) {
+    			location.setEventDepartment(editRoomForm.getEventDepartment() == null || editRoomForm.getEventDepartment().isEmpty() ? null : new DepartmentDAO().get(Long.valueOf(editRoomForm.getEventDepartment())));
+            	location.setBreakTime(editRoomForm.getBreakTime() == null || editRoomForm.getBreakTime().isEmpty() ? null : Integer.parseInt(editRoomForm.getBreakTime()));
+            	location.setEventStatus(editRoomForm.getEventStatus() == null || editRoomForm.getEventStatus() < 0 ? null : editRoomForm.getEventStatus());
+            }
+            
+        	location.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote());
 			
 			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
 				
@@ -361,7 +375,6 @@ public class EditRoomAction extends Action {
 					hibSession.saveOrUpdate(rd);
 				}
 			}
-			location.setEventDepartment(editRoomForm.getEventDepartment() == null || editRoomForm.getEventDepartment().isEmpty() ? null : new DepartmentDAO().get(Long.valueOf(editRoomForm.getEventDepartment())));
 
 			hibSession.saveOrUpdate(location);
 			
@@ -425,6 +438,10 @@ public class EditRoomAction extends Action {
             room.setArea(area);
             room.setSession(room.getControllingDepartment() == null ?
             		SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId(), hibSession) : room.getControllingDepartment().getSession());
+            
+            room.setBreakTime(editRoomForm.getBreakTime() == null || editRoomForm.getBreakTime().isEmpty() ? null : Integer.parseInt(editRoomForm.getBreakTime()));
+            room.setEventStatus(editRoomForm.getEventStatus() == null || editRoomForm.getEventStatus() < 0 ? null : editRoomForm.getEventStatus());
+            room.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote());
             
             LocationPermIdGenerator.setPermanentId(room);
 

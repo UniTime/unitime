@@ -472,7 +472,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
 					"mouseOver", hint,
 					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
-					"breakTime", String.valueOf(location.getBreakTime()),
+					"breakTime", String.valueOf(location.getEffectiveBreakTime()),
 					"message", location.getEventMessage()
 					));
 		}

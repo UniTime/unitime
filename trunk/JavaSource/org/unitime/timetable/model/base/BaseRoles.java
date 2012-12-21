@@ -33,6 +33,7 @@ public abstract class BaseRoles implements Serializable {
 	private String iAbbv;
 	private Boolean iManager;
 	private Boolean iEnabled;
+	private Boolean iInstructor;
 
 	private Set<String> iRights;
 
@@ -41,6 +42,7 @@ public abstract class BaseRoles implements Serializable {
 	public static String PROP_ABBV = "abbv";
 	public static String PROP_MANAGER = "manager";
 	public static String PROP_ENABLED = "enabled";
+	public static String PROP_INSTRUCTOR = "instructor";
 
 	public BaseRoles() {
 		initialize();
@@ -70,6 +72,10 @@ public abstract class BaseRoles implements Serializable {
 	public Boolean getEnabled() { return iEnabled; }
 	public void setEnabled(Boolean enabled) { iEnabled = enabled; }
 
+	public Boolean isInstructor() { return iInstructor; }
+	public Boolean getInstructor() { return iInstructor; }
+	public void setInstructor(Boolean instructor) { iInstructor = instructor; }
+
 	public Set<String> getRights() { return iRights; }
 	public void setRights(Set<String> rights) { iRights = rights; }
 	public void addTorights(String string) {
@@ -96,6 +102,7 @@ public abstract class BaseRoles implements Serializable {
 		return "Roles[" +
 			"\n	Abbv: " + getAbbv() +
 			"\n	Enabled: " + getEnabled() +
+			"\n	Instructor: " + getInstructor() +
 			"\n	Manager: " + getManager() +
 			"\n	Reference: " + getReference() +
 			"\n	RoleId: " + getRoleId() +

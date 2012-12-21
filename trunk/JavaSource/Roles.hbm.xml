@@ -59,6 +59,12 @@
             type="boolean"
             not-null="true"/>
 
+        <property
+            name="instructor"
+            column="instructor"
+            type="boolean"
+            not-null="true"/>
+
         <set name="rights" table="rights">
         	<key column="role_id"/>
         	<element column="value" type="string"/>

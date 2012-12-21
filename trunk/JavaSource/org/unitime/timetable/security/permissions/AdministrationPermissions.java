@@ -22,6 +22,7 @@ package org.unitime.timetable.security.permissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.ItypeDesc;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
 import org.unitime.timetable.model.SavedHQL.Flag;
 import org.unitime.timetable.model.Session;
@@ -386,4 +387,24 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.EventRoomTypeEdit)
 	public static class EventRoomTypeEdit extends EventRoomTypes {}
+	
+	@PermissionForRight(Right.InstructorRoles)
+	public static class InstructorRoles implements Permission<Department> {
+		@Autowired Permission<Department> permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Department source) {
+			if (!permissionDepartment.check(user, source))
+				return false;
+			
+			return source.isAllowEvents() && !Roles.findAllInstructorRoles().isEmpty();
+		}
+
+		@Override
+		public Class<Department> type() { return Department.class;}
+	}
+	
+	@PermissionForRight(Right.InstructorRoleEdit)
+	public static class InstructorRoleEdit extends InstructorRoles {}
+
 }

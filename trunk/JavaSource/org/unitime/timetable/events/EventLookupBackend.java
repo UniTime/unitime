@@ -954,7 +954,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						location.setSize(m.getLocation().getCapacity());
 						location.setDistance(distances.get(m.getLocation().getUniqueId()));
 						location.setRoomType(m.getLocation().getRoomTypeLabel());
-						location.setBreakTime(m.getLocation().getBreakTime());
+						location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 						location.setMessage(m.getLocation().getEventMessage());
 						meeting.setLocation(location);
 					}
@@ -1436,7 +1436,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setHint(m.getLocation().getHtmlHint());
 								location.setSize(m.getLocation().getCapacity());
 								location.setRoomType(m.getLocation().getRoomTypeLabel());
-								location.setBreakTime(m.getLocation().getBreakTime());
+								location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 								location.setMessage(m.getLocation().getEventMessage());
 								meeting.setLocation(location);
 							}
@@ -1550,7 +1550,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									location.setSize(rp.getRoom().getCapacity());
 									location.setDistance(distances.get(rp.getRoom().getUniqueId()));
 									location.setRoomType(rp.getRoom().getRoomTypeLabel());
-									location.setBreakTime(rp.getRoom().getBreakTime());
+									location.setBreakTime(rp.getRoom().getEffectiveBreakTime());
 									location.setMessage(rp.getRoom().getEventMessage());
 									meeting.setLocation(location);
 									event.addMeeting(meeting);

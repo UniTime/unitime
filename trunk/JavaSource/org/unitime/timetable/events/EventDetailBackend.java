@@ -184,7 +184,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				location.setHint(r.getHtmlHint());
     				location.setSize(r.getCapacity());
     				location.setRoomType(r.getRoomTypeLabel());
-    				location.setBreakTime(r.getBreakTime());
+    				location.setBreakTime(r.getEffectiveBreakTime());
     				location.setMessage(r.getEventMessage());
     				related.addLocation(location);
     			}
@@ -217,7 +217,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setHint(r.getHtmlHint());
 				location.setSize(r.getCapacity());
 				location.setRoomType(r.getRoomTypeLabel());
-				location.setBreakTime(r.getBreakTime());
+				location.setBreakTime(r.getEffectiveBreakTime());
 				location.setMessage(r.getEventMessage());
 				related.addLocation(location);
     		}
@@ -269,7 +269,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
-		    				location.setBreakTime(r.getBreakTime());
+		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
 		    				related.addLocation(location);
 		    			}
@@ -335,7 +335,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
-		    				location.setBreakTime(r.getBreakTime());
+		    				location.setBreakTime(r.getEffectiveBreakTime());
 		    				location.setMessage(r.getEventMessage());
 		    				related.addLocation(location);
 		    			}
@@ -412,12 +412,12 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setHint(m.getLocation().getHtmlHint());
 				location.setSize(m.getLocation().getCapacity());
 				location.setRoomType(m.getLocation().getRoomTypeLabel());
-				location.setBreakTime(m.getLocation().getBreakTime());
+				location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 				location.setMessage(m.getLocation().getEventMessage());
 				meeting.setLocation(location);
 				if ((e instanceof SpecialEvent || e instanceof CourseEvent) && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					if (m.getLocation().getEventDepartment() != null) {
-						String message = m.getLocation().getRoomType().getOption(m.getLocation().getEventDepartment()).getMessage();
+						String message = m.getLocation().getEventMessage();
 						if (message != null) {
 							MeetingConflictInterface conflict = new MeetingConflictInterface();
 							conflict.setName(message);

@@ -287,7 +287,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						location.setHint(m.getLocation().getHtmlHint());
 						location.setSize(m.getLocation().getCapacity());
 						location.setRoomType(m.getLocation().getRoomTypeLabel());
-						location.setBreakTime(m.getLocation().getBreakTime());
+						location.setBreakTime(m.getLocation().getEffectiveBreakTime());
 						location.setMessage(m.getLocation().getEventMessage());
 						meeting.setLocation(location);
 					}
