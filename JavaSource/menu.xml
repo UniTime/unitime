@@ -620,6 +620,12 @@
 					<hasPermission name="EventRoomTypes"/>
 				</condition>
 			</item>
+			<item name="Instructor Roles" page="admin" type="gwt">
+				<parameter name="type">instructorRole</parameter>
+				<condition>
+					<hasPermission name="InstructorRoles"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Data Exchange" page="dataImport.do">
 				<condition>
@@ -817,6 +823,15 @@
 					<hasPermission name="IsAdmin"/>
 				</not>
 				<hasPermission name="EventRoomTypes"/>
+			</condition>
+		</item>
+		<item name="Instructor Roles" page="admin" type="gwt">
+			<parameter name="type">instructorRole</parameter>
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="InstructorRoles"/>
 			</condition>
 		</item>
 	</menu>

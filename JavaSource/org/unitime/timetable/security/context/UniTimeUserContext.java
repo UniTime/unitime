@@ -152,7 +152,18 @@ public class UniTimeUserContext extends AbstractUserContext {
 						sessions.add(instructor.getDepartment().getSession());
 					}
 					authority.addQualifier(instructor.getDepartment());
-				}				
+					if (instructor.getRole() != null) {
+						List<? extends UserAuthority> instrRoleAuthorities = getAuthorities(instructor.getRole().getReference(), instructor.getDepartment().getSession());
+						UserAuthority instrRoleAuthority = (instrRoleAuthorities.isEmpty() ? null : instrRoleAuthorities.get(0));
+						if (instrRoleAuthority == null) {
+							instrRoleAuthority = new RoleAuthority(instructor.getUniqueId(), instructor.getRole());
+							instrRoleAuthority.addQualifier(instructor.getDepartment().getSession());
+							addAuthority(instrRoleAuthority);
+						}
+						instrRoleAuthority.addQualifier(instructor.getDepartment());
+						instrRoleAuthority.addQualifier(new SimpleQualifier("Role", Roles.ROLE_INSTRUCTOR));
+					}
+				}
 			}
 
 			Roles studentRole = Roles.getRole(Roles.ROLE_STUDENT);

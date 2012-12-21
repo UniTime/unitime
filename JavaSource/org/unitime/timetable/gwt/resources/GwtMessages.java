@@ -656,6 +656,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No academic session selected.")
 	String warnNoSession();
 	
+	@DefaultMessage("It is not allowed to create a new event in {0}.")
+	String warnCannotAddEvent(String session);
+
 	@DefaultMessage("No resource type selected.")
 	String warnNoResourceType();
 

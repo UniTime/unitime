@@ -171,6 +171,10 @@
 			<% } %>
 		</tt:hasProperty>
 		
+		<TR>
+			<TD>Type:</TD><TD><bean:write name="<%=frmName%>" property="typeName"/></TD>
+		</TR>
+
 		<logic:notEmpty name="<%=frmName%>" property="externalId">
 			<TR>
 				<TD>External Id:</TD><TD><bean:write name="<%=frmName%>" property="externalId"/></TD>
@@ -200,19 +204,6 @@
 			</TR>
 		</logic:notEmpty>
 		
-		<logic:notEmpty name="<%=frmName%>" property="eventDepartment">
-			<TR>
-				<TD nowrap>Event Department:</TD>
-				<TD>
-					<logic:iterate scope="request" name="eventDepts" id="d">
-						<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
-							<bean:write name="d" property="label"/>
-						</logic:equal>
-					</logic:iterate>
-				</TD>
-			</TR>		
-		</logic:notEmpty>
-			
 		<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
 			<TR>
 				<TD>Coordinates:</TD><TD><%=frm.getCoordinateX()%>, <%=frm.getCoordinateY()%>
@@ -235,10 +226,34 @@
 		<TR>
 			<TD nowrap>Ignore Room Checks:</TD><TD><bean:write name="<%=frmName%>" property="ignoreRoomCheck"/></TD>
 		</TR>
-
-		<TR>
-			<TD>Type:</TD><TD><bean:write name="<%=frmName%>" property="typeName"/></TD>
-		</TR>
+		
+		<logic:notEmpty name="<%=frmName%>" property="eventDepartment">
+			<TR>
+				<TD nowrap>Event Department:</TD>
+				<TD>
+					<logic:iterate scope="request" name="eventDepts" id="d">
+						<logic:equal name="<%=frmName%>" property="eventDepartment" value="<%=((LabelValueBean)d).getValue()%>">
+							<bean:write name="d" property="label"/>
+						</logic:equal>
+					</logic:iterate>
+				</TD>
+			</TR>
+			
+			<TR>
+				<TD nowrap>Event Status:</TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="eventStatus" filter="false"/>
+				</TD>
+			</TR>
+			<logic:notEmpty name="<%=frmName%>" property="breakTime">
+				<TR>
+					<TD nowrap>Break Time:</TD>
+					<TD>
+						<bean:write name="<%=frmName%>" property="breakTime" filter="false"/>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+		</logic:notEmpty>
 
 		<logic:notEmpty name="<%=frmName%>" property="roomPrefs">
 			<TR>
@@ -302,6 +317,15 @@
 				</TD>
 			</TR>
 		</logic:notEmpty>
+		
+		<logic:notEmpty name="<%=frmName%>" property="note">
+			<TR>
+				<TD nowrap>Note:</TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="note" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>		
 		
 		<tt:hasProperty name="unitime.minimap.url">
 			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>

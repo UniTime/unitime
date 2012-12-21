@@ -65,6 +65,9 @@ public class RoomDetailForm extends ActionForm {
 	private Integer examCapacity;
 	private String eventDepartment;
 	private String area;
+    private String breakTime;
+    private String note;
+    private String eventStatus;
 	
 	private Long previos, next;
 
@@ -315,5 +318,17 @@ public class RoomDetailForm extends ActionForm {
     public String getArea() { return area; }
     
     public void setArea(String area) { this.area = area; }
+    
+    public String getNote() { return note; }
+    
+    public void setNote(String note) { this.note = note; }
+    
+    public String getBreakTime() { return breakTime; }
+    
+    public void setBreakTime(String breakTime) { this.breakTime = breakTime; }
+
+    public String getEventStatus() { return eventStatus; }
+    
+    public void setEventStatus(String eventStatus) { this.eventStatus = eventStatus; }
 }
 

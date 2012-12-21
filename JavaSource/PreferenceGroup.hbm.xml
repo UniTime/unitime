@@ -913,6 +913,12 @@
                     foreign-key="fk_offering_coord_offering"/>
             </set>
 
+            <many-to-one
+                name="role"
+                class="Roles"
+                column="role_id"
+                not-null="false"
+                foreign-key="fk_instructor_role"/>
         </union-subclass>
         <union-subclass name="Exam" table="exam">
             <many-to-one

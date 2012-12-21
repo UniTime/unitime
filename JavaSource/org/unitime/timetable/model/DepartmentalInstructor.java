@@ -469,6 +469,7 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 		newDepartmentalInstructor.setNote(getNote());
 		newDepartmentalInstructor.setPositionType(getPositionType());
 		newDepartmentalInstructor.setEmail(getEmail());
+		newDepartmentalInstructor.setRole(getRole());
 		return(newDepartmentalInstructor);
 	}
 	
