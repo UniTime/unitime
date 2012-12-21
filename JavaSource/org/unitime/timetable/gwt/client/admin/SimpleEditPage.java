@@ -603,7 +603,7 @@ public class SimpleEditPage extends Composite {
 				} else if (field.getType() == FieldType.list) {
 					final ListBox list = new ListBox(false);
 					list.setStyleName("unitime-TextBox");
-					if (record.getField(index) == null) {
+					if (record.getField(index) == null && (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
 						list.addItem("", "");
 					}
 					for (ListItem item: field.getValues())
@@ -755,6 +755,43 @@ public class SimpleEditPage extends Composite {
 						});
 						initWidget(hp);
 					}
+				} else if (field.getType() == FieldType.person) {
+					HorizontalPanel hp = new HorizontalPanel();
+					String[] name = record.getValues(index);
+					final HTML label = new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
+					label.setWidth(field.getWidth() + "px");
+					hp.add(label);
+					Image change = new Image(RESOURCES.edit());
+					hp.add(change);
+					hp.setCellVerticalAlignment(change, HasVerticalAlignment.ALIGN_MIDDLE);
+					hp.setWidth("100%");
+					hp.setCellHorizontalAlignment(change, HasHorizontalAlignment.ALIGN_RIGHT);
+					label.getElement().getStyle().setPaddingRight(5, Unit.PX);
+					change.addClickHandler(new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							Lookup lookup = new Lookup();
+							lookup.setOptions("mustHaveExternalId");
+							lookup.setText(label.getText().equals("<i>Not set</i>") ? "" : label.getText());
+							lookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
+								@Override
+								public void onValueChange(ValueChangeEvent<PersonInterface> event) {
+									PersonInterface person = event.getValue();
+									if (person != null) {
+										label.setText(person.getLastName() + ", " + person.getFirstName() + (person.getMiddleName() == null ? "" : " " + person.getMiddleName()));
+										record.setField(index, null);
+										record.addToField(index, person.getLastName() == null ? "" : person.getLastName());
+										record.addToField(index, person.getFirstName() == null ? "" : person.getFirstName());
+										record.addToField(index, person.getMiddleName() == null ? "" : person.getMiddleName());
+										record.addToField(index, person.getId() == null ? "" : person.getId());
+										record.addToField(index, person.getEmail() == null ? "" : person.getEmail());
+									}
+								}
+							});
+							lookup.center();
+						}
+					});
+					initWidget(hp);
 				}
 			} else {
 				if (field.getType() == FieldType.toggle) {
@@ -768,6 +805,9 @@ public class SimpleEditPage extends Composite {
 						Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
 						initWidget(label);
 					}
+				} else if (field.getType() == FieldType.person) {
+					String[] name = record.getValues(index);
+					initWidget(new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
 				} else {
 					Label label = new Label(getValue());
 					initWidget(label);

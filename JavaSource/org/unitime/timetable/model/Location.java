@@ -940,6 +940,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     		groups += g.getName();
     	}
     	if (!groups.isEmpty()) hint += "<tr><td>Groups:</td><td>" + groups + "</td></tr>";
+    	hint += "<tr><td>Events:</td><td><i>" + (getEventDepartment() == null ? "No Event Department" : getEffectiveEventStatus().toString()) + "</i></td></tr>";
     	String message = getEventMessage();
     	if (message != null && !message.isEmpty())
     		hint += "<tr><td colspan=\\'2\\'>" + message.replace("'", "\\'") + "</td></tr>";
@@ -961,14 +962,26 @@ public abstract class Location extends BaseLocation implements Comparable {
     	return nrMeetings.intValue() > 0;
     }
     
-    public int getBreakTime() {
+    public int getEffectiveBreakTime() {
+    	if (getBreakTime() != null)
+    		return getBreakTime();
     	if (getEventDepartment() == null)
     		return Integer.parseInt(ApplicationProperties.getProperty("unitime.events.breakTime." + getRoomType().getReference(), "0"));
     	else
     		return getRoomType().getOption(getEventDepartment()).getBreakTime();
     }
     
+    public RoomTypeOption.Status getEffectiveEventStatus() {
+    	if (getEventStatus() != null)
+    		return RoomTypeOption.Status.values()[getEventStatus()];
+    	if (getEventDepartment() == null)
+    		return RoomTypeOption.Status.NoEventManagement;
+    	else
+    		return getRoomType().getOption(getEventDepartment()).getEventStatus();
+    }
+
     public String getEventMessage() {
+    	if (getNote() != null && !getNote().isEmpty()) return getNote();
     	if (getEventDepartment() == null)
     		return null;
     	else

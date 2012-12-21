@@ -47,4 +47,9 @@ public abstract class BaseDepartmentalInstructorDAO extends _RootDAO<Departmenta
 	public List<DepartmentalInstructor> findByDepartment(org.hibernate.Session hibSession, Long departmentId) {
 		return hibSession.createQuery("from DepartmentalInstructor x where x.department.uniqueId = :departmentId").setLong("departmentId", departmentId).list();
 	}
+
+	@SuppressWarnings("unchecked")
+	public List<DepartmentalInstructor> findByRole(org.hibernate.Session hibSession, Long roleId) {
+		return hibSession.createQuery("from DepartmentalInstructor x where x.role.roleId = :roleId").setLong("roleId", roleId).list();
+	}
 }

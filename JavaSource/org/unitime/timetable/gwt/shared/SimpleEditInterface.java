@@ -47,6 +47,7 @@ public class SimpleEditInterface implements IsSerializable {
 		examType("Examination Type"),
 		eventRoomType("Event Room Type"),
 		featureType("Room Feature Type"),
+		instructorRole("Instructor Role")
 		;
 	
 		private String iSingular, iPlural;
@@ -65,7 +66,7 @@ public class SimpleEditInterface implements IsSerializable {
 	}
 	
 	public static enum FieldType implements IsSerializable {
-		text, toggle, list, multi, students;
+		text, toggle, list, multi, students, person;
 	}
 	
 	private Type iType = null;

@@ -295,6 +295,10 @@ public class RoomDetailAction extends Action {
 		
 		roomDetailForm.setEventDepartment(location.getEventDepartment() == null ? null : location.getEventDepartment().getUniqueId().toString());
 		
+		roomDetailForm.setBreakTime(location.getEffectiveBreakTime() == 0 && location.getBreakTime() == null ? "" : String.valueOf(location.getEffectiveBreakTime()) + (location.getBreakTime() == null ? " <i>(Default)</i>" : ""));
+		roomDetailForm.setEventStatus(location.getEffectiveEventStatus().toString() + (location.getEventStatus() == null ? " <i>(Default)</i>" : ""));
+		roomDetailForm.setNote(location.getNote() == null ? "" : location.getNote());
+		
 		EditRoomAction.setupDepartments(request, sessionContext, location);
 
 		LookupTables.setupExamTypes(request, sessionContext.getUser().getCurrentAcademicSessionId());

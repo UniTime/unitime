@@ -8180,11 +8180,54 @@
 			references %SCHEMA%.meeting (uniqueid) on delete cascade
 		</sql>
 	</update>
-	<update version="102" date="18-12-2012" comment="Event Location Unavailable">
+	<update version="102" date="18-Dec-2012" comment="Event Location Unavailable">
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventLocationUnavailable'
 			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventAddUnavailable'
+		</sql>
+	</update>
+	<update version="103" date="21-Dec-2012" comment="Room Event Management Properties">
+		<plsql>alter table %SCHEMA%.room add break_time number(10)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add break_time number(10)</plsql>
+		<mysql>alter table %SCHEMA%.room add break_time bigint(10) null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add break_time bigint(10) null</mysql>
+		
+		<plsql>alter table %SCHEMA%.room add event_status number(10)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add event_status number(10)</plsql>
+		<mysql>alter table %SCHEMA%.room add event_status bigint(10) null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add event_status bigint(10) null</mysql>
+		
+		<plsql>alter table %SCHEMA%.room add note varchar2(2048 char)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room add note varchar(2048) binary null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add note varchar(2048) binary null</mysql>
+		
+		<plsql>alter table %SCHEMA%.roles add instructor number(1) default 0</plsql>
+		<mysql>alter table %SCHEMA%.roles add instructor int(1) default 0</mysql>
+		
+		<plsql>alter table %SCHEMA%.departmental_instructor add role_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.departmental_instructor add role_id decimal(20,0) null</mysql>
+
+		<sql>
+			alter table %SCHEMA%.departmental_instructor add constraint fk_instructor_role foreign key (role_id)
+			references %SCHEMA%.roles (role_id) on delete set null
+		</sql>
+
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorRoles'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'InstructorRoleEdit'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomEditChangeEventProperties'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
 		</sql>
 	</update>
 </dbupdate>

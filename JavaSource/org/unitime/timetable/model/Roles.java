@@ -91,7 +91,15 @@ public class Roles extends BaseRoles implements HasRights, Comparable<Roles> {
     	return new TreeSet<Roles>(criteria.setCacheable(true).list());
     }
 
-	@Override
+    public static Set<Roles> findAllInstructorRoles() {
+    	return findAllInstructorRoles(RolesDAO.getInstance().getSession());
+    }
+    
+    public static Set<Roles> findAllInstructorRoles(org.hibernate.Session hibSession) {
+    	return new TreeSet<Roles>(hibSession.createCriteria(Roles.class).add(Restrictions.eq("instructor", Boolean.TRUE)).setCacheable(true).list());
+    }
+
+    @Override
 	public int compareTo(Roles o) {
 		if (isManager() != o.isManager())
 			return (isManager() ? 1 : -1);

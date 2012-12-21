@@ -94,6 +94,9 @@ public class Room extends BaseRoom {
 		r.setPermanentId(getPermanentId());
 		r.setExamCapacity(getExamCapacity());
 		r.setExamTypes(new HashSet<ExamType>(getExamTypes()));
+		r.setEventStatus(getEventStatus());
+		r.setBreakTime(getBreakTime());
+		r.setNote(getNote());
 		return r;
 	}
 	

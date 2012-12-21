@@ -138,7 +138,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
 					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
 					if (location != null && location.getEventDepartment() != null) {
-						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
+						String message = location.getEventMessage();
 						if (message != null) {
 							conflict.setName(message);
 						}
@@ -211,7 +211,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						conflict.setEndSlot(288);
 						meeting.addConflict(conflict);
 					} else { // has a message?
-						String message = location.getRoomType().getOption(location.getEventDepartment()).getMessage();
+						String message = location.getEventMessage();
 						if (message != null) {
 							MeetingConflictInterface conflict = new MeetingConflictInterface();
 							conflict.setName(message);

@@ -306,17 +306,19 @@ public class SimpleEditServlet implements SimpleEditService {
 				data = new SimpleEditInterface(type,
 						new Field("Reference", FieldType.text, 160, 20),
 						new Field("Name", FieldType.text, 250, 40),
+						new Field("Instructor", FieldType.toggle, 40),
 						new Field("Enabled", FieldType.toggle, 40),
 						new Field("Sort Order", FieldType.text, 80, 10, false, false)
 						);
-				data.setSortBy(3);
+				data.setSortBy(4);
 				int idx = 0;
 				for (Roles role: Roles.findAll(false)) {
-					Record r = data.addRecord(role.getRoleId(), role.isManager() && !role.isUsed());
-					r.setField(0, role.getReference(), role.isManager());
+					Record r = data.addRecord(role.getRoleId(), (role.isManager() || role.isInstructor()) && !role.isUsed());
+					r.setField(0, role.getReference(), role.isManager() || role.isInstructor());
 					r.setField(1, role.getAbbv());
-					r.setField(2, role.isEnabled() ? "true" : "false");
-					r.setField(3, String.valueOf(idx++));
+					r.setField(2, role.isInstructor() ? "true" : "false");
+					r.setField(3, role.isEnabled() ? "true" : "false");
+					r.setField(4, String.valueOf(idx++));
 				}
 				break;
 			case permissions:
@@ -419,6 +421,42 @@ public class SimpleEditServlet implements SimpleEditService {
 									"select count(f) from RoomFeature f where f.featureType.uniqueId = :uniqueId")
 									.setLong("uniqueId", ftype.getUniqueId()).uniqueResult()).intValue();
 					r.setDeletable(used == 0);
+				}
+				break;
+			case instructorRole:
+				List<ListItem> departments = new ArrayList<ListItem>();
+				List<ListItem> instructorRoles = new ArrayList<ListItem>();
+				instructorRoles.add(new ListItem("", ""));
+				for (Roles role: Roles.findAllInstructorRoles()) {
+					instructorRoles.add(new ListItem(role.getUniqueId().toString(), role.getAbbv()));
+				}
+				data = new SimpleEditInterface(type,
+						new Field("Department", FieldType.list, 160, departments),
+						new Field("Instructor", FieldType.person, 300),
+						new Field("Role", FieldType.list, 300, instructorRoles)
+						);
+				data.setSortBy(0, 1);
+				
+				boolean deptIndep = sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+
+				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+					if (!department.isAllowEvents()) continue;
+					departments.add(new ListItem(department.getUniqueId().toString(), department.getLabel()));
+					for (DepartmentalInstructor instructor: (List<DepartmentalInstructor>)hibSession.createQuery(
+							"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName")
+							.setLong("departmentId", department.getUniqueId()).list()) {
+						if (deptIndep && instructor.getRole() == null) continue;
+						Record r = data.addRecord(instructor.getUniqueId(), false);
+						r.setField(0, instructor.getDepartment().getLabel(), false);
+						r.setField(1, null, false);
+						r.addToField(1, instructor.getLastName() == null ? "" : instructor.getLastName());
+						r.addToField(1, instructor.getFirstName() == null ? "" : instructor.getFirstName());
+						r.addToField(1, instructor.getMiddleName() == null ? "" : instructor.getMiddleName());
+						r.addToField(1, instructor.getExternalUniqueId());
+						r.addToField(1, instructor.getEmail() == null ? "" : instructor.getEmail());
+						r.setField(2, instructor.getRole() == null ? "" : instructor.getRole().getUniqueId().toString());
+						r.setDeletable(deptIndep);
+					}
 				}
 				break;
 			}
@@ -1094,10 +1132,12 @@ public class SimpleEditServlet implements SimpleEditService {
 							boolean changed = 
 								!ToolBox.equals(role.getReference(), r.getField(0)) ||
 								!ToolBox.equals(role.getAbbv(), r.getField(1)) ||
-								!ToolBox.equals(role.isEnabled(), "true".equals(r.getField(2)));
+								!ToolBox.equals(role.isInstructor(), "true".equals(r.getField(2))) ||
+								!ToolBox.equals(role.isEnabled(), "true".equals(r.getField(3)));
 							role.setReference(r.getField(0));
 							role.setAbbv(r.getField(1));
-							role.setEnabled("true".equals(r.getField(2)));
+							role.setInstructor("true".equals(r.getField(2)));
+							role.setEnabled("true".equals(r.getField(3)));
 							hibSession.saveOrUpdate(role);
 							if (changed)
 								ChangeLog.addChange(hibSession,
@@ -1114,7 +1154,8 @@ public class SimpleEditServlet implements SimpleEditService {
 						Roles role = new Roles();
 						role.setReference(r.getField(0));
 						role.setAbbv(r.getField(1));
-						role.setEnabled("true".equals(r.getField(2)));
+						role.setInstructor("true".equals(r.getField(2)));
+						role.setEnabled("true".equals(r.getField(3)));
 						role.setManager(true);
 						r.setUniqueId((Long)hibSession.save(role));
 						ChangeLog.addChange(hibSession,
@@ -1319,6 +1360,99 @@ public class SimpleEditServlet implements SimpleEditService {
 								null);
 					}	
 					break;
+				case instructorRole:
+					for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+						if (!department.isAllowEvents()) continue;
+						List<DepartmentalInstructor> instructors = (List<DepartmentalInstructor>)hibSession.createQuery(
+								"from DepartmentalInstructor i where i.department.uniqueId = :departmentId and i.externalUniqueId is not null order by i.lastName, i.firstName")
+								.setLong("departmentId", department.getUniqueId()).list();
+						for (DepartmentalInstructor instructor: instructors) {
+							Record r = data.getRecord(instructor.getUniqueId());
+							if (r == null) {
+								if (instructor.getRole() == null) continue;
+								
+								instructor.setRole(null);
+								
+								hibSession.update(instructor);
+								
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										instructor,
+										instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": No Role",
+										Source.SIMPLE_EDIT, 
+										Operation.DELETE,
+										null,
+										instructor.getDepartment());
+							} else {
+								if (ToolBox.equals(instructor.getRole() == null ? "" : instructor.getRole().getUniqueId().toString(), r.getField(2))) continue;
+								
+								instructor.setRole(r.getField(2) == null || r.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(r.getField(2))));
+								
+								hibSession.update(instructor);
+								
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										instructor,
+										instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? "No Role" : instructor.getRole().getAbbv()),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										instructor.getDepartment());								
+							}
+						}
+					
+						for (Record r: data.getNewRecords()) {
+							if (!department.getUniqueId().toString().equals(r.getField(0))) continue;
+							
+							if (r.getField(1) == null || r.getField(1).isEmpty()) continue;
+							
+							String[] name = r.getValues(1);
+
+							DepartmentalInstructor instructor = null;
+							boolean add = true;
+							
+							for (DepartmentalInstructor i: instructors)
+								if (name[3].equals(i.getExternalUniqueId())) {
+									instructor = i;
+									add = false;
+									break;
+								}
+							
+							if (instructor == null) {
+								instructor = new DepartmentalInstructor();
+								instructor.setExternalUniqueId(name[3]);
+								instructor.setLastName(name[0]);
+								instructor.setFirstName(name[1]);
+								instructor.setMiddleName(name[2].isEmpty() ? null : name[2]);
+								instructor.setEmail(name.length <=4 || name[4].isEmpty() ? null : name[4]);
+								instructor.setIgnoreToFar(false);
+								instructor.setDepartment(department);
+
+								instructor.setRole(r.getField(2) == null || r.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(r.getField(2))));
+
+								r.setUniqueId((Long)hibSession.save(instructor));
+							} else {
+								r.setUniqueId(instructor.getUniqueId());
+								instructor.setRole(r.getField(2) == null || r.getField(2).isEmpty() ? null : RolesDAO.getInstance().get(Long.valueOf(r.getField(2))));
+
+								hibSession.update(instructor);
+							}
+							
+							r.setDeletable(false);
+							r.setField(0, r.getField(0), false);
+							r.setField(1, r.getField(1), false);
+							
+							ChangeLog.addChange(hibSession,
+									getSessionContext(),
+									instructor,
+									instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? "No Role" : instructor.getRole().getAbbv()),
+									Source.SIMPLE_EDIT, 
+									(add ? Operation.CREATE : Operation.UPDATE),
+									null,
+									instructor.getDepartment());
+						}
+					}
+					break;
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1389,6 +1523,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.EventRoomTypes;
 		case featureType:
 			return Right.RoomFeatures;
+		case instructorRole:
+			return Right.InstructorRoles;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1428,6 +1564,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.EventRoomTypeEdit;
 		case featureType:
 			return Right.RoomFeatureTypeEdit;
+		case instructorRole:
+			return Right.InstructorRoleEdit;
 		default:
 			return Right.IsAdmin;
 		}

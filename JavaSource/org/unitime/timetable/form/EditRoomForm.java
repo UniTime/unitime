@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -36,9 +38,11 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
+import org.unitime.timetable.util.IdValue;
 import org.unitime.timetable.webutil.WebTextValidation;
 
 /** 
@@ -72,6 +76,9 @@ public class EditRoomForm extends ActionForm {
     private Map<String,Boolean> examEnabled = new HashMap<String, Boolean>();
     private String examCapacity;
     private String area;
+    private String breakTime;
+    private String note;
+    private Integer eventStatus;
 	
 	// --------------------------------------------------------- Methods
 
@@ -296,6 +303,7 @@ public class EditRoomForm extends ActionForm {
         externalId=null; id=null; name=null; room=true; type=null; bldgId = null;
 		ignoreTooFar=Boolean.FALSE; ignoreRoomCheck=Boolean.FALSE;
 		examEnabled.clear();  examCapacity=null;
+		eventStatus = RoomTypeOption.getDefaultStatus();
 	}
 	
 	public boolean getExamEnabled(String type) {
@@ -330,5 +338,26 @@ public class EditRoomForm extends ActionForm {
     public String getArea() { return area; }
     
     public void setArea(String area) { this.area = area; }
+    
+    public String getNote() { return note; }
+    
+    public void setNote(String note) { this.note = note; }
+    
+    public String getBreakTime() { return breakTime; }
+    
+    public void setBreakTime(String breakTime) { this.breakTime = breakTime; }
+
+    public Integer getEventStatus() { return eventStatus; }
+    
+    public void setEventStatus(Integer eventStatus) { this.eventStatus = eventStatus; }
+    
+    public List<IdValue> getEventStates() { 
+    	List<IdValue> ret = new ArrayList<IdValue>();
+    	ret.add(new IdValue(-1l, "Default"));
+    	for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
+    		ret.add(new IdValue(new Long(state.ordinal()), state.toString()));
+    	}
+    	return ret;
+    }
 }
 

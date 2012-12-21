@@ -170,7 +170,7 @@ public class LocationPermissions {
 
 	@PermissionForRight(Right.RoomEditChangeExaminationStatus)
 	public static class RoomEditChangeExaminationStatus extends RoomEditChangeCapacity {}
-
+	
 	@PermissionForRight(Right.RoomEditChangeExternalId)
 	public static class RoomEditChangeExternalId extends RoomEditChangeCapacity {}
 
@@ -179,6 +179,9 @@ public class LocationPermissions {
 
 	@PermissionForRight(Right.RoomEditChangeType)
 	public static class RoomEditChangeType extends RoomEditChangeCapacity {}
+
+	@PermissionForRight(Right.RoomEditChangeEventProperties)
+	public static class RoomEditChangeEventProperties extends RoomEditChangeCapacity {}
 
 	@PermissionForRight(Right.EditRoomDepartments)
 	public static class EditRoomDepartments implements Permission<Department> {

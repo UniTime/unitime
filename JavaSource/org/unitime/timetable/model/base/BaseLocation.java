@@ -44,6 +44,9 @@ public abstract class BaseLocation implements Serializable {
 	private Boolean iIgnoreTooFar;
 	private Boolean iIgnoreRoomCheck;
 	private Double iArea;
+	private Integer iEventStatus;
+	private String iNote;
+	private Integer iBreakTime;
 	private String iManagerIds;
 	private String iPattern;
 	private Integer iExamCapacity;
@@ -66,6 +69,9 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_IGNORE_TOO_FAR = "ignoreTooFar";
 	public static String PROP_IGNORE_ROOM_CHECK = "ignoreRoomCheck";
 	public static String PROP_AREA = "area";
+	public static String PROP_EVENT_STATUS = "eventStatus";
+	public static String PROP_NOTE = "note";
+	public static String PROP_BREAK_TIME = "breakTime";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
@@ -107,6 +113,15 @@ public abstract class BaseLocation implements Serializable {
 
 	public Double getArea() { return iArea; }
 	public void setArea(Double area) { iArea = area; }
+
+	public Integer getEventStatus() { return iEventStatus; }
+	public void setEventStatus(Integer eventStatus) { iEventStatus = eventStatus; }
+
+	public String getNote() { return iNote; }
+	public void setNote(String note) { iNote = note; }
+
+	public Integer getBreakTime() { return iBreakTime; }
+	public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
 
 	public String getManagerIds() { return iManagerIds; }
 	public void setManagerIds(String managerIds) { iManagerIds = managerIds; }
@@ -186,15 +201,18 @@ public abstract class BaseLocation implements Serializable {
 	public String toDebugString() {
 		return "Location[" +
 			"\n	Area: " + getArea() +
+			"\n	BreakTime: " + getBreakTime() +
 			"\n	Capacity: " + getCapacity() +
 			"\n	CoordinateX: " + getCoordinateX() +
 			"\n	CoordinateY: " + getCoordinateY() +
 			"\n	DisplayName: " + getDisplayName() +
 			"\n	EventDepartment: " + getEventDepartment() +
+			"\n	EventStatus: " + getEventStatus() +
 			"\n	ExamCapacity: " + getExamCapacity() +
 			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
 			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
 			"\n	ManagerIds: " + getManagerIds() +
+			"\n	Note: " + getNote() +
 			"\n	Pattern: " + getPattern() +
 			"\n	PermanentId: " + getPermanentId() +
 			"\n	Session: " + getSession() +

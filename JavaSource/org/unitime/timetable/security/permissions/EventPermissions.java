@@ -132,21 +132,21 @@ public class EventPermissions {
 				mgrDept = (mgrDept == null ? "" : mgrDept + ",") + id;
 			
 			if (sessionId == null) return new ArrayList<Long>();
-						
+			
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
 					"select l.uniqueId " +
 					"from Location l, RoomTypeOption o " +
 					"where l.eventDepartment.allowEvents = true and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId and (" +
-					"o.status in (" + anyRequest + ")" +
+					"(l.eventStatus in (" + anyRequest + ") or (l.eventStatus is null and o.status in (" + anyRequest + ")))" +
 					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)
-							? " or o.status in (" + deptRequest + ")"
+							? " or (l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + ")))"
 							: roleDept == null ? ""
-							: " or (o.status in (" + deptRequest + ") and o.department.uniqueId in (" + roleDept + "))"
+							: " or ((l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + "))) and o.department.uniqueId in (" + roleDept + "))"
 					) +
 					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && user.getCurrentAuthority().hasRight(Right.EventMeetingApprove)
-							? " or o.status in (" + mgrRequest + ")"
+							? " or (l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ")))"
 							: mgrDept == null ? ""
-							: " or (o.status in (" + mgrRequest + ") and o.department.uniqueId in (" + mgrDept + "))"
+							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + "))) and o.department.uniqueId in (" + mgrDept + "))"
 					) +
 					")")
 					.setLong("sessionId", sessionId).setCacheable(true).list();
@@ -204,7 +204,7 @@ public class EventPermissions {
 			
 			// Event manager can see all events.
 			// FIXME: Really?
-			if (user.getCurrentAuthority().hasRight(Right.EventLookupContact)) return true;
+			// if (user.getCurrentAuthority().hasRight(Right.EventLookupContact)) return true;
 			
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:

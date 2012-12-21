@@ -169,6 +169,7 @@ public enum Right {
 	RoomEditChangeCapacity(Location.class),
 	RoomEditChangeExaminationStatus(Location.class),
 	RoomEditChangeRoomProperties(Location.class),
+	RoomEditChangeEventProperties(Location.class),
 	RoomAvailability(Session.class),
 	RoomDepartments(Department.class),
 	EditRoomDepartments(Department.class),
@@ -455,6 +456,9 @@ public enum Right {
 	
 	RoomFeatureTypes,
 	RoomFeatureTypeEdit,
+	
+	InstructorRoles(Department.class),
+	InstructorRoleEdit(Department.class),
 	
 	/** Administration: Defaults */
 	

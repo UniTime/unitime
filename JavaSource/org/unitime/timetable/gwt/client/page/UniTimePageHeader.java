@@ -155,6 +155,15 @@ public class UniTimePageHeader extends Composite {
 					};
 					userLabel.addClickHandler(c);
 					hint.addClickHandler(c);
+				} else {
+					ClickHandler c = new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							ToolBox.open(GWT.getHostPageBaseURL() + "selectPrimaryRole.do?list=Y");
+						}
+					};
+					userLabel.addClickHandler(c);
+					hint.addClickHandler(c);
 				}
 			}
 			@Override
