@@ -62,7 +62,9 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         UNASSIGN("unassignment"),
         APPROVE("approve"),
         REJECT("reject"),
-        MERGE("merge");
+        MERGE("merge"),
+        NOTE("note"),
+        ;
         
         private String iTitle;
         Operation(String title) { iTitle = title; }
@@ -331,9 +333,11 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
                         "select ch from ChangeLog ch " +
                         "where ch.objectUniqueId=:objectUniqueId and ch.objectType=:objectType "+
                         (source==null?"":"and ch.sourceString=:source ") +
+                        "and ch.operationString != :note " +
                         "order by ch.timeStamp desc");
             q.setLong("objectUniqueId", objectUniqueId.longValue());
             q.setString("objectType",objectType);
+            q.setString("note", Operation.NOTE.toString());
             if (source!=null)
                 q.setString("source",source.name());
             q.setMaxResults(1);

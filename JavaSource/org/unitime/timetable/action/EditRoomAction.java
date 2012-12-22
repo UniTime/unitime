@@ -30,6 +30,8 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.cpsolver.ifs.util.ToolBox;
+
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -343,6 +345,7 @@ public class EditRoomAction extends Action {
             	location.setEventStatus(editRoomForm.getEventStatus() == null || editRoomForm.getEventStatus() < 0 ? null : editRoomForm.getEventStatus());
             }
             
+            String oldNote = location.getNote();
         	location.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote());
 			
 			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
@@ -377,6 +380,9 @@ public class EditRoomAction extends Action {
 			}
 
 			hibSession.saveOrUpdate(location);
+			
+        	if (!ToolBox.equals(oldNote, location.getNote()))
+        		ChangeLog.addChange(hibSession, sessionContext, location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()), ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
 			
             ChangeLog.addChange(
                     hibSession, 

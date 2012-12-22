@@ -49,6 +49,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	private List<String> iStyleNames = new ArrayList<String>();
 	private String iTitle = null;
 	private Boolean iOrder = null;
+	private ClickHandler iClickHandler = null;
 	
 	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align) {
 		super(title, false);
@@ -65,6 +66,16 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 				popup.showRelativeTo((Widget)event.getSource());
 			}
 		});
+	}
+	
+	public UniTimeTableHeader(String title, int colSpan, HorizontalAlignmentConstant align, ClickHandler clickHandler) {
+		super(title, false);
+		iColSpan = colSpan;
+		iAlign = align;
+		iTitle = title;
+		
+		iClickHandler = clickHandler;
+		addClickHandler(clickHandler);
 	}
 	
 	public boolean setMenu(final PopupPanel popup) {
@@ -106,6 +117,18 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 		this(" ", 1, HasHorizontalAlignment.ALIGN_LEFT);
 	}
 
+	public UniTimeTableHeader(String title, ClickHandler clickHandler) {
+		this(title, 1, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+	}
+	
+	public UniTimeTableHeader(String title, int colSpan, ClickHandler clickHandler) {
+		this(title, colSpan, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+	}
+	
+	public UniTimeTableHeader(ClickHandler clickHandler) {
+		this(" ", 1, HasHorizontalAlignment.ALIGN_LEFT, clickHandler);
+	}
+
 	
 	public UniTimeTableHeader(String title, HorizontalAlignmentConstant align) {
 		this(title, 1, align);
@@ -120,7 +143,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	}
 	
 	public String getStyleName() {
-		return (iOperations.isEmpty() ? "unitime-TableHeader" : "unitime-ClickableTableHeader");
+		return (iOperations.isEmpty() && iClickHandler == null ? "unitime-TableHeader" : "unitime-ClickableTableHeader");
 	}
 	
 

@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeMenuBar;
 import org.unitime.timetable.gwt.client.page.UniTimeSideBar;
 import org.unitime.timetable.gwt.client.page.UniTimeVersion;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
+import org.unitime.timetable.gwt.client.rooms.RoomNoteChanges;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 
@@ -53,6 +54,7 @@ public enum Components {
 	offeringReservationsReadOnly("UniTimeGWT:OfferingReservationsRO", new ComponentFactory() { public void insert(RootPanel panel) { new ReservationTable(false, true).insert(panel); } }),
 	offeringEnrollments("UniTimeGWT:OfferingEnrollments", new ComponentFactory() { public void insert(RootPanel panel) { new EnrollmentTable(true, true).insert(panel); } }),
 	roomSharing("UniTimeGWT:RoomSharingWidget", new ComponentFactory() { public void insert(RootPanel panel) { new RoomSharingWidget(false).insert(panel); } }),
+	roomNoteChanges("UniTimeGWT:RoomNoteChanges", new ComponentFactory() { public void insert(RootPanel panel) { new RoomNoteChanges().insert(panel); } }),
 	;
 	
 	private String iId;
