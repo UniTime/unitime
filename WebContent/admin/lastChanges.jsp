@@ -72,7 +72,7 @@
 	<TR>
 		<TD colspan='2' align='right'>
 			<html:submit onclick="displayLoading();" property="op" value="Apply"/>
-			<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+			<html:submit property="op" value="Export PDF"/>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
 		</TD>
 	</TR>
@@ -82,7 +82,7 @@
 			<TR>
 				<TD colspan='2' align='right'>
 					<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
-					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+					<html:submit property="op" value="Export PDF"/>
 				</TD>
 			</TR>
 		</TABLE>

@@ -20,7 +20,6 @@
 package org.unitime.timetable.webutil;
 
 import java.awt.Image;
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -28,7 +27,6 @@ import java.util.TreeSet;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.BuildingPref;
@@ -260,7 +258,7 @@ public class InstructorListBuilder {
 		}        
     }
     
-    public File pdfTableForInstructor(SessionContext context, String deptId, int order ) throws Exception {
+    public PdfWebTable pdfTableForInstructor(SessionContext context, String deptId) throws Exception {
 		int cols = 10;
 		boolean timeVertical = RequiredTimeTable.getTimeGridVertical(context.getUser());
 		boolean gridAsText = RequiredTimeTable.getTimeGridAsText(context.getUser());
@@ -435,12 +433,8 @@ public class InstructorListBuilder {
 
 		}
 		
-		File file = ApplicationProperties.getTempFile("instructors", "pdf");
-		
-		webTable.exportPdf(file, order);
-		
-		return file;
-    }    
+		return webTable;
+    }
     
     /**
      * Puts a space &nbsp; if string is of 0 length

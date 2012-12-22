@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -69,6 +69,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.pdf.PdfClassListTableBuilder;
 
@@ -186,12 +187,17 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 			sessionContext.setAttribute(SessionAttribute.ClassesCourseNumber, classListForm.getCourseNbr());
 			
 			if ("exportPdf".equals(action)) {
-				File pdfFile = new PdfClassListTableBuilder().pdfTableForClasses(
+	    		OutputStream out = ExportUtils.getPdfOutputStream(response, "classes");
+				
+				new PdfClassListTableBuilder().pdfTableForClasses(out,
 						WebSolver.getClassAssignmentProxy(request.getSession()),
 			    		WebSolver.getExamSolver(request.getSession()),
 			    		classListForm, 
 			    		sessionContext);
-				if (pdfFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
+				
+				out.flush(); out.close();
+				
+				return null;
 			}
 			
 			BackTracker.markForBack(

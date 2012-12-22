@@ -1490,8 +1490,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructional Offerings")
 	String labelInstructionalOfferings();
 	
-	@DefaultMessage("Unable to create PDF file.")
-	String errorUnableToCreatePdf();
+	@DefaultMessage("Unable to create PDF file: {0}.")
+	String errorUnableToCreatePdf(String reason);
 	
 	@DefaultMessage("Unable to create worksheet PDF file: nothing to export.")
 	String errorUnableToCreateWorksheetPdfNoData();

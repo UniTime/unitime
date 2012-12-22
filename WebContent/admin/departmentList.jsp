@@ -84,7 +84,7 @@
 						</TD>
 					</sec:authorize>
 					<TD nowrap>
-						<html:submit onclick="displayLoading();" property="op" value="Export PDF" title='Export PDF (Alt+P)' accesskey="P" styleClass="btn"/>
+						<input type='button' onclick="document.location='departmentList.do?op=Export%20PDF';" title='Export PDF (Alt+P)' accesskey="P" class="btn" value="Export PDF">
 					</TD></TR>
 				</TABLE>
 		</TD>

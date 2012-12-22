@@ -20,7 +20,9 @@
 package org.unitime.timetable.reports.exam;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -123,7 +125,11 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     }
     
     public PdfLegacyExamReport(int mode, File file, String title, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-        super(mode, file, title, ApplicationProperties.getProperty("tmtbl.exam.report." + examType.getReference(), examType.getLabel().toUpperCase()) + " EXAMINATIONS", 
+    	this(mode, (file == null ? null : new FileOutputStream(file)), title, session, examType, subjectArea, exams);
+    }
+    
+    public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
+        super(mode, out, title, ApplicationProperties.getProperty("tmtbl.exam.report." + (examType == null ? "all" : examType.getReference()), (examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase()) + " EXAMINATIONS"), 
                 title + " -- " + session.getLabel(), session.getLabel());
         if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
         iExams = exams;
@@ -133,7 +139,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         iDispRooms = "true".equals(System.getProperty("room","true"));
         iNoRoom = System.getProperty("noroom",ApplicationProperties.getProperty("tmtbl.exam.report.noroom","INSTR OFFC"));
         iDirect = "true".equals(System.getProperty("direct","true"));
-        iM2d = "true".equals(System.getProperty("m2d",(examType.getType() == ExamType.sExamTypeFinal?"true":"false")));
+        iM2d = "true".equals(System.getProperty("m2d",(examType == null || examType.getType() == ExamType.sExamTypeFinal?"true":"false")));
         iBtb = "true".equals(System.getProperty("btb","false"));
         iLimit = Integer.parseInt(System.getProperty("limit", "-1"));
         iItype = "true".equals(System.getProperty("itype",ApplicationProperties.getProperty("tmtbl.exam.report.itype","true")));

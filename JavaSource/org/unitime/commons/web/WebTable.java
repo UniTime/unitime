@@ -21,7 +21,6 @@ package org.unitime.commons.web;
 
 
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -716,10 +715,5 @@ public class WebTable {
         }
         
         return csv;
-    }
-	
-    public void exportCsv(File file, int ordCol) throws Exception {
-		CSVFile csv = printCsvTable(ordCol);
-		csv.save(file);
     }
 }

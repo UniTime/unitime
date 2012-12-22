@@ -41,7 +41,7 @@
 				<sec:authorize access="hasPermission(null, 'Session', 'BuildingExportPdf')">
 					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 						<html:hidden property="op" value="Export PDF"/>
-						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
+						<html:submit styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
 					</html:form>
 				</sec:authorize>
 				</td><td>
@@ -75,7 +75,7 @@
 				<sec:authorize access="hasPermission(null, 'Session', 'BuildingExportPdf')">
 					<html:form action="buildingEdit" styleClass="FormWithNoPadding">
 						<html:hidden property="op" value="Export PDF"/>
-						<html:submit onclick="displayLoading();" styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
+						<html:submit styleClass="btn" accesskey="P" title="Export PDF (Alt+P)" value="Export PDF"/>
 					</html:form>
 				</sec:authorize>
 				</td><td>

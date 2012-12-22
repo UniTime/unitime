@@ -63,8 +63,8 @@
 		<TD colspan='2' align='right'>
 			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
 			<logic:notEmpty name="examReportForm" property="table">
-				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
-				<html:submit onclick="displayLoading();" property="op" value="Export CSV"/>
+				<html:submit property="op" value="Export PDF"/>
+				<html:submit property="op" value="Export CSV"/>
 			</logic:notEmpty>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
 		</TD>

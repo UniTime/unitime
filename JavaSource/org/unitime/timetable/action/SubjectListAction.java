@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,7 +29,6 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ChangeLog;
@@ -39,7 +37,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 import org.apache.struts.action.Action;
@@ -133,9 +131,8 @@ public class SubjectListAction extends Action {
                         lastChangeCmp });
             }
 
-            File file = ApplicationProperties.getTempFile("subjects", "pdf");
-            webTable.exportPdf(file, WebTable.getOrder(sessionContext, "SubjectList.ord"));
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            ExportUtils.exportPDF(webTable, WebTable.getOrder(sessionContext, "SubjectList.ord"), response, "subjects");
+            return null;
         }
         
         WebTable webTable = new WebTable( 

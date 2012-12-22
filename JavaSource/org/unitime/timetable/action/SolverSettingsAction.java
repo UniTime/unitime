@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
@@ -46,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverSettingsForm;
 import org.unitime.timetable.model.SolverParameter;
 import org.unitime.timetable.model.SolverParameterDef;
@@ -61,7 +58,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 
 
 /** 
@@ -242,70 +239,65 @@ public class SolverSettingsAction extends Action {
                 errors.add("key", new ActionMessage("errors.invalid", "Unique Id : " + id));
                 saveErrors(request, errors);
             } else {
-                try {
-                    SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
-                    org.hibernate.Session hibSession = dao.getSession();
+                SolverPredefinedSettingDAO dao = new SolverPredefinedSettingDAO();
+                org.hibernate.Session hibSession = dao.getSession();
+            
+                SolverPredefinedSetting setting = dao.get(new Long(id), hibSession);
                 
-                    SolverPredefinedSetting setting = dao.get(new Long(id), hibSession);
-                    
-                    if(setting==null) {
-                        errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
-                        saveErrors(request, errors);
-                    } else {
-                        File file = ApplicationProperties.getTempFile(setting.getName(), "txt");
-                        PrintWriter pw = new PrintWriter(new FileWriter(file));
-                        DataProperties properties = null;
-                        switch (myForm.getAppearanceIdx()) {
-                        case SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER:
-                        	properties = studentSectioningSolverService.createConfig(setting.getUniqueId(), null);
-                        	break;
-                        case SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER:
-                        	properties = examinationSolverService.createConfig(setting.getUniqueId(), null);
-                        	break;
-                        default:
-                        	properties = courseTimetablingSolverService.createConfig(setting.getUniqueId(), null);
-                        }
-                        pw.println("## Solver Configuration File");
-                        pw.println("## Name: "+setting.getDescription());
-                        pw.println("## Date: "+new Date());
-                        pw.println("######################################");
-                        for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
-                            SolverParameterGroup g = (SolverParameterGroup)i.next();
-                            if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
-                                if (g.getType()!=SolverParameterGroup.sTypeStudent) continue;
-                            } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
-                                if (g.getType()!=SolverParameterGroup.sTypeExam) continue;
-                            } else {
-                                if (g.getType()!=SolverParameterGroup.sTypeCourse) continue;
-                            }
-                            pw.println();
-                            pw.println("## "+g.getDescription().replaceAll("<br>", "\n#"));
-                            pw.println("######################################");
-                            TreeSet parameters = new TreeSet(g.getParameters());
-                            for (Iterator j=parameters.iterator();j.hasNext();) {
-                                SolverParameterDef p = (SolverParameterDef)j.next();
-                                String value = properties.getProperty(p.getName(),p.getDefault());
-                                if (value==null) continue;
-                                pw.println("## "+p.getDescription().replaceAll("<br>", "\n#"));
-                                pw.println("## Type: "+p.getType());
-                                if (value!=null && !value.equals(p.getDefault()))
-                                    pw.println("## Default: "+p.getDefault());
-                                pw.println(p.getName()+"="+properties.getProperty(p.getName(),p.getDefault()));
-                                properties.remove(p.getName());
-                            }
+                if(setting==null) {
+                    errors.add("name", new ActionMessage("errors.invalid", "Unique Id : " + id));
+                    saveErrors(request, errors);
+                } else {
+                    PrintWriter pw = ExportUtils.getPlainTextWriter(response, setting.getName() + ".txt");
+                    DataProperties properties = null;
+                    switch (myForm.getAppearanceIdx()) {
+                    case SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER:
+                    	properties = studentSectioningSolverService.createConfig(setting.getUniqueId(), null);
+                    	break;
+                    case SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER:
+                    	properties = examinationSolverService.createConfig(setting.getUniqueId(), null);
+                    	break;
+                    default:
+                    	properties = courseTimetablingSolverService.createConfig(setting.getUniqueId(), null);
+                    }
+                    pw.println("## Solver Configuration File");
+                    pw.println("## Name: "+setting.getDescription());
+                    pw.println("## Date: "+new Date());
+                    pw.println("######################################");
+                    for (Iterator i=hibSession.createQuery("select g from SolverParameterGroup g order by g.order").iterate();i.hasNext();) {
+                        SolverParameterGroup g = (SolverParameterGroup)i.next();
+                        if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_STUDENT_SOLVER) {
+                            if (g.getType()!=SolverParameterGroup.sTypeStudent) continue;
+                        } else if (myForm.getAppearanceIdx()==SolverPredefinedSetting.APPEARANCE_EXAM_SOLVER) {
+                            if (g.getType()!=SolverParameterGroup.sTypeExam) continue;
+                        } else {
+                            if (g.getType()!=SolverParameterGroup.sTypeCourse) continue;
                         }
                         pw.println();
-                        pw.println("## Other Properties");
+                        pw.println("## "+g.getDescription().replaceAll("<br>", "\n#"));
                         pw.println("######################################");
-                        for (Enumeration e=properties.propertyNames();e.hasMoreElements();) {
-                            String name = (String)e.nextElement();
-                            pw.println(name+"="+properties.getProperty(name));
+                        TreeSet parameters = new TreeSet(g.getParameters());
+                        for (Iterator j=parameters.iterator();j.hasNext();) {
+                            SolverParameterDef p = (SolverParameterDef)j.next();
+                            String value = properties.getProperty(p.getName(),p.getDefault());
+                            if (value==null) continue;
+                            pw.println("## "+p.getDescription().replaceAll("<br>", "\n#"));
+                            pw.println("## Type: "+p.getType());
+                            if (value!=null && !value.equals(p.getDefault()))
+                                pw.println("## Default: "+p.getDefault());
+                            pw.println(p.getName()+"="+properties.getProperty(p.getName(),p.getDefault()));
+                            properties.remove(p.getName());
                         }
-                        pw.flush(); pw.close();
-                        request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
                     }
-                } catch (Exception e) {
-                    Debug.error(e);
+                    pw.println();
+                    pw.println("## Other Properties");
+                    pw.println("######################################");
+                    for (Enumeration e=properties.propertyNames();e.hasMoreElements();) {
+                        String name = (String)e.nextElement();
+                        pw.println(name+"="+properties.getProperty(name));
+                    }
+                    pw.flush(); pw.close();
+                    return null;
                 }
                 list=false;
             }

@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -42,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolverGroupEditForm;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Session;
@@ -52,7 +50,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -285,11 +283,11 @@ public class SolverGroupEditAction extends Action {
 	        }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getSolverGroups(request, session, false);
-                File file = ApplicationProperties.getTempFile("solverGroups", "pdf");
-                table.exportPdf(file, WebTable.getOrder(sessionContext, "solverGroups.ord"));
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-                myForm.setOp("List");
+            	ExportUtils.exportPDF(
+            			getSolverGroups(request, session, false),
+            			WebTable.getOrder(sessionContext, "solverGroups.ord"),
+            			response, "solverGroups");
+            	return null;
             }
 
 	        // Read all existing settings and store in request

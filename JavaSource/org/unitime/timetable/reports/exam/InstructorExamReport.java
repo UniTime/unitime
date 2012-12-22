@@ -21,6 +21,7 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
@@ -70,6 +71,10 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         super(mode, file, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
     }
     
+    public InstructorExamReport(int mode, OutputStream out, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, out, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
+    }
+
     private void generateCache() {
         if (iStudentNames==null) {
             iStudentNames = new Hashtable();

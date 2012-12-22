@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -40,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.AssignedClassesForm;
@@ -57,6 +55,7 @@ import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -171,17 +170,15 @@ public class AssignedClassesAction extends Action {
         if ("Export PDF".equals(op)) {
         	PdfWebTable table = exportPdf(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
         	if (table != null) {
-        		File file = ApplicationProperties.getTempFile("assigned", "pdf");
-        		table.exportPdf(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        		ExportUtils.exportPDF(table, WebTable.getOrder(sessionContext,"assignedClasses.ord"), response, "assigned");
+        		return null;
         	}
         }
         if ("Export CSV".equals(op)) {
         	PdfWebTable table = exportPdf(model.getSimpleMode(),request,"Assigned Classes",assignedClasses);
         	if (table != null) {
-        		File file = ApplicationProperties.getTempFile("assigned", "csv");
-        		table.exportCsv(file, WebTable.getOrder(sessionContext,"assignedClasses.ord"));
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        		ExportUtils.exportCSV(table, WebTable.getOrder(sessionContext,"assignedClasses.ord"), response, "assigned");
+        		return null;
         	}
         }
 		

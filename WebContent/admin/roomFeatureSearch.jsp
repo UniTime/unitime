@@ -60,7 +60,7 @@
 				<html:submit property="op" value="Search" onclick="displayLoading();" accesskey="S" styleClass="btn"/>
 				<sec:authorize access="hasPermission(null, 'Department', 'RoomFeaturesExportPdf')">
 					&nbsp;&nbsp;
-					<html:submit property="op" value="Export PDF" onclick="displayLoading();" accesskey="P" styleClass="btn"/>
+					<html:submit property="op" value="Export PDF" accesskey="P" styleClass="btn"/>
 				</sec:authorize>
 			</TD>
 		</TR>

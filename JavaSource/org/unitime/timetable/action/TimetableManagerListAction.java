@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,10 +29,9 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 import org.unitime.timetable.webutil.TimetableManagerBuilder;
 
@@ -84,10 +81,10 @@ public class TimetableManagerListAction extends Action {
         String tblData = (order>=1?table.printTable(order):table.printTable());
         
         if ("Export PDF".equals(request.getParameter("op"))) {
-            PdfWebTable pdfTable =  new TimetableManagerBuilder().getManagersTable(sessionContext,false);
-            File file = ApplicationProperties.getTempFile("managers", "pdf");
-            pdfTable.exportPdf(file, order);
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	ExportUtils.exportPDF(
+        			new TimetableManagerBuilder().getManagersTable(sessionContext,false),
+        			order, response, "managers");
+        	return null;
         }
             
 

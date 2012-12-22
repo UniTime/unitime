@@ -19,8 +19,8 @@
 */
 package org.unitime.timetable.util;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -67,7 +67,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
      * @param outputStream
      * @return PdfWriter
      */
-    public static PdfWriter initFooter(Document document, FileOutputStream outputStream) 
+    public static PdfWriter initFooter(Document document, OutputStream outputStream) 
     		throws DocumentException, IOException {
     	
 		PdfWriter iWriter = PdfWriter.getInstance(document, outputStream);

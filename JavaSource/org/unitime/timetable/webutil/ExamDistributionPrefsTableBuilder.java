@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.webutil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -29,9 +27,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.hibernate.Query;
-import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Exam;
@@ -77,7 +73,7 @@ public class ExamDistributionPrefsTableBuilder {
 		return toHtmlTable(request, context, distPrefs, null); 
 	}
 
-    public File getDistPrefsTableAsPdf(HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
+    public void getDistPrefsTableAsPdf(OutputStream out, HttpServletRequest request, SessionContext context, Long subjectAreaId, String courseNbr, Long examTypeId) throws Exception {
         
         Query q = new DistributionPrefDAO().getSession().createQuery(
                 "select distinct dp from DistributionPref dp " +
@@ -95,7 +91,7 @@ public class ExamDistributionPrefsTableBuilder {
             q.setString("courseNbr", courseNbr.trim().replaceAll("\\*", "%"));
         List distPrefs = q.setCacheable(true).list();
 
-        return toPdfTable(request, context, distPrefs, examTypeId); 
+        toPdfTable(out, request, context, distPrefs, examTypeId); 
     }
 
     public String getDistPrefsTable(HttpServletRequest request, SessionContext context, Exam exam) throws Exception {
@@ -189,7 +185,7 @@ public class ExamDistributionPrefsTableBuilder {
         return tbl.printTable(WebTable.getOrder(context,"examDistPrefsTable.ord"));
     }
 
-    public File toPdfTable(HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) {
+    public void toPdfTable(OutputStream out, HttpServletRequest request, SessionContext context, Collection distPrefs, Long examTypeId) throws Exception {
         WebTable.setOrder(context,"examDistPrefsTable.ord",request.getParameter("order"),4);
         
         PdfWebTable tbl = new PdfWebTable(4, 
@@ -248,38 +244,24 @@ public class ExamDistributionPrefsTableBuilder {
         if (nrPrefs==0)
             tbl.addLine(null,  new String[] { "No preferences found", "", "", "" }, null);
         
-        FileOutputStream out = null;
-        try {
-        	File file = ApplicationProperties.getTempFile("exdistpref", "pdf");
-            int ord = WebTable.getOrder(context,"examDistPrefsTable.ord");
-            ord = (ord>0?1:-1)*(1+Math.abs(ord));
-        	
-        	PdfPTable table = tbl.printPdfTable(ord);
-        	
-        	float width = tbl.getWidth();
-        	
-        	Document doc = new Document(new Rectangle(60f + width, 60f + 1.30f * width),30,30,30,30); 
+        int ord = WebTable.getOrder(context,"examDistPrefsTable.ord");
+        ord = (ord>0?1:-1)*(1+Math.abs(ord));
+    	
+    	PdfPTable table = tbl.printPdfTable(ord);
+    	
+    	float width = tbl.getWidth();
+    	
+    	Document doc = new Document(new Rectangle(60f + width, 60f + 1.30f * width),30,30,30,30); 
 
-        	out = new FileOutputStream(file);
-			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-			iWriter.setPageEvent(new PdfEventHandler());
-    		doc.open();
-    		
-    		if (tbl.getName()!=null)
-    			doc.add(new Paragraph(tbl.getName(), PdfFont.getBigFont(true)));
-    		
-    		doc.add(table);
-    		
-    		doc.close();
-            
-        	return file;
-        } catch (Exception e) {
-        	Debug.error(e);
-        } finally {
-        	try {
-        		if (out!=null) out.close();
-        	} catch (IOException e) {}
-        }
-    	return null;
+		PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+		iWriter.setPageEvent(new PdfEventHandler());
+		doc.open();
+		
+		if (tbl.getName()!=null)
+			doc.add(new Paragraph(tbl.getName(), PdfFont.getBigFont(true)));
+		
+		doc.add(table);
+		
+		doc.close();
     }
 }

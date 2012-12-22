@@ -20,15 +20,12 @@
 package org.unitime.timetable.webutil.pdf;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeSet;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.ClassInstructor;
@@ -90,97 +87,82 @@ public class PdfClassAssignmentReportListTableBuilder extends PdfClassListTableB
         return cell;
     }
 
-    public File pdfTableForClasses(ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, SessionContext context){
-    	FileOutputStream out = null;
-    	try {
-            setVisibleColumns(form);
-     		
-            Collection classes = (Collection) form.getClasses();
-            
-            if (isShowTimetable()) {
-            	boolean hasTimetable = false;
-            	if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
-	            	if (classAssignment instanceof CachedClassAssignmentProxy) {
-	            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
-	            	}
-        			for (Iterator i=classes.iterator();i.hasNext();) {
-        				Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
-        				if (classAssignment.getAssignment(clazz)!=null) {
-        					hasTimetable = true; break;
-        				}
-        			}
+    public void pdfTableForClasses(OutputStream out, ClassAssignmentProxy classAssignment, ExamAssignmentProxy examAssignment, ClassAssignmentsReportForm form, SessionContext context) throws Exception{
+        setVisibleColumns(form);
+ 		
+        Collection classes = (Collection) form.getClasses();
+        
+        if (isShowTimetable()) {
+        	boolean hasTimetable = false;
+        	if (context.hasPermission(Right.ClassAssignments) && classAssignment != null) {
+            	if (classAssignment instanceof CachedClassAssignmentProxy) {
+            		((CachedClassAssignmentProxy)classAssignment).setCache(classes);
             	}
-            	setDisplayTimetable(hasTimetable);
-            }
-            setUserSettings(context.getUser());
-            
-            if (examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId())) {
-                setShowExam(true);
-                setShowExamTimetable(true);
-                setShowExamName(false);
-            }
-            setShowInstructor(true);
-            if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
-            	setShowDemand(true);
-            }
-            
-            File file = ApplicationProperties.getTempFile("classassign", "pdf");
-	    	
-			float[] widths = getWidths();
-			float totalWidth = 0;
-			for (int i=0;i<widths.length;i++)
-				totalWidth += widths[i];
+    			for (Iterator i=classes.iterator();i.hasNext();) {
+    				Object[] o = (Object[])i.next(); Class_ clazz = (Class_)o[0];
+    				if (classAssignment.getAssignment(clazz)!=null) {
+    					hasTimetable = true; break;
+    				}
+    			}
+        	}
+        	setDisplayTimetable(hasTimetable);
+        }
+        setUserSettings(context.getUser());
+        
+        if (examAssignment!=null || Exam.hasTimetable(context.getUser().getCurrentAcademicSessionId())) {
+            setShowExam(true);
+            setShowExamTimetable(true);
+            setShowExamName(false);
+        }
+        setShowInstructor(true);
+        if (StudentClassEnrollment.sessionHasEnrollments(context.getUser().getCurrentAcademicSessionId())) {
+        	setShowDemand(true);
+        }
+        
+		float[] widths = getWidths();
+		float totalWidth = 0;
+		for (int i=0;i<widths.length;i++)
+			totalWidth += widths[i];
 
-			iDocument = new Document(new Rectangle(60f+totalWidth,60f+1.30f*totalWidth), 30f, 30f, 30f, 30f); 
+		iDocument = new Document(new Rectangle(60f+totalWidth,60f+1.30f*totalWidth), 30f, 30f, 30f, 30f); 
 
-			out = new FileOutputStream(file);
-			iWriter = PdfEventHandler.initFooter(iDocument, out);
-			iDocument.open();
+		iWriter = PdfEventHandler.initFooter(iDocument, out);
+		iDocument.open();
 
-            int ct = 0;
-            Iterator it = classes.iterator();
-            SubjectArea subjectArea = null;
-            String prevLabel = null;
-            while (it.hasNext()){
-            	Object[] o = (Object[])it.next(); Class_ c = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
-            	if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
-					if (iPdfTable!=null) {
-						iDocument.add(iPdfTable);
-						iDocument.newPage();
-					}
-            		
-					iPdfTable = new PdfPTable(getWidths());
-					iPdfTable.setWidthPercentage(100);
-					iPdfTable.getDefaultCell().setPadding(3);
-					iPdfTable.getDefaultCell().setBorderWidth(0);
-					iPdfTable.setSplitRows(false);
-
-					subjectArea = co.getSubjectArea();
-					ct = 0;
-
-					iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
-					iDocument.add(new Paragraph(" "));
-					pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
+        int ct = 0;
+        Iterator it = classes.iterator();
+        SubjectArea subjectArea = null;
+        String prevLabel = null;
+        while (it.hasNext()){
+        	Object[] o = (Object[])it.next(); Class_ c = (Class_)o[0]; CourseOffering co = (CourseOffering)o[1];
+        	if (subjectArea == null || !subjectArea.getUniqueId().equals(co.getSubjectArea().getUniqueId())){
+				if (iPdfTable!=null) {
+					iDocument.add(iPdfTable);
+					iDocument.newPage();
 				}
-                
-                pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", context, prevLabel);
-                prevLabel = c.getClassLabel(co);
-            }  
+        		
+				iPdfTable = new PdfPTable(getWidths());
+				iPdfTable.setWidthPercentage(100);
+				iPdfTable.getDefaultCell().setPadding(3);
+				iPdfTable.getDefaultCell().setBorderWidth(0);
+				iPdfTable.setSplitRows(false);
+
+				subjectArea = co.getSubjectArea();
+				ct = 0;
+
+				iDocument.add(new Paragraph(labelForTable(subjectArea), PdfFont.getBigFont(true)));
+				iDocument.add(new Paragraph(" "));
+				pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
+			}
             
-            if (iPdfTable!=null)
-            	iDocument.add(iPdfTable);
+            pdfBuildClassRow(classAssignment, examAssignment, ++ct, co, c, "", context, prevLabel);
+            prevLabel = c.getClassLabel(co);
+        }  
+        
+        if (iPdfTable!=null)
+        	iDocument.add(iPdfTable);
 
-			iDocument.close();
-
-			return file;
-    	} catch (Exception e) {
-    		Debug.error(e);
-    	} finally {
-        	try {
-        		if (out!=null) out.close();
-        	} catch (IOException e) {}
-    	}
-    	return null;
+		iDocument.close();
     }
     
     @Override

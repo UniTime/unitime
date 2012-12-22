@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionReportForm;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.RoomType;
@@ -64,6 +61,7 @@ import org.unitime.timetable.solver.ui.SameSubpartBalancingReport;
 import org.unitime.timetable.solver.ui.StudentConflictsReport;
 import org.unitime.timetable.solver.ui.ViolatedDistrPreferencesReport;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -141,23 +139,33 @@ public class SolutionReportAction extends Action {
         }
         
         if ("Export PDF".equals(op)) {
-        	FileOutputStream out = null;
-        	try {
-        		File file = ApplicationProperties.getTempFile("report", "pdf");
-        		
-        		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.getHeight(), 60f + 0.75f * PageSize.LETTER.getHeight()),30,30,30,30);
-        		
-        		out = new FileOutputStream(file);
-    			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    			iWriter.setPageEvent(new PdfEventHandler());
-        		doc.open();
-        		
-                boolean atLeastOneRoomReport = false;
-                for (RoomType type : RoomType.findAll()) {
-                    RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
-                    if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
-                    PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
-                    if (table==null) continue;
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "report");
+    		
+    		Document doc = new Document(new Rectangle(60f + PageSize.LETTER.getHeight(), 60f + 0.75f * PageSize.LETTER.getHeight()),30,30,30,30);
+    		
+			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+			iWriter.setPageEvent(new PdfEventHandler());
+    		doc.open();
+    		
+            boolean atLeastOneRoomReport = false;
+            for (RoomType type : RoomType.findAll()) {
+                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, type.getUniqueId());
+                if (roomReport==null || roomReport.getGroups().isEmpty()) continue;
+                PdfWebTable table = getRoomReportTable(request, roomReport, true, type.getUniqueId());
+                if (table==null) continue;
+                PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord"));
+                if (!atLeastOneRoomReport) {
+                    doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+                    doc.newPage();
+                }
+                doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+                doc.add(pdfTable);
+                atLeastOneRoomReport = true;
+            }
+            RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
+            if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
+                PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
+                if (table!=null) {
                     PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord"));
                     if (!atLeastOneRoomReport) {
                         doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
@@ -167,175 +175,156 @@ public class SolutionReportAction extends Action {
                     doc.add(pdfTable);
                     atLeastOneRoomReport = true;
                 }
-                RoomReport roomReport = solver.getRoomReport(sessionDays, startDayDayOfWeek, null);
-                if (roomReport!=null && !roomReport.getGroups().isEmpty()) {
-                    PdfWebTable table = getRoomReportTable(request, roomReport, true, null);
-                    if (table!=null) {
-                        PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.roomReport.ord"));
-                        if (!atLeastOneRoomReport) {
-                            doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-                            doc.newPage();
-                        }
-                        doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-                        doc.add(pdfTable);
-                        atLeastOneRoomReport = true;
-                    }
-                }
+            }
 
-                if (atLeastOneRoomReport) {
-                    PdfPTable pdfTable = new PdfPTable(new float[] {10f,100f});
-        			pdfTable.setWidthPercentage(100);
-        			pdfTable.getDefaultCell().setPadding(3);
-        			pdfTable.getDefaultCell().setBorderWidth(0);
-        			pdfTable.setSplitRows(false);
-        			pdfTable.addCell("Group");
-        			pdfTable.addCell("group size <minimum, maximum)");
-        			pdfTable.addCell("Size");
-        			pdfTable.addCell("actual group size (size of the smallest and the biggest room in the group)");
-        			pdfTable.addCell("NrRooms");
-        			pdfTable.addCell("number of rooms in the group");
-        			pdfTable.addCell("ClUse");
-        			pdfTable.addCell("number of classes that are using a room from the group (actual solution)");
-        			pdfTable.addCell("ClShould");
-        			pdfTable.addCell("number of classes that \"should\" use a room of the group (smallest available room of a class is in this group)");
-        			pdfTable.addCell("ClMust");
-        			pdfTable.addCell("number of classes that must use a room of the group (all available rooms of a class are in this group)");
-        			pdfTable.addCell("HrUse");
-        			pdfTable.addCell("average hours a room of the group is used (actual solution)");
-        			pdfTable.addCell("HrShould");
-        			pdfTable.addCell("average hours a room of the group should be used (smallest available room of a class is in this group)");
-        			pdfTable.addCell("HrMust");
-        			pdfTable.addCell("average hours a room of this group must be used (all available rooms of a class are in this group)");
-        			pdfTable.addCell("");
-        			pdfTable.addCell("*) cumulative numbers (group minimum ... inf) are displayed in parentheses.");
-        			doc.add(pdfTable);
-        		}
-        		
-        		DiscouragedInstructorBtbReport discouragedInstructorBtbReportReport = solver.getDiscouragedInstructorBtbReport();
-        		if (discouragedInstructorBtbReportReport!=null && !discouragedInstructorBtbReportReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getDiscouragedInstructorBtbReportReportTable(request, discouragedInstructorBtbReportReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violInstBtb.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        		}
+            if (atLeastOneRoomReport) {
+                PdfPTable pdfTable = new PdfPTable(new float[] {10f,100f});
+    			pdfTable.setWidthPercentage(100);
+    			pdfTable.getDefaultCell().setPadding(3);
+    			pdfTable.getDefaultCell().setBorderWidth(0);
+    			pdfTable.setSplitRows(false);
+    			pdfTable.addCell("Group");
+    			pdfTable.addCell("group size <minimum, maximum)");
+    			pdfTable.addCell("Size");
+    			pdfTable.addCell("actual group size (size of the smallest and the biggest room in the group)");
+    			pdfTable.addCell("NrRooms");
+    			pdfTable.addCell("number of rooms in the group");
+    			pdfTable.addCell("ClUse");
+    			pdfTable.addCell("number of classes that are using a room from the group (actual solution)");
+    			pdfTable.addCell("ClShould");
+    			pdfTable.addCell("number of classes that \"should\" use a room of the group (smallest available room of a class is in this group)");
+    			pdfTable.addCell("ClMust");
+    			pdfTable.addCell("number of classes that must use a room of the group (all available rooms of a class are in this group)");
+    			pdfTable.addCell("HrUse");
+    			pdfTable.addCell("average hours a room of the group is used (actual solution)");
+    			pdfTable.addCell("HrShould");
+    			pdfTable.addCell("average hours a room of the group should be used (smallest available room of a class is in this group)");
+    			pdfTable.addCell("HrMust");
+    			pdfTable.addCell("average hours a room of this group must be used (all available rooms of a class are in this group)");
+    			pdfTable.addCell("");
+    			pdfTable.addCell("*) cumulative numbers (group minimum ... inf) are displayed in parentheses.");
+    			doc.add(pdfTable);
+    		}
+    		
+    		DiscouragedInstructorBtbReport discouragedInstructorBtbReportReport = solver.getDiscouragedInstructorBtbReport();
+    		if (discouragedInstructorBtbReportReport!=null && !discouragedInstructorBtbReportReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getDiscouragedInstructorBtbReportReportTable(request, discouragedInstructorBtbReportReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violInstBtb.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    		}
 
-        		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
-        		if (violatedDistrPreferencesReport!=null && !violatedDistrPreferencesReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getViolatedDistrPreferencesReportTable(request, violatedDistrPreferencesReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violDistPrefReport.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        		}
-        		
-        		StudentConflictsReport studentConflictsReport = solver.getStudentConflictsReport();
-        		if (studentConflictsReport!=null && !studentConflictsReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getStudentConflictsReportTable(request, studentConflictsReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.studConf.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        		}
-        		
-        		SameSubpartBalancingReport sameSubpartBalancingReport = solver.getSameSubpartBalancingReport();
-        		if (sameSubpartBalancingReport!=null && !sameSubpartBalancingReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getSameSubpartBalancingReportTable(request, sameSubpartBalancingReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.sectBalancingReport.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        		}
-        		
-        		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
-        		if (deptBalancingReport!=null && !deptBalancingReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getDeptBalancingReportTable(request, deptBalancingReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.deptBalancingReport.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        		}
+    		ViolatedDistrPreferencesReport violatedDistrPreferencesReport = solver.getViolatedDistrPreferencesReport();
+    		if (violatedDistrPreferencesReport!=null && !violatedDistrPreferencesReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getViolatedDistrPreferencesReportTable(request, violatedDistrPreferencesReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.violDistPrefReport.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    		}
+    		
+    		StudentConflictsReport studentConflictsReport = solver.getStudentConflictsReport();
+    		if (studentConflictsReport!=null && !studentConflictsReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getStudentConflictsReportTable(request, studentConflictsReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.studConf.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    		}
+    		
+    		SameSubpartBalancingReport sameSubpartBalancingReport = solver.getSameSubpartBalancingReport();
+    		if (sameSubpartBalancingReport!=null && !sameSubpartBalancingReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getSameSubpartBalancingReportTable(request, sameSubpartBalancingReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.sectBalancingReport.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    		}
+    		
+    		DeptBalancingReport deptBalancingReport = solver.getDeptBalancingReport();
+    		if (deptBalancingReport!=null && !deptBalancingReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getDeptBalancingReportTable(request, deptBalancingReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.deptBalancingReport.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    		}
 
-        		PerturbationReport perturbationReport = solver.getPerturbationReport();
-        		if (perturbationReport!=null && !perturbationReport.getGroups().isEmpty()) {
-        			PdfWebTable table = getPerturbationReportTable(request, perturbationReport, true);
-        			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.pert.ord"));
-        			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-        			doc.newPage();
-        			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-        			doc.add(pdfTable);
-        			pdfTable = new PdfPTable(new float[] {5f,100f});
-        			pdfTable.setWidthPercentage(100);
-        			pdfTable.getDefaultCell().setPadding(3);
-        			pdfTable.getDefaultCell().setBorderWidth(0);
-        			pdfTable.setSplitRows(false);
-        			pdfTable.addCell("Class");
-        			pdfTable.addCell("Class name");
-        			pdfTable.addCell("Time");
-        			pdfTable.addCell("Time (initial -> assigned)");
-        			pdfTable.addCell("Room");
-        			pdfTable.addCell("Room (initial -> assigned)");
-        			pdfTable.addCell("Dist");
-        			pdfTable.addCell("Distance between assignments (if different are used buildings)");
-        			pdfTable.addCell("St");
-        			pdfTable.addCell("Number of affected students");
-        			pdfTable.addCell("StT");
-        			pdfTable.addCell("Number of affected students by time change");
-        			pdfTable.addCell("StR");
-        			pdfTable.addCell("Number of affected students by room change");
-        			pdfTable.addCell("StB");
-        			pdfTable.addCell("Number of affected students by building change");
-        			pdfTable.addCell("Ins");
-        			pdfTable.addCell("Number of affected instructors");
-        			pdfTable.addCell("InsT");
-        			pdfTable.addCell("Number of affected instructors by time change");
-        			pdfTable.addCell("InsR");
-        			pdfTable.addCell("Number of affected instructors by room change");
-        			pdfTable.addCell("InsB");
-        			pdfTable.addCell("Number of affected instructors by building change");
-        			pdfTable.addCell("Rm");
-        			pdfTable.addCell("Number of rooms changed");
-        			pdfTable.addCell("Bld");
-        			pdfTable.addCell("Number of buildings changed");
-        			pdfTable.addCell("Tm");
-        			pdfTable.addCell("Number of times changed");
-        			pdfTable.addCell("Day");
-        			pdfTable.addCell("Number of days changed");
-        			pdfTable.addCell("Hr");
-        			pdfTable.addCell("Number of hours changed");
-        			pdfTable.addCell("TFSt");
-        			pdfTable.addCell("Assigned building too far for instructor (from the initial one)");
-        			pdfTable.addCell("TFIns");
-        			pdfTable.addCell("Assigned building too far for students (from the initial one)");
-        			pdfTable.addCell("DStC");
-        			pdfTable.addCell("Difference in student conflicts");
-        			pdfTable.addCell("NStC");
-        			pdfTable.addCell("Number of new student conflicts");
-        			pdfTable.addCell("DTPr");
-        			pdfTable.addCell("Difference in time preferences");
-        			pdfTable.addCell("DRPr");
-        			pdfTable.addCell("Difference in room preferences");
-        			pdfTable.addCell("DInsB");
-        			pdfTable.addCell("Difference in back-to-back instructor preferences");
-        			doc.add(pdfTable);
-        		}
-        		
-        		doc.close();
-
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        		//response.sendRedirect("temp/"+file.getName());
-        	} catch (Exception e) {
-        		e.printStackTrace();
-        	} finally {
-        		try {
-        			if (out!=null) out.close();
-        		} catch (IOException e) {}
-        	}
+    		PerturbationReport perturbationReport = solver.getPerturbationReport();
+    		if (perturbationReport!=null && !perturbationReport.getGroups().isEmpty()) {
+    			PdfWebTable table = getPerturbationReportTable(request, perturbationReport, true);
+    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(sessionContext,"solutionReports.pert.ord"));
+    			doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+    			doc.newPage();
+    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+    			doc.add(pdfTable);
+    			pdfTable = new PdfPTable(new float[] {5f,100f});
+    			pdfTable.setWidthPercentage(100);
+    			pdfTable.getDefaultCell().setPadding(3);
+    			pdfTable.getDefaultCell().setBorderWidth(0);
+    			pdfTable.setSplitRows(false);
+    			pdfTable.addCell("Class");
+    			pdfTable.addCell("Class name");
+    			pdfTable.addCell("Time");
+    			pdfTable.addCell("Time (initial -> assigned)");
+    			pdfTable.addCell("Room");
+    			pdfTable.addCell("Room (initial -> assigned)");
+    			pdfTable.addCell("Dist");
+    			pdfTable.addCell("Distance between assignments (if different are used buildings)");
+    			pdfTable.addCell("St");
+    			pdfTable.addCell("Number of affected students");
+    			pdfTable.addCell("StT");
+    			pdfTable.addCell("Number of affected students by time change");
+    			pdfTable.addCell("StR");
+    			pdfTable.addCell("Number of affected students by room change");
+    			pdfTable.addCell("StB");
+    			pdfTable.addCell("Number of affected students by building change");
+    			pdfTable.addCell("Ins");
+    			pdfTable.addCell("Number of affected instructors");
+    			pdfTable.addCell("InsT");
+    			pdfTable.addCell("Number of affected instructors by time change");
+    			pdfTable.addCell("InsR");
+    			pdfTable.addCell("Number of affected instructors by room change");
+    			pdfTable.addCell("InsB");
+    			pdfTable.addCell("Number of affected instructors by building change");
+    			pdfTable.addCell("Rm");
+    			pdfTable.addCell("Number of rooms changed");
+    			pdfTable.addCell("Bld");
+    			pdfTable.addCell("Number of buildings changed");
+    			pdfTable.addCell("Tm");
+    			pdfTable.addCell("Number of times changed");
+    			pdfTable.addCell("Day");
+    			pdfTable.addCell("Number of days changed");
+    			pdfTable.addCell("Hr");
+    			pdfTable.addCell("Number of hours changed");
+    			pdfTable.addCell("TFSt");
+    			pdfTable.addCell("Assigned building too far for instructor (from the initial one)");
+    			pdfTable.addCell("TFIns");
+    			pdfTable.addCell("Assigned building too far for students (from the initial one)");
+    			pdfTable.addCell("DStC");
+    			pdfTable.addCell("Difference in student conflicts");
+    			pdfTable.addCell("NStC");
+    			pdfTable.addCell("Number of new student conflicts");
+    			pdfTable.addCell("DTPr");
+    			pdfTable.addCell("Difference in time preferences");
+    			pdfTable.addCell("DRPr");
+    			pdfTable.addCell("Difference in room preferences");
+    			pdfTable.addCell("DInsB");
+    			pdfTable.addCell("Difference in back-to-back instructor preferences");
+    			doc.add(pdfTable);
+    		}
+    		
+    		doc.close();
+    		
+    		out.flush(); out.close();
+    		
+    		return null;
         }
 		
 		return mapping.findForward("showSolutionReport");

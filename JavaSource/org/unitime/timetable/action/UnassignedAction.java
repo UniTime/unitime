@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -35,7 +34,6 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.UnassignedForm;
@@ -51,6 +49,7 @@ import org.unitime.timetable.solver.ui.SolutionUnassignedClassesModel;
 import org.unitime.timetable.solver.ui.UnassignedClassRow;
 import org.unitime.timetable.solver.ui.UnassignedClassesModel;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -98,21 +97,19 @@ public class UnassignedAction extends Action {
         }
         
         if ("Export PDF".equals(op)) {
-        	PdfWebTable table = exportPdf(request, myForm.getSubjectArea());
-        	if (table != null) {
-        		File file = ApplicationProperties.getTempFile("unassigned", "pdf");
-            	table.exportPdf(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
-            	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        	}
+        	ExportUtils.exportPDF(
+        			exportPdf(request, myForm.getSubjectArea()),
+        			WebTable.getOrder(sessionContext,"unassigned.ord"),
+        			response, "unassigned");
+        	return null;
         }
 
         if ("Export CSV".equals(op)) {
-        	PdfWebTable table = exportPdf(request, myForm.getSubjectArea());
-        	if (table != null) {
-        		File file = ApplicationProperties.getTempFile("unassigned", "csv");
-            	table.exportCsv(file, WebTable.getOrder(sessionContext,"unassigned.ord"));
-            	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        	}
+        	ExportUtils.exportCSV(
+        			exportPdf(request, myForm.getSubjectArea()),
+        			WebTable.getOrder(sessionContext,"unassigned.ord"),
+        			response, "unassigned");
+        	return null;
         }
 
         getUnassigned(request, myForm.getSubjectArea());

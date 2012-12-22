@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -70,6 +70,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ComboBoxLookup;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.DistributionPrefsTableBuilder;
@@ -297,10 +298,11 @@ public class DistributionPrefsAction extends Action {
         }
 
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
-            DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();
-            File file = tbl.getAllDistPrefsTableForCurrentUserAsPdf(sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
-            if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-            op = "view";
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "distprefs");
+        	
+            new DistributionPrefsTableBuilder().getAllDistPrefsTableForCurrentUserAsPdf(out, sessionContext, frm.getFilterSubjectAreaId(), frm.getFilterCourseNbr());
+            
+            return null;
         }
         
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));

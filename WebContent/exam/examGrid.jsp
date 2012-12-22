@@ -128,7 +128,7 @@ try {
 		<TR>
 			<TD colspan='2' align='right'>
 				<html:submit onclick="displayLoading();" property="op" value="Change"/>
-				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+				<html:submit property="op" value="Export PDF"/>
 				<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
 			</TD>
 		</TR>
@@ -137,7 +137,7 @@ try {
 		<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 			<TR>
 				<TD colspan='2' align='right'>
-					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+					<html:submit property="op" value="Export PDF"/>
 					<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>
 				</TD>
 			</TR>

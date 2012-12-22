@@ -20,9 +20,7 @@
 package org.unitime.timetable.webutil;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -417,31 +415,23 @@ public class PdfWebTable extends WebTable {
 		return iName;
 	}
     
-    public void exportPdf(File file, int ordCol) throws Exception {
-    	FileOutputStream out = null;
-    	try {
-    		PdfPTable table = printPdfTable(ordCol);
+    public void exportPdf(OutputStream out, int ordCol) throws Exception {
+		PdfPTable table = printPdfTable(ordCol);
     	
-    		float width = getWidth();
-    	
-    		Document doc = new Document(new Rectangle(60f + width, 60f + 0.75f * width),30,30,30,30); 
+		float width = getWidth();
+	
+		Document doc = new Document(new Rectangle(60f + width, 60f + 0.75f * width),30,30,30,30); 
 
-    		out = new FileOutputStream(file);
-			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-			iWriter.setPageEvent(new PdfEventHandler());
-    		doc.open();
-		
-    		if (iName!=null)
-    			doc.add(new Paragraph(iName, PdfFont.getBigFont(true)));
-		
-    		doc.add(table);
-		
-    		doc.close();
-    	} finally {
-        	try {
-        		if (out!=null) out.close();
-        	} catch (IOException e) {}
-    	}    		
+		PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+		iWriter.setPageEvent(new PdfEventHandler());
+		doc.open();
+	
+		if (iName!=null)
+			doc.add(new Paragraph(iName, PdfFont.getBigFont(true)));
+	
+		doc.add(table);
+	
+		doc.close();
     }
     
 	public void applyPdfStyle(PdfPCell cell, WebTableLine currentLine, WebTableLine nextLine, int order) {

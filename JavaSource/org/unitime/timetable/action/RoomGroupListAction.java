@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +37,6 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.model.Department;
@@ -49,7 +46,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
@@ -132,9 +129,10 @@ public class RoomGroupListAction extends Action {
 		
 		if ("Export PDF".equals(request.getParameter("op"))) {
 			sessionContext.checkPermission(Right.RoomGroupsExportPdf);
-			File file = buildPdfGroupTable(sessionContext, roomGroupListForm);
-			if (file != null && file.exists())
-				request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+			OutputStream out = ExportUtils.getPdfOutputStream(response, "roomGroups");
+			printPdfGroupTable(out, sessionContext, roomGroupListForm);
+			out.flush(); out.close();
+			return null;
 		}
 
 		return mapping.findForward("showRoomGroupList");
@@ -281,180 +279,166 @@ public class RoomGroupListAction extends Action {
 			request.removeAttribute("roomGroupsDepartment");
 	}
 
-	public static File buildPdfGroupTable(SessionContext context, RoomGroupListForm roomGroupListForm) throws Exception{
-    	FileOutputStream out = null;
-    	try {
-    		File file = ApplicationProperties.getTempFile("room_groups", "pdf");
-    		
-    		out = new FileOutputStream(file);
-    		
-    		PdfWebTable globalWebTable = new PdfWebTable(5, "Global Room Groups", null, new String[] {
-    				"Name", "Abbreviation", "Default ", "Rooms", "Description" },
-    				new String[] { "left", "left", "middle", "left", "left" }, 
-    				new boolean[] { true, true, true, true, true} );
-    		
-    		PdfWebTable departmentWebTable = new PdfWebTable(5, "Department Room Groups", null, new String[] {
-    				"Name", "Abbreviation", "Department ", "Rooms", "Description" },
-    				new String[] { "left", "left", "left", "left", "left" }, 
-    				new boolean[] { true, true, true, true, true} );
-    		
-    		Set<Department> depts = Department.getUserDepartments(context.getUser());
-            Long examType = null;
-            Department department = null;
-            if (roomGroupListForm.getDeptCodeX() != null && roomGroupListForm.getDeptCodeX().matches("Exam[0-9]*"))
-            	examType = Long.valueOf(roomGroupListForm.getDeptCodeX().substring(4));
-            else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
-            	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), context.getUser().getCurrentAcademicSessionId());
-            boolean deptCheck = examType == null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
-            if (department != null) {
-            	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
-            }
+	public static void printPdfGroupTable(OutputStream out, SessionContext context, RoomGroupListForm roomGroupListForm) throws Exception{
+		PdfWebTable globalWebTable = new PdfWebTable(5, "Global Room Groups", null, new String[] {
+				"Name", "Abbreviation", "Default ", "Rooms", "Description" },
+				new String[] { "left", "left", "middle", "left", "left" }, 
+				new boolean[] { true, true, true, true, true} );
+		
+		PdfWebTable departmentWebTable = new PdfWebTable(5, "Department Room Groups", null, new String[] {
+				"Name", "Abbreviation", "Department ", "Rooms", "Description" },
+				new String[] { "left", "left", "left", "left", "left" }, 
+				new boolean[] { true, true, true, true, true} );
+		
+		Set<Department> depts = Department.getUserDepartments(context.getUser());
+        Long examType = null;
+        Department department = null;
+        if (roomGroupListForm.getDeptCodeX() != null && roomGroupListForm.getDeptCodeX().matches("Exam[0-9]*"))
+        	examType = Long.valueOf(roomGroupListForm.getDeptCodeX().substring(4));
+        else if (roomGroupListForm.getDeptCodeX() != null && !roomGroupListForm.getDeptCodeX().isEmpty() && !"All".equals(roomGroupListForm.getDeptCodeX()))
+        	department = Department.findByDeptCode(roomGroupListForm.getDeptCodeX(), context.getUser().getCurrentAcademicSessionId());
+        boolean deptCheck = examType == null && !context.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent);
+        if (department != null) {
+        	deptCheck = true; depts = new TreeSet<Department>(); depts.add(department);
+        }
 
-            boolean splitRows = false;
-            
-    		boolean haveGlobalRoomGroup = false;
-    		for (RoomGroup rg: RoomGroup.getAllGlobalRoomGroups(context.getUser().getCurrentAcademicSessionId())) {
-    			Collection rs = new TreeSet(rg.getRooms());
+        boolean splitRows = false;
+        
+		boolean haveGlobalRoomGroup = false;
+		for (RoomGroup rg: RoomGroup.getAllGlobalRoomGroups(context.getUser().getCurrentAcademicSessionId())) {
+			Collection rs = new TreeSet(rg.getRooms());
 
-    			StringBuffer assignedRoom = new StringBuffer();
-    			int nrRows = 0;
-    			
-    			boolean haveRooms = false;
-    			for (Iterator iter = rs.iterator();iter.hasNext();) {
-    				Location r = (Location) iter.next();
-    				if (examType != null && !r.isExamEnabled(examType)) continue;
-    				if (deptCheck) {
-    					boolean skip = true;
-    					for (RoomDept rd: r.getRoomDepts())
-    						if (depts.contains(rd.getDepartment())) { skip = false; break; }
-    					if (skip) continue;
-    				}
-    				if (assignedRoom.length()>0) assignedRoom.append(", ");
-    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750) {
-    					assignedRoom.append("\n");
-    					nrRows++;
-    				}
-    				assignedRoom.append(r.getLabel());
-    				haveRooms = true;
-    			}
-    			
-    			if (nrRows>40) splitRows=true;
-    			
-    			if (!haveRooms && !context.hasPermission(rg, Right.GlobalRoomGroupEdit)) continue;
-    			
-    			globalWebTable.addLine(
-    					null, 
-    					new String[] {
-    							rg.getName(),
-                                rg.getAbbv(),
-    							(rg.isDefaultGroup().booleanValue()?"Yes":"No"),
-    							assignedRoom.toString(), 
-    							(rg.getDescription() == null ? "" : rg.getDescription())}, 
-    					new Comparable[] {
-    							rg.getName(),
-                                rg.getAbbv(),
-    							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
-    							null,
-    							(rg.getDescription() == null ? "" : rg.getDescription())
-    					});
-    		
-    			haveGlobalRoomGroup = true;
-    		}
+			StringBuffer assignedRoom = new StringBuffer();
+			int nrRows = 0;
+			
+			boolean haveRooms = false;
+			for (Iterator iter = rs.iterator();iter.hasNext();) {
+				Location r = (Location) iter.next();
+				if (examType != null && !r.isExamEnabled(examType)) continue;
+				if (deptCheck) {
+					boolean skip = true;
+					for (RoomDept rd: r.getRoomDepts())
+						if (depts.contains(rd.getDepartment())) { skip = false; break; }
+					if (skip) continue;
+				}
+				if (assignedRoom.length()>0) assignedRoom.append(", ");
+				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750) {
+					assignedRoom.append("\n");
+					nrRows++;
+				}
+				assignedRoom.append(r.getLabel());
+				haveRooms = true;
+			}
+			
+			if (nrRows>40) splitRows=true;
+			
+			if (!haveRooms && !context.hasPermission(rg, Right.GlobalRoomGroupEdit)) continue;
+			
+			globalWebTable.addLine(
+					null, 
+					new String[] {
+							rg.getName(),
+                            rg.getAbbv(),
+							(rg.isDefaultGroup().booleanValue()?"Yes":"No"),
+							assignedRoom.toString(), 
+							(rg.getDescription() == null ? "" : rg.getDescription())}, 
+					new Comparable[] {
+							rg.getName(),
+                            rg.getAbbv(),
+							new Integer(rg.isDefaultGroup().booleanValue()?0:1),
+							null,
+							(rg.getDescription() == null ? "" : rg.getDescription())
+					});
+		
+			haveGlobalRoomGroup = true;
+		}
 
-    		Set<RoomGroup> departmentRoomGroups = new TreeSet<RoomGroup>();
-    		for (Department d: Department.getUserDepartments(context.getUser())) {
-    			if ("All".equals(roomGroupListForm.getDeptCodeX()) || d.getDeptCode().equals(roomGroupListForm.getDeptCodeX()))
-    				departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(d));
-    		}
-    		if (department != null && department.isExternalManager()) {
-    			departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(department));
-    		}
+		Set<RoomGroup> departmentRoomGroups = new TreeSet<RoomGroup>();
+		for (Department d: Department.getUserDepartments(context.getUser())) {
+			if ("All".equals(roomGroupListForm.getDeptCodeX()) || d.getDeptCode().equals(roomGroupListForm.getDeptCodeX()))
+				departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(d));
+		}
+		if (department != null && department.isExternalManager()) {
+			departmentRoomGroups.addAll(RoomGroup.getAllDepartmentRoomGroups(department));
+		}
 
-    		for (RoomGroup rg: departmentRoomGroups) {
-    			String ownerName = rg.getDepartment().getShortLabel();
+		for (RoomGroup rg: departmentRoomGroups) {
+			String ownerName = rg.getDepartment().getShortLabel();
 
-    			Collection rs = new TreeSet(rg.getRooms());
+			Collection rs = new TreeSet(rg.getRooms());
 
-    			// get rooms
-    			StringBuffer assignedRoom = new StringBuffer();
-    			
-    			for (Iterator iter = rs.iterator();iter.hasNext();) {
-    				Location r = (Location) iter.next();
-                    if (examType != null) {
-                        if (!r.isExamEnabled(examType)) continue;
-                    } else {
-                        boolean skip = true;
-                        for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
-                            RoomDept rd = (RoomDept)j.next();
-                            if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
-                        }
-                        if (skip) continue;
+			// get rooms
+			StringBuffer assignedRoom = new StringBuffer();
+			
+			for (Iterator iter = rs.iterator();iter.hasNext();) {
+				Location r = (Location) iter.next();
+                if (examType != null) {
+                    if (!r.isExamEnabled(examType)) continue;
+                } else {
+                    boolean skip = true;
+                    for (Iterator j=r.getRoomDepts().iterator();j.hasNext();) {
+                        RoomDept rd = (RoomDept)j.next();
+                        if (rg.getDepartment().equals(rd.getDepartment())) { skip=false; break; }
                     }
-    				if (assignedRoom.length() > 0) assignedRoom.append(", ");
-    				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750)
-    					assignedRoom.append("\n");
-    				assignedRoom.append(r.getLabel());
-    			}
-    			
-    			departmentWebTable.addLine(
-    					null, 
-    					new String[] {
-    							rg.getName(),
-                                rg.getAbbv(),
-    							ownerName,
-    							assignedRoom.toString(), 
-    							(rg.getDescription() == null ? "" : rg.getDescription())}, 
-    					new Comparable[] {
-    							rg.getName(),
-                                rg.getAbbv(),
-    							ownerName,
-    							null,
-    							(rg.getDescription() == null ? "" : rg.getDescription())
-    					});
-    			}
-    		
-    		Document doc = null;
-    		
-    		if (haveGlobalRoomGroup) {
-				PdfWebTable table = globalWebTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.gord"));
-    			pdfTable.setSplitRows(splitRows);
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			}
-    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-    			doc.add(pdfTable);
-    		}
-    		
-    		if (!departmentRoomGroups.isEmpty()) {
-				PdfWebTable table = departmentWebTable;
-    			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.mord"));
-    			if (doc==null) {
-    				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
-    				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-    				iWriter.setPageEvent(new PdfEventHandler());
-    				doc.open();
-    			} else {
-    				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
-    				doc.newPage();
-    			}
-    			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
-    			doc.add(pdfTable);
-    		}
-    		
-    		if (doc==null) return null;
-    		
-    		doc.close();
-    		
-    		return file;
-    	} finally {
-    		try {
-    			if (out!=null) out.close();
-    		} catch (IOException e) {}
-    	}
+                    if (skip) continue;
+                }
+				if (assignedRoom.length() > 0) assignedRoom.append(", ");
+				if (PdfWebTable.getWidthOfLastLine(assignedRoom.toString(),false,false)>750)
+					assignedRoom.append("\n");
+				assignedRoom.append(r.getLabel());
+			}
+			
+			departmentWebTable.addLine(
+					null, 
+					new String[] {
+							rg.getName(),
+                            rg.getAbbv(),
+							ownerName,
+							assignedRoom.toString(), 
+							(rg.getDescription() == null ? "" : rg.getDescription())}, 
+					new Comparable[] {
+							rg.getName(),
+                            rg.getAbbv(),
+							ownerName,
+							null,
+							(rg.getDescription() == null ? "" : rg.getDescription())
+					});
+			}
+		
+		Document doc = null;
+		
+		if (haveGlobalRoomGroup) {
+			PdfWebTable table = globalWebTable;
+			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.gord"));
+			pdfTable.setSplitRows(splitRows);
+			if (doc==null) {
+				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
+				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+				iWriter.setPageEvent(new PdfEventHandler());
+				doc.open();
+			}
+			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+			doc.add(pdfTable);
+		}
+		
+		if (!departmentRoomGroups.isEmpty()) {
+			PdfWebTable table = departmentWebTable;
+			PdfPTable pdfTable = table.printPdfTable(WebTable.getOrder(context,"roomGroupList.mord"));
+			if (doc==null) {
+				doc = new Document(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()),30,30,30,30);
+				PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+				iWriter.setPageEvent(new PdfEventHandler());
+				doc.open();
+			} else {
+				doc.setPageSize(new Rectangle(60f + table.getWidth(), 60f + 0.75f * table.getWidth()));
+				doc.newPage();
+			}
+			doc.add(new Paragraph(table.getName(), PdfFont.getBigFont(true)));
+			doc.add(pdfTable);
+		}
+		
+		if (doc!=null) doc.close();
+
 	}
 	
 }

@@ -20,9 +20,7 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
@@ -52,29 +50,21 @@ public class PdfExamGridTable extends ExamGridTable {
         super(form, context, solver);
     }
     
-    public void export(File file) throws Exception {
-        FileOutputStream out = null;
-        try {
-            int nrCols = getNrColumns();
-            iDocument = (iForm.getDispMode()==sDispModeInRowHorizontal || iForm.getDispMode()==sDispModeInRowVertical ?
-                new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)).rotate(), 30, 30, 30, 30)
-            :
-                new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)), 30, 30, 30, 30));
+    public void export(OutputStream out) throws Exception {
+        int nrCols = getNrColumns();
+        iDocument = (iForm.getDispMode()==sDispModeInRowHorizontal || iForm.getDispMode()==sDispModeInRowVertical ?
+            new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)).rotate(), 30, 30, 30, 30)
+        :
+            new Document(new Rectangle(Math.max(PageSize.LETTER.getWidth(),60.0f+100.0f*nrCols),Math.max(PageSize.LETTER.getHeight(),60.0f+150f*nrCols)), 30, 30, 30, 30));
 
-            out = new FileOutputStream(file);
-            PdfEventHandler.initFooter(iDocument, out);
-            iDocument.open();
-            
-            printTable();
+        PdfEventHandler.initFooter(iDocument, out);
+        iDocument.open();
         
-            printLegend();
-        
-            iDocument.close();
-        } finally {
-            try {
-                if (out!=null) out.close();
-            } catch (IOException e) {}
-        }
+        printTable();
+    
+        printLegend();
+    
+        iDocument.close();
     }
     
     public int getNrColumns() {
