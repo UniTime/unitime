@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,13 +30,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.TimetableForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.timegrid.PdfTimetableGridTable;
 import org.unitime.timetable.webutil.timegrid.TimetableGridModel;
 import org.unitime.timetable.webutil.timegrid.TimetableGridTable;
@@ -81,10 +80,10 @@ public class TimetableAction extends Action {
 		myForm.setLoaded(table.reload(request, sessionContext, courseTimetablingSolverService.getSolver()));
 
         if ("Export PDF".equals(op)) {
-        	File file = ApplicationProperties.getTempFile("timetable", "pdf");
-        	PdfTimetableGridTable.export2Pdf(table, file);
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-       		//response.sendRedirect("temp/"+file.getName());
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "timetable");
+        	PdfTimetableGridTable.export2Pdf(table, out);
+        	out.flush(); out.close();
+        	return null;
         }
 
         myForm.setOp("Change");

@@ -307,7 +307,7 @@
 					accesskey="<%=MSG.accessExportPdf()%>" 
 					styleClass="btn" 
 					title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
-					onclick="doit.value=this.value;displayLoading();">
+					onclick="doit.value=this.value;">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
 				</sec:authorize>

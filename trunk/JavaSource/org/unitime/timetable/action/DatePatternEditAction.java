@@ -64,6 +64,7 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 
@@ -472,11 +473,8 @@ public class DatePatternEditAction extends Action {
 	        }
 
 	        if ("Generate SQL".equals(op)) {
-	            PrintWriter out = null;
+	            PrintWriter out = ExportUtils.getPlainTextWriter(response, "tp.sql");
 	            try {
-	                File file = ApplicationProperties.getTempFile("tp", "sql");
-	                out = new PrintWriter(new FileWriter(file));
-	                
 	                TreeSet patterns = new TreeSet(DatePattern.findAll(sessionContext.getUser(), null, null));
 	                
 	                boolean mysql = false;
@@ -518,15 +516,13 @@ public class DatePatternEditAction extends Action {
 	                out.println();
 
 	                out.flush(); out.close(); out = null;
-	                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
 	            } catch (Exception e) {
 	                throw e;
 	            } finally {
 	                if (out!=null) out.close();
 	            }
-	            
-	            myForm.load(null);
-	            myForm.setOp("List");
+
+	            return null;
 	        }
 	        
 	        if ("Push Up".equals(op)) {
@@ -582,7 +578,7 @@ public class DatePatternEditAction extends Action {
 
 	            	out.flush(); out.close(); out = null;
 	            	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-	        	
+		        	
 	    			tx.commit();
 	    	    } catch (Exception e) {
 	    	    	if (tx!=null) tx.rollback();
@@ -794,17 +790,13 @@ public class DatePatternEditAction extends Action {
 						*/
 	            	}
 	            	
-	            	File file = ApplicationProperties.getTempFile("datePatterns", "csv");
-	           		csv.save(file);
-	           		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+	            	ExportUtils.exportCSV(csv, response, "datePatterns");
 	    			tx.commit();
+	            	return null;
 	    	    } catch (Exception e) {
 	    	    	if (tx!=null) tx.rollback();
 	    	    	throw e;
 	    	    }
-	    	    
-	        	myForm.load(null);
-	        	myForm.setOp("List");
 	        }
 
 	        if ("List".equals(myForm.getOp())) {

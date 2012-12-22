@@ -67,15 +67,13 @@
 			</TD>
 			<TD valign="middle">
 				<html:submit
-					accesskey="P" styleClass="btn" titleKey="title.exportPDF" property="op"
-					onclick="displayLoading();">
+					accesskey="P" styleClass="btn" titleKey="title.exportPDF" property="op">
 					<bean:message key="button.exportPDF" />
 				</html:submit> 
 			</TD>
 			<TD valign="middle">
 				<html:submit
-					accesskey="C" styleClass="btn" titleKey="title.exportCSV" property="op"
-					onclick="displayLoading();">
+					accesskey="C" styleClass="btn" titleKey="title.exportCSV" property="op">
 					<bean:message key="button.exportCSV" />
 				</html:submit> 
 			</TD>

@@ -63,13 +63,13 @@
 				</html:submit>
 				<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportPdf')">
 					&nbsp;&nbsp;
-					<html:submit property="op" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
+					<html:submit property="op" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 						<bean:message key="button.exportPDF" />
 					</html:submit>
 				</sec:authorize>
 				<sec:authorize access="hasPermission(null, 'Department', 'RoomsExportCsv')">
 					&nbsp;&nbsp;
-					<html:submit property="op" onclick="displayLoading();" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
+					<html:submit property="op" accesskey="C" styleClass="btn" titleKey="title.exportCSV">
 						<bean:message key="button.exportCSV" />
 					</html:submit>
 				</sec:authorize>

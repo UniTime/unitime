@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Vector;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,9 +42,10 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.InstructorListBuilder;
+import org.unitime.timetable.webutil.PdfWebTable;
 
 
 /**
@@ -141,9 +141,11 @@ public class InstructorListAction extends Action {
 			saveErrors(request, errors);
 		} else {
 			if (MSG.actionExportPdf().equals(op)) {
-				File file = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId(), WebTable.getOrder(sessionContext,"instructorList.ord"));
-				if (file != null && file.exists())
-					request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+				PdfWebTable table = ilb.pdfTableForInstructor(sessionContext, instructorSearchForm.getDeptUniqueId());
+				if (table != null) {
+					ExportUtils.exportPDF(table, WebTable.getOrder(sessionContext,"instructorList.ord"), response, "instructors");
+					return null;
+				}
 			}
 		}
 		

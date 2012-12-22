@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -81,7 +80,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -136,17 +135,19 @@ public class ExamAssignmentReportAction extends Action {
         WebTable table = getTable(session.getUniqueId(), true, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(session.getUniqueId(), false, myForm, assignedExams);
-            File file = ApplicationProperties.getTempFile("xreport", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"));
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	ExportUtils.exportPDF(
+        			getTable(session.getUniqueId(), false, myForm, assignedExams),
+        			WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"),
+        			response, "xreport");
+        	return null;
         }
         
         if ("Export CSV".equals(op) && table!=null) {
-            WebTable csvTable = getTable(session.getUniqueId(), false, myForm, assignedExams);
-            File file = ApplicationProperties.getTempFile("xreport", "csv");
-            csvTable.toCSVFile(WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord")).save(file);
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	ExportUtils.exportCSV(
+        			getTable(session.getUniqueId(), false, myForm, assignedExams),
+        			WebTable.getOrder(sessionContext,"examAssignmentReport["+myForm.getReport()+"].ord"),
+        			response, "xreport");
+        	return null;
         }
 
         if (table!=null)

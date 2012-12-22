@@ -37,7 +37,7 @@
 					<sec:authorize access="hasPermission(#deptUniqueId, 'Department', 'InstructorsExportPdf')">
 					<TD>
 					<html:form action="instructorList" styleClass="FormWithNoPadding">			
-						<html:submit property="op" onclick="displayLoading();" styleClass="btn" 
+						<html:submit property="op" styleClass="btn" 
 							accesskey="<%=MSG.accessExportPdf() %>" 
 							title="<%=MSG.titleExportPdf(MSG.accessExportPdf()) %>">
 							<loc:message name="actionExportPdf" />

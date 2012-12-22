@@ -20,9 +20,8 @@
 package org.unitime.timetable.action;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -92,6 +91,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayCo
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 @Service("/personalSchedule")
@@ -364,82 +364,75 @@ public class PersonalizedExamReportAction extends Action {
         
         if ("Export PDF".equals(myForm.getOp())) {
             sLog.info("  Generating PDF for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)));
-            FileOutputStream out = null;
-            try {
-                File file = ApplicationProperties.getTempFile("schedule", "pdf");
+            OutputStream out = ExportUtils.getPdfOutputStream(response, "schedule");
                 
-                if (!instructorExams.isEmpty()) {
-                    TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-                    for (Exam exam : instructorExams) {
-                        if (exam.getAssignedPeriod()==null) continue;
-                        exams.add(new ExamAssignmentInfo(exam, useCache));
-                    }
+            if (!instructorExams.isEmpty()) {
+                TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
+                for (Exam exam : instructorExams) {
+                    if (exam.getAssignedPeriod()==null) continue;
+                    exams.add(new ExamAssignmentInfo(exam, useCache));
+                }
 
+                InstructorExamReport ir = new InstructorExamReport(
+                        InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
+                        null, null, exams);
+                ir.setM2d(true); ir.setDirect(true);
+                ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
+                ir.printHeader();
+                ir.printReport(ExamInfo.createInstructorInfo(instructor), exams);
+                ir.lastPage();
+                ir.close();
+            } else if (!studentExams.isEmpty()) {
+                TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
+                TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
+                for (ExamOwner examOwner : studentExams) {
+                    if (examOwner.getExam().getAssignedPeriod()==null) continue;
+                    ExamAssignmentInfo x = new ExamAssignmentInfo(examOwner, student, studentExams);
+                    exams.add(x);
+                    sections.addAll(x.getSectionsIncludeCrosslistedDummies());
+                }
+                
+                StudentExamReport sr = new StudentExamReport(
+                        StudentExamReport.sModeNormal, out, student.getSession(),
+                        null, null, exams);
+                sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
+                sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
+                sr.printHeader();
+                sr.printReport(student, sections);
+                sr.lastPage();
+                sr.close();
+            } else if (hasClasses) {
+                if (instructor!=null) {
                     InstructorExamReport ir = new InstructorExamReport(
-                            InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
-                            null, null, exams);
+                            InstructorExamReport.sModeNormal, out, instructor.getDepartment().getSession(),
+                            null, null, new TreeSet<ExamAssignmentInfo>());
                     ir.setM2d(true); ir.setDirect(true);
                     ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
                     ir.printHeader();
-                    ir.printReport(ExamInfo.createInstructorInfo(instructor), exams);
+                    ir.printReport(ExamInfo.createInstructorInfo(instructor), new TreeSet<ExamAssignmentInfo>());
                     ir.lastPage();
                     ir.close();
-                } else if (!studentExams.isEmpty()) {
-                    TreeSet<ExamAssignmentInfo> exams = new TreeSet<ExamAssignmentInfo>();
-                    TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>();
-                    for (ExamOwner examOwner : studentExams) {
-                        if (examOwner.getExam().getAssignedPeriod()==null) continue;
-                        ExamAssignmentInfo x = new ExamAssignmentInfo(examOwner, student, studentExams);
-                        exams.add(x);
-                        sections.addAll(x.getSectionsIncludeCrosslistedDummies());
-                    }
-                    
+                } else if (student!=null) {
                     StudentExamReport sr = new StudentExamReport(
-                            StudentExamReport.sModeNormal, file, student.getSession(),
-                            null, null, exams);
+                            StudentExamReport.sModeNormal, out, student.getSession(),
+                            null, null, new TreeSet<ExamAssignmentInfo>());
                     sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
                     sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
                     sr.printHeader();
-                    sr.printReport(student, sections);
+                    sr.printReport(student, new TreeSet<ExamSectionInfo>());
                     sr.lastPage();
                     sr.close();
-                } else if (hasClasses) {
-                    if (instructor!=null) {
-                        InstructorExamReport ir = new InstructorExamReport(
-                                InstructorExamReport.sModeNormal, file, instructor.getDepartment().getSession(),
-                                null, null, new TreeSet<ExamAssignmentInfo>());
-                        ir.setM2d(true); ir.setDirect(true);
-                        ir.setClassSchedule(instructor.getDepartment().getSession().getStatusType().canNoRoleReportClass());
-                        ir.printHeader();
-                        ir.printReport(ExamInfo.createInstructorInfo(instructor), new TreeSet<ExamAssignmentInfo>());
-                        ir.lastPage();
-                        ir.close();
-                    } else if (student!=null) {
-                        StudentExamReport sr = new StudentExamReport(
-                                StudentExamReport.sModeNormal, file, student.getSession(),
-                                null, null, new TreeSet<ExamAssignmentInfo>());
-                        sr.setM2d(true); sr.setBtb(true); sr.setDirect(true);
-                        sr.setClassSchedule(student.getSession().getStatusType().canNoRoleReportClass());
-                        sr.printHeader();
-                        sr.printReport(student, new TreeSet<ExamSectionInfo>());
-                        sr.lastPage();
-                        sr.close();
-                    }
                 }
-                
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-            } catch (Exception e) {
-                sLog.error("Unable to generate PDF for "+(instructor!=null?instructor.getName(DepartmentalInstructor.sNameFormatShort):student.getName(DepartmentalInstructor.sNameFormatShort)),e);
-            } finally {
-                try {
-                    if (out!=null) out.close();
-                } catch (IOException e) {}
             }
+            
+            out.flush(); out.close();
+            return null;
         }
         
         if ("iCalendar".equals(myForm.getOp())) {
         	Long sid = (instructor != null ? instructor.getDepartment().getSession().getUniqueId() : student.getSession().getUniqueId());
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "calendar?q=" + QueryEncoderBackend.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid)));
+        	response.sendRedirect( response.encodeURL("calendar?q=" + QueryEncoderBackend.encode("uid=" + externalId + (sid == null ? "" : "&sid=" + sid))));
+        	return null;
         }
         
         /*
@@ -1184,7 +1177,7 @@ public class PersonalizedExamReportAction extends Action {
                                 new MultiComparable(-exam.getExamType().getType(), -exam.getNrStudents()-(conflict.getOtherExam()==null?0:conflict.getOtherExam().getNrStudents()), exam, 0),
                                 new MultiComparable(-exam.getExamType().getType(), exam.getExamTypeLabel(), exam, 0),
                                 new MultiComparable(-exam.getExamType().getType(), exam.getPeriodOrd(), exam, 0),
-                                new MultiComparable(-exam.getExamType().getType(), exam.getPeriod().getStartSlot(), exam, 0),
+                                new MultiComparable(-exam.getExamType().getType(), (exam.getPeriod() == null ? -1 : exam.getPeriod().getStartSlot()), exam, 0),
                                 new MultiComparable(-exam.getExamType().getType(), exam.getRoomsName(":"), exam, 0)
                             });
                 }

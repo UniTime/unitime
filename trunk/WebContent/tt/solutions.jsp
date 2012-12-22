@@ -349,7 +349,7 @@
 						</logic:notEqual>
 					</sec:authorize>
 					<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionExportCsv')">
-						<html:submit onclick="<%=\"displayLoading();selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Export Solution"/>
+						<html:submit onclick="<%=\"selectedSolutionBean.value='\"+idx+\"';\"%>" property="op" value="Export Solution"/>
 					</sec:authorize>
 					<logic:equal name="sb" property="commited" value="">
 						<sec:authorize access="hasPermission(#sb.uniqueId, 'Solution', 'TimetablesSolutionDelete')">

@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -61,6 +61,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.ExamDistributionPrefsTableBuilder;
@@ -245,10 +246,10 @@ public class ExamDistributionPrefsAction extends Action {
         }	    
         
         if ("export".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
-            ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();
-            File file = tbl.getDistPrefsTableAsPdf(request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId())?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
-            if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-            op = "view";
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "distpref");
+            new ExamDistributionPrefsTableBuilder().getDistPrefsTableAsPdf(out, request, sessionContext, (Constants.ALL_OPTION_VALUE.equals(frm.getFilterSubjectAreaId()) || frm.getFilterSubjectAreaId().isEmpty()?null:Long.valueOf(frm.getFilterSubjectAreaId())), frm.getFilterCourseNbr(), frm.getExamType());
+            out.flush();out.close();
+            return null;
         }
         
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));

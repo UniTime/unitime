@@ -220,7 +220,7 @@ try {
 			<html:submit onclick="displayLoading();" property="op" value="Reload Input Data"/>
 			<html:submit onclick="confirmUnload();displayLoading();" property="op" value="Unload"/>
 			<sec:authorize access="hasPermission(#solverForm.owner, 'SolverGroup', 'SolverSolutionExportCsv')">
-				<html:submit onclick="displayLoading();" property="op" value="Export Solution"/>
+				<html:submit property="op" value="Export Solution"/>
 			</sec:authorize>
 <% } %>
 			<html:submit onclick="displayLoading();" property="op" accesskey="R" value="Refresh"/>

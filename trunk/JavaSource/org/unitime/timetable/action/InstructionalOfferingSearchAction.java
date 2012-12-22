@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
@@ -63,7 +63,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.service.AssignmentService;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.PdfWorksheet;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.pdf.PdfInstructionalOfferingTableBuilder;
@@ -201,9 +201,9 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
         
         if (getErrors(request).isEmpty()) {
-            File pdfFile = 
-                (new PdfInstructionalOfferingTableBuilder())
-                .pdfTableForInstructionalOfferings(
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "offerings");
+        	
+            new PdfInstructionalOfferingTableBuilder().pdfTableForInstructionalOfferings(out,
                         WebSolver.getClassAssignmentProxy(request.getSession()),
                         WebSolver.getExamSolver(request.getSession()),
                         frm, 
@@ -212,12 +212,9 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
                         true, 
                         frm.getCourseNbr()==null || frm.getCourseNbr().length()==0);
             
-            if (pdfFile!=null) {
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+pdfFile.getName());
-                //response.sendRedirect("temp/"+pdfFile.getName());
-            } else {
-                getErrors(request).add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreatePdf()));
-            }
+            out.flush(); out.close();
+            
+            return null;
         }
         
         return fwd;
@@ -258,25 +255,13 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
         InstructionalOfferingListForm frm = (InstructionalOfferingListForm) form;
         
         if (getErrors(request).isEmpty()) {
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "worksheet");
+        	
+            PdfWorksheet.print(out, new SubjectAreaDAO().get(Long.valueOf(frm.getSubjectAreaId())), frm.getCourseNbr());
             
-            try {
-                File file = ApplicationProperties.getTempFile("worksheet", "pdf");
-            
-                PdfWorksheet.print(file, new SubjectAreaDAO().get(Long.valueOf(frm.getSubjectAreaId())), frm.getCourseNbr());
-            
-                if (file.exists()) 
-                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-                else {
-                    ActionMessages errors = getErrors(request);
-                    errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreateWorksheetPdfNoData()));
-                    saveErrors(request, errors);
-                }
-            } catch (Exception e) {
-                ActionMessages errors = getErrors(request);
-                errors.add("searchResult", new ActionMessage("errors.generic", MSG.errorUnableToCreateWorksheetPdf(e.getMessage())));
-                saveErrors(request, errors);
-                Debug.error(e);
-            }
+            out.flush(); out.close();
+
+            return null;
         }
         
         return fwd;

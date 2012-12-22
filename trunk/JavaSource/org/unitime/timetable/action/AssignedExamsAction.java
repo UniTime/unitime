@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamReportForm;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -46,7 +44,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DistributionConflict;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -93,17 +91,19 @@ public class AssignedExamsAction extends Action {
         WebTable table = getTable(true, false, myForm, assignedExams);
         
         if ("Export PDF".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(false, true, myForm, assignedExams);
-            File file = ApplicationProperties.getTempFile("assigned", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext, "assignedExams.ord"));
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	ExportUtils.exportPDF(
+            		getTable(false, true, myForm, assignedExams),
+            		WebTable.getOrder(sessionContext, "assignedExams.ord"),
+            		response, "assigned");
+            return null;
         }
         
         if ("Export CSV".equals(op) && table!=null) {
-            PdfWebTable pdfTable = getTable(false, false, myForm, assignedExams);
-            File file = ApplicationProperties.getTempFile("assigned", "csv");
-            pdfTable.exportCsv(file, WebTable.getOrder(sessionContext, "assignedExams.ord"));
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	ExportUtils.exportCSV(
+        			getTable(false, false, myForm, assignedExams),
+        			WebTable.getOrder(sessionContext, "assignedExams.ord"),
+        			response, "assigned");
+        	return null;
         }
 
         if (table!=null)

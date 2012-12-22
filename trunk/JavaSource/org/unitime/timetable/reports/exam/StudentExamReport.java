@@ -21,6 +21,7 @@ package org.unitime.timetable.reports.exam;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -67,6 +68,10 @@ public class StudentExamReport extends PdfLegacyExamReport {
         super(mode, file, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
     }
     
+    public StudentExamReport(int mode, OutputStream out, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, out, "STUDENT EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
+    }
+
     private void generateCache() {
         if (iStudents==null) {
             sLog.info("  Loading students...");

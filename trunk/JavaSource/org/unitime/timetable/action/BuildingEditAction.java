@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 
@@ -37,7 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.BuildingEditForm;
 import org.unitime.timetable.model.Assignment;
 import org.unitime.timetable.model.Building;
@@ -47,7 +45,7 @@ import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -186,13 +184,12 @@ public class BuildingEditAction extends Action {
                 
             }
             
-            File file = ApplicationProperties.getTempFile("buildings", "pdf");
+            ExportUtils.exportPDF(
+            		table,
+            		PdfWebTable.getOrder(sessionContext, "BuildingList.ord"),
+            		response, "buildings");
             
-            table.exportPdf(file, PdfWebTable.getOrder(sessionContext, "BuildingList.ord"));
-            
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-            
-            return mapping.findForward("back");
+            return null;
         }
         
         if ("Update Data".equals(op)) {

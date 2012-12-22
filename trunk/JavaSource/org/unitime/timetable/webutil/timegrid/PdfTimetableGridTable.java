@@ -20,9 +20,7 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Enumeration;
@@ -63,48 +61,40 @@ public class PdfTimetableGridTable {
 		iTable = table;
 	}
 	
-	public static void export2Pdf(TimetableGridTable table, File file) throws Exception {
+	public static void export2Pdf(TimetableGridTable table, OutputStream out) throws Exception {
 		PdfTimetableGridTable x = new PdfTimetableGridTable(table);
-		x.export(file);
+		x.export(out);
 	}
 	
-	public void export(File file) throws Exception {
-		FileOutputStream out = null;
-		try {
-			int nrCols = getNrColumns();
-			iDocument = (iTable.isDispModePerWeekVertical() ?
-					new Document(new Rectangle(60.0f+7.0f*nrCols,60.0f+9.3f*nrCols), 30, 30, 30, 30)
-				:
-					new Document(new Rectangle(60.0f+10.0f*nrCols,60.0f+7.5f*nrCols), 30, 30, 30, 30)
-				);
+	public void export(OutputStream out) throws Exception {
+		int nrCols = getNrColumns();
+		iDocument = (iTable.isDispModePerWeekVertical() ?
+				new Document(new Rectangle(60.0f+7.0f*nrCols,60.0f+9.3f*nrCols), 30, 30, 30, 30)
+			:
+				new Document(new Rectangle(60.0f+10.0f*nrCols,60.0f+7.5f*nrCols), 30, 30, 30, 30)
+			);
 
-			out = new FileOutputStream(file);
-			iWriter = PdfEventHandler.initFooter(iDocument, out);
-			iDocument.open();
-		
-			if (iTable.isDispModeInRow()) {
-				for (iDay=iTable.startDay();iDay<=iTable.endDay();iDay++) {
-					int rowNumber=0; 
-		        	for (Enumeration e = iTable.models().elements(); e.hasMoreElements(); rowNumber++) {
-		        		printToPdf((TimetableGridModel)e.nextElement(),rowNumber);
-		        	}
-		        	flushTable();
-				}
-			} else {
+		iWriter = PdfEventHandler.initFooter(iDocument, out);
+		iDocument.open();
+	
+		if (iTable.isDispModeInRow()) {
+			for (iDay=iTable.startDay();iDay<=iTable.endDay();iDay++) {
 				int rowNumber=0; 
-				for (Enumeration e = iTable.models().elements(); e.hasMoreElements(); rowNumber++) {
-					printToPdf((TimetableGridModel)e.nextElement(),rowNumber);
-				}
+	        	for (Enumeration e = iTable.models().elements(); e.hasMoreElements(); rowNumber++) {
+	        		printToPdf((TimetableGridModel)e.nextElement(),rowNumber);
+	        	}
+	        	flushTable();
 			}
-		
-			printLegend();
-        
-			iDocument.close();
-		} finally {
-    		try {
-    			if (out!=null) out.close();
-    		} catch (IOException e) {}
+		} else {
+			int rowNumber=0; 
+			for (Enumeration e = iTable.models().elements(); e.hasMoreElements(); rowNumber++) {
+				printToPdf((TimetableGridModel)e.nextElement(),rowNumber);
+			}
 		}
+	
+		printLegend();
+    
+		iDocument.close();
 	}
 	
 	public int getNrColumns() {

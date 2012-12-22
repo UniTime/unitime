@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.AssignmentHistoryForm;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
@@ -47,7 +45,7 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -100,10 +98,11 @@ public class AssignmentHistoryAction extends Action {
         }
 		
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"History",solver.getAssignmentRecords());
-        	if (f!=null)
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
-        		//response.sendRedirect("temp/"+f.getName());
+        	ExportUtils.exportPDF(
+        			exportPdf(model.getSimpleMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"History",solver.getAssignmentRecords()),
+        			WebTable.getOrder(sessionContext,"assignmentHistory.ord"),
+        			response, "history");
+        	return null;
         }
 
         return mapping.findForward("showAssignmentHistory");
@@ -263,7 +262,7 @@ public class AssignmentHistoryAction extends Action {
         return webTable.printTable(WebTable.getOrder(context, "assignmentHistory.ord"));
     }	
 
-    public File exportPdf(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) {
+    public PdfWebTable exportPdf(boolean simple, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector history) throws Exception {
     	if (history==null || history.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -277,132 +276,127 @@ public class AssignmentHistoryAction extends Action {
         			new String[] {"Time", "Score", "Class", "Date", "Time", "Room", "Conf","Std","Tm","Rm","Gr","Ins","Usl","Big","Dept","Subp","Pert"},
         			new String[] {"left", "left", "left", "left", "left", "left","right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
-        try {
-        	for (Enumeration e=history.elements();e.hasMoreElements();) {
-        		AssignmentRecord record = (AssignmentRecord)e.nextElement();
-        		StringBuffer classes = new StringBuffer();
-        	    StringBuffer rooms = new StringBuffer();
-        	    StringBuffer times = new StringBuffer();
-        	    StringBuffer roomsSort = new StringBuffer();
-        	    StringBuffer timesSort = new StringBuffer();
-        	    StringBuffer dates = new StringBuffer();
-        	    StringBuffer datesSort = new StringBuffer();
-        	    boolean first = true;
-        	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
-        	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
-        	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context,solver,false));
-        	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context,solver,false));
-        	    	if (!first) {
-        	    		roomsSort.append(":");
-        	    		timesSort.append(":");
-            	    	classes.append("\n");
-            	        rooms.append("\n");
-            	        times.append("\n");
-            	        dates.append("\n");
-        	    	}
-        	        classes.append((before==null?after.getClazz().getName():before.getClazz().getName()));
-        	        times.append(ClassAssignmentDetails.dispTimeNoHtml((before==null?null:before.getAssignedTime()),(after==null?null:after.getAssignedTime())));
-        	        for (int i=0;i<(before==null?after.getAssignedRoom().length:before.getAssignedRoom().length);i++) {
-        	        	if (i>0) rooms.append(", ");
-        	        	rooms.append(ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getAssignedRoom()[i]),(after==null?null:after.getAssignedRoom()[i])));
-        	        }
-        	        dates.append((before == null || before.getAssignedTime() == null ? "not-assigned" : before.getAssignedTime().getDatePatternName()) +
-        	        		(after == null || after.getAssignedTime() == null ? " -> not-assigned" : before != null &&
-        	        		before.getAssignedTime().getDatePatternName().equals(after.getAssignedTime().getDatePatternName()) ? "" : " -> " + after.getAssignedTime().getDatePatternName()));
-        	        timesSort.append(before==null?after.getTimeName():before.getTimeName());
-        	        roomsSort.append(before==null?after.getRoomName():before.getRoomName());
-        	        datesSort.append(before==null?after.getDaysName():before.getDaysName());
-        	        first = false;
-        	    }
-        	    if (first) continue;
-        	    
-        	    Suggestion bSg = record.getBefore();
-        	    Suggestion aSg = record.getAfter();
-        	    
-        	    StringBuffer sb = new StringBuffer();
-        	    if (aSg.getCommitedStudentConflicts()-bSg.getCommitedStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("c",aSg.getCommitedStudentConflicts()-bSg.getCommitedStudentConflicts()));
-        	    }
-        	    if (aSg.getDistanceStudentConflicts()-bSg.getDistanceStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("d",aSg.getDistanceStudentConflicts()-bSg.getDistanceStudentConflicts()));
-        	    }
-        	    if (aSg.getHardStudentConflicts()-bSg.getHardStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("h",aSg.getHardStudentConflicts()-bSg.getHardStudentConflicts()));
-        	    }
-        	    if (sb.length()>0) sb.append(")");
-        	    
-        	    if (simple)
-            	    webTable.addLine(null,
-            	    		new String[] {
-            	    			sDF.format(record.getTimeStamp()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getValue()-bSg.getValue()),
-            	    			classes.toString(),
-            	    			dates.toString(),
-            	    			times.toString(),
-            	    			rooms.toString(),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())+sb.toString()
-            	    			},
-            	             new Comparable[] {
-            	             	record.getTimeStamp(),
-            	                new Double(aSg.getValue()-bSg.getValue()),
-            	                classes.toString(),
-            	                datesSort.toString(),
-            	                timesSort.toString(),
-            	                roomsSort.toString(),
-            	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
-            	             });
-        	    else
-            	    webTable.addLine(null,
-            	    		new String[] {
-            	    			sDF.format(record.getTimeStamp()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getValue()-bSg.getValue()),
-            	    			classes.toString(),
-            	    			dates.toString(),
-            	    			times.toString(),
-            	    			rooms.toString(),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())+sb,
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getUselessSlots()-bSg.getUselessSlots()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
-            	             },
-            	             new Comparable[] {
-        	             		record.getTimeStamp(),
-            	                new Double(aSg.getValue()-bSg.getValue()),
-            	                classes.toString(),
-            	                datesSort.toString(),
-            	                timesSort.toString(),
-            	                roomsSort.toString(),
-            	                new Integer(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
-            	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
-            	                new Double(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
-            	                new Long(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
-            	                new Long(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
-            	                new Long(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
-            	                new Long(aSg.getUselessSlots()-bSg.getUselessSlots()),
-            	                new Long(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
-            	                new Double(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
-            	                new Double(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
-            	                new Double(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
-            	             });
-        	}
-        	File file = ApplicationProperties.getTempFile("history", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(context,"assignmentHistory.ord"));
-        	return file;
-        } catch (Exception e) {
-        	Debug.error(e);
-        }
-        return null;
-    }	
+
+        for (Enumeration e=history.elements();e.hasMoreElements();) {
+    		AssignmentRecord record = (AssignmentRecord)e.nextElement();
+    		StringBuffer classes = new StringBuffer();
+    	    StringBuffer rooms = new StringBuffer();
+    	    StringBuffer times = new StringBuffer();
+    	    StringBuffer roomsSort = new StringBuffer();
+    	    StringBuffer timesSort = new StringBuffer();
+    	    StringBuffer dates = new StringBuffer();
+    	    StringBuffer datesSort = new StringBuffer();
+    	    boolean first = true;
+    	    for (Enumeration f=record.getAssignments().elements();f.hasMoreElements();) {
+    	    	RecordedAssignment assignment = (RecordedAssignment)f.nextElement();
+    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context,solver,false));
+    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context,solver,false));
+    	    	if (!first) {
+    	    		roomsSort.append(":");
+    	    		timesSort.append(":");
+        	    	classes.append("\n");
+        	        rooms.append("\n");
+        	        times.append("\n");
+        	        dates.append("\n");
+    	    	}
+    	        classes.append((before==null?after.getClazz().getName():before.getClazz().getName()));
+    	        times.append(ClassAssignmentDetails.dispTimeNoHtml((before==null?null:before.getAssignedTime()),(after==null?null:after.getAssignedTime())));
+    	        for (int i=0;i<(before==null?after.getAssignedRoom().length:before.getAssignedRoom().length);i++) {
+    	        	if (i>0) rooms.append(", ");
+    	        	rooms.append(ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getAssignedRoom()[i]),(after==null?null:after.getAssignedRoom()[i])));
+    	        }
+    	        dates.append((before == null || before.getAssignedTime() == null ? "not-assigned" : before.getAssignedTime().getDatePatternName()) +
+    	        		(after == null || after.getAssignedTime() == null ? " -> not-assigned" : before != null &&
+    	        		before.getAssignedTime().getDatePatternName().equals(after.getAssignedTime().getDatePatternName()) ? "" : " -> " + after.getAssignedTime().getDatePatternName()));
+    	        timesSort.append(before==null?after.getTimeName():before.getTimeName());
+    	        roomsSort.append(before==null?after.getRoomName():before.getRoomName());
+    	        datesSort.append(before==null?after.getDaysName():before.getDaysName());
+    	        first = false;
+    	    }
+    	    if (first) continue;
+    	    
+    	    Suggestion bSg = record.getBefore();
+    	    Suggestion aSg = record.getAfter();
+    	    
+    	    StringBuffer sb = new StringBuffer();
+    	    if (aSg.getCommitedStudentConflicts()-bSg.getCommitedStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("c",aSg.getCommitedStudentConflicts()-bSg.getCommitedStudentConflicts()));
+    	    }
+    	    if (aSg.getDistanceStudentConflicts()-bSg.getDistanceStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("d",aSg.getDistanceStudentConflicts()-bSg.getDistanceStudentConflicts()));
+    	    }
+    	    if (aSg.getHardStudentConflicts()-bSg.getHardStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("h",aSg.getHardStudentConflicts()-bSg.getHardStudentConflicts()));
+    	    }
+    	    if (sb.length()>0) sb.append(")");
+    	    
+    	    if (simple)
+        	    webTable.addLine(null,
+        	    		new String[] {
+        	    			sDF.format(record.getTimeStamp()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getValue()-bSg.getValue()),
+        	    			classes.toString(),
+        	    			dates.toString(),
+        	    			times.toString(),
+        	    			rooms.toString(),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())+sb.toString()
+        	    			},
+        	             new Comparable[] {
+        	             	record.getTimeStamp(),
+        	                new Double(aSg.getValue()-bSg.getValue()),
+        	                classes.toString(),
+        	                datesSort.toString(),
+        	                timesSort.toString(),
+        	                roomsSort.toString(),
+        	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())
+        	             });
+    	    else
+        	    webTable.addLine(null,
+        	    		new String[] {
+        	    			sDF.format(record.getTimeStamp()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getValue()-bSg.getValue()),
+        	    			classes.toString(),
+        	    			dates.toString(),
+        	    			times.toString(),
+        	    			rooms.toString(),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts())+sb,
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getUselessSlots()-bSg.getUselessSlots()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
+        	             },
+        	             new Comparable[] {
+    	             		record.getTimeStamp(),
+        	                new Double(aSg.getValue()-bSg.getValue()),
+        	                classes.toString(),
+        	                datesSort.toString(),
+        	                timesSort.toString(),
+        	                roomsSort.toString(),
+        	                new Integer(aSg.getUnassignedVariables()-bSg.getUnassignedVariables()),
+        	                new Long(aSg.getViolatedStudentConflicts()-bSg.getViolatedStudentConflicts()),
+        	                new Double(aSg.getGlobalTimePreference()-bSg.getGlobalTimePreference()),
+        	                new Long(aSg.getGlobalRoomPreference()-bSg.getGlobalRoomPreference()),
+        	                new Long(aSg.getGlobalGroupConstraintPreference()-bSg.getGlobalGroupConstraintPreference()),
+        	                new Long(aSg.getInstructorDistancePreference()-bSg.getInstructorDistancePreference()),
+        	                new Long(aSg.getUselessSlots()-bSg.getUselessSlots()),
+        	                new Long(aSg.getTooBigRooms()-bSg.getTooBigRooms()),
+        	                new Double(aSg.getDepartmentSpreadPenalty()-bSg.getDepartmentSpreadPenalty()),
+        	                new Double(aSg.getSpreadPenalty()-bSg.getSpreadPenalty()),
+        	                new Double(aSg.getPerturbationPenalty()-bSg.getPerturbationPenalty())
+        	             });
+    	}
+        
+        return webTable; 
+    }
 
 }
 
