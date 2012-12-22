@@ -988,4 +988,25 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Not Available")
 	String unavailableEventDefaultName();
+	
+	@DefaultMessage("Room Note History")
+	String sectRoomNoteHistory();
+	
+	@DefaultMessage("The selected room has no room note changes.")
+	String noRoomNoteChanges();
+	
+	@DefaultMessage("Failed to load change logs: {0}")
+	String failedLoadRoomNoteChanges(String cause);
+	
+	@DefaultMessage("Session")
+	String colAcademicSession();
+	
+	@DefaultMessage("Manager")
+	String colManager();
+	
+	@DefaultMessage("not set")
+	String emptyNote();
+	
+	@DefaultMessage("Display changes across all academic sessions.")
+	String checkAllSessions();
 }

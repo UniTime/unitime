@@ -400,6 +400,12 @@
 		<tt:last-change type='Location'>
 			<bean:write name="<%=frmName%>" property="id"/>
 		</tt:last-change>		
+		
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:RoomNoteChanges' style="display: none;"><bean:write name="<%=frmName%>" property="id"/></div>
+			</TD>
+		</TR>
 
 		<TR>
 			<TD colspan='2'>
