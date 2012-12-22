@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.SolutionChangesForm;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.security.SessionContext;
@@ -46,7 +44,7 @@ import org.unitime.timetable.solver.interactive.ClassAssignmentDetails;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -125,10 +123,14 @@ public class SolutionChangesAction extends Action {
         	request.setAttribute("SolutionChanges.message","No changes."); 
         
         if ("Export PDF".equals(op)) {
-        	File f = exportPdf(model.getSimpleMode(),model.getReversedMode(),request,sessionContext,courseTimetablingSolverService.getSolver(),"Changes",changes);
-        	if (f!=null)
-        		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+f.getName());
-        		//response.sendRedirect("temp/"+f.getName());
+        	PdfWebTable table = exportPdf(model.getSimpleMode(),model.getReversedMode(),sessionContext,courseTimetablingSolverService.getSolver(),"Changes",changes);
+        	if (table != null) {
+            	ExportUtils.exportPDF(
+            			table,
+            			WebTable.getOrder(sessionContext,"solutionChanges.ord"),
+            			response, "changes");
+            	return null;
+        	}
         }
 
         return mapping.findForward("showSolutionChanges");
@@ -258,7 +260,7 @@ public class SolutionChangesAction extends Action {
         return webTable.printTable(WebTable.getOrder(context, "solutionChanges.ord"));
     }	
 
-    public File exportPdf(boolean simple, boolean reversed, HttpServletRequest request, SessionContext context, SolverProxy solver, String name, Vector changes) {
+    public PdfWebTable exportPdf(boolean simple, boolean reversed, SessionContext context, SolverProxy solver, String name, Vector changes) throws Exception {
     	if (changes==null || changes.isEmpty()) return null;
         PdfWebTable webTable =
         	(simple?
@@ -272,105 +274,98 @@ public class SolutionChangesAction extends Action {
         			new String[] {"Class", "Date", "Time", "Room", "Std","Tm","Rm","Gr","Ins","Usl","Big","Dept","Subp","Pert"},
         			new String[] {"left", "left", "left", "left", "right","right","right","right","right","right","right","right","right","right","right"},
         			null ));
-        try {
-        	for (Enumeration e=changes.elements();e.hasMoreElements();) {
-        		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
-    	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
-    	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
-    	    	if (reversed) {
-    	    		ClassAssignmentDetails x = after; after = before; before = x;
-    	    	}
-    	    	String className = (after==null?before.getClazz().getName():after.getClazz().getName());
-    	    	ClassAssignmentDetails classSort = (after==null?before:after);
-    	    	String time = ClassAssignmentDetails.dispTimeNoHtml((before==null?null:before.getTime()),(after==null?null:after.getTime()));
-        		String rooms = "";
-        		for (int i=0;i<(before==null?(after.getRoom()==null?0:after.getRoom().length):(before.getRoom()==null?0:before.getRoom().length));i++) {
-    	        	if (i>0) rooms += ", ";
-    	        	rooms += (ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getRoom()[i]),(after==null?null:after.getRoom()[i])));
-    	        }
-    	        String dates = (before == null ? "not-assigned" : before.getDaysName()) + (after == null ? " -> not-assigned" : before != null && before.getDaysName().equals(after.getDaysName()) ? "" : " -> " + after.getDaysName());
-    	        String timesSort = (before==null?after.getTimeName():before.getTimeName());
-    	        String roomsSort = (before==null?after.getRoomName():before.getRoomName());
-    	        String datesSort = (before==null?after.getDaysName():before.getDaysName());
-    	        
-    	        AssignmentPreferenceInfo bInf = (before==null?null:before.getInfo());
-    	        AssignmentPreferenceInfo aInf = (after==null?null:after.getInfo());
-    	        if (aInf==null) aInf = new AssignmentPreferenceInfo();
-    	        if (bInf==null) bInf = new AssignmentPreferenceInfo();
+    	for (Enumeration e=changes.elements();e.hasMoreElements();) {
+    		RecordedAssignment assignment = (RecordedAssignment)e.nextElement();
+	    	ClassAssignmentDetails before = (assignment.getBefore()==null?null:assignment.getBefore().getDetails(context, solver, false));
+	    	ClassAssignmentDetails after = (assignment.getAfter()==null?null:assignment.getAfter().getDetails(context, solver, false));
+	    	if (reversed) {
+	    		ClassAssignmentDetails x = after; after = before; before = x;
+	    	}
+	    	String className = (after==null?before.getClazz().getName():after.getClazz().getName());
+	    	ClassAssignmentDetails classSort = (after==null?before:after);
+	    	String time = ClassAssignmentDetails.dispTimeNoHtml((before==null?null:before.getTime()),(after==null?null:after.getTime()));
+    		String rooms = "";
+    		for (int i=0;i<(before==null?(after.getRoom()==null?0:after.getRoom().length):(before.getRoom()==null?0:before.getRoom().length));i++) {
+	        	if (i>0) rooms += ", ";
+	        	rooms += (ClassAssignmentDetails.dispRoomNoHtml((before==null?null:before.getRoom()[i]),(after==null?null:after.getRoom()[i])));
+	        }
+	        String dates = (before == null ? "not-assigned" : before.getDaysName()) + (after == null ? " -> not-assigned" : before != null && before.getDaysName().equals(after.getDaysName()) ? "" : " -> " + after.getDaysName());
+	        String timesSort = (before==null?after.getTimeName():before.getTimeName());
+	        String roomsSort = (before==null?after.getRoomName():before.getRoomName());
+	        String datesSort = (before==null?after.getDaysName():before.getDaysName());
+	        
+	        AssignmentPreferenceInfo bInf = (before==null?null:before.getInfo());
+	        AssignmentPreferenceInfo aInf = (after==null?null:after.getInfo());
+	        if (aInf==null) aInf = new AssignmentPreferenceInfo();
+	        if (bInf==null) bInf = new AssignmentPreferenceInfo();
 
-        	    StringBuffer sb = new StringBuffer();
-        	    if (aInf.getNrCommitedStudentConflicts()-bInf.getNrCommitedStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("c",aInf.getNrCommitedStudentConflicts()-bInf.getNrCommitedStudentConflicts()));
-        	    }
-        	    if (aInf.getNrDistanceStudentConflicts()-bInf.getNrDistanceStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("d",bInf.getNrDistanceStudentConflicts()-bInf.getNrDistanceStudentConflicts()));
-        	    }
-        	    if (aInf.getNrHardStudentConflicts()-bInf.getNrHardStudentConflicts()!=0) {
-        	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
-        	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("h",aInf.getNrHardStudentConflicts()-bInf.getNrHardStudentConflicts()));
-        	    }
-        	    if (sb.length()>0) sb.append(")");
-        	    
-        	    if (simple)
-            	    webTable.addLine(null,
-            	    		new String[] {
-            	    			className,
-            	    			dates,
-            	    			time,
-            	    			rooms,
-            	    			ClassAssignmentDetails.dispNumberNoHtml(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())+sb
-            	    			},
-            	             new Comparable[] {
-            	    			classSort,
-            	                datesSort,
-            	                timesSort,
-            	                roomsSort,
-            	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
-            	             });
-        	    else
-            	    webTable.addLine(null,
-            	    		new String[] {
-        	    				className,
-        	    				dates,
-        	    				time,
-        	    				rooms,
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())+sb,
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getTimePreference()-bInf.getTimePreference()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
-        	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
-            	             },
-            	             new Comparable[] {
-            	    			classSort,
-        	             		datesSort,
-        	                	timesSort,
-        	                	roomsSort,
-            	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
-            	                new Double(aInf.getTimePreference()-bInf.getTimePreference()),
-            	                new Long(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
-            	                new Long(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
-            	                new Long(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
-            	                new Long(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
-            	                new Long(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
-            	                new Double(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
-            	                new Double(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
-            	                new Double(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
-            	             });
-        	}
-        	File file = ApplicationProperties.getTempFile("changes", "pdf");
-        	webTable.exportPdf(file, WebTable.getOrder(context,"solutionChanges.ord"));
-        	return file;
-        } catch (Exception e) {
-        	Debug.error(e);
-        }
-        return null;
+    	    StringBuffer sb = new StringBuffer();
+    	    if (aInf.getNrCommitedStudentConflicts()-bInf.getNrCommitedStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("c",aInf.getNrCommitedStudentConflicts()-bInf.getNrCommitedStudentConflicts()));
+    	    }
+    	    if (aInf.getNrDistanceStudentConflicts()-bInf.getNrDistanceStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("d",bInf.getNrDistanceStudentConflicts()-bInf.getNrDistanceStudentConflicts()));
+    	    }
+    	    if (aInf.getNrHardStudentConflicts()-bInf.getNrHardStudentConflicts()!=0) {
+    	    	if (sb.length()==0) sb.append(" ("); else sb.append(",");
+    	    	sb.append(ClassAssignmentDetails.dispNumberNoHtml("h",aInf.getNrHardStudentConflicts()-bInf.getNrHardStudentConflicts()));
+    	    }
+    	    if (sb.length()>0) sb.append(")");
+    	    
+    	    if (simple)
+        	    webTable.addLine(null,
+        	    		new String[] {
+        	    			className,
+        	    			dates,
+        	    			time,
+        	    			rooms,
+        	    			ClassAssignmentDetails.dispNumberNoHtml(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())+sb
+        	    			},
+        	             new Comparable[] {
+        	    			classSort,
+        	                datesSort,
+        	                timesSort,
+        	                roomsSort,
+        	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())
+        	             });
+    	    else
+        	    webTable.addLine(null,
+        	    		new String[] {
+    	    				className,
+    	    				dates,
+    	    				time,
+    	    				rooms,
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts())+sb,
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getTimePreference()-bInf.getTimePreference()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
+    	    				ClassAssignmentDetails.dispNumberNoHtml(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
+        	             },
+        	             new Comparable[] {
+        	    			classSort,
+    	             		datesSort,
+    	                	timesSort,
+    	                	roomsSort,
+        	                new Long(aInf.getNrStudentConflicts()-bInf.getNrStudentConflicts()),
+        	                new Double(aInf.getTimePreference()-bInf.getTimePreference()),
+        	                new Long(aInf.sumRoomPreference()-bInf.sumRoomPreference()),
+        	                new Long(aInf.getGroupConstraintPref()-bInf.getGroupConstraintPref()),
+        	                new Long(aInf.getBtbInstructorPreference()-bInf.getBtbInstructorPreference()),
+        	                new Long(aInf.getUselessHalfHours()-bInf.getUselessHalfHours()),
+        	                new Long(aInf.getTooBigRoomPreference()-bInf.getTooBigRoomPreference()),
+        	                new Double(aInf.getDeptBalancPenalty()-bInf.getDeptBalancPenalty()),
+        	                new Double(aInf.getSpreadPenalty()-bInf.getSpreadPenalty()),
+        	                new Double(aInf.getPerturbationPenalty()-bInf.getPerturbationPenalty())
+        	             });
+    	}
+    	return webTable;
     }	
 }
 

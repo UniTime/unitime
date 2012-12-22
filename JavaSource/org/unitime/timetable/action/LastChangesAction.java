@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -34,7 +33,6 @@ import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.LastChangesForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
@@ -42,7 +40,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -105,9 +103,9 @@ public class LastChangesAction extends Action {
                     new boolean[] { false, true, true, true, true, true, true} );
             for (Iterator i=changes.iterator();i.hasNext();)
                 printLastChangeTableRow(request, pdfTable, (ChangeLog)i.next(), false);
-            File file = ApplicationProperties.getTempFile("lastChanges", "pdf");
-            pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,"lastChanges.ord2"));
-            if (file!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            
+            ExportUtils.exportPDF(pdfTable, WebTable.getOrder(sessionContext,"lastChanges.ord2"), response, "lastChanges");
+            return null;
         }
         
         return mapping.findForward("display");

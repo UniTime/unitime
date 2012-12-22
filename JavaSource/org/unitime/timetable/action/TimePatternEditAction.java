@@ -61,6 +61,7 @@ import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 
@@ -273,25 +274,18 @@ public class TimePatternEditAction extends Action {
                 			});
             	}
             	
-            	File file = ApplicationProperties.getTempFile("exact", "csv");
-           		csv.save(file);
-           		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
     			tx.commit();
+            	ExportUtils.exportCSV(csv, response, "exact");
+            	return null;
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
     	    }
-
-    	    myForm.load(null, null);
-    	    myForm.setOp("List");
         }
         
         if ("Generate SQL".equals(op)) {
-            PrintWriter out = null;
+            PrintWriter out = ExportUtils.getPlainTextWriter(response, "tp.sql");
             try {
-                File file = ApplicationProperties.getTempFile("tp", "sql");
-                out = new PrintWriter(new FileWriter(file));
-                
                 TreeSet patterns = new TreeSet(TimePattern.findAll(sessionId,null));
                 
                 boolean mysql = false;
@@ -398,15 +392,12 @@ public class TimePatternEditAction extends Action {
                 }
                 
                 out.flush(); out.close(); out = null;
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+                return null;
             } catch (Exception e) {
                 throw e;
             } finally {
                 if (out!=null) out.close();
             }
-            
-            myForm.load(null, null);
-            myForm.setOp("List");
         }
         
         
@@ -598,17 +589,14 @@ public class TimePatternEditAction extends Action {
 	            			});
             	}
             	
-            	File file = ApplicationProperties.getTempFile("timePatterns", "csv");
-           		csv.save(file);
-           		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
     			tx.commit();
+    			
+    			ExportUtils.exportCSV(csv, response, "timePatterns");
+    			return null;
     	    } catch (Exception e) {
     	    	if (tx!=null) tx.rollback();
     	    	throw e;
     	    }
-    	    
-    	    myForm.load(null, null);
-    	    myForm.setOp("List");
         }
 
         if ("Add Time Pattern".equals(op)) {

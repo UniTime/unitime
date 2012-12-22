@@ -22,6 +22,7 @@ package org.unitime.timetable.reports;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -41,7 +42,7 @@ import com.lowagie.text.pdf.PdfWriter;
 public class PdfLegacyReport {
     protected int iNrChars = 133;
     protected int iNrLines = 50;
-    private FileOutputStream iOut = null;
+    private OutputStream iOut = null;
     private Document iDoc = null;
     private StringBuffer iBuffer = new StringBuffer();
     private PrintWriter iPrint = null;
@@ -66,12 +67,24 @@ public class PdfLegacyReport {
         iSubject = subject;
         iSession = session;
         
-        if (file!=null) open(file, mode);
+        if (file!=null) open(new FileOutputStream(file), mode);
+    }
+    
+    public PdfLegacyReport(int mode, OutputStream out, String title, String title2, String subject, String session) throws IOException, DocumentException{
+        iTitle = title;
+        iTitle2 = title2;
+        iSubject = subject;
+        iSession = session;
+        
+        if (out!=null) open(out, mode);
     }
     
     public void open(File file, int mode) throws DocumentException, IOException {
-        if (file==null) return;
-        iOut = new FileOutputStream(file);
+    	open(new FileOutputStream(file), mode);
+    }
+    
+    public void open(OutputStream out, int mode) throws DocumentException, IOException {
+        iOut = out;
         if (mode==sModeText) {
             iPrint = new PrintWriter(iOut);
         } else {

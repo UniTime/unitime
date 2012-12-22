@@ -160,7 +160,7 @@
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD align="right">
-				<html:submit onclick="displayLoading();" property="op" value="Export PDF" /> 
+				<html:submit property="op" value="Export PDF" /> 
 				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh" /> 
 			</TD>
 		</TR>

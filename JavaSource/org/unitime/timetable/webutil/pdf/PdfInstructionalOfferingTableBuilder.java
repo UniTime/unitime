@@ -20,9 +20,7 @@
 package org.unitime.timetable.webutil.pdf;
 
 import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,7 +31,6 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import org.unitime.commons.Debug;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.InstructionalOfferingListForm;
@@ -1477,12 +1474,13 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         }
     }
 
-    public File pdfTableForInstructionalOffering(
+    public void pdfTableForInstructionalOffering(
+    		OutputStream out,
     		ClassAssignmentProxy classAssignment, 
     		ExamAssignmentProxy examAssignment,
             Long instructionalOfferingId, 
             SessionContext context,
-            Comparator classComparator){
+            Comparator classComparator) throws Exception{
     	
     	if (instructionalOfferingId != null && context != null){
 	        InstructionalOfferingDAO idao = new InstructionalOfferingDAO();
@@ -1495,24 +1493,24 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	        WebInstructionalOfferingTableBuilder iotbl = new WebInstructionalOfferingTableBuilder();
 	        iotbl.setDisplayDistributionPrefs(false);
 	        setVisibleColumns(COLUMNS);
-		    return pdfTableForInstructionalOfferings(
+		    pdfTableForInstructionalOfferings(out,
 				        classAssignment, examAssignment,
 				        ts, subjectAreaId, context, false, false, classComparator);
     	}
-    	return null;
     }
     
-    public File pdfTableForInstructionalOfferings(
+    public void pdfTableForInstructionalOfferings(
+    		OutputStream out,
             ClassAssignmentProxy classAssignment,
             ExamAssignmentProxy examAssignment,
             InstructionalOfferingListForm form, 
             Long subjectAreaId, 
             SessionContext context,
             boolean displayHeader,
-            boolean allCoursesAreGiven){
+            boolean allCoursesAreGiven) throws Exception{
     	
     	setVisibleColumns(form);
-    	return pdfTableForInstructionalOfferings(classAssignment, examAssignment,
+    	pdfTableForInstructionalOfferings(out, classAssignment, examAssignment,
     			(TreeSet) form.getInstructionalOfferings(), 
      			subjectAreaId,
     			context,
@@ -1521,20 +1519,18 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
    	
     }
     
-    protected File pdfTableForInstructionalOfferings(
+    protected void pdfTableForInstructionalOfferings(
+    		OutputStream out,
             ClassAssignmentProxy classAssignment, 
             ExamAssignmentProxy examAssignment,
             TreeSet insructionalOfferings, 
             Long subjectAreaId, 
             SessionContext context,
             boolean displayHeader, boolean allCoursesAreGiven,
-            Comparator classComparator) {
+            Comparator classComparator) throws Exception {
     	
     	if (classComparator!=null)
     		setClassComparator(classComparator);
-    	
-    	FileOutputStream out = null;
-    	try {
     	
     	if (isShowTimetable()) {
     		boolean hasTimetable = false;
@@ -1601,8 +1597,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             }
         }
          
-        File file = ApplicationProperties.getTempFile("insofferings", "pdf");
-    	
     	float[] widths = getWidths();
     	float totalWidth = 0;
     	for (int i=0;i<widths.length;i++)
@@ -1611,7 +1605,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	
     	iDocument = new Document(new Rectangle(60f+totalWidth,60f+0.77f*totalWidth), 30f, 30f, 30f, 30f); 
 
-    	out = new FileOutputStream(file);
 		iWriter = PdfEventHandler.initFooter(iDocument, out);
 		iDocument.open();
          
@@ -1674,15 +1667,6 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 		
 		iDocument.close();
 
-		return file;
-    	} catch (Exception e) {
-    		Debug.error(e);
-    	} finally {
-        	try {
-        		if (out!=null) out.close();
-        	} catch (IOException e) {}
-    	}
-    	return null;
     }
 
 }

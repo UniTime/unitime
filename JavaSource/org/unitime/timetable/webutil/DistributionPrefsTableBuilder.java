@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.webutil;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -31,11 +29,9 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.unitime.commons.Debug;
 import org.unitime.commons.web.WebTable;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
@@ -97,7 +93,7 @@ public class DistributionPrefsTableBuilder {
 		return toHtmlTable(request, context, prefs, true); 
 	}
 
-	public File getAllDistPrefsTableForCurrentUserAsPdf(SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
+	public void getAllDistPrefsTableForCurrentUserAsPdf(OutputStream out, SessionContext context, String subjectAreaId, String courseNbr) throws Exception {
 
 		if (subjectAreaId.equals(Constants.BLANK_OPTION_VALUE))
             subjectAreaId = null;
@@ -125,7 +121,7 @@ public class DistributionPrefsTableBuilder {
 		else
 			title += " - "+session.getLabel()+" Distribution Preferences";
 		
-		return toPdfTable(context, prefs, title); 
+		toPdfTable(out, context, prefs, title); 
 	}
 
 	public String getDistPrefsTableForClass(HttpServletRequest request, SessionContext context, Class_ clazz) {
@@ -321,7 +317,7 @@ public class DistributionPrefsTableBuilder {
         return tbl.printTable(WebTable.getOrder(context,"distPrefsTable.ord"));
     }
 
-    public File toPdfTable(SessionContext context, Collection distPrefs, String title) {
+    public void toPdfTable(OutputStream out, SessionContext context, Collection distPrefs, String title) throws Exception {
     	String instructorFormat = UserProperty.NameFormat.get(context.getUser());
         
         PdfWebTable tbl = new PdfWebTable(5, 
@@ -401,38 +397,24 @@ public class DistributionPrefsTableBuilder {
         if (nrPrefs==0)
             tbl.addLine(null,  new String[] { "No preferences found", "", "", "", "" }, null);
         
-        FileOutputStream out = null;
-        try {
-        	File file = ApplicationProperties.getTempFile("distpref", "pdf");
-            int ord = WebTable.getOrder(context, "distPrefsTable.ord");
-            ord = (ord>0?1:-1)*(1+Math.abs(ord));
-        	
-        	PdfPTable table = tbl.printPdfTable(ord);
-        	
-        	float width = tbl.getWidth();
-        	
-        	Document doc = new Document(new Rectangle(60f + width, 60f + 1.30f * width),30,30,30,30); 
+        int ord = WebTable.getOrder(context, "distPrefsTable.ord");
+        ord = (ord>0?1:-1)*(1+Math.abs(ord));
 
-        	out = new FileOutputStream(file);
-			PdfWriter iWriter = PdfWriter.getInstance(doc, out);
-			iWriter.setPageEvent(new PdfEventHandler());
-    		doc.open();
-    		
-    		if (tbl.getName()!=null)
-    			doc.add(new Paragraph(tbl.getName(), PdfFont.getBigFont(true)));
-    		
-    		doc.add(table);
-    		
-    		doc.close();
-            
-        	return file;
-        } catch (Exception e) {
-        	Debug.error(e);
-        } finally {
-        	try {
-        		if (out!=null) out.close();
-        	} catch (IOException e) {}
-        }
-    	return null;
+        PdfPTable table = tbl.printPdfTable(ord);
+
+        float width = tbl.getWidth();
+
+        Document doc = new Document(new Rectangle(60f + width, 60f + 1.30f * width),30,30,30,30); 
+
+        PdfWriter iWriter = PdfWriter.getInstance(doc, out);
+        iWriter.setPageEvent(new PdfEventHandler());
+        doc.open();
+
+        if (tbl.getName()!=null)
+        	doc.add(new Paragraph(tbl.getName(), PdfFont.getBigFont(true)));
+
+        doc.add(table);
+
+        doc.close();
     }
 }

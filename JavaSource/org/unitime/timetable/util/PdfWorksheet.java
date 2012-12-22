@@ -19,9 +19,9 @@
 */
 package org.unitime.timetable.util;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Comparator;
@@ -79,7 +79,7 @@ public class PdfWorksheet {
     private boolean iUseCommitedAssignments = true;
     private static int sNrChars = 133;
     private static int sNrLines = 50;
-    private FileOutputStream iOut = null;
+    private OutputStream iOut = null;
     private Document iDoc = null;
     private SubjectArea iSubjectArea = null;
     private String iCourseNumber = null;
@@ -88,7 +88,7 @@ public class PdfWorksheet {
     private StringBuffer iBuffer = new StringBuffer();
     private CourseOffering iCourseOffering = null;
     
-    private PdfWorksheet(File file, SubjectArea sa, String courseNumber) throws IOException, DocumentException  {
+    private PdfWorksheet(OutputStream out, SubjectArea sa, String courseNumber) throws IOException, DocumentException  {
         iUseCommitedAssignments = "true".equals(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.useCommitedAssignments","true"));
         iSubjectArea = sa;
         iCourseNumber = courseNumber;
@@ -96,7 +96,7 @@ public class PdfWorksheet {
             iCourseNumber = null;
         iDoc = new Document(PageSize.LETTER.rotate());
 
-        iOut = new FileOutputStream(file);
+        iOut = out;
         PdfWriter.getInstance(iDoc, iOut);
 
         iDoc.addTitle(sa.getSubjectAreaAbbreviation()+(iCourseNumber==null?"":" "+iCourseNumber)+" Worksheet");
@@ -109,7 +109,7 @@ public class PdfWorksheet {
         printHeader();
     }
     
-    public static boolean print(File file, SubjectArea sa) throws IOException, DocumentException {
+    public static boolean print(OutputStream out, SubjectArea sa) throws IOException, DocumentException {
         TreeSet courses = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 CourseOffering co1 = (CourseOffering)o1;
@@ -123,7 +123,7 @@ public class PdfWorksheet {
                 createQuery("select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId").
                 setLong("subjectAreaId", sa.getUniqueId()).list());
         if (courses.isEmpty()) return false;
-        PdfWorksheet w = new PdfWorksheet(file,sa,null);
+        PdfWorksheet w = new PdfWorksheet(out,sa,null);
         for (Iterator i=courses.iterator();i.hasNext();) {
             w.print((CourseOffering)i.next());
         }
@@ -132,7 +132,7 @@ public class PdfWorksheet {
         return true;
     }
     
-    public static boolean print(File file, SubjectArea sa, String courseNumber) throws IOException, DocumentException {
+    public static boolean print(OutputStream out, SubjectArea sa, String courseNumber) throws IOException, DocumentException {
         TreeSet courses = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 CourseOffering co1 = (CourseOffering)o1;
@@ -152,7 +152,7 @@ public class PdfWorksheet {
         }
         courses.addAll(new SessionDAO().getSession().createQuery(query).setLong("subjectAreaId", sa.getUniqueId()).list());
         if (courses.isEmpty()) return false;
-        PdfWorksheet w = new PdfWorksheet(file,sa,courseNumber);
+        PdfWorksheet w = new PdfWorksheet(out,sa,courseNumber);
         for (Iterator i=courses.iterator();i.hasNext();) {
             w.print((CourseOffering)i.next());
         }
@@ -584,7 +584,6 @@ public class PdfWorksheet {
     
     private void close() throws IOException {
         iDoc.close();
-        iOut.close();
     }
 
     public static void main(String[] args) {
@@ -616,7 +615,9 @@ public class PdfWorksheet {
             for (Iterator i=subjectAreas.iterator();i.hasNext();) {
                 SubjectArea sa = (SubjectArea)i.next();
                 System.out.println("Printing subject area "+sa.getSubjectAreaAbbreviation()+" ...");
-                PdfWorksheet.print(new File(sa.getSubjectAreaAbbreviation()+".pdf"),sa);
+                FileOutputStream out = new FileOutputStream(sa.getSubjectAreaAbbreviation()+".pdf");
+                PdfWorksheet.print(out,sa);
+                out.flush(); out.close();
             }
             
             HibernateUtil.closeHibernate();

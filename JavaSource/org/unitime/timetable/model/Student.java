@@ -167,7 +167,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
         else if (DepartmentalInstructor.sNameFormatLastInitial.equals(instructorNameFormat))
             return Constants.toInitialCase(getLastName()==null?"":getLastName().trim())+", "+
                 (getFirstName()==null?"":getFirstName().trim().substring(0, 1).toUpperCase())+
-                (getMiddleName()==null?"":" "+getMiddleName().trim().substring(0, 1).toUpperCase());
+                (getMiddleName()==null || getMiddleName().isEmpty()?"":" "+getMiddleName().trim().substring(0, 1).toUpperCase());
         else if (DepartmentalInstructor.sNameFormatLastFirstMiddle.equals(instructorNameFormat))
             return Constants.toInitialCase((getLastName()==null?"":getLastName().trim())+", "+(getFirstName()==null?"":getFirstName().trim()) + (getMiddleName()==null?"":" "+getMiddleName().trim()));
         else if (DepartmentalInstructor.sNameFormatShort.equals(instructorNameFormat)) {

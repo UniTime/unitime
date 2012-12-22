@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.DepartmentListForm;
@@ -39,7 +37,7 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 import org.apache.struts.action.Action;
@@ -161,10 +159,12 @@ public class DepartmentListAction extends Action {
                             lastChangeCmp });
                 }
             }
-
-            File file = ApplicationProperties.getTempFile("departments", "pdf");
-            webTable.exportPdf(file, WebTable.getOrder(sessionContext, "DepartmentList.ord"));
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            
+            ExportUtils.exportPDF(
+            		webTable,
+            		WebTable.getOrder(sessionContext, "DepartmentList.ord"),
+            		response, "departments");
+            return null;
         }
         
 		WebTable webTable = new WebTable((dispLastChanges ? 10 : 9), "",

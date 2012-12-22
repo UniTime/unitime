@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
@@ -44,7 +43,6 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.commons.MultiComparable;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.RoomAvailabilityForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
@@ -62,6 +60,7 @@ import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -109,10 +108,11 @@ public class RoomAvailabilityAction extends Action {
             WebTable table = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), true, myForm):getTable(request, session.getUniqueId(), true, myForm));
             
             if ("Export PDF".equals(op) && table!=null) {
-                PdfWebTable pdfTable = (myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm));
-                File file = ApplicationProperties.getTempFile("roomavail", "pdf");
-                pdfTable.exportPdf(file, WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")));
-                request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+                ExportUtils.exportPDF(
+                		(myForm.getCompare()?getCompareTable(request, session.getUniqueId(), false, myForm):getTable(request, session.getUniqueId(), false, myForm)),
+                		WebTable.getOrder(sessionContext,(myForm.getCompare()?"roomAvailability.cord":"roomAvailability.ord")),
+                		response, "roomavail");
+                return null;
             }
             
             if (table!=null)

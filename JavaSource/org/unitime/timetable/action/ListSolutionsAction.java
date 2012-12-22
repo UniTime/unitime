@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,7 +68,7 @@ import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -397,13 +396,8 @@ public class ListSolutionsAction extends Action {
         			solutionIds+=solution.getUniqueId().toString();
         		}
         	}
-        	File file = ApplicationProperties.getTempFile("solution", "csv");
-        	csvFile.save(file);
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-        	/*
-        	response.sendRedirect("temp/"+file.getName());
-       		response.setContentType("text/csv");
-       		*/
+        	ExportUtils.exportCSV(csvFile, response, "solution");
+        	return null;
         }
 
         getSolutions(request, myForm);

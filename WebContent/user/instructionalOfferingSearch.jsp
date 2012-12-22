@@ -265,7 +265,7 @@
 				<sec:authorize access="hasPermission(null, 'Department', 'InstructionalOfferingsExportPDF')">
 				<html:submit
 					accesskey="<%=MSG.accessExportPdf()%>" styleClass="btn" title='<%=MSG.titleExportPdf(MSG.accessExportPdf())%>'
-					onclick="doit.value=this.value;displayLoading();">
+					onclick="doit.value=this.value;">
 					<loc:message name="actionExportPdf"/>
 				</html:submit> 
 				</sec:authorize>
@@ -274,7 +274,7 @@
 				<tt:propertyEquals name="tmtbl.pdf.worksheet" value="true">
 					<html:submit
 						accesskey="<%=MSG.accessWorksheetPdf()%>" styleClass="btn" title='<%=MSG.titleWorksheetPdf(MSG.accessWorksheetPdf())%>'
-						onclick="doit.value=this.value;displayLoading();">
+						onclick="doit.value=this.value;">
 						<loc:message name="actionWorksheetPdf"/>
 					</html:submit>
 				</tt:propertyEquals>

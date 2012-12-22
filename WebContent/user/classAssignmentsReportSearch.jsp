@@ -180,7 +180,7 @@
 				</html:submit>
 				<sec:authorize access="hasPermission(null, 'Session', 'ClassAssignmentsExportPdf')">
 					&nbsp;&nbsp;&nbsp;
-					<html:submit property="doit" onclick="displayLoading();" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
+					<html:submit property="doit" accesskey="P" styleClass="btn" titleKey="title.exportPDF">
 						<bean:message key="button.exportPDF" />
 					</html:submit>
 				</sec:authorize>

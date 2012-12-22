@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
 import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,11 +30,10 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -107,9 +105,11 @@ public class ItypeDescListAction extends Action {
 	        }
 	        
 	        if ("Export PDF".equals(request.getParameter("op"))) {
-	            File file = ApplicationProperties.getTempFile("itypes", "pdf");
-	            webTable.exportPdf(file, PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"));
-	            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+	        	ExportUtils.exportPDF(
+	        			webTable,
+	        			PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"),
+	        			response, "itypes");
+	        	return null;
 	        }
 
 	        String tblData = webTable.printTable(PdfWebTable.getOrder(sessionContext,"itypeDescList.ord"));

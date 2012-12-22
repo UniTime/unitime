@@ -19,8 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -50,7 +49,7 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 
 
 /** 
@@ -122,11 +121,10 @@ public class SolverAction extends Action {
             sessionContext.checkPermission(myForm.getOwner(), "SolverGroup", Right.SolverSolutionExportXml);
             solver.restoreBest();
             byte[] buf = solver.exportXml();
-            File file = ApplicationProperties.getTempFile("solution", "xml");
-            FileOutputStream fos = new FileOutputStream(file);
-            fos.write(buf);
-            fos.flush();fos.close();
-            request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+            OutputStream out = ExportUtils.getXmlOutputStream(response, "solution");
+            out.write(buf);
+            out.flush(); out.close();
+            return null;
         }
         
         if ("Restore From Best".equals(op)) {
@@ -222,14 +220,9 @@ public class SolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	sessionContext.checkPermission(myForm.getOwner(), "SolverGroup", Right.SolverSolutionExportCsv);
-
-        	File file = ApplicationProperties.getTempFile("solution", "csv");
-       		solver.export().save(file);
-       		request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-       		/*
-       		response.sendRedirect("temp/"+file.getName());
-       		response.setContentType("text/csv");
-       		*/
+        	
+        	ExportUtils.exportCSV(solver.export(), response, "solution");
+        	return null;
         }
 
 		return mapping.findForward("showSolver");

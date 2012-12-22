@@ -34,7 +34,7 @@
 				<tt:section-title>Filter</tt:section-title>
 				<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
 				<logic:notEmpty name="roomAvailabilityForm" property="table">
-					<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+					<html:submit property="op" value="Export PDF"/>
 				</logic:notEmpty>
 				<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
 			</tt:section-header>
@@ -111,7 +111,7 @@
 		<TD align="right">
 			<html:submit onclick="displayLoading();" accesskey="A" property="op" value="Apply"/>
 			<logic:notEmpty name="roomAvailabilityForm" property="table">
-				<html:submit onclick="displayLoading();" property="op" value="Export PDF"/>
+				<html:submit property="op" value="Export PDF"/>
 			</logic:notEmpty>
 			<html:submit onclick="displayLoading();" accesskey="R" property="op" value="Refresh"/>
 		</TD>

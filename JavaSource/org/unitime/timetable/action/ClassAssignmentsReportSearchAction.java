@@ -19,15 +19,13 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import net.sf.cpsolver.ifs.util.CSVFile;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -37,7 +35,6 @@ import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.ClassAssignmentsReportForm;
 import org.unitime.timetable.form.ClassListFormInterface;
@@ -53,7 +50,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.spring.struts.SpringAwareLookupDispatchAction;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.CsvClassAssignmentExport;
 import org.unitime.timetable.webutil.pdf.PdfClassAssignmentReportListTableBuilder;
@@ -200,29 +197,21 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
 						"Class Assignments ("+names+")", 
 						true, true);
 			} else if ("exportPdf".equals(action)) {
-				PdfClassAssignmentReportListTableBuilder tb = new PdfClassAssignmentReportListTableBuilder();
-				File outFile = tb.pdfTableForClasses(classAssignmentService.getAssignment(), examinationSolverService.getSolver(), classListForm, sessionContext);
-				//if (outFile!=null) response.sendRedirect("temp/"+outFile.getName());
-				if (outFile!=null) request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+outFile.getName());
-				BackTracker.markForBack(
-						request, 
-						"classAssignmentsReportSearch.do?doit=Search&loadFilter=1"+ids, 
-						"Class Assignments ("+names+")", 
-						true, true);
+				OutputStream out = ExportUtils.getPdfOutputStream(response, "classassign");
+				
+				new PdfClassAssignmentReportListTableBuilder().pdfTableForClasses(out, classAssignmentService.getAssignment(), examinationSolverService.getSolver(), classListForm, sessionContext);
+				
+				out.flush(); out.close();
+				
+				return null;
 			} else if ("exportCsv".equals(action)) {
-				CSVFile csvFile = CsvClassAssignmentExport.exportCsv(sessionContext.getUser(), classListForm.getClasses(), classAssignmentService.getAssignment());
-				File file = ApplicationProperties.getTempFile("classassign", "csv");
-	        	csvFile.save(file);
-				request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-				BackTracker.markForBack(
-						request, 
-						"classAssignmentsReportSearch.do?doit=Search&loadFilter=1"+ids, 
-						"Class Assignments ("+names+")", 
-						true, true);
-	        	/*
-	        	response.sendRedirect("temp/"+file.getName());
-	       		response.setContentType("text/csv");
-	       		*/
+
+				ExportUtils.exportCSV(
+						CsvClassAssignmentExport.exportCsv(sessionContext.getUser(), classListForm.getClasses(), classAssignmentService.getAssignment()),
+						response,
+						"classassign");
+				
+	    		return null;
 			} 
 			return mapping.findForward("showClassAssignmentsReportList");
 		}

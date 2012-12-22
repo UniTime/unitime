@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,7 +34,7 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupListForm;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -90,9 +90,10 @@ public class RoomGroupSearchAction extends Action {
 			
 			if ("Export PDF".equals(request.getParameter("op"))) {
 				sessionContext.checkPermission(Right.RoomGroupsExportPdf);
-				File file = RoomGroupListAction.buildPdfGroupTable(sessionContext, roomGroupListForm);
-				if (file != null && file.exists())
-					request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+				OutputStream out = ExportUtils.getPdfOutputStream(response, "roomGroups");
+				RoomGroupListAction.printPdfGroupTable(out, sessionContext, roomGroupListForm);
+				out.flush(); out.close();
+				return null;
 			}
 			
 			return mapping.findForward("roomGroupList");

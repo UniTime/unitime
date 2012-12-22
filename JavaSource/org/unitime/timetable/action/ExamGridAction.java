@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.io.File;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -32,7 +32,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamGridForm;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.ExamPeriod;
@@ -44,7 +43,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
-import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.PdfExamGridTable;
@@ -103,9 +102,10 @@ public class ExamGridAction extends Action {
         request.setAttribute("table", table);
 
         if ("Export PDF".equals(op)) {
-        	File file = ApplicationProperties.getTempFile("timetable", "pdf");
-        	table.export(file);
-        	request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
+        	OutputStream out = ExportUtils.getPdfOutputStream(response, "timetable");
+        	table.export(out);
+        	out.flush(); out.close();
+        	return null;
         }
 
         myForm.setOp("Change");

@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.awt.Image;
-import java.io.File;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -40,7 +39,6 @@ import org.apache.struts.action.ActionMessages;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
-import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ExamListForm;
@@ -69,6 +67,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.webutil.BackTracker;
 import org.unitime.timetable.webutil.Navigation;
@@ -113,22 +112,19 @@ public class ExamListAction extends Action {
             }
             
             if ("Export PDF".equals(op)) {
-                PdfWebTable table = getExamTable(myForm, false, true);
-                if (table!=null) {
-                    File file = ApplicationProperties.getTempFile("exams", "pdf");
-                    table.exportPdf(file, WebTable.getOrder(sessionContext, "ExamList.ord"));
-                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-                }
-
+            	ExportUtils.exportPDF(
+            			getExamTable(myForm, false, true),
+            			WebTable.getOrder(sessionContext, "ExamList.ord"),
+            			response, "exams");
+            	return null;
             }
 
             if ("Export CSV".equals(op)) {
-            	PdfWebTable table = getExamTable(myForm, false, false);
-            	if (table!=null) {
-                    File file = ApplicationProperties.getTempFile("exams", "csv");
-            		table.exportCsv(file, WebTable.getOrder(sessionContext, "ExamList.ord"));
-                    request.setAttribute(Constants.REQUEST_OPEN_URL, "temp/"+file.getName());
-                }
+            	ExportUtils.exportCSV(
+            			getExamTable(myForm, false, false),
+            			WebTable.getOrder(sessionContext, "ExamList.ord"),
+            			response, "exams");
+            	return null;
             }
         }
         
