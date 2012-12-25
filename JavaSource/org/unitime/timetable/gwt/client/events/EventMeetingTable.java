@@ -93,7 +93,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public static enum OperationType {
-		Approve, Reject, Inquire, AddMeetings, Cancel, Delete
+		Approve, Reject, Inquire, AddMeetings, Cancel, Delete, Modify
 	}
 	
 	private Mode iMode = null;
@@ -246,7 +246,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				if (getData(row).getMeeting().getId() == null)
 					removeRow(row);
 				else {
-					getData(row).getMeeting().setApprovalStatus(ApprovalStatus.Deleted);
+					MeetingInterface meeting = getData(row).getMeeting();
+					meeting.setApprovalStatus(ApprovalStatus.Deleted);
+					meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
 					getRowFormatter().addStyleName(row, "deleted-row");
 					setWidget(row, 0, new HTML("&nbsp;"));
 					HTML approval = (HTML)getWidget(row, getHeader(MESSAGES.colApproval()).getColumn());
@@ -382,6 +384,59 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			public boolean allowNoSelection() {
 				return getMode().isAllowApproveAll();
 			}
+		});
+		hTimes.addOperation(new EventMeetingOperation() {
+			@Override
+            public void execute() {
+				getOperation(OperationType.Modify).execute(EventMeetingTable.this, OperationType.Modify, data());
+			}
+            @Override
+            public String getName() {
+                    return MESSAGES.opModifyMeetings();
+            }
+    		@Override
+    		public boolean isApplicable() {
+    			Integer start = null, end = null;
+    			boolean hasSelection = hasSelection();
+    			if (hasSelection) {
+    				for (int row = 1; row < getRowCount(); row++) {
+    					Widget w =  getWidget(row, 0);
+    					if (w != null && w instanceof CheckBox) {
+    						CheckBox ch = (CheckBox)w;
+    						if (ch.getValue()) {
+    							EventMeetingRow e = getData(row);
+    							if (!isApplicable(e)) return false;
+								if (start == null) { start = e.getMeeting().getStartSlot(); end = e.getMeeting().getEndSlot(); }
+								else if (start != e.getMeeting().getStartSlot() || end != e.getMeeting().getEndSlot()) return false;
+    						}
+    					}
+    				}
+    				return true;
+    			} else if (allowNoSelection()) {
+    				for (int row = 1; row < getRowCount(); row++) {
+    					Widget w =  getWidget(row, 0);
+    					if (w != null && w instanceof CheckBox) {
+    						EventMeetingRow e = getData(row);
+    						if (!isApplicable(e)) return false;
+							if (start == null) { start = e.getMeeting().getStartSlot(); end = e.getMeeting().getEndSlot(); }
+							else if (start != e.getMeeting().getStartSlot() || end != e.getMeeting().getEndSlot()) return false;
+    					}
+    				}
+    				return true;
+    			} else {
+    				return false;
+    			}
+    		}
+    		@Override
+    		public boolean allMustMatch(boolean hasSelection) {
+    			return true;
+    		}
+    		@Override
+            public boolean isApplicable(EventMeetingRow data) {
+                    return isEditable() && hasOperation(OperationType.Modify) && data.getMeeting() != null && (data.getMeeting().getId() == null || data.getMeeting().isCanDelete() || data.getMeeting().isCanCancel());
+            }
+            @Override
+            public void execute(int row, EventMeetingRow data) {}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
 			@Override
@@ -655,7 +710,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().isShowEventDetails() ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
-				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn())) setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
+				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().isShowOptionalColumns())
+					setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 				if (!title.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colTitle()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().isShowOptionalColumns()) 
 					setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), true);
 				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
@@ -852,16 +908,18 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 
 		if (!data.hasParent()) {
 			if (meeting != null) {
-				if (meeting.hasConflicts()) {
-					for (MeetingConflictInterface cMeeting: meeting.getConflicts())
-						add(new EventMeetingRow(null, cMeeting, data));
-				} else if (event.hasConflicts()) {
-					for (EventInterface cEvent: event.getConflicts()) {
-						if (cEvent.hasMeetings())
-							for (MeetingInterface cMeeting: cEvent.getMeetings()) {
-								if (meeting.inConflict(cMeeting))
-									add(new EventMeetingRow(cEvent, cMeeting, data));
-							}
+				if (meeting.getApprovalStatus() == ApprovalStatus.Pending ||  meeting.getApprovalStatus() == ApprovalStatus.Approved) {
+					if (meeting.hasConflicts()) {
+						for (MeetingConflictInterface cMeeting: meeting.getConflicts())
+							add(new EventMeetingRow(null, cMeeting, data));
+					} else if (event.hasConflicts()) {
+						for (EventInterface cEvent: event.getConflicts()) {
+							if (cEvent.hasMeetings())
+								for (MeetingInterface cMeeting: cEvent.getMeetings()) {
+									if (meeting.inConflict(cMeeting))
+										add(new EventMeetingRow(cEvent, cMeeting, data));
+								}
+						}
 					}
 				}
 			} else if (event != null) {

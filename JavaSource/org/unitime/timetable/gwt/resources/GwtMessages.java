@@ -74,6 +74,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Setup Times ...")
 	String opChangeOffsets();
 	
+	@DefaultMessage("Modify ...")
+	String opModifyMeetings();
+
+	
 	@DefaultMessage("<b><i>+</i></b> Add Meetings ...")
 	String opAddMeetings();
 
@@ -602,6 +606,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Add meetings failed: {0}")
 	String failedAddMeetings(String reason);
 	
+	@DefaultMessage("Failed to modify meetings: {0}")
+	String failedChangeMeetings(String reason);
+
 	@DefaultMessage("{0} cannot be created through the event interface.")
 	String failedSaveEventWrongType(String eventType);
 	
@@ -734,6 +741,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Add Meetings...")
 	String dialogAddMeetings();
 	
+	@DefaultMessage("Modify Meetings...")
+	String dialogModifyMeetings();
+
 	@DefaultMessage("Approve Meetings...")
 	String dialogApprove();
 
@@ -1009,4 +1019,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Display changes across all academic sessions.")
 	String checkAllSessions();
+	
+	@DefaultMessage("Show deleted, cancelled, and rejected meetings.")
+	String showDeletedMeetings();
 }

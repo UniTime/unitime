@@ -56,11 +56,15 @@ import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResp
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -85,6 +89,7 @@ public class EventDetail extends Composite {
 	private UniTimeTable<RelatedObjectInterface> iOwners;
 	private EnrollmentTable iEnrollments;
 	private ApproveDialog iApproveDialog;
+	private CheckBox iShowDeleted;
 	
 	private EventPropertiesProvider iProperties;
 	
@@ -188,6 +193,22 @@ public class EventDetail extends Composite {
 		iMeetings.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Cancel, iApproveDialog);
 		iMeetings.setEditable(false);
+		
+		iShowDeleted = new CheckBox("<i>" + MESSAGES.showDeletedMeetings() + "</i>", true);
+		iShowDeleted.setValue(EventCookie.getInstance().isShowDeletedMeetings());
+		iShowDeleted.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iMeetings.setMeetings(iEvent, iMeetings.getMeetings());
+				EventCookie.getInstance().setShowDeletedMeetings(event.getValue());
+				if (event.getValue())
+					iMeetings.removeStyleName("unitime-EventMeetingsHideDeleted");
+				else
+					iMeetings.addStyleName("unitime-EventMeetingsHideDeleted");
+			}
+		});
+		if (!iShowDeleted.getValue())
+			iMeetings.addStyleName("unitime-EventMeetingsHideDeleted");
 		
 		iOwners = new UniTimeTable<RelatedObjectInterface>();
 		iOwners.setStyleName("unitime-EventOwners");
@@ -339,6 +360,10 @@ public class EventDetail extends Composite {
 			});
 			iForm.addHeaderRow(header);
 			iForm.addRow(iMeetings);
+			
+			iForm.addRow(iShowDeleted);
+			iForm.getCellFormatter().setHorizontalAlignment(iForm.getRowCount() - 1, 0, HasHorizontalAlignment.ALIGN_RIGHT);
+			iShowDeleted.setValue(EventCookie.getInstance().isShowDeletedMeetings(), true);
 		}
 		
 		iNotes.clearTable(1);
