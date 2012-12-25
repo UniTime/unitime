@@ -386,9 +386,9 @@ public class EventEmail {
 					break;
 				case Approved:
 					if (skipDeleted)
-						out.println("  <td><i>" + MESSAGES.approvalApproved() + "<i></td>");
-					else
 						out.println("  <td>" + dfApproval.format(meeting.getMeetings().first().getApprovalDate()) + "</td>");
+					else
+						out.println("  <td><i>" + MESSAGES.approvalApproved() + "<i></td>");
 					break;
 				case Rejected:
 					out.println("  <td><i>" + MESSAGES.approvalRejected() + "</i></td>");

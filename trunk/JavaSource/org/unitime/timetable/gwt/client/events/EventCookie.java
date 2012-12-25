@@ -28,6 +28,7 @@ public class EventCookie {
 	private int iFlags = EventInterface.sDefaultEventFlags;
 	private String iType = null;
 	private String iHash = null;
+	private boolean iShowDeltedMeetings = true;
 	private static EventCookie sInstance = null;
 	
 	private EventCookie() {
@@ -38,6 +39,7 @@ public class EventCookie {
 				iFlags = Integer.parseInt(params[0]);
 				iType = params[1];
 				iHash = params[2];
+				iShowDeltedMeetings = "T".equals(params[3]);
 			}
 		} catch (Exception e) {
 		}
@@ -45,7 +47,8 @@ public class EventCookie {
 	
 	private void save() {
 		Cookies.setCookie("UniTime:Event",
-				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash)
+				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash) +
+				"|" + (iShowDeltedMeetings ? "T": "F")
 				);
 	}
 	
@@ -72,6 +75,15 @@ public class EventCookie {
 	
 	public void setHash(String type, String hash) {
 		iType = type; iHash = hash;
+		save();
+	}
+	
+	public boolean isShowDeletedMeetings() {
+		return iShowDeltedMeetings;
+	}
+	
+	public void setShowDeletedMeetings(boolean show) {
+		iShowDeltedMeetings = show;
 		save();
 	}
 }
