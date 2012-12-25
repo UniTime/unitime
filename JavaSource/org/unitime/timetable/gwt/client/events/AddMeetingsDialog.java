@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -277,11 +278,35 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void reset(String roomFilterValue) {
+		reset(roomFilterValue, null);
+	}
+
+	public void reset(String roomFilterValue, List<MeetingInterface> meetings) {
 		iMatchingRooms = null;
 		iDates.setValue(new ArrayList<Date>());
-		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6));
+		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6), true);
 		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue, true);
 		iSelected.clear();
+		if (meetings != null && !meetings.isEmpty()) {
+			MeetingInterface first = meetings.get(0);
+			iTimes.setValue(new StartEndTimeSelector.StartEndTime(first.getStartSlot(), first.getEndSlot()), true);
+			TreeSet<Date> dates = new TreeSet<Date>();
+			Set<String> rooms = new TreeSet<String>();
+			for (MeetingInterface m: meetings) {
+				dates.add(m.getMeetingDate());
+				if (m.getLocation() != null) {
+					iSelected.add(m.getDayOfYear() + ":" + m.getLocation().getId());
+					rooms.add(m.getLocationName());
+				}
+			}
+			iDates.setValue(new ArrayList<Date>(dates));
+			String roomFilter = "";
+			for (String room: rooms) {
+				if (!roomFilter.isEmpty()) roomFilter += " or ";
+				roomFilter += room;
+			}
+			iRooms.setValue((roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue) + (roomFilter.isEmpty() ? "" : " " + roomFilter), true);
+		}
 	}
 
 	private Integer iHoverDate = null;

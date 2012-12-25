@@ -2751,3 +2751,18 @@ unitime-RoomSharingWidget .legend .blank {
 	opacity: 1;
     -moz-opacity:1;
 }
+
+.unitime-EventMeetingsHideDeleted {
+}
+
+.unitime-EventMeetingsHideDeleted .cancelled-row {
+	display: none;
+}
+
+.unitime-EventMeetingsHideDeleted .deleted-row {
+	display: none;
+}
+
+.unitime-EventMeetingsHideDeleted .rejected-row {
+	display: none;
+}

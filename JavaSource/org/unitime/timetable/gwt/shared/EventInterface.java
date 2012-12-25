@@ -638,7 +638,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (cmp != 0) return cmp;
 			cmp = getLocationName().compareTo(meeting.getLocationName());
 			if (cmp != 0) return cmp;
-			return (getId() == null ? new Long(-1) : getId()).compareTo(meeting.getId() == null ? new Long(-1) : meeting.getId());
+			return (getId() == null ? meeting.getId() == null ? 0 : -1 : meeting.getId() == null ? 1 : getId().compareTo(meeting.getId()));
 		}
 		
 		public int hashCode() {
@@ -648,10 +648,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof MeetingInterface)) return false;
 			MeetingInterface m = (MeetingInterface)o;
-			if (getId() != null)
+			if (getId() != null && m.getId() != null) 
 				return getId().equals(m.getId());
-			return getDayOfYear() == m.getDayOfYear() && EventInterface.equals(getMeetingDate(), m.getMeetingDate()) &&
-				EventInterface.equals(getLocation(), m.getLocation()) && getStartSlot() == m.getStartSlot() && getEndSlot() == m.getEndSlot();
+			return getDayOfYear() == m.getDayOfYear() && EventInterface.equals(getLocation(), m.getLocation()) && getStartSlot() == m.getStartSlot() && getEndSlot() == m.getEndSlot();
 		}
 		
 		@SuppressWarnings("deprecation")

@@ -110,8 +110,8 @@ public class StartEndTimeSelector extends Composite implements HasValue<StartEnd
 
 	@Override
 	public void setValue(StartEndTime value, boolean fireEvents) {
-		iStart.setValue(value == null ? null : value.getStart());
-		iEnd.setValue(value == null ? null : value.getEnd());
+		iStart.setValue(value == null ? null : value.getStart(), fireEvents);
+		iEnd.setValue(value == null ? null : value.getEnd(), fireEvents);
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
 	}
