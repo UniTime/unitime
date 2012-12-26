@@ -128,7 +128,7 @@ public class RoomSharingWidget extends Composite {
 	}
 	
 	public boolean isEditable(int day, int slot) {
-		return isEditable() && iModel.isEditable(day, slot);
+		return isEditable() && iModel.isEditable(day, slot, iMode.getStep());
 	}
 	
 	public RoomSharingModel getModel() {
@@ -153,6 +153,9 @@ public class RoomSharingWidget extends Composite {
 					}
 				iHorizontal.setValue(cookie.endsWith("|1"));
 			} catch (Exception e) {}
+		} else {
+			iHorizontal.setValue(model.isDefaultHorizontal());
+			iModeSelection.setSelectedIndex(iModel.getDefaultMode());
 		}
 		
 		iOption = iModel.getDefaultOption();
@@ -215,7 +218,7 @@ public class RoomSharingWidget extends Composite {
 		
 		public void setOption(RoomSharingOption option) {
 			if (!isEditable(iDay, iSlot)) return;
-			iModel.setOption(iDay, iSlot, option);
+			iModel.setOption(iDay, iSlot, iMode.getStep(), option);
 			if (option == null) {
 				getElement().getStyle().clearBackgroundColor();
 				setHTML("");

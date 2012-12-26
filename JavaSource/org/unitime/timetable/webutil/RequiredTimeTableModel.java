@@ -39,9 +39,6 @@ public interface RequiredTimeTableModel {
 	/** Day header, e.g., MWF */
 	public String getDayHeader(int day);
 	
-	/** Unique file name representing the model and its content */
-	public String getFileName();
-	
 	/** Set preference */ 
 	public void setPreference(int day, int time, String pref);
 	/** Get preference */

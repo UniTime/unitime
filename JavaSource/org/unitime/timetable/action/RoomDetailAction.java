@@ -249,7 +249,6 @@ public class RoomDetailAction extends Action {
 		roomDetailForm.setArea(location.getArea() == null ? null : new DecimalFormat(ApplicationProperties.getProperty("unitime.room.area.units.format", "#,##0.00")).format(location.getArea()));
 		roomDetailForm.setIgnoreTooFar(location.isIgnoreTooFar()==null?false:location.isIgnoreTooFar().booleanValue());
 		roomDetailForm.setIgnoreRoomCheck(location.isIgnoreRoomCheck().booleanValue());
-		roomDetailForm.setPatterns(location.getPattern());
 		roomDetailForm.setGlobalFeatures(new TreeSet(location.getGlobalRoomFeatures()));
 		roomDetailForm.setDepartmentFeatures(new TreeSet(location.getDepartmentRoomFeatures()));
 		for (Iterator i=roomDetailForm.getDepartmentFeatures().iterator();i.hasNext();) {

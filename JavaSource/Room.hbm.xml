@@ -115,7 +115,7 @@
             column="pattern"
             type="java.lang.String"
             not-null="false"
-            length="350"/>
+            length="2016"/>
 
         <set name="examTypes" table="room_exam_type">
             <cache include="non-lazy" usage="read-write"/>

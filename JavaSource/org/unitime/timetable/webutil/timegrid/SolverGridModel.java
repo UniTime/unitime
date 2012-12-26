@@ -45,6 +45,7 @@ import net.sf.cpsolver.coursett.criteria.TooBigRooms;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
+import net.sf.cpsolver.coursett.model.RoomSharingModel;
 import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
@@ -91,20 +92,25 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			}
 		}
 		HashSet done = new HashSet();
+		RoomSharingModel sharing = room.getSharingModel();
 		for (int i=0;i<Constants.DAY_CODES.length;i++)
 			for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
+				if (sharing != null) {
+					if (sharing.isNotAvailable(i, j)) {
+						setAvailable(i,j,false);
+					} else {
+						Long dept = sharing.getDepartmentId(i*Constants.SLOTS_PER_DAY+j);
+	                    if (dept!=null && !deptIds.contains(dept)) {
+	                        setAvailable(i,j,false);
+	                    }
+					}
+				}
                 List<Placement> placements = (room.getAvailableArray()==null?null:room.getAvailableArray()[i*Constants.SLOTS_PER_DAY+j]);
                 if (placements!=null && !placements.isEmpty()) {
                     for (Placement p: placements) {
                     	if ((showEvents || p.getAssignmentId() != null) && done.add(p))
                             init(solver, p, sBgModeNotAvailable, firstDay);
                     }
-                } else if (!room.isAvailable(i*Constants.SLOTS_PER_DAY+j)) {
-                    setAvailable(i,j,room.isAvailable(i*Constants.SLOTS_PER_DAY+j));
-                } else {
-                    Long dept = (room.getSharingModel()==null?null:room.getSharingModel().getDepartmentId(i*Constants.SLOTS_PER_DAY+j));
-                    if (dept!=null && !deptIds.contains(dept))
-                        setAvailable(i,j,false);
                 }
 			}
 	}
