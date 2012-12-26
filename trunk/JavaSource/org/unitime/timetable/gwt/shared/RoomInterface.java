@@ -113,11 +113,13 @@ public class RoomInterface implements IsSerializable {
 		private Long iId;
 		private String iName;
 		private Long iDefaultOption;
+		private boolean iDefaultHorizontal;
 		private List<RoomSharingDisplayMode> iModes;
 		private List<RoomSharingOption> iOptions;
 		private List<RoomSharingOption> iOtherOptions;
 		private Map<Integer, Map<Integer, Long>> iModel;
 		private Map<Integer, Map<Integer, Boolean>> iEditable;
+		private int iDefaultMode = 0;
 		private boolean iDefaultEditable = true;
 		
 		public RoomSharingModel() {}
@@ -205,8 +207,9 @@ public class RoomInterface implements IsSerializable {
 				slot2id.put(slot, optionId);
 		}
 
-		public void setOption(int day, int slot, RoomSharingOption option) {
-			setOption(day, slot, option == null ? null : option.getId());
+		public void setOption(int day, int slot, int step, RoomSharingOption option) {
+			for (int i = 0; i < step; i++)
+				setOption(day, slot + i, option == null ? null : option.getId());
 		}
 		
 		public boolean isEditable(int day, int slot) {
@@ -215,6 +218,12 @@ public class RoomInterface implements IsSerializable {
 			if (slot2ed == null) return iDefaultEditable;
 			Boolean ed = slot2ed.get(slot);
 			return (ed == null ? iDefaultEditable : ed);
+		}
+		
+		public boolean isEditable(int day, int slot, int step) {
+			for (int i = 0; i < step; i++)
+				if (!isEditable(day, slot + i)) return false;
+			return true;
 		}
 
 		public void setEditable(int day, int slot, boolean editable) {
@@ -229,6 +238,11 @@ public class RoomInterface implements IsSerializable {
 		
 		public void setDefaultEditable(boolean editable) { iDefaultEditable = editable; }
 		
+		public boolean isDefaultHorizontal() { return iDefaultHorizontal; }
+		public void setDefaultHorizontal(boolean horizontal) { iDefaultHorizontal = horizontal; }
+		
+		public int getDefaultMode() { return iDefaultMode; }
+		public void setDefaultMode(int mode) { iDefaultMode = mode; }
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.RoomSharingBackend")

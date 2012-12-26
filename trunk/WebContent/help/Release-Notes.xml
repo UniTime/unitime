@@ -445,6 +445,33 @@
 			</description>
 		</item>		
 		<item>
+			<name>Room Sharing</name>
+			<description>
+				<line>Room Sharing Grid
+					<line>Room sharing grid no longer needs to be defined in half-hour increments starting on every hour or half-hour.</line>
+					<line>Default settings can be changed using unitime.room.sharingMode.X application properties (where X is a number starting from 1), or by overriding GWTConstant called roomSharingModes.</line>
+					<line>Format: name|first slot|last slot|first day|last day|increment</line>
+					<line>Defaults:
+						<line>unitime.room.sharingMode1=Workdays × Daytime|0|4|90|222|6
+							<line>Monday - Friday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments</line>
+						</line>
+						<line>unitime.room.sharingMode2=All Week × Daytime|0|6|90|222|6
+							<line>Monday - Sunday, starting at 7:30 am, ending at 6:30 pm, in half-hour increments</line>
+						</line>
+						<line>unitime.room.sharingMode3=Workdays × Evening|0|4|222|288|6
+							<line>Monday - Friday, starting at 6:30 pm, ending at midnight, in half-hour increments</line>
+						</line>
+						<line>unitime.room.sharingMode4=All Week × Evening|0|5|222|288|6
+							<line>Monday - Sunday, starting at 6:30 pm, ending at midnight, in half-hour increments</line>
+						</line>
+						<line>unitime.room.sharingMode5=All Week × All Times|0|6|0|288|6
+							<line>Monday - Sunday, starting at midnight, ending at midnight, in half-hour increments</line>
+						</line>
+					</line>
+				</line>
+			</description>
+		</item>		
+		<item>
 			<name>Export to PDF/CSV/XML</name>
 			<description>
 				<line>Instead of generating a temporary file, the PDF/CSV/XML content is exported within the HTTP servlet response.</line>

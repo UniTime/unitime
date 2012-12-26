@@ -992,4 +992,17 @@ public abstract class Location extends BaseLocation implements Comparable {
     public String getLabelWithCapacity() {
     	return (getCapacity() == null ? getLabel() : MSG.labelLocationLabelWithCapacity(getLabel(), getCapacity()));
     }
+    
+    @Override
+    public String getPattern() {
+    	String pattern = super.getPattern();
+    	if (pattern != null && pattern.length() == 336) {
+    		// Old format (1 character per half-hour) -> convert to 1 character per slot
+    		StringBuffer p = new StringBuffer();
+    		for (int i = 0; i < 2016; i++)
+    			p.append(pattern.charAt(i / 6));
+    		return p.toString();
+    	}
+    	return pattern;
+    }
 }

@@ -117,18 +117,12 @@ public class SolutionGridModel extends TimetableGridModel {
 		RoomSharingModel sharing = room.getRoomSharingModel();
 		if (sharing!=null) {
 			for (int i=0;i<Constants.DAY_CODES.length;i++)
-				for (int j=0;j<Constants.SLOTS_PER_DAY/6;j++) {
+				for (int j=0;j<Constants.SLOTS_PER_DAY;j++) {
 					if (sharing.isFreeForAll(i,j)) continue;
-					if (sharing.isNotAvailable(i,j)) {
-						for (int x=0;x<6;x++)
-							setAvailable(i,6*j+x,false);
-						continue;
-					}
+					if (sharing.isNotAvailable(i,j)) { setAvailable(i,j,false); continue; }
 					Long dept = sharing.getDepartmentId(i,j);
-					if (dept!=null && !deptIds.contains(dept)) { 
-						for (int x=0;x<6;x++)
-							setAvailable(i,6*j+x,false);
-					}
+					if (dept!=null && !deptIds.contains(dept))
+						setAvailable(i,j,false);
 				}
 		}
 		if (showEvents && RoomAvailability.getInstance() != null) {

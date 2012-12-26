@@ -51,7 +51,6 @@ public class RoomDetailForm extends ActionForm {
 	private Double coordinateY;
 	private Long type;
     private String typeName;
-	private String patterns;
 	private Collection groups;
 	private Collection globalFeatures;	
 	private Collection departmentFeatures;	
@@ -168,14 +167,6 @@ public class RoomDetailForm extends ActionForm {
     public void setExternalId(String externalId) {
         this.externalId = externalId;
     }
-
-    public String getPatterns() {
-		return patterns;
-	}
-
-	public void setPatterns(String patterns) {
-		this.patterns = patterns;
-	}
 
 	public Long getType() {
 		return type;

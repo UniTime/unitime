@@ -380,6 +380,7 @@ public class RequiredTimeTable {
     	if (getModel().isExactTime()) return null;
     	int[] limit = getModel().getSelectionLimits(getModel().getDefaultSelection());
     	int minTime=limit[0], maxTime=limit[1], minDay=limit[2], maxDay=limit[3];
+    	int timeStep = (limit.length >= 5 ? limit[4] : 1);
         int lineWidth = 1;
         int cellWidth = 5;
         int cellsAcross;
@@ -389,9 +390,9 @@ public class RequiredTimeTable {
 
         if (timeVertical) {
             cellsAcross = maxDay-minDay+1;
-            cellsDown = maxTime-minTime+1;
+            cellsDown = 1+(maxTime-minTime)/timeStep;
         } else {
-            cellsAcross = maxTime-minTime+1;
+            cellsAcross = 1+(maxTime-minTime)/timeStep;
             cellsDown = maxDay-minDay+1;
         }
 
@@ -416,11 +417,11 @@ public class RequiredTimeTable {
             else
                 cellY = day-minDay;
 
-            for (int time = minTime; time <= maxTime; time++) {
+            for (int time = minTime; time <= maxTime; time += timeStep) {
                 if (timeVertical)
-                    cellY = time-minTime;
+                    cellY = (time-minTime) / timeStep;
                 else
-                    cellX = time-minTime;
+                    cellX = (time-minTime) / timeStep;
 
                 String pref = iModel.getPreference(day, time);
                 if (pref==null) pref = PreferenceLevel.sNeutral;
