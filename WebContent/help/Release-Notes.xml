@@ -170,6 +170,60 @@
 			</description>
 		</item>
 		<item>
+			<name>Event Status</name>
+			<description>
+				<line>An event management can be enabled or disabled per department and room type, using the Event Room Types page.</line>
+				<line>Only departments that have event management enabled (Departments page) and room types that have at least one event room (Event Department under Edit Room page) are visible (can be enabled for event management).</line>
+				<line>One of the following status can be set:
+					<line>No Event Management
+						<line>Event management is disabled.</line>
+					</line>
+					<line>Authenticated Users Can Request Events Managers Can Approve
+						<line>Any authenticated user (with the appropriate right) can request an event, event managers are allowed to approve an event.</line>
+					</line>
+					<line>Departmental Users Can Request Events Managers Can Approve
+						<line>Any instructor or timetable manager (with the appropriate right) can request an event in a room of her/his department(s), event managers are allowed to approve an event.</line>
+					</line>
+					<line>Event Managers Can Request Events Managers Can Approve
+						<line>Only event managers are allowed to request and to approve an event.</line>
+					</line>
+					<line>Authenticated Users Can Request Events No Approval
+						<line>Any authenticated user (with the appropriate right) can request an event, event managers are not allowed to approve an event.</line>
+					</line>
+					<line>Departmental Users Can Request Events No Approval
+						<line>Any instructor or timetable manager (with the appropriate right) can request an event in a room of her/his department(s), event managers are not allowed to approve an event.</line>
+					</line>
+					<line>Event Managers Can Request Events No Approval
+						<line>Only event managers are allowed to request an event, event managers are not allowed to approve an event.</line>
+					</line>
+				</line>
+				<line>Together with an event status, a message (that is to be displayed next to the requested room of the appropriate department and room type) and a default break time can be defined.
+					<line>A message is displayed as an error (room not available), if the user is not allowed to request a meeting in the room.</line>
+					<line>A message is displayed as a warning, if the user is allowed to request a meeting in the room.</line>
+					<line>Default break time is used as an offset between published and allocated time of an event (e.g., 10 means that the published end time of an event is 10 minutes earlier than the allocated time).</line>
+				</line>
+				<line>Event status, message and break time can be overridden on an individual room (Edit Room page).</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor (Event) Roles</name>
+			<description>
+				<line>A (departmental) instructor can have an additional role assigned in UniTime, using Instructor Roles page.
+					<line>Only roles that are made available to instructors (Instructor toggle on the Roles page) can be used.</line>
+					<line>The page is only available when there is at least one role available to instructors.</line>
+				</line>
+				<line>Intended use case: event manager can assign people of his/her department with some lesser event roles (e.g., to be able to request course-related events, approve events, ...)
+					<line>An instructor with an event role will be able to request an event while the event status is one of the following:
+						<line>Authenticated Users Can Request</line>
+						<line>Departmental Users Can Request</line>
+						<line>Event Managers Can Request</line>
+					</line>
+					<line>An instructor with an event role that allows him / her to approve will be able to approve (or reject) an event while the event status allows for event managers to approve events.</line>
+					<line>In both cases, department of the instructor is considered (and compared with event department of the room in question).</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Deprecated Pages</name>
 			<description>
 				<line>Meetings and Room Availability pages are no longer needed -- all the functionality is available on the new Events page.</line>
@@ -376,6 +430,24 @@
 					<line>Default units are square feet, but they can be changed through the localization.</line>
 					<line>External rooms and the appropriate XML import can include room area as well.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Room Note</name>
+			<description>
+				<line>Rooms and Non-University Locations have a new note.
+					<line>A note can be edited on the Edit Room Page.</line>
+					<line>It is visible on the Room Detail page (if present), in the room tooltip, and in the events (where it overrides the note that is set on the room type &amp; department combination, Event Room Types page).</line>
+					<line>A history of the room note is available on the Room Detail page (section Room Note History at the bottom of the page).
+						<line>There is also a toggle allowing to display note changes across all academic sessions (rooms are matched using their permanent ids).</line>
+					</line>
+				</line>
+			</description>
+		</item>		
+		<item>
+			<name>Export to PDF/CSV/XML</name>
+			<description>
+				<line>Instead of generating a temporary file, the PDF/CSV/XML content is exported within the HTTP servlet response.</line>
 			</description>
 		</item>
 		<item>
