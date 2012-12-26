@@ -31,6 +31,9 @@ import java.util.TreeSet;
 import org.hibernate.Transaction;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.defaults.CommonValues;
+import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -48,6 +51,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.webutil.RequiredTimeTable;
 
 @Service("org.unitime.timetable.gwt.shared.RoomInterface$RoomSharingRequest")
 public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingRequest, RoomSharingModel> {
@@ -73,13 +77,24 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		RoomSharingModel model = new RoomSharingModel();
 		model.setId(location.getUniqueId());
 		model.setName(location.getLabel());
-		for (String mode: CONSTANTS.roomSharingModes())
+		for (int i = 0; true; i++) {
+			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			if (mode == null || mode.isEmpty()) break;
 			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
-		
+		}
 		boolean editable = context.hasPermission(location, Right.RoomEditAvailability);
 		model.setDefaultEditable(editable);
 		model.addOption(new RoomSharingOption(-1l, "#FFFFFF", MESSAGES.codeFreeForAll(), MESSAGES.legendFreeForAll(), editable));
 		model.addOption(new RoomSharingOption(-2l, "#696969", MESSAGES.codeNotAvailable(), MESSAGES.legendNotAvailable(), editable));
+		
+		String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
+		if (defaultGridSize != null)
+			for (int i = 0; i < model.getModes().size(); i++) {
+				if (model.getModes().get(i).getName().equals(defaultGridSize)) {
+					model.setDefaultMode(i); break;
+				}
+			}
+		model.setDefaultHorizontal(CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
 		model.setDefaultOption(model.getOptions().get(0));
 		
 		Set<Department> current = new TreeSet<Department>();
@@ -106,13 +121,13 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
         try {
             int idx = 0;
             for (int d = 0; d < Constants.NR_DAYS; d++)
-                for (int t = 0; t < Constants.SLOTS_PER_DAY / 6; t++) {
+                for (int t = 0; t < Constants.SLOTS_PER_DAY; t++) {
                     pref = (location.getPattern() != null && idx < location.getPattern().length() ? location.getPattern().charAt(idx) : net.sf.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar);
                     idx++;
                     if (pref == net.sf.cpsolver.coursett.model.RoomSharingModel.sNotAvailablePrefChar) {
-                    	model.setOption(d, 6 * t, -2l);
+                    	model.setOption(d, t, -2l);
                     } else if (pref == net.sf.cpsolver.coursett.model.RoomSharingModel.sFreeForAllPrefChar) {
-                    	model.setOption(d, 6 * t, -1l);
+                    	model.setOption(d, t, -1l);
                     } else {
                     	Long deptId = (char2dept == null ? null : char2dept.get(pref));
                     	if (deptId == null) {
@@ -120,7 +135,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
                     			deptId = new ArrayList<Department>(current).get(pref - '0').getUniqueId();
                     		} catch (IndexOutOfBoundsException e) {}
                     	}
-                    	model.setOption(d, 6 * t, deptId);
+                    	model.setOption(d, t, deptId);
                     }
                 }
         } catch (NullPointerException e) {
@@ -138,7 +153,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			model.setDefaultEditable(control || allDept);
 			if (!control && !allDept) {
 				for (int d = 0; d < 7; d++)
-					for (int s = 0; s < 288; s += 6) {
+					for (int s = 0; s < 288; s ++) {
 						RoomSharingOption option = model.getOption(d, s);
 						model.setEditable(d, s, option != null && context.getUser().getCurrentAuthority().hasQualifier(new SimpleQualifier("Department", option.getId())));
 					}
@@ -166,7 +181,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		
 		String pattern = "";
 		for (int d = 0; d < 7; d++)
-			for (int s = 0; s < 288; s += 6) {
+			for (int s = 0; s < 288; s ++) {
 				RoomSharingOption option = request.getModel().getOption(d, s);
 				pattern += dept2char.get(option.getId());
 			}

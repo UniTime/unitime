@@ -20,22 +20,28 @@
 package org.unitime.timetable.model;
 
 import java.awt.Color;
-import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
 
 public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharingModel implements RequiredTimeTableModel {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private boolean[][] iEditable = null;
 	private int iDefaultSelection = 0;
 	
@@ -66,12 +72,21 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 	public static String sNotAvailableNameAbbv = "N/A";
 	public static String sFreeForAllNameAbbv = "Free";
 	
+	private List<RoomInterface.RoomSharingDisplayMode> iModes = new ArrayList<RoomInterface.RoomSharingDisplayMode>();
+	
 	public RoomSharingModel(Location location, Set editingDepartmentIds) {
 		this(location, editingDepartmentIds, null);
 	}
 	
 	
 	public RoomSharingModel(Location location, Set editingDepartmentIds, Collection departments) {
+		super(1);
+		for (int i = 0; true; i++) {
+			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			if (mode == null || mode.isEmpty()) break;
+			iModes.add(new RoomInterface.RoomSharingDisplayMode(mode));
+		}
+		
 		Collection givenDepartments = departments;
 		iPreference = new Long[getNrDays()][getNrTimes()];
 		iEditable = new boolean[getNrDays()][getNrTimes()];
@@ -184,72 +199,15 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 	public String getName() { return null; }
 	
 	public String getStartTime(int time) {
-	    return Constants.toTime(6*time*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
+	    return Constants.toTime(time*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
 	}
 	
 	public String getEndTime(int time) {
-        return Constants.toTime(6*(time+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
+        return Constants.toTime((time+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN);
 	}
 	
 	public String getDayHeader(int day) {
 		return Constants.DAY_NAME[day];
-	}
-	
-	private static String xChars="0123456789abcdefghijklmnopqrstuvwxyz -";
-    public String getPreferencesHex() {
-    	int[] limit = getSelectionLimits(getDefaultSelection());
-    	BigInteger idn = new BigInteger("0");
-    	BigInteger mxColor = new BigInteger(String.valueOf(0x1000000));
-    	for (int i=0;i<iDepartmentColors.length;i++) {
-    		Color c = iDepartmentColors[i];
-    		idn = idn.multiply(mxColor).add(new BigInteger(String.valueOf(c.getRGB()&0xFFFFFF)));
-    	}
-    	BigInteger mxLen = new BigInteger("16");
-    	BigInteger mxPref = new BigInteger(String.valueOf(2+getPreferenceNames().length));
-    	int nr = 0;
-    	Long px = null;
-        for (int d=limit[2];d<=limit[3];d++)
-            for (int t=limit[0];t<=limit[1];t++) {
-            	Long preference = iPreference[d][t];
-            	if (px==null) {
-            		px = preference; nr = 1;
-            	} else if (px.equals(preference) && nr<16) {
-            		nr++;
-            	} else {
-            		int x=0;
-                	if (px.equals(sNotAvailablePref))
-                		x = getNrDepartments();
-                	else if (px.equals(sFreeForAllPref))
-                		x = getNrDepartments()+1;
-                	else
-                		x = getIndex(px);
-                	idn = idn.multiply(mxLen).add(new BigInteger(String.valueOf(nr-1))).multiply(mxPref).add(new BigInteger(String.valueOf(x)));
-            		px=preference; nr=1;
-            	}
-            }
-        if (px!=null) {
-    		int x=0;
-        	if (px.equals(sNotAvailablePref))
-        		x = getNrDepartments();
-        	else if (px.equals(sFreeForAllPref))
-        		x = getNrDepartments()+1;
-        	else
-        		x = getIndex(px);
-        	idn = idn.multiply(mxLen).add(new BigInteger(String.valueOf(nr-1))).multiply(mxPref).add(new BigInteger(String.valueOf(x)));
-        }
-        StringBuffer s = new StringBuffer("R"+iDepartmentColors.length+"_"+(limit[1]-limit[0])+"x"+(limit[3]-limit[2])+"_");
-        BigInteger radix = new BigInteger(String.valueOf(xChars.length()));
-        while (idn.bitLength()>0) {
-        	int x = idn.mod(radix).intValue();
-        	idn = idn.divide(radix);
-        	s.append(xChars.charAt(x));
-        }
-        return s.toString();
-    }
-	
-	
-	public String getFileName() {
-		return getPreferencesHex();
 	}
 	
 	public void setPreference(int day, int time, String pref) {
@@ -339,27 +297,14 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 	}
 
 	public int getNrSelections() {
-		return 5;
+		return iModes.size();
 	}
 	public String getSelectionName(int idx) {
-		switch (idx) {
-			case 0: return "Workdays &times; Daytime";
-			case 1: return "All Week &times; Daytime";
-			case 2: return "Workdays &times; Evening";
-			case 3: return "All Week &times; Evening";
-			case 4: return "All Week &times; All Times";
-		}
-		return null;
+		return iModes.get(idx).getName();
 	}
 	public int[] getSelectionLimits(int idx) {
-		switch (idx) {
-			case 0: return new int[] {15,36,0,4};
-			case 1: return new int[] {15,36,0,6};
-			case 2: return new int[] {37,47,0,4};
-			case 3: return new int[] {37,47,0,6};
-			case 4: return new int[] {0,47,0,6};
-		}
-		return new int[] {0,getNrTimes()-1,0,getNrDays()-1};
+		RoomInterface.RoomSharingDisplayMode mode = iModes.get(idx);
+		return new int[] {mode.getFirstSlot(), mode.getLastSlot() - 1, mode.getFirstDay(), mode.getLastDay(), mode.getStep()};
 	}
 	public void setDefaultSelection(int selection) {
 		iDefaultSelection = selection;
@@ -448,9 +393,9 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
          		   //all day
          	   } else {
          		  sb.append(" ");
-         		  sb.append(Constants.toTime(6*j*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
+         		  sb.append(Constants.toTime(j*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
          		  sb.append(" - ");
-                  sb.append(Constants.toTime(6*(endTime+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
+                  sb.append(Constants.toTime((endTime+1)*Constants.SLOT_LENGTH_MIN+Constants.FIRST_SLOT_TIME_MIN));
          	   }
             }
 		return sb.toString();

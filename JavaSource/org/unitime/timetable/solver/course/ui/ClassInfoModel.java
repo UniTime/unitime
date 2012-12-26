@@ -1022,8 +1022,8 @@ public class ClassInfoModel implements Serializable {
                 if (sharingModel!=null) {
                 	sharing: for (int d = 0; d<Constants.NR_DAYS; d++) {
                 		if ((Constants.DAY_CODES[d] & period.getDayCode())==0) continue;
-                		int startTime = period.getStartSlot() / 6;
-                		int endTime = (period.getStartSlot()+period.getLength()-1) / 6;
+                		int startTime = period.getStartSlot();
+                		int endTime = (period.getStartSlot()+period.getLength()-1);
                 		for (int t = startTime; t<=endTime; t++) {
                 			Long px = Long.valueOf(sharingModel.getPreference(d,t));
                 			if (px.equals(RoomSharingModel.sNotAvailablePref)) {
