@@ -481,7 +481,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				for (EventInterface event: iData) {
 					if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 					for (MeetingInterface meeting: event.getMeetings()) {
-						if (filter(event, meeting)) continue;
+						if (filterEvent(event, meeting)) continue;
 						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 						if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 						if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
@@ -520,7 +520,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 					for (MeetingInterface meeting: event.getMeetings()) {
 						if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
-						if (meeting.getMeetingDate() != null && !filter(event, meeting))
+						if (meeting.getMeetingDate() != null && !filterEvent(event, meeting))
 							meetings.add(meeting);
 					}
 					if (!meetings.isEmpty())
@@ -888,7 +888,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			for (EventInterface event: iData) {
 				if (event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) continue;
 				for (MeetingInterface meeting: event.getMeetings()) {
-					if (filter(event, meeting)) continue;
+					if (filterEvent(event, meeting)) continue;
 					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
 					if (firstSlot > meeting.getStartSlot()) firstSlot = meeting.getStartSlot();
 					if (lastSlot < meeting.getEndSlot()) lastSlot = meeting.getEndSlot();
@@ -927,13 +927,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
 					if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
-					if (meeting.getMeetingDate() != null && !filter(event, meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
+					if (meeting.getMeetingDate() != null && !filterEvent(event, meeting) && first <= meeting.getDayOfYear() && meeting.getDayOfYear() <= last)
 						meetings.add(meeting);
 				}
 				if (!meetings.isEmpty())
 					iTimeGrid.addEvent(event, meetings);
 			}
-			iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)),
+			iTimeGrid.shrink(iEvents.hasChip(new FilterBox.Chip("day", null)), iEvents.hasChip(new Chip("type", "Not Available")),
 					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[0])),
 					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[1])),
 					iEvents.hasChip(new FilterBox.Chip("day", CONSTANTS.longDays()[2])),
@@ -1263,6 +1263,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	
 	@Override
 	public boolean filter(EventInterface event, MeetingInterface meeting) {
+		// if (event != null && event.getId() == null) return true;
+		if (event != null && event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) return true;
+		return filterEvent(event, meeting);
+	}
+	
+	public boolean filterEvent(EventInterface event, MeetingInterface meeting) {
 		if (event != null && event.getType() == EventType.Unavailabile && !iEvents.hasChip(new Chip("type", "Not Available"))) {
 			if (getResourceType() != ResourceType.ROOM || gridMode() != TimeGrid.Mode.OVERLAP) return true;
 		}
@@ -1282,7 +1288,6 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		}
 		
 		return false;
-
 	}
 	
 	private TimeGrid.Mode gridMode() {

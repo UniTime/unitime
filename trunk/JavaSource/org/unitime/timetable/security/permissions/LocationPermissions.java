@@ -439,6 +439,22 @@ public class LocationPermissions {
 		public Class<Location> type() { return Location.class; }
 	}
 	
+	@PermissionForRight(Right.RoomDetailEventAvailability)
+	public static class RoomDetailEventAvailability implements Permission<Location> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Location source) {
+			return source.getEventDepartment() != null && permissionDepartment.check(user, source.getEventDepartment());
+		}
+
+		@Override
+		public Class<Location> type() { return Location.class; }
+	}
+
+	@PermissionForRight(Right.RoomEditEventAvailability)
+	public static class RoomEditEventAvailability extends RoomDetailEventAvailability{}
+	
 	@PermissionForRight(Right.RoomEditPreference)
 	public static class RoomEditPreference extends RoomEditAvailability{}
 

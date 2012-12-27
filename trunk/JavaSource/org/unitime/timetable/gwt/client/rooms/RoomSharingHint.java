@@ -53,13 +53,18 @@ public class RoomSharingHint extends PopupPanel {
 	public Long getLoncationId() { return iLocationId; }
 	
 	/** Never use from GWT code */
-	public static void _showHint(JavaScriptObject source, String locationId) {
-		showHint((Element) source.cast(), Long.valueOf(locationId));
+	public static void _showRoomSharingHint(JavaScriptObject source, String locationId) {
+		showHint((Element) source.cast(), Long.valueOf(locationId), false);
 	}
 	
-	public static void showHint(final Element relativeObject, final long locationId) {
+	/** Never use from GWT code */
+	public static void _showEventAvailabilityHint(JavaScriptObject source, String locationId) {
+		showHint((Element) source.cast(), Long.valueOf(locationId), true);
+	}
+
+	public static void showHint(final Element relativeObject, final long locationId, boolean eventAvailability) {
 		getInstance().setLocationId(locationId);
-		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId), new AsyncCallback<RoomInterface.RoomSharingModel>() {
+		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId, eventAvailability), new AsyncCallback<RoomInterface.RoomSharingModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
 			}
@@ -131,9 +136,15 @@ public class RoomSharingHint extends PopupPanel {
 	
 	public static native void createTriggers()/*-{
 	$wnd.showGwtRoomAvailabilityHint = function(source, content) {
-		@org.unitime.timetable.gwt.client.rooms.RoomSharingHint::_showHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
+		@org.unitime.timetable.gwt.client.rooms.RoomSharingHint::_showRoomSharingHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
+	};
+	$wnd.showGwtRoomEventAvailabilityHint = function(source, content) {
+		@org.unitime.timetable.gwt.client.rooms.RoomSharingHint::_showEventAvailabilityHint(Lcom/google/gwt/core/client/JavaScriptObject;Ljava/lang/String;)(source, content);
 	};
 	$wnd.hideGwtRoomAvailabilityHint = function() {
+		@org.unitime.timetable.gwt.client.rooms.RoomSharingHint::hideHint()();
+	};
+	$wnd.hideGwtRoomEventAvailabilityHint = function() {
 		@org.unitime.timetable.gwt.client.rooms.RoomSharingHint::hideHint()();
 	};
 }-*/;

@@ -254,6 +254,7 @@ public class RoomInterface implements IsSerializable {
 		private Operation iOperation;
 		private Long iLocationId;
 		private RoomSharingModel iModel;
+		private boolean iEventAvailability = false;
 		
 		public RoomSharingRequest() {}
 		
@@ -268,18 +269,23 @@ public class RoomInterface implements IsSerializable {
 		
 		public String toString() { return getOperation().name() + "[" + getLocationId() + "]"; }
 		
-		public static RoomSharingRequest load(Long locationId) {
+		public boolean isEventAvailability() { return iEventAvailability; }
+		public void setEventAvailability(boolean availability) { iEventAvailability = availability; }
+		
+		public static RoomSharingRequest load(Long locationId, boolean eventAvailability) {
 			RoomSharingRequest request = new RoomSharingRequest();
 			request.setOperation(Operation.LOAD);
 			request.setLocationId(locationId);
+			request.setEventAvailability(eventAvailability);
 			return request;
 		}
 		
-		public static RoomSharingRequest save(Long locationId, RoomSharingModel model) {
+		public static RoomSharingRequest save(Long locationId, RoomSharingModel model, boolean eventAvailability) {
 			RoomSharingRequest request = new RoomSharingRequest();
 			request.setOperation(Operation.SAVE);
 			request.setLocationId(locationId);
 			request.setModel(model);
+			request.setEventAvailability(eventAvailability);
 			return request;
 		}
 	}

@@ -21,6 +21,7 @@ package org.unitime.timetable.events;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -384,6 +385,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			}
     		
     	Hashtable<Long, EventInterface> conflictingEvents = new Hashtable<Long, EventInterface>();
+    	Set<Location> unavailableLocations = new HashSet<Location>();
     	for (Meeting m: e.getMeetings()) {
 			MeetingInterface meeting = new MeetingInterface();
 			meeting.setId(m.getUniqueId());
@@ -567,11 +569,37 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 			}
 			
+			if (m.getLocation().getEventAvailability() != null && m.getLocation().getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
+				check: for (int slot = meeting.getStartSlot(); slot < meeting.getEndSlot(); slot++) {
+					if (m.getLocation().getEventAvailability().charAt(meeting.getDayOfWeek() * Constants.SLOTS_PER_DAY + slot) == '1') {
+						unavailableLocations.add(m.getLocation());
+						break check;
+					}
+				}
+			}
+			
 			event.addMeeting(meeting);
 		}
     	
 		for (EventInterface confEvent: conflictingEvents.values())
 			event.addConflict(confEvent);
+		
+		for (Location location: unavailableLocations) {
+			Set<MeetingInterface> unavailabilities = EventLookupBackend.generateUnavailabilityMeetings(location, true);
+			if (unavailabilities != null && !unavailabilities.isEmpty()) {
+				for (MeetingInterface meeting: event.getMeetings())
+					for (MeetingInterface conf: unavailabilities)
+						if (meeting.inConflict(conf)) meeting.addConflict((MeetingConflictInterface)conf);
+				EventInterface unavailability = new EventInterface();
+				unavailability.setId(-location.getUniqueId());
+				unavailability.setName(MESSAGES.unavailableEventDefaultName());
+				unavailability.setType(EventInterface.EventType.Unavailabile);
+				for (MeetingInterface m: unavailabilities)
+					if (event.inConflict(unavailability))
+						unavailability.addMeeting(m);
+				event.addConflict(unavailability);
+			}
+		}
     	
     	for (EventNote n: e.getNotes()) {
     		NoteInterface note = new NoteInterface();

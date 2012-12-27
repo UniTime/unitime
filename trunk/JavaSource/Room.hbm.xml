@@ -117,6 +117,13 @@
             not-null="false"
             length="2016"/>
 
+        <property
+            name="eventAvailability"
+            column="availability"
+            type="java.lang.String"
+            not-null="false"
+            length="2016"/>
+
         <set name="examTypes" table="room_exam_type">
             <cache include="non-lazy" usage="read-write"/>
             <key column="location_id"/>

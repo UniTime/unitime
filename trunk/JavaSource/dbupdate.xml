@@ -8241,4 +8241,20 @@
 		<plsql>alter table %SCHEMA%.non_university_location modify manager_ids varchar2(3000 char)</plsql>
 		<plsql>alter table %SCHEMA%.non_university_location modify display_name varchar2(100 char)</plsql>
 	</update>
+	<update version="105" date="27-Dec-2012" comment="Room Event Availability">
+		<plsql>alter table %SCHEMA%.room add availability varchar2(2048 char)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add availability varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room add availability varchar(2048) binary null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add availability varchar(2048) binary null</mysql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomDetailEventAvailability'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'RoomEditEventAvailability'
+			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+		</sql>
+	</update>
 </dbupdate>

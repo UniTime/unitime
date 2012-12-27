@@ -1150,8 +1150,22 @@ h1 {
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
-  	background: #e3e8f3 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
-  	cursor: pointer;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+	background-color: #e3e8f3;
+	cursor: pointer;
 }
 
 .unitime3-HeaderTitle {

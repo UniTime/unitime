@@ -110,6 +110,10 @@
 								<bean:message key="button.modifyRoomFeatures" />
 						</html:submit>
 					</sec:authorize>
+					<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditEventAvailability')">
+						&nbsp;
+						<html:submit property="doit" accesskey="E" styleClass="btn" title="Edit Event Availability (Alt+E)">Edit Event Availability</html:submit>
+					</sec:authorize>
 					<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 						&nbsp;
 						<html:submit property="doit"  styleClass="btn" accesskey="D" titleKey="title.removeRoom" onclick="confirmDelete();">
@@ -396,6 +400,33 @@
 			</logic:equal>
 		</logic:iterate>
 		</sec:authorize>
+		
+		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomDetailEventAvailability')">
+		
+		<TR>
+			<TD colspan='2'>
+				<tt:section-title>Room Event Availability</tt:section-title>
+			</TD>
+		</TR>
+
+		<TR>
+			<TD colspan="2">
+				<span id='UniTimeGWT:RoomEventAvailabilityWidget' style="display: none;"><bean:write name="<%=frmName%>" property="id"/></span>
+				<%-- <%=frm.getSharingTable()%> --%>
+			</TD>
+		</TR>
+		
+		<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditEventAvailability')">
+			<TR>
+				<TD colspan="2" align='center' style='border-top:black 1px dashed'>
+					<font size='-1'><i>
+						Room Event Availability table is read-only. To edit this table, please click Edit Event Availability button.
+					</i></font>
+				</TD>
+			</TR>
+		</sec:authorize>
+
+		</sec:authorize>		
 
 		<tt:last-change type='Location'>
 			<bean:write name="<%=frmName%>" property="id"/>
@@ -453,6 +484,10 @@
 						>
 						<bean:message key="button.modifyRoomFeatures" />
 					</html:submit>
+				</sec:authorize>
+				<sec:authorize access="hasPermission(#roomDetailForm.id, 'Location', 'RoomEditEventAvailability')">
+					&nbsp;
+					<html:submit property="doit" accesskey="E" styleClass="btn" title="Edit Event Availability (Alt+E)">Edit Event Availability</html:submit>
 				</sec:authorize>
 				<sec:authorize access="(#roomDetailForm.nonUniv == true and hasPermission(#roomDetailForm.id, 'NonUniversityLocation', 'NonUniversityLocationDelete')) or (#roomDetailForm.nonUniv == false and hasPermission(#roomDetailForm.id, 'Location', 'RoomDelete'))">
 					&nbsp;
