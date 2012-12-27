@@ -164,9 +164,9 @@ public class RoomSharingWidget extends Composite {
 		setMode(iModel.getModes().get(iModeSelection.getSelectedIndex()), iHorizontal.getValue());
 	}
 	
-	public void insert(final RootPanel panel) {
+	public void insert(final RootPanel panel, boolean eventAvailability) {
 		Long locationId = Long.valueOf(panel.getElement().getInnerHTML().trim());
-		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId), new AsyncCallback<RoomSharingModel>() {
+		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId, eventAvailability), new AsyncCallback<RoomSharingModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				UniTimeNotifications.error(MESSAGES.failedToLoadRoomAvailability(caught.getMessage()));

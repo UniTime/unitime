@@ -804,6 +804,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
+						event != null && event.getType() == EventType.Unavailabile ? "" : 
 						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 				prev = mtg; prevPast = m.isPast(); prevApproval = thisApproval;
 				if (m.getApprovalStatus() != ApprovalStatus.Cancelled && m.getApprovalStatus() != ApprovalStatus.Rejected)
@@ -859,7 +860,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					meeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
-					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
+					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? event.getId() != null && event.getId() < 0l ? "" : "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
 					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
 							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
@@ -1630,10 +1631,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		public List<MeetingInterface> getMeetings(MeetingFilter filter) {
 			List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 			if (iMeeting != null) {
-				if (filter == null || !filter.filter(iEvent, iMeeting)) meetings.add(iMeeting);
+				if (filter == null || !filter.filter(iParent == null ? iEvent : iParent.iEvent, iMeeting)) meetings.add(iMeeting);
 			} else if (iEvent != null) {
 				for (MeetingInterface meeting: iEvent.getMeetings())
-					if (filter == null || !filter.filter(iEvent, meeting)) meetings.add(meeting);
+					if (filter == null || !filter.filter(iParent == null ? iEvent : iParent.iEvent, meeting)) meetings.add(meeting);
 			}
 			return meetings;
 		}

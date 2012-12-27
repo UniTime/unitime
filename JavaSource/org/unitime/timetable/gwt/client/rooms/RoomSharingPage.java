@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.rooms;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -44,15 +45,19 @@ public class RoomSharingPage extends Composite {
 	private UniTimeHeaderPanel iHeader, iFooter;
 	
 	private Long iLocationId;
+	private boolean iEventAvailability;
 	
 	public RoomSharingPage() {
+		iEventAvailability = "1".equals(Window.Location.getParameter("events"));
+		if (iEventAvailability)
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEditRoomEventAvailability());
 		iForm = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
 		iHeader.addButton("update", MESSAGES.buttonUpdate(), 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.showLoading();
-				RPC.execute(RoomInterface.RoomSharingRequest.save(iLocationId, iSharing.getModel()), new AsyncCallback<RoomInterface.RoomSharingModel>() {
+				RPC.execute(RoomInterface.RoomSharingRequest.save(iLocationId, iSharing.getModel(), iEventAvailability), new AsyncCallback<RoomInterface.RoomSharingModel>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iHeader.setErrorMessage(MESSAGES.failedToSaveRoomAvailability(caught.getMessage()));
@@ -90,7 +95,7 @@ public class RoomSharingPage extends Composite {
 		try {
 			iLocationId = Long.valueOf(Window.Location.getParameter("id"));
 			LoadingWidget.getInstance().show(MESSAGES.waitLoadingRoomAvailability());
-			RPC.execute(RoomInterface.RoomSharingRequest.load(iLocationId), new AsyncCallback<RoomInterface.RoomSharingModel>() {
+			RPC.execute(RoomInterface.RoomSharingRequest.load(iLocationId, iEventAvailability), new AsyncCallback<RoomInterface.RoomSharingModel>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					LoadingWidget.getInstance().hide();

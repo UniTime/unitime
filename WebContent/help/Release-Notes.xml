@@ -127,6 +127,11 @@
 					<line>Not available events only show up in the timetable grid when showing a timetable of a room (or rooms), and they display differently than ordinary events (grayed out and without a shade).</line>
 					<line>Not available events only show up in the events or meetings if the Not Available type is explicitly selected in the event filter, or when they are shown on the timetable grid.</line>
 				</line>
+				<line>Event Room Availability
+					<line>Default event room availability can be edited on a room (Edit Event Availability on Room Details page).</line>
+					<line>This is a semester-wide availability table very much like the one for course timetabling (Room Availability).</line>
+					<line>It can be seen with Room Detail Event Availability permission, changed with Room Edit Event Availability permission.</line>
+				</line>
 			</description>
 		</item>
 		<item>

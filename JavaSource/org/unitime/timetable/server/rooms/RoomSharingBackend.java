@@ -62,15 +62,15 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 	public RoomSharingModel execute(RoomSharingRequest request, SessionContext context) {
 		switch (request.getOperation()) {
 		case LOAD:
-			return load(request, context);
+			return (request.isEventAvailability() ? loadEventAvailability(request, context) : loadRoomSharing(request, context));
 		case SAVE:
-			return save(request, context);
+			return (request.isEventAvailability() ? saveEventAvailability(request, context) : saveRoomSharing(request, context));
 		default:
 			return null;
 		}
 	}
 	
-	public RoomSharingModel load(RoomSharingRequest request, SessionContext context) {
+	public RoomSharingModel loadRoomSharing(RoomSharingRequest request, SessionContext context) {
 		context.checkPermission(request.getLocationId(), "Location", Right.RoomDetailAvailability);
 		Location location = LocationDAO.getInstance().get(request.getLocationId());
 		
@@ -163,7 +163,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		return model;
 	}
 
-	public RoomSharingModel save(RoomSharingRequest request, SessionContext context) {
+	public RoomSharingModel saveRoomSharing(RoomSharingRequest request, SessionContext context) {
 		context.checkPermission(request.getLocationId(), "Location", Right.RoomEditAvailability);
 		
 		Map<Long, Character> dept2char = new HashMap<Long, Character>();
@@ -212,6 +212,72 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				hibSession.saveOrUpdate(rd);
 			}
 			
+			hibSession.save(location);
+			tx.commit();
+			
+			return null;
+			
+		} catch (Exception ex) {
+			tx.rollback();
+			if (ex instanceof GwtRpcException) throw (GwtRpcException)ex;
+			throw new GwtRpcException(ex.getMessage(), ex);
+		}
+	}
+	
+	public RoomSharingModel loadEventAvailability(RoomSharingRequest request, SessionContext context) {
+		context.checkPermission(request.getLocationId(), "Location", Right.RoomDetailEventAvailability);
+		Location location = LocationDAO.getInstance().get(request.getLocationId());
+		
+		RoomSharingModel model = new RoomSharingModel();
+		model.setId(location.getUniqueId());
+		model.setName(location.getLabel());
+		for (int i = 0; true; i++) {
+			String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+			if (mode == null || mode.isEmpty()) break;
+			model.addMode(new RoomInterface.RoomSharingDisplayMode(mode));
+		}
+		boolean editable = context.hasPermission(location, Right.RoomEditEventAvailability);
+		model.setDefaultEditable(editable);
+		model.addOption(new RoomSharingOption(0l, "#FFFFFF", MESSAGES.codeAvailable(), MESSAGES.legendAvailable(), editable));
+		model.addOption(new RoomSharingOption(1l, "#696969", MESSAGES.codeNotAvailable(), MESSAGES.legendNotAvailable(), editable));
+		
+		String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
+		if (defaultGridSize != null)
+			for (int i = 0; i < model.getModes().size(); i++) {
+				if (model.getModes().get(i).getName().equals(defaultGridSize)) {
+					model.setDefaultMode(i); break;
+				}
+			}
+		model.setDefaultHorizontal(CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
+		model.setDefaultOption(model.getOptions().get(0));
+		
+		int idx = 0;
+        for (int d = 0; d < Constants.NR_DAYS; d++)
+            for (int t = 0; t < Constants.SLOTS_PER_DAY; t++) {
+                char pref = (location.getEventAvailability() != null && idx < location.getEventAvailability().length() ? location.getEventAvailability().charAt(idx) : '0');
+                idx++;
+                model.setOption(d, t, pref == '0' ? 0l : 1l);
+            }
+
+        return model;
+	}
+	
+	public RoomSharingModel saveEventAvailability(RoomSharingRequest request, SessionContext context) {
+		context.checkPermission(request.getLocationId(), "Location", Right.RoomEditEventAvailability);
+		
+		String availability = "";
+		for (int d = 0; d < 7; d++)
+			for (int s = 0; s < 288; s ++) {
+				RoomSharingOption option = request.getModel().getOption(d, s);
+				availability += (option.getId() == 0l ? '0' : '1');
+			}
+		
+		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
+		Transaction tx = hibSession.beginTransaction();
+		try {
+		
+			Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
+			location.setEventAvailability(availability);
 			hibSession.save(location);
 			tx.commit();
 			

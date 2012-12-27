@@ -732,6 +732,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event Detail")
 	String pageEventDetail();
 	
+	@DefaultMessage("Edit Room Event Availability")
+	String pageEditRoomEventAvailability();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -980,6 +983,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("N/A")
 	String codeNotAvailable();
+	
+	@DefaultMessage("Available")
+	String legendAvailable();
+	
+	@DefaultMessage("")
+	String codeAvailable();
 	
 	@DefaultMessage("<u>A</u>dd Department...")
 	String buttonAddDepartment();

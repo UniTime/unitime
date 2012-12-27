@@ -422,13 +422,22 @@ public class TimeGrid extends Composite {
 		return 0;
 	}
 
-	public void shrink(boolean skipDays, boolean... day) {
+	public void shrink(boolean skipDays, boolean showUnavailable, boolean... day) {
 		boolean hasDay[] = new boolean[] { !skipDays, !skipDays, !skipDays, !skipDays, !skipDays, false, false };
 		for (int i = 0; i < day.length; i++)
 			if (day[i]) hasDay[i] = true;
-		for (int slot = 0; slot < 24 * 60 / 5; slot++) {
-			for (int i = 0; i < 7; i++)
-				if (iMeetingTable[i][slot] != null && !iMeetingTable[i][slot].isEmpty()) hasDay[i] = true;
+		for (int i = 0; i < 7; i++) {
+			if (hasDay[i]) continue;
+			for (int slot = 0; slot < 24 * 60 / 5; slot++) {
+				if (iMeetingTable[i][slot] == null) continue;
+				if (showUnavailable) {
+					if (!iMeetingTable[i][slot].isEmpty()) { hasDay[i] = true; break; }
+				} else {
+					for (Meeting meeting: iMeetingTable[i][slot]) {
+						if (meeting.getEvent().getType() != EventType.Unavailabile) { hasDay[i] = true; break; }
+					}
+				}
+			}
 		}
 		for (int i = 0; i < iSelections.getWidgetCount(); i++) {
 			Widget w = iSelections.getWidget(i);
@@ -763,7 +772,8 @@ public class TimeGrid extends Composite {
 			
 	        setStyleName(event.getType() == EventType.Unavailabile ? "unavailability" : "meeting");
 	    	P header = new P("header", "label");
-	    	header.setHTML(name);
+	    	if (event.getType() != EventType.Unavailabile || (event.getId() != null && event.getId() >= 0l))
+	    		header.setHTML(name);
 	        add(header);
 
 	        P footer = new P("footer");
@@ -776,7 +786,8 @@ public class TimeGrid extends Composite {
 	        	if (notes.length() > 0) notes += delim;
 	        	notes += "<span  style=\"white-space: nowrap\">" + n + "</span>";
 	        }
-	        footer.setHTML(notes);
+	        if (event.getType() != EventType.Unavailabile || (event.getId() != null && event.getId() >= 0l))
+	        	footer.setHTML(notes);
 	        add(footer);
 	        
 			double totalHeight = iCellHeight * length / 12.0 - 3;
@@ -841,6 +852,7 @@ public class TimeGrid extends Composite {
 		}
 		
 		private void select(boolean selected) {
+			if (iEvent.getType() == EventType.Unavailabile && iEvent.getId() != null && iEvent.getId() < 0l) return;
 			if (selected) {
 				getElement().getStyle().setWidth(iCellWidth - 6, Unit.PX);
 				getElement().getStyle().setLeft(4 + iCellWidth * getDay(), Unit.PX);

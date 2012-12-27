@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.hibernate.Query;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -97,6 +102,17 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					response.addOverlap(CalendarUtils.date2dayOfYear(session.getSessionStartYear(), m.getMeetingDate()), m.getLocationPermanentId(), conflict);
 				}
 				
+				query = EventDAO.getInstance().getSession().createQuery(
+						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ") and eventAvailability is not null and length(eventAvailability) = :nrSlots and eventAvailability like '%1%'");
+				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
+					query.setLong("l" + i, request.getLocations().get(idx + i));
+
+				for (Location location: (List<Location>)query.setLong("sessionId", request.getSessionId()).setInteger("nrSlots", Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length).list()) {
+					Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
+					if (conflicts != null && !conflicts.isEmpty())
+						for (MeetingConflictInterface conflict: conflicts)
+							response.addOverlap(conflict.getDayOfYear(), location.getPermanentId(), conflict);
+				}
 			}
 		}
 		
@@ -198,6 +214,16 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					meeting.addConflict(conflict);
 				}
 				
+				if (location != null && location.getEventAvailability() != null && location.getEventAvailability().length() == Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) {
+					check: for (int slot = meeting.getStartSlot(); slot < meeting.getEndSlot(); slot++) {
+						if (location.getEventAvailability().charAt(meeting.getDayOfWeek() * Constants.SLOTS_PER_DAY + slot) == '1') {
+							for (MeetingConflictInterface conflict: generateUnavailabilityMeetings(location, meeting))
+								meeting.addConflict(conflict);
+							break check;
+						}
+					}
+				}
+				
 				if (available) {
 					if (location.getEventDepartment() == null) { // no event department
 						MeetingConflictInterface conflict = new MeetingConflictInterface();
@@ -231,5 +257,104 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 
 		
 		return response;
+	}
+	
+	public static TreeSet<MeetingConflictInterface> generateUnavailabilityMeetings(Location location, List<Integer> dates, int startSlot, int endSlot) {
+		if (location.getEventAvailability() == null || location.getEventAvailability().length() != Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) return null;
+
+		TreeSet<MeetingConflictInterface> ret = new TreeSet<MeetingConflictInterface>();
+		
+		ResourceInterface resource = new ResourceInterface();
+		resource.setType(ResourceType.ROOM);
+		resource.setId(location.getUniqueId());
+		resource.setName(location.getLabel());
+		resource.setHint(location.getHtmlHint());
+		resource.setSize(location.getCapacity());
+		resource.setRoomType(location.getRoomTypeLabel());
+		resource.setBreakTime(location.getEffectiveBreakTime());
+		resource.setMessage(location.getEventMessage());
+		
+		Calendar calendar = Calendar.getInstance();
+        for (int day = 0; day < Constants.DAY_CODES.length; day++)
+        	for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {
+        		if (location.getEventAvailability().charAt(day * Constants.SLOTS_PER_DAY + startTime) != '1') { startTime++; continue; }
+        		int endTime = startTime + 1;
+        		while (endTime < Constants.SLOTS_PER_DAY && location.getEventAvailability().charAt(day * Constants.SLOTS_PER_DAY + endTime) == '1') endTime++;
+        		if (startTime < endSlot && startSlot < endTime) {
+            		calendar.setTime(location.getSession().getEventBeginDate());
+            		int dayOfYear = CalendarUtils.date2dayOfYear(location.getSession().getSessionStartYear(), calendar.getTime());
+            		
+            		do {
+            			if (dates.contains(dayOfYear)) {
+                			int dayOfWeek = -1;
+                			switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+                			case Calendar.MONDAY: dayOfWeek = Constants.DAY_MON; break;
+                			case Calendar.TUESDAY: dayOfWeek = Constants.DAY_TUE; break;
+                			case Calendar.WEDNESDAY: dayOfWeek = Constants.DAY_WED; break;
+                			case Calendar.THURSDAY: dayOfWeek = Constants.DAY_THU; break;
+                			case Calendar.FRIDAY: dayOfWeek = Constants.DAY_FRI; break;
+                			case Calendar.SATURDAY: dayOfWeek = Constants.DAY_SAT; break;
+                			case Calendar.SUNDAY: dayOfWeek = Constants.DAY_SUN; break;
+                			}
+                			
+                			if (day == dayOfWeek) {
+                    			MeetingConflictInterface m = new MeetingConflictInterface();
+                				m.setName(MESSAGES.unavailableEventDefaultName());
+                				m.setType(EventInterface.EventType.Unavailabile);
+                        		m.setStartSlot(startTime);
+                        		m.setEndSlot(endTime);
+                        		m.setDayOfWeek(dayOfWeek);
+                        		m.setMeetingDate(calendar.getTime());
+                        		m.setDayOfYear(dayOfYear);
+                        		m.setLocation(resource);
+                        		ret.add(m);
+                			}
+            			}
+            			calendar.add(Calendar.DAY_OF_YEAR, 1); dayOfYear++;
+            		} while (!calendar.getTime().after(location.getSession().getEventEndDate()));        			
+        		}
+        		startTime = endTime;
+        	}
+		return ret;
+	}
+	
+	public static TreeSet<MeetingConflictInterface> generateUnavailabilityMeetings(Location location, MeetingInterface meeting) {
+		if (location.getEventAvailability() == null || location.getEventAvailability().length() != Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length) return null;
+
+		TreeSet<MeetingConflictInterface> ret = new TreeSet<MeetingConflictInterface>();
+		
+		ResourceInterface resource = new ResourceInterface();
+		resource.setType(ResourceType.ROOM);
+		resource.setId(location.getUniqueId());
+		resource.setName(location.getLabel());
+		resource.setHint(location.getHtmlHint());
+		resource.setSize(location.getCapacity());
+		resource.setRoomType(location.getRoomTypeLabel());
+		resource.setBreakTime(location.getEffectiveBreakTime());
+		resource.setMessage(location.getEventMessage());
+		
+		int day = meeting.getDayOfWeek();
+		for (int startTime = 0; startTime < Constants.SLOTS_PER_DAY; ) {
+    		if (location.getEventAvailability().charAt(day * Constants.SLOTS_PER_DAY + startTime) != '1') { startTime++; continue; }
+    		int endTime = startTime + 1;
+    		while (endTime < Constants.SLOTS_PER_DAY && location.getEventAvailability().charAt(day * Constants.SLOTS_PER_DAY + endTime) == '1') endTime++;
+    		if (startTime < meeting.getEndSlot() && meeting.getStartSlot() < endTime) {
+    			
+    			MeetingConflictInterface m = new MeetingConflictInterface();
+				m.setName(MESSAGES.unavailableEventDefaultName());
+				m.setType(EventInterface.EventType.Unavailabile);
+        		m.setStartSlot(startTime);
+        		m.setEndSlot(endTime);
+        		m.setDayOfWeek(meeting.getDayOfWeek());
+        		m.setMeetingDate(meeting.getMeetingDate());
+        		m.setDayOfYear(meeting.getDayOfYear());
+        		m.setLocation(resource);
+        		ret.add(m);
+
+    		}
+    		startTime = endTime;
+    	}
+    	
+		return ret;
 	}
 }
