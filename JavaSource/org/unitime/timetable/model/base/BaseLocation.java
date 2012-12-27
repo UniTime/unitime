@@ -49,6 +49,7 @@ public abstract class BaseLocation implements Serializable {
 	private Integer iBreakTime;
 	private String iManagerIds;
 	private String iPattern;
+	private String iEventAvailability;
 	private Integer iExamCapacity;
 	private String iDisplayName;
 
@@ -74,6 +75,7 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_BREAK_TIME = "breakTime";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
+	public static String PROP_AVAILABILITY = "eventAvailability";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_DISPLAY_NAME = "displayName";
 
@@ -128,6 +130,9 @@ public abstract class BaseLocation implements Serializable {
 
 	public String getPattern() { return iPattern; }
 	public void setPattern(String pattern) { iPattern = pattern; }
+
+	public String getEventAvailability() { return iEventAvailability; }
+	public void setEventAvailability(String eventAvailability) { iEventAvailability = eventAvailability; }
 
 	public Integer getExamCapacity() { return iExamCapacity; }
 	public void setExamCapacity(Integer examCapacity) { iExamCapacity = examCapacity; }
@@ -206,6 +211,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	CoordinateX: " + getCoordinateX() +
 			"\n	CoordinateY: " + getCoordinateY() +
 			"\n	DisplayName: " + getDisplayName() +
+			"\n	EventAvailability: " + getEventAvailability() +
 			"\n	EventDepartment: " + getEventDepartment() +
 			"\n	EventStatus: " + getEventStatus() +
 			"\n	ExamCapacity: " + getExamCapacity() +

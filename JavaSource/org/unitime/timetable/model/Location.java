@@ -730,6 +730,12 @@ public abstract class Location extends BaseLocation implements Comparable {
                 ).setLong("sessionId", sessionId).setCacheable(true).list();
     }
 
+    public static List<Location> findAllEventRooms(Long departmentId) {
+        return (List<Location>)new LocationDAO().getSession().createQuery(
+                "select l from Location l where l.eventDepartment.uniqueId=:departmentId"
+                ).setLong("departmentId", departmentId).setCacheable(true).list();
+    }
+
     public static List<Room> findAllRooms(Long sessionId) {
         return (List<Room>)new LocationDAO().getSession().createQuery(
                 "select l from Room l where l.session.uniqueId=:sessionId"

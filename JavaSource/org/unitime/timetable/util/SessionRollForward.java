@@ -341,6 +341,11 @@ public class SessionRollForward {
 					toRoom.setPattern(fromRoom.getPattern());
 					toRoom.setRoomNumber(toExternalRoom.getRoomNumber());
 					toRoom.setRoomType(toExternalRoom.getRoomType());
+					toRoom.setExamTypes(new HashSet<ExamType>(fromRoom.getExamTypes()));
+					toRoom.setEventStatus(fromRoom.getEventStatus());
+					toRoom.setBreakTime(fromRoom.getBreakTime());
+					toRoom.setNote(fromRoom.getNote());
+					toRoom.setEventAvailability(fromRoom.getEventAvailability());
 					LocationPermIdGenerator.setPermanentId(toRoom);
 				} else {
 					return;

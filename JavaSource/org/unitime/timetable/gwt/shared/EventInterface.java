@@ -682,15 +682,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setType(EventType type) { iEventType = type; }
 		
 		public int compareTo(MeetingInterface conflict) {
-			int cmp = new Integer(getDayOfYear()).compareTo(conflict.getDayOfYear());
+			int cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
+			if (cmp != 0) return cmp;
+			cmp = new Integer(getDayOfYear()).compareTo(conflict.getDayOfYear());
 			if (cmp != 0) return cmp;
 			cmp = new Integer(getStartSlot()).compareTo(conflict.getStartSlot());
 			if (cmp != 0) return cmp;
 			cmp = new Integer(getEndSlot()).compareTo(conflict.getEndSlot());
 			if (cmp != 0) return cmp;
 			cmp = getName().compareTo(((MeetingConflictInterface)conflict).getName());
-			if (cmp != 0) return cmp;
-			cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
 			if (cmp != 0) return cmp;
 			return (getId() == null ? new Long(-1) : getId()).compareTo(conflict.getId() == null ? new Long(-1) : conflict.getId());
 		}

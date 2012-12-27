@@ -171,9 +171,12 @@ public class RoomListAction extends Action {
 	            roomListForm.setRooms(new TreeSet<Location>(Location.findAll(sessionContext.getUser().getCurrentAcademicSessionId())));
 			} else {
 				TreeSet<Location> rooms = new TreeSet<Location>();
-				for (Department department: Department.getUserDepartments(sessionContext.getUser()))
+				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
 					for (RoomDept rd: department.getRoomDepts())
 						rooms.add(rd.getRoom());
+					if (department.isAllowEvents())
+						rooms.addAll(Location.findAllEventRooms(department.getUniqueId()));
+				}
 				roomListForm.setRooms(rooms);
 			}
 		} else if (roomListForm.getDeptCodeX().equals("Exam")) {
@@ -198,6 +201,8 @@ public class RoomListAction extends Action {
 				}
 				for (RoomDept rd: department.getRoomDepts())
 					rooms.add(rd.getRoom());
+				if (department.isAllowEvents())
+					rooms.addAll(Location.findAllEventRooms(department.getUniqueId()));
 			}
 			roomListForm.setRooms(rooms);
 		}
@@ -681,7 +686,10 @@ public class RoomListAction extends Action {
 	                
 	                //events column
                 	if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
-                        text[idx] = location.getEventDepartment().htmlShortLabel();
+                		if (sessionContext.hasPermission(location, Right.RoomDetailEventAvailability))
+                			text[idx] = "<span onmouseover=\"showGwtRoomEventAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomEventAvailabilityHint();\">" + location.getEventDepartment().htmlShortLabel() + "</span>";
+                		else
+                			text[idx] = location.getEventDepartment().htmlShortLabel();
                         comp[idx] = location.getEventDepartment().getDeptCode();
                     } else {
                         text[idx] = "";
