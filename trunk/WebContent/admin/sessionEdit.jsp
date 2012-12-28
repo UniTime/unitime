@@ -253,7 +253,7 @@
 			<TD valign="top">
 				<html:text property="wkDrop" maxlength="4" size="4"/>
 			</TD><TD>
-				<i>Number of weeks during which students are allowed to drom from courses they are enrolled into.<br>
+				<i>Number of weeks during which students are allowed to drop from courses they are enrolled into.<br>
 			</TD>
 		</TR>
 		<TR>
