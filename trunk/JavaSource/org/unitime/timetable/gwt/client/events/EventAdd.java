@@ -259,9 +259,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				});
 			}
 		};
-		iHeader.addButton("create", MESSAGES.buttonCreate(), 75, clickCreateOrUpdate);
-		iHeader.addButton("update", MESSAGES.buttonUpdate(), 75, clickCreateOrUpdate);
-		iHeader.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
+		iHeader.addButton("create", MESSAGES.buttonCreateEvent(), 100, clickCreateOrUpdate);
+		iHeader.addButton("update", MESSAGES.buttonUpdateEvent(), 100, clickCreateOrUpdate);
+		iHeader.addButton("delete", MESSAGES.buttonDeleteEvent(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
 				final EventInterface event = getEvent();
@@ -294,7 +294,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				});
 			}
 		});
-		iHeader.addButton("cancel", MESSAGES.buttonCancel(), 75, new ClickHandler() {
+		iHeader.addButton("cancel", MESSAGES.buttonCancelEvent(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
 				final EventInterface event = getEvent();
@@ -712,7 +712,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEventModifyMeetings.setText(MESSAGES.dialogModifyMeetings());
 		
 		iMeetingsHeader = new UniTimeHeaderPanel(MESSAGES.sectMeetings());
-		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 75, new ClickHandler() {
+		iMeetingsHeader.addButton("add", MESSAGES.buttonAddMeetings(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEventAddMeetings.showDialog(getEventId());

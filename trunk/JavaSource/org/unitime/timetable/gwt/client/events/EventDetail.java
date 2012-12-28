@@ -98,7 +98,7 @@ public class EventDetail extends Composite {
 		iProperties = properties;
 		
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler() {
+		iHeader.addButton("edit", MESSAGES.buttonEditEvent(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				edit();
