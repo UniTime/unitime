@@ -238,8 +238,8 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		}
 		boolean editable = context.hasPermission(location, Right.RoomEditEventAvailability);
 		model.setDefaultEditable(editable);
-		model.addOption(new RoomSharingOption(0l, "#FFFFFF", MESSAGES.codeAvailable(), MESSAGES.legendAvailable(), editable));
-		model.addOption(new RoomSharingOption(1l, "#696969", MESSAGES.codeNotAvailable(), MESSAGES.legendNotAvailable(), editable));
+		model.addOption(new RoomSharingOption(-1l, "#FFFFFF", MESSAGES.codeAvailable(), MESSAGES.legendAvailable(), editable));
+		model.addOption(new RoomSharingOption(-2l, "#696969", MESSAGES.codeNotAvailable(), MESSAGES.legendNotAvailable(), editable));
 		
 		String defaultGridSize = RequiredTimeTable.getTimeGridSize(context.getUser());
 		if (defaultGridSize != null)
@@ -256,7 +256,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
             for (int t = 0; t < Constants.SLOTS_PER_DAY; t++) {
                 char pref = (location.getEventAvailability() != null && idx < location.getEventAvailability().length() ? location.getEventAvailability().charAt(idx) : '0');
                 idx++;
-                model.setOption(d, t, pref == '0' ? 0l : 1l);
+                model.setOption(d, t, pref == '0' ? -1l : -2l);
             }
 
         return model;
@@ -269,7 +269,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 		for (int d = 0; d < 7; d++)
 			for (int s = 0; s < 288; s ++) {
 				RoomSharingOption option = request.getModel().getOption(d, s);
-				availability += (option.getId() == 0l ? '0' : '1');
+				availability += (option.getId() == -1l ? '0' : '1');
 			}
 		
 		org.hibernate.Session hibSession = LocationDAO.getInstance().getSession();
