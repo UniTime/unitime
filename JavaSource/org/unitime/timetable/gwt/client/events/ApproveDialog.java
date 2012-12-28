@@ -158,10 +158,10 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	public void show(List<EventMeetingRow> meetings, ApproveEventRpcRequest.Operation operation) {
 		iTable.setValue(meetings);
 		switch (operation) {
-		case APPROVE: setText(MESSAGES.dialogApprove());
-		case REJECT: setText(MESSAGES.dialogReject());
-		case INQUIRE: setText(MESSAGES.dialogInquire());
-		case CANCEL: setText(MESSAGES.dialogCancel());
+		case APPROVE: setText(MESSAGES.dialogApprove()); break;
+		case REJECT: setText(MESSAGES.dialogReject()); break;
+		case INQUIRE: setText(MESSAGES.dialogInquire()); break;
+		case CANCEL: setText(MESSAGES.dialogCancel()); break;
 		}
 		iFooter.setEnabled("approve", operation == ApproveEventRpcRequest.Operation.APPROVE);
 		iFooter.setEnabled("reject", operation == ApproveEventRpcRequest.Operation.REJECT);
