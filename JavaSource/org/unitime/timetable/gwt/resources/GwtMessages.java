@@ -114,17 +114,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<b><i>?</i></b> Inquire ...")
 	String opInquireAllMeetings();
 	
-	@DefaultMessage("<u>A</u>pprove")
-	String opApprove();
+	@DefaultMessage("<u>A</u>pprove Meetings")
+	String opApproveMeetings();
 
-	@DefaultMessage("<u>R</u>eject")
-	String opReject();
+	@DefaultMessage("<u>R</u>eject Meetings")
+	String opRejectMeetings();
 
 	@DefaultMessage("<u>I</u>nquire")
-	String opInquire();
+	String opInquireMeetings();
 
-	@DefaultMessage("<u>C</u>ancel")
-	String opCancel();
+	@DefaultMessage("<u>C</u>ancel Meetings")
+	String opCancelMeetings();
 	
 	@DefaultMessage("<u>B</u>ack")
 	String opBack();
@@ -441,6 +441,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>C</u>ancel")
 	String buttonCancel();
 	
+	@DefaultMessage("<u>C</u>ancel Event")
+	String buttonCancelEvent();
+
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
 	
@@ -450,7 +453,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd&nbsp;Event")
 	String buttonAddEvent();
 	
-	@DefaultMessage("<u>A</u>dd")
+	@DefaultMessage("<u>A</u>dd Meetings")
 	String buttonAddMeetings();
 	
 	@DefaultMessage("<u>P</u>rint")
@@ -465,17 +468,17 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();
 	
-	@DefaultMessage("<u>C</u>reate")
-	String buttonCreate();
+	@DefaultMessage("<u>C</u>reate Event")
+	String buttonCreateEvent();
 
-	@DefaultMessage("<u>U</u>pdate")
-	String buttonUpdate();
+	@DefaultMessage("<u>U</u>pdate Event")
+	String buttonUpdateEvent();
 
-	@DefaultMessage("<u>D</u>elete")
-	String buttonDelete();
+	@DefaultMessage("<u>D</u>elete Event")
+	String buttonDeleteEvent();
 
-	@DefaultMessage("<u>E</u>dit")
-	String buttonEdit();
+	@DefaultMessage("<u>E</u>dit Event")
+	String buttonEditEvent();
 
 	@DefaultMessage("<u>L</u>ookup")
 	String buttonLookupMainContact();

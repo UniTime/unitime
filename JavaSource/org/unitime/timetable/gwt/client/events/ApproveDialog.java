@@ -94,28 +94,28 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
 		
 		iFooter = new UniTimeHeaderPanel();
-		iFooter.addButton("approve", MESSAGES.opApprove(), new ClickHandler() {
+		iFooter.addButton("approve", MESSAGES.opApproveMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				onSubmit(ApproveEventRpcRequest.Operation.APPROVE, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
-		iFooter.addButton("inquire", MESSAGES.opInquire(), new ClickHandler() {
+		iFooter.addButton("inquire", MESSAGES.opInquireMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				onSubmit(ApproveEventRpcRequest.Operation.INQUIRE, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
-		iFooter.addButton("reject", MESSAGES.opReject(), new ClickHandler() {
+		iFooter.addButton("reject", MESSAGES.opRejectMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				onSubmit(ApproveEventRpcRequest.Operation.REJECT, iTable.getValue(), iNotes.getText());
 				hide();
 			}
 		});
-		iFooter.addButton("cancel", MESSAGES.opCancel(), new ClickHandler() {
+		iFooter.addButton("cancel", MESSAGES.opCancelMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				onSubmit(ApproveEventRpcRequest.Operation.CANCEL, iTable.getValue(), iNotes.getText());
