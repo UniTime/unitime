@@ -52,7 +52,13 @@ public class RoomType extends BaseRoomType implements Comparable<RoomType> {
 	    return new TreeSet<RoomType>(RoomTypeDAO.getInstance().findAll());
 	}
 
-    public static TreeSet<RoomType> findAll(boolean isRoom) {
+	public static TreeSet<RoomType> findAll(Long sessionId) {
+		return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createQuery(
+				"select distinct t from Location l inner join l.roomType t where l.session.uniqueId = :sessionId")
+				.setLong("sessionId", sessionId).setCacheable(true).list());
+	}
+
+	public static TreeSet<RoomType> findAll(boolean isRoom) {
         return new TreeSet<RoomType>(RoomTypeDAO.getInstance().getSession().createCriteria(RoomType.class).add(Restrictions.eq("room", isRoom)).setCacheable(true).list());
     }
 

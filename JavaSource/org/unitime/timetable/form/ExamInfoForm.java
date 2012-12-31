@@ -208,7 +208,7 @@ public class ExamInfoForm extends ActionForm {
     }
 
     public Collection<RoomType> getAllRoomTypes() {
-        return RoomType.findAll();
+        return RoomType.findAll(iSessionId);
     }
     
     public Long getSessionId() { return iSessionId; }
