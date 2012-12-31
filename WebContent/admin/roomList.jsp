@@ -40,7 +40,7 @@
 		<tt:section-header>
 			<tt:section-title>
 				<span style='font-weight:normal;'>
-					<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+					<logic:iterate name="<%=frmName%>" property="allRoomTypes" id="roomType">
 						<bean:define name="roomType" property="reference" id="ref"/>
 						<logic:notEmpty name="<%=(String)ref%>" scope="request">
 							<A class="l7" href='<%="#"+ref%>'><bean:write name="roomType" property="label"/></A>&nbsp;
@@ -104,7 +104,7 @@
 
 <!-- rooms -->
 	<% boolean empty = true; %>
-	<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+	<logic:iterate name="<%=frmName%>" property="allRoomTypes" id="roomType">
 		<bean:define name="roomType" property="reference" id="ref"/>
 		<logic:notEmpty name="<%=(String)ref%>" scope="request">
 			<% empty = false; %>
@@ -131,7 +131,7 @@
 			<tt:section-header>
 			<tt:section-title>
 				<span style='font-weight:normal;'>
-				<logic:iterate name="<%=frmName%>" property="roomTypes" id="roomType">
+				<logic:iterate name="<%=frmName%>" property="allRoomTypes" id="roomType">
 					<bean:define name="roomType" property="reference" id="ref"/>
 					<logic:notEmpty name="<%=(String)ref%>" scope="request">
 						<A class="l7" href='<%="#"+ref%>'><bean:write name="roomType" property="label"/></A>&nbsp;

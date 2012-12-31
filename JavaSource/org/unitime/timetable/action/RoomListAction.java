@@ -48,6 +48,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,7 @@ import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.comparators.DepartmentNameComparator;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomTypeDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -137,6 +139,7 @@ public class RoomListAction extends Action {
 		sessionContext.checkPermission(Right.Rooms);
 		
 		RoomListForm roomListForm = (RoomListForm) form;
+		roomListForm.save(request.getSession());
 		ActionMessages errors = new ActionMessages();
 		
 		//get deptCode from request - for user with only one department
@@ -166,51 +169,13 @@ public class RoomListAction extends Action {
 			return mapping.findForward("showRoomSearch");
 		}
 		
-		if (roomListForm.getDeptCodeX().equalsIgnoreCase("All")) {
-			if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
-	            roomListForm.setRooms(new TreeSet<Location>(Location.findAll(sessionContext.getUser().getCurrentAcademicSessionId())));
-			} else {
-				TreeSet<Location> rooms = new TreeSet<Location>();
-				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
-					for (RoomDept rd: department.getRoomDepts())
-						rooms.add(rd.getRoom());
-					if (department.isAllowEvents())
-						rooms.addAll(Location.findAllEventRooms(department.getUniqueId()));
-				}
-				roomListForm.setRooms(rooms);
-			}
-		} else if (roomListForm.getDeptCodeX().equals("Exam")) {
-			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
-			if (!types.isEmpty()) {
-				roomListForm.setDeptCodeX("Exam" + types.get(0).getUniqueId());
-				roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(), types.get(0)));
-			}
-		} else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
-		    roomListForm.setRooms(Location.findAllExamLocations(sessionContext.getUser().getCurrentAcademicSessionId(),
-		    		ExamTypeDAO.getInstance().get(Long.valueOf(roomListForm.getDeptCodeX().substring(4)))));
-		} else {
-			Department department = Department.findByDeptCode(roomListForm.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
-			TreeSet<Location> rooms = new TreeSet<Location>();
-			if (department != null) {
-				if ("Export PDF".equals(request.getParameter("op"))) {
-					sessionContext.checkPermission(department, Right.RoomsExportPdf);
-				} else if ("Export CSV".equals(request.getParameter("op"))) {
-					sessionContext.checkPermission(department, Right.RoomsExportCsv);
-				} else {
-					sessionContext.checkPermission(department, Right.Rooms);
-				}
-				for (RoomDept rd: department.getRoomDepts())
-					rooms.add(rd.getRoom());
-				if (department.isAllowEvents())
-					rooms.addAll(Location.findAllEventRooms(department.getUniqueId()));
-			}
-			roomListForm.setRooms(rooms);
-		}
+		lookupRooms(roomListForm, request.getParameter("op"));
 		
 		if (roomListForm.getRooms() == null || roomListForm.getRooms().isEmpty()) {
-			errors.add("searchResult", new ActionMessage("errors.generic", "No rooms for the selected department were found."));
+			errors.add("searchResult", new ActionMessage("errors.generic", "No room matching the above criteria was found."));
 			request.setAttribute("colspan","7"); 
 			saveErrors(request, errors);
+			return mapping.findForward("showRoomSearch");
 		}
 		
 		ExamType examType = null;
@@ -236,6 +201,138 @@ public class RoomListAction extends Action {
 		
 		return mapping.findForward("showRoomList");
 
+	}
+	
+	public void lookupRooms(RoomListForm form, String op) {
+		String from = "Location l";
+		String where = "l.session.uniqueId = :sessionId";
+		
+		List<Long> departmentIds = null;
+		Long examTypeId = null;
+
+		if (form.getDeptCodeX().equalsIgnoreCase("All")) {
+			if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent)) {
+			} else {
+				departmentIds = new ArrayList<Long>();
+				String depts = "";
+				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+					if (!depts.isEmpty()) depts += ",";
+					depts += (depts.isEmpty() ? "" : ",") + ":dept" + (departmentIds.size());
+					departmentIds.add(department.getUniqueId());
+				}
+				from = "Location l left outer join l.roomDepts rd";
+				where += " and (rd.department.uniqueId in (" + depts + ") or l.eventDepartment.uniqueId in (" + depts + "))";
+
+			}
+		} else if (form.getDeptCodeX().equals("Exam")) {
+			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty()) {
+				examTypeId = types.get(0).getUniqueId();
+				form.setDeptCodeX("Exam" + examTypeId);
+				from = "Location l inner join l.examTypes xt";
+				where += " and xt.uniqueId = :examTypeId";
+			}
+		} else if (form.getDeptCodeX().matches("Exam[0-9]*")) {
+			from = "Location l inner join l.examTypes xt";
+			examTypeId = Long.valueOf(form.getDeptCodeX().substring(4));
+			where += " and xt.uniqueId = :examTypeId";
+		} else {
+			Department department = Department.findByDeptCode(form.getDeptCodeX(), sessionContext.getUser().getCurrentAcademicSessionId());
+			if (department != null) {
+				if ("Export PDF".equals(op)) {
+					sessionContext.checkPermission(department, Right.RoomsExportPdf);
+				} else if ("Export CSV".equals(op)) {
+					sessionContext.checkPermission(department, Right.RoomsExportCsv);
+				} else {
+					sessionContext.checkPermission(department, Right.Rooms);
+				}
+				from = "Location l left outer join l.roomDepts rd";
+				where += " and (rd.department.uniqueId = :dept0 or l.eventDepartment.uniqueId = :dept0)";
+				departmentIds = new ArrayList<Long>(); departmentIds.add(department.getUniqueId());
+			} else return;
+		}
+		
+		Integer minSize = null, maxSize = null;
+		if (form.getMinRoomSize() != null && !form.getMinRoomSize().isEmpty()) {
+			try {
+				minSize = Integer.valueOf(form.getMinRoomSize());
+				where += " and l.capacity >= :minSize";
+			} catch (NumberFormatException e) {
+			}
+		}
+		if (form.getMaxRoomSize() != null && !form.getMaxRoomSize().isEmpty()) {
+			try {
+				maxSize = Integer.valueOf(form.getMaxRoomSize());
+				where += " and l.capacity <= :maxSize";
+			} catch (NumberFormatException e) {
+			}
+		}
+		
+		List<Long> roomTypes = null;
+		if (form.getRoomTypes() != null && form.getRoomTypes().length > 0) {
+			String types = "";
+			roomTypes = new ArrayList<Long>();
+			for (int i = 0; i < form.getRoomTypes().length; i++) {
+				types += (types.isEmpty() ? "" : ",") + ":type" + i;
+				roomTypes.add(form.getRoomTypes()[i]);
+			}
+			where += " and l.roomType.uniqueId in (" + types + ")";
+		}
+		
+		List<Long> roomGroups = null;
+		if (form.getRoomGroups() != null && form.getRoomGroups().length > 0) {
+			String groups = "";
+			roomGroups = new ArrayList<Long>();
+			for (int i = 0; i < form.getRoomGroups().length; i++) {
+				groups += (groups.isEmpty() ? "" : ",") + ":group" + i;
+				roomGroups.add(form.getRoomGroups()[i]);
+			}
+			from += " inner join l.roomGroups g";
+			where += " and g.uniqueId in (" + groups + ")";
+		}
+		
+		List<Long> roomFeatures = null;
+		if (form.getRoomFeatures() != null && form.getRoomFeatures().length > 0) {
+			roomFeatures = new ArrayList<Long>();
+			for (int i = 0; i < form.getRoomFeatures().length; i++) {
+				from += " inner join l.features f" + i;
+				where += " and f" + i + ".uniqueId = :feature" + i;
+				roomFeatures.add(form.getRoomFeatures()[i]);
+			}
+		}
+		
+		String filter = null;
+		if (form.getFilter() != null && !form.getFilter().isEmpty()) {
+			filter = form.getFilter();
+			from += ", Room r, NonUniversityLocation u";
+			where += " and ((r.uniqueId = l.uniqueId and (lower(r.buildingAbbv || ' ' || r.roomNumber) like '%' || :filter || '%' or lower(r.displayName) like '%' || :filter || '%')) or (u.uniqueId = l.uniqueId and lower(u.name) like '%' || :filter || '%'))";
+		}
+		
+		Query query = LocationDAO.getInstance().getSession().createQuery("select distinct l from " + from + " where " + where);
+		
+		query.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId());
+		if (departmentIds != null)
+			for (int i = 0; i < departmentIds.size(); i++)
+				query.setLong("dept" + i, departmentIds.get(i));
+		if (examTypeId != null)
+			query.setLong("examTypeId", examTypeId);
+		if (minSize != null)
+			query.setInteger("minSize", minSize);
+		if (maxSize != null)
+			query.setInteger("maxSize", maxSize);
+		if (filter != null)
+			query.setString("filter", filter.toLowerCase());
+		if (roomTypes != null)
+			for (int i = 0; i < roomTypes.size(); i++)
+				query.setLong("type" + i, roomTypes.get(i));
+		if (roomGroups != null)
+			for (int i = 0; i < roomGroups.size(); i++)
+				query.setLong("group" + i, roomGroups.get(i));
+		if (roomFeatures != null)
+			for (int i = 0; i < roomFeatures.size(); i++)
+				query.setLong("feature" + i, roomFeatures.get(i));
+		
+		form.setRooms((List<Location>)query.setCacheable(true).list());
 	}
 
 	/**

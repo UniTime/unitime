@@ -71,6 +71,7 @@ public class RoomSearchAction extends Action {
 		RoomListForm roomListForm = (RoomListForm) form;
 		
 		sessionContext.checkPermission(Right.Rooms);
+		roomListForm.load(request.getSession());
 		
 		String deptCode = roomListForm.getDeptCodeX();
 		if (deptCode==null) {
@@ -82,9 +83,7 @@ public class RoomSearchAction extends Action {
 		    	sessionContext.setAttribute(SessionAttribute.DepartmentCodeRoom, deptCode);
 		}
 		
-		if (deptCode != null && !deptCode.isEmpty() &&
-				("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.Rooms))) {
-			
+		if (deptCode != null && !deptCode.isEmpty() && ("All".equals(deptCode) || deptCode.matches("Exam[0-9]*") || sessionContext.hasPermission(deptCode, "Department", Right.Rooms))) {
 			roomListForm.setDeptCodeX(deptCode);
 			return mapping.findForward("roomList");
 			

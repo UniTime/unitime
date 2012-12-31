@@ -24,12 +24,18 @@ import java.util.Collection;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.model.GlobalRoomFeature;
+import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.RoomFeatureType;
+import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomType;
+import org.unitime.timetable.security.context.HttpSessionContext;
 
 
 /** 
@@ -49,6 +55,14 @@ public class RoomListForm extends ActionForm {
 	private Collection rooms;
 	private String deptCode;
 	
+    private String iMinRoomSize = null, iMaxRoomSize = null;
+	private Long[] iRoomFeatures = null;
+	private Long[] iRoomTypes = null;
+	private Long[] iRoomGroups = null;
+	private String iFilter = null;
+	private Long iSessionId = null;
+
+	
 	// --------------------------------------------------------- Methods
 
 	/** 
@@ -58,7 +72,46 @@ public class RoomListForm extends ActionForm {
 	 */
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 		rooms = new ArrayList();
+        iSessionId = HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId();
 	}
+	
+    public void load(HttpSession session) {
+        iMinRoomSize = (String)session.getAttribute("RoomList.MinRoomSize");
+        iMaxRoomSize = (String)session.getAttribute("RoomList.MaxRoomSize");
+        iFilter = (String)session.getAttribute("RoomList.Filter");
+        iRoomTypes = (Long[]) session.getAttribute("RoomList.RoomTypes");
+        iRoomGroups = (Long[]) session.getAttribute("RoomList.RoomGroups");
+		iRoomFeatures = (Long[]) session.getAttribute("RoomList.RoomFeatures");
+    }
+    
+    public void save(HttpSession session) {
+        if (iMinRoomSize==null)
+            session.removeAttribute("RoomList.MinRoomSize");
+        else
+            session.setAttribute("RoomList.MinRoomSize", iMinRoomSize);
+        if (iMaxRoomSize==null)
+            session.removeAttribute("RoomList.MaxRoomSize");
+        else
+            session.setAttribute("RoomList.MaxRoomSize", iMaxRoomSize);
+
+        if (iFilter==null)
+            session.removeAttribute("RoomList.Filter");
+        else
+            session.setAttribute("RoomList.Filter", iFilter);
+        
+        if (iRoomTypes==null)
+        	session.removeAttribute("RoomList.RoomTypes");
+        else
+        	session.setAttribute("RoomList.RoomTypes", iRoomTypes);
+        if (iRoomGroups==null)
+        	session.removeAttribute("RoomList.RoomGroups");
+        else
+        	session.setAttribute("RoomList.RoomGroups", iRoomGroups);
+        if (iRoomFeatures==null)
+        	session.removeAttribute("RoomList.RoomFeatures");
+        else
+        	session.setAttribute("RoomList.RoomFeatures", iRoomFeatures);
+    }
 	
 	/**
 	 * @return Returns the rooms.
@@ -95,7 +148,41 @@ public class RoomListForm extends ActionForm {
         return errors;
     }
     
-    public Set<RoomType> getRoomTypes() {
-        return RoomType.findAll();
+    public String getMinRoomSize() { return iMinRoomSize; }
+    public void setMinRoomSize(String minRoomSize) { iMinRoomSize = minRoomSize; }
+    public String getMaxRoomSize() { return iMaxRoomSize; }
+    public void setMaxRoomSize(String maxRoomSize) { iMaxRoomSize = maxRoomSize; }
+    public String getFilter() { return iFilter; }
+    public void setFilter(String filter) { iFilter = filter; }
+    
+    public Long[] getRoomTypes() { return iRoomTypes; }
+	public void setRoomTypes(Long[] rts) { iRoomTypes = rts; }
+
+    public Long[] getRoomGroups() { return iRoomGroups; }
+    public void setRoomGroups(Long[] rgs) { iRoomGroups= rgs; }
+
+    public Long[] getRoomFeatures() { return iRoomFeatures; }
+    public void setRoomFeatures(Long[] rfs) { iRoomFeatures = rfs; }
+    
+    public Collection<RoomFeatureType> getRoomFeatureTypes() {
+    	Set<RoomFeatureType> types = RoomFeatureType.getRoomFeatureTypes(iSessionId, false);
+    	if (RoomFeatureType.hasRoomFeatureWithNoType(iSessionId, false)) {
+    		RoomFeatureType f = new RoomFeatureType();
+    		f.setUniqueId(-1l); f.setReference("Features"); f.setLabel("Room Features");
+    		types.add(f);
+    	}
+    	return types;
+    }
+    
+    public Collection<GlobalRoomFeature> getAllRoomFeatures(String featureType) {
+    	return RoomFeature.getAllGlobalRoomFeatures(iSessionId, featureType == null || featureType.isEmpty() ? null : Long.valueOf(featureType));
+    }
+    
+    public Collection<RoomGroup> getAllRoomGroups() {
+        return RoomGroup.getAllGlobalRoomGroups(iSessionId);
+    }
+
+    public Collection<RoomType> getAllRoomTypes() {
+        return RoomType.findAll(iSessionId);
     }
 }
