@@ -164,158 +164,108 @@
 				</TR>
 			</logic:notEmpty>
 		</logic:equal>
+		</table>
 		
+		<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		<logic:notEmpty name="<%=frmName%>" property="assignedRooms">
-			<TR>
-				<TD colspan='2'>&nbsp;</TD>
-			</TR>
-			<TR>
-				<TD colspan='2'>
+			<tr>
+				<td colspan='6'>&nbsp;</td>
+			</tr>
+			<tr>
+				<td colspan='6'>
 					<tt:section-title>Currently Assigned Rooms</tt:section-title>
-				</TD>
-			</TR>
-			<TR>
-				<TD colspan='2'>
-					<TABLE cellpadding="5" cellspacing="0">
-						<TR align="center" valign="top" >
-						<TD> &nbsp;</TD>
-						<logic:iterate name="<%=frmName%>" property="heading" id="heading">
-						<%String h1 = (String) heading; %>	
-							<TD align="left"><I><%=h1%></I></TD>
-						</logic:iterate>
-						</TR>
-							
-						<logic:iterate name="<%=frmName%>" property="assignedRooms" id="room" indexId="ctr">
-						<% Location r1 = (Location) room;%>
-						
-						<TR align="center" onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
-							<TD>
-								<html:multibox property="assignedSelected">
-									<%=r1.getUniqueId()%>
-								</html:multibox>	
-							</TD>
-				
-							<TD align="left">
-								<%=r1.getLabel()%>
-							</TD>
-							
-							<TD align="left">
-								<% if (r1 instanceof Room) { %>
-									<%=((Room)r1).getRoomTypeLabel()%>
-								<% } else { %>
-									Non University
-								<% } %>
-							</TD>
-							
-							<TD align="center">
-								<%=r1.getCapacity()%>
-							</TD>
-							
-							<% if (r1.hasAnyExamsEnabled()) { %>
-								<TD align="center"><%=r1.getExamCapacity()%></TD>
-							<% } else { %>
-								<TD></TD>
-							<% } %>
-							
-							<logic:iterate name="<%=frmName%>" property="roomFeatures" id="roomFeature">
-							<% 
-								RoomFeature rf1 = (RoomFeature) roomFeature; 
-								frm.setFeature(r1.hasFeature(rf1));
-							%>
-							<TD align="center">
-								<% if (r1.hasFeature(rf1)) { %>
-									<IMG border='0' align='middle' src='images/tick.gif' title='<%=rf1.getLabel()%>'/>
-								<% } %>
-								<!-- 
-								<html:checkbox disabled="true" property="feature" />
-								-->
-							</TD>
-							</logic:iterate>
-						
-						</TR>
-						
-						</logic:iterate>
-					</TABLE>
-				</TD>
-			</TR>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="WebTableHeader">&nbsp;</td>
+				<td class="WebTableHeader">Room</td>
+				<td class="WebTableHeader">Type</td>
+				<td class="WebTableHeader">Capacity</td>
+				<td class="WebTableHeader">Exam<br>Capacity</td>
+				<td class="WebTableHeader">Room Features</td>
+			</tr>
+			<logic:iterate name="<%=frmName%>" property="assignedRooms" id="room" indexId="ctr" type="org.unitime.timetable.model.Location">
+				<tr valign="top" onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
+					<td nowrap>
+						<html:multibox property="assignedSelected">
+							<bean:write name="room" property="uniqueId"/>
+						</html:multibox>
+					</td>
+					<td align="left" nowrap>
+						<bean:write name="room" property="label"/>
+					</td>
+					<td align="left" nowrap>
+						<bean:write name="room" property="roomTypeLabel"/>
+					</td>
+					<td align="center" nowrap>
+						<bean:write name="room" property="capacity"/>
+					</td>
+					<td align="center" nowrap>
+						<logic:notEmpty name="room" property="examTypes">
+							<bean:write name="room" property="examCapacity"/>
+						</logic:notEmpty>
+						<logic:empty name="room" property="examTypes">
+							<i>N/A</i>
+						</logic:empty>
+					</td>
+					
+					<td align="left">
+						<bean:write name="<%=frmName%>" property='<%="features(" + room.getUniqueId() + ")"%>' filter="false"/>
+					</td>
+				</tr>
+			</logic:iterate>
 		</logic:notEmpty>
 
 		<logic:notEmpty name="<%=frmName%>" property="notAssignedRooms">
-			<TR>
-				<TD colspan='2'>&nbsp;</TD>
-			</TR>
-			<TR>
-				<TD colspan='2'>
+			<tr>
+				<td colspan='6'>&nbsp;</td>
+			</tr>
+			<tr>
+				<td colspan='6'>
 					<tt:section-title>Currently Not Assigned Rooms</tt:section-title>
-				</TD>
-			</TR>
-			<TR>
-				<TD colspan='2'>
-					<TABLE cellpadding="5" cellspacing="0">
-						<TR align="center" valign="top">
-						<TD> &nbsp;</TD>
-						<logic:iterate name="<%=frmName%>" property="heading" id="heading">
-						<%String h2 = (String) heading; %>	
-							<TD align="left"><I><%=h2%></I></TD>
-						</logic:iterate>
-						</TR>
-							
-						<logic:iterate name="<%=frmName%>" property="notAssignedRooms" id="room" indexId="ctr">
-						<% Location r2 = (Location) room;%>
-						
-						<TR align="center" onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
-				
-							<TD>
-								<html:multibox property="notAssignedSelected">
-									<%=r2.getUniqueId()%>
-								</html:multibox>	
-							</TD>
-				
-							<TD align="left">
-								<%=r2.getLabel()%>
-							</TD>
-							
-							<TD align="left">
-								<% if (r2 instanceof Room) { %>
-									<%=((Room)r2).getRoomTypeLabel()%>
-								<% } else { %>
-									Non University
-								<% } %>
-							</TD>
-
-							<TD align="center">
-								<%=r2.getCapacity()%>
-							</TD>
-							
-							<% if (r2.hasAnyExamsEnabled()) { %>
-								<TD align="center"><%=r2.getExamCapacity()%></TD>
-							<% } else { %>
-								<TD></TD>
-							<% } %>
-
-							<logic:iterate name="<%=frmName%>" property="roomFeatures" id="roomFeature">
-							<% 
-								RoomFeature rf2 = (RoomFeature) roomFeature; 
-								frm.setFeature(r2.hasFeature(rf2));
-							%>
-							<TD align="center">
-								<% if (r2.hasFeature(rf2)) { %>
-									<IMG border='0' align='middle' src='images/tick.gif' title='<%=rf2.getLabel()%>'/>
-								<% } %>
-								<!-- 
-								<html:checkbox disabled="true" property="feature" />
-								-->
-							</TD>
-							</logic:iterate>
-						
-						</TR>
-						
-						</logic:iterate>
-					</TABLE>
-				</TD>
-			</TR>
+				</td>
+			</tr>
+			<tr valign="top">
+				<td class="WebTableHeader">&nbsp;</td>
+				<td class="WebTableHeader">Room</td>
+				<td class="WebTableHeader">Type</td>
+				<td class="WebTableHeader">Capacity</td>
+				<td class="WebTableHeader">Exam<br>Capacity</td>
+				<td class="WebTableHeader">Room Features</td>
+			</tr>
+			<logic:iterate name="<%=frmName%>" property="notAssignedRooms" id="room" indexId="ctr" type="org.unitime.timetable.model.Location">
+				<tr valign="top" onmouseover="this.style.backgroundColor='rgb(223,231,242)';" onmouseout="this.style.backgroundColor='transparent';">
+					<td nowrap>
+						<html:multibox property="notAssignedSelected">
+							<bean:write name="room" property="uniqueId"/>
+						</html:multibox>
+					</td>
+					<td align="left" nowrap>
+						<bean:write name="room" property="label"/>
+					</td>
+					<td align="left" nowrap>
+						<bean:write name="room" property="roomTypeLabel"/>
+					</td>
+					<td align="center" nowrap>
+						<bean:write name="room" property="capacity"/>
+					</td>
+					<td align="center" nowrap>
+						<logic:notEmpty name="room" property="examTypes">
+							<bean:write name="room" property="examCapacity"/>
+						</logic:notEmpty>
+						<logic:empty name="room" property="examTypes">
+							<i>N/A</i>
+						</logic:empty>
+					</td>
+					<td align="left">
+						<bean:write name="<%=frmName%>" property='<%="features(" + room.getUniqueId() + ")"%>' filter="false"/>
+					</td>
+				</tr>
+			</logic:iterate>
 		</logic:notEmpty>
+		</table>
 		
+		<table width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan="2">
 				<tt:section-title/>

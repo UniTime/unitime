@@ -39,8 +39,6 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
@@ -48,16 +46,12 @@ import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.form.RoomGroupEditForm;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentRoomFeature;
-import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
-import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -160,81 +154,10 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
 		
 		TreeSet sortedAvailableRooms = new TreeSet(available);
 		roomGroupEditForm.setNotAssignedRooms(sortedAvailableRooms);
-
-		Collection roomFeatures = getRoomFeatures(rg);
-		roomGroupEditForm.setHeading(getHeading(roomFeatures));
-		roomGroupEditForm.setRoomFeatures(roomFeatures);
 		
 		roomGroupEditForm.setRooms();
 					
 		return mapping.findForward("showEdit");
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	private Collection getRoomFeatures(RoomGroup rg) throws Exception {
-		
-		ArrayList roomFeatures = new ArrayList();
-
-		org.hibernate.Session hibSession = null;
-		try {
-			hibSession = RoomFeatureDAO.getInstance().getSession();
-			
-			roomFeatures.addAll(hibSession
-						.createCriteria(GlobalRoomFeature.class)
-						.add(Restrictions.eq("session.uniqueId", rg.getSession().getUniqueId()))
-						.addOrder(Order.asc("label"))
-						.list());
-			
-			if (!rg.isGlobal()) {
-				roomFeatures.addAll(hibSession
-					.createCriteria(DepartmentRoomFeature.class)
-					.addOrder(Order.asc("label"))
-					.add(Restrictions.eq("department.uniqueId", rg.getDepartment().getUniqueId()))
-					.list());
-			}
-			
-		} catch (Exception e) {
-			Debug.error(e);
-		}
-		
-		return roomFeatures;
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	private String[] getHeading(Collection roomFeatures) {
-		//set headings
-		String fixedHeading[][] = { 
-				{ "Room", "left", "true" },
-				{ "Type", "left", "true" },
-				{ "Capacity", "right", "false" },
-				{ "Exam Capacity", "right", "false" }
-				};
-		
-		String heading[] = new String[fixedHeading.length
-				+ roomFeatures.size()];
-		String alignment[] = new String[heading.length];
-		boolean sorted[] = new boolean[heading.length];
-		for (int i = 0; i < fixedHeading.length; i++) {
-			heading[i] = fixedHeading[i][0];
-			alignment[i] = fixedHeading[i][1];
-			sorted[i] = (Boolean.valueOf(fixedHeading[i][2])).booleanValue();
-		}
-		int i = fixedHeading.length;
-		for (Iterator it = roomFeatures.iterator(); it.hasNext();) {
-			heading[i] = ((RoomFeature) it.next()).getLabel();
-			heading[i] = heading[i].replaceAll(" ", "<br>");
-			alignment[i] = "center";
-			sorted[i] = true;
-			i++;
-		}
-		
-		return heading;
 	}
 
 	/**

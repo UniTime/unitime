@@ -30,8 +30,11 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.dao.LocationDAO;
 
 
 /** 
@@ -49,14 +52,11 @@ public class RoomGroupEditForm extends ActionForm {
     private String abbv;
 	private boolean global;
 	private boolean deft;
-	private boolean feature;
 	private String desc;
 	private Collection assignedRooms;
 	private Collection notAssignedRooms;
 	private String[] assignedSelected = {};
 	private String[] notAssignedSelected = {};
-	private String[] heading;
-	private Collection roomFeatures;
 	private String doit;
 	private String deptCode;
 	private String deptName;
@@ -222,30 +222,6 @@ public class RoomGroupEditForm extends ActionForm {
 		this.id = id;
 	}
 
-	public String[] getHeading() {
-		return heading;
-	}
-
-	public void setHeading(String[] heading) {
-		this.heading = heading;
-	}
-
-	public Collection getRoomFeatures() {
-		return roomFeatures;
-	}
-
-	public void setRoomFeatures(Collection roomFeatures) {
-		this.roomFeatures = roomFeatures;
-	}
-
-	public boolean isFeature() {
-		return feature;
-	}
-
-	public void setFeature(boolean feature) {
-		this.feature = feature;
-	}
-
 	public String getDoit() {
 		return doit;
 	}
@@ -280,6 +256,21 @@ public class RoomGroupEditForm extends ActionForm {
     
     public Long getSessionId() { return sessionId; }
     public void setSessionId(Long sessionId) { this.sessionId = sessionId; }
+    
+    public String getFeatures(String locationId) {
+    	Location location = LocationDAO.getInstance().get(Long.valueOf(locationId));
+    	if (location == null) return "";
+    	String features = "";
+    	for (GlobalRoomFeature feature: location.getGlobalRoomFeatures()) {
+    		if (!features.isEmpty()) features += ", ";
+    		features += "<span title='" + feature.getLabel() + "' style='white-space:nowrap;'>" + feature.getLabelWithType() + "</span>";
+    	}
+    	for (DepartmentRoomFeature feature: location.getDepartmentRoomFeatures()) {
+    		if (!features.isEmpty()) features += ", ";
+    		features += "<span title='" + feature.getLabel() + "' style='white-space:nowrap;'>" + feature.getLabelWithType() + "</span>";
+    	}
+    	return features;
+    }
 
 }
 
