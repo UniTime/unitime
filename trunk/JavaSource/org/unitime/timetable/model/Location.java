@@ -324,15 +324,12 @@ public abstract class Location extends BaseLocation implements Comparable {
 	 * @return
 	 */
 
-	public Collection getDepartmentRoomFeatures() {
-		Collection drfs = new HashSet();
-		for (Iterator iter = getFeatures().iterator(); iter.hasNext();) {
-			RoomFeature rf = (RoomFeature) iter.next();
-			if (rf instanceof DepartmentRoomFeature) {
-				drfs.add(rf);
-			}
-		}
-		return (new TreeSet(drfs));
+	public TreeSet<DepartmentRoomFeature> getDepartmentRoomFeatures() {
+		TreeSet<DepartmentRoomFeature> drfs = new TreeSet<DepartmentRoomFeature>();
+		for (RoomFeature rf: getFeatures())
+			if (rf instanceof DepartmentRoomFeature)
+				drfs.add((DepartmentRoomFeature)rf);
+		return drfs;
 	}
 	
 	/**

@@ -30,8 +30,11 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.DepartmentRoomFeature;
+import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomFeature;
+import org.unitime.timetable.model.dao.LocationDAO;
 
 
 public class RoomFeatureEditForm extends ActionForm {
@@ -279,4 +282,21 @@ public class RoomFeatureEditForm extends ActionForm {
 	public Long getFeatureTypeId() { return featureTypeId; }
 	
 	public void setFeatureTypeId(Long featureTypeId) { this.featureTypeId = featureTypeId; }
+	
+    public String getFeatures(String locationId) {
+    	Location location = LocationDAO.getInstance().get(Long.valueOf(locationId));
+    	if (location == null) return "";
+    	String features = "";
+    	for (GlobalRoomFeature feature: location.getGlobalRoomFeatures()) {
+    		if (feature.getUniqueId().toString().equals(id)) continue;
+    		if (!features.isEmpty()) features += ", ";
+    		features += "<span title='" + feature.getLabel() + "' style='white-space:nowrap;'>" + feature.getLabelWithType() + "</span>";
+    	}
+    	for (DepartmentRoomFeature feature: location.getDepartmentRoomFeatures()) {
+    		if (feature.getUniqueId().toString().equals(id)) continue;
+    		if (!features.isEmpty()) features += ", ";
+    		features += "<span title='" + feature.getLabel() + "' style='white-space:nowrap;'>" + feature.getLabelWithType() + "</span>";
+    	}
+    	return features;
+    }
 }
