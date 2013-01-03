@@ -36,7 +36,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
-import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 
 import net.sf.cpsolver.ifs.model.Model;
@@ -57,7 +56,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	private Map<Long, CurCourse> iCourses = new Hashtable<Long, CurCourse>();
 	private List<CurCourse> iSwapableCourses = new ArrayList<CurCourse>();
 	private CurStudentLimit iStudentLimit = null;
-	private double iMinStudentWeight = Float.MAX_VALUE, iMaxStudentWeight = 0.0;
+	private double iMinStudentWeight = Float.MAX_VALUE, iMaxStudentWeight = 0.0, iTotalStudentWeight = 0.0;
 	private double iAssignedWeight = 0.0, iBestAssignedWeight  = 0.0, iMaxAssignedWeight = 0.0;
 	
 	public CurModel(Collection<CurStudent> students) {
@@ -66,6 +65,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		for (CurStudent student: getStudents()) {
 			iMinStudentWeight = Math.min(iMinStudentWeight, student.getWeight());
 			iMaxStudentWeight = Math.max(iMaxStudentWeight, student.getWeight());
+			iTotalStudentWeight += student.getWeight();
 		}
 	}
 	
@@ -86,8 +86,15 @@ public class CurModel extends Model<CurVariable, CurValue> {
 	}
 	
 	public void setTargetShare(Long c1, Long c2, double share) {
-		iCourses.get(c1).setTargetShare(c2, share);
-		iCourses.get(c2).setTargetShare(c1, share);
+		CurCourse course1 = iCourses.get(c1);
+		CurCourse course2 = iCourses.get(c2);
+		double ub = Math.min(course1.getOriginalMaxSize(), course2.getOriginalMaxSize());
+		double lb = Math.max(0, course1.getOriginalMaxSize() + course2.getOriginalMaxSize() - iTotalStudentWeight);
+		double ts = Math.round(Math.max(lb, Math.min(ub, share)));
+		if (ts != share)
+			sLog.debug("Target share between " + course1.getCourseName() + " and " + course2.getCourseName() + " changed to " + ts + " (was: " + share + ", lb:" + lb + ", ub:" + ub + ")");
+		course1.setTargetShare(c2, ts);
+		course2.setTargetShare(c1, ts);
 	}
 	
 	public void setStudentLimits() {
@@ -284,17 +291,18 @@ public class CurModel extends Model<CurVariable, CurValue> {
 
     public void saveAsXml(Element root) {
     	List<Long> courses = new ArrayList<Long>();
+    	DecimalFormat df = new DecimalFormat("0.##########");
     	for (CurCourse course: getCourses()) {
     		Element courseElement = root.addElement("course");
     		courseElement.addAttribute("id", course.getCourseId().toString());
     		courseElement.addAttribute("name", course.getCourseName());
-    		courseElement.addAttribute("limit", String.valueOf(course.getOriginalMaxSize()));
+    		courseElement.addAttribute("limit", df.format(course.getOriginalMaxSize()));
     		if (course.getPriority() != null)
     			courseElement.addAttribute("priority", course.getPriority().toString());
     		if (!courses.isEmpty()) {
         		String share = "";
     			for (Long other: courses) {
-    				share += (share.isEmpty() ? "" : ",") + course.getTargetShare(other);
+    				share += (share.isEmpty() ? "" : ",") +  df.format(course.getTargetShare(other));
     			}
 				courseElement.addAttribute("share", share);
     		}
@@ -304,7 +312,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			Element studentElement = root.addElement("student");
 			studentElement.addAttribute("id", student.getStudentId().toString());
 			if (student.getWeight() != 1.0)
-				studentElement.addAttribute("weight", String.valueOf(student.getWeight()));
+				studentElement.addAttribute("weight", df.format(student.getWeight()));
 			String courseIds = "";
 			for (CurCourse course: student.getCourses()) {
 				courseIds += (courseIds.isEmpty() ? "" : ",") + course.getCourseId();
@@ -399,10 +407,13 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			}
 			it++;
 		}
+		cfg.setProperty("HC.Iters", String.valueOf(it));
+		cfg.setProperty("HC.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- final value: " + this);
     }
     
     public void deluge(DataProperties cfg) {
+    	double f = cfg.getPropertyDouble("Deluge.Factor", 0.999999);
     	sLog.debug("  -- running great deluge");
 		int it = 0;
 		double total = getTotalValue();
@@ -425,10 +436,12 @@ public class CurModel extends Model<CurVariable, CurValue> {
 					total += value;
 				}
 			}
-			bound *= 0.999999;
+			bound *= f;
 			it++;
 		}
+		cfg.setProperty("Deluge.Iters", String.valueOf(it));
 		restoreBest();
+		cfg.setProperty("Deluge.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- final value: " + this);
     }
     
@@ -460,9 +473,12 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		sLog.debug("  -- final value: " + this);
     }
     
-    public void solve() {
+    public DataProperties solve() {
+    	return solve(new DataProperties());
+    }
+    
+    public DataProperties solve(DataProperties cfg) {
     	sLog.debug("  -- setting up the solver");
-    	DataProperties cfg = new DataProperties();
     	CurVariableSelection var = new CurVariableSelection(cfg);
     	CurValueSelection vs = new CurValueSelection(cfg);
 		Solution<CurVariable, CurValue> solution = new Solution<CurVariable, CurValue>(this);
@@ -485,9 +501,11 @@ public class CurModel extends Model<CurVariable, CurValue> {
     			sLog.debug("    -- incomplete " + course.getCourseName() + ": " + getCourse(course.getCourseId()).getStudents() + " (" + course.getSize() + "/" + course.getOriginalMaxSize() + ")");
     		}
     	}
+    	cfg.setProperty("Initial.Value", String.valueOf(getTotalValue()));
 		sLog.debug("  -- initial value: " + this);
 		hc(cfg); // or fast(cfg);
 		deluge(cfg); // or naive(cfg);
+		return cfg;
     }
     
     public boolean isSameModel(Object o) {
@@ -549,10 +567,6 @@ public class CurModel extends Model<CurVariable, CurValue> {
 			m.saveAsXml(d0.addElement("curriculum"));
 			sLog.info(d0.asXML());
 			
-			CurModel n = CurModel.loadFromXml((new SAXReader()).read("/Users/muller/solution.xml").getRootElement());
-            n.setStudentLimits();
-            sLog.info("Same model: " + m.isSameModel(n) + ", " + n.isSameModel(m));
-    		
     		sLog.info("Loaded: " + ToolBox.dict2string(m.getInfo(), 2));
 
     		m.solve();
