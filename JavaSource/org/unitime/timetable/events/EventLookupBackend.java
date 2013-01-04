@@ -1563,7 +1563,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			for (CourseOffering co: courses) {
 						    		event.addCourseName(co.getCourseName());
 						    		event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
-						    		if (clazz.getSectionNumberString(hibSession) != null)
+						    		if (clazz.getClassSuffix(co) != null)
 						    			event.addExternalId(clazz.getClassSuffix(co));
 				    			}
 				    			for (RoomPref rp: (Set<RoomPref>)clazz.effectivePreferences(RoomPref.class)) {
