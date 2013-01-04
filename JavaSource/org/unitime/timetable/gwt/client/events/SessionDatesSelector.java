@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -33,7 +32,8 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
-import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -45,7 +45,6 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
@@ -114,7 +113,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			iPanel.getWidget().add(new SingleMonth(month, isCanSelectPast()));
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
 			if (end < 0) end = month.getFirst(SessionMonth.Flag.END);
-			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.EXAM_START);
+			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.FINALS);
 			if (firstHoliday < 0) firstHoliday = month.getFirst(SessionMonth.Flag.HOLIDAY);
 			if (firstBreak < 0) firstBreak = month.getFirst(SessionMonth.Flag.BREAK);
 			if (firstOutside < 0) firstOutside = month.getFirst(SessionMonth.Flag.DISABLED);
@@ -125,62 +124,6 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
 		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, firstPast, today));
-	}
-	
-	public static class SessionMonth implements IsSerializable {
-		public static enum Flag implements IsSerializable {
-			START,
-			END,
-			EXAM_START,
-			VACATION,
-			HOLIDAY,
-			BREAK,
-			SELECTED,
-			DISABLED,
-			PAST;
-			
-			public int flag() { return 1 << ordinal(); }
-		}
-		
-		private int iYear, iMonth;
-		private int[] iDays;
-		
-		public SessionMonth() {}
-		public SessionMonth(int year, int month) {
-			iYear = year; iMonth = month;
-			iDays = new int[31];
-		}
-		public int getYear() { return iYear; }
-		public int getMonth() { return iMonth; }
-		public boolean hasFlag(int day, Flag f) {
-			return (iDays[day] & f.flag()) != 0;
-		}
-		public void setFlag(int day, Flag f) {
-			if (!hasFlag(day, f)) iDays[day] += f.flag();
-		}
-		public void clearFlag(int day, Flag f) {
-			if (hasFlag(day, f)) iDays[day] -= f.flag();
-		}
-		public int getFlags(int day) {
-			return iDays[day];
-		}
-		public int getFirst(Flag flag) {
-			for (int i = 0; i < iDays.length; i++)
-				if (hasFlag(i, flag)) return i;
-			return -1;
-		}
-	}
-	
-	@GwtRpcImplementedBy("org.unitime.timetable.events.DateSelectorBackend")
-	public static class RequestSessionDetails extends EventRpcRequest<GwtRpcResponseList<SessionMonth>> {
-
-		public RequestSessionDetails() {}
-		public RequestSessionDetails(Long sessionId) { setSessionId(sessionId); }
-		
-		@Override
-		public String toString() {
-			return getSessionId().toString();
-		}
 	}
 	
 	public static class P extends AbsolutePanel {
@@ -411,7 +354,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 					d.addStyleName("start");
 				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.END))
 					d.addStyleName("start");
-				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.EXAM_START))
+				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.FINALS))
 					d.addStyleName("exam");
 				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.HOLIDAY))
 					d.addStyleName("holiday");
@@ -483,7 +426,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (exam >= 0) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(exam + 1), "cell", "exam"));
-				line.add(new P(MESSAGES.legendExamStart(), "title"));
+				line.add(new P(MESSAGES.legendFinals(), "title"));
 				box.add(line);
 			}
 			

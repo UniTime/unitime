@@ -24,8 +24,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.events.SessionDatesSelector.RequestSessionDetails;
-import org.unitime.timetable.gwt.client.events.SessionDatesSelector.SessionMonth;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -42,6 +40,8 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;

@@ -23,8 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.unitime.timetable.gwt.client.events.SessionDatesSelector.RequestSessionDetails;
-import org.unitime.timetable.gwt.client.events.SessionDatesSelector.SessionMonth;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -34,6 +32,8 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
+import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -592,7 +592,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 						d.addStyleName("start");
 					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.END))
 						d.addStyleName("start");
-					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.EXAM_START))
+					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.FINALS))
 						d.addStyleName("exam");
 					else if (sessionMonth.hasFlag(i - 1, SessionMonth.Flag.HOLIDAY))
 						d.addStyleName("holiday");
