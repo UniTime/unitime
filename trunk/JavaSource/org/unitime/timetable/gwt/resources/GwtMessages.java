@@ -29,10 +29,10 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Version {0} built on {1}")
 	String pageVersion(String version, String buildDate);
 	
-	@DefaultMessage("&copy; 2008 - 2012 UniTime LLC,<br>distributed under GNU General Public License.")
+	@DefaultMessage("&copy; 2008 - 2013 UniTime LLC,<br>distributed under GNU General Public License.")
 	String pageCopyright();
 	
-	@DefaultMessage("UniTime {0}, \u00A9 2008 - 2012 UniTime LLC, distributed under GNU GPL.")
+	@DefaultMessage("UniTime {0}, \u00A9 2008 - 2013 UniTime LLC, distributed under GNU GPL.")
 	String pdfCopyright(String version);
 	
 	@DefaultMessage("Oooops, the loading is taking too much time... Something probably went wrong. You may need to reload this page.")
