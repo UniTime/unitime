@@ -2,6 +2,7 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.MeetingFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
@@ -42,9 +43,9 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeHeaderPanel iFooter;
 	
-	public ApproveDialog() {
+	public ApproveDialog(EventPropertiesProvider properties) {
 		super(true, false);
-		iTable = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, false);
+		iTable = new EventMeetingTable(EventMeetingTable.Mode.ApprovalOfSingleEventMeetings, false, properties);
 		
 		iForm = new SimpleForm();
 		

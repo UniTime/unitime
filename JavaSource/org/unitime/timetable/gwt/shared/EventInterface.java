@@ -799,7 +799,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    }
 	}
 	
-    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast) {
+	public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast) {
+		return getMultiMeetings(meetings, checkPast, null, null);
+	}
+	
+    public static TreeSet<MultiMeetingInterface> getMultiMeetings(Collection<MeetingInterface> meetings, boolean checkPast, DateFlagsProvider flags, EventType type) {
         TreeSet<MultiMeetingInterface> ret = new TreeSet<MultiMeetingInterface>();
         HashSet<MeetingInterface> meetingSet = new HashSet<MeetingInterface>(meetings);
         while (!meetingSet.isEmpty()) {
@@ -810,13 +814,14 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
             meetingSet.remove(meeting);
             HashMap<Integer,MeetingInterface> similar = new HashMap<Integer, MeetingInterface>(); 
             TreeSet<Integer> dow = new TreeSet<Integer>(); dow.add(meeting.getDayOfWeek());
+            SessionMonth.Flag flag = (flags == null ? null : flags.getDateFlag(type, meeting.getMeetingDate()));
             for (MeetingInterface m : meetingSet) {
             	if (m.getMeetingTime(null).equals(meeting.getMeetingTime(null)) &&
             		m.getLocationName().equals(meeting.getLocationName()) &&
             		(!checkPast || m.isPast() == meeting.isPast()) && 
-            		(m.getApprovalStatus() == meeting.getApprovalStatus())) {
-            		if (m.getDayOfYear() - meeting.getDayOfYear() < 7)
-            			dow.add(m.getDayOfWeek());
+            		(m.getApprovalStatus() == meeting.getApprovalStatus()) &&
+            		(flags == null || flag == flags.getDateFlag(type, m.getMeetingDate()))) {
+            		if (m.getDayOfYear() - meeting.getDayOfYear() < 7) dow.add(m.getDayOfWeek());
                     similar.put(m.getDayOfYear(),m);
                 }
             }
@@ -2014,4 +2019,64 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				EventFlag.SHOW_CAPACITY.flag() +
 				EventFlag.SHOW_TITLE.flag() + 
 				EventFlag.SHOW_APPROVAL.flag();
+	
+	public static class SessionMonth implements IsSerializable {
+		public static enum Flag implements IsSerializable {
+			START,
+			END,
+			FINALS,
+			HOLIDAY,
+			BREAK,
+			SELECTED,
+			DISABLED,
+			PAST,
+			WEEKEND;
+			
+			public int flag() { return 1 << ordinal(); }
+		}
+		
+		private int iYear, iMonth;
+		private int[] iDays;
+		
+		public SessionMonth() {}
+		public SessionMonth(int year, int month) {
+			iYear = year; iMonth = month;
+			iDays = new int[31];
+		}
+		public int getYear() { return iYear; }
+		public int getMonth() { return iMonth; }
+		public boolean hasFlag(int day, Flag f) {
+			return (iDays[day] & f.flag()) != 0;
+		}
+		public void setFlag(int day, Flag f) {
+			if (!hasFlag(day, f)) iDays[day] += f.flag();
+		}
+		public void clearFlag(int day, Flag f) {
+			if (hasFlag(day, f)) iDays[day] -= f.flag();
+		}
+		public int getFlags(int day) {
+			return iDays[day];
+		}
+		public int getFirst(Flag flag) {
+			for (int i = 0; i < iDays.length; i++)
+				if (hasFlag(i, flag)) return i;
+			return -1;
+		}
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.events.DateSelectorBackend")
+	public static class RequestSessionDetails extends EventRpcRequest<GwtRpcResponseList<SessionMonth>> {
+
+		public RequestSessionDetails() {}
+		public RequestSessionDetails(Long sessionId) { setSessionId(sessionId); }
+		
+		@Override
+		public String toString() {
+			return getSessionId().toString();
+		}
+	}
+	
+	public static interface DateFlagsProvider {
+		public SessionMonth.Flag getDateFlag(EventType type, Date date);
+	}
 }

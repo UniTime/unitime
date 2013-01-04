@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,6 +63,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -82,6 +84,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
@@ -170,6 +173,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private PageType iType = null;
 	private boolean iInitialized = false;
 	private List<EventInterface> iBack = new ArrayList<EventInterface>();
+	private List<SessionMonth> iSessionMonths = null;
 	
 	public static enum PageType {
 		Timetable("tab", "0", "title", "Event Timetable", "rooms", ""),
@@ -462,7 +466,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
-				EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false);
+				EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false, EventResourceTimetable.this);
 				table.setMeetingFilter(EventResourceTimetable.this);
 				table.setShowMainContact(iProperties != null && iProperties.isCanLookupContacts());
 				table.setEvents(iData);
@@ -746,7 +750,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		};
 		
-		iTable = new EventMeetingTable(EventMeetingTable.Mode.ListOfEvents, true) {
+		iTable = new EventMeetingTable(EventMeetingTable.Mode.ListOfEvents, true, this) {
 			@Override
 			protected void onSortByChanded(EventComparator.EventMeetingSortBy sortBy) {
 				changeUrl();
@@ -778,7 +782,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		});
 		
-		iApproveDialog = new ApproveDialog() {
+		iApproveDialog = new ApproveDialog(this) {
 			@Override
 			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> data, String message) {
 				Map<EventInterface, List<MeetingInterface>> event2meetings = new HashMap<EventInterface, List<MeetingInterface>>();
@@ -1548,6 +1552,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	
 	private void loadProperties(final AsyncCallback<EventPropertiesRpcResponse> callback) {
 		iProperties = null;
+		iSessionMonths = null;
 		iTable.setShowMainContact(false);
 		iFilterHeader.setEnabled("lookup", false);
 		iFilterHeader.setEnabled("add", false);
@@ -1560,19 +1565,33 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						callback.onFailure(caught);
 				}
 				@Override
-				public void onSuccess(EventPropertiesRpcResponse result) {
-					iProperties = result;
-					iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
-					iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
-					iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
-					iEventAdd.setup(result);
-					iTable.setShowMainContact(result.isCanLookupContacts());
-					iApproveDialog.reset(result);
-					if (callback != null)
-						callback.onSuccess(result);
+				public void onSuccess(final EventPropertiesRpcResponse result) {
+					RPC.execute(new RequestSessionDetails(iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()));
+							if (callback != null)
+								callback.onFailure(caught);
+						}
+						
+						@Override
+						public void onSuccess(GwtRpcResponseList<SessionMonth> months) {
+							iProperties = result;
+							iSessionMonths = months;
+							iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
+							iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
+							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
+							iEventAdd.setup(result);
+							iTable.setShowMainContact(result.isCanLookupContacts());
+							iApproveDialog.reset(result);
+							if (callback != null)
+								callback.onSuccess(result);
+						}
+					});
 				}
 			});
 			iLookup.setOptions("mustHaveExternalId,session=" + iSession.getAcademicSessionId());
+
 		} else {
 			iLookup.setOptions("mustHaveExternalId");
 		}
@@ -1735,5 +1754,23 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			return session.has(AcademicSession.Flag.HasClasses) || session.has(AcademicSession.Flag.HasFinalExams) || session.has(AcademicSession.Flag.HasMidtermExams);
 		return true;
 	}
+
+	@Override
+	public SessionMonth.Flag getDateFlag(EventType type, Date date) {
+		if (iSessionMonths == null || iSessionMonths.isEmpty()) return null;
+		if (date == null) return null;
+		int m = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
+		for (SessionMonth month: iSessionMonths)
+			if (m == month.getMonth() + 1) {
+				int d = Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1;
+				if (month.hasFlag(d, SessionMonth.Flag.FINALS) && type != EventType.FinalExam) return SessionMonth.Flag.FINALS;
+				if (month.hasFlag(d, SessionMonth.Flag.BREAK)) return SessionMonth.Flag.BREAK;
+				if (month.hasFlag(d, SessionMonth.Flag.WEEKEND)) return SessionMonth.Flag.WEEKEND;
+				if (month.hasFlag(d, SessionMonth.Flag.HOLIDAY)) return SessionMonth.Flag.HOLIDAY;
+				return null;
+			}
+		return null;
+	}
+
 
 }

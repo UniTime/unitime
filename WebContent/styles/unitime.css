@@ -2228,6 +2228,26 @@ div.gwt-MenuBarPopup {
 	overflow: hidden;
 }
 
+.unitime-EventMeetings .finals {
+	color: green;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .holiday {
+	color: red;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .break {
+	color: purple;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .weekend {
+	color: graytext;
+	font-weight: bold;
+}
+
 @media print {
 	.unitime-EventMeetings .conflict-row {
 		font-style: italic;
