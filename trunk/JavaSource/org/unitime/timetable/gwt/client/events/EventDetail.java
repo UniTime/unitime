@@ -134,7 +134,7 @@ public class EventDetail extends Composite {
 		contactHeader.add(new UniTimeTableHeader(MESSAGES.colPhone()));
 		iContacts.addRow(null, contactHeader);
 		
-		iApproveDialog = new ApproveDialog() {
+		iApproveDialog = new ApproveDialog(iProperties) {
 			@Override
 			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message){
 				switch (operation) {
@@ -187,7 +187,7 @@ public class EventDetail extends Composite {
 			}
 		};
 		
-		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true);
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true, iProperties);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Approve, iApproveDialog);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Reject, iApproveDialog);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Inquire, iApproveDialog);

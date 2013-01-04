@@ -786,8 +786,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Classes Start/End")
 	String legendClassesStartOrEnd();
 	
-	@DefaultMessage("Examination Start")
-	String legendExamStart();
+	@DefaultMessage("Finals")
+	String legendFinals();
 	
 	@DefaultMessage("Holiday")
 	String legendHoliday();
@@ -800,6 +800,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("In The Past")
 	String legendPast();
+
+	@DefaultMessage("Finals")
+	String hintFinals();
+	
+	@DefaultMessage("Holiday")
+	String hintHoliday();
+	
+	@DefaultMessage("Break")
+	String hintBreak();
+
+	@DefaultMessage("Weekend")
+	String hintWeekend();
 
 	@DefaultMessage("<span title=\"Conflicting event\" style=\"font-style:normal;\">&#9785;</span>")
 	String signConflict();

@@ -55,6 +55,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.DateFlagsProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
@@ -575,6 +576,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onChange(ChangeEvent event) {
 				EventType type = getEventType();
+				iEvent.setType(type);
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile);
@@ -729,7 +731,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		});
 		iForm.addHeaderRow(iMeetingsHeader);
 		
-		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true); iMeetings.setEditable(true);
+		iMeetings = new EventMeetingTable(EventMeetingTable.Mode.MeetingsOfAnEvent, true, iProperties); iMeetings.setEditable(true);
 		iMeetings.setOperation(EventMeetingTable.OperationType.AddMeetings, this);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Delete, this);
 		iMeetings.setOperation(EventMeetingTable.OperationType.Cancel, this);
@@ -1550,7 +1552,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		return iProperties == null ? null : iProperties.getProperties();
 	}
 
-	public static interface EventPropertiesProvider {
+	public static interface EventPropertiesProvider extends DateFlagsProvider {
 		public Long getSessionId();
 		public EventPropertiesRpcResponse getProperties();
 		public List<SelectionInterface> getSelection(); 

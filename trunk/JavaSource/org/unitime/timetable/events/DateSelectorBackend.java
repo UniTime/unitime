@@ -19,30 +19,44 @@
 */
 package org.unitime.timetable.events;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.unitime.timetable.gwt.client.events.SessionDatesSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.util.DateUtils;
 
-@Service("org.unitime.timetable.gwt.client.events.SessionDatesSelector$RequestSessionDetails")
-public class DateSelectorBackend extends EventAction<SessionDatesSelector.RequestSessionDetails, GwtRpcResponseList<SessionDatesSelector.SessionMonth>> {
+@Service("org.unitime.timetable.gwt.shared.EventInterface$RequestSessionDetails")
+public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtRpcResponseList<SessionMonth>> {
 
 	@Override
-	public GwtRpcResponseList<SessionDatesSelector.SessionMonth> execute(SessionDatesSelector.RequestSessionDetails command, EventContext context) {
+	public GwtRpcResponseList<SessionMonth> execute(RequestSessionDetails command, EventContext context) {
 		Session session = SessionDAO.getInstance().get(command.getSessionId());
 		
-		GwtRpcResponseList<SessionDatesSelector.SessionMonth> response = new GwtRpcResponseList<SessionDatesSelector.SessionMonth>();
+		GwtRpcResponseList<SessionMonth> response = new GwtRpcResponseList<SessionMonth>();
 		
 		Calendar calendar = Calendar.getInstance();
+
+		List<Date> finals = new ArrayList<Date>();
+		for (Number dateOffset: (List<Number>)SessionDAO.getInstance().getSession().createQuery(
+				"select distinct dateOffset from ExamPeriod where session.uniqueId = :sessionId and examType.type = :finalType")
+				.setLong("sessionId", command.getSessionId()).setInteger("finalType", ExamType.sExamTypeFinal).setCacheable(true).list()) {
+		    calendar.setTime(session.getExamBeginDate());
+		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
+		    finals.add(calendar.getTime());
+		}
+		
 		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
 			
-			SessionDatesSelector.SessionMonth m = new SessionDatesSelector.SessionMonth(
+			SessionMonth m = new SessionMonth(
 					calendar.get(Calendar.YEAR),
 					calendar.get(Calendar.MONTH));
 			
@@ -50,26 +64,34 @@ public class DateSelectorBackend extends EventAction<SessionDatesSelector.Reques
 			for (int i = 0; i < nrDays; i++) {
 				switch (session.getHoliday(1 + i, month)) {
 				case Session.sHolidayTypeBreak:
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.BREAK);
+					m.setFlag(i, SessionMonth.Flag.BREAK);
 					break;
 				case Session.sHolidayTypeHoliday:
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.HOLIDAY);
+					m.setFlag(i, SessionMonth.Flag.HOLIDAY);
 					break;
 				}
 				
 				if (compare(calendar.getTime(), session.getSessionBeginDateTime()) == 0)
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.START);
+					m.setFlag(i, SessionMonth.Flag.START);
 
 				if (compare(calendar.getTime(), session.getSessionEndDateTime()) == 0)
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.END);
+					m.setFlag(i, SessionMonth.Flag.END);
 
-				if (compare(calendar.getTime(), session.getExamBeginDate()) == 0)
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.EXAM_START);
-
+				for (Date finalDate: finals) {
+					if (compare(calendar.getTime(), finalDate) == 0)
+						m.setFlag(i, SessionMonth.Flag.FINALS);
+				}
+				
 				if (compare(calendar.getTime(), session.getEventBeginDate()) < 0 || compare(calendar.getTime(), session.getEventEndDate()) > 0)
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.DISABLED);
+					m.setFlag(i, SessionMonth.Flag.DISABLED);
 				else if (context.isPastOrOutside(calendar.getTime()))
-					m.setFlag(i, SessionDatesSelector.SessionMonth.Flag.PAST);
+					m.setFlag(i, SessionMonth.Flag.PAST);
+				
+				switch (calendar.get(Calendar.DAY_OF_WEEK)) {
+				case Calendar.SATURDAY:
+				case Calendar.SUNDAY:
+					m.setFlag(i, SessionMonth.Flag.WEEKEND);
+				}
 				
 				calendar.add(Calendar.DAY_OF_YEAR, 1);
 			}

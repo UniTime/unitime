@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.P;
@@ -47,6 +48,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -103,12 +105,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private boolean iSelectable = true, iEditable = false;
 	private Map<OperationType, Implementation> iImplementations = new HashMap<OperationType, Implementation>();
 	private MeetingFilter iMeetingFilter = null;
+	private EventPropertiesProvider iPropertiesProvider = null;
 
-	public EventMeetingTable(Mode mode, boolean selectable) {
+	public EventMeetingTable(Mode mode, boolean selectable, EventPropertiesProvider properties) {
 		setStyleName("unitime-EventMeetings");
 		
 		iMode = mode;
 		iSelectable = selectable;
+		iPropertiesProvider = properties;
 		
 		if (getRowCount() > 0) clearTable();
 		
@@ -752,7 +756,33 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 					row.get(row.size() - 1).addStyleName("indent");
 				} else {
-					row.add(new Label(meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : sDateFormatMeeting.format(meeting.getMeetingDate()), false));
+					if (meeting.isArrangeHours())
+						row.add(new Label(CONSTANTS.arrangeHours()));
+					else {
+						Label meetingDate = new Label(sDateFormatMeeting.format(meeting.getMeetingDate()), false);
+						SessionMonth.Flag dateFlag = (iPropertiesProvider == null ? null : iPropertiesProvider.getDateFlag(event == null ? null : event.getType(), meeting.getMeetingDate()));
+						if (dateFlag != null) {
+							switch (dateFlag) {
+							case FINALS:
+								meetingDate.setTitle(MESSAGES.hintFinals());
+								meetingDate.addStyleName("finals");
+								break;
+							case BREAK:
+								meetingDate.setTitle(MESSAGES.hintBreak());
+								meetingDate.addStyleName("break");
+								break;
+							case HOLIDAY:
+								meetingDate.setTitle(MESSAGES.hintHoliday());
+								meetingDate.addStyleName("holiday");
+								break;
+							case WEEKEND:
+								meetingDate.setTitle(MESSAGES.hintWeekend());
+								meetingDate.addStyleName("weekend");
+								break;
+							}
+						}
+						row.add(meetingDate);
+					}
 				}
 				row.add(new Label(meeting.getMeetingTime(CONSTANTS), false));
 				row.add(new Label(meeting.getAllocatedTime(CONSTANTS), false));
@@ -780,7 +810,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			String[] prev = null;
 			boolean prevPast = false;
 			allCancelledOrRejected = true;
-			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true)) {
+			boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
+			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType())) {
 				String[] mtg = new String[] {
 						m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
 						m.getMeetings().first().getMeetingTime(CONSTANTS),
@@ -790,6 +821,25 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getLocationNameWithHint(),
 						(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : MESSAGES.notApplicable())
 						};
+				if (!m.isArrangeHours() && !m.isPast()) {
+					SessionMonth.Flag dateFlag = (globalUnavailability || iPropertiesProvider == null ? null : iPropertiesProvider.getDateFlag(event == null ? null : event.getType(), m.getFirstMeetingDate()));
+					if (dateFlag != null) {
+						switch (dateFlag) {
+						case FINALS:
+							mtg[0] = "<span class='finals' title=\"" + MESSAGES.hintFinals() + "\">" + mtg[0] + "</span>";
+							break;
+						case BREAK:
+							mtg[0] = "<span class='break' title=\"" + MESSAGES.hintBreak() + "\">" + mtg[0] + "</span>";
+							break;
+						case HOLIDAY:
+							mtg[0] = "<span class='holiday' title=\"" + MESSAGES.hintHoliday() + "\">" + mtg[0] + "</span>";
+							break;
+						case WEEKEND:
+							mtg[0] = "<span class='weekend' title=\"" + MESSAGES.hintWeekend() + "\">" + mtg[0] + "</span>";
+							break;
+						}
+					}
+				}
 				for (int i = 0; i < mtgs.length; i++) {
 					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
 				}
