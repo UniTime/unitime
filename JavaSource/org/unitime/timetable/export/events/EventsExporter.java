@@ -73,7 +73,6 @@ public abstract class EventsExporter implements Exporter {
     	request.setEventFilter(eventFilter);
     	RoomFilterRpcRequest roomFilter = new RoomFilterRpcRequest();
     	roomFilter.setSessionId(sessionId);
-    	boolean hasRoomFilter = false;
     	for (Enumeration<String> e = helper.getParameterNames(); e.hasMoreElements(); ) {
     		String command = e.nextElement();
     		if (command.equals("e:text")) {
@@ -82,16 +81,13 @@ public abstract class EventsExporter implements Exporter {
     			for (String value: helper.getParameterValues(command))
     				eventFilter.addOption(command.substring(2), value);
     		} else if (command.equals("r:text")) {
-    			hasRoomFilter = true;
     			roomFilter.setText(helper.getParameter("r:text"));
     		} else if (command.startsWith("r:")) {
-    			hasRoomFilter = true;
     			for (String value: helper.getParameterValues(command))
     				roomFilter.addOption(command.substring(2), value);
     		}
     	}
-    	if (hasRoomFilter)
-    		request.setRoomFilter(roomFilter);
+		request.setRoomFilter(roomFilter);
     	
     	UserContext u = helper.getSessionContext().getUser();
     	String user = helper.getParameter("user");
