@@ -8257,4 +8257,29 @@
 			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
 		</sql>
 	</update>
+	<update version="106" date="4-Jan-2013" comment="Event Date Mapping">
+		<plsql>
+			create table %SCHEMA%.date_mapping (
+				uniqueid number(20,0) constraint nn_date_map_id not null,
+				session_id number(20,0) constraint nn_date_map_session not null,
+				class_date number(10,0) constraint nn_date_map_class not null,
+				event_date number(10,0) constraint nn_date_map_event not null,
+				note varchar2(1000 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.date_mapping add constraint pk_date_mapping primary key (uniqueid)</plsql>
+		<mysql>
+			create table %SCHEMA%.date_mapping (
+				uniqueid decimal(20,0) primary key not null,
+				session_id decimal(20,0) not null,
+				class_date bigint(10)  not null,
+				event_date bigint(10)  not null,
+				note varchar(1000)
+			) engine = INNODB
+		</mysql>
+		<sql>
+			alter table %SCHEMA%.date_mapping add constraint fk_event_date_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

@@ -367,7 +367,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
             sb.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		sb.append("<script language='JavaScript'>");
 		sb.append(
-			"calGenerate("+getSession().getSessionStartYear()+","+
+			"calGenerate2("+getSession().getSessionStartYear()+","+
 				(getSession().getPatternStartMonth()) +","+
 				(getSession().getPatternEndMonth())+","+
 				getPatternArray()+","+
@@ -375,7 +375,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 				"['Classes offered','Classes not offered'],"+
 				"['rgb(240,240,50)','rgb(240,240,240)'],"+
 				"'1',"+
-				getBorderArray(uniqueId)+","+editable+","+editable+");");
+				getBorderArray(uniqueId)+","+getSession().getColorArray()+","+editable+","+editable+");");
 		sb.append("</script>");
 		return sb.toString();
 	}

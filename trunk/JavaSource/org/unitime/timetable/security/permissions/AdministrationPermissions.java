@@ -21,6 +21,7 @@ package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
@@ -31,6 +32,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.ItypeDescDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 
@@ -406,5 +408,48 @@ public class AdministrationPermissions {
 	
 	@PermissionForRight(Right.InstructorRoleEdit)
 	public static class InstructorRoleEdit extends InstructorRoles {}
+	
+	@PermissionForRight(Right.EventDateMappings)
+	public static class EventDateMappings implements Permission<Session> {
+		@Autowired Permission<Session> permissionSession;
+		@Autowired Permission<Session> permissionEventDateMappingEdit;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source)) return false;
+			
+			// Is there a mapping to show?
+			if (EventDateMapping.hasMapping(source.getUniqueId())) return true;
+			
+			// Is there a mapping to add?
+			if (user.getCurrentAuthority().hasRight(Right.EventDateMappingEdit) && permissionEventDateMappingEdit.check(user, source))
+				return true;
+			
+			return false;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class;}
+	}
+	
+	@PermissionForRight(Right.EventDateMappingEdit)
+	public static class EventDateMappingEdit implements Permission<Session> {
+		@Autowired Permission<Session> permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (!permissionSession.check(user, source))
+				return false;
+			
+			int nrCommitted = ((Number)SessionDAO.getInstance().getSession().
+                    createQuery("select count(s) from Solution s where s.owner.session.uniqueId = :sessionId and s.commited = true").
+                    setLong("sessionId", source.getUniqueId()).setCacheable(true).uniqueResult()).intValue();
+            
+			return nrCommitted == 0;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class;}
+	}
 
 }

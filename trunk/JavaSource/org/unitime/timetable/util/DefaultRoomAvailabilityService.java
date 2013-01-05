@@ -31,6 +31,7 @@ import java.util.Vector;
 
 import org.hibernate.Query;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Session;
@@ -53,6 +54,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
     }
     public Collection<TimeBlock> getRoomAvailability(Location location, Date startTime, Date endTime, String excludeType) {
         if (location.getPermanentId()==null) return null;
+        EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(location.getSession().getUniqueId()) : null);
         TimeFrame time = new TimeFrame(startTime, endTime);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
@@ -88,21 +90,24 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                     .setInteger("endSlot", endSlot)
                     .setCacheable(true);
             for (Iterator i=q.list().iterator();i.hasNext();) {
-                Meeting m = (Meeting)i.next(); 
-                ret.add(new MeetingTimeBlock(m));
+                Meeting m = (Meeting)i.next();
+                MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                if (block.getStartTime() != null)
+                	ret.add(block);
             }
             return ret;
         }
     }
     public void activate(Session session, Date startTime, Date endTime, String excludeType, boolean waitForSync) {
         TimeFrame time = new TimeFrame(startTime, endTime);
+        EventDateMapping.Class2EventDateMap class2eventDateMap = (sClassType.equals(excludeType) ? EventDateMapping.getMapping(session.getUniqueId()) : null);
         synchronized(iCache) {
             CacheElement cache = get(time, excludeType);
             if (cache==null) {
                 cache = new CacheElement(time, excludeType);
                 iCache.insertElementAt(cache, 0);
             }
-            cache.update();
+            cache.update(class2eventDateMap);
         }
     }
     
@@ -155,7 +160,7 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
             iTime = time;
             iExcludeType = excludeType;
         };
-        public void update() {
+        public void update(EventDateMapping.Class2EventDateMap class2eventDateMap) {
             iAvailability.clear();
             String exclude = null;
             if (iExcludeType!=null) {
@@ -183,7 +188,9 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
                 if (blocks==null) {
                     blocks = new TreeSet(); iAvailability.put(m.getLocationPermanentId(), blocks);
                 }
-                blocks.add(new MeetingTimeBlock(m));
+                MeetingTimeBlock block = new MeetingTimeBlock(m, class2eventDateMap);
+                if (block.getStartTime() != null)
+                	blocks.add(block);
             }
             iTimestamp = new Date().toString();
         }
@@ -219,12 +226,12 @@ public class DefaultRoomAvailabilityService implements RoomAvailabilityInterface
 		Long iMeetingId;
         String iEventName, iEventType;
         Date iStart, iEnd;
-        public MeetingTimeBlock(Meeting m) {
+        public MeetingTimeBlock(Meeting m, EventDateMapping.Class2EventDateMap class2eventDateMap) {
             iMeetingId = m.getUniqueId();
             iEventName = m.getEvent().getEventName();
             iEventType = m.getEvent().getEventTypeLabel();
-            iStart = m.getTrueStartTime();
-            iEnd = m.getTrueStopTime();
+            iStart = m.getTrueStartTime(class2eventDateMap);
+            iEnd = m.getTrueStopTime(class2eventDateMap);
         }
         public Long getId() { return iMeetingId; }
         public String getEventName() { return iEventName; }

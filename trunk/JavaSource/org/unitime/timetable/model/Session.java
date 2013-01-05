@@ -333,7 +333,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 	}
 
 	public String getHolidaysHtml(boolean editable) {
-		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getSessionStartYear(), getHolidays(), editable);
+		return getHolidaysHtml(getSessionBeginDateTime(), getSessionEndDateTime(), getClassesEndDateTime(), getExamBeginDate(), getEventBeginDate(), getEventEndDate(), getSessionStartYear(), getHolidays(), editable, EventDateMapping.getMapping(getUniqueId()));
 	}
 
 	public static String getHolidaysHtml(
@@ -345,12 +345,13 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 			Date eventEndTime,
 			int acadYear, 
 			String holidays,
-			boolean editable) {
+			boolean editable,
+			EventDateMapping.Class2EventDateMap class2eventDateMap) {
 		
 		StringBuffer prefTable = new StringBuffer();
 		StringBuffer prefNames = new StringBuffer();
 		StringBuffer prefColors = new StringBuffer();
-
+		
 		for (int i = 0; i < sHolidayTypeNames.length; i++) {
 			prefTable.append((i == 0 ? "" : ",") + "'" + i + "'");
 			prefNames.append((i == 0 ? "" : ",") + "'" + sHolidayTypeNames[i]
@@ -361,6 +362,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 
 		StringBuffer holidayArray = new StringBuffer();
 		StringBuffer borderArray = new StringBuffer();
+		StringBuffer colorArray = new StringBuffer();
 		
 		Calendar sessionBeginDate = Calendar.getInstance(Locale.US);
 		sessionBeginDate.setTime(sessionBeginTime);
@@ -390,16 +392,30 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 			if (m != startMonth) {
 				holidayArray.append(",");
 				borderArray.append(",");
+				colorArray.append(",");
 			}
 			holidayArray.append("[");
 			borderArray.append("[");
+			colorArray.append("[");
 			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, acadYear);
 			for (int d = 1; d <= daysOfMonth; d++) {
 				if (d > 1) {
 					holidayArray.append(",");
 					borderArray.append(",");
+					colorArray.append(",");
 				}
 				holidayArray.append("'" + getHoliday(d, m, acadYear, startMonth, holidays) + "'");
+				
+				String color = "null";
+				if (class2eventDateMap != null) {
+					if (class2eventDateMap.hasClassDate(DateUtils.getDate(d, m, acadYear))) {
+						color = "'#c0c'";
+					} else if (class2eventDateMap.hasEventDate(DateUtils.getDate(d, m, acadYear))) {
+						color = "'#0cc'";
+					}
+				}
+				colorArray.append(color);
+				
 				if (d == sessionBeginDate.get(Calendar.DAY_OF_MONTH)
 						&& (m%12) == sessionBeginDate.get(Calendar.MONTH)
 						&& yr == sessionBeginDate.get(Calendar.YEAR))
@@ -429,16 +445,17 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 			}
 			holidayArray.append("]");
 			borderArray.append("]");
+			colorArray.append("]");
 		}
 
 		StringBuffer table = new StringBuffer();
 		table
 				.append("<script language='JavaScript' type='text/javascript' src='scripts/datepatt.js'></script>");
 		table.append("<script language='JavaScript'>");
-		table.append("calGenerate(" + acadYear + "," + startMonth + ","
+		table.append("calGenerate2(" + acadYear + "," + startMonth + ","
 				+ endMonth + "," + "[" + holidayArray + "]," + "[" + prefTable
 				+ "]," + "[" + prefNames + "]," + "[" + prefColors + "]," + "'"
-				+ sHolidayTypeNone + "'," + "[" + borderArray + "]," + editable
+				+ sHolidayTypeNone + "'," + "[" + borderArray + "],[" + colorArray + "]," + editable
 				+ "," + editable + ");");
 		table.append("</script>");
 		return table.toString();
@@ -535,6 +552,34 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		if (holiday!=Session.sHolidayTypeNone)
 			return "'"+Session.sHolidayTypeColors[holiday]+" 2px solid'";
 		return "null";
+	}
+	
+	public String getColorArray() {
+		EventDateMapping.Class2EventDateMap class2EventDateMap = EventDateMapping.getMapping(getUniqueId());
+		int startMonth = getSession().getPatternStartMonth();
+		int endMonth = getSession().getPatternEndMonth();
+		int year = getSession().getSessionStartYear();
+		StringBuffer sb = new StringBuffer("[");
+		for (int m=startMonth;m<=endMonth;m++) {
+			if (m!=startMonth) sb.append(",");
+			sb.append("[");
+			int daysOfMonth = DateUtils.getNrDaysOfMonth(m, year);
+			for (int d=1;d<=daysOfMonth;d++) {
+				if (d>1) sb.append(",");
+				String color = "null";
+				if (class2EventDateMap != null) {
+					if (class2EventDateMap.hasClassDate(DateUtils.getDate(d, m, year))) {
+						color = "'#c0c'";
+					} else if (class2EventDateMap.hasEventDate(DateUtils.getDate(d, m, year))) {
+						color = "'#0cc'";
+					}
+				}
+				sb.append(color);
+			}
+			sb.append("]");
+		}
+		sb.append("]");
+		return sb.toString();
 	}
 	
 	/** Return distance of the given date outside the session start/end date (in milliseconds) */

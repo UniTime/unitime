@@ -803,6 +803,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("In The Past")
 	String legendPast();
+	
+	@DefaultMessage("Mapped Class Date")
+	String legendDateMappingClassDate();
+
+	@DefaultMessage("Mapped Event Date")
+	String legendDateMappingEventDate();
 
 	@DefaultMessage("Finals")
 	String hintFinals();

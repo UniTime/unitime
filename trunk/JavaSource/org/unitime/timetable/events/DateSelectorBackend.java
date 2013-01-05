@@ -28,9 +28,11 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.DateUtils;
 
 @Service("org.unitime.timetable.gwt.shared.EventInterface$RequestSessionDetails")
@@ -52,6 +54,8 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 		    calendar.add(Calendar.DAY_OF_YEAR, dateOffset.intValue());
 		    finals.add(calendar.getTime());
 		}
+		
+		EventDateMapping.Class2EventDateMap class2eventDateMap = (context.hasPermission(Right.EventDateMappings) ? EventDateMapping.getMapping(command.getSessionId()) : null);
 		
 		for (int month = session.getStartMonth(); month <= session.getEndMonth(); month ++) {
 			calendar.setTime(DateUtils.getDate(1, month, session.getSessionStartYear()));
@@ -93,6 +97,12 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 					m.setFlag(i, SessionMonth.Flag.WEEKEND);
 				}
 				
+				if (class2eventDateMap != null && class2eventDateMap.hasClassDate(calendar.getTime()))
+					m.setFlag(i, SessionMonth.Flag.DATE_MAPPING_CLASS);
+				
+				if (class2eventDateMap != null && class2eventDateMap.hasEventDate(calendar.getTime()))
+					m.setFlag(i, SessionMonth.Flag.DATE_MAPPING_EVENT);
+
 				calendar.add(Calendar.DAY_OF_YEAR, 1);
 			}
 			

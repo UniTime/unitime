@@ -340,6 +340,22 @@
 				<line>Hard conflicts can be created only between classes that are not committed (otherwise there is a risk of not being able to assign a class in time because of committed conflicts).</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Date Mapping</name>
+			<description>
+				<line>Added ability to create a mapping of class dates to event dates (list of pairs class date → event date related to an academic session).</line>
+				<line>When a mapping is defined, it is used for creation of class events (class dates are mapped to event dates) and for room availability in course timetabling (events are mapped back from event dates to class dates).</line>
+				<line>The mapping can be defined on Administration > Academic Sessions > Event Date Mappings page.
+					<line>The existing mappings can be seen with Event Date Mappings permission (if there is any) and edited with the Event Date Mapping Edit permission (no timetable cannot be committed at that time).</line>
+					<line>These two permissions are not assigned to any role by default, making this feature not visible by default.</line>
+				</line>
+				<line>When a date mapping is defined, the date patterns should be defined so that classes do take place on the class dates (marked with purple text color in the pattern) and not on the event dates (marked with teal color in the pattern).
+					<line>Such meetings will be mapped from these class dates to the event dates using the defined mapping when a solution is committed (or a committed assignment is changed using Class Assignment page).</line>
+				</line>
+				<line>The mapping does not roll forward.</line>
+				<line>Use Case: Rare timetabling exceptions usually caused by following a different day schedule on a certain dates (e.g., because there is too many Monday holidays in the term).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
