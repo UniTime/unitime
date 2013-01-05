@@ -53,7 +53,7 @@ public class RoomSharingPage extends Composite {
 			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEditRoomEventAvailability());
 		iForm = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("update", MESSAGES.buttonUpdateEvent(), 75, new ClickHandler(){
+		iHeader.addButton("update", MESSAGES.buttonUpdate(), 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.showLoading();

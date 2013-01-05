@@ -465,6 +465,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("M<u>o</u>re&nbsp;&or;")
 	String buttonMoreOperations();
 
+	@DefaultMessage("<u>U</u>pdate")
+	String buttonUpdate();
+
 	@DefaultMessage("<u>B</u>ack")
 	String buttonBack();
 	
@@ -812,7 +815,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Weekend")
 	String hintWeekend();
-
+	
 	@DefaultMessage("<span title=\"Conflicting event\" style=\"font-style:normal;\">&#9785;</span>")
 	String signConflict();
 	
