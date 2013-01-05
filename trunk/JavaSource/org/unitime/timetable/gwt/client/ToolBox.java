@@ -202,4 +202,8 @@ public class ToolBox {
     		return $doc.body.clientWidth;
     	}
 	}-*/;
+	
+	public native static void scrollToElement(Element element)/*-{
+		element.scrollIntoView();
+	}-*/;
 }
