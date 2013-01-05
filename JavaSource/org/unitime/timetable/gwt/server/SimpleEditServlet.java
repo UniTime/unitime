@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.server;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -34,6 +35,8 @@ import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.services.SimpleEditService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditException;
@@ -52,6 +55,7 @@ import org.unitime.timetable.model.CourseCreditType;
 import org.unitime.timetable.model.CourseCreditUnitType;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
@@ -92,6 +96,7 @@ import org.unitime.timetable.security.rights.Right;
 @Service("simpleEdit.gwt")
 public class SimpleEditServlet implements SimpleEditService {
 	private static Logger sLog = Logger.getLogger(SimpleEditServlet.class);
+	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
@@ -458,6 +463,23 @@ public class SimpleEditServlet implements SimpleEditService {
 						r.setField(2, instructor.getRole() == null ? "" : instructor.getRole().getUniqueId().toString());
 						r.setDeletable(deptIndep);
 					}
+				}
+				break;
+			case dateMapping:
+				data = new SimpleEditInterface(type,
+						new Field("Class Date", FieldType.date, 100, Flag.UNIQUE),
+						new Field("Event Date", FieldType.date, 100, Flag.UNIQUE),
+						new Field("Note", FieldType.text, 300, 1000)
+						);
+				data.setSortBy(0, 1);
+				data.setSessionId(sessionId);
+				data.setSessionName(SessionDAO.getInstance().get(sessionId).getLabel());
+				SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()); 
+				for (EventDateMapping mapping: EventDateMapping.findAll(sessionId)) {
+					Record r = data.addRecord(mapping.getUniqueId());
+					r.setField(0, dateFormat.format(mapping.getClassDate()));
+					r.setField(1, dateFormat.format(mapping.getEventDate()));
+					r.setField(2, mapping.getNote());
 				}
 				break;
 			}
@@ -1454,6 +1476,57 @@ public class SimpleEditServlet implements SimpleEditService {
 						}
 					}
 					break;
+				case dateMapping:
+					SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+					for (EventDateMapping mapping: EventDateMapping.findAll(sessionId)) {
+						Record r = data.getRecord(mapping.getUniqueId());
+						if (r == null) {
+							ChangeLog.addChange(hibSession,
+									getSessionContext(),
+									mapping,
+									dateFormat.format(mapping.getClassDate()) + " &rarr; " + dateFormat.format(mapping.getEventDate()),
+									Source.SIMPLE_EDIT, 
+									Operation.DELETE,
+									null,
+									null);
+							hibSession.delete(mapping);
+						} else {
+							boolean typeChanged = 
+								!ToolBox.equals(dateFormat.format(mapping.getClassDate()), r.getField(0)) ||
+								!ToolBox.equals(dateFormat.format(mapping.getEventDate()), r.getField(1)) ||
+								!ToolBox.equals(mapping.getNote(), r.getField(2));
+							mapping.setClassDate(dateFormat.parse(r.getField(0)));
+							mapping.setEventDate(dateFormat.parse(r.getField(1)));
+							mapping.setNote(r.getField(2));
+							hibSession.saveOrUpdate(mapping);
+							if (typeChanged)
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										mapping,
+										dateFormat.format(mapping.getClassDate()) + " &rarr; " + dateFormat.format(mapping.getEventDate()),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										null);
+						}
+					}
+					for (Record r: data.getNewRecords()) {
+						EventDateMapping mapping = new EventDateMapping();
+						mapping.setSession(SessionDAO.getInstance().get(sessionId));
+						mapping.setClassDate(dateFormat.parse(r.getField(0)));
+						mapping.setEventDate(dateFormat.parse(r.getField(1)));
+						mapping.setNote(r.getField(2));
+						r.setUniqueId((Long)hibSession.save(mapping));
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								mapping,
+								dateFormat.format(mapping.getClassDate()) + " &rarr; " + dateFormat.format(mapping.getEventDate()),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}
+					break;
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1526,6 +1599,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.RoomFeatures;
 		case instructorRole:
 			return Right.InstructorRoles;
+		case dateMapping:
+			return Right.EventDateMappings;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1567,6 +1642,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.RoomFeatureTypeEdit;
 		case instructorRole:
 			return Right.InstructorRoleEdit;
+		case dateMapping:
+			return Right.EventDateMappingEdit;
 		default:
 			return Right.IsAdmin;
 		}

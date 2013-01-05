@@ -614,6 +614,12 @@
 					<hasPermission name="ExaminationPeriods"/>
 				</condition>
 			</item>
+			<item name="Event Date Mappings" page="admin" type="gwt">
+				<parameter name="type">dateMapping</parameter>
+				<condition>
+					<hasPermission name="EventDateMappings"/>
+				</condition>
+			</item>
 			<item name="Event Room Types" page="admin" type="gwt">
 				<parameter name="type">eventRoomType</parameter>
 				<condition>

@@ -462,6 +462,9 @@ public enum Right {
 	InstructorRoles(Department.class),
 	InstructorRoleEdit(Department.class),
 	
+	EventDateMappings(Session.class),
+	EventDateMappingEdit(Session.class),
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

@@ -48,6 +48,7 @@ public class SimpleEditInterface implements IsSerializable {
 		eventRoomType("Event Room Type"),
 		featureType("Room Feature Type"),
 		instructorRole("Instructor Role"),
+		dateMapping("Event Date Mapping"),
 		;
 	
 		private String iSingular, iPlural;

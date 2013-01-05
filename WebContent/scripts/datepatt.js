@@ -224,12 +224,13 @@ function calGenHeader(name, year, month, editable) {
 	document.writeln("</tr>");
 }
 
-function calGenField(name, monthIdx, date, highlight, editable) {
+function calGenField(name, monthIdx, date, highlight, textColors, editable) {
 	var border = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(100,100,100) 1px solid':highlight[monthIdx][date.getDate()-1]);
+	var color = (textColors==null || textColors[monthIdx][date.getDate()-1] == null ? 'black' : textColors[monthIdx][date.getDate()-1]);
 	var borderSelect = (highlight==null || highlight[monthIdx][date.getDate()-1]==null?'rgb(0,0,242) 1px solid':'rgb(0,0,242) 2px solid');
 	if (editable && calGetPreference(name, date)!='@')
 		document.writeln("<td align='center' width='20' height='20' id='"+name+"_"+date.getFullYear()+"_"+date.getMonth()+"_"+date.getDate()+"' "+
- 		  	"style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";\" "+
+ 		  	"style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";color:" + color + ";\" "+
  			"onmouseover=\"this.style.border='"+borderSelect+"';this.style.cursor='pointer';\" "+
  			"onmouseout=\"this.style.border='"+border+"';\" "+
  			"onclick=\"calSetPreference('"+name+"', [new Date("+date.getFullYear()+","+date.getMonth()+","+date.getDate()+")]);\">"+
@@ -237,7 +238,7 @@ function calGenField(name, monthIdx, date, highlight, editable) {
  			"</td>");
  	else
 		document.writeln("<td align='center' width='20' height='20' id='"+name+"_"+date.getMonth()+"_"+date.getDate()+"' "+
- 		  "style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";\" "+
+ 		  "style=\"border:"+border+";background-color:"+calPref2Color(calGetPreference(name, date))+";color:" + color + ";\" "+
  			"<font size=1>"+date.getDate()+"</font>"+
  			"</td>");
 }
@@ -265,7 +266,7 @@ function calGenFieldBlankTBR() {
 	document.writeln("<td width='20' height='20' style=\"border-top:rgb(100,100,100) 1px solid;border-bottom:rgb(100,100,100) 1px solid;border-right:rgb(100,100,100) 1px solid;\" >&nbsp;</td>");
 }
 
-function calGetMonth(name, year, month, monthIdx, highlight, editable, nameSuffix) {
+function calGetMonth(name, year, month, monthIdx, highlight, textColors, editable, nameSuffix) {
 	document.writeln("<table style='font-size:10px;' cellSpacing='0' cellPadding='1' border='0'>");
 	var xmonth=month; var xyear = year;
 	if (xmonth<0) {  do { xmonth+=12; xyear--; } while (xmonth < 0); }
@@ -292,7 +293,7 @@ function calGetMonth(name, year, month, monthIdx, highlight, editable, nameSuffi
 			calGenWeekHeader(name, x, editable);
 		}
 		f = false;
-		calGenField(name, monthIdx, x, highlight, editable);
+		calGenField(name, monthIdx, x, highlight, textColors, editable);
 		x.setDate(x.getDate()+1);
 	} while (x.getMonth()==xmonth);
 	if (x.getDay()!=0) {
@@ -333,6 +334,10 @@ function calGenLegend(name, prefTable, prefNames, editable) {
 }
 
 function calGenerate(year, startMonth, endMonth, cal, prefTable, prefNames, prefColors, defPref, highlight, editable, showLegend, name, nameSuffix, cols, ts, te) {
+	calGenerate2(year, startMonth, endMonth, cal, prefTable, prefNames, prefColors, defPref, highlight, null, editable, showLegend, name, nameSuffix, cols, ts, te);
+}
+
+function calGenerate2(year, startMonth, endMonth, cal, prefTable, prefNames, prefColors, defPref, highlight, textColors, editable, showLegend, name, nameSuffix, cols, ts, te) {
  	cols = (typeof(cols) != 'undefined' ? cols : 4);
  	name = (typeof(name) != 'undefined' ? name : 'cal');
  	nameSuffix = (typeof(nameSuffix) != 'undefined' ? nameSuffix : '');
@@ -343,7 +348,7 @@ function calGenerate(year, startMonth, endMonth, cal, prefTable, prefNames, pref
 	for (var m=startMonth;m<=endMonth;m++) {
 		if ((m-startMonth)%cols==0) document.writeln("<tr>");
 		document.writeln("<td valign='top'>");
-			calGetMonth(name, year,m,m-startMonth,highlight, editable, nameSuffix);
+			calGetMonth(name, year,m,m-startMonth,highlight,textColors,editable, nameSuffix);
 		document.writeln("</td>");
 		if ((m-startMonth)%cols==cols-1) document.writeln("</tr>");
 	}

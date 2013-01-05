@@ -357,6 +357,7 @@ public class Assignment extends BaseAssignment {
         DatePattern dp = getDatePattern();
         cal.setTime(dp.getStartDate()); cal.setLenient(true);
         TimeLocation time = getTimeLocation(); 
+        EventDateMapping.Class2EventDateMap class2eventDates = EventDateMapping.getMapping(clazz.getSessionId());
         for (int idx=0;idx<dp.getPattern().length();idx++) {
             if (dp.getPattern().charAt(idx)=='1') {
                 boolean offered = false;
@@ -369,13 +370,14 @@ public class Assignment extends BaseAssignment {
                     case Calendar.SATURDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SAT]) != 0); break;
                     case Calendar.SUNDAY : offered = ((time.getDayCode() & Constants.DAY_CODES[Constants.DAY_SUN]) != 0); break;
                 }
-                if (offered && (changePast || !cal.getTime().before(today))) {
+                Date meetingDate = class2eventDates.getEventDate(cal.getTime());
+                if (offered && (changePast || !meetingDate.before(today))) {
                     boolean created = false;
                     for (Iterator i=getRooms().iterator();i.hasNext();) {
                         Location location = (Location)i.next();
                         if (location.getPermanentId()!=null) {
                             Meeting m = new Meeting();
-                            m.setMeetingDate(cal.getTime());
+                            m.setMeetingDate(meetingDate);
                             m.setStartPeriod(time.getStartSlot());
                             m.setStartOffset(0);
                             m.setStopPeriod(time.getStartSlot()+time.getLength());
@@ -391,7 +393,7 @@ public class Assignment extends BaseAssignment {
                     }
                     if (!created && createNoRoomMeetings) {
                         Meeting m = new Meeting();
-                        m.setMeetingDate(cal.getTime());
+                        m.setMeetingDate(meetingDate);
                         m.setStartPeriod(time.getStartSlot());
                         m.setStartOffset(0);
                         m.setStopPeriod(time.getStartSlot()+time.getLength());
