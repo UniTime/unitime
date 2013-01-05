@@ -1199,12 +1199,12 @@ public class ClassInfoModel implements Serializable {
  			} else {
  				datesToCheck = period.getDates();
  			}
-            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(permIds, period.getStartSlot(), period.getLength(),
+            Hashtable<Long,Set<Long>> room2classIds = Location.findClassLocationTable(clazz.getSessionId(), permIds, period.getStartSlot(), period.getLength(),
             		changePast ? period.getDates() : datesToCheck);
             
             Hashtable<Long,Set<Event>> room2events = null;
             if (RoomAvailability.getInstance()!=null && RoomAvailability.getInstance() instanceof DefaultRoomAvailabilityService) {
-            	room2events = Location.findEventTable(permIds, period.getStartSlot(), period.getLength(), datesToCheck);
+            	room2events = Location.findEventTable(clazz.getSessionId(), permIds, period.getStartSlot(), period.getLength(), datesToCheck);
             }
 
  			rooms: for (Map.Entry<Location, Integer> entry: filteredRooms.entrySet()) {

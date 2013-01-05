@@ -108,7 +108,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1; 
+		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1; 
 		for (SessionMonth month: months) {
 			iPanel.getWidget().add(new SingleMonth(month, isCanSelectPast()));
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
@@ -118,12 +118,14 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (firstBreak < 0) firstBreak = month.getFirst(SessionMonth.Flag.BREAK);
 			if (firstOutside < 0) firstOutside = month.getFirst(SessionMonth.Flag.DISABLED);
 			if (firstPast < 0) firstPast = month.getFirst(SessionMonth.Flag.PAST);
+			if (firstEventDate < 0) firstEventDate = month.getFirst(SessionMonth.Flag.DATE_MAPPING_EVENT);
+			if (firstClassDate < 0) firstClassDate = month.getFirst(SessionMonth.Flag.DATE_MAPPING_CLASS);
 			if (month.getYear() == Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date())) &&
 				month.getMonth() + 1 == Integer.parseInt(DateTimeFormat.getFormat("MM").format(new Date())))
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, firstPast, today));
+		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, firstPast, today, firstClassDate, firstEventDate));
 	}
 	
 	public static class P extends AbsolutePanel {
@@ -360,6 +362,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 					d.addStyleName("holiday");
 				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.BREAK))
 					d.addStyleName("break");
+				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DATE_MAPPING_CLASS))
+					d.addStyleName("classDate");
+				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DATE_MAPPING_EVENT))
+					d.addStyleName("eventDate");
 				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.SELECTED))
 					d.setValue(true);
 				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DISABLED))
@@ -387,7 +393,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	}
 	
 	public static class Legend extends AbsolutePanel {
-		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int firstPast, int today) {
+		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
 			addStyleName("legend");
 			P box = new P(null, "box");
 			add(box);
@@ -444,6 +450,20 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				box.add(line);
 			}
 			
+			if (firstClassDate >= 0) {
+				line = new P(null, "row");
+				line.add(new P(String.valueOf(firstClassDate + 1), "cell", "classDate"));
+				line.add(new P(MESSAGES.legendDateMappingClassDate(), "title"));
+				box.add(line);
+			}
+
+			if (firstEventDate >= 0) {
+				line = new P(null, "row");
+				line.add(new P(String.valueOf(firstEventDate + 1), "cell", "eventDate"));
+				line.add(new P(MESSAGES.legendDateMappingEventDate(), "title"));
+				box.add(line);
+			}
+
 			if (today >= 1) {
 				line = new P(null, "row");
 				line.add(new P(String.valueOf(today), "cell", "today"));

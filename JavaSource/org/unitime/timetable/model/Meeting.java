@@ -258,6 +258,28 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
         return c.getTime();
     }
 
+	public Date getTrueStartTime(EventDateMapping.Class2EventDateMap class2eventDateMap) {
+		Calendar c = Calendar.getInstance(Locale.US);
+		Date meetingDate = class2eventDateMap == null ? getMeetingDate() : class2eventDateMap.getClassDate(getMeetingDate());
+		if (meetingDate == null) return null;
+        c.setTime(meetingDate);
+        int min = (getStartPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+	}
+	
+	public Date getTrueStopTime(EventDateMapping.Class2EventDateMap class2eventDateMap) {
+        Calendar c = Calendar.getInstance(Locale.US);
+		Date meetingDate = class2eventDateMap == null ? getMeetingDate() : class2eventDateMap.getClassDate(getMeetingDate());
+		if (meetingDate == null) return null;
+        c.setTime(meetingDate);
+        int min = (getStopPeriod().intValue()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN);
+        c.set(Calendar.HOUR, min/60);
+        c.set(Calendar.MINUTE, min%60);
+        return c.getTime();
+    }
+	
 	public int getDayOfWeek() {
         Calendar c = Calendar.getInstance(Locale.US);
         c.setTime(getMeetingDate());
