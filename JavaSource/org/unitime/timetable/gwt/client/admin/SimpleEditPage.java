@@ -22,18 +22,25 @@ package org.unitime.timetable.gwt.client.admin;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
+import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
@@ -41,12 +48,14 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.services.SimpleEditService;
 import org.unitime.timetable.gwt.services.SimpleEditServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
@@ -65,6 +74,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -92,6 +102,7 @@ import com.google.gwt.user.client.ui.Widget;
 public class SimpleEditPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private final SimpleEditServiceAsync iService = GWT.create(SimpleEditService.class);
 	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
 
@@ -108,6 +119,24 @@ public class SimpleEditPage extends Composite {
 	private Lookup iLookup;
 	private boolean[] iVisible = null;
 	
+	private AcademicSessionProvider iAcademicSessionProvider = new AcademicSessionProvider() {
+		@Override
+		public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {}
+		
+		@Override
+		public String getAcademicSessionName() {
+			return iData.getSessionName();
+		}
+		
+		@Override
+		public Long getAcademicSessionId() {
+			return iData.getSessionId();
+		}
+		
+		@Override
+		public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {}
+	};
+	
 	public SimpleEditPage() throws SimpleEditException {
 		String typeString = Window.Location.getParameter("type");
 		if (typeString == null) throw new SimpleEditException("Edit type is not provided.");
@@ -118,6 +147,11 @@ public class SimpleEditPage extends Composite {
 		ClickHandler save = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				String valid = validate();
+				if (valid != null) {
+					iHeader.setErrorMessage(valid);
+					return;
+				}
 				iData.getRecords().clear();
 				iData.getRecords().addAll(iTable.getData());
 				iHeader.setMessage("Saving data...");
@@ -150,7 +184,7 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iEditable = false;
-				load();
+				load(null);
 			}
 		};
 		
@@ -226,17 +260,49 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 		
-		load();
+		load(null);
+	}
+	
+	private Record next(Record record) {
+		if (record == null || record.getUniqueId() == null) return null;
+		boolean next = false;
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			Record rec = iTable.getData(row);
+			if (rec == null || rec.getUniqueId() == null) continue;
+			if (next) return rec;
+			if (record.getUniqueId().equals(rec.getUniqueId())) next = true;
+		}
+		return null;
+	}
+	
+	private Record previous(Record record) {
+		if (record == null || record.getUniqueId() == null) return null;
+		Record previous = null;
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			Record rec = iTable.getData(row);
+			if (rec == null || rec.getUniqueId() == null) continue;
+			if (record.getUniqueId().equals(rec.getUniqueId())) return previous;
+			previous = rec;
+		}
+		return null;
 	}
 	
 	private void detail(final Record record) {
 		SimpleForm detail = new SimpleForm();
+		final List<MyCell> cells = new ArrayList<SimpleEditPage.MyCell>();
 		UniTimePageLabel.getInstance().setPageName((record.getUniqueId() == null ? "Add " : "Edit ") + iData.getType().getTitleSingular());
 		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
+		Record prev = previous(record);
+		Record next = next(record);
 		
 		header.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				String valid = validate(record, cells);
+				if (valid != null) {
+					header.setErrorMessage(valid);
+					return;
+				}
 				final Set<Long> old = new HashSet<Long>();
 				if (record.getUniqueId() == null) {
 					for (Record r: iData.getRecords())
@@ -264,15 +330,18 @@ public class SimpleEditPage extends Composite {
 							if (record.getUniqueId() == null) {
 								if (!old.contains(iTable.getData(r).getUniqueId())) {
 									iTable.setSelected(r, true);
+									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
 									break;
 								}
 							} else {
 								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
 									iTable.setSelected(r, true);
+									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
 									break;
 								}
 							}
 						}
+						Client.fireGwtPageChanged(new GwtPageChangeEvent());
 					}
 				});
 			}
@@ -298,6 +367,79 @@ public class SimpleEditPage extends Composite {
 							iSimple.setWidget(iPanel);
 							refreshTable();
 							saveOrder();
+							Client.fireGwtPageChanged(new GwtPageChangeEvent());
+						}
+					});
+				}
+			});
+		}
+		
+		if (prev != null) {
+			header.addButton("prev", "<u>P</u>revious", 75, new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					String valid = validate(record, cells);
+					if (valid != null) {
+						header.setErrorMessage(valid);
+						return;
+					}
+					iData.getRecords().clear();
+					iData.getRecords().addAll(iTable.getData());
+					if (record.getUniqueId() == null)
+						iData.getRecords().add(record);
+					header.setMessage("Saving data...");
+					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+						}
+						@Override
+						public void onSuccess(SimpleEditInterface result) {
+							iData = result;
+							refreshTable();
+							Record prev = previous(record);
+							if (prev != null) {
+								detail(prev);
+							} else {
+								iSimple.setWidget(iPanel);
+							}
+							Client.fireGwtPageChanged(new GwtPageChangeEvent());
+						}
+					});
+				}
+			});
+		}
+		
+		if (next != null) {
+			header.addButton("next", "<u>N</u>ext", 75, new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					String valid = validate(record, cells);
+					if (valid != null) {
+						header.setErrorMessage(valid);
+						return;
+					}
+					iData.getRecords().clear();
+					iData.getRecords().addAll(iTable.getData());
+					if (record.getUniqueId() == null)
+						iData.getRecords().add(record);
+					header.setMessage("Saving data...");
+					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+						@Override
+						public void onFailure(Throwable caught) {
+							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+						}
+						@Override
+						public void onSuccess(SimpleEditInterface result) {
+							iData = result;
+							refreshTable();
+							Record next = next(record);
+							if (next != null) {
+								detail(next);
+							} else {
+								iSimple.setWidget(iPanel);
+							}
+							Client.fireGwtPageChanged(new GwtPageChangeEvent());
 						}
 					});
 				}
@@ -308,23 +450,45 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iSimple.setWidget(iPanel);
-				load();
+				load(new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {}
+					@Override
+					public void onSuccess(Boolean result) {
+						if (record.getUniqueId() != null) {
+							for (int r = 0; r < iTable.getRowCount(); r++) {
+								if (iTable.getData(r) == null) continue;
+								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
+									iTable.setSelected(r, true);
+									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+									break;
+								}
+							}
+						}					
+					}
+				});
+				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
 		
 		detail.addHeaderRow(header);
 		int idx = 0;
 		for (Field field: iData.getFields()) {
-			detail.addRow(field.getName() + ":", new MyCell(record.isEditable(idx), field, record, idx, true));
+			MyCell cell = new MyCell(record.isEditable(idx), field, record, idx, true);
+			cells.add(cell);
+			if (field.isVisible())
+				detail.addRow(field.getName() + ":", cell);
 			idx ++;
 		}
 		UniTimeHeaderPanel bottom = header.clonePanel();
 		detail.addNotPrintableBottomRow(bottom);
 		
 		iSimple.setWidget(detail);
+		ToolBox.scrollToElement(detail.getElement());
+		Client.fireGwtPageChanged(new GwtPageChangeEvent());
 	}
 	
-	public void load() {
+	public void load(final AsyncCallback<Boolean> callback) {
 		iBottom.setVisible(false);
 		iHeader.setEnabled("add", false);
 		iHeader.setEnabled("save", false);
@@ -360,15 +524,18 @@ public class SimpleEditPage extends Composite {
 								}
 							});
 							refreshTable();
+							if (callback != null) callback.onSuccess(true);
 						}
 						@Override
 						public void onFailure(Throwable caught) {
 							Collections.sort(iData.getRecords(), cmp);
 							refreshTable();
+							if (callback != null) callback.onSuccess(false);
 						}
 					});
 				} else {
 					refreshTable();
+					if (callback != null) callback.onSuccess(true);
 				}
 			}
 			
@@ -376,6 +543,7 @@ public class SimpleEditPage extends Composite {
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage("Unable to load data (" + caught.getMessage() + ")");
 				ToolBox.checkAccess(caught);
+				if (callback != null) callback.onFailure(caught);
 			}
 		});
 	}
@@ -578,7 +746,8 @@ public class SimpleEditPage extends Composite {
 		public MyCell(boolean editable, Field field, final Record record, final int index, boolean detail) {
 			iField = field; iRecord = record; iIndex = index;
 			if (editable) {
-				if (field.getType() == FieldType.text) {
+				switch (field.getType()) {
+				case text:
 					final TextBox text = new TextBox();
 					text.setStyleName("unitime-TextBox");
 					text.setMaxLength(field.getLength());
@@ -588,9 +757,10 @@ public class SimpleEditPage extends Composite {
 						@Override
 						public void onChange(ChangeEvent event) {
 							record.setField(index, text.getText());
+							setError(null);
 						}
 					});
-					initWidget(text);
+					initWidget(new UniTimeWidget<TextBox>(text));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
 						text.addChangeHandler(new ChangeHandler() {
 							@Override
@@ -600,7 +770,31 @@ public class SimpleEditPage extends Composite {
 							}
 						});
 					}
-				} else if (field.getType() == FieldType.list) {
+					break;
+				case number:
+					final NumberBox number = new NumberBox();
+					number.setText(record.getField(index));
+					number.setDecimal(field.isAllowFloatingPoint());
+					number.setNegative(field.isAllowNegative());
+					number.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							record.setField(index, number.getText());
+							setError(null);
+						}
+					});
+					initWidget(new UniTimeWidget<TextBox>(number));
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						number.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
+					break;
+				case list:
 					final ListBox list = new ListBox(false);
 					list.setStyleName("unitime-TextBox");
 					if (record.getField(index) == null && (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
@@ -615,9 +809,10 @@ public class SimpleEditPage extends Composite {
 						@Override
 						public void onChange(ChangeEvent event) {
 							record.setField(index, (list.getSelectedIndex() < 0 || list.getValue(list.getSelectedIndex()).isEmpty() ? null : list.getValue(list.getSelectedIndex())));
+							setError(null);
 						}
 					});
-					initWidget(list);
+					initWidget(new UniTimeWidget<ListBox>(list));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
 						list.addChangeHandler(new ChangeHandler() {
 							@Override
@@ -627,32 +822,34 @@ public class SimpleEditPage extends Composite {
 							}
 						});
 					}
-				} else if (field.getType() == FieldType.multi) {
-					final ListBox list = new ListBox(true);
-					list.setStyleName("unitime-TextBox");
-					list.setVisibleItemCount(3);
+					break;
+				case multi:
+					final ListBox multi = new ListBox(true);
+					multi.setStyleName("unitime-TextBox");
+					multi.setVisibleItemCount(3);
 					for (ListItem item: field.getValues())
-						list.addItem(item.getText(), item.getValue());
+						multi.addItem(item.getText(), item.getValue());
 					String[] vals = record.getValues(index);
 					if (vals != null) {
 						for (String val: vals) {
-							for (int i = 0; i < list.getItemCount(); i++)
-								if (list.getValue(i).equals(val))
-									list.setItemSelected(i, true);
+							for (int i = 0; i < multi.getItemCount(); i++)
+								if (multi.getValue(i).equals(val))
+									multi.setItemSelected(i, true);
 						}
 					}
-					list.addChangeHandler(new ChangeHandler() {
+					multi.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
 							record.setField(index, null);
-							for (int i = 0; i < list.getItemCount(); i++ ) {
-								if (list.isItemSelected(i)) record.addToField(index, list.getValue(i));
+							for (int i = 0; i < multi.getItemCount(); i++ ) {
+								if (multi.isItemSelected(i)) record.addToField(index, multi.getValue(i));
 							}
+							setError(null);
 						}
 					});
-					initWidget(list);
+					initWidget(new UniTimeWidget<ListBox>(multi));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
-						list.addChangeHandler(new ChangeHandler() {
+						multi.addChangeHandler(new ChangeHandler() {
 							@Override
 							public void onChange(ChangeEvent event) {
 								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
@@ -660,16 +857,18 @@ public class SimpleEditPage extends Composite {
 							}
 						});
 					}
-				} else if (field.getType() == FieldType.toggle) {
+					break;
+				case toggle:
 					final CheckBox check = new CheckBox();
 					check.setValue(record.getField(index) == null ? null : "true".equalsIgnoreCase(record.getField(index)));
 					check.addClickHandler(new ClickHandler() {
 						@Override
 						public void onClick(ClickEvent event) {
 							record.setField(index, check.getValue() == null ? null : check.getValue() ? "true" : "false");
+							setError(null);
 						}
 					});
-					initWidget(check);
+					initWidget(new UniTimeWidget<CheckBox>(check));
 					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
 						check.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 							@Override
@@ -679,33 +878,35 @@ public class SimpleEditPage extends Composite {
 							}
 						});
 					}
-				} else if (field.getType() == FieldType.students) {
+					break;
+				case students:
 					if (detail) {
-						final TextArea text = new TextArea();
-						text.setValue(getValue());
-						text.setStyleName("unitime-TextArea");
-						text.setVisibleLines(10);
-						text.setCharacterWidth(80);
-						text.addValueChangeHandler(new ValueChangeHandler<String>() {
+						final TextArea area = new TextArea();
+						area.setValue(getValue());
+						area.setStyleName("unitime-TextArea");
+						area.setVisibleLines(10);
+						area.setCharacterWidth(80);
+						area.addValueChangeHandler(new ValueChangeHandler<String>() {
 							@Override
 							public void onValueChange(ValueChangeEvent<String> event) {
-								record.setField(index, text.getText());
+								record.setField(index, area.getText());
+								setError(null);
 							}
 						});
 						VerticalPanel students = new VerticalPanel();
-						students.add(text);
+						students.add(area);
 						Button lookup = new Button("<u>L</u>ookup");
 						lookup.setAccessKey('l');
 						lookup.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
-								iStudentsText = text;
+								iStudentsText = area;
 								iLookup.center();
 							}
 						});
 						students.add(lookup);
 						students.setCellHorizontalAlignment(lookup, HasHorizontalAlignment.ALIGN_RIGHT);
-						initWidget(students);
+						initWidget(new UniTimeWidget<VerticalPanel>(students));
 					} else {
 						HorizontalPanel hp = new HorizontalPanel();
 						final Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
@@ -729,6 +930,7 @@ public class SimpleEditPage extends Composite {
 									public void onValueChange(ValueChangeEvent<String> event) {
 										record.setField(index, event.getValue());
 										label.setText(String.valueOf(event.getValue().isEmpty() ? 0 : event.getValue().split("\\n").length));
+										setError(null);
 									}
 								});
 								form.addRow(text);
@@ -753,9 +955,10 @@ public class SimpleEditPage extends Composite {
 								dialog.center();
 							}
 						});
-						initWidget(hp);
+						initWidget(new UniTimeWidget<HorizontalPanel>(hp));
 					}
-				} else if (field.getType() == FieldType.person) {
+					break;
+				case person:
 					HorizontalPanel hp = new HorizontalPanel();
 					String[] name = record.getValues(index);
 					final HTML label = new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
@@ -785,19 +988,44 @@ public class SimpleEditPage extends Composite {
 										record.addToField(index, person.getMiddleName() == null ? "" : person.getMiddleName());
 										record.addToField(index, person.getId() == null ? "" : person.getId());
 										record.addToField(index, person.getEmail() == null ? "" : person.getEmail());
+										setError(null);
 									}
 								}
 							});
 							lookup.center();
 						}
 					});
-					initWidget(hp);
+					initWidget(new UniTimeWidget<HorizontalPanel>(hp));
+					break;
+				case date:
+					final SingleDateSelector date = new SingleDateSelector(iData.getSessionId() == null ? null : iAcademicSessionProvider, false);
+					date.setText(record.getField(index));
+					date.addValueChangeHandler(new ValueChangeHandler<Date>() {
+						@Override
+						public void onValueChange(ValueChangeEvent<Date> event) {
+							record.setField(index, date.getText());
+							setError(null);
+						}
+					});
+					initWidget(new UniTimeWidget<SingleDateSelector>(date));
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						date.addValueChangeHandler(new ValueChangeHandler<Date>() {
+							@Override
+							public void onValueChange(ValueChangeEvent<Date> event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
+					break;
 				}
 			} else {
-				if (field.getType() == FieldType.toggle) {
+				switch (field.getType()) {
+				case toggle:
 					Image image = new Image(record.getField(index) != null && "true".equalsIgnoreCase(record.getField(index)) ? RESOURCES.on() : RESOURCES.off());
 					initWidget(image);
-				} else if (field.getType() == FieldType.students) {
+					break;
+				case students:
 					if (detail) {
 						HTML html = new HTML(getValue().replaceAll("\\n", "<br>"));
 						initWidget(html);
@@ -805,13 +1033,25 @@ public class SimpleEditPage extends Composite {
 						Label label = new Label(String.valueOf(getValue().isEmpty() ? 0 : getValue().split("\\n").length));
 						initWidget(label);
 					}
-				} else if (field.getType() == FieldType.person) {
+					break;
+				case person:
 					String[] name = record.getValues(index);
 					initWidget(new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
-				} else {
+					break;
+				default:
 					Label label = new Label(getValue());
 					initWidget(label);
 				}
+			}
+		}
+		
+		public void setError(String message) {
+			if (getWidget() instanceof UniTimeWidget<?>) {
+				UniTimeWidget<?> w = (UniTimeWidget<?>)getWidget();
+				if (message == null || message.isEmpty())
+					w.clearHint();
+				else
+					w.setErrorHint(message);
 			}
 		}
 				
@@ -885,6 +1125,133 @@ public class SimpleEditPage extends Composite {
 				iHeader.clearMessage();
 			}
 		});
+	}
+	
+	public String validate() {
+		return validate(null, null);
+	}
+	
+	public String validate(Record detailRecord, List<MyCell> detailCells) {
+		String valid = null;
+		DateTimeFormat dateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+		Map<Integer, Map<String, MyCell>> uniqueMap = new HashMap<Integer, Map<String, MyCell>>();
+		for (int row = 0; row < iTable.getRowCount(); row++) {
+			SimpleEditInterface.Record record = iTable.getData(row);
+			if (record == null || record.isEmpty()) continue;
+			if (detailRecord != null && detailRecord.getUniqueId() != null && detailRecord.getUniqueId().equals(record.getUniqueId())) continue;
+			for (int col = 0; col < iData.getFields().length; col ++) {
+				Field field = iData.getFields()[col];
+				String value = record.getField(col);
+				MyCell widget = (MyCell)iTable.getWidget(row, col);
+				widget.setError(null);
+				if (!field.isEditable()) continue;
+				if (field.isUnique()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (value == null || value.isEmpty()) {
+						widget.setError(field.getName() + " must be set.");
+						if (valid == null && detailRecord == null) {
+							valid = field.getName() + " must be set.";
+						}
+					} else {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(field.getName() + " must be unique.");
+							old.setError(field.getName() + " must be unique.");
+							if (valid == null && detailRecord == null) {
+								valid = field.getName() + " must be unique.";
+							}
+						}
+					}
+				} else if (field.isNotEmpty()) {
+					if (value == null || value.isEmpty()) {
+						widget.setError(field.getName() + " must be set.");
+						if (valid == null && detailRecord == null) {
+							valid = field.getName() + " must be set.";
+						}
+					}
+				} else {
+					switch (field.getType()) {
+					case date:
+						Date date = null;
+						try {
+							date = dateFormat.parse(value);
+						} catch (Exception e) {
+							widget.setError(value + " is not a valid date.");
+							if (valid == null && detailRecord == null) {
+								valid = value + " is not a valid date.";
+							}
+						}
+						if (date == null && field.isNotEmpty()) {
+							widget.setError(field.getName() + " must be set.");
+							if (valid == null && detailRecord == null) {
+								valid = field.getName() + " must be set.";
+							}
+						}
+					}
+				}
+			}
+		}
+		if (detailRecord != null && !detailCells.isEmpty()) {
+			SimpleEditInterface.Record record = detailRecord;
+			for (int col = 0; col < iData.getFields().length; col ++) {
+				Field field = iData.getFields()[col];
+				String value = record.getField(col);
+				MyCell widget = detailCells.get(col);
+				widget.setError(null);
+				if (!field.isEditable()) continue;
+				if (field.isUnique()) {
+					Map<String, MyCell> values = uniqueMap.get(col);
+					if (values == null) {
+						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
+					}
+					if (value == null || value.isEmpty()) {
+						widget.setError(field.getName() + " must be set.");
+						if (valid == null) {
+							valid = field.getName() + " must be set.";
+						}
+					} else {
+						MyCell old = values.put(value, widget);
+						if (old != null) {
+							widget.setError(field.getName() + " must be unique.");
+							old.setError(field.getName() + " must be unique.");
+							if (valid == null) {
+								valid = field.getName() + " must be unique.";
+							}
+						}
+					}
+				} else if (field.isNotEmpty()) {
+					if (value == null || value.isEmpty()) {
+						widget.setError(field.getName() + " must be set.");
+						if (valid == null) {
+							valid = field.getName() + " must be set.";
+						}
+					}
+				} else {
+					switch (field.getType()) {
+					case date:
+						Date date = null;
+						try {
+							date = dateFormat.parse(value);
+						} catch (Exception e) {
+							widget.setError(value + " is not a valid date.");
+							if (valid == null) {
+								valid = value + " is not a valid date.";
+							}
+						}
+						if (date == null && field.isNotEmpty()) {
+							widget.setError(field.getName() + " must be set.");
+							if (valid == null) {
+								valid = field.getName() + " must be set.";
+							}
+						}
+					}
+				}
+			}
+		}
+		return valid;
 	}
 
 }

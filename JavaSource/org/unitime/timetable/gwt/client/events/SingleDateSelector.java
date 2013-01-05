@@ -54,37 +54,50 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.datepicker.client.CalendarUtil;
 
-public class SingleDateSelector extends Composite implements HasValue<Date> {
+public class SingleDateSelector extends Composite implements HasValue<Date>, HasText {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	
+	private RegExp[] iRegExp = new RegExp[] {
+			RegExp.compile("^([0-9]+)[/ ]*([0-9]*)[/ ]*([0-9]*)$"),
+			RegExp.compile("^([0-9]+)\\.?([0-9]*)\\.?([0-9]*)$")
+	};
+
 	private PopupPanel iPopup;
 	private SingleMonth iMonth;
 	private DateTimeFormat iFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private AcademicSessionProvider iAcademicSession;
 	
 	UniTimeWidget<TextBox> iPicker;
+	private boolean iHint;
 	
 	public SingleDateSelector() {
-		this(null);
+		this(null, true);
 	}
 	
 	public SingleDateSelector(AcademicSessionProvider session) {
+		this(session, true);
+	}
+	
+	public SingleDateSelector(AcademicSessionProvider session, boolean hint) {
 		iAcademicSession = session;
+		iHint = hint;
 
 		iPicker = new UniTimeWidget<TextBox>(new TextBox());
-		iPicker.setHint(iFormat.getPattern().toUpperCase());
+		if (iHint) iPicker.setHint(iFormat.getPattern().toUpperCase());
 		iPicker.getWidget().setStyleName("gwt-SuggestBox");
 		iPicker.getWidget().addStyleName("unitime-DateSelectionBox");
 		
@@ -148,8 +161,10 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 						iPopup.hide();
 						break;
 					case KeyCodes.KEY_ENTER:
-						if (iMonth.getValue() != null)
+						if (iMonth.getValue() != null) {
 							iPicker.getWidget().setText(iFormat.format(iMonth.getValue()));
+							ValueChangeEvent.fire(SingleDateSelector.this, getValue());
+						}
 						event.preventDefault();
 						event.stopPropagation();
 						iPopup.hide();
@@ -158,7 +173,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 				} else {
 					if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && (event.getNativeEvent().getAltKey() || iPicker.getWidget().getCursorPos() == iPicker.getWidget().getText().length())) {
 						try {
-							iMonth.setDate(iFormat.parse(iPicker.getWidget().getText()));
+							iMonth.setValue(iFormat.parse(iPicker.getWidget().getText()));
 						} catch (Exception e) {}
 						iPopup.showRelativeTo(iPicker.getWidget());
 						event.preventDefault();
@@ -174,6 +189,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 				if (event.getValue() != null) {
 					iPicker.getWidget().setText(iFormat.format(iMonth.getValue()));
 					if (iPopup.isShowing()) iPopup.hide();
+					ValueChangeEvent.fire(SingleDateSelector.this, event.getValue());
 				}
 			}
 		});
@@ -181,11 +197,47 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 		iPicker.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				try {
-					iMonth.setDate(iFormat.parse(iPicker.getWidget().getText()));
-				} catch (Exception e) {
-					iMonth.setDate(null);
+				MatchResult match = iRegExp[0].exec(iPicker.getWidget().getText());
+				int month = -1, day = -1, year = -1;
+				if (match != null) {
+					month = Integer.parseInt(match.getGroup(1));
+					day = (match.getGroup(2).isEmpty() ? 1 : Integer.parseInt(match.getGroup(2)));
+					year = (match.getGroup(3).isEmpty() ? -1 : Integer.parseInt(match.getGroup(3)));
+					
+				} else {
+					match = iRegExp[1].exec(iPicker.getWidget().getText());
+					if (match != null) {
+						day = Integer.parseInt(match.getGroup(1));
+						month = (match.getGroup(2).isEmpty() ? -1 : Integer.parseInt(match.getGroup(2)));
+						year = (match.getGroup(3).isEmpty() ? -1 : Integer.parseInt(match.getGroup(3)));
+					}
 				}
+				if (year <= 99 && month >= 0 && iMonth.getMonths() != null) {
+					for (SessionMonth m: iMonth.getMonths()) {
+						if (m.getMonth() + 1 == month) {
+							if (year < 0 || year == m.getYear() + 1900 || year == m.getYear() + 2000) { year = m.getYear(); }
+						}
+					}
+				}
+				if (year < 0) {
+					year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date()));
+				} else if (year <= 99) {
+					year += 2000;
+				}
+				if (year >= 0 && month >= 1 && month <= 12 && day >= 1) {
+					iMonth.setDate(year, month, day);
+					setValue(iMonth.getValue());
+					ValueChangeEvent.fire(SingleDateSelector.this, getValue());	
+					return;
+				}
+				
+				Date date = null;
+				try {
+					date = iFormat.parse(iPicker.getWidget().getText());
+				} catch (Exception e) {}
+				iMonth.setValue(date);
+				setValue(date == null ? null : iMonth.getValue());
+				ValueChangeEvent.fire(SingleDateSelector.this, getValue());				
 			}
 		});
 		
@@ -210,9 +262,9 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 	
 	public void init(Long sessionId) {
 		if (sessionId == null) {
-			iPicker.setHint(MESSAGES.hintNoSession());
+			if (iHint) iPicker.setHint(MESSAGES.hintNoSession());
 		} else {
-			iPicker.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
+			if (iHint) iPicker.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override
@@ -222,7 +274,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 
 				@Override
 				public void onSuccess(GwtRpcResponseList<SessionMonth> result) {
-					iPicker.setHint(iFormat.getPattern().toUpperCase());
+					if (iHint) iPicker.setHint(iFormat.getPattern().toUpperCase());
 					iMonth.setMonths(result);
 				}
 			});
@@ -386,6 +438,10 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 			init();
 		}
 		
+		public List<SessionMonth> getMonths() {
+			return iMonths;
+		}
+		
 		private void init() {
 			clear(); iDays.clear();
 			
@@ -418,7 +474,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 					}
 				}
 			}
-			if (sessionMonth != null && iDay > 0) {
+			if (sessionMonth != null && iDay >= 0) {
 				while (iDay > 0 && sessionMonth.hasFlag(iDay - 1, SessionMonth.Flag.DISABLED)) iDay --;
 				if (iDay == 0) {
 					iDay = 1;
@@ -642,6 +698,11 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 			init();
 		}
 		
+		public void setDate(int year, int month, int day) {
+			iYear = year; iMonth = month; iDay = day;
+			init();
+		}
+		
 		@Override
 		public HandlerRegistration addValueChangeHandler(ValueChangeHandler<Date> handler) {
 			return addHandler(handler, ValueChangeEvent.getType());
@@ -704,5 +765,17 @@ public class SingleDateSelector extends Composite implements HasValue<Date> {
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
 	}
+	
+	@Override
+	public void setText(String text) {
+		if (text == null || text.isEmpty())
+			setValue(null);
+		else
+			setValue(iFormat.parse(text));
+	}
 
+	@Override
+	public String getText() {
+		return iPicker.getWidget().getText();
+	}
 }

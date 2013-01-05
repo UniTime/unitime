@@ -47,7 +47,7 @@ public class SimpleEditInterface implements IsSerializable {
 		examType("Examination Type"),
 		eventRoomType("Event Room Type"),
 		featureType("Room Feature Type"),
-		instructorRole("Instructor Role")
+		instructorRole("Instructor Role"),
 		;
 	
 		private String iSingular, iPlural;
@@ -66,7 +66,20 @@ public class SimpleEditInterface implements IsSerializable {
 	}
 	
 	public static enum FieldType implements IsSerializable {
-		text, toggle, list, multi, students, person;
+		text, number, toggle, list, multi, students, person, date;
+	}
+	
+	public static enum Flag implements IsSerializable {
+		HIDDEN,
+		READ_ONLY,
+		UNIQUE,
+		NOT_EMPTY,
+		FLOAT,
+		NEGATIVE,
+		;
+		
+		public int toInt() { return 1 << ordinal(); }
+		public boolean has(int flags) { return (flags & toInt()) == toInt(); }
 	}
 	
 	private Type iType = null;
@@ -74,6 +87,8 @@ public class SimpleEditInterface implements IsSerializable {
 	private Field[] iFields = null;
 	private boolean iEditable = true, iAddable = true, iSaveOrder = true;
 	private int[] iSort = null;
+	private Long iSessionId = null;
+	private String iSessionName = null;
 	
 	public SimpleEditInterface() {
 	}
@@ -85,6 +100,12 @@ public class SimpleEditInterface implements IsSerializable {
 	
 	public boolean isSaveOrder() { return iSaveOrder; }
 	public void setSaveOrder(boolean saveOrder) { iSaveOrder = saveOrder; } 
+	
+	public Long getSessionId() { return iSessionId; }
+	public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+	
+	public String getSessionName() { return iSessionName; }
+	public void setSessionName(String sessionName) { iSessionName = sessionName; }
 	
 	public Type getType() { return iType; }
 	
@@ -297,55 +318,31 @@ public class SimpleEditInterface implements IsSerializable {
 	public static class Field implements IsSerializable {
 		private String iName = null;
 		private FieldType iType = null;
-		private int iLength = 0, iWidth = 0;
+		private int iLength = 0, iWidth = 0, iFlags = 0;
 		private List<ListItem> iValues = null;
-		private boolean iEditable = true;
-		private boolean iVisible = true;
 		
 		public Field() {}
 		
-		public Field(String name, FieldType type, int width, int length, boolean editable, boolean visible) {
+		public Field(String name, FieldType type, int width, int length, Flag... flags) {
 			iName = name;
 			iType = type;
 			iWidth = width;
 			iLength = length;
-			iEditable = editable;
-			iVisible = visible;
+			iFlags = 0;
+			for (Flag flag: flags)
+				if (flag != null)
+					iFlags = iFlags | flag.toInt();
+		}
+				
+		public Field(String name, FieldType type, int width, Flag... flags) {
+			this(name, type, width, 0, flags);
 		}
 		
-		public Field(String name, FieldType type, int width, int length, boolean editable) {
-			this(name, type, width, length, editable, true);
-		}
-		
-		public Field(String name, FieldType type, int width, boolean editable) {
-			this(name, type, width, 0, editable, true);
-		}
-		
-		public Field(String name, FieldType type, int width, boolean editable, boolean visible) {
-			this(name, type, width, 0, editable, visible);
-		}
-		
-		public Field(String name, FieldType type, int width) {
-			this(name, type, width, 0, true, true);
-		}
-		
-		public Field(String name, FieldType type, int width, int length) {
-			this(name, type, width, length, true, true);
-		}
-		
-		public Field(String name, FieldType type, int width, List<ListItem> values, boolean editable, boolean visible) {
-			this(name, type, width, 0, editable, visible);
+		public Field(String name, FieldType type, int width, List<ListItem> values, Flag... flags) {
+			this(name, type, width, 0, flags);
 			iValues = values;
 		}
 		
-		public Field(String name, FieldType type, int width, List<ListItem> values, boolean editable) {
-			this(name, type, width, values, editable, true);
-		}
-		
-		public Field(String name, FieldType type, int width, List<ListItem> values) {
-			this(name, type, width, values, true, true);
-		}
-
 		public String getName() { return iName; }
 		public FieldType getType() { return iType; }
 		public int getLength() { return iLength; }
@@ -355,8 +352,12 @@ public class SimpleEditInterface implements IsSerializable {
 			if (iValues == null) iValues = new ArrayList<ListItem>();
 			iValues.add(item);
 		}
-		public boolean isEditable() { return iEditable; }
-		public boolean isVisible() { return iVisible; }
+		public boolean isEditable() { return !Flag.READ_ONLY.has(iFlags); }
+		public boolean isVisible() { return !Flag.HIDDEN.has(iFlags); }
+		public boolean isUnique() { return Flag.UNIQUE.has(iFlags); }
+		public boolean isNotEmpty() { return Flag.NOT_EMPTY.has(iFlags); }
+		public boolean isAllowFloatingPoint() { return Flag.FLOAT.has(iFlags); }
+		public boolean isAllowNegative() { return Flag.NEGATIVE.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();
