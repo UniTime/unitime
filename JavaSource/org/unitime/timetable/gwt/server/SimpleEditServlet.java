@@ -40,6 +40,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.Flag;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Type;
@@ -106,9 +107,9 @@ public class SimpleEditServlet implements SimpleEditService {
 			switch (type) {
 			case area:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40, false),
-						new Field("Abbreviation", FieldType.text, 80, 10),
-						new Field("Short Title", FieldType.text, 200, 50),
+						new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
+						new Field("Abbreviation", FieldType.text, 80, 10, Flag.UNIQUE),
+						new Field("Short Title", FieldType.text, 200, 50, Flag.UNIQUE),
 						new Field("Long Title", FieldType.text, 500, 100)
 						);
 				data.setSortBy(1,2,3);
@@ -123,9 +124,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case classification:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40, false),
-						new Field("Code", FieldType.text, 80, 10),
-						new Field("Name", FieldType.text, 500, 50));
+						new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
+						new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 500, 50, Flag.UNIQUE));
 				data.setSortBy(1,2);
 				for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, sessionId)) {
 					Record r = data.addRecord(clasf.getUniqueId());
@@ -141,9 +142,9 @@ public class SimpleEditServlet implements SimpleEditService {
 					areas.add(new ListItem(area.getUniqueId().toString(), area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())));
 				}
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40, false),
-						new Field("Code", FieldType.text, 80, 10),
-						new Field("Name", FieldType.text, 300, 50),
+						new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
+						new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 50, Flag.UNIQUE),
 						new Field("Academic Area", FieldType.list, 300, areas));
 				data.setSortBy(3,1,2);
 				for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, sessionId)) {
@@ -162,9 +163,9 @@ public class SimpleEditServlet implements SimpleEditService {
 					areas.add(new ListItem(area.getUniqueId().toString(), area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())));
 				}
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40, false),
-						new Field("Code", FieldType.text, 80, 10),
-						new Field("Name", FieldType.text, 300, 50),
+						new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
+						new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 50, Flag.UNIQUE),
 						new Field("Academic Area", FieldType.list, 300, areas));
 				data.setSortBy(3,1,2);
 				for (PosMinor minor: PosMinorDAO.getInstance().findBySession(hibSession, sessionId)) {
@@ -179,10 +180,10 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case group:
 				data = new SimpleEditInterface(type,
-						new Field("External Id", FieldType.text, 120, 40, false),
-						new Field("Code", FieldType.text, 80, 10),
-						new Field("Name", FieldType.text, 300, 50),
-						new Field("Students", FieldType.students, 200, true));
+						new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
+						new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 50, Flag.UNIQUE),
+						new Field("Students", FieldType.students, 200));
 				data.setSortBy(1,2);
 				for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, sessionId)) {
 					Record r = data.addRecord(group.getUniqueId());
@@ -200,9 +201,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case consent:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
-						new Field("Abbreviation", FieldType.text, 160, 20));
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
+						new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE));
 				data.setSortBy(0, 1);
 				data.setAddable(false);
 				for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll()) {
@@ -228,9 +229,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case creditType:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
-						new Field("Abbreviation", FieldType.text, 80, 10));
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
+						new Field("Abbreviation", FieldType.text, 80, 10, Flag.UNIQUE));
 				data.setSortBy(0, 1, 2);
 				for (CourseCreditType credit: CourseCreditTypeDAO.getInstance().findAll()) {
 					int used =
@@ -245,9 +246,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case creditUnit:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
-						new Field("Abbreviation", FieldType.text, 80, 10));
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
+						new Field("Abbreviation", FieldType.text, 80, 10, Flag.UNIQUE));
 				data.setSortBy(0, 1, 2);
 				for (CourseCreditUnitType credit: CourseCreditUnitTypeDAO.getInstance().findAll()) {
 					int used =
@@ -262,9 +263,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case position:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
-						new Field("Sort Order", FieldType.text, 80, 10)
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
+						new Field("Sort Order", FieldType.number, 80, 10, Flag.UNIQUE)
 						);
 				data.setSortBy(2, 0, 1);
 				DecimalFormat df = new DecimalFormat("0000");
@@ -304,11 +305,11 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;	
 			case roles:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 250, 40),
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 250, 40, Flag.UNIQUE),
 						new Field("Instructor", FieldType.toggle, 40),
 						new Field("Enabled", FieldType.toggle, 40),
-						new Field("Sort Order", FieldType.text, 80, 10, false, false)
+						new Field("Sort Order", FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
 						);
 				data.setSortBy(4);
 				int idx = 0;
@@ -324,10 +325,10 @@ public class SimpleEditServlet implements SimpleEditService {
 			case permissions:
 				List<Roles> roles = new ArrayList<Roles>(Roles.findAll(false));
 				Field[] fields = new Field[2 + roles.size()];
-				fields[0] = new Field("Name", FieldType.text, 160, 200, false);
-				fields[1] = new Field("Level", FieldType.text, 160, 200, false);
+				fields[0] = new Field("Name", FieldType.text, 160, 200, Flag.READ_ONLY);
+				fields[1] = new Field("Level", FieldType.text, 160, 200, Flag.READ_ONLY);
 				for (int i = 0; i < roles.size(); i++) {
-					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40, true, roles.get(i).isEnabled());
+					fields[2 + i] = new Field(roles.get(i).getReference(), FieldType.toggle, 40, roles.get(i).isEnabled() ? null : Flag.HIDDEN);
 				}
 				data = new SimpleEditInterface(type, fields);
 				data.setSortBy(-1);
@@ -366,12 +367,12 @@ public class SimpleEditServlet implements SimpleEditService {
 				}
 
 				data = new SimpleEditInterface(type,
-						new Field("Department", FieldType.text, 160, false),
-						new Field("Room Type", FieldType.text, 100, false),
-						new Field("Status", FieldType.list, 300, states),
+						new Field("Department", FieldType.text, 160, Flag.READ_ONLY),
+						new Field("Room Type", FieldType.text, 100, Flag.READ_ONLY),
+						new Field("Status", FieldType.list, 300, states, Flag.NOT_EMPTY),
 						new Field("Message", FieldType.text, 500, 200),
 						new Field("Break Time", FieldType.text, 50, 10),
-						new Field("Sort Order", FieldType.text, 80, 10, false, false)
+						new Field("Sort Order", FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
 						);
 				data.setSortBy(0, 5);
 				data.setAddable(false);
@@ -406,8 +407,8 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case featureType:
 				data = new SimpleEditInterface(type,
-						new Field("Abbreviation", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
 						new Field("Event Management", FieldType.toggle, 40)
 						);
 				data.setSortBy(2, 1);
