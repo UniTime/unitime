@@ -54,12 +54,14 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.InstrOfferingPermIdGenerator;
@@ -79,6 +81,8 @@ public class CourseOfferingEditAction extends Action {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
     // --------------------------------------------------------- Instance Variables
 
@@ -183,8 +187,13 @@ public class CourseOfferingEditAction extends Action {
      * @param frm
      */
     private void doUpdate(HttpServletRequest request, CourseOfferingEditForm frm) throws Exception {
-
-    	sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
+    	boolean limitedEdit = false;
+    	
+    	if (sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote)) {
+    		limitedEdit = !sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
+    	} else {
+    		sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
+    	}
 
         String title = frm.getTitle();
         String note = frm.getScheduleBookNote();
@@ -201,119 +210,11 @@ public class CourseOfferingEditAction extends Action {
             tx = hibSession.beginTransaction();
 
 	        CourseOffering co = cdao.get(crsId);
-
-	        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
-	        	LastLikeCourseDemand llcd = null;
-	        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString();
-	        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
-	        		llcd = (LastLikeCourseDemand)it.next();
-	        		if (llcd.getCoursePermId() == null){
-		        		llcd.setCoursePermId(permId);
-		        		hibSession.update(llcd);
-	        		}
-	        	}
-        		co.setPermId(permId);
-	        }
-	        co.setCourseNbr(crsNbr);
-	        co.setTitle(title);
+	        InstructionalOffering io = co.getInstructionalOffering();
+	        
 	        co.setScheduleBookNote(note);
 
-	        if (frm.getDemandCourseOfferingId()==null) {
-	        	co.setDemandOffering(null);
-	        } else {
-	        	CourseOffering dco = cdao.get(frm.getDemandCourseOfferingId(),hibSession);
-	        	co.setDemandOffering(dco==null?null:dco);
-	        }
-
-	        // Update consent only if course is controlling
-	        InstructionalOffering io = null;
 	        if (co.isIsControl().booleanValue()) {
-		        io = co.getInstructionalOffering();
-
-		        if (frm.getConsent()==null || frm.getConsent().intValue()<=0)
-		            io.setConsentType(null);
-		        else {
-		            OfferingConsentType oct = odao.get(frm.getConsent());
-		            io.setConsentType(oct);
-		        }
-
-		        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
-		        	CourseCreditUnitConfig origConfig = io.getCredit();
-		        	if (origConfig != null){
-						io.setCredit(null);
-						hibSession.delete(origConfig);
-		        	}
-		        } else {
-		         	if(io.getCredit() != null){
-		        		CourseCreditUnitConfig ccuc = io.getCredit();
-		        		if (ccuc.getCreditFormat().equals(frm.getCreditFormat())){
-		        			boolean changed = false;
-		        			if (!ccuc.getCreditType().getUniqueId().equals(frm.getCreditType())){
-		        				changed = true;
-		        			}
-		        			if (!ccuc.getCreditUnitType().getUniqueId().equals(frm.getCreditUnitType())){
-		        				changed = true;
-		        			}
-		        			if (ccuc instanceof FixedCreditUnitConfig) {
-								FixedCreditUnitConfig fcuc = (FixedCreditUnitConfig) ccuc;
-								if (!fcuc.getFixedUnits().equals(frm.getUnits())){
-									changed = true;
-								}
-							} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
-								VariableFixedCreditUnitConfig vfcuc = (VariableFixedCreditUnitConfig) ccuc;
-								if (!vfcuc.getMinUnits().equals(frm.getUnits())){
-									changed = true;
-								}
-								if (!vfcuc.getMaxUnits().equals(frm.getMaxUnits())){
-									changed = true;
-								}
-								if (vfcuc instanceof VariableRangeCreditUnitConfig) {
-									VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
-									if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
-										changed = true;
-									}
-								}
-							}
-		        			if (changed){
-		        				CourseCreditUnitConfig origConfig = io.getCredit();
-		            			io.setCredit(null);
-		            			hibSession.delete(origConfig);
-		            			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-		            			io.getCredit().setOwner(io);
-		        			}
-		        		} else {
-		        			CourseCreditUnitConfig origConfig = io.getCredit();
-		        			io.setCredit(null);
-		        			hibSession.delete(origConfig);
-		        			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-		        			io.getCredit().setOwner(io);
-		        		}
-		        	} else {
-		    			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
-		    			io.getCredit().setOwner(io);
-		        	}
-		        }
-
-		        if (io.getCredit() != null){
-		        	hibSession.saveOrUpdate(io.getCredit());
-		        }
-
-		        io.setByReservationOnly(frm.isByReservationOnly());
-		        try {
-		        	io.setLastWeekToEnroll(Integer.parseInt(frm.getWkEnroll()));
-		        } catch (Exception e) {
-		        	io.setLastWeekToEnroll(null);
-		        }
-		        try {
-			        io.setLastWeekToChange(Integer.parseInt(frm.getWkChange()));
-		        } catch (Exception e) {
-			        io.setLastWeekToChange(null);
-		        }
-		        try{
-			        io.setLastWeekToDrop(Integer.parseInt(frm.getWkDrop()));
-		        } catch (Exception e) {
-		        	io.setLastWeekToDrop(null);
-		        }
 		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
 		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
 		            DepartmentalInstructor instructor = i.next();
@@ -331,7 +232,122 @@ public class CourseOfferingEditAction extends Action {
 		           }
 		        }
 
-		        hibSession.update(io);
+		        if (limitedEdit)
+		        	hibSession.update(io);
+	        }
+
+	        if (!limitedEdit) {
+		        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
+		        	LastLikeCourseDemand llcd = null;
+		        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString();
+		        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
+		        		llcd = (LastLikeCourseDemand)it.next();
+		        		if (llcd.getCoursePermId() == null){
+			        		llcd.setCoursePermId(permId);
+			        		hibSession.update(llcd);
+		        		}
+		        	}
+	        		co.setPermId(permId);
+		        }
+		        co.setCourseNbr(crsNbr);
+		        co.setTitle(title);
+
+		        if (frm.getDemandCourseOfferingId()==null) {
+		        	co.setDemandOffering(null);
+		        } else {
+		        	CourseOffering dco = cdao.get(frm.getDemandCourseOfferingId(),hibSession);
+		        	co.setDemandOffering(dco==null?null:dco);
+		        }
+
+		        // Update consent only if course is controlling
+		        if (co.isIsControl().booleanValue()) {
+			        if (frm.getConsent()==null || frm.getConsent().intValue()<=0)
+			            io.setConsentType(null);
+			        else {
+			            OfferingConsentType oct = odao.get(frm.getConsent());
+			            io.setConsentType(oct);
+			        }
+
+			        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
+			        	CourseCreditUnitConfig origConfig = io.getCredit();
+			        	if (origConfig != null){
+							io.setCredit(null);
+							hibSession.delete(origConfig);
+			        	}
+			        } else {
+			         	if(io.getCredit() != null){
+			        		CourseCreditUnitConfig ccuc = io.getCredit();
+			        		if (ccuc.getCreditFormat().equals(frm.getCreditFormat())){
+			        			boolean changed = false;
+			        			if (!ccuc.getCreditType().getUniqueId().equals(frm.getCreditType())){
+			        				changed = true;
+			        			}
+			        			if (!ccuc.getCreditUnitType().getUniqueId().equals(frm.getCreditUnitType())){
+			        				changed = true;
+			        			}
+			        			if (ccuc instanceof FixedCreditUnitConfig) {
+									FixedCreditUnitConfig fcuc = (FixedCreditUnitConfig) ccuc;
+									if (!fcuc.getFixedUnits().equals(frm.getUnits())){
+										changed = true;
+									}
+								} else if (ccuc instanceof VariableFixedCreditUnitConfig) {
+									VariableFixedCreditUnitConfig vfcuc = (VariableFixedCreditUnitConfig) ccuc;
+									if (!vfcuc.getMinUnits().equals(frm.getUnits())){
+										changed = true;
+									}
+									if (!vfcuc.getMaxUnits().equals(frm.getMaxUnits())){
+										changed = true;
+									}
+									if (vfcuc instanceof VariableRangeCreditUnitConfig) {
+										VariableRangeCreditUnitConfig vrcuc = (VariableRangeCreditUnitConfig) vfcuc;
+										if (!vrcuc.isFractionalIncrementsAllowed().equals(frm.getFractionalIncrementsAllowed())){
+											changed = true;
+										}
+									}
+								}
+			        			if (changed){
+			        				CourseCreditUnitConfig origConfig = io.getCredit();
+			            			io.setCredit(null);
+			            			hibSession.delete(origConfig);
+			            			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+			            			io.getCredit().setOwner(io);
+			        			}
+			        		} else {
+			        			CourseCreditUnitConfig origConfig = io.getCredit();
+			        			io.setCredit(null);
+			        			hibSession.delete(origConfig);
+			        			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+			        			io.getCredit().setOwner(io);
+			        		}
+			        	} else {
+			    			io.setCredit(CourseCreditUnitConfig.createCreditUnitConfigOfFormat(frm.getCreditFormat(), frm.getCreditType(), frm.getCreditUnitType(), frm.getUnits(), frm.getMaxUnits(), frm.getFractionalIncrementsAllowed(), new Boolean(true)));
+			    			io.getCredit().setOwner(io);
+			        	}
+			        }
+
+			        if (io.getCredit() != null){
+			        	hibSession.saveOrUpdate(io.getCredit());
+			        }
+
+			        io.setByReservationOnly(frm.isByReservationOnly());
+			        try {
+			        	io.setLastWeekToEnroll(Integer.parseInt(frm.getWkEnroll()));
+			        } catch (Exception e) {
+			        	io.setLastWeekToEnroll(null);
+			        }
+			        try {
+				        io.setLastWeekToChange(Integer.parseInt(frm.getWkChange()));
+			        } catch (Exception e) {
+				        io.setLastWeekToChange(null);
+			        }
+			        try{
+				        io.setLastWeekToDrop(Integer.parseInt(frm.getWkDrop()));
+			        } catch (Exception e) {
+			        	io.setLastWeekToDrop(null);
+			        }
+
+			        hibSession.update(io);
+		        }
 	        }
 
 	        hibSession.saveOrUpdate(co);
@@ -344,14 +360,16 @@ public class CourseOfferingEditAction extends Action {
                     ChangeLog.Operation.UPDATE,
                     co.getSubjectArea(),
                     co.getDepartment());
+            
+        	if (limitedEdit && permissionOfferingLockNeeded.check(sessionContext.getUser(), io))
+        		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), io.getSessionId(), io.getUniqueId());        		
 
             hibSession.flush();
             tx.commit();
 
             hibSession.refresh(co);
 
-            if (io!=null)
-                hibSession.refresh(io);
+            hibSession.refresh(io);
             
         	String className = ApplicationProperties.getProperty("tmtbl.external.course_offering.edit_action.class");
         	if (className != null && className.trim().length() > 0){
@@ -361,7 +379,6 @@ public class CourseOfferingEditAction extends Action {
 	        	ExternalCourseOfferingEditAction editAction = (ExternalCourseOfferingEditAction) (Class.forName(className).newInstance());
 	       		editAction.performExternalCourseOfferingEditAction(io, hibSession);
         	}
-
         }
         catch (Exception e) {
             try {
@@ -386,7 +403,8 @@ public class CourseOfferingEditAction extends Action {
             CourseOfferingEditForm frm,
             String crsOfferingId) throws Exception {
     	
-    	sessionContext.checkPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering);
+    	if (!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingNote))
+    		sessionContext.checkPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering);
 
         // Load Course Offering
         Long courseOfferingId = new Long(crsOfferingId);
@@ -501,7 +519,8 @@ public class CourseOfferingEditAction extends Action {
             HttpServletRequest request,
             CourseOfferingEditForm frm) throws Exception {
 
-    	sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
+    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote))
+    		sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 
     	frm.setAllowDemandCourseOfferings(true);
 
