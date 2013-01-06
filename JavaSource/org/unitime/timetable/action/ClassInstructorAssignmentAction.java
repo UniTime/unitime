@@ -51,12 +51,15 @@ import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.DepartmentalInstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstrOfferingConfigDAO;
+import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.util.Constants;
@@ -68,6 +71,7 @@ public class ClassInstructorAssignmentAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
 	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 	/**
      * Method execute
      * @param mapping
@@ -152,14 +156,21 @@ public class ClassInstructorAssignmentAction extends Action {
 
                     InstrOfferingConfig cfg = new InstrOfferingConfigDAO().get(frm.getInstrOffrConfigId());
 
+                    org.hibernate.Session hibSession = InstructionalOfferingDAO.getInstance().getSession();
                     ChangeLog.addChange(
-                            null,
+                    		hibSession,
                             sessionContext,
                             cfg,
                             ChangeLog.Source.CLASS_INSTR_ASSIGN,
                             ChangeLog.Operation.UPDATE,
                             cfg.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                             null);
+                    
+                	if (permissionOfferingLockNeeded.check(sessionContext.getUser(), InstructionalOfferingDAO.getInstance().get(frm.getInstrOfferingId()))) {
+                		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), sessionContext.getUser().getCurrentAcademicSessionId(), frm.getInstrOfferingId());
+                	}
+                	
+                	hibSession.flush();
 
                 	String className = ApplicationProperties.getProperty("tmtbl.external.instr_offr_config.assign_instructors_action.class");
                 	if (className != null && className.trim().length() > 0){
