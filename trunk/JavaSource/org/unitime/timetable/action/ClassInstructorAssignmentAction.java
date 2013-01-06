@@ -166,8 +166,8 @@ public class ClassInstructorAssignmentAction extends Action {
                             cfg.getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                             null);
                     
-                	if (permissionOfferingLockNeeded.check(sessionContext.getUser(), InstructionalOfferingDAO.getInstance().get(frm.getInstrOfferingId()))) {
-                		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), sessionContext.getUser().getCurrentAcademicSessionId(), frm.getInstrOfferingId());
+                	if (permissionOfferingLockNeeded.check(sessionContext.getUser(), cfg.getInstructionalOffering())) {
+                		StudentSectioningQueue.offeringChanged(hibSession, sessionContext.getUser(), cfg.getInstructionalOffering().getSessionId(), cfg.getInstructionalOffering().getUniqueId());
                 	}
                 	
                 	hibSession.flush();
