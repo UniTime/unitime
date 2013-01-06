@@ -529,6 +529,20 @@ public class CoursePermissions {
 		
 	}
 	
+	@PermissionForRight(Right.EditCourseOfferingCoordinators) 
+	public static class EditCourseOfferingCoordinators implements Permission<CourseOffering> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, CourseOffering source) {
+			return source.isIsControl() && permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
+		}
+
+		@Override
+		public Class<CourseOffering> type() { return CourseOffering.class; }
+		
+	}
+	
 	@PermissionForRight(Right.CanUseHardPeriodPrefs)
 	public static class CanUseHardPeriodPrefs implements Permission<PreferenceGroup> {
 

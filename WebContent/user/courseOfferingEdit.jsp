@@ -135,12 +135,26 @@
 		<html:hidden property="title"/>
 	</sec:authorize>	
 
+	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')">
 		<TR>
 			<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
 			<TD>
 				<html:textarea property="scheduleBookNote" rows="4" cols="57" />
 			</TD>
 		</TR>
+	</sec:authorize>
+	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') and !hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')">
+		<logic:notEmpty name="courseOfferingEditForm" property="scheduleBookNote">
+			<TR>
+				<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
+				<TD>
+					<bean:write name="courseOfferingEditForm" property="scheduleBookNote" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		<html:hidden property="scheduleBookNote"/>
+	</sec:authorize>
+	
 		
 	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
 		<logic:notEmpty name="courseOfferingEditForm" property="consent">
@@ -292,6 +306,7 @@
 	</logic:notEmpty>
 
 	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
@@ -324,6 +339,25 @@
 				</table>
 				</TD>
 			</TR>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') and !hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')">
+			<logic:notEmpty name="courseOfferingEditForm" property="instructors">
+				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
+				<TD nowrap>
+					<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
+						<logic:iterate name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request" id="lookup" type="org.unitime.timetable.util.ComboBoxLookup">
+							<logic:equal name="lookup" property="value" value="<%=instructor.toString()%>">
+								<logic:greaterThan name="ctr" value="0"><br></logic:greaterThan>
+								<bean:write name="lookup" property="label"/>
+							</logic:equal>
+						</logic:iterate>
+					</logic:iterate>
+				</TD>
+			</logic:notEmpty>
+			<logic:iterate name="courseOfferingEditForm" property="instructors" id="instructor" indexId="ctr">
+				<html:hidden property='<%= "instructors[" + ctr + "]" %>'/>
+			</logic:iterate>
+		</sec:authorize>
 
 		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">			
 			<TR>
