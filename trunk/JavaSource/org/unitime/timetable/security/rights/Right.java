@@ -98,6 +98,7 @@ public enum Right {
 	AddCourseOffering(SubjectArea.class),
 	EditCourseOffering(CourseOffering.class),
 	EditCourseOfferingNote(CourseOffering.class),
+	EditCourseOfferingCoordinators(CourseOffering.class),
 	
 	OfferingCanLock(InstructionalOffering.class),
 	OfferingCanUnlock(InstructionalOffering.class),

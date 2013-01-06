@@ -187,9 +187,15 @@ public class CourseOfferingEditAction extends Action {
      * @param frm
      */
     private void doUpdate(HttpServletRequest request, CourseOfferingEditForm frm) throws Exception {
-    	boolean limitedEdit = false;
+    	boolean limitedEdit = false, updateNote = false, updateCoordinators = false; 
     	
     	if (sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote)) {
+    		updateNote = true;
+    	}
+    	if (sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingCoordinators)) {
+    		updateCoordinators = true;
+    	}
+    	if (updateNote || updateCoordinators) {
     		limitedEdit = !sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
     	} else {
     		sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
@@ -212,9 +218,10 @@ public class CourseOfferingEditAction extends Action {
 	        CourseOffering co = cdao.get(crsId);
 	        InstructionalOffering io = co.getInstructionalOffering();
 	        
-	        co.setScheduleBookNote(note);
+	        if (!limitedEdit || updateNote)
+	        	co.setScheduleBookNote(note);
 
-	        if (co.isIsControl().booleanValue()) {
+	        if (!limitedEdit || updateCoordinators || co.isIsControl().booleanValue()) {
 		        if (io.getCoordinators() == null) io.setCoordinators(new HashSet<DepartmentalInstructor>());
 		        for (Iterator<DepartmentalInstructor> i = io.getCoordinators().iterator(); i.hasNext(); ) {
 		            DepartmentalInstructor instructor = i.next();
@@ -403,7 +410,8 @@ public class CourseOfferingEditAction extends Action {
             CourseOfferingEditForm frm,
             String crsOfferingId) throws Exception {
     	
-    	if (!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingNote))
+    	if (!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingNote) &&
+    		!sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators))
     		sessionContext.checkPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering);
 
         // Load Course Offering
@@ -438,9 +446,11 @@ public class CourseOfferingEditAction extends Action {
         
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
             frm.getInstructors().add(instructor.getUniqueId().toString());
-        
-        for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
-            frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
+
+        if (sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOfferingCoordinators) ||
+        	sessionContext.hasPermission(crsOfferingId, "CourseOffering", Right.EditCourseOffering))
+        	for (int i=0;i<Constants.PREF_ROWS_ADDED;i++)
+        		frm.getInstructors().add(Constants.BLANK_OPTION_VALUE);
         
         // Consent Type and Credit can be edited only on the controlling course offering
         if (co.isIsControl().booleanValue()) {
@@ -519,7 +529,8 @@ public class CourseOfferingEditAction extends Action {
             HttpServletRequest request,
             CourseOfferingEditForm frm) throws Exception {
 
-    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote))
+    	if (!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingNote) &&
+        	!sessionContext.hasPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOfferingCoordinators))
     		sessionContext.checkPermission(frm.getCourseOfferingId(), "CourseOffering", Right.EditCourseOffering);
 
     	frm.setAllowDemandCourseOfferings(true);

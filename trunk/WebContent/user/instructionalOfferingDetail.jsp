@@ -260,7 +260,7 @@
 							</TD>
 						</logic:equal>
 						<TD align="right" class="BottomBorderGray">
-							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote')">
+							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
 								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
 									<html:hidden property="courseOfferingId" value="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
 									<html:submit property="op" 
