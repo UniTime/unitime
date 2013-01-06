@@ -36,6 +36,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tiles:importAttribute />
 <loc:bundle name="CourseMessages">
@@ -52,7 +53,6 @@
 	<html:hidden property="courseName"/>
 	<html:hidden property="ioNotOffered"/>
 	
-
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
 		<TR>
 			<TD valign="middle" colspan='2'>
@@ -107,7 +107,8 @@
 			</TD>
 		</TR>
 		</logic:messagesPresent>
-
+		
+	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
 		<TR>
 			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
@@ -120,6 +121,19 @@
 				<html:text property="title" size="60" maxlength="90" />
 			</TD>
 		</TR>
+	</sec:authorize>
+	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+		<html:hidden property="courseNbr"/>
+		<logic:notEmpty name="courseOfferingEditForm" property="title">
+			<TR>
+				<TD><loc:message name="propertyCourseTitle"/> </TD>
+				<TD>
+					<bean:write name="courseOfferingEditForm" property="title"/>				
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		<html:hidden property="title"/>
+	</sec:authorize>	
 
 		<TR>
 			<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
@@ -128,6 +142,7 @@
 			</TD>
 		</TR>
 		
+	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
 		<logic:notEmpty name="courseOfferingEditForm" property="consent">
 		<TR>
 			<TD valign="top"><loc:message name="propertyConsent" /></TD>
@@ -214,17 +229,69 @@
 				</TD>
 			</TR>
 		</logic:equal>
+	</sec:authorize>
+	
+	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+		<logic:notEmpty name="courseOfferingEditForm" property="consent">
+			<logic:notEqual name="courseOfferingEditForm" property="consent" value="-1">
+				<TR>
+					<TD valign="top"><loc:message name="propertyConsent" /></TD>
+					<TD>
+						<logic:iterate name="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" scope="request" id="consent" type="org.unitime.timetable.model.OfferingConsentType">
+							<logic:equal name="courseOfferingEditForm" property="consent" value="<%=consent.getUniqueId().toString()%>">
+								<bean:write name="consent" property="label"/>
+							</logic:equal>
+						</logic:iterate>
+					</TD>
+				</TR>
+			</logic:notEqual>
+			<html:hidden property="consent"/>
+		</logic:notEmpty>
 
-		<logic:notEmpty name="courseOfferingEditForm" property="catalogLinkLabel">
+		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+			<logic:notEmpty name="courseOfferingEditForm" property="creditText">
+				<TR>
+					<TD><loc:message name="propertyCredit"/></TD>
+					<TD>
+						<bean:write name="courseOfferingEditForm" property="creditText"/>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			<html:hidden property="creditFormat"/>
+			<html:hidden property="creditType"/>
+			<html:hidden property="creditUnitType"/>
+			<html:hidden property="units"/>
+			<html:hidden property="maxUnits"/>
+			<html:hidden property="creditText"/>
+		</logic:equal>
+		
+		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
+			<logic:notEmpty name="courseOfferingEditForm" property="demandCourseOfferingId">
+				<logic:iterate name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" scope="request" id="course" type="org.unitime.timetable.model.CourseOffering">
+					<logic:equal name="courseOfferingEditForm" property="demandCourseOfferingId" value="<%=course.getUniqueId().toString()%>">
+						<TR>
+							<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
+							<TD>
+								<bean:write name="course" property="courseNameWithTitle"/>
+							</TD>
+						</TR>				
+					</logic:equal>
+				</logic:iterate>
+			</logic:notEmpty>
+		</logic:equal>
+		<html:hidden property="demandCourseOfferingId"/>
+	</sec:authorize>
+
+	<logic:notEmpty name="courseOfferingEditForm" property="catalogLinkLabel">
 		<TR>
 			<TD><loc:message name="propertyCourseCatalog"/> </TD>
 			<TD>
 				<A href="<bean:write name="courseOfferingEditForm" property="catalogLinkLocation" />" target="_blank"><bean:write name="courseOfferingEditForm" property="catalogLinkLabel" /></A>
 			</TD>
 		</TR>
-		</logic:notEmpty>
+	</logic:notEmpty>
 
-		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
+	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
@@ -257,6 +324,8 @@
 				</table>
 				</TD>
 			</TR>
+
+		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">			
 			<TR>
 				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
 				<TD>
@@ -290,7 +359,60 @@
 					<html:hidden property="weekStartDayOfWeek"/>
 				</TD>
 			</TR>
-		</logic:equal>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">			
+			<logic:equal name="courseOfferingEditForm" property="byReservationOnly" value="true">
+				<TR>
+					<TD><loc:message name="propertyByReservationOnly"/></TD>
+					<TD>
+						<IMG src="images/tick.gif" alt="ENABLED" title="<%=MSG.descriptionByReservationOnly2() %>" border="0">
+						<i><loc:message name="descriptionByReservationOnly2"/></i>
+					</TD>
+				</TR>
+			</logic:equal>
+			<html:hidden property="byReservationOnly"/>
+			<logic:notEmpty name="courseOfferingEditForm" property="wkEnroll">
+				<TR>
+					<TD valign="top"><loc:message name="propertyLastWeekEnrollment"/></TD>
+					<TD>
+						<loc:message name="textLastWeekEnrollment"><bean:write name="courseOfferingEditForm" property="wkEnroll" /></loc:message>
+						<logic:empty name="courseOfferingEditForm" property="wkChange">
+							<logic:empty name="courseOfferingEditForm" property="wkDrop">
+								<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
+							</logic:empty>
+						</logic:empty>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			<logic:notEmpty name="courseOfferingEditForm" property="wkChange">
+				<TR>
+					<TD valign="top"><loc:message name="propertyLastWeekChange"/></TD>
+					<TD>
+						<loc:message name="textLastWeekChange"><bean:write name="courseOfferingEditForm" property="wkChange" /></loc:message>
+						<logic:empty name="courseOfferingEditForm" property="wkDrop">
+							<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
+						</logic:empty>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			<logic:notEmpty name="courseOfferingEditForm" property="wkDrop">
+				<TR>
+					<TD valign="top"><loc:message name="propertyLastWeekDrop"/></TD>
+					<TD>
+						<loc:message name="textLastWeekDrop"><bean:write name="courseOfferingEditForm" property="wkDrop" /></loc:message>
+						<br><i><loc:message name="descriptionEnrollmentDeadlines"><bean:write name="courseOfferingEditForm" property="weekStartDayOfWeek" /></loc:message></i>
+					</TD>
+				</TR>
+			</logic:notEmpty>
+			<html:hidden property="wkEnroll"/>
+			<html:hidden property="wkEnrollDefault"/>
+			<html:hidden property="wkChange"/>
+			<html:hidden property="wkChangeDefault"/>
+			<html:hidden property="wkDrop"/>
+			<html:hidden property="wkDropDefault"/>
+			<html:hidden property="weekStartDayOfWeek"/>
+		</sec:authorize>		
+	</logic:equal>
 
 <!-- Buttons -->
 		<TR>

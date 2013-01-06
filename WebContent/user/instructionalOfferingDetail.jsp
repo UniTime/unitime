@@ -16,7 +16,6 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
-<%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.defaults.SessionAttribute"%>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.model.DistributionPref" %>
@@ -261,7 +260,7 @@
 							</TD>
 						</logic:equal>
 						<TD align="right" class="BottomBorderGray">
-							<sec:authorize access="hasPermission(#co, 'EditCourseOffering')">
+							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote')">
 								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
 									<html:hidden property="courseOfferingId" value="<%= ((CourseOffering)co).getUniqueId().toString() %>" />
 									<html:submit property="op" 
@@ -337,12 +336,14 @@
 			</TD>
 		</TR>
 
-		<TR>
-			<TD><loc:message name="propertyCredit"/></TD>
-			<TD>
-				<bean:write name="instructionalOfferingDetailForm" property="creditText" />
-			</TD>
-		</TR>
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="creditText">
+			<TR>
+				<TD><loc:message name="propertyCredit"/></TD>
+				<TD>
+					<bean:write name="instructionalOfferingDetailForm" property="creditText" />
+				</TD>
+			</TR>
+		</logic:notEmpty>
 		
 		<logic:equal name="instructionalOfferingDetailForm" property="byReservationOnly" value="true">
 			<TR>
