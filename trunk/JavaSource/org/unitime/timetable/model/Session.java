@@ -614,20 +614,6 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		return server != null && server.isOfferingLocked(offeringId);
 	}
 	
-	public boolean isOfferingLockNeeded(Long offeringId) {
-		if (getStatusType().isTestSession()) return false;
-		if (!getStatusType().canOnlineSectionStudents()) return false;
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
-		return server != null && !server.isOfferingLocked(offeringId);
-	}
-
-	public boolean isOfferingFullLockNeeded(Long offeringId) {
-		if (getStatusType().isTestSession()) return false;
-		if (!getStatusType().canOnlineSectionStudents() && !getStatusType().canSectionAssistStudents()) return false;
-		OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());
-		return server != null && !server.isOfferingLocked(offeringId);
-	}
-
 	public void lockOffering(Long offeringId) {
 		if (getStatusType().canLockOfferings()) {
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(getUniqueId());

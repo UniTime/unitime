@@ -80,6 +80,7 @@ import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 
@@ -93,6 +94,8 @@ public class ReservationServlet implements ReservationService {
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
+	
+	@Autowired Permission<InstructionalOffering> permissionOfferingLockNeeded;
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
@@ -655,10 +658,8 @@ public class ReservationServlet implements ReservationService {
 				}
 				hibSession.saveOrUpdate(r);
 				hibSession.saveOrUpdate(r.getInstructionalOffering());
-				if (offering.getSession().getStatusType().canSectionAssistStudents()) {
-					if (!offering.getSession().isOfferingLocked(offering.getUniqueId()))
-						StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
-				}
+				if (permissionOfferingLockNeeded.check(user, offering))
+					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();
 				return r.getUniqueId();
 			} finally {
@@ -685,15 +686,11 @@ public class ReservationServlet implements ReservationService {
 				if (reservation == null)
 					return false;
 				InstructionalOffering offering = reservation.getInstructionalOffering();
-		    	if (offering.getSession().isOfferingLockNeeded(offering.getUniqueId()))
-					throw new ReservationException("Offering " + offering.getCourseName() + " is unlocked, please lock it first.");
 				offering.getReservations().remove(reservation);
 				hibSession.delete(reservation);
 				hibSession.saveOrUpdate(offering);
-				if (offering.getSession().getStatusType().canSectionAssistStudents()) {
-					if (!offering.getSession().isOfferingLocked(offering.getUniqueId()))
-						StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
-				}
+				if (permissionOfferingLockNeeded.check(user, offering))
+					StudentSectioningQueue.offeringChanged(hibSession, user, offering.getSession().getUniqueId(), offering.getUniqueId());
 				hibSession.flush();
 			} finally {
 				hibSession.close();
