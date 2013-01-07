@@ -21,7 +21,6 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -38,14 +37,11 @@ import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
-import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
-import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.solver.ClassAssignmentProxy;
-import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DynamicList;
 import org.unitime.timetable.util.DynamicListObjectFactory;
 
@@ -82,8 +78,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	private List showDisplay;
 	private List externalIds;
 	
-	private List coordinators;
-  
 	/**
 	 * 
 	 */
@@ -112,7 +106,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
     	deletedInstrRowNum = null;
     	displayExternalId = new Boolean(false);
     	proxy = null;	
-    	coordinators = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	resetLists();
 	}
 
@@ -308,35 +301,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
         		tx.rollback(); throw e;
         	}
 		}
-	    
-	    org.hibernate.Session hibSession = cdao.getSession();
-    	Transaction tx = hibSession.beginTransaction();
-    	try {
-    		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(getInstrOfferingId(), hibSession);
-    		
-    		Set<DepartmentalInstructor> delete = new HashSet<DepartmentalInstructor>(io.getCoordinators());
-    		
-            for (Iterator i=getCoordinatorList().iterator();i.hasNext();) {
-                String instructorId = (String)i.next();
-                if (!Constants.BLANK_OPTION_VALUE.equals(instructorId) && !Preference.BLANK_PREF_VALUE.equals(instructorId)) {
-                    DepartmentalInstructor instructor = new DepartmentalInstructorDAO().get(Long.valueOf(instructorId));
-                    if (instructor != null && !delete.remove(instructor)) {
-                        io.getCoordinators().add(instructor);
-                        instructor.getOfferings().add(io);
-                    }
-               }
-            }
-            
-            for (DepartmentalInstructor instructor: delete) {
-            	io.getCoordinators().remove(instructor);
-                instructor.getOfferings().remove(io);
-            }
-
-            hibSession.update(io);
-            tx.commit();
-    	} catch (Exception e) {
-    		tx.rollback(); throw e;
-    	}
 	}
 
 	public void unassignAllInstructors() throws Exception {
@@ -361,23 +325,6 @@ public class ClassInstructorAssignmentForm extends ActionForm {
         	}
 		}
 	    this.getInstructorUids().clear();
-	    
-	    org.hibernate.Session hibSession = cdao.getSession();
-    	Transaction tx = hibSession.beginTransaction();
-    	try {
-    		InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(getInstrOfferingId(), hibSession);
-    		
-            for (DepartmentalInstructor instructor: new ArrayList<DepartmentalInstructor>(io.getCoordinators())) {
-            	io.getCoordinators().remove(instructor);
-                instructor.getOfferings().remove(io);
-            }
-
-            hibSession.update(io);
-            tx.commit();
-    	} catch (Exception e) {
-    		tx.rollback(); throw e;
-    	}
-    	this.getCoordinatorList().clear();
 	}
 
 	public String getOp() {
@@ -587,8 +534,4 @@ public class ClassInstructorAssignmentForm extends ActionForm {
 	public void setDisplayExternalId(Boolean displayExternalId) {
 		this.displayExternalId = displayExternalId;
 	}
-	
-    public List getCoordinatorList() { return coordinators; }
-    public void setCoordinatorList(List coordinators) { this.coordinators = coordinators; }
-    public boolean getCanDeleteCoordinators() { return coordinators.size() > 1; }
 }

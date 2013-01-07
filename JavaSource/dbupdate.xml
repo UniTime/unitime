@@ -7802,7 +7802,7 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EditRoomDepartmentsExams'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EditRoomDepartments%Exams'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EditRoomDepartments%Exams'
 		</sql>
 	</update>
 	<update version="94" date="19-Nov-2012" comment="Room Type Option Changes">
@@ -8064,7 +8064,7 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventAddUnavailable'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventLocationOverbook'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventLocationOverbook'
 		</sql>
 	</update>
 	<update version="98" date="15-Dec-2012" comment="Room Feature Types">
@@ -8095,12 +8095,12 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'RoomFeatureTypes'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'ExamTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'ExamTypes'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'RoomFeatureTypeEdit'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'ExamTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'ExamTypeEdit'
 		</sql>
 		<plsql>alter table %SCHEMA%.room_feature modify label varchar2(60 char)</plsql>
 		<plsql>alter table %SCHEMA%.room_feature modify abbv varchar2(60 char)</plsql>
@@ -8135,17 +8135,17 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventMeetingDelete'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventMeetingCancel'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventMeetingEdit'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventMeetingInquire'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventMeetingApprove'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventMeetingApprove'
 		</sql>
 	</update>
 	<update version="101" date="17-Dec-2012" comment="Event Attachments">
@@ -8184,7 +8184,7 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventLocationUnavailable'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventAddUnavailable'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventAddUnavailable'
 		</sql>
 	</update>
 	<update version="103" date="21-Dec-2012" comment="Room Event Management Properties">
@@ -8217,17 +8217,17 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'InstructorRoles'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypes'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'InstructorRoleEdit'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'RoomEditChangeEventProperties'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
 		</sql>
 	</update>
 	<update version="104" date="26-Dec-2012" comment="Room Sharing">
@@ -8249,12 +8249,12 @@
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'RoomDetailEventAvailability'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
 		</sql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'RoomEditEventAvailability'
-			from %SCHEMA%.roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
 		</sql>
 	</update>
 	<update version="106" date="4-Jan-2013" comment="Event Date Mapping">
@@ -8280,6 +8280,13 @@
 		<sql>
 			alter table %SCHEMA%.date_mapping add constraint fk_event_date_session foreign key (session_id)
 			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
+	<update version="107" date="7-Jan-2013" comment="Edit Course Offering Coordinators">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EditCourseOfferingCoordinators'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EditCourseOffering'
 		</sql>
 	</update>
 </dbupdate>
