@@ -55,7 +55,7 @@
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 					minWordLength="2" 
 					tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-					onblur="hideSuggestionList('courseNbrText');" />
+					onblur="blurSuggestionList('courseNbrText');" />
 			</TD>
 			<TD valign="middle" nowrap>
 				&nbsp;&nbsp;&nbsp;

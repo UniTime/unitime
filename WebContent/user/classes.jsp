@@ -52,7 +52,7 @@
 				suggestAction="/getCourseNumbers" property="courseNumber" styleId="courseNumberText" 
 				suggestCount="15" size="10" maxlength="10" layout="false" all="true" 
 			 	tooltip="Course numbers can be specified using wildcard (*). E.g. 2*"
-				onblur="hideSuggestionList('courseNumberText');" />
+				onblur="blurSuggestionList('courseNumberText');" />
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<html:submit onclick="op.value='Apply'; this.disabled=true; document.getElementById('s2').disabled=true; displayLoading(); form.submit();" styleId="s1" accesskey="A" value="Apply" title="Apply (Alt+A)"/>
 		</TD>
