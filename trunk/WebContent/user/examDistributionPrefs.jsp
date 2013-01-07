@@ -303,7 +303,7 @@
 						suggestAction="/getCourseNumbers" property="filterCourseNbr" styleId="courseNbr" 
 						suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 						minWordLength="2"
-						onblur="hideSuggestionList('courseNbr');" />
+						onblur="blurSuggestionList('courseNbr');" />
 					&nbsp;&nbsp;&nbsp;
 					<html:submit property="op" 
 						onclick="displayLoading();"

@@ -522,6 +522,11 @@ function hideSuggestionList(textFieldId)
 	}
 }
 
+function blurSuggestionList(textFieldId)
+{
+	setTimeout(function() { hideSuggestionList(textFieldId);}, 200);
+}
+
 
 function displayCursor(textFieldId, suggestionIndex)
 {
