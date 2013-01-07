@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,7 +48,6 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.comparators.ClassComparator;
@@ -62,7 +60,6 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.WebSolver;
-import org.unitime.timetable.util.Constants;
 
 @Service("/classInstructorAssignment")
 public class ClassInstructorAssignmentAction extends Action {
@@ -208,17 +205,7 @@ public class ClassInstructorAssignmentAction extends Action {
         if (op.equals(rsc.getMessage("button.addInstructor"))) {
         	frm.addInstructor();
         }
-        
-        if (op.equals("Add Coordinator") ) {
-        	frm.getCoordinatorList().add(1 + Integer.parseInt(frm.getAddInstructorId()), Preference.BLANK_PREF_VALUE);
-		}
-		
-        if (op.equals("Delete Coordinator")) {
-        	frm.getCoordinatorList().remove(Integer.parseInt(frm.getDeletedInstrRowNum()));
-        	if (frm.getCoordinatorList().isEmpty())
-        		frm.getCoordinatorList().add(Preference.BLANK_PREF_VALUE);
-        }
-        
+
         return mapping.findForward("classInstructorAssignment");
     }
 
@@ -283,11 +270,6 @@ public class ClassInstructorAssignmentAction extends Action {
         		loadClasses(frm, ss.getClasses(), new String());
         	}
         }
-        
-        for (DepartmentalInstructor coordinator: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
-            frm.getCoordinatorList().add(coordinator.getUniqueId().toString());
-        
-        frm.getCoordinatorList().add(Constants.BLANK_OPTION_VALUE);
     }
 
     private void loadClasses(ClassInstructorAssignmentForm frm, Set classes, String indent){
