@@ -22,11 +22,11 @@ alter table non_university_location add availability varchar2(2048 char);
 		
 insert into rights (role_id, value)
 		select distinct r.role_id, 'RoomDetailEventAvailability'
-		from roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+		from roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties';
 
 insert into rights (role_id, value)
 	select distinct r.role_id, 'RoomEditEventAvailability'
-	from roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties'
+	from roles r, rights g where g.role_id = r.role_id and g.value like 'RoomEditChangeEventProperties';
 
 /*
  * Update database version
