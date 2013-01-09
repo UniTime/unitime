@@ -70,11 +70,11 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 		if (sessionId == null) {
 			return ((Number)ExamTypeDAO.getInstance().getSession().createQuery(
 					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId")
-					.setLong("typeId", getUniqueId()).uniqueResult()).longValue() > 0;
+					.setLong("typeId", getUniqueId()).setCacheable(true).uniqueResult()).longValue() > 0;
 		} else {
 			return ((Number)ExamTypeDAO.getInstance().getSession().createQuery(
 					"select count(p) from ExamPeriod p where p.examType.uniqueId = :typeId and p.session.uniqueId = :sessionId")
-					.setLong("typeId", getUniqueId()).setLong("sessionId", sessionId).uniqueResult()).longValue() > 0;
+					.setLong("typeId", getUniqueId()).setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).longValue() > 0;
 		}
 	}
 }
