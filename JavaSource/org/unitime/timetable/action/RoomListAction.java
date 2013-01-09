@@ -308,8 +308,6 @@ public class RoomListAction extends Action {
 			where += " and ((l.class = Room and (lower(l.buildingAbbv || ' ' || l.roomNumber) like :filter or lower(l.displayName) like :filter)) or (l.class = NonUniversityLocation and lower(l.name) like :filter))";
 		}
 		
-		System.out.println("Query: select distinct l from \n    " + from + " \n where \n    " + where);
-		long t0 = System.currentTimeMillis();
 		Query query = LocationDAO.getInstance().getSession().createQuery("select distinct l from " + from + " where " + where);
 		
 		query.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId());
@@ -335,7 +333,6 @@ public class RoomListAction extends Action {
 				query.setLong("feature" + i, roomFeatures.get(i));
 		
 		form.setRooms((List<Location>)query.setCacheable(true).list());
-		System.out.println("  took: " + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**
