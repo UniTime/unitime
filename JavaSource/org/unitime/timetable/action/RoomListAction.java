@@ -204,7 +204,12 @@ public class RoomListAction extends Action {
 	}
 	
 	public void lookupRooms(RoomListForm form, String op) {
-		String from = "Location l";
+		String from = "Location l" +
+				" left join fetch l.roomDepts rd" +
+				" left join fetch l.examTypes xt" +
+				" left join fetch l.features f" +
+				" left join fetch l.roomGroups g" +
+				" left join fetch l.roomType t";
 		String where = "l.session.uniqueId = :sessionId";
 		
 		List<Long> departmentIds = null;
@@ -220,7 +225,6 @@ public class RoomListAction extends Action {
 					depts += (depts.isEmpty() ? "" : ",") + ":dept" + (departmentIds.size());
 					departmentIds.add(department.getUniqueId());
 				}
-				from = "Location l left outer join l.roomDepts rd";
 				where += " and (rd.department.uniqueId in (" + depts + ") or l.eventDepartment.uniqueId in (" + depts + "))";
 
 			}
@@ -229,11 +233,10 @@ public class RoomListAction extends Action {
 			if (!types.isEmpty()) {
 				examTypeId = types.get(0).getUniqueId();
 				form.setDeptCodeX("Exam" + examTypeId);
-				from = "Location l inner join l.examTypes xt";
 				where += " and xt.uniqueId = :examTypeId";
 			}
 		} else if (form.getDeptCodeX().matches("Exam[0-9]*")) {
-			from = "Location l inner join l.examTypes xt";
+			// from = "Location l inner join l.examTypes xt";
 			examTypeId = Long.valueOf(form.getDeptCodeX().substring(4));
 			where += " and xt.uniqueId = :examTypeId";
 		} else {
@@ -246,7 +249,6 @@ public class RoomListAction extends Action {
 				} else {
 					sessionContext.checkPermission(department, Right.Rooms);
 				}
-				from = "Location l left outer join l.roomDepts rd";
 				where += " and (rd.department.uniqueId = :dept0 or l.eventDepartment.uniqueId = :dept0)";
 				departmentIds = new ArrayList<Long>(); departmentIds.add(department.getUniqueId());
 			} else return;
@@ -287,7 +289,6 @@ public class RoomListAction extends Action {
 				groups += (groups.isEmpty() ? "" : ",") + ":group" + i;
 				roomGroups.add(form.getRoomGroups()[i]);
 			}
-			from += " inner join l.roomGroups g";
 			where += " and g.uniqueId in (" + groups + ")";
 		}
 		
@@ -304,10 +305,11 @@ public class RoomListAction extends Action {
 		String filter = null;
 		if (form.getFilter() != null && !form.getFilter().isEmpty()) {
 			filter = form.getFilter();
-			from += ", Room r, NonUniversityLocation u";
-			where += " and ((r.uniqueId = l.uniqueId and (lower(r.buildingAbbv || ' ' || r.roomNumber) like '%' || :filter || '%' or lower(r.displayName) like '%' || :filter || '%')) or (u.uniqueId = l.uniqueId and lower(u.name) like '%' || :filter || '%'))";
+			where += " and ((l.class = Room and (lower(l.buildingAbbv || ' ' || l.roomNumber) like :filter or lower(l.displayName) like :filter)) or (l.class = NonUniversityLocation and lower(l.name) like :filter))";
 		}
 		
+		System.out.println("Query: select distinct l from \n    " + from + " \n where \n    " + where);
+		long t0 = System.currentTimeMillis();
 		Query query = LocationDAO.getInstance().getSession().createQuery("select distinct l from " + from + " where " + where);
 		
 		query.setLong("sessionId", sessionContext.getUser().getCurrentAcademicSessionId());
@@ -321,7 +323,7 @@ public class RoomListAction extends Action {
 		if (maxSize != null)
 			query.setInteger("maxSize", maxSize);
 		if (filter != null)
-			query.setString("filter", filter.toLowerCase());
+			query.setString("filter", "%" + filter.toLowerCase() + "%");
 		if (roomTypes != null)
 			for (int i = 0; i < roomTypes.size(); i++)
 				query.setLong("type" + i, roomTypes.get(i));
@@ -333,6 +335,7 @@ public class RoomListAction extends Action {
 				query.setLong("feature" + i, roomFeatures.get(i));
 		
 		form.setRooms((List<Location>)query.setCacheable(true).list());
+		System.out.println("  took: " + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**
@@ -391,6 +394,7 @@ public class RoomListAction extends Action {
 								"select distinct f from DepartmentRoomFeature f inner join f.department d where " +
 								"d.session.uniqueId=:sessionId order by f.label").
 								setLong("sessionId",sessionId).
+								setCacheable(true).
 								list());						
 					} else {
 						String deptIds = "";
@@ -403,6 +407,7 @@ public class RoomListAction extends Action {
 									"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 									"where d.session.uniqueId=:sessionId and d.uniqueId in ("+ deptIds + ") order by f.label").
 									setLong("sessionId",sessionId).
+									setCacheable(true).
 									list());
 					} 
 	            } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
@@ -412,7 +417,9 @@ public class RoomListAction extends Action {
 								"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 								"where d.session.uniqueId=:sessionId and d.deptCode = :deptCode order by f.label").
 						setLong("sessionId",sessionId).
-						setString("deptCode",roomListForm.getDeptCodeX()).list());
+						setString("deptCode",roomListForm.getDeptCodeX()).
+						setCacheable(true).
+						list());
 				}
 				
 				Debug.debug("manager room feature: " + deptRoomFeatures.size());
@@ -946,6 +953,7 @@ public class RoomListAction extends Action {
 							"select distinct f from DepartmentRoomFeature f inner join f.department d where " +
 							"d.session.uniqueId=:sessionId order by f.label").
 							setLong("sessionId",sessionId).
+							setCacheable(true).
 							list());						
 				} else {
 					String deptIds = "";
@@ -958,6 +966,7 @@ public class RoomListAction extends Action {
 								"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 								"where d.session.uniqueId=:sessionId and d.uniqueId in ("+ deptIds + ") order by f.label").
 								setLong("sessionId",sessionId).
+								setCacheable(true).
 								list());
 				} 
             } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
@@ -967,7 +976,9 @@ public class RoomListAction extends Action {
 							"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 							"where d.session.uniqueId=:sessionId and d.deptCode = :deptCode order by f.label").
 					setLong("sessionId",sessionId).
-					setString("deptCode",roomListForm.getDeptCodeX()).list());
+					setString("deptCode",roomListForm.getDeptCodeX()).
+					setCacheable(true).
+					list());
 			}
 			
 		} catch (Exception e) {
@@ -1470,6 +1481,7 @@ public class RoomListAction extends Action {
 							"select distinct f from DepartmentRoomFeature f inner join f.department d where " +
 							"d.session.uniqueId=:sessionId order by f.label").
 							setLong("sessionId",sessionId).
+							setCacheable(true).
 							list());						
 				} else {
 					String deptIds = "";
@@ -1482,6 +1494,7 @@ public class RoomListAction extends Action {
 								"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 								"where d.session.uniqueId=:sessionId and d.uniqueId in ("+ deptIds + ") order by f.label").
 								setLong("sessionId",sessionId).
+								setCacheable(true).
 								list());
 				} 
             } else if (roomListForm.getDeptCodeX().matches("Exam[0-9]*")) {
@@ -1491,7 +1504,9 @@ public class RoomListAction extends Action {
 							"select distinct f from DepartmentRoomFeature f inner join f.department d " +
 							"where d.session.uniqueId=:sessionId and d.deptCode = :deptCode order by f.label").
 					setLong("sessionId",sessionId).
-					setString("deptCode",roomListForm.getDeptCodeX()).list());
+					setString("deptCode",roomListForm.getDeptCodeX()).
+					setCacheable(true).
+					list());
 			}
 			
 		} catch (Exception e) {
