@@ -556,7 +556,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public boolean isUsed() {
-    	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setLong("id", getUniqueId()).uniqueResult()).intValue() > 0;
+    	return ((Number)ExamPeriodDAO.getInstance().getSession().createQuery("select count(x) from Exam x where x.assignedPeriod.uniqueId = :id").setLong("id", getUniqueId()).setCacheable(true).uniqueResult()).intValue() > 0;
     }
     
     public int getExamEventStopOffsetForExam(Exam exam){
