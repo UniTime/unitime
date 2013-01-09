@@ -550,7 +550,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null and x.examType.type=:examType").
-                setLong("sessionId",sessionId).setInteger("examType",examType).uniqueResult()).longValue()>0;
+                setLong("sessionId",sessionId).setInteger("examType",examType).setCacheable(true).uniqueResult()).longValue()>0;
     }
     
     public static boolean hasTimetable(Long sessionId) {
@@ -559,7 +559,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(x) from Exam x " +
                 		"where x.session.uniqueId=:sessionId and " +
                 		"x.assignedPeriod!=null").
-                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
+                setLong("sessionId",sessionId).setCacheable(true).uniqueResult()).longValue()>0;
     }
 
     public static boolean hasMidtermExams(Long sessionId) {
@@ -568,7 +568,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
     			createQuery("select count(p) from ExamPeriod p " +
     					"where p.session.uniqueId=:sessionId and "+
     					"p.examType.type = "+ExamType.sExamTypeMidterm).
-    			setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
+    			setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).longValue()>0;
     }
     
     public static boolean hasFinalExams(Long sessionId) {
@@ -577,7 +577,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.type = "+ExamType.sExamTypeFinal).
-                setLong("sessionId", sessionId).uniqueResult()).longValue()>0;
+                setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).longValue()>0;
     }
     
     public static boolean hasExamsOfType(Long sessionId, ExamType type) {
@@ -586,7 +586,7 @@ public class Exam extends BaseExam implements Comparable<Exam> {
                 createQuery("select count(p) from ExamPeriod p " +
                         "where p.session.uniqueId=:sessionId and "+
                         "p.examType.uniqueid = :typeId").
-                setLong("sessionId", sessionId).setLong("typeId", type.getUniqueId()).uniqueResult()).longValue()>0;
+                setLong("sessionId", sessionId).setLong("typeId", type.getUniqueId()).setCacheable(true).uniqueResult()).longValue()>0;
     }
 
     public static Collection<ExamAssignmentInfo> findAssignedExams(Long sessionId, Long examTypeId) {
