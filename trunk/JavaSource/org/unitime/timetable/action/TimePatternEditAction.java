@@ -229,7 +229,19 @@ public class TimePatternEditAction extends Action {
             	if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
             		tx = hibSession.beginTransaction();
             	
-            	TimePattern tp = TimePattern.findByName(sessionId, "Exact Time");
+            	TimePattern tp = TimePattern.findExactTime(sessionId);
+            	
+            	if (tp == null) {
+                    myForm.load(null, null);
+                    myForm.setOp("List");
+                    getTimePatterns(request, sessionId);
+                    
+            		ActionMessages errors = new ActionMessages();
+                    errors.add("key", new ActionMessage("errors.generic", "There is no Exact Time time pattern defined."));
+                    saveErrors(request, errors);
+
+                    return mapping.findForward("list");
+            	}
             	
             	List timePrefs = 
             			hibSession.
