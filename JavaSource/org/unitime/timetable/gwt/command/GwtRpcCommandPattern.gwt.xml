@@ -21,10 +21,4 @@
  <module>
  	<source path="client"/>
  	<define-configuration-property name="org.unitime.timetable.gwt.command.interceptor.class" is_multi_valued="false" />
- 	<!-- enable if needed for UniTime.gwt.xml -->
- 	<!-- 
-	<generate-with class="org.unitime.timetable.gwt.command.generator.GwtRpcProxyGenerator">
- 		<when-type-assignable class="com.google.gwt.user.client.rpc.RemoteService" />
- 	</generate-with>
- 	 -->
 </module>
