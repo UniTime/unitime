@@ -253,14 +253,13 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
-		
-		getElement().getStyle().setProperty("width", "auto");
 	}
 	
 	public void showDialog(Long eventId) {
 		iStep = (Window.getClientWidth() - 300) / 105;
 		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
-		ToolBox.setMaxWidth(iDatesForm.getElement().getStyle(), (Window.getClientWidth() - 200) + "px");
+		int nrMonths = Math.max(3, Math.min(5, (Window.getClientWidth() - 300) / 225));
+		iDates.setWidth((225 * nrMonths) + "px");
 		
 		iResponse = null;
 		iEventId = eventId;
