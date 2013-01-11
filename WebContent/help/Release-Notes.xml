@@ -28,6 +28,22 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Google Web Toolkit</name>
+			<description>
+				<line>GWT updated to version 2.5.0 (was 2.4.0)
+					<line>Unfortunately, this is at the moment the only resolution of the broken animations in Chrome 24, see http://code.google.com/p/chromium/issues/detail?id=158910 for more details.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.205</version>
+	<release-date>Sat, 6 Oct 2012</release-date>
+	<category>
 		<title>Course Timetabling</title>
 		<item>
 			<name>Curricula</name>
