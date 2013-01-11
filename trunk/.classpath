@@ -22,7 +22,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-1.2.106.jar" sourcepath="3rd_party/sources/cpsolver-1.2.106-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/dom4j-1.6.1.jar" sourcepath="3rd_party/sources/dom4j-1.6.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-1.5.0.jar" sourcepath="3rd_party/sources/ehcache-1.5.0-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet-2.4.0.jar" sourcepath="3rd_party/sources/gwt-servlet-2.4.0-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet-2.5.0.jar" sourcepath="3rd_party/sources/gwt-servlet-2.5.0-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-core-3.5.6-Final.jar" sourcepath="3rd_party/sources/hibernate-core-3.5.6-Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-ehcache-3.5.6-Final.jar" sourcepath="3rd_party/sources/hibernate-ehcache-3.5.6-Final-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/itext-2.1.7.jar" sourcepath="3rd_party/sources/itext-2.1.7-sources.jar"/>
@@ -69,8 +69,8 @@
 
 	<classpathentry kind="lib" path="3rd_party/ant-1.8.4.jar" sourcepath="3rd_party/sources/ant-1.8.4-sources.jar"/>
 	<!-- 
-	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.4.0.jar" sourcepath="3rd_party/sources/gwt-dev-2.4.0-sources.jar"/>
-	<classpathentry kind="lib" path="3rd_party/gwt-user-2.4.0.jar" sourcepath="3rd_party/sources/gwt-user-2.4.0-sources.jar"/>
+	<classpathentry kind="lib" path="3rd_party/gwt-dev-2.5.0.jar" sourcepath="3rd_party/sources/gwt-dev-2.5.0-sources.jar"/>
+	<classpathentry kind="lib" path="3rd_party/gwt-user-2.5.0.jar" sourcepath="3rd_party/sources/gwt-user-2.5.0-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/jsp-api-2.1.jar" sourcepath="3rd_party/sources/jsp-api-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/servlet-api-2.5.jar" sourcepath="3rd_party/sources/servlet-api-2.5-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/validation-api-1.0.0.GA.jar" sourcepath="3rd_party/sources/validation-api-1.0.0.GA-sources.jar"/>
