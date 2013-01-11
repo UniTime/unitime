@@ -33,7 +33,7 @@ google-sites-liberation-1.0.4.jar
 
 gwt-dev.jar, gwt-user.jar, gwt-servlet.jar, gwt-servlet-deps.jar, validation-api-1.0.0.GA.jar,
 validation-api-1.0.0.GA-sources.jar
-	Google Web Toolkit 2.4
+	Google Web Toolkit 2.5
 	URL: http://code.google.com/webtoolkit/
 	Copyrigt: (C) 2011 Google
 	License: Apache Software License, Version 2.0
