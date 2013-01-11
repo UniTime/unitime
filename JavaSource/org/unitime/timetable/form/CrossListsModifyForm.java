@@ -109,20 +109,6 @@ public class CrossListsModifyForm extends ActionForm {
 	        if (this.ctrlCrsOfferingId==null || this.ctrlCrsOfferingId.intValue()<=0) {
 	            errors.add("ctrlCrsOfferingId", new ActionMessage("errors.generic", MSG.errorRequiredControllingCourse()));            
 	        }
-	        
-	        // Check limits if cross-listed
-	        if (courseOfferingIds.size()>1) {
-	            for (int i=0; i<courseOfferingIds.size(); i++) {
-	                try {
-		                String limit = (String) limits.get(i);
-	                    Integer.parseInt(limit); 
-	                }
-	                catch (Exception e) {
-	    	            errors.add("limit", new ActionMessage("errors.generic", MSG.errorRequiredReservedSpace()));
-	    	            break;
-	                }	                    
-	            }
-	        }
         }
         
         return errors;
@@ -351,11 +337,7 @@ public class CrossListsModifyForm extends ActionForm {
         this.courseOfferingNames.add((co.getCourseNameWithTitle()));
         this.ownedCourse.add(isOwner);
         this.resvId.add("");
-        if (co.getReservation() != null)
-        	this.limits.add(co.getReservation().toString());
-        else
-            this.limits.add(co.getInstructionalOffering().getCourseOfferings().size() == 1 && co.getInstructionalOffering().getLimit() != null ? co.getInstructionalOffering().getLimit().toString()
-            		: co.getProjectedDemand() != null ? co.getProjectedDemand().toString() : co.getDemand().toString());
+        this.limits.add(co.getReservation() == null ? "" : co.getReservation().toString());
         this.requested.add("");
         this.projected.add(co.getProjectedDemand() == null ? "" : co.getProjectedDemand().toString());
         this.lastTerm.add(co.getDemand() == null ? "" : co.getDemand().toString());
