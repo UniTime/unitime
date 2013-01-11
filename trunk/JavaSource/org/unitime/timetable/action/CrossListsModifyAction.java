@@ -377,7 +377,11 @@ public class CrossListsModifyAction extends Action {
 	                
 	                // Update course reservation
 	                int indx = frm.getIndex(origCrs);
-	                co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
+	                try {
+	                	co.setReservation(ids.size() > 1 ? Integer.valueOf(frm.getLimits(indx)) : null);
+	                } catch (NumberFormatException e) {
+	                	co.setReservation(null);
+	                }
 
 	                hibSession.saveOrUpdate(co);
 
@@ -426,7 +430,11 @@ public class CrossListsModifyAction extends Action {
 	                    addedOfferings.addElement(co3);
 
     	                int indx = frm.getIndex(course);
-                        co3.setReservation(Integer.valueOf(frm.getLimits(indx)));
+    	                try {
+    	                	co3.setReservation(Integer.valueOf(frm.getLimits(indx)));
+    	                } catch (NumberFormatException e) {
+    	                	co3.setReservation(null);
+    	                }
 		                
 	                    // Remove from collection
 	                    //i.remove();

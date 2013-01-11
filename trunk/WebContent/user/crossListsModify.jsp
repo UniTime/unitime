@@ -37,9 +37,7 @@
 
 <SCRIPT language="javascript">
 	<!--
-	var origTotal = 0;
 	var ioLimit = -1;
-	var colorCodeTotal = true;
 	var mismatchHtml = 
 		" &nbsp;&nbsp; " +
 		"<img src='images/Error16.jpg' alt='<%=MSG.altCrossListsLimitsDoNotMatch()%>' title='<%=MSG.titleCrossListsLimitsDoNotMatch() %>' border='0' align='top'> &nbsp;" +
@@ -59,32 +57,35 @@
 		i=0;
 		total = 0;
 		blanksExist = false;
+		allBlank = true;
 		while ( (o = document.getElementById("reserved_" + i++)) !=null ) {
 			val = o.value = o.value.trim();
 			if (val=="") {
 				val = 0;
 				blanksExist = true;
-			}
-			if (val == parseInt(val) && parseInt(val)>=0) {
+			} else  if (val == parseInt(val) && parseInt(val)>=0) {
 				total += parseInt(val);
-			}
-			else {
+				allBlank = false;
+			} else {
 				document.getElementById("resvTotal").innerHTML = "<font color='red'><b>?</b></font>";
 				return;
 			}
 		}
 		
 		str = "<b>" + total + "</b>&nbsp;&nbsp;";
-		if (total<origTotal && origTotal>=0 && colorCodeTotal) {
-			str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
+		if (ioLimit >= 0) {
+			if (total < ioLimit) {
+				str = "<font color='red'><b>" + total + "</b></font>&nbsp;&nbsp;";
+			} else {
+				str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
+			}
 		}
-		if (total>origTotal && origTotal>=0 && colorCodeTotal) {
-			str = "<font color='green'><b>" + total + "</b></font>&nbsp;&nbsp;";
-		}
+		if (allBlank) str = "";
+		
 		if (document.getElementById('resvTotal'))
 			document.getElementById('resvTotal').innerHTML = str;
 		
-		if (total<ioLimit && origTotal>=0) 
+		if (!allBlank && total<ioLimit) 
 			document.getElementById("resvTotalDiff").innerHTML = mismatchHtml;
 		else 
 			document.getElementById("resvTotalDiff").innerHTML = "";
@@ -231,7 +232,7 @@
 								<html:hidden property='<%= "limits[" + ctr + "]" %>' />
 							<% } else { %>
 								<logic:equal name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
-									<html:text name="crossListsModifyForm" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" property='<%= "limits[" + ctr + "]" %>' size="4" maxlength="4" />
+									<html:text name="crossListsModifyForm" styleId='<%= "reserved_" + ctr %>' onchange="updateResvTotal();" property='<%= "limits[" + ctr + "]" %>' size="4" maxlength="4" style="text-align:right;"/>
 								</logic:equal>
 								<logic:notEqual name="crossListsModifyForm" property="ownedInstrOffr" value="true" >
 									<bean:write name="crossListsModifyForm" property='<%= "limits[" + ctr + "]" %>' />
@@ -286,7 +287,7 @@
 					<TR>
 						<TD align="left" class='rowTotal'><I> <loc:message name="rowCrossListsTotal"/> </I></TD>
 						<TD align="center" class='rowTotal'><I> &nbsp; </I></TD>
-						<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= resvTotal %>&nbsp; &nbsp;</DIV></TD>
+						<TD class='rowTotal' align='right'><DIV id='resvTotal'><%= resvExists ? resvTotal : "" %>&nbsp; &nbsp;</DIV></TD>
 						<TD align="right" class='rowTotal'>&nbsp;<!-- I> Requested </I --></TD>
 						<TD class='rowTotal' align='right'><%= projTotal>=0 ? projTotal : "" %>&nbsp; </TD>
 						<TD class='rowTotal' align='right'><%= lastTermTotal>=0 ? lastTermTotal : "" %>&nbsp; </TD>
@@ -334,18 +335,8 @@
 
 <SCRIPT language="javascript">
 	<!--
-	<% int ioLimit = pageContext.getAttribute("instrOffrLimit")!=null 
-						? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit"))
-						: -1; 
-
-		if (ioLimit!=-1 && resvTotal!=ioLimit && resvExists) {						
-	%>	
-		updateResvTotal();
-	<%
-		}		
-	%>
-	colorCodeTotal = false;
-	ioLimit = <%=ioLimit%>;
+	ioLimit = <%= pageContext.getAttribute("instrOffrLimit")!=null ? Integer.valueOf((String) pageContext.getAttribute("instrOffrLimit")) : -1 %> 
+	updateResvTotal();
 	// -->
 </SCRIPT>
 

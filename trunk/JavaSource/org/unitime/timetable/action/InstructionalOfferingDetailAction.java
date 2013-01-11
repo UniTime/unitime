@@ -367,12 +367,15 @@ public class InstructionalOfferingDetailAction extends Action {
         // Check limits on courses if cross-listed
         if (io.getCourseOfferings().size()>1 && !frm.getUnlimited().booleanValue()) {
             int lim = 0;
+            boolean reservationSet = false;
             for (CourseOffering course: io.getCourseOfferings()) {
-            	if (course.getReservation() != null)
+            	if (course.getReservation() != null) {
             		lim += course.getReservation();
+            		reservationSet = true;
+            	}
             }
             
-            if (io.getLimit()!=null && lim < io.getLimit().intValue()) {
+            if (reservationSet && io.getLimit()!=null && lim < io.getLimit().intValue()) {
                 request.setAttribute("limitsDoNotMatch", ""+lim);
             }
         }
