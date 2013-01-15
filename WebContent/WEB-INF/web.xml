@@ -225,6 +225,11 @@
 			<param-value>false</param-value>
 		</init-param>
 	</filter>
+	
+	<filter>
+		<filter-name>Cache Disabling Filter</filter-name>
+		<filter-class>org.unitime.timetable.filter.CacheDisablingFilter</filter-class>
+	</filter>
 
 	<!-- Filter Mappings -->
 	<filter-mapping>
@@ -285,6 +290,11 @@
 	<filter-mapping>
 		<filter-name>Locale Filter</filter-name>
 		<url-pattern>*.rpc</url-pattern>
+	</filter-mapping>
+
+	<filter-mapping>
+		<filter-name>Cache Disabling Filter</filter-name>
+		<url-pattern>/unitime/unitime.nocache.js</url-pattern>
 	</filter-mapping>
 
 	<jsp-config>
