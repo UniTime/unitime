@@ -1100,7 +1100,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public void executeSelected() {
 			MenuItem selected = getSelectedItem();
 			if (selected != null)
-				selected.getCommand().execute();
+				selected.getScheduledCommand().execute();
 		}
 	}
 	
