@@ -346,7 +346,7 @@ public class EditRoomAction extends Action {
             }
             
             String oldNote = location.getNote();
-        	location.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote());
+        	location.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote().length() > 2048 ? editRoomForm.getNote().substring(0, 2048) : editRoomForm.getNote());
 			
 			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
 				
@@ -447,7 +447,7 @@ public class EditRoomAction extends Action {
             
             room.setBreakTime(editRoomForm.getBreakTime() == null || editRoomForm.getBreakTime().isEmpty() ? null : Integer.parseInt(editRoomForm.getBreakTime()));
             room.setEventStatus(editRoomForm.getEventStatus() == null || editRoomForm.getEventStatus() < 0 ? null : editRoomForm.getEventStatus());
-            room.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote());
+            room.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote().length() > 2048 ? editRoomForm.getNote().substring(0, 2048) : editRoomForm.getNote());
             
             LocationPermIdGenerator.setPermanentId(room);
 
