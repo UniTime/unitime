@@ -335,7 +335,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public boolean isDisplayStringHTML() { return true; }
 			});
-		iResources.getTextBox().addFocusHandler(new FocusHandler() {
+		iResources.getValueBox().addFocusHandler(new FocusHandler() {
 			@Override
 			public void onFocus(FocusEvent event) {
 				iResources.showSuggestionList();

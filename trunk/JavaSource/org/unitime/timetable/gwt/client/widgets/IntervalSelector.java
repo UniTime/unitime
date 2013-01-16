@@ -581,7 +581,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		public void executeSelected() {
 			MenuItem selected = getSelectedItem();
 			if (selected != null)
-				selected.getCommand().execute();
+				selected.getScheduledCommand().execute();
 		}
 		
 		public MenuItem itemAt(int index) {
