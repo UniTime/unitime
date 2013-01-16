@@ -1055,4 +1055,40 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Show deleted, cancelled, and rejected meetings.")
 	String showDeletedMeetings();
+	
+	@DefaultMessage("Capacity:")
+	String propRoomCapacity();
+	
+	@DefaultMessage("Area:")
+	String propRoomArea();
+	
+	@DefaultMessage("Groups:")
+	String propRoomGroups();
+
+	@DefaultMessage("Events:")
+	String propRoomEventStatus();
+
+	@DefaultMessage("Distance:")
+	String propRoomDistance();
+
+	@DefaultMessage("{0} ({1})")
+	String label(String name, String type);
+
+	@DefaultMessage("{0}")
+	String capacity(String capacity);
+
+	@DefaultMessage("{0} ({1} for examinations)")
+	String capacityWithExam(String capacity, String examCapacity);
+
+	@DefaultMessage("{0} ({1} for {2} examinations)")
+	String capacityWithExamType(String capacity, String examCapacity, String examType);
+	
+	@DefaultMessage("Features")
+	String roomFeatures();
+	
+	@DefaultMessage("No Event Department")
+	String noEventDepartment();
+	
+	@DefaultMessage("{0} m")
+	String roomDistance(String distanceInMeters);
 }

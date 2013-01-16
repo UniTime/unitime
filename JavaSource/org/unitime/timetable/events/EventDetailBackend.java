@@ -182,7 +182,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     				location.setType(ResourceType.ROOM);
     				location.setId(r.getUniqueId());
     				location.setName(r.getLabel());
-    				location.setHint(r.getHtmlHint());
     				location.setSize(r.getCapacity());
     				location.setRoomType(r.getRoomTypeLabel());
     				location.setBreakTime(r.getEffectiveBreakTime());
@@ -215,7 +214,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setType(ResourceType.ROOM);
 				location.setId(r.getUniqueId());
 				location.setName(r.getLabel());
-				location.setHint(r.getHtmlHint());
 				location.setSize(r.getCapacity());
 				location.setRoomType(r.getRoomTypeLabel());
 				location.setBreakTime(r.getEffectiveBreakTime());
@@ -267,7 +265,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setType(ResourceType.ROOM);
 		    				location.setId(r.getUniqueId());
 		    				location.setName(r.getLabel());
-		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
 		    				location.setBreakTime(r.getEffectiveBreakTime());
@@ -333,7 +330,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				location.setType(ResourceType.ROOM);
 		    				location.setId(r.getUniqueId());
 		    				location.setName(r.getLabel());
-		    				location.setHint(r.getHtmlHint());
 		    				location.setSize(r.getCapacity());
 		    				location.setRoomType(r.getRoomTypeLabel());
 		    				location.setBreakTime(r.getEffectiveBreakTime());
@@ -411,7 +407,6 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				location.setType(ResourceType.ROOM);
 				location.setId(m.getLocation().getUniqueId());
 				location.setName(m.getLocation().getLabel());
-				location.setHint(m.getLocation().getHtmlHint());
 				location.setSize(m.getLocation().getCapacity());
 				location.setRoomType(m.getLocation().getRoomTypeLabel());
 				location.setBreakTime(m.getLocation().getEffectiveBreakTime());

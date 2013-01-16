@@ -56,7 +56,6 @@ import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.SolverProxy;
@@ -577,7 +576,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		private int iPref;
 		private long iSize;
 		private boolean iStrike;
-		private transient Location iLocation;
 		
 		public RoomInfo(String name, Long roomId, long size, int pref) {
 			iName = name;
@@ -597,23 +595,18 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			if (o==null || !(o instanceof RoomInfo)) return false;
 			return getId().equals(((RoomInfo)o).getId());
 		}
-		public Location getLocation() {
-			if (iLocation == null)
-				iLocation = LocationDAO.getInstance().get(getId());
-			return iLocation;
-		}
-		
+
 		public String toHtml(boolean link, boolean showSelected, boolean showHint) {
 			boolean uline = false;
 			if (showSelected && iRoom!=null) {
 				for (int i=0;i<iRoom.length;i++)
 					if (iRoom[i].equals(this)) uline=true;
 			}
-			if (showHint && getLocation() != null) {
+			if (showHint) {
 				return
 					(link?"<a id='room_"+getId()+"' onclick=\"selectRoom(event, '"+getId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+iSize+" seats'>":"<a class='noFancyLinks' title='"+iSize+" seats'>")+
 					"<span style='color:"+PreferenceLevel.int2color(iPref)+";' "+
-					"onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(iPref))+ "');\" onmouseout=\"hideGwtHint();\">" +
+					"onmouseover=\"showGwtRoomHint(this, '" + getId() + "', '" + PreferenceLevel.int2string(iPref) + "');\" onmouseout=\"hideGwtRoomHint();\">" +
 					(uline?"<u>":"")+
 					(iStrike?"<s>":"")+
 					iName+

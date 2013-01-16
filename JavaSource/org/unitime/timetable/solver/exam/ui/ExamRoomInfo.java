@@ -78,13 +78,13 @@ public class ExamRoomInfo implements Serializable, Comparable<ExamRoomInfo>{
     
     public String toString() {
     	return "<span style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference()))+";' " +
-    		"onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(getPreference())) + "');\" onmouseout=\"hideGwtHint();\">" +
+    		"onmouseover=\"showGwtRoomHint(this, '" + getLocationId() + "', '" + PreferenceLevel.int2string(getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">" +
     		getName() + "</span>";
     }
     
     public String getNameWithHint(boolean pref) {
     	return "<span" + (pref? " style='color:"+PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(getPreference()))+";'": "") +
-    		" onmouseover=\"showGwtHint(this, '" + getLocation().getHtmlHint(PreferenceLevel.int2string(getPreference())) + "');\" onmouseout=\"hideGwtHint();\">" +
+    		" onmouseover=\"showGwtRoomHint(this, '" + getLocationId() + "', '" + PreferenceLevel.int2string(getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">" +
     		getName() + "</span>";
     }
     

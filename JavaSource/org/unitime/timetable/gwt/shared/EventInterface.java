@@ -370,7 +370,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private String iAbbreviation;
 		private String iResourceName;
 		private String iTitle;
-		private String iHint = null;
 		private Integer iSize = null;
 		private Double iDistance = null;
 		private String iRoomType = null;
@@ -383,7 +382,6 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			setId(room.getUniqueId());
 			setAbbreviation(room.getAbbreviation());
 			setName(room.getName());
-			setHint(room.getProperty("mouseOver", null));
 			String capacity = room.getProperty("capacity", null);
 			setSize(capacity == null ? null : Integer.valueOf(capacity));
 			String distance = room.getProperty("distance", null);
@@ -423,13 +421,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public String getMessage() { return iMessage; }
 		
-		public String getHint() { return iHint; }
-		public boolean hasHint() { return iHint != null && !iHint.isEmpty(); }
-		public void setHint(String hint) { iHint = hint; }
 		public String getNameWithHint() {
 			if (iResourceName == null || iResourceName.isEmpty()) return "";
-			if (iHint == null || iHint.isEmpty()) return iResourceName;
-			return "<span onmouseover=\"showGwtHint(this, '" + iHint + "');\" onmouseout=\"hideGwtHint();\">" + iResourceName + "</span>";
+			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">" + iResourceName + "</span>";
 		}
 		
 		public String toString() {

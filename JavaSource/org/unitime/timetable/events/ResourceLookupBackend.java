@@ -87,7 +87,6 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							ret.setId(room.getUniqueId());
 							ret.setAbbreviation(room.getLabel());
 							ret.setName(room.getLabel());
-							ret.setHint(room.getHtmlHint());
 							return ret;
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
@@ -103,7 +102,6 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							ret.setId(location.getUniqueId());
 							ret.setAbbreviation(location.getLabel());
 							ret.setName(location.getLabel());
-							ret.setHint(location.getHtmlHint());
 							return ret;
 						}
 					} else {
@@ -120,7 +118,6 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							ret.setId(room.getUniqueId());
 							ret.setAbbreviation(room.getLabel());
 							ret.setName(room.getLabel());
-							ret.setHint(room.getHtmlHint());
 							return ret;
 						}
 						List<NonUniversityLocation> locations = hibSession.createQuery("select distinct l from NonUniversityLocation l " +
@@ -136,7 +133,6 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							ret.setId(location.getUniqueId());
 							ret.setAbbreviation(location.getLabel());
 							ret.setName(location.getLabel());
-							ret.setHint(location.getHtmlHint());
 							return ret;
 						}
 					}

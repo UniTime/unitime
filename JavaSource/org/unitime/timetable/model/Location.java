@@ -311,7 +311,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		return grfs;
 	}
 	
-	TreeSet<RoomGroup> getGlobalRoomGroups() {
+	public TreeSet<RoomGroup> getGlobalRoomGroups() {
 		TreeSet<RoomGroup> grgs = new TreeSet<RoomGroup>();
 		for (RoomGroup rg: getRoomGroups()) {
 			if (rg.isGlobal()) grgs.add(rg);
@@ -891,10 +891,12 @@ public abstract class Location extends BaseLocation implements Comparable {
         return table;
     }
     
+    @Deprecated
     public String getHtmlHint() {
     	return getHtmlHint(null);
     }
     
+    @Deprecated
     public String getHtmlHint(String preference) {
 		try {
 			if (!Hibernate.isPropertyInitialized(this, "roomType") || !Hibernate.isInitialized(getRoomType())) {
@@ -907,6 +909,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 		}
     }
 
+    @Deprecated
 	private String getHtmlHintImpl(String preference) {
     	String hint = (preference == null ? "" : preference + " " ) + getLabel() + (getDisplayName() == null ? " (" + getRoomTypeLabel() + ")" : " (" + getDisplayName() + ")");
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
@@ -954,7 +957,7 @@ public abstract class Location extends BaseLocation implements Comparable {
     }
     
     public String getLabelWithHint() {
-    	return "<span onmouseover=\"showGwtHint(this, '" + getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + getLabel() + "</span>";
+    	return "<span onmouseover=\"showGwtRoomHint(this, '" + getUniqueId() + "');\" onmouseout=\"hideGwtRoomHint();\">" + getLabel() + "</span>";
     }
     
     public boolean isUsed() {
