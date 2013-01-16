@@ -242,10 +242,10 @@ public class RoomNoteChanges extends Composite {
 		for (ChangeLogInterface log: logs) {
 			List<Widget> line = new ArrayList<Widget>();
 			
-			line.add(new Label(sDateFormat.format(log.getDate())));
-			line.add(new Label(log.getSession()));
-			line.add(new HTML(log.getManager() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : log.getManager()));
-			line.add(new HTML(log.getObject() == null || log.getObject().isEmpty() || "-".equals(log.getObject()) ? "<i>" + MESSAGES.emptyNote() + "</i>" : log.getObject()));
+			line.add(new Label(sDateFormat.format(log.getDate()), false));
+			line.add(new Label(log.getSession(), false));
+			line.add(new HTML(log.getManager() == null ? "<i>" + MESSAGES.notApplicable() + "</i>" : log.getManager(), false));
+			line.add(new HTML(log.getObject() == null || log.getObject().isEmpty() || "-".equals(log.getObject()) ? "<i>" + MESSAGES.emptyNote() + "</i>" : log.getObject(), true));
 			
 			iChanges.addRow(log, line);
 			iChanges.getRowFormatter().setVerticalAlign(iChanges.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
