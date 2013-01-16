@@ -2811,3 +2811,11 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-EventMeetingsHideDeleted .rejected-row {
 	display: none;
 }
+
+.unitime-RoomHint {
+	max-width: 450px;
+}
+
+.unitime-RoomHint .minimap {
+	border: 1px solid #9CB0CE;
+}

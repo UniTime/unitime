@@ -66,7 +66,21 @@ public class RoomPref extends BaseRoomPref {
     	return ToolBox.equals(getRoom(),((RoomPref)other).getRoom());
     }
     
+    @Override
+    public String preferenceHtml() {
+    	StringBuffer sb = new StringBuffer("<span ");
+    	if (this.getPrefLevel().getPrefId().intValue() != 4) {
+    		sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");
+    	} else {
+    		sb.append("style='font-weight:bold;' ");
+    	}
+    	sb.append("onmouseover=\"showGwtRoomHint(this, '" + getRoom().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " Room');\" onmouseout=\"hideGwtRoomHint();\">");
+    	sb.append(this.preferenceAbbv());
+    	sb.append("</span>");
+    	return (sb.toString());
+    }
+    
 	public String preferenceTitle() {
-    	return getPrefLevel().getPrefName() + " Room " + getRoom().getHtmlHint();
+    	return getPrefLevel().getPrefName() + " Room " + getRoom().getLabel();
 	}
 }

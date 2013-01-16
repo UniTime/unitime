@@ -1095,7 +1095,7 @@ public class WebInstructionalOfferingTableBuilder {
 	    			Location room = (Location)it2.next();
 	    			if (info!=null)
 	    				sb.append("<span style='color:"+(isEditable?PreferenceLevel.int2color(info.getRoomPreference(room.getUniqueId())):disabledColor)+";' " +
-	    						"onmouseover=\"showGwtHint(this, '" + room.getHtmlHint(isEditable ? PreferenceLevel.int2string(info.getRoomPreference(room.getUniqueId())) : null) + "');\" onmouseout=\"hideGwtHint();\">");
+	    						"onmouseover=\"showGwtRoomHint(this, '" + room.getUniqueId() + "', '" + (isEditable ? PreferenceLevel.int2string(info.getRoomPreference(room.getUniqueId())) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">");
 	    			sb.append(room.getLabel());
 	   				if (info!=null)
 	   					sb.append("</span>");

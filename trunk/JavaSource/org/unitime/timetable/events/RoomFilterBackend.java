@@ -459,9 +459,6 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		Map<Long, Double> distances = new HashMap<Long, Double>();
 		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), -1, distances, null)) {
 			Double dist = distances.get(location.getUniqueId());
-			String hint = location.getHtmlHint();
-			if (dist != null)
-				hint = hint.replace("</table>", "<tr><td>Distance:</td><td>" + Math.round(dist) + " m</td></tr></table>");
 			response.addResult(new Entity(
 					location.getUniqueId(),
 					location.getDisplayName(),
@@ -470,7 +467,6 @@ public class RoomFilterBackend extends FilterBoxBackend {
 					"type", location.getRoomType().getLabel(),
 					"capacity", location.getCapacity().toString(),
 					"distance", String.valueOf(dist == null ? 0l : Math.round(dist)),
-					"mouseOver", hint,
 					"overbook", context.hasPermission(location, Right.EventLocationOverbook) ? "1" : "0",
 					"breakTime", String.valueOf(location.getEffectiveBreakTime()),
 					"message", location.getEventMessage()

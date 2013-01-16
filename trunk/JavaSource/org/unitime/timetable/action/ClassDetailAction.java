@@ -56,7 +56,6 @@ import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
-import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
@@ -319,8 +318,7 @@ public class ClassDetailAction extends PreferencesAction {
 	    					rooms.append("<span id='room_dots' onMouseOver=\"this.style.cursor='hand';this.style.cursor='pointer';\" style='display:inline'><a onClick=\"document.getElementById('room_dots').style.display='none';document.getElementById('room_rest').style.display='inline';\">...</a></span><span id='room_rest' style='display:none'>");
 	        			rooms.append(
 	        					"<span style='color:"+PreferenceLevel.int2color(rl.getPreference())+";' " +
-	        					"onmouseover=\"showGwtHint(this, '" + LocationDAO.getInstance().get(rl.getId()).getHtmlHint(
-	        							PreferenceLevel.int2string(rl.getPreference()))+ "');\" onmouseout=\"hideGwtHint();\">"+
+	        					"onmouseover=\"showGwtRoomHint(this, '" + rl.getId() + "', '" + PreferenceLevel.int2string(rl.getPreference()) + "');\" onmouseout=\"hideGwtRoomHint();\">"+
 	        					rl.getName()+
 	        					"</span>");
 	        			idx++;

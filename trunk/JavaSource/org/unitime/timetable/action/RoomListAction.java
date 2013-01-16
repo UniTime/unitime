@@ -616,7 +616,7 @@ public class RoomListAction extends Action {
 					text[idx] = 
 						(editable?"":"<font color='gray'>")+
 						(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-						"<span onmouseover=\"showGwtHint(this, '" + bldg.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + bldg.getAbbreviation() + "</span>"+
+						"<span onmouseover=\"showGwtRoomHint(this, '-" + bldg.getUniqueId() + "');\" onmouseout=\"hideGwtRoomHint();\">" + bldg.getAbbreviation() + "</span>"+
 						(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 						(editable?"":"</font>");
 					comp[0] = location.getLabel();
@@ -626,7 +626,7 @@ public class RoomListAction extends Action {
 				text[idx] = 
 					(editable?"":"<font color='gray'>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-					(room==null?location.getLabelWithHint():"<span onmouseover=\"showGwtHint(this, '" + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">" + room.getRoomNumber() + "</span>")+
+					(room==null?location.getLabelWithHint():"<span onmouseover=\"showGwtRoomHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomHint();\">" + room.getRoomNumber() + "</span>")+
 					(location.isIgnoreRoomCheck().booleanValue()?"</i>":"")+
 					(editable?"":"</font>");
 				comp[idx] = location.getLabel();
@@ -694,16 +694,16 @@ public class RoomListAction extends Action {
 	                    if (room==null) {
 	                        text[0] =
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+location.getLabel()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtRoomHint(this, '" + location.getUniqueId() + "', '" +roomPref.getPrefName() + "');\" onmouseout=\"hideGwtRoomHint();\">"+location.getLabel()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    } else {
 	                        text[0] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +(bldg == null ? roomPref.getPrefName() + " " + location.getHtmlHint() : bldg.getHtmlHint()) + "');\" onmouseout=\"hideGwtHint();\">"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtRoomHint(this, '-" + bldg.getUniqueId() + "', '" +(bldg == null ? roomPref.getPrefName() : "") + "');\" onmouseout=\"hideGwtRoomHint();\">"+(bldg==null?"":bldg.getAbbreviation())+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                        text[1] = 
 	                            (location.isIgnoreRoomCheck().booleanValue()?"<i>":"")+
-	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtHint(this, '" +roomPref.getPrefName() + " " + location.getHtmlHint() + "');\" onmouseout=\"hideGwtHint();\">"+room.getRoomNumber()+"</span>"+
+	                            "<span style='color:"+roomPref.prefcolor()+";font-weight:bold;' onmouseover=\"showGwtRoomHint(this, '" + location.getUniqueId() + "', '" +roomPref.getPrefName() + "');\" onmouseout=\"hideGwtRoomHint();\">"+room.getRoomNumber()+"</span>"+
 	                            (location.isIgnoreRoomCheck().booleanValue()?"</i>":"");
 	                    }
 	                }

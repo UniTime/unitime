@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -289,5 +291,103 @@ public class RoomInterface implements IsSerializable {
 			return request;
 		}
 	}
+	
+	public static class RoomHintResponse implements GwtRpcResponse {
+		private Long iId = null;
+		private String iLabel = null;
+		private String iDisplayName = null;
+		private String iRoomTypeLabel = null;
+		private String iMiniMapUrl = null;
+		private Integer iCapacity = null, iExamCapacity = null;
+		private String iExamType = null;
+		private String iArea = null;
+		private String iGroups = null;
+		private String iEventStatus = null;
+		private String iNote = null;
+		
+		private Map<String, String> iFeatures = null;
+		
+		public RoomHintResponse() {
+		}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getLabel() { return iLabel; }
+		public void setLabel(String label) { iLabel = label; }
+		
+		public String getDisplayName() { return iDisplayName; }
+		public void setDisplayName(String displayName) { iDisplayName = displayName; }
+		public boolean hasDisplayName() { return iDisplayName != null && !iDisplayName.isEmpty(); }
+		
+		public String getRoomTypeLabel() { return iRoomTypeLabel; }
+		public void setRoomTypeLabel(String roomTypeLabel) { iRoomTypeLabel = roomTypeLabel; }
+		public boolean hasRoomTypeLabel() { return iRoomTypeLabel != null && !iRoomTypeLabel.isEmpty(); }
+		
+		public String getMiniMapUrl() { return iMiniMapUrl; }
+		public void setMiniMapUrl(String miniMapUrl) { iMiniMapUrl = miniMapUrl; }
+		public boolean hasMiniMapUrl() { return iMiniMapUrl != null && !iMiniMapUrl.isEmpty(); }
+
+		public Integer getCapacity() { return iCapacity; }
+		public void setCapacity(Integer capacity) { iCapacity = capacity; }
+		public boolean hasCapacity() { return iCapacity != null && iCapacity != 0; }
+
+		public Integer getExamCapacity() { return iExamCapacity; }
+		public void setExamCapacity(Integer examCapacity) { iExamCapacity = examCapacity; }
+		public boolean hasExamCapacity() { return iExamCapacity != null && iExamCapacity != 0; }
+		
+		public String getExamType() { return iExamType; }
+		public void setExamType(String examType) { iExamType = examType; }
+		public boolean hasExamType() { return iExamType != null && !iExamType.isEmpty(); }
+
+		public String getArea() { return iArea; }
+		public void setArea(String area) { iArea = area; }
+		public boolean hasArea() { return iArea != null && !iArea.isEmpty(); }
+		
+		public boolean hasFeatures() { return iFeatures != null && !iFeatures.isEmpty(); }
+		public void addFeature(String type, String name) {
+			if (iFeatures == null) iFeatures = new HashMap<String, String>();
+			String featuresThisType = iFeatures.get(type);
+    		if (featuresThisType == null) {
+    			featuresThisType = "";
+    		} else {
+    			featuresThisType += ", ";
+    		}
+    		featuresThisType += name;
+    		iFeatures.put(type, featuresThisType);
+		}
+		public Set<String> getFeatureNames() { return new TreeSet<String>(iFeatures.keySet()); }
+		public String getFeatures(String name) { return iFeatures.get(name); }
+		
+		public String getGroups() { return iGroups; }
+		public void setGroups(String groups) { iGroups = groups; }
+		public boolean hasGroups() { return iGroups != null && !iGroups.isEmpty(); }
+
+		public String getEventStatus() { return iEventStatus; }
+		public void setEventStatus(String eventStatus) { iEventStatus = eventStatus; }
+		public boolean hasEventStatus() { return iEventStatus != null && !iEventStatus.isEmpty(); }
+
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+
+	}
+	
+	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.RoomSharingBackend")
+	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {
+		private Long iLocationId;
+		
+		public Long getLocationId() { return iLocationId; }
+		public void setLocationId(Long locationId) { iLocationId = locationId; }
+		
+		public String toString() { return "" + getLocationId(); }
+		
+		public static RoomHintRequest load(Long locationId) {
+			RoomHintRequest request = new RoomHintRequest();
+			request.setLocationId(locationId);
+			return request;
+		}
+	}
+
 
 }
