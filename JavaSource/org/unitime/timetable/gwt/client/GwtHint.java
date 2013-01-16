@@ -25,23 +25,17 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * @author Tomas Muller
  */
 public class GwtHint extends PopupPanel {
-	private HTML iContent;
 	private static GwtHint sInstance;
 
 	public GwtHint(String html) {
 		super();
 		setStyleName("unitime-PopupHint");
-		iContent = new HTML(html, false);
-		setWidget(iContent);
-	}
-	
-	public void setContent(String html) {
-		iContent.setHTML(html);
 	}
 	
 	public static GwtHint getInstance() {
@@ -66,7 +60,11 @@ public class GwtHint extends PopupPanel {
 	}
 	
 	public static void showHint(final Element relativeObject, String content) {
-		getInstance().setContent(content);
+		showHint(relativeObject, new HTML(content, false));
+	}
+	
+	public static void showHint(final Element relativeObject, Widget content) {
+		getInstance().setWidget(content);
 		getInstance().setPopupPositionAndShow(new PositionCallback() {
 			@Override
 			public void setPosition(int offsetWidth, int offsetHeight) {

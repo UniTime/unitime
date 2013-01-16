@@ -953,7 +953,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						location.setType(ResourceType.ROOM);
 						location.setId(m.getLocation().getUniqueId());
 						location.setName(m.getLocation().getLabel());
-						location.setHint(m.getLocation().getHtmlHint());
 						location.setSize(m.getLocation().getCapacity());
 						location.setDistance(distances.get(m.getLocation().getUniqueId()));
 						location.setRoomType(m.getLocation().getRoomTypeLabel());
@@ -1451,7 +1450,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								location.setType(ResourceType.ROOM);
 								location.setId(m.getLocation().getUniqueId());
 								location.setName(m.getLocation().getLabel());
-								location.setHint(m.getLocation().getHtmlHint());
 								location.setSize(m.getLocation().getCapacity());
 								location.setRoomType(m.getLocation().getRoomTypeLabel());
 								location.setBreakTime(m.getLocation().getEffectiveBreakTime());
@@ -1574,7 +1572,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									location.setType(ResourceType.ROOM);
 									location.setId(rp.getRoom().getUniqueId());
 									location.setName(rp.getRoom().getLabel());
-									location.setHint(rp.getRoom().getHtmlHint());
 									location.setSize(rp.getRoom().getCapacity());
 									location.setDistance(distances.get(rp.getRoom().getUniqueId()));
 									location.setRoomType(rp.getRoom().getRoomTypeLabel());
@@ -1646,7 +1643,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		resource.setType(ResourceType.ROOM);
 		resource.setId(location.getUniqueId());
 		resource.setName(location.getLabel());
-		resource.setHint(location.getHtmlHint());
 		resource.setSize(location.getCapacity());
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());

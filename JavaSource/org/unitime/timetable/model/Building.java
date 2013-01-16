@@ -264,6 +264,7 @@ public class Building extends BaseBuilding implements Comparable {
 				setLong("sessionId", sessionId).setCacheable(true).list();
 	}
 
+    @Deprecated
     public String getHtmlHint() {
     	String hint = getName();
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");

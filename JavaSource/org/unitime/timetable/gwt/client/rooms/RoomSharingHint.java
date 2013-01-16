@@ -19,38 +19,27 @@
 */
 package org.unitime.timetable.gwt.client.rooms;
 
+import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.shared.RoomInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.i18n.client.LocaleInfo;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.PopupPanel;
 
-public class RoomSharingHint extends PopupPanel {
-	private static RoomSharingHint sInstance;
+public class RoomSharingHint {
+	private static RoomSharingWidget sSharing;
+	private static long sLastLocationId = -1;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
-	private RoomSharingWidget iSharing;
-	private Long iLocationId = null;
-	
-	public RoomSharingHint() {
-		super();
-		setStyleName("unitime-PopupHint");
-		iSharing = new RoomSharingWidget(false);
-		setWidget(iSharing.getPanel());
+	public static RoomSharingWidget content(RoomInterface.RoomSharingModel model) {
+		if (sSharing == null)
+			sSharing = new RoomSharingWidget(false);
+		sSharing.setModel(model);
+		return sSharing;
 	}
-	
-	public void setModel(RoomInterface.RoomSharingModel model) {
-		iSharing.setModel(model);
-	}
-	
-	public void setLocationId(Long locationId) { iLocationId = locationId; }
-	public Long getLoncationId() { return iLocationId; }
 	
 	/** Never use from GWT code */
 	public static void _showRoomSharingHint(JavaScriptObject source, String locationId) {
@@ -63,7 +52,7 @@ public class RoomSharingHint extends PopupPanel {
 	}
 
 	public static void showHint(final Element relativeObject, final long locationId, boolean eventAvailability) {
-		getInstance().setLocationId(locationId);
+		sLastLocationId = locationId;
 		RPC.execute(RoomInterface.RoomSharingRequest.load(locationId, eventAvailability), new AsyncCallback<RoomInterface.RoomSharingModel>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -71,68 +60,15 @@ public class RoomSharingHint extends PopupPanel {
 			
 			@Override
 			public void onSuccess(RoomInterface.RoomSharingModel result) {
-				if (locationId != getInstance().getLoncationId()) return;
-				getInstance().iSharing.setModel(result);
-				getInstance().setPopupPositionAndShow(new PositionCallback() {
-					@Override
-					public void setPosition(int offsetWidth, int offsetHeight) {
-					    int textBoxOffsetWidth = relativeObject.getOffsetWidth();
-					    int offsetWidthDiff = offsetWidth - textBoxOffsetWidth;
-					    int left;
-					    if (LocaleInfo.getCurrentLocale().isRTL()) {
-						      int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
-						      left = textBoxAbsoluteLeft - offsetWidthDiff;
-						      if (offsetWidthDiff > 0) {
-							        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
-							        int windowLeft = Window.getScrollLeft();
-							        int textBoxLeftValForRightEdge = textBoxAbsoluteLeft + textBoxOffsetWidth;
-							        int distanceToWindowRight = windowRight - textBoxLeftValForRightEdge;
-							        int distanceFromWindowLeft = textBoxLeftValForRightEdge - windowLeft;
-							        if (distanceFromWindowLeft < offsetWidth && distanceToWindowRight >= offsetWidthDiff) {
-								          left = textBoxAbsoluteLeft;
-							        }
-						      }
-					    } else {
-						      left = relativeObject.getAbsoluteLeft();
-						      if (offsetWidthDiff > 0) {
-							        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
-							        int windowLeft = Window.getScrollLeft();
-							        int distanceToWindowRight = windowRight - left;
-							        int distanceFromWindowLeft = left - windowLeft;
-							        if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
-								          left -= offsetWidthDiff;
-							        }
-						      }
-					    }
-					    int top = relativeObject.getAbsoluteTop();
-					    int windowTop = Window.getScrollTop();
-					    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
-					    int distanceFromWindowTop = top - windowTop;
-					    int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
-					    if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
-						      top -= offsetHeight;
-					    } else {
-						      top += relativeObject.getOffsetHeight();
-					    }
-					    getInstance().setPopupPosition(left, top);
-					}
-				});				
+				if (locationId == sLastLocationId && result != null)
+					GwtHint.showHint(relativeObject, content(result));
 			}
 		});
 	}
 	
 	public static void hideHint() {
-		getInstance().setLocationId(null);
-		getInstance().hide();
+		GwtHint.hideHint();
 	}
-	
-	public static RoomSharingHint getInstance() {
-		if (sInstance == null) {
-			sInstance = new RoomSharingHint();
-		}
-		return sInstance;
-	}
-
 	
 	public static native void createTriggers()/*-{
 	$wnd.showGwtRoomAvailabilityHint = function(source, content) {

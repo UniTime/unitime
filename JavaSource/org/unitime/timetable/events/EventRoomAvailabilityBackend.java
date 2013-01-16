@@ -268,7 +268,6 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setType(ResourceType.ROOM);
 		resource.setId(location.getUniqueId());
 		resource.setName(location.getLabel());
-		resource.setHint(location.getHtmlHint());
 		resource.setSize(location.getCapacity());
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());
@@ -327,7 +326,6 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 		resource.setType(ResourceType.ROOM);
 		resource.setId(location.getUniqueId());
 		resource.setName(location.getLabel());
-		resource.setHint(location.getHtmlHint());
 		resource.setSize(location.getCapacity());
 		resource.setRoomType(location.getRoomTypeLabel());
 		resource.setBreakTime(location.getEffectiveBreakTime());

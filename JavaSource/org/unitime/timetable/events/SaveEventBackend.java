@@ -284,7 +284,6 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						location.setType(ResourceType.ROOM);
 						location.setId(m.getLocation().getUniqueId());
 						location.setName(m.getLocation().getLabel());
-						location.setHint(m.getLocation().getHtmlHint());
 						location.setSize(m.getLocation().getCapacity());
 						location.setRoomType(m.getLocation().getRoomTypeLabel());
 						location.setBreakTime(m.getLocation().getEffectiveBreakTime());

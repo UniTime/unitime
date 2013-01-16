@@ -66,8 +66,22 @@ public class BuildingPref extends BaseBuildingPref {
     	if (other==null || !(other instanceof BuildingPref)) return false;
     	return ToolBox.equals(getBuilding(),((BuildingPref)other).getBuilding());
     }
+    
+    @Override
+    public String preferenceHtml() {
+    	StringBuffer sb = new StringBuffer("<span ");
+    	if (this.getPrefLevel().getPrefId().intValue() != 4) {
+    		sb.append("style='color:"+this.getPrefLevel().prefcolor()+";font-weight:bold;' ");
+    	} else {
+    		sb.append("style='font-weight:bold;' ");
+    	}
+    	sb.append("onmouseover=\"showGwtRoomHint(this, '-" + getBuilding().getUniqueId() + "', '" + getPrefLevel().getPrefName() + " Building');\" onmouseout=\"hideGwtRoomHint();\">");
+    	sb.append(this.preferenceAbbv());
+    	sb.append("</span>");
+    	return (sb.toString());
+    }
 
 	public String preferenceTitle() {
-    	return getPrefLevel().getPrefName() + " Building " + getBuilding().getHtmlHint();
+    	return getPrefLevel().getPrefName() + " Building " + getBuilding().getName();
 	}
 }
