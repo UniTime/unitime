@@ -316,7 +316,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		public void executeSelected() {
 			MenuItem selected = getSelectedItem();
 			if (selected != null)
-				selected.getCommand().execute();
+				selected.getScheduledCommand().execute();
 		}
 	}
 
