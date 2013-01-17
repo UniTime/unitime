@@ -29,9 +29,12 @@
 <!ATTLIST message id CDATA #REQUIRED >
 <!ATTLIST message repliesTo CDATA #IMPLIED >
 <!ATTLIST message created CDATA #REQUIRED >
-<!ATTLIST message type ( student_change | approval_request | approval | consent | synchronization | schedule_change ) #REQUIRED >
+<!ATTLIST message type ( student_change | approval_request | approval | consent | synchronization | schedule_change  ) #REQUIRED >
 <!ATTLIST message source ( assistant | waitlist | course_change | dashboard | synchronization | student_change )  #IMPLIED >
 <!ATTLIST message tsformat CDATA #IMPLIED >
+<!ATTLIST message campus CDATA #REQUIRED >
+<!ATTLIST message term CDATA #REQUIRED >
+<!ATTLIST message year CDATA #REQUIRED >
 
 <!ELEMENT student (curriculum*, group*, course*) >
 <!ATTLIST student id CDATA #REQUIRED >
@@ -40,6 +43,7 @@
 <!ATTLIST student last CDATA #IMPLIED >
 <!ATTLIST student email CDATA #IMPLIED >
 <!ATTLIST student status CDATA #IMPLIED >
+<!ATTLIST student statusTimestamp CDATA #IMPLIED >
 
 <!ELEMENT curriculum EMPTY >
 <!ATTLIST curriculum area CDATA #REQUIRED >
@@ -50,16 +54,24 @@
 <!ELEMENT group EMPTY >
 <!ATTLIST group code CDATA #REQUIRED >
 
-<!ELEMENT course (class*) >
+<!ELEMENT course (class*, reservation?) >
 <!ATTLIST course subject CDATA #REQUIRED >
 <!ATTLIST course number CDATA #REQUIRED >
 <!ATTLIST course status CDATA #IMPLIED >
+<!ATTLIST course statusTimestamp CDATA #IMPLIED >
 <!ATTLIST course message CDATA #IMPLIED >
 <!ATTLIST course consent CDATA #IMPLIED >
-<!ATTLIST course request CDATA #IMPLIED >
-<!ATTLIST course priority CDATA #IMPLIED >
-<!ATTLIST course force ( true | false ) #IMPLIED >
+<!ATTLIST course consentUserId CDATA #IMPLIED >
+<!ATTLIST course consentTimestamp CDATA #IMPLIED >
+<!ATTLIST course requestUserId CDATA #IMPLIED >
+<!ATTLIST course requestTimestamp CDATA #IMPLIED >
+
+<!ELEMENT reservation ( #PCDATA ) >
+<!ATTLIST reservation type ( Individual | Curriculum | Group | Course ) #REQUIRED >
+<!ATTLIST reservation allowOverLimit ( true | false ) #REQUIRED >
+<!ATTLIST reservation allowTimeOverlap ( true | false ) #REQUIRED >
 
 <!ELEMENT class ( #PCDATA ) >
 <!ATTLIST class id CDATA #IMPLIED >
-<!ATTLIST class enrollment CDATA #IMPLIED >
+<!ATTLIST class allowTimeOverlap ( true | false ) #IMPLIED >
+<!ATTLIST class message CDATA #IMPLIED >
