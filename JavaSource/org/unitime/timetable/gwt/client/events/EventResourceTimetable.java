@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
@@ -1471,6 +1472,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iTable.hasSortBy())
 			iHistoryToken.setParameter("sort", String.valueOf(iTable.getSortBy()));
 		iHistoryToken.mark();
+		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 	}
 	
 	private class RoomSelector extends IntervalSelector<ResourceInterface> {

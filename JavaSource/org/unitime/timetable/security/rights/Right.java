@@ -22,6 +22,7 @@ package org.unitime.timetable.security.rights;
 import java.util.Date;
 
 import org.unitime.timetable.model.Building;
+import org.unitime.timetable.model.ClassEvent;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
@@ -31,6 +32,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExternalRoom;
 import org.unitime.timetable.model.GlobalRoomFeature;
 import org.unitime.timetable.model.InstrOfferingConfig;
@@ -322,6 +324,8 @@ public enum Right {
     EventLookupSchedule,
     EventDetail(Event.class),
     EventEdit(Event.class),
+    EventEditClass(ClassEvent.class),
+    EventEditExam(ExamEvent.class),
     EventDate(Date.class),
     EventLocation(Location.class),
     EventLocationApprove(Location.class),
@@ -332,6 +336,8 @@ public enum Right {
     EventMeetingInquire(Meeting.class),
     EventMeetingApprove(Meeting.class),
     EventMeetingCancel(Meeting.class),
+    EventMeetingCancelClass(Meeting.class),
+    EventMeetingCancelExam(Meeting.class),
     EventApprovePast,
     EventAnyLocation,
     EventEditPast,

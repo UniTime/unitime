@@ -29,17 +29,27 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
 import org.unitime.timetable.model.DepartmentStatusType;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamEvent;
+import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.UserAuthority;
@@ -200,20 +210,57 @@ public class EventPermissions {
 		@Override
 		public boolean check(UserContext user, Event source) {
 			// Owner can always see
-			if (user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId())) return true;
+			if (source.getMainContact() != null && user.getExternalUserId().equals(source.getMainContact().getExternalUniqueId())) return true;
 			
-			// Event manager can see all events.
-			// FIXME: Really?
-			// if (user.getCurrentAuthority().hasRight(Right.EventLookupContact)) return true;
+			// Additional contacts can also see
+			for (EventContact contact: source.getAdditionalContacts())
+				if (user.getExternalUserId().equals(contact.getExternalUniqueId())) return true;
 			
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:
 				// Class event -- can see Class Detail page?
-				return user.getCurrentAuthority().hasRight(Right.ClassDetail) && permissionClassDetail.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz());
+				if (user.getCurrentAuthority().hasRight(Right.ClassDetail) && permissionClassDetail.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz())) return true;
+				// Instructors and course coordinators can also see details
+				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+					Class_ clazz = ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz();
+					if (clazz == null) return false;
+					for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					}
+					for (ClassInstructor instructor: clazz.getClassInstructors()) {
+						if (user.getExternalUserId().equals(instructor.getInstructor().getExternalUniqueId())) return true;
+					}
+				}
+				return false;
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
 				// Examination event -- can see ExaminationDetail page?
-				return user.getCurrentAuthority().hasRight(Right.ExaminationDetail) && permissionExaminationDetail.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()).getExam());
+				if (user.getCurrentAuthority().hasRight(Right.ExaminationDetail) && permissionExaminationDetail.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()).getExam()))
+					return true;
+				// Instructors and course coordinators can also see details
+				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+					Exam exam = ExamEventDAO.getInstance().get(source.getUniqueId()).getExam();
+					if (exam == null) return false;
+					for (DepartmentalInstructor instructor: exam.getInstructors()) {
+						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					}
+					for (ExamOwner owner: exam.getOwners()) {
+						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					}
+				}
+				return false;
+			case Event.sEventTypeCourse:
+				// Course coordinators can also see details
+				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+					CourseEvent event = CourseEventDAO.getInstance().get(source.getUniqueId());
+					for (RelatedCourseInfo owner: event.getRelatedCourses()) {
+						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					}
+				}
+				// Also event managers can see
+				return user.getCurrentAuthority().hasRight(Right.EventLookupContact);
 			default:
 				// Event managers can see other events
 				return user.getCurrentAuthority().hasRight(Right.EventLookupContact);
@@ -229,15 +276,19 @@ public class EventPermissions {
 	public static class EventEdit extends EventPermission<Event> {
 		@Autowired PermissionSession permissionSession;
 		@Autowired Permission<Date> permissionEventDate;
+		@Autowired Permission<ClassEvent> permissionEventEditClass;
+		@Autowired Permission<ExamEvent> permissionEventEditExam;
 		
 		@Override
 		public boolean check(UserContext user, Event source) {
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:
+				// Class event -- can see Class Assignment page?
+				return user.getCurrentAuthority().hasRight(Right.EventEditClass) && permissionEventEditClass.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()));
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
-				// Examination and class events cannot be edited just yet
-				return false;
+				// Exam event -- can see Exam Assignment page?
+				return user.getCurrentAuthority().hasRight(Right.EventEditExam) && permissionEventEditExam.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()));
 			case Event.sEventTypeUnavailable:
 				if (!user.getCurrentAuthority().hasRight(Right.EventAddUnavailable)) return false;
 				break;
@@ -255,6 +306,59 @@ public class EventPermissions {
 
 		@Override
 		public Class<Event> type() { return Event.class; }
+	}
+	
+	@PermissionForRight(Right.EventEditClass)
+	public static class EventEditClass extends EventPermission<ClassEvent> {
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, ClassEvent source) {
+			if (source == null || source.getClazz() == null) return false;
+			
+			// Schedule managers can edit when allowed by academic session status
+			if (user.getCurrentAuthority().hasRight(Right.ClassEdit) && permissionDepartment.check(user, source.getClazz().getManagingDept(), DepartmentStatusType.Status.Timetable))
+				return true;
+
+			// Course coordinators can edit a class
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (DepartmentalInstructor instructor: source.getClazz().getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public Class<ClassEvent> type() { return ClassEvent.class; }
+	}
+	
+	@PermissionForRight(Right.EventEditExam)
+	public static class EventEditExam extends EventPermission<ExamEvent> {
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, ExamEvent source) {
+			if (source == null || source.getExam() == null) return false;
+			
+			// Examination manager can edit when allowed by academic session status
+			if (user.getCurrentAuthority().hasRight(Right.ExaminationEdit) && permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamTimetable))
+				return true;
+			
+			// Course coordinators can edit an exam
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (ExamOwner owner: source.getExam().getOwners()) {
+					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+			}
+			
+			return false;
+		}
+
+		@Override
+		public Class<ExamEvent> type() { return ExamEvent.class; }
 	}
 	
 	@PermissionForRight(Right.EventDate)
@@ -429,9 +533,11 @@ public class EventPermissions {
 		public boolean check(UserContext user, Meeting source) {
 			switch (source.getEvent().getEventType()) {
 			case Event.sEventTypeClass:
+				// Permissions EventMeetingCancelClass should be used instead
+				return false;
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
-				// Examination and class events cannot be cancelled through the event management
+				// Permissions EventMeetingCancelExam should be used instead
 				return false;
 			case Event.sEventTypeSpecial:
 			case Event.sEventTypeCourse:
@@ -444,12 +550,22 @@ public class EventPermissions {
 				break;
 			}
 			
-			// Is the date ok?
-			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+			// If the date is ok
+			if (permissionEventDate.check(user, source.getMeetingDate())) {
 
-			// Owner can delete if date is ok
-			if (user.getExternalUserId().equals(source.getEvent().getMainContact().getExternalUniqueId())) {
-				if (permissionEventDate.check(user, source.getMeetingDate())) return true;
+				// Owner can delete if date is ok
+				if (user.getExternalUserId().equals(source.getEvent().getMainContact().getExternalUniqueId())) 
+					return true;
+				
+				// Course events -- check course coordinators
+				if (source.getEvent().getEventType() == Event.sEventTypeCourse && Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+					CourseEvent event = CourseEventDAO.getInstance().get(source.getEvent().getUniqueId());
+					for (RelatedCourseInfo owner: event.getRelatedCourses()) {
+						for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+							if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+					}
+				}
+
 			}
 			
 			// Otherwise must be a manager
@@ -468,6 +584,76 @@ public class EventPermissions {
 		@Override
 		public Class<Meeting> type() { return Meeting.class; }
 	}
+	
+	@PermissionForRight(Right.EventMeetingCancelClass)
+	public static class EventMeetingCancelClass extends EventPermission<Meeting> {
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getEvent().getEventType() != Event.sEventTypeClass) return false;
+
+			// Only approved meetings can be cancelled
+			if (source.getStatus() != Meeting.Status.APPROVED) return false;
+
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+			
+			Class_ clazz = ClassEventDAO.getInstance().get(source.getEvent().getUniqueId()).getClazz();
+			if (clazz == null) return false;
+			
+			// Course coordinators can cancel a class
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				return false;
+			}
+			
+			// Check departmental permissions
+			return permissionDepartment.check(user, clazz.getManagingDept(), DepartmentStatusType.Status.Timetable);
+		}
+
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
+	@PermissionForRight(Right.EventMeetingCancelExam)
+	public static class EventMeetingCancelExam extends EventPermission<Meeting> {
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getEvent().getEventType() != Event.sEventTypeFinalExam && source.getEvent().getEventType() != Event.sEventTypeMidtermExam) return false;
+
+			// Only approved meetings can be cancelled
+			if (source.getStatus() != Meeting.Status.APPROVED) return false;
+
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+
+			Exam exam = ExamEventDAO.getInstance().get(source.getEvent().getUniqueId()).getExam();
+			if (exam == null) return false;
+			
+			// Course coordinators can cancel an exam
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (ExamOwner owner: exam.getOwners()) {
+					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				return false;
+			}
+			
+			// Otherwise check session permission
+			return permissionSession.check(user, exam.getSession(), DepartmentStatusType.Status.ExamTimetable);
+		}
+
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
 	
 	@PermissionForRight(Right.EventMeetingApprove)
 	public static class EventMeetingApprove extends EventPermission<Meeting> {

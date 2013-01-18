@@ -654,6 +654,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Insufficient rights to reject meeting {0}.")
 	String failedApproveEventNoRightsToReject(String meeting);
 	
+	@DefaultMessage("Insufficient rights to cancel meeting {0}.")
+	String failedApproveEventNoRightsToCancel(String meeting);
+
 	@DefaultMessage("Failed to hide academic session info: {0}")
 	String failedToHideSessionInfo(String reason);
 	
