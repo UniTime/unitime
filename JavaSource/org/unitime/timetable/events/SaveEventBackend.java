@@ -70,8 +70,14 @@ import org.unitime.timetable.util.Constants;
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {
-		if (request.getEvent().hasContact() && (request.getEvent().getContact().getExternalId() == null || !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId())))
-			context.checkPermission(Right.EventLookupContact);
+		if (request.getEvent().hasContact() && (request.getEvent().getContact().getExternalId() == null || !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId()))) {
+			switch (request.getEvent().getType()) {
+			case Special:
+			case Course:
+			case Unavailabile:
+				context.checkPermission(Right.EventLookupContact);
+			}
+		}
 		if (request.getEvent().getId() == null) { // new even
 			switch (request.getEvent().getType()) {
 			case Special:
