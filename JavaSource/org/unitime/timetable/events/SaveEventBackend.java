@@ -201,8 +201,21 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 					if (m.getApprovalStatus().ordinal() != meeting.getApprovalStatus()) {
 						switch (m.getApprovalStatus()) {
 						case Cancelled:
-							if (!context.hasPermission(meeting, Right.EventMeetingCancel))
-								throw new GwtRpcException(MESSAGES.failedSaveEventCanNotCancelMeeting(toString(meeting)));
+    						switch (meeting.getEvent().getEventType()) {
+    						case Event.sEventTypeFinalExam:
+    						case Event.sEventTypeMidtermExam:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancelExam))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+    						case Event.sEventTypeClass:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancelClass))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+        					default:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancel))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+    						}
 							meeting.setStatus(Meeting.Status.CANCELLED);
 							meeting.setApprovalDate(now);
 							hibSession.update(meeting);
@@ -255,9 +268,17 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
                     event.getMeetings().add(meeting);
                     createdMeetings.add(meeting);
 				}
-				if (request.getEvent().getType() == EventType.Unavailabile && meeting.getApprovalDate() == null) {
-					meeting.setStatus(Meeting.Status.APPROVED);
-					meeting.setApprovalDate(now);
+				// automatic approval
+				if (meeting.getApprovalDate() == null) {
+					switch (request.getEvent().getType()) {
+					case Unavailabile:
+					case Class:
+					case FinalExam:
+					case MidtermExam:
+						meeting.setStatus(Meeting.Status.APPROVED);
+						meeting.setApprovalDate(now);
+						break;
+					}
 				}
 			}
 			

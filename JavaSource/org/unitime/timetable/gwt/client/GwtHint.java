@@ -41,6 +41,12 @@ public class GwtHint extends PopupPanel {
 	public static GwtHint getInstance() {
 		if (sInstance == null) {
 			sInstance = new GwtHint("");
+			Client.addGwtPageChangedHandler(new Client.GwtPageChangedHandler() {
+				@Override
+				public void onChange(Client.GwtPageChangeEvent event) {
+					hideHint();
+				}
+			});
 		}
 		return sInstance;
 	}

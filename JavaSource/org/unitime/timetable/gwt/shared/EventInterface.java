@@ -288,7 +288,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public int compareTo(EventInterface event) {
 		int cmp = getType().compareTo(event.getType());
 		if (cmp != 0) return cmp;
-		if (hasInstructionType()) {
+		if (hasInstructionType() && event.hasInstructionType()) {
 			cmp = getInstructionType().compareTo(event.getInstructionType());
 			if (cmp != 0) return cmp;
 		}
