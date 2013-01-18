@@ -576,10 +576,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onChange(ChangeEvent event) {
 				EventType type = getEventType();
+				iName.setReadOnly(type == EventType.Class || type == EventType.MidtermExam || type != EventType.FinalExam);
 				iEvent.setType(type);
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
-				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
 				if (iMeetings.getRowCount() > 1) {
 					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -660,6 +661,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 							}
 							if (meeting.getId() == null) {
 								i.remove();
+							} else if (meeting.getApprovalStatus() == ApprovalStatus.Cancelled || meeting.getApprovalStatus() == ApprovalStatus.Deleted) {
+								// already cancelled or deleted
 							} else if (meeting.isCanDelete()) {
 								meeting.setApprovalStatus(ApprovalStatus.Deleted);
 								meeting.setCanApprove(false); meeting.setCanCancel(false); meeting.setCanInquire(false); meeting.setCanEdit(false); meeting.setCanDelete(false);
@@ -782,13 +785,16 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				EventMeetingRow row = event.getData();
 				if (row == null) return;
 				if (row.getParent() != null) row = row.getParent();
-				if (iMeetings.isSelectable(row)) {
-					MeetingInterface meeting = row.getMeeting();
-					if (meeting != null && (meeting.getId() == null || meeting.isCanCancel() || meeting.isCanDelete())) {
-						List<EventMeetingRow> selection = new ArrayList<EventMeetingRow>();
-						selection.add(row);
-						execute(iMeetings, OperationType.Modify, selection);
-					}
+				MeetingInterface meeting = row.getMeeting();
+				if (meeting == null) return;
+				if (iMeetings.isSelectable(row) && (meeting.getId() == null || meeting.isCanCancel() || meeting.isCanDelete())) {
+					List<EventMeetingRow> selection = new ArrayList<EventMeetingRow>();
+					selection.add(row);
+					execute(iMeetings, OperationType.Modify, selection);
+				} else if (!row.getMeeting().isPast() && (row.getMeeting().getApprovalStatus() == ApprovalStatus.Cancelled || row.getMeeting().getApprovalStatus() == ApprovalStatus.Deleted)) {
+					List<EventMeetingRow> selection = new ArrayList<EventMeetingRow>();
+					selection.add(row);
+					execute(iMeetings, OperationType.Modify, selection);
 				}
 			}
 		});
@@ -956,6 +962,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iSavedEvent = null;
 		iHeader.clearMessage();
 		iName.getWidget().setText(iEvent.getName() == null ? "" : iEvent.getName());
+		iName.setText(iEvent.getName() == null ? "" : iEvent.getName());
 		if (iEvent.hasSponsor()) {
 			for (int i = 1; i < iSponsors.getItemCount(); i++) {
 				if (iSponsors.getValue(i).equals(iEvent.getSponsor().getUniqueId().toString())) {

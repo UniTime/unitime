@@ -72,26 +72,42 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
 	private static DateTimeFormat sDateFormatMeeting = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
 	
+	public static enum ModeFlag {
+		ShowEventDetails,
+		ShowMeetings,
+		ShowOptionalColumns,
+		MustShowApproval,
+		AllowApproveAll,
+		HideTitle,
+		;
+		
+		public int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags) {
+			return (in(flags) ? flags : flags + flag());
+		}
+		public int clear(int flags) {
+			return (in(flags) ? flags - flag() : flags);
+		}
+	}
+	
 	public static enum Mode {
-		ListOfEvents(true, false, true, false, false),
-		ListOfMeetings(true, true, true, false, false),
-		MeetingsOfAnEvent(false, true, true, true, true),
-		ApprovalOfEvents(true, false, false, true, false),
-		ApprovalOfMeetings(true, true, false, true, false),
-		ApprovalOfSingleEventMeetings(false, true, false, true, false);
+		ListOfEvents(ModeFlag.ShowEventDetails, ModeFlag.ShowOptionalColumns),
+		ListOfMeetings(ModeFlag.ShowEventDetails, ModeFlag.ShowMeetings, ModeFlag.ShowOptionalColumns),
+		MeetingsOfAnEvent(ModeFlag.ShowMeetings, ModeFlag.ShowOptionalColumns, ModeFlag.MustShowApproval, ModeFlag.AllowApproveAll, ModeFlag.HideTitle),
+		ApprovalOfEvents(ModeFlag.ShowEventDetails, ModeFlag.MustShowApproval),
+		ApprovalOfMeetings(ModeFlag.ShowEventDetails, ModeFlag.ShowMeetings, ModeFlag.MustShowApproval),
+		ApprovalOfSingleEventMeetings(ModeFlag.ShowMeetings, ModeFlag.MustShowApproval);
 		
-		private boolean iShowEventDetails, iShowMeetings, iShowOptionalColumns, iMustShowApproval, iAllowApproveAll;
-		
-		Mode(boolean showEventDetails, boolean showMeetings, boolean showOptionalColumns, boolean mustShowApproval, boolean approveAll) {
-			iShowEventDetails = showEventDetails; iShowMeetings = showMeetings; iShowOptionalColumns = showOptionalColumns; iMustShowApproval = mustShowApproval;
-			iAllowApproveAll = approveAll;
+		private int iFlags = 0;
+		Mode(ModeFlag... flags) {
+			for (ModeFlag flag: flags)
+				iFlags = flag.set(iFlags);
 		}
 		
-		public boolean isShowEventDetails() { return iShowEventDetails; }
-		public boolean isShowMeetings() { return iShowMeetings; }
-		public boolean isShowOptionalColumns() { return iShowOptionalColumns; }
-		public boolean isMustShowApproval() { return iMustShowApproval; }
-		public boolean isAllowApproveAll() { return iAllowApproveAll; }
+		public boolean hasFlag(ModeFlag flag) { return flag.in(iFlags); }
 	}
 	
 	public static enum OperationType {
@@ -294,7 +310,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public boolean allowNoSelection() {
-				return getMode().isAllowApproveAll();
+				return getMode().hasFlag(ModeFlag.AllowApproveAll);
 			}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
@@ -319,7 +335,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public boolean allowNoSelection() {
-				return getMode().isAllowApproveAll();
+				return getMode().hasFlag(ModeFlag.AllowApproveAll);
 			}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
@@ -361,7 +377,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public boolean allowNoSelection() {
-				return getMode().isAllowApproveAll();
+				return getMode().hasFlag(ModeFlag.AllowApproveAll);
 			}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
@@ -386,7 +402,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public boolean allowNoSelection() {
-				return getMode().isAllowApproveAll();
+				return getMode().hasFlag(ModeFlag.AllowApproveAll);
 			}
 		});
 		hTimes.addOperation(new EventMeetingOperation() {
@@ -636,13 +652,13 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	protected boolean isSelectable(EventMeetingRow data) {
 		return (hasOperation(OperationType.Approve) && data.isCanApprove()) ||
-				(hasOperation(OperationType.Cancel) && data.isCanCancel() && (!getMode().isShowEventDetails() || isShowMainContact())) ||
+				(hasOperation(OperationType.Cancel) && data.isCanCancel() && (!getMode().hasFlag(ModeFlag.ShowEventDetails) || isShowMainContact())) ||
 				(hasOperation(OperationType.Inquire) && data.isCanInquire()) ||
 				(isEditable() && (data.isEditable() || data.isCanCancel() || data.isCanDelete()));
 	}
 	
 	public void add(EventMeetingRow data) {
-		if (!getMode().isShowMeetings() && data.getMeetings(getMeetingFilter()).isEmpty()) return;
+		if (!getMode().hasFlag(ModeFlag.ShowMeetings) && data.getMeetings(getMeetingFilter()).isEmpty()) return;
 		
 		List<Widget> row = new ArrayList<Widget>();
 		
@@ -711,24 +727,24 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().isShowEventDetails() ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
-				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().isShowOptionalColumns())
+				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle))
 					setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
-				if (!title.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colTitle()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().isShowOptionalColumns()) 
+				if (!title.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colTitle()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), true);
-				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
+				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			} else {
 				row.add(new HTML(event.getName()));
 				row.add(new HTML("&nbsp;"));
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().isShowEventDetails() ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
-				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().isShowOptionalColumns()) 
+				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			}
 		} else if (conflict != null) {
@@ -749,7 +765,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		boolean allCancelledOrRejected = false;
 		if (meeting != null) {
 			if (conflict != null && (conflict.getType() == EventType.Message || conflict.getType() == EventType.Unavailabile) && conflict.isAllDay()) {
-				row.add(new HTMLWithColSpan(conflict.getName(), false, 5));
+				row.add(new HTMLWithColSpan(conflict.getName(), true, 5));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
 				if (conflict != null) {
@@ -890,7 +906,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		if (event != null && iShowMainContact) {
 			row.add(new HTML(event.hasContact() ? event.getContact().getName(MESSAGES) : "&nbsp;"));
-			if (isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().isShowOptionalColumns()) {
+			if (isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
 				switch (event.getType()) {
 				case Course:
 				case Special:
@@ -919,7 +935,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			row.add(new HTML(approval == null ? "" : approval, false));
 		}
 
-		if (!getMode().isMustShowApproval() && !isColumnVisible(getHeader(MESSAGES.colApproval()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_APPROVAL)) {
+		if (!getMode().hasFlag(ModeFlag.MustShowApproval) && !isColumnVisible(getHeader(MESSAGES.colApproval()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_APPROVAL)) {
 			if (event != null)
 				switch (event.getType()) {
 				case Course:
@@ -985,6 +1001,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		Set<Integer> cols = new HashSet<Integer>();
 		cols.add(getHeader(MESSAGES.colName()).getColumn());
 		cols.add(getHeader(MESSAGES.colSection()).getColumn());
+		cols.add(getHeader(MESSAGES.colTitle()).getColumn());
+		cols.add(getHeader(MESSAGES.colNote()).getColumn());
 		cols.add(getHeader(MESSAGES.colType()).getColumn());
 		cols.add(getHeader(MESSAGES.colEnrollment()).getColumn());
 		cols.add(getHeader(MESSAGES.colLimit()).getColumn());
@@ -1000,19 +1018,19 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
-			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().isMustShowApproval());
+			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().hasFlag(ModeFlag.MustShowApproval));
 		}
-		setColumnVisible(getHeader(MESSAGES.colName()).getColumn(), getMode().isShowEventDetails());
-		setColumnVisible(getHeader(MESSAGES.colType()).getColumn(), getMode().isShowEventDetails());
-		if (getMode().isShowOptionalColumns()) {
+		setColumnVisible(getHeader(MESSAGES.colName()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails));
+		setColumnVisible(getHeader(MESSAGES.colType()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails));
+		if (getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
 			setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
 			setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
 			setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
 			setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
-			setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), getMode().isShowEventDetails() && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
-			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), getMode().isShowEventDetails() && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
+			setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
+			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
 			setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
-			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), getMode().isShowEventDetails() && EventCookie.getInstance().get(EventFlag.SHOW_SPONSOR));
+			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && EventCookie.getInstance().get(EventFlag.SHOW_SPONSOR));
 		} else {
 			setColumnVisible(getHeader(MESSAGES.colPublishedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
 			setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), !EventCookie.getInstance().get(EventFlag.SHOW_PUBLISHED_TIME));
@@ -1025,7 +1043,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), false);
 			setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), false);
-			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().isMustShowApproval());
+			setColumnVisible(getHeader(MESSAGES.colApproval()).getColumn(), getMode().hasFlag(ModeFlag.MustShowApproval));
 		}
 	}
 	
@@ -1084,14 +1102,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				case SHOW_LIMIT:
 				case SHOW_ENROLLMENT:
 				case SHOW_MAIN_CONTACT:
-					return iShowMainContact && getMode().isShowEventDetails();
+					return iShowMainContact && getMode().hasFlag(ModeFlag.ShowEventDetails);
 				case SHOW_SPONSOR:
 				case SHOW_NOTE:
-					return getMode().isShowEventDetails();
+					return getMode().hasFlag(ModeFlag.ShowEventDetails);
 				case SHOW_TITLE:
 					return isColumnVisible(getHeader(MESSAGES.colSection()).getColumn());
 				case SHOW_APPROVAL:
-					return !getMode().isMustShowApproval();
+					return !getMode().hasFlag(ModeFlag.MustShowApproval);
 				default:
 					return true;
 				}
@@ -1226,7 +1244,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				}
 			});
 		}
-		if (getMode().isShowMeetings() && getMode().isShowEventDetails()) {
+		if (getMode().hasFlag(ModeFlag.ShowMeetings) && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 			Long eventId = null, conflictId = null;
 			Set<Integer> eventCols = getEventColumns();
 			int line = 0;
@@ -1576,7 +1594,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		List<EventMeetingRow> rows = new ArrayList<EventMeetingTable.EventMeetingRow>();
 		if (events != null) {
 			for (EventInterface event: events) {
-				if (getMode().isShowMeetings()) {
+				if (getMode().hasFlag(ModeFlag.ShowMeetings)) {
 					for (MeetingInterface meeting: event.getMeetings())
 						if (getMeetingFilter() == null || !getMeetingFilter().filter(event, meeting))
 							rows.add(new EventMeetingRow(event, meeting));
@@ -1594,7 +1612,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	
 	public void setMeetings(EventInterface event, Collection<MeetingInterface> meetings, boolean fireEvents) {
 		List<EventMeetingRow> rows = new ArrayList<EventMeetingTable.EventMeetingRow>();
-		if (getMode().isShowMeetings()) {
+		if (getMode().hasFlag(ModeFlag.ShowMeetings)) {
 			for (MeetingInterface meeting: meetings)
 				rows.add(new EventMeetingRow(event, meeting));
 		} else {

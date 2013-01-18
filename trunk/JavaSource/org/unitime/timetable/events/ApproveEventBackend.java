@@ -102,9 +102,21 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
     						
     						break;
     					case CANCEL:
-    						
-    						if (!context.hasPermission(meeting, Right.EventMeetingCancel))
-    							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToReject(toString(meeting)));
+    						switch (meeting.getEvent().getEventType()) {
+    						case Event.sEventTypeFinalExam:
+    						case Event.sEventTypeMidtermExam:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancelExam))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+    						case Event.sEventTypeClass:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancelClass))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+        					default:
+        						if (!context.hasPermission(meeting, Right.EventMeetingCancel))
+        							throw new GwtRpcException(MESSAGES.failedApproveEventNoRightsToCancel(toString(meeting)));
+        						break;
+    						}
     						
     						meeting.setStatus(Meeting.Status.CANCELLED);
     						meeting.setApprovalDate(now);

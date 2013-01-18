@@ -190,6 +190,27 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     			}
     		}
     		event.addRelatedObject(related);
+    		
+    		event.addCourseName(courseOffering.getCourseName());
+    		event.addCourseTitle(courseOffering.getTitle() == null ? "" : courseOffering.getTitle());
+    		event.setInstruction(clazz.getSchedulingSubpart().getItype().getDesc().length() <= 20 ? clazz.getSchedulingSubpart().getItype().getDesc() : clazz.getSchedulingSubpart().getItype().getAbbv());
+    		event.setInstructionType(clazz.getSchedulingSubpart().getItype().getItype());
+    		event.setSectionNumber(clazz.getSectionNumberString(hibSession));
+    		if (clazz.getClassSuffix(courseOffering) == null) {
+	    		event.setName(clazz.getClassLabel(courseOffering));
+    		} else {
+	    		event.addExternalId(clazz.getClassSuffix(courseOffering));
+    			event.setName(courseOffering.getCourseName() + " " + clazz.getClassSuffix(courseOffering));
+    		}
+			for (CourseOffering co: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCourseOfferings()) {
+				if (!co.isIsControl()) {
+					event.addCourseName(co.getCourseName());
+					event.addCourseTitle(co.getTitle() == null ? "" : co.getTitle());
+					if (clazz.getClassSuffix(co) != null)
+						event.addExternalId(clazz.getClassSuffix(co));
+				}
+			}
+    		
     	} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
     		ExamEvent xe = (e instanceof ExamEvent ? (ExamEvent)e : ExamEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		event.setEnrollment(xe.getExam().countStudents());
@@ -401,7 +422,11 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			meeting.setCanInquire(context.hasPermission(m, Right.EventMeetingInquire));
 			meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
 			meeting.setCanDelete(context.hasPermission(m, Right.EventMeetingDelete));
-			meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel));
+			meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel) ||
+					(m.getEvent().getEventType() == Event.sEventTypeClass && context.hasPermission(m, Right.EventMeetingCancelClass)) ||
+					(m.getEvent().getEventType() == Event.sEventTypeFinalExam && context.hasPermission(m, Right.EventMeetingCancelExam)) ||
+					(m.getEvent().getEventType() == Event.sEventTypeMidtermExam && context.hasPermission(m, Right.EventMeetingCancelExam))
+					);
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);

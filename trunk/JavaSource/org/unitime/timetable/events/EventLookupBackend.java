@@ -945,7 +945,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					meeting.setCanInquire(context.hasPermission(m, Right.EventMeetingInquire));
 					meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
 					meeting.setCanDelete(context.hasPermission(m, Right.EventMeetingDelete));
-					meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel));
+					meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel) ||
+							(m.getEvent().getEventType() == Event.sEventTypeClass && context.hasPermission(m, Right.EventMeetingCancelClass)) ||
+							(m.getEvent().getEventType() == Event.sEventTypeFinalExam && context.hasPermission(m, Right.EventMeetingCancelExam)) ||
+							(m.getEvent().getEventType() == Event.sEventTypeMidtermExam && context.hasPermission(m, Right.EventMeetingCancelExam))
+							);
 					meeting.setApprovalDate(m.getApprovalDate());
 					meeting.setApprovalStatus(m.getApprovalStatus());
 					if (m.getLocation() != null) {
