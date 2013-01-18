@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -335,14 +336,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				@Override
 				public void onMouseOver(MouseOverEvent event) {
 					((P)event.getSource()).addStyleName("hover");
-					GwtHint.showHint(p.getElement(), room.getProperty("mouseOver", "").replace("\\'", "'"));
+					RoomHint.showHint(p.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""));
 				}
 			});
 			p.addMouseOutHandler(new MouseOutHandler() {
 				@Override
 				public void onMouseOut(MouseOutEvent event) {
 					((P)event.getSource()).removeStyleName("hover");
-					GwtHint.hideHint();
+					RoomHint.hideHint();
 				}
 			});
 			row.add(p);
