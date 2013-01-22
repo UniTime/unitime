@@ -212,7 +212,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 				hibSession.saveOrUpdate(rd);
 			}
 			
-			hibSession.save(location);
+			hibSession.saveOrUpdate(location);
 			tx.commit();
 			
 			return null;
