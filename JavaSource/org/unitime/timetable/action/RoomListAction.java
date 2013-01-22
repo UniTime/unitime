@@ -205,7 +205,7 @@ public class RoomListAction extends Action {
 	
 	public void lookupRooms(RoomListForm form, String op) {
 		String from = "Location l" +
-				" left join fetch l.roomDepts rd" +
+				" left join l.roomDepts rd" +
 				" left join fetch l.examTypes xt" +
 				" left join fetch l.features f" +
 				" left join fetch l.roomGroups g" +
