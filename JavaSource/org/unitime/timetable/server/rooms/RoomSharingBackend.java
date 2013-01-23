@@ -42,6 +42,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingModel;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingRequest;
+import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RoomDept;
@@ -213,6 +214,9 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			}
 			
 			hibSession.saveOrUpdate(location);
+			
+			ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, location.getControllingDepartment());
+			
 			tx.commit();
 			
 			return null;
@@ -279,6 +283,9 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			Location location = LocationDAO.getInstance().get(request.getLocationId(), hibSession);
 			location.setEventAvailability(availability);
 			hibSession.save(location);
+			
+			ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, location.getControllingDepartment());
+			
 			tx.commit();
 			
 			return null;
