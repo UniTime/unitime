@@ -85,6 +85,9 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	
 	    	response.setNote(location.getEventMessage());
 	    	
+	    	if ("true".equals(ApplicationProperties.getProperty("unitime.roomHint.showBreakTime", "false")))
+	    		response.setBreakTime(location.getEffectiveBreakTime());
+	    	
 	    	return response;
 		} else {
 			Building building = BuildingDAO.getInstance().get(-request.getLocationId());

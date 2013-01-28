@@ -1074,6 +1074,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Distance:")
 	String propRoomDistance();
 
+	@DefaultMessage("Break Time:")
+	String propRoomBreakTime();
+
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
 
@@ -1094,4 +1097,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} m")
 	String roomDistance(String distanceInMeters);
+	
+	@DefaultMessage("{0} minutes")
+	String breakTime(String breakTimeInMinutes);
 }
