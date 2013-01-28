@@ -8292,6 +8292,8 @@
 	<update version="108" date="28-Jan-2013" comment="Event Statuses">
 		<plsql>alter table %SCHEMA%.room_type_option modify message varchar2(2048 char)</plsql>
 		<mysql>alter table %SCHEMA%.room_type_option modify message varchar(2048) null</mysql>
+		<plsql>alter table %SCHEMA%.user_data modify value varchar2(4000 char)</plsql>
+		<mysql>alter table %SCHEMA%.user_data modify value varchar(4000) null</mysql>
 		<sql>
 			insert into %SCHEMA%.rights (role_id, value)
 			select distinct r.role_id, 'EventStatuses'

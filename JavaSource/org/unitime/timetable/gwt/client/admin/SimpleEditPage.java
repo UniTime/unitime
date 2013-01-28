@@ -891,7 +891,7 @@ public class SimpleEditPage extends Composite {
 		for (Record r: iData.getRecords()) {
 			fillRow(r, row++);
 			empty = r.isEmpty();
-			if ((row % 31) == 0) { iTable.addRow(null, header(false)); row++; }
+			if ((row % 31) == 0 && !hasDetails()) { iTable.addRow(null, header(false)); row++; }
 		}
 		if (!empty && iEditable && iData.isEditable() && iData.isAddable())
 			fillRow(iData.addRecord(null), row);
@@ -1392,10 +1392,13 @@ public class SimpleEditPage extends Composite {
 		public Record getRecord() { return iRecord; }
 		
 		public boolean focus() { 
-			if (getWidget() instanceof Focusable) {
-				((Focusable)getWidget()).setFocus(true);
-				if (getWidget() instanceof TextBox)
-					((TextBox)getWidget()).selectAll();
+			Widget w = getWidget();
+			if (w instanceof UniTimeWidget<?>)
+				w = ((UniTimeWidget<?>)w).getWidget();
+			if (w instanceof Focusable) {
+				((Focusable)w).setFocus(true);
+				if (w instanceof TextBox)
+					((TextBox)w).selectAll();
 				return true;
 			}
 			return false;
