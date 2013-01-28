@@ -221,7 +221,6 @@ public class RoomListAction extends Action {
 				departmentIds = new ArrayList<Long>();
 				String depts = "";
 				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
-					if (!depts.isEmpty()) depts += ",";
 					depts += (depts.isEmpty() ? "" : ",") + ":dept" + (departmentIds.size());
 					departmentIds.add(department.getUniqueId());
 				}
