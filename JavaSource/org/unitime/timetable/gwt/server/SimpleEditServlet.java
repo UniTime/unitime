@@ -388,7 +388,7 @@ public class SimpleEditServlet implements SimpleEditService {
 					if (!department.isAllowEvents()) continue;
 					for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
 							"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
-							.setLong("departmentId", department.getUniqueId()).list()) {
+							.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 						RoomTypeOption option = roomType.getOption(department);
 						Record r = data.addRecord(--id, false);
 						r.setField(0, "+", false);
@@ -400,7 +400,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
 						for (Room room: (List<Room>)hibSession.createQuery(
 								"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber")
-								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).list()) {
+								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
 							r = data.addRecord(room.getUniqueId(), false);
 							r.setField(0, String.valueOf(id));
 							r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
@@ -413,7 +413,7 @@ public class SimpleEditServlet implements SimpleEditService {
 					}
 					for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
 							"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
-							.setLong("departmentId", department.getUniqueId()).list()) {
+							.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 						RoomTypeOption option = roomType.getOption(department);
 						Record r = data.addRecord(--id, false);
 						r.setField(0, "+", false);
@@ -425,7 +425,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
 						for (NonUniversityLocation room: (List<NonUniversityLocation>)hibSession.createQuery(
 								"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name")
-								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).list()) {
+								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).setCacheable(true).list()) {
 							r = data.addRecord(room.getUniqueId(), false);
 							r.setField(0, String.valueOf(id));
 							r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
@@ -1302,7 +1302,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						if (!department.isAllowEvents()) continue;
 						for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
 								"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
-								.setLong("departmentId", department.getUniqueId()).list()) {
+								.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 							RoomTypeOption option = roomType.getOption(department);
 							for (Record r: data.getRecords()) {
 								if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
@@ -1332,7 +1332,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						}
 						for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
 								"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
-								.setLong("departmentId", department.getUniqueId()).list()) {
+								.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 							RoomTypeOption option = roomType.getOption(department);
 							for (Record r: data.getRecords()) {
 								if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
@@ -1362,7 +1362,7 @@ public class SimpleEditServlet implements SimpleEditService {
 						}
 						for (Location location: (List<Location>)hibSession.createQuery(
 								"from Location where eventDepartment.uniqueId = :departmentId")
-								.setLong("departmentId", department.getUniqueId()).list()) {
+								.setLong("departmentId", department.getUniqueId()).setCacheable(true).list()) {
 							Record r = data.getRecord(location.getUniqueId());
 							if (r != null) {
 								Integer status = r.getField(3) == null || r.getField(3).isEmpty() ? null : Integer.parseInt(r.getField(3));
