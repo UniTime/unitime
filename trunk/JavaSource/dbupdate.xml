@@ -8289,4 +8289,18 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EditCourseOffering'
 		</sql>
 	</update>
+	<update version="108" date="28-Jan-2013" comment="Event Statuses">
+		<plsql>alter table %SCHEMA%.room_type_option modify message varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room_type_option modify message varchar(2048) null</mysql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventStatuses'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'EventStatusEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
+		</sql>
+	</update>
 </dbupdate>

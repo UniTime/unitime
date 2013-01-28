@@ -67,6 +67,7 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.TextAlign;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -205,6 +206,7 @@ public class SimpleEditPage extends Composite {
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
+		iTable.setStyleName("unitime-WebTable");
 		iTable.setAllowSelection(true);
 		iPanel.addRow(iTable);
 		
@@ -242,6 +244,15 @@ public class SimpleEditPage extends Composite {
 		iTable.addMouseClickListener(new MouseClickListener<SimpleEditInterface.Record>() {
 			@Override
 			public void onMouseClick(TableEvent<Record> event) {
+				if (event.getCol() == 0 && event.getData() != null && hasDetails()) {
+					if ("+".equals(event.getData().getField(0))) {
+						setDetailsVisible(event.getData().getUniqueId(), true);
+						return;
+					} else if ("-".equals(event.getData().getField(0))) {
+						setDetailsVisible(event.getData().getUniqueId(), false);
+						return;
+					}
+				}
 				if (iEditable || !iData.isEditable() || event.getData() == null || !event.getData().isEditable()) return;
 				detail(event.getData());
 			}
@@ -269,6 +280,7 @@ public class SimpleEditPage extends Composite {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
 			Record rec = iTable.getData(row);
 			if (rec == null || rec.getUniqueId() == null) continue;
+			if (!iTable.getRowFormatter().isVisible(row)) continue;
 			if (next) return rec;
 			if (record.getUniqueId().equals(rec.getUniqueId())) next = true;
 		}
@@ -281,6 +293,7 @@ public class SimpleEditPage extends Composite {
 		for (int row = 0; row < iTable.getRowCount(); row++) {
 			Record rec = iTable.getData(row);
 			if (rec == null || rec.getUniqueId() == null) continue;
+			if (!iTable.getRowFormatter().isVisible(row)) continue;
 			if (record.getUniqueId().equals(rec.getUniqueId())) return previous;
 			previous = rec;
 		}
@@ -476,8 +489,12 @@ public class SimpleEditPage extends Composite {
 		for (Field field: iData.getFields()) {
 			MyCell cell = new MyCell(record.isEditable(idx), field, record, idx, true);
 			cells.add(cell);
-			if (field.isVisible())
-				detail.addRow(field.getName() + ":", cell);
+			if (field.isVisible() && field.getType() != FieldType.parent) {
+				String name = field.getName();
+				if (hasDetails() && name.contains("|"))
+					name = isParent(record) ? name.split("\\|")[0] : name.split("\\|")[1];
+				detail.addRow(name + ":", cell);
+			}
 			idx ++;
 		}
 		UniTimeHeaderPanel bottom = header.clonePanel();
@@ -486,6 +503,34 @@ public class SimpleEditPage extends Composite {
 		iSimple.setWidget(detail);
 		ToolBox.scrollToElement(detail.getElement());
 		Client.fireGwtPageChanged(new GwtPageChangeEvent());
+	}
+	
+	private boolean hasDetails() {
+		return iData != null && iData.getFields().length > 0 && iData.getFields()[0].getType() == FieldType.parent;
+	}
+	
+	private boolean isParent(Record r) {
+		return hasDetails() && ("+".equals(r.getField(0)) || "-".equals(r.getField(0)));
+	}
+
+	private boolean isChild(Record r) {
+		return hasDetails() && !"+".equals(r.getField(0)) && !"-".equals(r.getField(0));
+	}
+
+	private void setDetailsVisible(Long recordId, boolean show) {
+		if (!hasDetails()) return;
+		for (int i = 0; i < iTable.getRowCount(); i++) {
+			Record r = iTable.getData(i);
+			if (r == null) continue;
+			if (r.getUniqueId().equals(recordId)) {
+				Image details = (Image)((MyCell)iTable.getWidget(i, 0)).getInnerWidget();
+				details.setResource(show ? RESOURCES.treeOpen() : RESOURCES.treeClosed());
+				r.setField(0, show ? "-" : "+");
+			} else if (String.valueOf(recordId).equals(r.getField(0))) {
+				iTable.getRowFormatter().setVisible(i, show);
+			}
+		}
+		saveOrder();
 	}
 	
 	public void load(final AsyncCallback<Boolean> callback) {
@@ -506,13 +551,34 @@ public class SimpleEditPage extends Composite {
 				
 				Set<String> ordRequest = new HashSet<String>();
 				ordRequest.add("SimpleEdit.Order[" + iType.toString() + "]");
+				if (hasDetails())
+					ordRequest.add("SimpleEdit.Open[" + iType.toString() + "]");
+				ordRequest.add("SimpleEdit.Hidden[" + iType.toString() + "]");
 				if (iData.isSaveOrder()) {
 					iMenuService.getUserData(ordRequest, new AsyncCallback<HashMap<String,String>>() {
 						@Override
 						public void onSuccess(HashMap<String, String> result) {
 							final String order = "|" + result.get("SimpleEdit.Order[" + iType.toString() + "]") + "|";
+							if (hasDetails()) {
+								String open = "|" + result.get("SimpleEdit.Open[" + iType.toString() + "]") + "|";
+								for (Record r: iData.getRecords()) {
+									if (isParent(r))
+										r.setField(0, open.indexOf("|" + r.getUniqueId() + "|") >= 0 ? "-" : "+");
+								}
+							}
 							Collections.sort(iData.getRecords(), new Comparator<Record>() {
 								public int compare(Record r1, Record r2) {
+									if (iData.getFields()[0].getType() == FieldType.parent) {
+										Record p1 = ("+".equals(r1.getField(0)) || "-".equals(r1.getField(0)) ? null : iData.getRecord(Long.valueOf(r1.getField(0))));
+										Record p2 = ("+".equals(r2.getField(0)) || "-".equals(r2.getField(0)) ? null : iData.getRecord(Long.valueOf(r2.getField(0))));
+										if ((p1 == null ? r1 : p1).equals(p2 == null ? r2 : p2)) { // same parents
+											if (p1 != null && p2 == null) return 1; // r1 is already a parent
+											if (p1 == null && p2 != null) return -1; // r2 is already a parent
+											// same level
+										} else if (p1 != null || p2 != null) { // different parents
+											return compare(p1 == null ? r1 : p1, p2 == null ? r2 : p2); // compare parents
+										}
+									}
 									int i1 = (r1.getUniqueId() == null ? -1 : order.indexOf("|" + r1.getUniqueId() + "|"));
 									if (i1 >= 0) {
 										int i2 = (r2.getUniqueId() == null ? -1 : order.indexOf("|" + r2.getUniqueId() + "|"));
@@ -523,7 +589,7 @@ public class SimpleEditPage extends Composite {
 									return cmp.compare(r1, r2);
 								}
 							});
-							refreshTable();
+							refreshTable("|" + result.get("SimpleEdit.Hidden[" + iType.toString() + "]") + "|");
 							if (callback != null) callback.onSuccess(true);
 						}
 						@Override
@@ -552,51 +618,103 @@ public class SimpleEditPage extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		int col = 0;
 		for (final Field field: iData.getFields()) {
-			UniTimeTableHeader cell = new UniTimeTableHeader(field.getName());
+			String name = field.getName();
+			if (hasDetails() && name.contains("|"))
+				name = name.replace("|", "<br>&nbsp;&nbsp;");
+			UniTimeTableHeader cell = new UniTimeTableHeader(name);
 			if (!top) { cell.addStyleName("unitime-TopLineDash"); cell.getElement().getStyle().setPaddingTop(2, Unit.PX); }
 			header.add(cell);
 			final int index = col;
-			cell.addOperation(new UniTimeTableHeader.Operation() {
-				@Override
-				public void execute() {
-					iTable.sort(index, new Comparator<Record>() {
-						RecordComparator iComparator = iData.getComparator();
-						public int compare(Record a, Record b) {
-							String f = a.getField(index);
-							String g = b.getField(index);
-							if (f == null) {
-								if (g != null) return 1;
-							} else {
-								if (g == null) return -1;
-								int cmp = iComparator.compare(index, a, b);
-								if (cmp != 0) return cmp;
-							}
-							return (a.getUniqueId() == null ? b.getUniqueId() == null ? 0 : 1 : b.getUniqueId() == null ? -1 : a.getUniqueId().compareTo(b.getUniqueId()));
-						}
-					});
-					saveOrder();
-				}
-				
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				
-				@Override
-				public String getName() {
-					return "Sort by " + field.getName();
-				}
-			});
-			if (col == 0) {
+			if (field.getType() == FieldType.number)
+				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+			if (field.getType() == FieldType.parent) {
+				cell.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_CENTER);
 				cell.addOperation(new UniTimeTableHeader.Operation() {
 					@Override
 					public void execute() {
-						iTable.sort(index, iData.getComparator());
+						for (int row = 0; row < iTable.getRowCount(); row++) {
+							Record r = iTable.getData(row);
+							if (r == null) continue;
+							if ("+".equals(r.getField(0))) {
+								Image details = (Image)((MyCell)iTable.getWidget(row, 0)).getInnerWidget();
+								details.setResource(RESOURCES.treeOpen());
+								r.setField(0, "-");
+							} else if (!"-".equals(r.getField(0))) {
+								iTable.getRowFormatter().setVisible(row, true);
+							}
+						}
+						saveOrder();
+					}
+					
+					@Override
+					public boolean isApplicable() {
+						for (int row = 0; row < iTable.getRowCount(); row++) {
+							Record r = iTable.getData(row);
+							if (r != null && "+".equals(r.getField(0)))
+								return true;
+						}
+						return false;
+					}
+					
+					@Override
+					public boolean hasSeparator() {
+						return false;
+					}
+					
+					@Override
+					public String getName() {
+						return "Expand All";
+					}
+				});
+				cell.addOperation(new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						for (int row = 0; row < iTable.getRowCount(); row++) {
+							Record r = iTable.getData(row);
+							if (r == null) continue;
+							if ("-".equals(r.getField(0))) {
+								Image details = (Image)((MyCell)iTable.getWidget(row, 0)).getInnerWidget();
+								details.setResource(RESOURCES.treeClosed());
+								r.setField(0, "+");
+							} else if (!"+".equals(r.getField(0))) {
+								iTable.getRowFormatter().setVisible(row, false);
+							}
+						}
+						saveOrder();
+					}
+					
+					@Override
+					public boolean isApplicable() {
+						for (int row = 0; row < iTable.getRowCount(); row++) {
+							Record r = iTable.getData(row);
+							if (r != null && "-".equals(r.getField(0)))
+								return true;
+						}
+						return false;
+					}
+					
+					@Override
+					public boolean hasSeparator() {
+						return false;
+					}
+					
+					@Override
+					public String getName() {
+						return "Collapse All";
+					}
+				});
+			} else {
+				cell.addOperation(new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						iTable.sort(index, new Comparator<Record>() {
+							RecordComparator iComparator = iData.getComparator();
+							public int compare(Record a, Record b) {
+								int cmp = iComparator.compare(index, a, b);
+								if (cmp != 0) return cmp;
+								return iComparator.compare(a, b);
+							}
+						});
 						saveOrder();
 					}
 					
@@ -612,7 +730,96 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Sort by default";
+						return "Sort by " + field.getName();
+					}
+				});			
+				if (col == 0) {
+					cell.addOperation(new UniTimeTableHeader.Operation() {
+						@Override
+						public void execute() {
+							iTable.sort(index, iData.getComparator());
+							saveOrder();
+						}
+						
+						@Override
+						public boolean isApplicable() {
+							return true;
+						}
+						
+						@Override
+						public boolean hasSeparator() {
+							return false;
+						}
+						
+						@Override
+						public String getName() {
+							return "Sort by default";
+						}
+					});
+				}
+			}
+			if (col == 0) {
+				cell.addOperation(new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						for (int index = 1; index < iData.getFields().length; index++) {
+							if (iData.getFields()[index].isEditable() && iTable.isColumnVisible(index)) {
+								iTable.setColumnVisible(index, false);
+								iVisible[index] = false;
+							}
+						}
+						saveOrder();
+					}
+					
+					@Override
+					public boolean isApplicable() {
+						for (int index = 1; index < iData.getFields().length; index++) {
+							if (iData.getFields()[index].isEditable() && iTable.isColumnVisible(index)) return true;
+						}
+						return false;
+					}
+					
+					@Override
+					public boolean hasSeparator() {
+						return true;
+					}
+					
+					@Override
+					public String getName() {
+						return "Hide All";
+					}
+				});
+				cell.addOperation(new UniTimeTableHeader.Operation() {
+					@Override
+					public void execute() {
+						for (int index = 1; index < iData.getFields().length; index++) {
+							if (iData.getFields()[index].isEditable() && !iTable.isColumnVisible(index)) {
+								iTable.setColumnVisible(index, true);
+								iVisible[index] = true;
+							}
+						}
+						saveOrder();
+					}
+					
+					@Override
+					public boolean isApplicable() {
+						for (int index = 1; index < iData.getFields().length; index++) {
+							if (iData.getFields()[index].isEditable() && !iTable.isColumnVisible(index)) return true;
+						}
+						return false;
+					}
+					
+					@Override
+					public boolean hasSeparator() {
+						for (int index = 1; index < iData.getFields().length; index++) {
+							if (iData.getFields()[index].isEditable() && iTable.isColumnVisible(index)) return false;
+						}
+						return true;
+					}
+					
+					@Override
+					public String getName() {
+						return "Show All";
 					}
 				});
 			}
@@ -630,6 +837,7 @@ public class SimpleEditPage extends Composite {
 						public void execute() {
 							iTable.setColumnVisible(index, !iTable.isColumnVisible(index));
 							iVisible[index] = iTable.isColumnVisible(index);
+							saveOrder();
 						}
 						
 						@Override
@@ -662,14 +870,20 @@ public class SimpleEditPage extends Composite {
 	}
 	
 	private void refreshTable() {
+		refreshTable(null);
+	}
+	
+	private void refreshTable(String hidden) {
 		UniTimePageLabel.getInstance().setPageName((iEditable ? "Edit " : "") + iData.getType().getTitlePlural());
 		iTable.clearTable();
+		
+		iTable.setAllowSelection(!hasDetails());
 
 		iTable.addRow(null, header(true));
 		
 		if (iVisible == null) {
 			iVisible = new boolean[iData.getFields().length];
-			for (int i = 0; i < iVisible.length; i++) iVisible[i] = iData.getFields()[i].isVisible();
+			for (int i = 0; i < iVisible.length; i++) iVisible[i] = iData.getFields()[i].isVisible() && (hidden == null || !hidden.contains("|" + iData.getFields()[i].getName() + "|"));
 		}
 		
 		boolean empty = false;
@@ -736,15 +950,40 @@ public class SimpleEditPage extends Composite {
 			line.add(new Label());
 		}
 		iTable.setRow(row, record, line);
+		if (hasDetails()) {
+			if (!"+".equals(record.getField(0)) && !"-".equals(record.getField(0))) {
+				Record p = iData.getRecord(Long.valueOf(record.getField(0)));
+				if (p != null && "+".equals(p.getField(0)))
+					iTable.getRowFormatter().setVisible(row, false);
+			}
+			if (isParent(record)) {
+				iTable.getRowFormatter().getElement(row).getStyle().setBackgroundColor("#f3f3f3");
+				/*
+				for (int i = 1; i < iTable.getCellCount(row); i++)
+					iTable.getCellFormatter().addStyleName(row, i, "top-border-dashed");
+				*/
+			}
+		}
 	}
 	
 	public class MyCell extends Composite implements HasFocus, HasCellAlignment {
 		private Field iField;
 		private Record iRecord;
 		private int iIndex;
+		private boolean iDetail;
 		
-		public MyCell(boolean editable, Field field, final Record record, final int index, boolean detail) {
-			iField = field; iRecord = record; iIndex = index;
+		public MyCell(boolean editable, final Field field, final Record record, final int index, boolean detail) {
+			iField = field; iRecord = record; iIndex = index; iDetail = detail;
+			if (field.getType() == FieldType.parent) {
+				if ("+".equals(record.getField(index))) {
+					initWidget(new Image(RESOURCES.treeClosed()));
+				} else if ("-".equals(record.getField(index))) {
+					initWidget(new Image(RESOURCES.treeOpen()));
+				} else {
+					initWidget(new Label());
+				}
+				return;
+			}
 			if (editable) {
 				switch (field.getType()) {
 				case text:
@@ -771,11 +1010,42 @@ public class SimpleEditPage extends Composite {
 						});
 					}
 					break;
+				case textarea:
+					final TextArea textarea = new TextArea();
+					textarea.setStyleName("unitime-TextArea");
+					if (detail) {
+						textarea.setVisibleLines(Math.max(5, field.getHeight()));
+						textarea.setCharacterWidth(Math.max(80, field.getWidth()));
+					} else {
+						textarea.setVisibleLines(field.getHeight() <= 0 ? 2 : Math.min(3, field.getHeight()));
+						textarea.setCharacterWidth(field.getWidth() <= 0 ? 40: Math.min(60, field.getWidth()));
+					}
+					textarea.setText(record.getField(index));
+					textarea.addChangeHandler(new ChangeHandler() {
+						@Override
+						public void onChange(ChangeEvent event) {
+							record.setField(index, textarea.getText());
+							setError(null);
+						}
+					});
+					initWidget(new UniTimeWidget<TextArea>(textarea));
+					if (iEditable && iData.isAddable() && record.getUniqueId() == null) {
+						textarea.addChangeHandler(new ChangeHandler() {
+							@Override
+							public void onChange(ChangeEvent event) {
+								if (iData.getRecords().indexOf(iRecord) == iData.getRecords().size() - 1 && !record.isEmpty())
+									fillRow(iData.addRecord(null), iTable.insertRow(iTable.getRowCount()));
+							}
+						});
+					}
+					break;
 				case number:
 					final NumberBox number = new NumberBox();
+					number.getElement().getStyle().setTextAlign(TextAlign.RIGHT);
 					number.setText(record.getField(index));
 					number.setDecimal(field.isAllowFloatingPoint());
 					number.setNegative(field.isAllowNegative());
+					number.setWidth(field.getWidth() + "px");
 					number.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
@@ -797,7 +1067,8 @@ public class SimpleEditPage extends Composite {
 				case list:
 					final ListBox list = new ListBox(false);
 					list.setStyleName("unitime-TextBox");
-					if (record.getField(index) == null && (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
+					if (((record.getField(index) == null || record.getField(index).isEmpty()) || (!field.isNotEmpty() && (isChild(record) || field.isParentNotEmpty())))
+						&& (field.getValues().isEmpty() || !field.getValues().get(0).getValue().isEmpty())) {
 						list.addItem("", "");
 					}
 					for (ListItem item: field.getValues())
@@ -1038,21 +1309,62 @@ public class SimpleEditPage extends Composite {
 					String[] name = record.getValues(index);
 					initWidget(new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
 					break;
+				case textarea:
+					HTML html = new HTML(getValue());
+					initWidget(html);
+					break;
 				default:
 					Label label = new Label(getValue());
 					initWidget(label);
+					if (field.getType() == FieldType.number)
+						label.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
+					break;
 				}
 			}
+			if (!detail && index > 0 && iData.getFields()[index].getName().contains("|") && isChild(record))
+				getElement().getStyle().setPaddingLeft(20, Unit.PX);
+			setError(null);
 		}
 		
 		public void setError(String message) {
 			if (getWidget() instanceof UniTimeWidget<?>) {
 				UniTimeWidget<?> w = (UniTimeWidget<?>)getWidget();
-				if (message == null || message.isEmpty())
+				if (message == null || message.isEmpty()) {
 					w.clearHint();
-				else
+					if (iDetail && iField.isShowParentWhenEmpty()) {
+						String parent = getParentValue();
+						if (parent != null && !parent.isEmpty()) {
+							w.setHint("Defaults to " + (parent.length() > 80 ? parent.substring(0, 77) + "..." : parent) + " when empty.");
+						}
+					}
+				} else
 					w.setErrorHint(message);
 			}
+		}
+		
+		public String getParentValue() {
+			if (!isChild(iRecord)) return null;
+			Record parent = iData.getRecord(Long.valueOf(iRecord.getField(0)));
+			if (parent == null) return null;
+			String value = parent.getField(iIndex);
+			if (value == null) return "";
+			if (iField.getType() == FieldType.list) {
+				for (ListItem item: iField.getValues()) {
+					if (item.getValue().equals(value)) return item.getText();
+				}
+			} else if (iField.getType() == FieldType.multi) {
+				String text = "";
+				for (String val: parent.getValues(iIndex)) {
+					for (ListItem item: iField.getValues()) {
+						if (item.getValue().equals(val)) {
+							if (!text.isEmpty()) text += ", ";
+							text += item.getText();
+						}
+					}
+				}
+				return text;
+			}
+			return value;
 		}
 				
 		public String getValue() {
@@ -1088,6 +1400,8 @@ public class SimpleEditPage extends Composite {
 			}
 			return false;
 		}
+		
+		public Widget getInnerWidget() { return getWidget(); }
 
 		@Override
 		public HorizontalAlignmentConstant getCellAlignment() {
@@ -1114,6 +1428,26 @@ public class SimpleEditPage extends Composite {
 		}
 		List<String[]> data = new ArrayList<String[]>();
 		data.add(new String[] {"SimpleEdit.Order[" + iType.toString() + "]", ord});
+		if (iData.getFields()[0].getType() == FieldType.parent) {
+			String open = "";
+			for (int i = 0; i < iTable.getRowCount(); i++) {
+				Record r = iTable.getData(i);
+				if (r == null || r.getUniqueId() == null) continue;
+				if ("-".equals(r.getField(0))) {
+					if (!open.isEmpty()) open += "|";
+					open += r.getUniqueId();
+				}
+			}
+			data.add(new String[] {"SimpleEdit.Open[" + iType.toString() + "]", open});
+		}
+		String hidden = "";
+		for (int i = 0; i < iData.getFields().length; i++) {
+			if (!iTable.isColumnVisible(i)) {
+				if (!hidden.isEmpty()) hidden += "|";
+				hidden += iData.getFields()[i].getName();
+			}
+		}
+		data.add(new String[] {"SimpleEdit.Hidden[" + iType.toString() + "]", hidden});
 		iMenuService.setUserData(data, new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -1165,7 +1499,7 @@ public class SimpleEditPage extends Composite {
 							}
 						}
 					}
-				} else if (field.isNotEmpty()) {
+				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
 						widget.setError(field.getName() + " must be set.");
 						if (valid == null && detailRecord == null) {
@@ -1190,6 +1524,15 @@ public class SimpleEditPage extends Composite {
 								valid = field.getName() + " must be set.";
 							}
 						}
+						break;
+					case textarea:
+						if (value.length() > field.getLength()) {
+							widget.setError(field.getName() + " is too long.");
+							if (valid == null && detailRecord == null) {
+								valid = field.getName() + " is too long.";
+							}
+						}
+						break;
 					}
 				}
 			}
@@ -1222,7 +1565,7 @@ public class SimpleEditPage extends Composite {
 							}
 						}
 					}
-				} else if (field.isNotEmpty()) {
+				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
 						widget.setError(field.getName() + " must be set.");
 						if (valid == null) {
@@ -1247,6 +1590,15 @@ public class SimpleEditPage extends Composite {
 								valid = field.getName() + " must be set.";
 							}
 						}
+						break;
+					case textarea:
+						if (value.length() > field.getLength()) {
+							widget.setError(field.getName() + " is too long.");
+							if (valid == null) {
+								valid = field.getName() + " is too long.";
+							}
+						}
+						break;
 					}
 				}
 			}

@@ -620,10 +620,10 @@
 					<hasPermission name="EventDateMappings"/>
 				</condition>
 			</item>
-			<item name="Event Room Types" page="admin" type="gwt">
-				<parameter name="type">eventRoomType</parameter>
+			<item name="Event Statuses" page="admin" type="gwt">
+				<parameter name="type">eventStatus</parameter>
 				<condition>
-					<hasPermission name="EventRoomTypes"/>
+					<hasPermission name="EventStatuses"/>
 				</condition>
 			</item>
 			<item name="Instructor Roles" page="admin" type="gwt">
@@ -822,13 +822,13 @@
 					<hasPermission name="SettingsUser"/>
 				</condition>
 		</item>
-		<item name="Event Room Types" page="admin" type="gwt">
-			<parameter name="type">eventRoomType</parameter>
+		<item name="Event Statuses" page="admin" type="gwt">
+			<parameter name="type">eventStatus</parameter>
 			<condition>
 				<not>
 					<hasPermission name="IsAdmin"/>
 				</not>
-				<hasPermission name="EventRoomTypes"/>
+				<hasPermission name="EventStatuses"/>
 			</condition>
 		</item>
 		<item name="Instructor Roles" page="admin" type="gwt">
