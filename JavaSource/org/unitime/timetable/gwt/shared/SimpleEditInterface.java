@@ -45,7 +45,7 @@ public class SimpleEditInterface implements IsSerializable {
 		roles("Role"),
 		permissions("Permission"),
 		examType("Examination Type"),
-		eventRoomType("Event Room Type"),
+		eventStatus("Event Status", "Event Statuses"),
 		featureType("Room Feature Type"),
 		instructorRole("Instructor Role"),
 		dateMapping("Event Date Mapping"),
@@ -67,7 +67,7 @@ public class SimpleEditInterface implements IsSerializable {
 	}
 	
 	public static enum FieldType implements IsSerializable {
-		text, number, toggle, list, multi, students, person, date;
+		text, textarea, number, toggle, list, multi, students, person, date, parent;
 	}
 	
 	public static enum Flag implements IsSerializable {
@@ -75,8 +75,10 @@ public class SimpleEditInterface implements IsSerializable {
 		READ_ONLY,
 		UNIQUE,
 		NOT_EMPTY,
+		PARENT_NOT_EMPTY,
 		FLOAT,
 		NEGATIVE,
+		SHOW_PARENT_IF_EMPTY,
 		;
 		
 		public int toInt() { return 1 << ordinal(); }
@@ -172,12 +174,26 @@ public class SimpleEditInterface implements IsSerializable {
 	}
 	
 	public class RecordComparator implements Comparator<Record> {
+
 		public int compare(int index, Record r1, Record r2) {
+			if (getFields()[0].getType() == FieldType.parent) {
+				Record p1 = ("+".equals(r1.getField(0)) || "-".equals(r1.getField(0)) ? null : getRecord(Long.valueOf(r1.getField(0))));
+				Record p2 = ("+".equals(r2.getField(0)) || "-".equals(r2.getField(0)) ? null : getRecord(Long.valueOf(r2.getField(0))));
+				if ((p1 == null ? r1 : p1).equals(p2 == null ? r2 : p2)) { // same parents
+					if (p1 != null && p2 == null) return 1; // r1 is already a parent
+					if (p1 == null && p2 != null) return -1; // r2 is already a parent
+					// same level
+				} else if (p1 != null || p2 != null) { // different parents
+					return compare(index, p1 == null ? r1 : p1, p2 == null ? r2 : p2); // compare parents
+				}
+			}
 			if (index < 0)
-				return r1.getUniqueId().compareTo(r2.getUniqueId());
+				return (r1.getUniqueId() == null ? r2.getUniqueId() == null ? 0 : 1 : r1.getUniqueId() == null ? -1 : r1.getUniqueId().compareTo(r2.getUniqueId()));
 			Field field = getFields()[index]; 
 			String s1 = r1.getText(field, index);
 			String s2 = r2.getText(field, index);
+			if (s1 == null) return (s2 == null ? 0 : 1);
+			if (s2 == null) return -1;
 			switch (field.getType()) {
 			case students:
 				return new Integer(s1.isEmpty() ? 0 : s1.split("\\n").length).compareTo(s2.isEmpty() ? 0 : s2.split("\\n").length);
@@ -204,7 +220,7 @@ public class SimpleEditInterface implements IsSerializable {
 					if (cmp != 0) return cmp;
 				}
 			}
-			return r1.getUniqueId().compareTo(r2.getUniqueId());
+			return compare(-1, r1, r2);
 		}
 	}
 	
@@ -304,6 +320,14 @@ public class SimpleEditInterface implements IsSerializable {
 		
 		public boolean isDeletable() { return iDeletable; }
 		public void setDeletable(boolean deletable) { iDeletable = deletable; }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof Record)) return false;
+			Record r = (Record)o;
+			if (getUniqueId() != null) return getUniqueId().equals(r.getUniqueId());
+			return (r.getUniqueId() != null ? false : super.equals(o));
+		}
 	}
 	
 	public static class ListItem implements IsSerializable {
@@ -319,15 +343,16 @@ public class SimpleEditInterface implements IsSerializable {
 	public static class Field implements IsSerializable {
 		private String iName = null;
 		private FieldType iType = null;
-		private int iLength = 0, iWidth = 0, iFlags = 0;
+		private int iLength = 0, iWidth = 0, iHeight = 1, iFlags = 0;
 		private List<ListItem> iValues = null;
 		
 		public Field() {}
 		
-		public Field(String name, FieldType type, int width, int length, Flag... flags) {
+		public Field(String name, FieldType type, int width, int height, int length, Flag... flags) {
 			iName = name;
 			iType = type;
 			iWidth = width;
+			iHeight = height;
 			iLength = length;
 			iFlags = 0;
 			for (Flag flag: flags)
@@ -336,7 +361,11 @@ public class SimpleEditInterface implements IsSerializable {
 		}
 				
 		public Field(String name, FieldType type, int width, Flag... flags) {
-			this(name, type, width, 0, flags);
+			this(name, type, width, 1, 0, flags);
+		}
+		
+		public Field(String name, FieldType type, int width, int length, Flag... flags) {
+			this(name, type, width, 1, length, flags);
 		}
 		
 		public Field(String name, FieldType type, int width, List<ListItem> values, Flag... flags) {
@@ -348,6 +377,7 @@ public class SimpleEditInterface implements IsSerializable {
 		public FieldType getType() { return iType; }
 		public int getLength() { return iLength; }
 		public int getWidth() { return iWidth; }
+		public int getHeight() { return iHeight; }
 		public List<ListItem> getValues() { return iValues; }
 		public void addValue(ListItem item) {
 			if (iValues == null) iValues = new ArrayList<ListItem>();
@@ -357,8 +387,10 @@ public class SimpleEditInterface implements IsSerializable {
 		public boolean isVisible() { return !Flag.HIDDEN.has(iFlags); }
 		public boolean isUnique() { return Flag.UNIQUE.has(iFlags); }
 		public boolean isNotEmpty() { return Flag.NOT_EMPTY.has(iFlags); }
+		public boolean isParentNotEmpty() { return Flag.PARENT_NOT_EMPTY.has(iFlags); }
 		public boolean isAllowFloatingPoint() { return Flag.FLOAT.has(iFlags); }
 		public boolean isAllowNegative() { return Flag.NEGATIVE.has(iFlags); }
+		public boolean isShowParentWhenEmpty() { return Flag.SHOW_PARENT_IF_EMPTY.has(iFlags); }
 		
 		public int hashCode() {
 			return getName().hashCode();

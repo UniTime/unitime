@@ -298,7 +298,7 @@ public class RoomInterface implements IsSerializable {
 		private String iDisplayName = null;
 		private String iRoomTypeLabel = null;
 		private String iMiniMapUrl = null;
-		private Integer iCapacity = null, iExamCapacity = null;
+		private Integer iCapacity = null, iExamCapacity = null, iBreakTime = null;
 		private String iExamType = null;
 		private String iArea = null;
 		private String iGroups = null;
@@ -371,6 +371,9 @@ public class RoomInterface implements IsSerializable {
 		public void setNote(String note) { iNote = note; }
 		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
 
+		public Integer getBreakTime() { return iBreakTime; }
+		public void setBreakTime(Integer breakTime) { iBreakTime = breakTime; }
+		public boolean hasBreakTime() { return iBreakTime != null && iBreakTime != 0; }
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.RoomSharingBackend")

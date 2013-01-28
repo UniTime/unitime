@@ -57,11 +57,14 @@ import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.NonUniversityLocation;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PositionType;
 import org.unitime.timetable.model.Roles;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
@@ -220,8 +223,8 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case creditFormat:
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.NOT_EMPTY),
 						new Field("Abbreviation", FieldType.text, 80, 10));
 				data.setSortBy(0, 1, 2);
 				data.setAddable(false);
@@ -290,8 +293,8 @@ public class SimpleEditServlet implements SimpleEditService {
 				break;
 			case sectioning:
 				data = new SimpleEditInterface(type,
-						new Field("Abbreviation", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
+						new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
 						new Field("Access", FieldType.toggle, 40),
 						new Field("Advisor", FieldType.toggle, 40),
 						new Field("Email", FieldType.toggle, 40),
@@ -338,7 +341,6 @@ public class SimpleEditServlet implements SimpleEditService {
 				data = new SimpleEditInterface(type, fields);
 				data.setSortBy(-1);
 				data.setAddable(false);
-				data.setSaveOrder(false);
 				for (Right right: Right.values()) {
 					Record r = data.addRecord((long)right.ordinal(), false);
 					r.setField(0, right.toString(), false);
@@ -352,9 +354,9 @@ public class SimpleEditServlet implements SimpleEditService {
 				types.add(new ListItem(String.valueOf(ExamType.sExamTypeFinal), "Final Examinations"));
 				types.add(new ListItem(String.valueOf(ExamType.sExamTypeMidterm), "Midterm Examinations"));
 				data = new SimpleEditInterface(type,
-						new Field("Reference", FieldType.text, 160, 20),
-						new Field("Name", FieldType.text, 300, 60),
-						new Field("Type", FieldType.list, 300, types)
+						new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
+						new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
+						new Field("Type", FieldType.list, 300, types, Flag.NOT_EMPTY)
 						);
 				data.setSortBy(2, 1);
 				for (ExamType xtype: ExamTypeDAO.getInstance().findAll()) {
@@ -365,21 +367,21 @@ public class SimpleEditServlet implements SimpleEditService {
 					r.setDeletable(!xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 				}
 				break;
-			case eventRoomType:
+			case eventStatus:
 				List<ListItem> states = new ArrayList<ListItem>();
 				for (RoomTypeOption.Status state: RoomTypeOption.Status.values()) {
 					states.add(new ListItem(String.valueOf(state.ordinal()), state.toString()));
 				}
-
 				data = new SimpleEditInterface(type,
-						new Field("Department", FieldType.text, 160, Flag.READ_ONLY),
-						new Field("Room Type", FieldType.text, 100, Flag.READ_ONLY),
-						new Field("Status", FieldType.list, 300, states, Flag.NOT_EMPTY),
-						new Field("Message", FieldType.text, 500, 200),
-						new Field("Break Time", FieldType.text, 50, 10),
+						new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY),
+						new Field("Department|Type", FieldType.text, 160, Flag.READ_ONLY),
+						new Field("Room Type|Room", FieldType.text, 100, Flag.READ_ONLY),
+						new Field("Event Status", FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY),
+						new Field("Room Note", FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY),
+						new Field("Break Time", FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY),
 						new Field("Sort Order", FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
 						);
-				data.setSortBy(0, 5);
+				data.setSortBy(6);
 				data.setAddable(false);
 				long id = 0;
 				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
@@ -388,25 +390,51 @@ public class SimpleEditServlet implements SimpleEditService {
 							"select distinct r.roomType from Room r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
 							.setLong("departmentId", department.getUniqueId()).list()) {
 						RoomTypeOption option = roomType.getOption(department);
-						Record r = data.addRecord(id++, false);
-						r.setField(0, department.getLabel(), false);
-						r.setField(1, roomType.getLabel(), false);
-						r.setField(2, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
-						r.setField(3, option.getMessage() == null ? "" : option.getMessage());
-						r.setField(4, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
-						r.setField(5, roomType.getOrd().toString());
+						Record r = data.addRecord(--id, false);
+						r.setField(0, "+", false);
+						r.setField(1, department.getLabel(), false);
+						r.setField(2, roomType.getLabel(), false);
+						r.setField(3, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
+						r.setField(4, option.getMessage() == null ? "" : option.getMessage());
+						r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
+						r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+						for (Room room: (List<Room>)hibSession.createQuery(
+								"select r from Room r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.building.abbreviation, r.roomNumber")
+								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).list()) {
+							r = data.addRecord(room.getUniqueId(), false);
+							r.setField(0, String.valueOf(id));
+							r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
+							r.setField(2, room.getLabel(), false);
+							r.setField(3, room.getEventStatus() == null ? "" : room.getEventStatus().toString());
+							r.setField(4, room.getNote() == null ? "" : room.getNote());
+							r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
+							r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+						}
 					}
 					for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
 							"select distinct r.roomType from NonUniversityLocation r where r.eventDepartment.uniqueId = :departmentId order by r.roomType.ord, r.roomType.label")
 							.setLong("departmentId", department.getUniqueId()).list()) {
 						RoomTypeOption option = roomType.getOption(department);
-						Record r = data.addRecord(id++, false);
-						r.setField(0, department.getLabel(), false);
-						r.setField(1, roomType.getLabel(), false);
-						r.setField(2, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
-						r.setField(3, option.getMessage() == null ? "" : option.getMessage());
-						r.setField(4, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
-						r.setField(5, roomType.getOrd().toString());
+						Record r = data.addRecord(--id, false);
+						r.setField(0, "+", false);
+						r.setField(1, department.getLabel(), false);
+						r.setField(2, roomType.getLabel(), false);
+						r.setField(3, String.valueOf(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus()));
+						r.setField(4, option.getMessage() == null ? "" : option.getMessage());
+						r.setField(5, option.getBreakTime() == null ? "0" : option.getBreakTime().toString());
+						r.setField(6, department.getDeptCode() + ":" + roomType.getOrd());
+						for (NonUniversityLocation room: (List<NonUniversityLocation>)hibSession.createQuery(
+								"select r from NonUniversityLocation r where r.roomType.uniqueId = :roomTypeId and r.eventDepartment.uniqueId = :departmentId order by r.name")
+								.setLong("departmentId", department.getUniqueId()).setLong("roomTypeId", roomType.getUniqueId()).list()) {
+							r = data.addRecord(room.getUniqueId(), false);
+							r.setField(0, String.valueOf(id));
+							r.setField(1, department.getDeptCode() + " " + roomType.getLabel(), false);
+							r.setField(2, room.getLabel(), false);
+							r.setField(3, room.getEventStatus() == null ? "" : room.getEventStatus().toString());
+							r.setField(4, room.getNote() == null ? "" : room.getNote());
+							r.setField(5, room.getBreakTime() == null ? "" : room.getBreakTime().toString());
+							r.setField(6, department.getDeptCode() + ":" + roomType.getOrd() + ":" + room.getLabel());
+						}
 					}
 				}
 				break;
@@ -1269,7 +1297,7 @@ public class SimpleEditServlet implements SimpleEditService {
 								null);
 					}	
 					break;
-				case eventRoomType:
+				case eventStatus:
 					for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
 						if (!department.isAllowEvents()) continue;
 						for (RoomType roomType: (List<RoomType>)hibSession.createQuery(
@@ -1277,15 +1305,15 @@ public class SimpleEditServlet implements SimpleEditService {
 								.setLong("departmentId", department.getUniqueId()).list()) {
 							RoomTypeOption option = roomType.getOption(department);
 							for (Record r: data.getRecords()) {
-								if (r.getField(0).equals(department.getLabel()) && r.getField(1).equals(roomType.getLabel())) {
+								if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
 									boolean optionChanged = 
-											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(2))) ||
-											!ToolBox.equals(option.getMessage(), r.getField(3)) ||
-											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(4));
-									option.setStatus(Integer.parseInt(r.getField(2)));
-									option.setMessage(r.getField(3));
+											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(3))) ||
+											!ToolBox.equals(option.getMessage(), r.getField(4)) ||
+											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(5));
+									option.setStatus(Integer.parseInt(r.getField(3)));
+									option.setMessage(r.getField(4));
 									try {
-										option.setBreakTime(Integer.parseInt(r.getField(4)));
+										option.setBreakTime(Integer.parseInt(r.getField(5)));
 									} catch (NumberFormatException e) {
 										option.setBreakTime(0);
 									}
@@ -1294,7 +1322,7 @@ public class SimpleEditServlet implements SimpleEditService {
 										ChangeLog.addChange(hibSession,
 												getSessionContext(),
 												option.getRoomType(),
-												option.getRoomType().getLabel(),
+												option.getDepartment().getDeptCode() + " " + option.getRoomType().getLabel() + ": " + option.getEventStatus(),
 												Source.SIMPLE_EDIT, 
 												Operation.UPDATE,
 												null,
@@ -1307,15 +1335,15 @@ public class SimpleEditServlet implements SimpleEditService {
 								.setLong("departmentId", department.getUniqueId()).list()) {
 							RoomTypeOption option = roomType.getOption(department);
 							for (Record r: data.getRecords()) {
-								if (r.getField(0).equals(department.getLabel()) && r.getField(1).equals(roomType.getLabel())) {
+								if (r.getField(1).equals(department.getLabel()) && r.getField(2).equals(roomType.getLabel())) {
 									boolean optionChanged = 
-											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(2))) ||
-											!ToolBox.equals(option.getMessage(), r.getField(3)) ||
-											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(4));
-									option.setStatus(Integer.parseInt(r.getField(2)));
-									option.setMessage(r.getField(3));
+											!ToolBox.equals(option.getStatus() == null ? RoomTypeOption.getDefaultStatus() : option.getStatus(), Integer.valueOf(r.getField(3))) ||
+											!ToolBox.equals(option.getMessage(), r.getField(4)) ||
+											!ToolBox.equals(option.getBreakTime() == null ? "0" : option.getBreakTime().toString(), r.getField(5));
+									option.setStatus(Integer.parseInt(r.getField(3)));
+									option.setMessage(r.getField(4));
 									try {
-										option.setBreakTime(Integer.parseInt(r.getField(4)));
+										option.setBreakTime(Integer.parseInt(r.getField(5)));
 									} catch (NumberFormatException e) {
 										option.setBreakTime(0);
 									}
@@ -1324,12 +1352,48 @@ public class SimpleEditServlet implements SimpleEditService {
 										ChangeLog.addChange(hibSession,
 												getSessionContext(),
 												option.getRoomType(),
-												option.getRoomType().getLabel(),
+												option.getDepartment().getDeptCode() + " " + option.getRoomType().getLabel() + ": " + option.getEventStatus(),
 												Source.SIMPLE_EDIT, 
 												Operation.UPDATE,
 												null,
 												option.getDepartment());
 								}
+							}
+						}
+						for (Location location: (List<Location>)hibSession.createQuery(
+								"from Location where eventDepartment.uniqueId = :departmentId")
+								.setLong("departmentId", department.getUniqueId()).list()) {
+							Record r = data.getRecord(location.getUniqueId());
+							if (r != null) {
+								Integer status = r.getField(3) == null || r.getField(3).isEmpty() ? null : Integer.parseInt(r.getField(3));
+								String note = (r.getField(4) == null || r.getField(4).isEmpty() ? null : r.getField(4));
+								Integer breakTime = null;
+								try {
+									breakTime = (r.getField(5) == null || r.getField(5).isEmpty() ? null : Integer.parseInt(r.getField(5)));
+								} catch (NumberFormatException e) {}
+								boolean optionChanged = 
+										!ToolBox.equals(location.getEventStatus(), status) ||
+										!ToolBox.equals(location.getNote(), note) ||
+										!ToolBox.equals(location.getBreakTime(), breakTime);
+								if (!optionChanged) continue;
+								boolean noteChanged = !ToolBox.equals(location.getNote(), note);
+								location.setEventStatus(status);
+								location.setNote(note);
+								location.setBreakTime(breakTime);
+								hibSession.saveOrUpdate(location);
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										location,
+										location.getLabel() + ": " + location.getEffectiveEventStatus() + (location.getEventStatus() == null ? " (Default)" : ""),
+										Source.SIMPLE_EDIT, 
+										Operation.UPDATE,
+										null,
+										location.getEventDepartment());
+								if (noteChanged)
+									ChangeLog.addChange(hibSession,
+											getSessionContext(), location, (location.getNote() == null || location.getNote().isEmpty() ? "-" : location.getNote()),
+											ChangeLog.Source.ROOM_EDIT, ChangeLog.Operation.NOTE, null, location.getControllingDepartment());
+								
 							}
 						}
 					}
@@ -1593,8 +1657,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.Permissions;
 		case examType:
 			return Right.ExamTypes;
-		case eventRoomType:
-			return Right.EventRoomTypes;
+		case eventStatus:
+			return Right.EventStatuses;
 		case featureType:
 			return Right.RoomFeatures;
 		case instructorRole:
@@ -1636,8 +1700,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.PermissionEdit;
 		case examType:
 			return Right.ExamTypeEdit;
-		case eventRoomType:
-			return Right.EventRoomTypeEdit;
+		case eventStatus:
+			return Right.EventStatusEdit;
 		case featureType:
 			return Right.RoomFeatureTypeEdit;
 		case instructorRole:

@@ -461,8 +461,8 @@ public enum Right {
 	ExamTypes,
 	ExamTypeEdit,
 	
-	EventRoomTypes(Department.class),
-	EventRoomTypeEdit(Department.class),
+	EventStatuses(Department.class),
+	EventStatusEdit(Department.class),
 	
 	RoomFeatureTypes,
 	RoomFeatureTypeEdit,

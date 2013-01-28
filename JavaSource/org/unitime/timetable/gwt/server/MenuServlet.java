@@ -619,8 +619,9 @@ public class MenuServlet implements MenuService {
 			if (user == null) return null;
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			try {
-				for (String[] p: property2value)
+				for (String[] p: property2value) {
 					UserData.setProperty(user.getExternalUserId(), p[0], p[1]);
+				}
 				return null;
 			} finally {
 				hibSession.close();

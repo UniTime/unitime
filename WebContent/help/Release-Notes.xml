@@ -177,7 +177,7 @@
 		<item>
 			<name>Event Status</name>
 			<description>
-				<line>An event management can be enabled or disabled per department and room type, using the Event Room Types page.</line>
+				<line>An event management can be enabled or disabled per department and room type, using the Event Statuses page.</line>
 				<line>Only departments that have event management enabled (Departments page) and room types that have at least one event room (Event Department under Edit Room page) are visible (can be enabled for event management).</line>
 				<line>One of the following status can be set:
 					<line>No Event Management
@@ -458,7 +458,7 @@
 			<description>
 				<line>Rooms and Non-University Locations have a new note.
 					<line>A note can be edited on the Edit Room Page.</line>
-					<line>It is visible on the Room Detail page (if present), in the room tooltip, and in the events (where it overrides the note that is set on the room type &amp; department combination, Event Room Types page).</line>
+					<line>It is visible on the Room Detail page (if present), in the room tooltip, and in the events (where it overrides the note that is set on the room type &amp; department combination, Event Statuses page).</line>
 					<line>A history of the room note is available on the Room Detail page (section Room Note History at the bottom of the page).
 						<line>There is also a toggle allowing to display note changes across all academic sessions (rooms are matched using their permanent ids).</line>
 					</line>
