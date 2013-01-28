@@ -19,6 +19,8 @@
 
 alter table room_type_option modify message varchar(2048) null;
 
+alter table user_data modify value varchar(4000) null;
+
 insert into rights (role_id, value)
 	select distinct r.role_id, 'EventStatuses'
 	from roles r, rights g where g.role_id = r.role_id and g.value like 'EventRoomTypes';
