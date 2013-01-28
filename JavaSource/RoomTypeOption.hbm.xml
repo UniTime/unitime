@@ -48,7 +48,7 @@
             column="message"
             type="java.lang.String"
             not-null="true"
-            length="200"/>
+            length="2048"/>
             
         <property
             name="breakTime"

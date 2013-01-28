@@ -356,8 +356,8 @@ public class AdministrationPermissions {
 	@PermissionForRight(Right.StudentGroupEdit)
 	public static class StudentGroupEdit extends StudentGroups {}
 	
-	@PermissionForRight(Right.EventRoomTypes)
-	public static class EventRoomTypes implements Permission<Department> {
+	@PermissionForRight(Right.EventStatuses)
+	public static class EventStatuses implements Permission<Department> {
 		@Autowired Permission<Department> permissionDepartment;
 
 		@Override
@@ -387,8 +387,8 @@ public class AdministrationPermissions {
 		public Class<Department> type() { return Department.class;}
 	}
 	
-	@PermissionForRight(Right.EventRoomTypeEdit)
-	public static class EventRoomTypeEdit extends EventRoomTypes {}
+	@PermissionForRight(Right.EventStatusEdit)
+	public static class EventStatusEdit extends EventStatuses {}
 	
 	@PermissionForRight(Right.InstructorRoles)
 	public static class InstructorRoles implements Permission<Department> {
