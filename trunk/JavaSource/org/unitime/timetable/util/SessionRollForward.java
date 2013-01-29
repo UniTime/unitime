@@ -1134,6 +1134,12 @@ public class SessionRollForward {
 	}
 	
 	private Set getLocationsFor(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		if (fromPrefGroup instanceof Exam) {
+			Exam exam = (Exam)fromPrefGroup;
+			if (!getRoomList().containsKey(exam.getExamType()))
+				getRoomList().put(exam.getExamType(), Location.findAllExamLocations(toSession.getUniqueId(), exam.getExamType()));
+			return (Set)getRoomList().get(exam.getExamType());
+		}
 		Department toDepartment = findToManagingDepartmentForPrefGroup(toPrefGroup, fromPrefGroup, toSession);
 		if (toDepartment == null){
 			return(null);
