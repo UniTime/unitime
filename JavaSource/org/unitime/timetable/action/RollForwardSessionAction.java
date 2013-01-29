@@ -119,6 +119,10 @@ public class RollForwardSessionAction extends Action {
 		if (rollForwardSessionForm.getClassPrefsAction() == null){
 			rollForwardSessionForm.setClassPrefsAction(SessionRollForward.DO_NOT_ROLL_ACTION);
 		}
+		if (rollForwardSessionForm.getMidtermExamsPrefsAction() == null)
+			rollForwardSessionForm.setMidtermExamsPrefsAction(SessionRollForward.EXAMS_ROOM_PREFS);
+		if (rollForwardSessionForm.getFinalExamsPrefsAction() == null)
+			rollForwardSessionForm.setFinalExamsPrefsAction(SessionRollForward.EXAMS_ROOM_PREFS);
 
   		return mapping.findForward("displayRollForwardSessionForm");
 	}

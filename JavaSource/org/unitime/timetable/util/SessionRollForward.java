@@ -56,6 +56,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamLocationPref;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.ExternalBuilding;
 import org.unitime.timetable.model.ExternalRoom;
@@ -141,6 +142,10 @@ public class SessionRollForward {
 	public static String ROLL_PREFS_ACTION = "rollUnchanged";
 	public static String DO_NOT_ROLL_ACTION = "doNotRoll";
 	public static String PUSH_UP_ACTION = "pushUp";
+	public static String EXAMS_NO_PREF = "doNotRoll";
+	public static String EXAMS_ROOM_PREFS = "rollRoomPrefs"; 
+	public static String EXAMS_ALL_PREF = "rollAllPrefs";
+	
 
 
 	public void setSubpartLocationPrefRollForwardParameters(String subpartLocationPrefsAction){
@@ -1186,6 +1191,20 @@ public class SessionRollForward {
 		}
 	}
 	
+	protected void rollForwardPeriodPrefs(PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
+		for (Iterator<ExamPeriodPref> i = fromPrefGroup.getExamPeriodPreferences().iterator(); i.hasNext(); ) {
+			ExamPeriodPref fromPref = i.next();
+			ExamPeriod toPeriod = fromPref.getExamPeriod().findSameExamPeriodInSession(toSession);
+			if (toPeriod != null) {
+				ExamPeriodPref toPref = new ExamPeriodPref();
+				toPref.setExamPeriod(toPeriod);
+				toPref.setOwner(toPrefGroup);
+				toPref.setPrefLevel(fromPref.getPrefLevel());
+				toPrefGroup.addTopreferences(toPref);
+			}
+		}
+	}
+	
 	private void createToRoomFeaturePref(RoomFeaturePref fromRoomFeaturePref, PreferenceGroup fromPrefGroup, PreferenceGroup toPrefGroup, Session toSession){
 		if (fromPrefGroup instanceof Class_ && !isClassRollForward()) return;
 		RoomFeaturePref toRoomFeaturePref = new RoomFeaturePref();
@@ -1547,7 +1566,7 @@ public class SessionRollForward {
 		}		
 	}
 	
-	private void rollForwardExam(Exam fromExam, Session toSession) throws Exception{
+	private void rollForwardExam(Exam fromExam, Session toSession, String prefOption) throws Exception{
 		Exam toExam = new Exam();
 		toExam.setExamType(fromExam.getExamType());
 		toExam.setLength(fromExam.getLength());
@@ -1599,9 +1618,15 @@ public class SessionRollForward {
 		if (toExam.getOwners() != null || toExam.getOwners().size() > 0){
 			ExamDAO eDao = new ExamDAO();
 			eDao.save(toExam);
-			rollForwardBuildingPrefs(fromExam, toExam, toSession);
-			rollForwardRoomGroupPrefs(fromExam, toExam, toSession);
-			rollForwardRoomFeaturePrefs(fromExam, toExam, toSession);
+			if (EXAMS_ROOM_PREFS.equals(prefOption) || EXAMS_ALL_PREF.equals(prefOption)) {
+				rollForwardBuildingPrefs(fromExam, toExam, toSession);
+				rollForwardRoomGroupPrefs(fromExam, toExam, toSession);
+				rollForwardRoomFeaturePrefs(fromExam, toExam, toSession);
+			}
+			if (EXAMS_ALL_PREF.equals(prefOption)) {
+				rollForwardRoomPrefs(fromExam, toExam, toSession);
+				rollForwardPeriodPrefs(fromExam, toExam, toSession);
+			}
 			eDao.update(toExam);
 			eDao.getSession().flush();
 			eDao.getSession().evict(toExam);
@@ -1631,7 +1656,7 @@ public class SessionRollForward {
 		try {
 			List exams = findExamToRollForward(toSession, ExamType.sExamTypeMidterm);
 			for(Iterator examIt = exams.iterator(); examIt.hasNext();){
-				rollForwardExam((Exam) examIt.next(), toSession);
+				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getMidtermExamsPrefsAction());
 			}
 		} catch (Exception e) {
 			Debug.error(e);
@@ -1645,7 +1670,7 @@ public class SessionRollForward {
 		try {
 			List exams = findExamToRollForward(toSession, ExamType.sExamTypeFinal);
 			for(Iterator examIt = exams.iterator(); examIt.hasNext();){
-				rollForwardExam((Exam) examIt.next(), toSession);
+				rollForwardExam((Exam) examIt.next(), toSession, rollForwardSessionForm.getFinalExamsPrefsAction());
 			}
 		} catch (Exception e) {
 			Debug.error(e);

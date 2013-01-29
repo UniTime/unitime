@@ -413,6 +413,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Roll Forward</name>
+			<description>
+				<line>Added ability to
+					<line>not roll forward any examination preferences, or</line>
+					<line>roll forward all examination preferences.</line>
+					The default is still to roll forward only building, room feature and room group preferences (excluding period and room preferences).
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
