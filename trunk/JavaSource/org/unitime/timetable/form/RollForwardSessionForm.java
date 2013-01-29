@@ -103,6 +103,7 @@ public class RollForwardSessionForm extends ActionForm {
 	private String classPrefsAction;
 	private Boolean rollForwardCurricula;
 	private Long sessionToRollCurriculaForwardFrom;
+	private String midtermExamsPrefsAction, finalExamsPrefsAction;
 	
 	/** 
 	 * Method validate
@@ -341,6 +342,8 @@ public class RollForwardSessionForm extends ActionForm {
 		classPrefsAction = null;
 		rollForwardCurricula = false;
 		sessionToRollCurriculaForwardFrom = null;
+		finalExamsPrefsAction = null;
+		midtermExamsPrefsAction = null;
 	}
 
 	/** 
@@ -721,6 +724,12 @@ public class RollForwardSessionForm extends ActionForm {
 		this.classPrefsAction = classPrefsAction;
 	}
 	
+	public String getMidtermExamsPrefsAction() { return midtermExamsPrefsAction; }
+	public void setMidtermExamsPrefsAction(String midtermExamsPrefsAction) { this.midtermExamsPrefsAction = midtermExamsPrefsAction; }
+
+	public String getFinalExamsPrefsAction() { return finalExamsPrefsAction; }
+	public void setFinalExamsPrefsAction(String finalExamsPrefsAction) { this.finalExamsPrefsAction = finalExamsPrefsAction; }
+
 	public void copyTo(RollForwardSessionForm form) {
 		form.subjectAreas = subjectAreas;
 		form.subjectAreaIds = subjectAreaIds;
@@ -761,6 +770,8 @@ public class RollForwardSessionForm extends ActionForm {
 		form.classPrefsAction = classPrefsAction;
 		form.rollForwardCurricula = rollForwardCurricula;
 		form.sessionToRollCurriculaForwardFrom = sessionToRollCurriculaForwardFrom;
+		form.midtermExamsPrefsAction = midtermExamsPrefsAction;
+		form.finalExamsPrefsAction = finalExamsPrefsAction;
 	}
 	
 	public Object clone() {
