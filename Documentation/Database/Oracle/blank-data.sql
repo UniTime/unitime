@@ -1468,7 +1468,7 @@ values (108, 'showVarLimits', 'no', 'yes,no', 'Show the option to set variable c
 insert into SETTINGS (uniqueid, name, default_value, allowed_values, description)
 values (128, 'keepSort', 'no', 'yes,no', 'Sort classes on detail pages');
 insert into SETTINGS (uniqueid, name, default_value, allowed_values, description)
-values (168, 'roomFeaturesInOneColumn', 'yes', 'yes,no', 'Display Room Features In One Column');
+values (168, 'dispLastChanges', 'yes', 'yes,no', 'Display information from the change log in pages.');
 insert into SETTINGS (uniqueid, name, default_value, allowed_values, description)
 values (188, 'printNoteDisplay', 'icon', 'icon,shortened text,full text', 'Display an icon or shortened text when a class has a schedule print note.');
 insert into SETTINGS (uniqueid, name, default_value, allowed_values, description)
