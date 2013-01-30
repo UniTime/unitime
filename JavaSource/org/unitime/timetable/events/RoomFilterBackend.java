@@ -161,7 +161,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		}
 		response.add("building", new TreeSet<Entity>(buildings.values()));
 
-		Entity event = new Entity(-1l, "Event", "Event Rooms");
+		// Entity event = new Entity(-1l, "Event", "Event Rooms");
 		Entity managed = new Entity(-2l, "Managed", "Managed Rooms");
 		Entity examFinal = new Entity(-3l, "Final", "Final Examination Rooms");
 		Entity examMidterm = new Entity(-4l, "Midterm", "Midterm Examination Rooms");
@@ -178,11 +178,13 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				department.incCount();
 				if (userDepts != null && userDepts.contains(rd.getDepartment().getDeptCode())) isManaged = true;
 			}
+			/*
 			if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
 				Set<String> roomTypes = eventRoomTypes.get(location.getEventDepartment().getUniqueId());
 				if (roomTypes != null && roomTypes.contains(location.getRoomType().getLabel()))
 					event.incCount();
 			}
+			*/
 			if (location.hasFinalExamsEnabled())
 				examFinal.incCount();
 			if (location.hasMidtermExamsEnabled())
@@ -190,8 +192,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 			if (isManaged)
 				managed.incCount();
 		}
-		if (event.getCount() > 0)
-			response.add("department", event);
+		// if (event.getCount() > 0)
+		//	response.add("department", event);
 		if (managed.getCount() > 0)
 			response.add("department",managed);
 		if (examFinal.getCount() > 0)
@@ -228,7 +230,8 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		Set<String> ids = (options == null || "id".equals(ignoreCommand) ? null : options.get("id"));
 		
 		int min = 0, max = Integer.MAX_VALUE;
-		boolean nearby = (flag != null && flag.contains("nearby"));
+		boolean nearby = (flag != null && (flag.contains("nearby") || flag.contains("Nearby")));
+		boolean events = (flag != null && (flag.contains("event") || flag.contains("Event")));
 		if (size != null && !size.isEmpty()) {
 			Size prefix = Size.eq;
 			String number = size.iterator().next();
@@ -264,8 +267,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				" ,RoomTypeOption o" +
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
-				" l.eventDepartment.allowEvents = true and" +
-				" o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment")
+				" l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment")
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?
@@ -276,8 +278,10 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				" left outer join l.features f " +
 				" inner join rd.department.timetableManagers m" +
 				" left outer join m.managerRoles mr " +
+				(events ? " ,RoomTypeOption o" : "") +
 				" where" +
-				" l.session.uniqueId = :sessionId and m.externalUniqueId = :user")
+				" l.session.uniqueId = :sessionId and m.externalUniqueId = :user" +
+				(events ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment" : ""))
 				.setLong("sessionId", sessionId)
 				.setString("user", user.iterator().next())
 				.setCacheable(true)
@@ -289,8 +293,10 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				" left outer join l.features f " +
 				" left outer join rd.department.timetableManagers m" +
 				" left outer join m.managerRoles mr " +
+				(events ? " ,RoomTypeOption o" : "") +
 				" where" +
-				" l.session.uniqueId = :sessionId")
+				" l.session.uniqueId = :sessionId" +
+				(events ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment" : ""))
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list());
@@ -336,8 +342,12 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				if (!location.hasMidtermExamsEnabled()) continue;
 			} else if (!department.contains("Event") && !department.contains("Managed")) {
 				boolean found = false;
-				for (RoomDept rd: location.getRoomDepts())
-					if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
+				if (location.getEventDepartment() != null && department.contains(location.getEventDepartment().getDeptCode()))
+					found = true;
+				if (!found && !events) {
+					for (RoomDept rd: location.getRoomDepts())
+						if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
+				}
 				if (!found) continue;
 			}
 			ret.add(location);
@@ -398,8 +408,12 @@ public class RoomFilterBackend extends FilterBoxBackend {
 						if (!location.hasMidtermExamsEnabled()) continue;
 					} else if (!department.contains("Event") && !department.contains("Managed")) {
 						boolean found = false;
-						for (RoomDept rd: location.getRoomDepts())
-							if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
+						if (location.getEventDepartment() != null && department.contains(location.getEventDepartment().getDeptCode()))
+							found = true;
+						if (!found && !events) {
+							for (RoomDept rd: location.getRoomDepts())
+								if (department.contains(rd.getDepartment().getDeptCode())) { found = true; break; }
+						}
 						if (!found) continue;
 					}
 					Coordinates c = new Coordinates(location);

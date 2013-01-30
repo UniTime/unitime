@@ -158,7 +158,6 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		});
 	}
 	
-	
 	private String iLastSelected = null;
 	MenuItem iInsertedSuggestion = null;
 	private boolean selectASuggestion() {

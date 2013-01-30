@@ -109,6 +109,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -178,7 +179,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	
 	public static enum PageType {
 		Timetable("tab", "0", "title", "Event Timetable", "rooms", ""),
-		Events("filter", "events", "rooms", "department:Event", "events", "mode:\"My Events\"", "type", "room", "title", "Events",
+		Events("filter", "events", "rooms", "flag:Event", "events", "mode:\"My Events\"", "type", "room", "title", "Events",
 				"fixedTitle", "true", "fixedType", "true", "tab", "1"),
 		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
 		Classes(
@@ -252,7 +253,15 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						try {
 							((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
 						} catch (Exception e) {
-							UniTimeNotifications.error(MESSAGES.failedToHideSessionInfo(e.getMessage()));
+							// Try one more time in 5 seconds
+							new Timer() {
+								@Override
+								public void run() {
+									try {
+										((UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0)).hideSessionInfo();
+									} catch (Exception e) {}
+								}
+							}.schedule(5000);
 						}
 					}
 				});
@@ -979,10 +988,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				}
 			reload = true;
 		}
-		if (iHistoryToken.isChanged("rooms", (getResourceType() == ResourceType.ROOM ? "department:Event" : ""), iRooms.getValue())) {
-			iRooms.setValue(iHistoryToken.getParameter("rooms", (getResourceType() == ResourceType.ROOM ? "department:Event" : "")), true);
+		if (iHistoryToken.isChanged("rooms", (getResourceType() == ResourceType.ROOM ? "flag:Event" : ""), iRooms.getValue())) {
+			iRooms.setValue(iHistoryToken.getParameter("rooms", (getResourceType() == ResourceType.ROOM ? "flag:Event" : "")), true);
 			reload = true;
-			if (!iRooms.getValue().equals(getResourceType() == ResourceType.ROOM ? "department:Event" : "")) {
+			if (!iRooms.getValue().equals(getResourceType() == ResourceType.ROOM ? "flag:Event" : "")) {
 				isDefault = false;
 			}
 		}
@@ -1015,7 +1024,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iHistoryToken.hasParameter("sort"))
 			iTable.setSortBy(Integer.valueOf(iHistoryToken.getParameter("sort")));
 		if (iHistoryToken.hasParameter("event")) {
-			if (iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation()))
+			if (iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
 			if ("add".equals(iHistoryToken.getParameter("event"))) {
 				iEventAdd.setEvent(null);
