@@ -156,7 +156,7 @@ public class RoomFilterBox extends UniTimeFilterBox {
 		Label l1 = new Label(MESSAGES.propMin());
 
 		final TextBox min = new TextBox();
-		min.setStyleName("gwt-SuggestBox");
+		min.setStyleName("unitime-TextArea");
 		min.setMaxLength(10); min.getElement().getStyle().setWidth(50, Unit.PX);
 		
 		Label l2 = new Label(MESSAGES.propMax());
@@ -164,12 +164,15 @@ public class RoomFilterBox extends UniTimeFilterBox {
 
 		final TextBox max = new TextBox();
 		max.setMaxLength(10); max.getElement().getStyle().setWidth(50, Unit.PX);
-		max.setStyleName("gwt-SuggestBox");
+		max.setStyleName("unitime-TextArea");
+		
+		final CheckBox events = new CheckBox(MESSAGES.checkOnlyEventLocations());
+		events.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
 		final CheckBox nearby = new CheckBox(MESSAGES.checkIncludeNearby());
 		nearby.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		addFilter(new FilterBox.CustomFilter("other", l1, min, l2, max, nearby) {
+		addFilter(new FilterBox.CustomFilter("other", l1, min, l2, max, events, nearby) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -177,7 +180,11 @@ public class RoomFilterBox extends UniTimeFilterBox {
 				} else {
 					List<FilterBox.Suggestion> suggestions = new ArrayList<FilterBox.Suggestion>();
 					if ("nearby".startsWith(text.toLowerCase()) || MESSAGES.checkIncludeNearby().toLowerCase().startsWith(text.toLowerCase())) {
-						suggestions.add(new Suggestion(MESSAGES.checkIncludeNearby(), new Chip("flag", "nearby")));
+						suggestions.add(new Suggestion(MESSAGES.checkIncludeNearby(), new Chip("flag", "Nearby")));
+					} else if ("all".startsWith(text.toLowerCase()) || MESSAGES.checkAllLocations().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkAllLocations(), new Chip("flag", "All"), new Chip("flag", "Event")));
+					} else if ("event".startsWith(text.toLowerCase()) || MESSAGES.checkOnlyEventLocations().toLowerCase().startsWith(text.toLowerCase())) {
+						suggestions.add(new Suggestion(MESSAGES.checkOnlyEventLocations(), new Chip("flag", "Event"), new Chip("flag", "All")));
 					} else {
 						Chip old = null;
 						for (Chip c: chips) { if (c.getCommand().equals("size")) { old = c; break; } }
@@ -236,7 +243,7 @@ public class RoomFilterBox extends UniTimeFilterBox {
 		nearby.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<Boolean> event) {
-				Chip chip = new Chip("flag", "nearby");
+				Chip chip = new Chip("flag", "Nearby");
 				if (event.getValue()) {
 					if (!hasChip(chip)) addChip(chip, true);
 				} else {
@@ -251,12 +258,35 @@ public class RoomFilterBox extends UniTimeFilterBox {
 				event.getNativeEvent().preventDefault();
 			}
 		});
+		
+		events.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				Chip eventChip = new Chip("flag", "Event");
+				Chip allChip = new Chip("flag", "All");
+				if (event.getValue()) {
+					if (!hasChip(eventChip)) addChip(eventChip, true);
+					if (hasChip(allChip)) removeChip(allChip, true);
+				} else {
+					if (hasChip(eventChip)) removeChip(eventChip, true);
+					if (!hasChip(allChip)) addChip(allChip, true);
+				}
+			}
+		});
+		events.addMouseDownHandler(new MouseDownHandler() {
+			@Override
+			public void onMouseDown(MouseDownEvent event) {
+				event.getNativeEvent().stopPropagation();
+				event.getNativeEvent().preventDefault();
+			}
+		});
 
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (!isFilterPopupShowing()) {
-					nearby.setValue(hasChip(new Chip("flag", "nearby")));
+					nearby.setValue(hasChip(new Chip("flag", "Nearby")));
+					events.setValue(hasChip(new Chip("flag", "Event")));
 					Chip size = getChip("size");
 					if (size != null) {
 						if (size.getValue().startsWith("<=")) {

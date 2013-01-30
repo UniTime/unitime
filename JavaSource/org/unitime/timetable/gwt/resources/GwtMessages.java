@@ -726,6 +726,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Include close by locations")
 	String checkIncludeNearby();
 	
+	@DefaultMessage("Only event locations")
+	String checkOnlyEventLocations();
+
+	@DefaultMessage("All locations")
+	String checkAllLocations();
+
 	@DefaultMessage("One email per line please.")
 	String hintAdditionalEmails();
 	
@@ -858,6 +864,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{0} is not managed in UniTime or it is disabled for events.")
 	String conflictNotEventRoom(String locationName);
 	
+	@DefaultMessage("Not allowed to request an event in {0}.")
+	String conflictRoomDenied(String locationName);
+
 	@DefaultMessage("Not enough permissions to make {0} not available.")
 	String conflictCannotMakeUnavailable(String locationName);
 

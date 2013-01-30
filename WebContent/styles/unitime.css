@@ -2394,6 +2394,7 @@ div.gwt-MenuBarPopup {
 
 .unitime-MeetingSelection .conflict {
 	color: red;
+	text-align: left;
 }
 
 .unitime-MeetingSelection .date {
@@ -2818,4 +2819,9 @@ unitime-RoomSharingWidget .legend .blank {
 
 .unitime-RoomHint .minimap {
 	border: 1px solid #9CB0CE;
+}
+
+.unitime-VerticalScrollPanel {
+	overflow-x: hidden !important;
+    overflow-y: auto !important;
 }

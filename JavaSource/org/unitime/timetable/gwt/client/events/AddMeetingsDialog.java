@@ -44,6 +44,7 @@ import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -95,7 +96,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private RoomFilterBox iRooms;
 	private List<Entity> iMatchingRooms;
 	
-	private ScrollPanel iScroll;
+	private ScrollPanel iScrollDates;
+	private ScrollPanel iScrollRooms;
 	private int iIndex = 0, iStep = 10;
 	private Long iEventId = null;
 	
@@ -163,14 +165,21 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		iDatesForm.addHeaderRow(iDatesHeader);
 		
+		SimpleForm form = new SimpleForm(); form.removeStyleName("unitime-NotPrintableBottomLine");
+		
 		iDates = new SessionDatesSelector(session);
-		iDatesForm.addRow(MESSAGES.propDates(), iDates);
+		form.addRow(MESSAGES.propDates(), iDates);
 		
 		iTimes = new StartEndTimeSelector();
-		iDatesForm.addRow(MESSAGES.propTimes(), iTimes);
+		form.addRow(MESSAGES.propTimes(), iTimes);
 		
 		iRooms = new RoomFilterBox(session);
-		iDatesForm.addRow(MESSAGES.propLocations(), iRooms);
+		form.addRow(MESSAGES.propLocations(), iRooms);
+		
+		iScrollDates = new ScrollPanel(form);
+		iScrollDates.setStyleName("unitime-VerticalScrollPanel");
+		
+		iDatesForm.addRow(iScrollDates);
 		
 		iDatesForm.addBottomRow(iDatesHeader.clonePanel());
 		
@@ -240,9 +249,10 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		
 		iRoomAvailability = new P("unitime-MeetingSelection");
 		
-		iScroll = new ScrollPanel(iRoomAvailability);
+		iScrollRooms = new ScrollPanel(iRoomAvailability);
+		iScrollRooms.setStyleName("unitime-VerticalScrollPanel");
 
-		iAvailabilityForm.addRow(iScroll);
+		iAvailabilityForm.addRow(iScrollRooms);
 		
 		iAvailabilityForm.addNotPrintableBottomRow(iAvailabilityHeader.clonePanel());
 		
@@ -258,15 +268,30 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	
 	public void showDialog(Long eventId) {
 		iStep = (Window.getClientWidth() - 300) / 105;
-		ToolBox.setMaxHeight(iScroll.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
+		ToolBox.setMaxHeight(iScrollRooms.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
+		ToolBox.setMaxHeight(iScrollDates.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
 		int nrMonths = Math.max(3, Math.min(5, (Window.getClientWidth() - 300) / 225));
 		iDates.setWidth((225 * nrMonths) + "px");
 		
 		iResponse = null;
 		iEventId = eventId;
 		setWidget(iDatesForm);
+
 		center();
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+	}
+	
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible && getElement().getClientHeight() > Window.getClientHeight() - 100)
+			recenter();
+	}
+	
+	@Override
+	public void hide() {
+		super.hide();
+		GwtHint.getInstance().hide();
 	}
 		
 	public List<Entity> getRooms() { return iMatchingRooms; }
@@ -285,7 +310,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iMatchingRooms = null;
 		iDates.setValue(new ArrayList<Date>());
 		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6), true);
-		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue, true);
+		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue, true);
 		iSelected.clear();
 		if (meetings != null && !meetings.isEmpty()) {
 			MeetingInterface first = meetings.get(0);
@@ -305,7 +330,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				if (!roomFilter.isEmpty()) roomFilter += " or ";
 				roomFilter += room;
 			}
-			iRooms.setValue((roomFilterValue == null || roomFilterValue.isEmpty() ? "department:Event" : roomFilterValue.contains("department:") ? roomFilterValue : "department:Event " + roomFilterValue) + (roomFilter.isEmpty() ? "" : " " + roomFilter), true);
+			iRooms.setValue((roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue) + (roomFilter.isEmpty() ? "" : " " + roomFilter), true);
 		}
 	}
 
@@ -419,7 +444,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					int count = 0;
 					for (MeetingConflictInterface event: conflicts) {
 						if (count == 3) { conf += "<br>..."; break; }
-						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + " (" + event.getType().getAbbreviation(CONSTANTS) + ")";
+						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + event.getType().getAbbreviation(CONSTANTS) + ")");
 						count ++;
 					}
 					p.setHTML(conf);
@@ -459,7 +484,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						if (conflicts != null && !conflicts.isEmpty()) {
 							message += "<br>" + MESSAGES.propConflicts();
 							for (MeetingConflictInterface conflictingEvent: conflicts)
-								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + " (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + ")";
+								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + (conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + ")");
 						}
 						GwtHint.showHint(p.getElement(), message);
 					}
@@ -509,10 +534,17 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	}
 	
 	public void recenter() {
-		iScroll.getElement().getStyle().clearHeight();
-		if (getElement().getClientHeight() > Window.getClientHeight() - 100)
-			iScroll.getElement().getStyle().setHeight(Window.getClientHeight() - 200, Unit.PX);
+		GwtHint.getInstance().hide();
 		
+		iScrollRooms.getElement().getStyle().clearHeight();
+		if (getElement().getClientHeight() > Window.getClientHeight() - 100)
+			iScrollRooms.getElement().getStyle().setHeight(Window.getClientHeight() - 200, Unit.PX);
+		
+		iScrollDates.getElement().getStyle().clearHeight();
+		if (getElement().getClientHeight() > Window.getClientHeight() - 100) {
+			iScrollDates.getElement().getStyle().setHeight(Window.getClientHeight() - 200, Unit.PX);
+		}
+
 		int left = (Window.getClientWidth() - getOffsetWidth()) >> 1;
 	    int top = (Window.getClientHeight() - getOffsetHeight()) >> 1;
 		setPopupPosition(Math.max(Window.getScrollLeft() + left, 0), Math.max( Window.getScrollTop() + top, 0));
@@ -536,7 +568,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
         			iHoverLoc = getRooms().get(min);
         			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
         		}
-        		iScroll.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+        		iScrollRooms.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
         		break;
         	case KeyCodes.KEY_UP:
         		if (iHoverDate != null && iHoverLoc != null) {
@@ -549,7 +581,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
         			iHoverLoc = getRooms().get(min);
         			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
         		}
-        		iScroll.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+        		iScrollDates.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
         		break;
         	case KeyCodes.KEY_RIGHT:
         		if (iHoverDate != null && iHoverLoc != null) {

@@ -128,7 +128,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 		Label reqLab = new Label(MESSAGES.propRequestedBy());
 
 		final TextBox requested = new TextBox();
-		requested.setStyleName("gwt-SuggestBox");
+		requested.setStyleName("unitime-TextArea");
 		requested.setMaxLength(100); requested.setWidth("200px");
 		
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
@@ -326,6 +326,8 @@ public class EventFilterBox extends UniTimeFilterBox {
 		
 		final TimeSelector st = new TimeSelector(null);
 		final TimeSelector et = new TimeSelector(st);
+		st.setStyleName("unitime-TextArea"); st.addStyleName("unitime-TimeSelector");
+		et.setStyleName("unitime-TextArea"); et.addStyleName("unitime-TimeSelector");
 		addFilter(new FilterBox.CustomFilter("time", new Label(MESSAGES.propAfter()), st, new Label(" " + MESSAGES.propBefore()), et) {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, AsyncCallback<Collection<Suggestion>> callback) {

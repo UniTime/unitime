@@ -103,15 +103,41 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				}
 				
 				query = EventDAO.getInstance().getSession().createQuery(
-						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ") and eventAvailability is not null and length(eventAvailability) = :nrSlots and eventAvailability like '%1%'");
+						"from Location where session.uniqueId = :sessionId and permanentId in (" + locations + ")");
 				for (int i = idx; i + idx < request.getLocations().size() && i < 1000; i++)
 					query.setLong("l" + i, request.getLocations().get(idx + i));
 
-				for (Location location: (List<Location>)query.setLong("sessionId", request.getSessionId()).setInteger("nrSlots", Constants.SLOTS_PER_DAY * Constants.DAY_CODES.length).list()) {
-					Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
-					if (conflicts != null && !conflicts.isEmpty())
-						for (MeetingConflictInterface conflict: conflicts)
-							response.addOverlap(conflict.getDayOfYear(), location.getPermanentId(), conflict);
+				for (Location location: (List<Location>)query.setLong("sessionId", request.getSessionId()).setCacheable(true).list()) {
+					if (context.hasPermission(location, request.getEventType() == EventType.Unavailabile ? Right.EventLocationUnavailable : Right.EventLocation)) {
+						Set<MeetingConflictInterface> conflicts = generateUnavailabilityMeetings(location, request.getDates(), request.getStartSlot(), request.getEndSlot());
+						if (conflicts != null && !conflicts.isEmpty())
+							for (MeetingConflictInterface conflict: conflicts)
+								response.addOverlap(conflict.getDayOfYear(), location.getPermanentId(), conflict);
+					} else {
+						for (Integer date: request.getDates()) {
+							MeetingConflictInterface conflict = new MeetingConflictInterface();
+							if (location == null || location.getEventDepartment() == null || !location.getEventDepartment().isAllowEvents())
+								conflict.setName(MESSAGES.conflictNotEventRoom(location.getLabel()));
+							else if (request.getEventType() == EventType.Unavailabile)
+								conflict.setName(MESSAGES.conflictCannotMakeUnavailable(location.getLabel()));
+							else
+								conflict.setName(MESSAGES.conflictRoomDenied(location.getLabel()));
+							if (location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
+								String message = location.getEventMessage();
+								if (message != null && !message.isEmpty()) {
+									conflict.setName(message);
+								}
+							}
+							conflict.setType(EventInterface.EventType.Unavailabile);
+							conflict.setMeetingDate(CalendarUtils.dateOfYear2date(session.getSessionStartYear(), date));
+							conflict.setDayOfYear(date);
+							conflict.setStartOffset(0);
+							conflict.setEndOffset(0);
+							conflict.setStartSlot(0);
+							conflict.setEndSlot(288);
+							response.addOverlap(date, location.getPermanentId(), conflict);
+						}
+					}
 				}
 			}
 		}
@@ -152,10 +178,13 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				
 				if (location == null || !context.hasPermission(location, Right.EventLocation)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
-					conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
-					if (location != null && location.getEventDepartment() != null) {
+					if (location == null || location.getEventDepartment() == null || !location.getEventDepartment().isAllowEvents())
+						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+					else
+						conflict.setName(MESSAGES.conflictRoomDenied(meeting.getLocationName()));
+					if (location != null && location.getEventDepartment() != null && location.getEventDepartment().isAllowEvents()) {
 						String message = location.getEventMessage();
-						if (message != null) {
+						if (message != null && !message.isEmpty()) {
 							conflict.setName(message);
 						}
 					}
@@ -170,7 +199,10 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					available = false;
 				} else if (request.getEventType() == EventType.Unavailabile && !context.hasPermission(location, Right.EventLocationUnavailable)) {
 					MeetingConflictInterface conflict = new MeetingConflictInterface();
-					conflict.setName(MESSAGES.conflictCannotMakeUnavailable(meeting.getLocationName()));
+					if (location == null || location.getEventDepartment() == null || !location.getEventDepartment().isAllowEvents())
+						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
+					else
+						conflict.setName(MESSAGES.conflictCannotMakeUnavailable(meeting.getLocationName()));
 					conflict.setType(meeting.getId() == null ? EventInterface.EventType.Unavailabile : EventInterface.EventType.Message);
 					conflict.setMeetingDate(meeting.getMeetingDate());
 					conflict.setDayOfYear(meeting.getDayOfYear());
@@ -225,7 +257,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 				}
 				
 				if (available) {
-					if (location.getEventDepartment() == null) { // no event department
+					if (location.getEventDepartment() == null || !location.getEventDepartment().isAllowEvents()) { // no event department
 						MeetingConflictInterface conflict = new MeetingConflictInterface();
 						conflict.setName(MESSAGES.conflictNotEventRoom(meeting.getLocationName()));
 						conflict.setType(EventInterface.EventType.Message);
@@ -238,7 +270,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 						meeting.addConflict(conflict);
 					} else { // has a message?
 						String message = location.getEventMessage();
-						if (message != null) {
+						if (message != null && !message.isEmpty()) {
 							MeetingConflictInterface conflict = new MeetingConflictInterface();
 							conflict.setName(message);
 							conflict.setType(EventInterface.EventType.Message);
