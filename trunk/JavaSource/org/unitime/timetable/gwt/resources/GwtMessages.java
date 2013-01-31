@@ -281,6 +281,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Attachment")
 	String colAttachment();
+	
+	@DefaultMessage("Distance")
+	String colRoomDistance();
+
+	@DefaultMessage("Availability")
+	String colRoomAvailability();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -506,6 +512,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>S</u>elect")
 	String buttonSelect();
+	
+	@DefaultMessage("S<u>o</u>rt&nbsp;by&nbsp;&or;")
+	String buttonSortBy();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
