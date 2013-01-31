@@ -59,7 +59,7 @@ import org.unitime.timetable.webutil.timegrid.SolverGridModel;
  */
 public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 	private static final long serialVersionUID = 7L;
-	public static int sVersion = 7; // to be able to do some changes in the future
+	public static int sVersion = 8; // to be able to do some changes in the future
 	public static final int sConstraintTypeRoom = 1;
 	public static final int sConstraintTypeInstructor = 2;
 	public static final int sConstraintTypeGroup = 3;
@@ -120,7 +120,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 					placement.getTimeLocation().getLength(),
 					placement.getTimeLocation().getDatePatternName(),
 					placement.getTimeLocation().getTimePatternId(),
-					placement.getTimeLocation().getBreakTime());
+					placement.getTimeLocation().getBreakTime(),
+					placement.getTimeLocation().getDatePatternId());
 			var.values().add(val);
 			
 			List noGoods = (List)entry.getValue();
@@ -185,7 +186,8 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 							p.getTimeLocation().getLength(),
 							p.getTimeLocation().getDatePatternName(),
 							p.getTimeLocation().getTimePatternId(),
-							p.getTimeLocation().getBreakTime());
+							p.getTimeLocation().getBreakTime(),
+							p.getTimeLocation().getDatePatternId());
 					con.assignments().add(a);
 					a.incCounter((int)ass.getCounter(0));
 				}
@@ -298,14 +300,15 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		HashSet iAssignments = new HashSet();
 		int iLength;
 		int iBreakTime;
+		Long iDatePatternId = null;
 		String iDatePatternName = null;
 		Long iPatternId = null;
 		
-		CBSValue(CBSVariable var, String instructorName, List roomNames, int days, int startSlot, List roomIds, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSValue(CBSVariable var, String instructorName, List roomNames, int days, int startSlot, List roomIds, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime, Long datePatternId) {
 			iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iVariable = var; iInstructorName = instructorName; iRoomNames = roomNames; iTimePref = timePref; iRoomPrefs = roomPrefs;
 			iDatePatternName = datePatternName; iLength = length; iBreakTime = breakTime;
-			iPatternId = patternId;
+			iPatternId = patternId; iDatePatternId = datePatternId;
 		}
 		CBSValue(CBSVariable var, Element element) {
 			iVariable = var;
@@ -326,6 +329,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iLength = Integer.parseInt(element.attributeValue("length"));
 			iBreakTime = (element.attributeValue("breakTime")==null?0:Integer.parseInt(element.attributeValue("breakTime")));
 			iPatternId = Long.valueOf(element.attributeValue("pattern"));
+			iDatePatternId = Long.valueOf(element.attributeValue("datePatternId"));
 			for (Iterator i=element.elementIterator("cons");i.hasNext();)
 				iConstraints.add(new CBSConstraint(this,(Element)i.next())); 
 		}
@@ -355,6 +359,9 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public String getDatePatternName() {
 			return iDatePatternName;
 		}
+		public Long getDatePatternId() {
+			return iDatePatternId;
+		}
 		public List getRoomNames() { return iRoomNames; }
 		public String getInstructorName() { return iInstructorName; }
 		public int getTimePref() { return iTimePref; }
@@ -374,7 +381,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public Set constraints() { return iConstraints; }
 		public Set assignments() { return iAssignments; }
 		public int hashCode() {
-			return combine(combine(iRoomIds==null?0:iRoomIds.hashCode(),combine(iStartSlot,iDays)),iPatternId==null?0:iPatternId.intValue());
+			return combine(combine(iRoomIds==null?0:iRoomIds.hashCode(),combine(iStartSlot,iDays)),combine(iPatternId==null?0:iPatternId.intValue(),iDatePatternId==null?0:iDatePatternId.intValue()));
 		}
 		public Long getPatternId() {
 			return iPatternId;
@@ -382,7 +389,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof CBSValue)) return false;
 			CBSValue v = (CBSValue)o;
-			return v.getRoomIds().equals(getRoomIds()) && v.getDayCode()==getDayCode() && v.getStartSlot()==getStartSlot() && v.getPatternId().equals(getPatternId());
+			return v.getRoomIds().equals(getRoomIds()) && v.getDayCode()==getDayCode() && v.getStartSlot()==getStartSlot() && v.getPatternId().equals(getPatternId()) && v.getDatePatternId().equals(getDatePatternId());
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSValue)) return -1;
@@ -409,6 +416,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			element.addAttribute("tpref",String.valueOf(iTimePref));
 			for (Iterator i=iConstraints.iterator();i.hasNext();)
 				((CBSConstraint)i.next()).save(element.addElement("cons"));
+			element.addAttribute("datePatternId",String.valueOf(iDatePatternId));
 		}
 	}
 	
@@ -500,15 +508,16 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		int iLength;
 		int iBreakTime;
 		String iDatePatternName = null;
-		Long iPatternId;
+		Long iPatternId, iDatePatternId;
 		
-		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, List roomNames, int days, int startSlot, List roomIds, String pref, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime) {
+		CBSAssignment(CBSConstraint constraint, long classId, String varName, String instructorName, List roomNames, int days, int startSlot, List roomIds, String pref, int timePref, List roomPrefs, int length, String datePatternName, Long patternId, int breakTime, Long datePatternId) {
 			iClassId = classId; iStartSlot = startSlot; iDays = days; iRoomIds = roomIds;
 			iConstraint = constraint;
 			iVarName = varName; iInstructorName = instructorName; iRoomNames = roomNames;
 			iPref = pref; iTimePref = timePref; iRoomPrefs = roomPrefs;
 			iDatePatternName = datePatternName; iLength = length;
 			iPatternId = patternId; iBreakTime = breakTime;
+			iDatePatternId = datePatternId;
 		}
 		CBSAssignment(CBSConstraint constraint, Element element) {
 			iConstraint = constraint;
@@ -532,6 +541,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			iLength = Integer.parseInt(element.attributeValue("length"));
 			iBreakTime = (element.attributeValue("breakTime")==null?0:Integer.parseInt(element.attributeValue("breakTime")));
             iPatternId = (element.attributeValue("pattern")==null?null:Long.valueOf(element.attributeValue("pattern")));
+            iDatePatternId = (element.attributeValue("datePatternId")==null?null:Long.valueOf(element.attributeValue("datePatternId")));
 			incCounter(Integer.parseInt(element.attributeValue("cnt")));
 		}
 		public long getId() { return iClassId; }
@@ -578,8 +588,11 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public String getDatePatternName() {
 			return iDatePatternName;
 		}
+		public Long getDatePatternId() {
+			return iDatePatternId;
+		}
 		public int hashCode() {
-			return combine(combine((int)iClassId,combine(iRoomIds.hashCode(),combine(iStartSlot,iDays))),(iPatternId==null?0:iPatternId.intValue()));
+			return combine(combine((int)iClassId,combine(iRoomIds.hashCode(),combine(iStartSlot,iDays))),combine(iPatternId==null?0:iPatternId.intValue(),iDatePatternId==null?0:iDatePatternId.intValue()));
 		}
 		public int getCounter() { return iCounter; }
 		public void incCounter(int value) { 
@@ -589,7 +602,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof CBSAssignment)) return false;
 			CBSAssignment a = (CBSAssignment)o;
-			return a.getId()==getId() && a.getRoomIds().equals(getRoomIds()) && a.getDayCode()==getDayCode() && a.getStartSlot()==getStartSlot() && a.getPatternId().equals(getPatternId());
+			return a.getId()==getId() && a.getRoomIds().equals(getRoomIds()) && a.getDayCode()==getDayCode() && a.getStartSlot()==getStartSlot() && a.getPatternId().equals(getPatternId()) && a.getDatePatternId().equals(getDatePatternId());
 		}
 		public int compareTo(Object o) {
 			if (o==null || !(o instanceof CBSAssignment)) return -1;
@@ -612,6 +625,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
 			element.addAttribute("slot",String.valueOf(iStartSlot));
 			element.addAttribute("varName", iVarName);
 			element.addAttribute("pattern", iPatternId.toString());
+			element.addAttribute("datePatternId", iDatePatternId.toString());
 			if (iInstructorName!=null)
 				element.addAttribute("iName", iInstructorName);
 			element.addAttribute("cnt", String.valueOf(iCounter));
@@ -664,7 +678,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+variable.getId()+"&op=Reset','900','90%');\"";
+    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Suggestions', 'suggestions.do?id="+variable.getId()+"&op=Reset','900','90%');\"";
     	menu_item(out, menuId, variable.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -683,7 +697,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     	String description = null;
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&op=Try&reset=1','900','90%');\"";	
+    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Suggestions', 'suggestions.do?id="+value.variable().getId()+roomLink+"&days="+value.getDayCode()+"&pattern="+value.getPatternId()+"&slot="+value.getStartSlot()+"&dates="+value.getDatePatternId()+"&op=Try&reset=1','900','90%');\"";	
         menu_item(out, menuId, value.getCounter() + "&times; " + name, description, onClick, true);
     }
     
@@ -743,7 +757,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
     		name += " "+assignment.getInstructorName();
     	String onClick = null;
     	if (clickable)
-    		onClick = "onclick=\"showGwtDialog('Suggestions', 'suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&op=Try&reset=1','900','90%');\"";
+    		onClick = "onclick=\"(parent ? parent : window).showGwtDialog('Suggestions', 'suggestions.do?id="+assignment.getId()+roomLink+"&days="+assignment.getDayCode()+"&pattern="+assignment.getPatternId()+"&slot="+assignment.getStartSlot()+"&dates="+assignment.getDatePatternId()+"&op=Try&reset=1','900','90%');\"";
         leaf_item(out, assignment.getCounter()+"&times; "+name, null, onClick);
     }
     
@@ -898,7 +912,7 @@ public class ConflictStatisticsInfo implements TimetableInfo, Serializable {
             				xVariable = new CBSVariable(xConstraint,variable.getId(),variable.getName(),variable.getPref()); 
             				xConstraint.variables().add(xVariable);
             			}
-            			CBSValue xValue = new CBSValue(xVariable,value.getInstructorName(), value.getRoomNames(), value.getDayCode(),value.getStartSlot(),value.getRoomIds(),value.getTimePref(),value.getRoomPrefs(),value.getLength(),value.getDatePatternName(),value.getPatternId(),value.getBreakTime());
+            			CBSValue xValue = new CBSValue(xVariable,value.getInstructorName(), value.getRoomNames(), value.getDayCode(),value.getStartSlot(),value.getRoomIds(),value.getTimePref(),value.getRoomPrefs(),value.getLength(),value.getDatePatternName(),value.getPatternId(),value.getBreakTime(),value.getDatePatternId());
             			xVariable.values().add(xValue);
             			for (Iterator e4=constraint.assignments().iterator();e4.hasNext();) {
             				CBSAssignment assignment = (CBSAssignment)e4.next();
