@@ -206,14 +206,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iAvailabilityHeader.addButton("prev", MESSAGES.buttonLeft(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex - 10, null);
+				populate(iResponse, iIndex - iStep, null);
 				recenter();
 			}
 		});
 		iAvailabilityHeader.addButton("next", MESSAGES.buttonRight(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex + 10, null);
+				populate(iResponse, iIndex + iStep, null);
 				recenter();
 			}
 		});
@@ -284,7 +284,6 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iRoomAvailability = new P("unitime-MeetingSelection");
 		
 		iScrollRooms = new ScrollPanel(iRoomAvailability);
-		iScrollRooms.setStyleName("unitime-VerticalScrollPanel");
 
 		iAvailabilityForm.addRow(iScrollRooms);
 		
