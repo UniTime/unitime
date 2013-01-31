@@ -29,6 +29,7 @@ public class EventCookie {
 	private String iType = null;
 	private String iHash = null;
 	private boolean iShowDeltedMeetings = true;
+	private int iSortRoomsBy = -1;
 	private static EventCookie sInstance = null;
 	
 	private EventCookie() {
@@ -40,6 +41,7 @@ public class EventCookie {
 				iType = params[1];
 				iHash = params[2];
 				iShowDeltedMeetings = "T".equals(params[3]);
+				iSortRoomsBy = Integer.valueOf(params[4]);
 			}
 		} catch (Exception e) {
 		}
@@ -48,7 +50,8 @@ public class EventCookie {
 	private void save() {
 		Cookies.setCookie("UniTime:Event",
 				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash) +
-				"|" + (iShowDeltedMeetings ? "T": "F")
+				"|" + (iShowDeltedMeetings ? "T": "F") +
+				"|" + iSortRoomsBy
 				);
 	}
 	
@@ -84,6 +87,15 @@ public class EventCookie {
 	
 	public void setShowDeletedMeetings(boolean show) {
 		iShowDeltedMeetings = show;
+		save();
+	}
+	
+	public int getRoomsSortBy() {
+		return iSortRoomsBy;
+	}
+	
+	public void setSortRoomsBy(int sortRoomsBy) {
+		iSortRoomsBy = sortRoomsBy;
 		save();
 	}
 }
