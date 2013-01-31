@@ -20,6 +20,8 @@
 package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
+import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -52,6 +55,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -66,14 +70,18 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.UIObject;
 
 public class AddMeetingsDialog extends UniTimeDialogBox {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
@@ -152,7 +160,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 								@Override
 								public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 									LoadingWidget.getInstance().hide();
-									populate(result, 0);
+									populate(result, 0, EventCookie.getInstance().getRoomsSortBy());
 									setWidget(iAvailabilityForm);
 									recenter();
 								}
@@ -198,15 +206,41 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		iAvailabilityHeader.addButton("prev", MESSAGES.buttonLeft(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex - 10);
+				populate(iResponse, iIndex - 10, null);
 				recenter();
 			}
 		});
 		iAvailabilityHeader.addButton("next", MESSAGES.buttonRight(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				populate(iResponse, iIndex + 10);
+				populate(iResponse, iIndex + 10, null);
 				recenter();
+			}
+		});
+		iAvailabilityHeader.addButton("sort", MESSAGES.buttonSortBy(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				for (final SortRoomsBy sortBy: SortRoomsBy.values()) {
+					if (sortBy == SortRoomsBy.DISTANCE && !iRooms.hasChip(new Chip("flag", "Nearby"))) continue;
+					MenuItem item = new MenuItem(MESSAGES.opSortBy(getSortRoomsByName(sortBy)), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							EventCookie.getInstance().setSortRoomsBy(sortBy.ordinal());
+							populate(iResponse, 0, sortBy.ordinal());
+							recenter();
+						}
+					});
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				menu.setVisible(true);
+				menu.setFocusOnHoverEnabled(true);
+				popup.add(menu);
+				popup.showRelativeTo((UIObject)event.getSource());
+				((MenuBar)popup.getWidget()).focus();
 			}
 		});
 		iAvailabilityHeader.addButton("select", MESSAGES.buttonSelect(), 75, new ClickHandler() {
@@ -264,6 +298,95 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 			}
 		});
+	}
+	
+	static enum SortRoomsBy {
+		CAPACITY,
+		NAME,
+		DISTANCE,
+		AVAILABILITY
+	}
+	
+	public static String getSortRoomsByName(SortRoomsBy sortBy) {
+		switch (sortBy) {
+		case CAPACITY:
+			return MESSAGES.colCapacity();
+		case NAME:
+			return MESSAGES.colName();
+		case DISTANCE:
+			return MESSAGES.colRoomDistance();
+		case AVAILABILITY:
+			return MESSAGES.colRoomAvailability();
+		default:
+			return null;
+		}
+	}
+	
+	public static Comparator<Entity> getSortRoomsComparator(SortRoomsBy sortBy, final boolean preferSize, final List<Integer> dates, final EventRoomAvailabilityRpcResponse availability) {
+		switch (sortBy) {
+		case CAPACITY:
+			return new Comparator<Entity>() {
+				@Override
+				public int compare(Entity r1, Entity r2) {
+					int cmp = Integer.valueOf(r1.getProperty("capacity", "0")).compareTo(Integer.valueOf(r2.getProperty("capacity", "0")));
+					if (cmp != 0) return cmp;
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getUniqueId().compareTo(r2.getUniqueId()) : cmp);
+				}
+				
+			};
+		case NAME:
+			return new Comparator<Entity>() {
+				@Override
+				public int compare(Entity r1, Entity r2) {
+					int cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getUniqueId().compareTo(r2.getUniqueId()) : cmp);
+				}
+				
+			};
+		case DISTANCE:
+			return new Comparator<Entity>() {
+				@Override
+				public int compare(Entity r1, Entity r2) {
+					int cmp = Integer.valueOf(r1.getProperty("distance", "0")).compareTo(Integer.valueOf(r2.getProperty("distance", "0")));
+					if (cmp != 0) return cmp;
+					if (preferSize) {
+						cmp = Integer.valueOf(r1.getProperty("capacity", "0")).compareTo(Integer.valueOf(r2.getProperty("capacity", "0")));
+						if (cmp != 0) return cmp;
+					}
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getUniqueId().compareTo(r2.getUniqueId()) : cmp);
+				}
+			};
+		case AVAILABILITY:
+			return new Comparator<Entity>() {
+				@Override
+				public int compare(Entity r1, Entity r2) {
+					Long p1 = Long.valueOf(r1.getProperty("permId", "-1"));
+					Long p2 = Long.valueOf(r2.getProperty("permId", "-1"));
+					int a1 = 0, a2 = 0;
+					for (Integer date: dates) {
+						Set<MeetingConflictInterface> c1 = availability.getOverlaps(date, p1);
+						Set<MeetingConflictInterface> c2 = availability.getOverlaps(date, p2);
+						if (c1 == null || c1.isEmpty()) a1 ++;
+						if (c2 == null || c2.isEmpty()) a2 ++;
+					}
+					if (a1 > a2) return -1;
+					if (a1 < a2) return 1;
+					int cmp = Integer.valueOf(r1.getProperty("distance", "0")).compareTo(Integer.valueOf(r2.getProperty("distance", "0")));
+					if (cmp != 0) return cmp;
+					if (preferSize) {
+						cmp = Integer.valueOf(r1.getProperty("capacity", "0")).compareTo(Integer.valueOf(r2.getProperty("capacity", "0")));
+						if (cmp != 0) return cmp;
+					}
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getUniqueId().compareTo(r2.getUniqueId()) : cmp);
+				}
+				
+			};
+		default:
+			return null;
+		}
 	}
 	
 	public void showDialog(Long eventId) {
@@ -337,11 +460,18 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private Integer iHoverDate = null;
 	private Entity iHoverLoc = null;
 	
-	private void populate(EventRoomAvailabilityRpcResponse response, int index) {
+	private void populate(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
 		iResponse = response;
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
 		if (iIndex >= getRooms().size()) iIndex = iStep * (getRooms().size() / iStep);
+		
+		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), iResponse);
+			if (comparator != null)
+				Collections.sort(iMatchingRooms, comparator);
+		}
+		
 		iAvailabilityHeader.setEnabled("prev", iIndex > 0);
 		iAvailabilityHeader.setEnabled("next", iIndex + iStep < getRooms().size());
 		iRoomAvailability.clear();
@@ -609,11 +739,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
         		break;
         	case KeyCodes.KEY_PAGEDOWN:
         		if (iIndex + iStep < getRooms().size())
-        			populate(iResponse, iIndex + iStep);
+        			populate(iResponse, iIndex + iStep, null);
         		break;
         	case KeyCodes.KEY_PAGEUP:
         		if (iIndex > 0)
-        			populate(iResponse, iIndex - iStep);
+        			populate(iResponse, iIndex - iStep, null);
         		break;
         	case 32:
         		if (iHoverDate != null && iHoverLoc != null) {
