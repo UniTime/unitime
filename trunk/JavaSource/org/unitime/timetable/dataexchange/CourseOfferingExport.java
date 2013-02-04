@@ -337,7 +337,7 @@ public class CourseOfferingExport extends BaseExport {
             timeElement.addAttribute("startTime", startSlot2startTime(time.getStartSlot()));
             timeElement.addAttribute("endTime", timeLocation2endTime(time));
             DatePattern dp = assignment.getDatePattern();
-            if (dp != null && !dp.isDefault())
+            if (dp != null && (!dp.isDefault() || "true".equals(ApplicationProperties.getProperty("tmtbl.export.defaultDatePattern", "false"))))
             	timeElement.addAttribute("datePattern", dp.getName());
         }
     }
@@ -365,7 +365,7 @@ public class CourseOfferingExport extends BaseExport {
     }
     
     protected void exportDatePattern(Element classElement, DatePattern dp, Session session) {
-        if (dp!=null && !dp.equals(session.getDefaultDatePattern())) {
+        if (dp!=null && (!dp.equals(session.getDefaultDatePattern()) || "true".equals(ApplicationProperties.getProperty("tmtbl.export.defaultDatePattern", "false")))) {
             Calendar startDate = Calendar.getInstance(Locale.US);
             startDate.setTime(dp.getStartDate());
             Calendar endDate = Calendar.getInstance(Locale.US);
