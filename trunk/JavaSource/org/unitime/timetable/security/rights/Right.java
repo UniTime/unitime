@@ -431,6 +431,9 @@ public enum Right {
     SponsoringOrganizationDelete(SponsoringOrganization.class),
 
     StandardEventNotes,
+    StandardEventNotesGlobalEdit,
+    StandardEventNotesSessionEdit(Session.class),
+    StandardEventNotesDepartmentEdit(Department.class),
 
     Users,
     

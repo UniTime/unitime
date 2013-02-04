@@ -451,5 +451,10 @@ public class AdministrationPermissions {
 		@Override
 		public Class<Session> type() { return Session.class;}
 	}
+	
+	@PermissionForRight(Right.StandardEventNotesSessionEdit)
+	public static class StandardEventNotesSessionEdit extends SimpleSessionPermission {} 
 
+	@PermissionForRight(Right.StandardEventNotesDepartmentEdit)
+	public static class StandardEventNotesDepartmentEdit extends SimpleDepartmentPermission {} 
 }

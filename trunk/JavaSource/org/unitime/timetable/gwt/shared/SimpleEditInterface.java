@@ -49,6 +49,7 @@ public class SimpleEditInterface implements IsSerializable {
 		featureType("Room Feature Type"),
 		instructorRole("Instructor Role"),
 		dateMapping("Event Date Mapping"),
+		stdEvtNote("Standard Event Note"),
 		;
 	
 		private String iSingular, iPlural;

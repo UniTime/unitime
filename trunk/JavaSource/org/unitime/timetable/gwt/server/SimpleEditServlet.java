@@ -68,6 +68,10 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomType;
 import org.unitime.timetable.model.RoomTypeOption;
+import org.unitime.timetable.model.StandardEventNote;
+import org.unitime.timetable.model.StandardEventNoteDepartment;
+import org.unitime.timetable.model.StandardEventNoteGlobal;
+import org.unitime.timetable.model.StandardEventNoteSession;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.ChangeLog.Operation;
@@ -510,8 +514,64 @@ public class SimpleEditServlet implements SimpleEditService {
 					r.setField(2, mapping.getNote());
 				}
 				break;
+			case stdEvtNote:
+				List<ListItem> appliesTo = new ArrayList<ListItem>();
+				data = new SimpleEditInterface(type,
+						new Field("Reference", FieldType.text, 150, 20, Flag.NOT_EMPTY),
+						new Field("Note", FieldType.textarea, 50, 3, 1000, Flag.NOT_EMPTY),
+						new Field("Applies To", FieldType.list, 300, appliesTo, Flag.NOT_EMPTY)
+						);
+				data.setSortBy(2, 0, 1);
+
+				boolean editGlobal = getSessionContext().hasPermission(Right.StandardEventNotesGlobalEdit);
+				if (editGlobal) appliesTo.add(new ListItem("_global", "Global"));
+				for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteGlobal order by reference").setCacheable(true).list()) {
+					Record r = data.addRecord(note.getUniqueId());
+					r.setField(0, note.getReference(), editGlobal);
+					r.setField(1, note.getNote(), editGlobal);
+					r.setField(2, editGlobal ? "_global" : "Global", false);
+					r.setDeletable(editGlobal);
+				}
+				
+				data.setSessionId(sessionId);
+				data.setSessionName(SessionDAO.getInstance().get(sessionId).getLabel());
+				boolean editSession = getSessionContext().hasPermission(sessionId, "Session", Right.StandardEventNotesSessionEdit);
+				if (editSession)
+					appliesTo.add(new ListItem("_session", data.getSessionName()));
+				
+				for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery(
+						"from StandardEventNoteSession where session.uniqueId = :sessionId order by reference").setLong("sessionId", sessionId).setCacheable(true).list()) {
+					Record r = data.addRecord(note.getUniqueId());
+					r.setField(0, note.getReference(), editSession);
+					r.setField(1, note.getNote(), editSession);
+					r.setField(2, (editSession ? "_session" : data.getSessionName()), false);
+					r.setDeletable(editSession);
+				}
+				
+				data.setEditable(editGlobal || editSession);
+			
+				for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+					if (!department.isAllowEvents()) continue;
+					boolean editDept = getSessionContext().hasPermission(department, Right.StandardEventNotesDepartmentEdit);
+					if (editDept) {
+						appliesTo.add(new ListItem(department.getDeptCode(), department.getDeptCode() + " - " + department.getName()));
+						data.setEditable(true);
+					}
+					
+					for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery(
+							"from StandardEventNoteDepartment where department.uniqueId = :deptId order by reference").setLong("deptId", department.getUniqueId()).setCacheable(true).list()) {
+						Record r = data.addRecord(note.getUniqueId());
+						r.setField(0, note.getReference(), editDept);
+						r.setField(1, note.getNote(), editDept);
+						r.setField(2, editDept ? department.getDeptCode() : department.getDeptCode() + " - " + department.getName(), false);
+						r.setDeletable(editDept);
+					}
+				}
+				
+				break;
 			}
-			data.setEditable(getSessionContext().hasPermission(type2editRight(type)));
+			if (type != Type.stdEvtNote)
+				data.setEditable(getSessionContext().hasPermission(type2editRight(type)));
 			return data;
 		} catch (PageAccessException e) {
 			throw e;
@@ -1591,6 +1651,132 @@ public class SimpleEditServlet implements SimpleEditService {
 								null);
 					}
 					break;
+				case stdEvtNote:
+					if (getSessionContext().hasPermission(Right.StandardEventNotesGlobalEdit))
+						for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteGlobal").setCacheable(true).list()) {
+							Record r = data.getRecord(note.getUniqueId());
+							if (r == null) {
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										note,
+										note.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.DELETE,
+										null,
+										null);
+								hibSession.delete(note);
+							} else {
+								boolean noteChanged = !ToolBox.equals(note.getReference(), r.getField(0)) || !ToolBox.equals(note.getNote(), r.getField(1));
+								if (noteChanged) {
+									note.setReference(r.getField(0));
+									note.setNote(r.getField(1));
+									hibSession.saveOrUpdate(note);
+									ChangeLog.addChange(hibSession,
+											getSessionContext(),
+											note,
+											note.getReference(),
+											Source.SIMPLE_EDIT, 
+											Operation.UPDATE,
+											null,
+											null);
+								}
+							}
+						}
+					
+					if (getSessionContext().hasPermission(sessionId, "Session", Right.StandardEventNotesSessionEdit))
+						for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteSession where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+							Record r = data.getRecord(note.getUniqueId());
+							if (r == null) {
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										note,
+										note.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.DELETE,
+										null,
+										null);
+								hibSession.delete(note);
+							} else {
+								boolean noteChanged = !ToolBox.equals(note.getReference(), r.getField(0)) || !ToolBox.equals(note.getNote(), r.getField(1));
+								if (noteChanged) {
+									note.setReference(r.getField(0));
+									note.setNote(r.getField(1));
+									hibSession.saveOrUpdate(note);
+									ChangeLog.addChange(hibSession,
+											getSessionContext(),
+											note,
+											note.getReference(),
+											Source.SIMPLE_EDIT, 
+											Operation.UPDATE,
+											null,
+											null);
+								}
+							}
+						}
+					
+					for (Department department: Department.getUserDepartments(sessionContext.getUser())) {
+						if (!department.isAllowEvents()) continue;
+						if (!getSessionContext().hasPermission(department, Right.StandardEventNotesDepartmentEdit)) continue;
+						
+						for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteDepartment where department.uniqueId = :deptId").setLong("deptId", department.getUniqueId()).setCacheable(true).list()) {
+							Record r = data.getRecord(note.getUniqueId());
+							if (r == null) {
+								ChangeLog.addChange(hibSession,
+										getSessionContext(),
+										note,
+										note.getLabel(),
+										Source.SIMPLE_EDIT, 
+										Operation.DELETE,
+										null,
+										null);
+								hibSession.delete(note);
+							} else {
+								boolean noteChanged = !ToolBox.equals(note.getReference(), r.getField(0)) || !ToolBox.equals(note.getNote(), r.getField(1));
+								if (noteChanged) {
+									note.setReference(r.getField(0));
+									note.setNote(r.getField(1));
+									hibSession.saveOrUpdate(note);
+									ChangeLog.addChange(hibSession,
+											getSessionContext(),
+											note,
+											note.getReference(),
+											Source.SIMPLE_EDIT, 
+											Operation.UPDATE,
+											null,
+											null);
+								}
+							}
+						}
+					}
+					
+					for (Record r: data.getNewRecords()) {
+						StandardEventNote note = null;
+						if ("_global".equals(r.getField(2))) {
+							note = new StandardEventNoteGlobal();
+							if (!getSessionContext().hasPermission(Right.StandardEventNotesGlobalEdit)) continue;
+						} else if ("_session".equals(r.getField(2))) {
+							note = new StandardEventNoteSession();
+							((StandardEventNoteSession)note).setSession(SessionDAO.getInstance().get(sessionId));
+							if (!getSessionContext().hasPermission(((StandardEventNoteSession)note).getSession(), Right.StandardEventNotesSessionEdit)) continue;
+						} else {
+							note = new StandardEventNoteDepartment();
+							((StandardEventNoteDepartment)note).setDepartment(Department.findByDeptCode(r.getField(2), sessionId));
+							if (!getSessionContext().hasPermission(((StandardEventNoteDepartment)note).getDepartment(), Right.StandardEventNotesDepartmentEdit)) continue;
+						}
+						note.setReference(r.getField(0));
+						note.setNote(r.getField(1));
+						r.setUniqueId((Long)hibSession.save(note));
+						ChangeLog.addChange(hibSession,
+								getSessionContext(),
+								note,
+								note.getLabel(),
+								Source.SIMPLE_EDIT, 
+								Operation.CREATE,
+								null,
+								null);
+					}
+					
+					break;
 				}
 				hibSession.flush();
 				tx.commit(); tx = null;
@@ -1665,6 +1851,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.InstructorRoles;
 		case dateMapping:
 			return Right.EventDateMappings;
+		case stdEvtNote:
+			return Right.StandardEventNotes;
 		default:
 			return Right.IsAdmin;
 		}
@@ -1708,6 +1896,8 @@ public class SimpleEditServlet implements SimpleEditService {
 			return Right.InstructorRoleEdit;
 		case dateMapping:
 			return Right.EventDateMappingEdit;
+		case stdEvtNote:
+			return Right.StandardEventNotes;
 		default:
 			return Right.IsAdmin;
 		}

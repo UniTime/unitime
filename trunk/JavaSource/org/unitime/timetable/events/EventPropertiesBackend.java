@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -28,8 +27,10 @@ import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
 import org.unitime.timetable.model.Staff;
@@ -38,8 +39,13 @@ import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao.EventContactDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.StandardEventNoteDAO;
+import org.unitime.timetable.model.dao.StandardEventNoteDepartmentDAO;
+import org.unitime.timetable.model.dao.StandardEventNoteGlobalDAO;
+import org.unitime.timetable.model.dao.StandardEventNoteSessionDAO;
+import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 
@@ -66,7 +72,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		if (context.getUser() != null)
 			response.setMainContact(lookupMainContact(request.getSessionId(), context.getUser()));
 		
-		setupStandardNotes(session, response);
+		setupStandardNotes(request.getSessionId(), context.getUser(), response);
 		
 		return response;
 	}
@@ -187,11 +193,44 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		return c;
 	}
 	
-	public void setupStandardNotes(Session session, EventPropertiesRpcResponse response) {
-		for (StandardEventNote note: StandardEventNoteDAO.getInstance().findAll())
-			response.addStandardNote(note.getNote());
-		if (response.hasStandardNotes())
-			Collections.sort(response.getStandardNotes());
+	public void setupStandardNotes(Long sessionId, UserContext user, EventPropertiesRpcResponse response) {
+		for (StandardEventNote note: StandardEventNoteGlobalDAO.getInstance().findAll()) {
+			StandardEventNoteInterface n = new StandardEventNoteInterface();
+			n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
+			response.addStandardNote(n);
+		}
+		for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteSessionDAO.getInstance().getSession().createQuery(
+				"from StandardEventNoteSession where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+			StandardEventNoteInterface n = new StandardEventNoteInterface();
+			n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
+			response.addStandardNote(n);
+		}
+		if (user != null) {
+			String departments = ""; boolean allDepartments = false;
+			for (UserAuthority auth: user.getAuthorities(user.getCurrentAuthority() != null ? user.getCurrentAuthority().getRole() : Roles.ROLE_ANONYMOUS, new SimpleQualifier("Session", sessionId))) {
+				if (auth.hasRight(Right.DepartmentIndependent)) {
+					allDepartments = true; break;
+				} else {
+					for (Qualifiable q: auth.getQualifiers("Department"))
+						departments += (departments.isEmpty() ? "" : ",") + q.getQualifierId();
+				}
+			}
+			if (allDepartments) {
+				for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
+						"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {
+					StandardEventNoteInterface n = new StandardEventNoteInterface();
+					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
+					response.addStandardNote(n);
+				}
+			} else {
+				for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
+						"from StandardEventNoteDepartment where department.uniqueId in (" + departments + ")").setCacheable(true).list()) {
+					StandardEventNoteInterface n = new StandardEventNoteInterface();
+					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
+					response.addStandardNote(n);
+				}
+			}
+		}
 	}
 
 }

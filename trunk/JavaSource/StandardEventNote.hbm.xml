@@ -23,7 +23,7 @@
     <class
         name="StandardEventNote"
         table="standard_event_note"
-        abstract="false">
+        abstract="true">
         <cache usage="read-write"/>
         <id
             name="uniqueId"
@@ -33,6 +33,12 @@
                 <param name="sequence">pref_group_seq</param>
             </generator>
         </id>
+
+        <discriminator
+            column="discriminator"
+            type="string"
+            not-null="true"
+            length="10"/>
 
         <property
             name="reference"
@@ -50,6 +56,25 @@
             length="1000"
             unique="true"/>
 
+		<subclass name="StandardEventNoteGlobal" extends="StandardEventNote" discriminator-value="global"/>
+		
+		<subclass name="StandardEventNoteSession" extends="StandardEventNote" discriminator-value="session">
+	    	<many-to-one
+		    	name="session"
+		    	class="Session"
+	    		column="session_id"
+		    	not-null="true"
+		    	foreign-key="fk_stdevt_note_session"/>
+	    </subclass>
+	   
+	   <subclass name="StandardEventNoteDepartment" extends="StandardEventNote" discriminator-value="department">
+	   		<many-to-one
+		   		name="department"
+		   		class="Department"
+	   			column="department_id"
+		   		not-null="true"
+	            foreign-key="fk_stdevt_note_dept"/>
+       </subclass>
     </class>
 
 </hibernate-mapping>

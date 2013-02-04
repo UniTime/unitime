@@ -8305,4 +8305,41 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'EventRoomTypeEdit'
 		</sql>
 	</update>
+	<update version="109" date="4-Feb-2013" comment="Standard Event Notes">
+		<plsql>alter table %SCHEMA%.standard_event_note add discriminator varchar2(10 char) default 'global'</plsql>
+		<mysql>alter table %SCHEMA%.standard_event_note add discriminator varchar(10) default 'global'</mysql>
+		<plsql>alter table %SCHEMA%.standard_event_note add session_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.standard_event_note add session_id decimal(20,0)</mysql>
+		<plsql>alter table %SCHEMA%.standard_event_note add department_id number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.standard_event_note add department_id decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.standard_event_note add constraint fk_stdevt_note_session foreign key (session_id)
+			references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			alter table %SCHEMA%.standard_event_note add constraint fk_stdevt_note_dept foreign key (department_id)
+			references %SCHEMA%.department (uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StandardEventNotesGlobalEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'StandardEventNotes'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StandardEventNotesSessionEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'IsAdmin'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StandardEventNotesDepartmentEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'EventMeetingApprove'
+		</sql>
+		<sql>delete from %SCHEMA%.rights where value = 'StandardEventNotes'</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StandardEventNotes'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value in ('StandardEventNotesGlobalEdit', 'StandardEventNotesSessionEdit', 'StandardEventNotesDepartmentEdit') 
+		</sql>
+	</update>
 </dbupdate>
