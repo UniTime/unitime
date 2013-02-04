@@ -206,7 +206,6 @@ public class SimpleEditPage extends Composite {
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
-		iTable.setStyleName("unitime-WebTable");
 		iTable.setAllowSelection(true);
 		iPanel.addRow(iTable);
 		

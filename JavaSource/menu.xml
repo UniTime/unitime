@@ -711,7 +711,8 @@
 					<hasPermission name="SponsoringOrganizations"/>
 				</condition>
 			</item>
-			<item name="Standard Notes" page="eventStandardNotes.do">
+			<item name="Standard Notes" page="admin" type="gwt">
+				<parameter name="type">stdEvtNote</parameter>
 				<condition>
 					<hasPermission name="StandardEventNotes"/>
 				</condition>
@@ -838,6 +839,15 @@
 					<hasPermission name="IsAdmin"/>
 				</not>
 				<hasPermission name="InstructorRoles"/>
+			</condition>
+		</item>
+		<item name="Standard Notes" page="admin" type="gwt">
+			<parameter name="type">stdEvtNote</parameter>
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="StandardEventNotes"/>
 			</condition>
 		</item>
 	</menu>
