@@ -15,6 +15,7 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -66,7 +67,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 				String text = iNotes.getText();
 				if (!text.isEmpty() && !text.endsWith("\n"))
 					text += "\n";
-				text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+				text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
 				iNotes.setText(text);
 			}
 		});
@@ -77,7 +78,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 					String text = iNotes.getText();
 					if (!text.isEmpty() && !text.endsWith("\n"))
 						text += "\n";
-					text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+					text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
 					iNotes.setText(text);
 					event.preventDefault();
 					event.stopPropagation();
@@ -150,8 +151,8 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iStandardNotes.clear();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propStandardNotes()), properties != null && properties.hasStandardNotes());
 		if (properties != null && properties.hasStandardNotes()) {
-			for (String note: properties.getStandardNotes())
-				iStandardNotes.addItem(note);
+			for (StandardEventNoteInterface note: properties.getStandardNotes())
+				iStandardNotes.addItem(note.toString(), note.getNote());
 		}
 		iFileUpload.reset();
 	}

@@ -122,8 +122,6 @@
   	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
   	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
       <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
-  	  <form-bean name="eventStandardNotesForm" type="org.unitime.timetable.form.EventStandardNotesForm" />
-  	  <form-bean name="eventStandardNoteEditForm" type="org.unitime.timetable.form.EventStandardNoteEditForm" />
 	  <form-bean name="classInfoForm" type="org.unitime.timetable.form.ClassInfoForm" />
 	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
    </form-beans>
@@ -2041,50 +2039,6 @@
        <forward name="edit" path="roomTypeEditTile" />
     </action>
     
-        <action
-    	path="/eventStandardNotes"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventStandardNotesForm"
-    	input="eventStandardNotesTile"
-    	name="eventStandardNotesForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventStandardNotesTile"
-    		redirect="true" />
-    	<forward 
-    		name="edit"
-    		path="/eventStandardNoteEdit.do"
-    		redirect="true" />
-    	<forward 
-    		name="add"
-    		path="eventStandardNoteAddTile"
-    		redirect="true" />
-    </action>
-
-    <action
-    	path="/eventStandardNoteEdit"
-    	type="org.springframework.web.struts.DelegatingActionProxy"
-    	attribute="eventStandardNoteEditForm"
-    	input="eventStandardNoteEditTile"
-    	name="eventStandardNoteEditForm"
-    	scope="request"
-    	validate="false">
-    	<forward
-    		name="show"
-    		path="eventStandardNoteEditTile"
-    		redirect="true" />
-    	<forward
-    		name="add"
-    		path="eventStandardNoteAddTile"
-    		redirect="true" />
-    	<forward 
-    		name="list"
-    		path="/eventStandardNotes.do"
-    		redirect="true" />
-    </action>
-
     <action
     	path="/classInfo"
     	type="org.springframework.web.struts.DelegatingActionProxy"

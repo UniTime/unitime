@@ -69,6 +69,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -494,7 +495,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				String text = iNotes.getText();
 				if (!text.isEmpty() && !text.endsWith("\n"))
 					text += "\n";
-				text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+				text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
 				iNotes.setText(text);
 				iStandardNotesBox.hide();
 				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -512,7 +513,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					String text = iNotes.getText();
 					if (!text.isEmpty() && !text.endsWith("\n"))
 						text += "\n";
-					text += iStandardNotes.getItemText(iStandardNotes.getSelectedIndex());
+					text += iStandardNotes.getValue(iStandardNotes.getSelectedIndex());
 					iNotes.setText(text);
 					event.preventDefault();
 					event.stopPropagation();
@@ -1103,8 +1104,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iStandardNotesButton.setVisible(canSeeStandardNotes);
 		iStandardNotes.clear();
 		if (canSeeStandardNotes)
-			for (String note: getProperties().getStandardNotes())
-				iStandardNotes.addItem(note);
+			for (StandardEventNoteInterface note: getProperties().getStandardNotes())
+				iStandardNotes.addItem(note.toString(), note.getNote());
 		
 		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
 		

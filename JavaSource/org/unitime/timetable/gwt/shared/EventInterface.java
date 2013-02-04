@@ -1477,11 +1477,41 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public String toString() { return hasSessionId() ? getSessionId().toString() : "NULL"; }
 	}
 	
+	public static class StandardEventNoteInterface implements IsSerializable, Comparable<StandardEventNoteInterface> {
+		private Long iId;
+		private String iReference, iNote;
+		
+		public StandardEventNoteInterface() {}
+		
+		public Long getId() { return iId; }
+		public void setId(Long id) { iId = id; }
+		
+		public String getReference() { return iReference; }
+		public void setReference(String reference) { iReference = reference; }
+		
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		
+		@Override
+		public String toString() { return getReference() + ": " + getNote(); }
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof StandardEventNoteInterface)) return false;
+			StandardEventNoteInterface n = (StandardEventNoteInterface)o;
+			return getId().equals(n.getId());
+		}
+		
+		public int compareTo(StandardEventNoteInterface n) {
+			return toString().compareToIgnoreCase(n.toString());
+		}
+	}
+	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
 		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
-		private List<String> iStandardNotes = null;
+		private Set<StandardEventNoteInterface> iStandardNotes = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1515,9 +1545,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setMainContact(ContactInterface mainContact) { iMainContact = mainContact; }
 		
 		public boolean hasStandardNotes() { return iStandardNotes != null && !iStandardNotes.isEmpty(); }
-		public List<String> getStandardNotes() { return iStandardNotes; }
-		public void addStandardNote(String note) {
-			if (iStandardNotes == null) { iStandardNotes = new ArrayList<String>(); }
+		public Set<StandardEventNoteInterface> getStandardNotes() { return iStandardNotes; }
+		public void addStandardNote(StandardEventNoteInterface note) {
+			if (iStandardNotes == null) { iStandardNotes = new TreeSet<StandardEventNoteInterface>(); }
 			iStandardNotes.add(note);
 		}
 	}
