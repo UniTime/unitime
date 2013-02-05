@@ -414,6 +414,15 @@
 			</description>
 		</item>
 		<item>
+			<name>Period Placement Penalty</name>
+			<description>
+				<line>Period placement penalty is now counted in the same way as the room placement penalty, that is: 2 * exam period penalty + default period penalty
+					<line>where "exam period penalty" is the penalty set on the exam and "default period penalty" is the (default) penalty set on the period.</line>
+				</line>
+				<line>This way a preference on an exam does not get negated with a preference on the period (e.g., strongly preferring a period that is strongly discouraged does not result in zero penalty).</line>
+			</description>
+		</item>
+		<item>
 			<name>Examination Roll Forward</name>
 			<description>
 				<line>Added ability to
