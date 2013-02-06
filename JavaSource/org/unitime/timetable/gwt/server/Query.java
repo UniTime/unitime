@@ -128,7 +128,7 @@ public class Query implements Serializable {
 			return t;
 		}
 		if (query.startsWith("(") && query.endsWith(")")) return parse(query.substring(1, query.length() - 1).trim());
-		if (query.startsWith("\"") && query.endsWith("\"")) return new AtomTerm(null, query.substring(1, query.length() - 1).trim());
+		if (query.startsWith("\"") && query.endsWith("\"") && query.length() >= 2) return new AtomTerm(null, query.substring(1, query.length() - 1).trim());
 		int idx = query.indexOf(':');
 		if (idx >= 0) {
 			return new AtomTerm(query.substring(0, idx).trim().toLowerCase(), query.substring(idx + 1).trim());
