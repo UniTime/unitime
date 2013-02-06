@@ -57,11 +57,14 @@ import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface.TimeBlock;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.BuildingPref;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -70,6 +73,7 @@ import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DistributionPrefDAO;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -129,13 +133,16 @@ public class ExamDatabaseLoader extends ExamLoader {
             TravelTime.populateTravelTimes(getModel().getDistanceMetric(), iSessionId, hibSession);
             loadPeriods();
             loadRooms();
-            if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
-            loadExams();
-            loadStudents();
-            loadDistributions();
-            ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId, hibSession);
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) loadAvailabilitiesFromEvents();
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+type.getReference(),"false"))) makeupSameRoomConstraints();
+            // if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
+            
+            loadExamsAllSection();
+            // loadExams();
+            // loadStudents();
+            
+            // loadDistributions();
+            // ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId, hibSession);
+            // if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.eventConflicts."+type.getReference(),"true"))) loadAvailabilitiesFromEvents();
+            // if ("true".equals(ApplicationProperties.getProperty("tmtbl.exam.sameRoom."+type.getReference(),"false"))) makeupSameRoomConstraints();
             getModel().init();
             checkConsistency();
             assignInitial();
@@ -149,6 +156,8 @@ public class ExamDatabaseLoader extends ExamLoader {
     
     public int pref2weight(String pref) {
         if (pref==null) return 0;
+        if (PreferenceLevel.sRequired.equals(pref))
+            return -16;
         if (PreferenceLevel.sStronglyPreferred.equals(pref))
             return -4;
         if (PreferenceLevel.sPreferred.equals(pref))
@@ -157,6 +166,8 @@ public class ExamDatabaseLoader extends ExamLoader {
             return 1;
         if (PreferenceLevel.sStronglyDiscouraged.equals(pref))
             return 4;
+        if (PreferenceLevel.sProhibited.equals(pref))
+            return 16;
         return 0;
     }
     
@@ -201,12 +212,92 @@ public class ExamDatabaseLoader extends ExamLoader {
                 ExamPeriod period = iPeriods.get(((org.unitime.timetable.model.ExamPeriod)entry.getKey()).getUniqueId());
                 String pref = ((PreferenceLevel)entry.getValue()).getPrefProlog();
                 if (period==null) continue;
-                if (PreferenceLevel.sProhibited.equals(pref))
-                    room.setAvailable(period.getIndex(), false);
-                else
-                    room.setPenalty(period.getIndex(), pref2weight(pref));
+                room.setPenalty(period.getIndex(), pref2weight(pref));
             }
         }
+    }
+    
+    protected List<ExamPeriodPlacement> findPeriods(org.unitime.timetable.model.Exam exam, ExamType type) {
+        List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
+        boolean hasReqPeriod = false;
+        Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
+        for (ExamPeriod period: getModel().getPeriods()) {
+            if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
+            String pref = null;
+            for (Iterator j=periodPrefs.iterator();j.hasNext();) {
+                ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
+                if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
+            }
+            if (type.getType() == ExamType.sExamTypeMidterm && pref==null) continue;
+            if (PreferenceLevel.sProhibited.equals(pref)) continue;
+            if (PreferenceLevel.sRequired.equals(pref)) {
+                if (!hasReqPeriod) periodPlacements.clear(); 
+                hasReqPeriod = true;
+                periodPlacements.add(new ExamPeriodPlacement(period, 0));
+            } else if (!hasReqPeriod) {
+                periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
+            }
+        }
+        return periodPlacements;
+    }
+    
+    protected List<CourseClass> getOwners(org.unitime.timetable.model.Exam exam) {
+    	List<CourseClass> owners = new ArrayList<ExamDatabaseLoader.CourseClass>();
+    	for (org.unitime.timetable.model.ExamOwner owner: exam.getOwners()) {
+    		CourseOffering course = owner.getCourse();
+    		switch (owner.getOwnerType()) {
+    		case org.unitime.timetable.model.ExamOwner.sOwnerTypeClass:
+    			owners.add(new CourseClass(course, (Class_)owner.getOwnerObject(), true));
+    			break;
+    		case org.unitime.timetable.model.ExamOwner.sOwnerTypeConfig:
+    			List<Class_> classes = null; int itype = 0;
+    			for (SchedulingSubpart s: ((InstrOfferingConfig)owner.getOwnerObject()).getSchedulingSubparts()) {
+    				if (classes == null || classes.size() > s.getClasses().size() || (classes.size() == s.getClasses().size() && itype > s.getItype().getItype())) {
+    					classes = new ArrayList(s.getClasses());
+    					itype = s.getItype().getItype();
+    				}
+    			}
+    			for (Class_ clazz: classes)
+    				owners.add(new CourseClass(course, clazz, true));
+    			break;
+    		default: // course of offering
+    			for (InstrOfferingConfig config: course.getInstructionalOffering().getInstrOfferingConfigs()) {
+        			classes = null; itype = 0;
+        			for (SchedulingSubpart s: config.getSchedulingSubparts()) {
+        				if (classes == null || classes.size() > s.getClasses().size() || (classes.size() == s.getClasses().size() && itype > s.getItype().getItype())) {
+        					classes = new ArrayList(s.getClasses());
+        					itype = s.getItype().getItype();
+        				}
+        			}
+        			for (Class_ clazz: classes)
+        				owners.add(new CourseClass(course, clazz, owner.getOwnerType() == org.unitime.timetable.model.ExamOwner.sOwnerTypeOffering));
+    			}
+    			break;
+    		}
+    	}
+    	return owners;
+    }
+    
+    protected List<ExamPeriodPlacement> findPeriodsClass17Other8(org.unitime.timetable.model.Exam exam, boolean class17, boolean other8) {
+        List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
+        
+        List<CourseClass> owners = getOwners(exam);
+        if (owners.size() == 1) { // class exam
+        	if (!class17) return periodPlacements;
+        	
+        	for (int i = 0; i < 17; i++)
+        		periodPlacements.add(new ExamPeriodPlacement(getModel().getPeriods().get(i), 0));
+        	
+        } else { // multiple-classes exam 
+        	if (!other8) return periodPlacements;
+        	iProgress.info(exam.getLabel() + " is a course exam (" + owners.size() + " classes)");
+        	
+        	for (int i = 17; i < 25; i++)
+        		periodPlacements.add(new ExamPeriodPlacement(getModel().getPeriods().get(i), 0));
+
+        }
+
+        return periodPlacements;
     }
     
     protected void loadExams() {
@@ -219,28 +310,11 @@ public class ExamDatabaseLoader extends ExamLoader {
             iProgress.incProgress();
             org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
             
-            List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
-            boolean hasReqPeriod = false;
-            Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
-            for (ExamPeriod period: getModel().getPeriods()) {
-                if (iProhibitedPeriods.contains(period) ||  period.getLength()<exam.getLength()) continue;
-                String pref = null;
-                for (Iterator j=periodPrefs.iterator();j.hasNext();) {
-                    ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
-                    if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
-                }
-                if (type.getType() == ExamType.sExamTypeMidterm && pref==null) continue;
-                if (PreferenceLevel.sProhibited.equals(pref)) continue;
-                if (PreferenceLevel.sRequired.equals(pref)) {
-                    if (!hasReqPeriod) periodPlacements.clear(); 
-                    hasReqPeriod = true;
-                    periodPlacements.add(new ExamPeriodPlacement(period, 0));
-                } else if (!hasReqPeriod) {
-                    periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
-                }
-            }
+            List<ExamPeriodPlacement> periodPlacements = // findPeriodsSoft(exam, type); 
+            		findPeriodsClass17Other8(exam, false, true);
+
             if (periodPlacements.isEmpty()) {
-                iProgress.warn("Exam "+getExamLabel(exam)+" has no period available, it is not loaded.");
+                // iProgress.warn("Exam "+getExamLabel(exam)+" has no period available, it is not loaded.");
                 continue;
             }
             
@@ -296,6 +370,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
                 loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
 
+            /*
             if (exam.getAssignedPeriod()!=null) {
                 boolean fail = false;
                 ExamPeriod period = iPeriods.get(exam.getAssignedPeriod().getUniqueId());
@@ -336,6 +411,7 @@ public class ExamDatabaseLoader extends ExamLoader {
                 if (!fail)
                     x.setInitialAssignment(new ExamPlacement(x, periodPlacement, roomPlacements));
             }
+            */
         }
     }
     
@@ -486,7 +562,7 @@ public class ExamDatabaseLoader extends ExamLoader {
             boolean hasStrongDisc = false, allStrongDisc = true;
             for (ExamPeriod period: getModel().getPeriods()) {
                 if (roomEx.isAvailable(period))
-                    if (roomEx.getPenalty(period)==4) hasStrongDisc = true;
+                    if (roomEx.getPenalty(period)>=4) hasStrongDisc = true;
                     else allStrongDisc = false;
             }
             //all strongly discouraged and not overridden by room preference -> do not use this room
@@ -1034,5 +1110,146 @@ public class ExamDatabaseLoader extends ExamLoader {
                 getModel().getDistributionConstraints().add(constraint);
             }
         }
+    }
+    
+    
+    protected List<ExamPeriodPlacement> findPeriodsSoft(org.unitime.timetable.model.Exam exam, ExamType type) {
+        List<ExamPeriodPlacement> periodPlacements = new ArrayList<ExamPeriodPlacement>();
+        Set periodPrefs = exam.getPreferences(ExamPeriodPref.class);
+        for (ExamPeriod period: getModel().getPeriods()) {
+            if (iProhibitedPeriods.contains(period) || period.getLength()<exam.getLength()) continue;
+            String pref = null;
+            for (Iterator j=periodPrefs.iterator();j.hasNext();) {
+                ExamPeriodPref periodPref = (ExamPeriodPref)j.next();
+                if (period.getId().equals(periodPref.getExamPeriod().getUniqueId())) { pref = periodPref.getPrefLevel().getPrefProlog(); break; }
+            }
+            if (type.getType() == ExamType.sExamTypeMidterm && pref==null) continue;
+            periodPlacements.add(new ExamPeriodPlacement(period, pref2weight(pref)));
+        }
+        return periodPlacements;
+    }
+    
+    protected void loadExamsAllSection() {
+        if (isRemote()) HibernateUtil.clearCache();
+        Collection exams = org.unitime.timetable.model.Exam.findAll(iSessionId, iExamTypeId);
+        ExamType type = ExamTypeDAO.getInstance().get(iExamTypeId);
+        boolean considerLimit = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.useLimit."+type.getUniqueId(), (type.getType() == ExamType.sExamTypeFinal?"false":"true")));
+        iProgress.setPhase("Loading exams...", exams.size());
+        for (Iterator i=exams.iterator();i.hasNext();) {
+            iProgress.incProgress();
+            org.unitime.timetable.model.Exam exam = (org.unitime.timetable.model.Exam)i.next();
+            
+            List<ExamPeriodPlacement> periodPlacements = findPeriodsSoft(exam, type);
+            if (periodPlacements.isEmpty()) {
+                iProgress.warn("Exam "+getExamLabel(exam)+" has no period available, it is not loaded.");
+                continue;
+            }
+
+            int idx = 0;
+            for (CourseClass cc: getOwners(exam)) {
+
+                Exam x = new Exam(
+                        exam.getUniqueId() * 1000 + (idx ++),
+                        cc.toString(),
+                        exam.getLength(),
+                        (exam.getSeatingType().intValue()==org.unitime.timetable.model.Exam.sSeatingTypeExam),
+                        exam.getMaxNbrRooms(),
+                        0,
+                        periodPlacements,
+                        findRooms(exam));
+                if (type.getType() == ExamType.sExamTypeFinal) {
+                    if (exam.getAvgPeriod()!=null) x.setAveragePeriod(exam.getAvgPeriod());
+                    else x.setAveragePeriod(getModel().getPeriods().size()/2);
+                }
+                x.setModel(getModel());
+
+                int minSize = cc.getClazz().getClassLimit();
+                ExamOwner cs = new ExamOwner(x, cc.getUniqueId(), cc.toString());
+                x.getOwners().add(cs);
+                
+                x.setSizeOverride(exam.getExamSize());
+                x.setPrintOffset(exam.examOffset());
+                
+                if (considerLimit && minSize>0)
+                    x.setMinSize(minSize);
+                
+                if (x.getMaxRooms()>0) {
+                    if (x.getRoomPlacements().isEmpty()) {
+                        iProgress.warn("Exam "+getExamLabel(exam)+" has no room available, it is not loaded.");
+                        continue;
+                    }
+                    boolean hasAssignment = false;
+                    for (Iterator<ExamPeriodPlacement> ep=x.getPeriodPlacements().iterator();!hasAssignment && ep.hasNext();) {
+                        ExamPeriodPlacement period = ep.next();
+                        if (x.findRoomsRandom(period)!=null) hasAssignment = true;
+                    }
+                    if (!hasAssignment) {
+                        iProgress.warn("Exam "+getExamLabel(exam)+" has no available assignment, it is not loaded.");
+                        continue;
+                    }
+                }
+                
+                getModel().addVariable(x);
+                iExams.put(exam.getUniqueId(), x);
+                
+                for (Iterator j=exam.getInstructors().iterator();j.hasNext();)
+                    loadInstructor((DepartmentalInstructor)j.next()).addVariable(x);
+                
+                for (Long studentId: cc.getStudents()) {
+                    ExamStudent student = (ExamStudent)iStudents.get(studentId);
+                    if (student==null) {
+                        student = new ExamStudent(getModel(), studentId);
+                        getModel().addConstraint(student);
+                        getModel().getStudents().add(student);
+                        iStudents.put(studentId, student);
+                    }
+                    if (!student.variables().contains(x))
+                        student.addVariable(x);
+                    cs.getStudents().add(student);
+                }
+            }
+        }
+    }
+    
+    public static class CourseClass {
+    	CourseOffering iCourse;
+    	Class_ iClazz;
+    	boolean iOffering;
+    	
+    	public CourseClass(CourseOffering course, Class_ clazz, boolean offering) {
+    		iClazz = clazz; iCourse = course; iOffering = offering;
+    	}
+    	
+    	public Long getUniqueId() {
+    		return 1000000000 * getCourse().getUniqueId() + getClazz().getUniqueId();
+    	}
+    	
+    	public Class_ getClazz() { return iClazz; }
+    	
+    	public CourseOffering getCourse() { return iCourse; }
+    	
+    	public boolean isOffering() { return iOffering; }
+    	
+    	public String toString() { return getClazz().getClassLabel(getCourse()) + (getClazz().getCommittedAssignment() != null ? " " + getClazz().getCommittedAssignment().getPlacement().getLongName() : ""); }
+    	
+    	public int hashCode() { return getUniqueId().hashCode(); }
+    	
+    	public List<Long> getStudents() {
+    		if (isOffering())
+    			return (List<Long>)new ExamDAO().getSession().createQuery(
+    					"select e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId")
+    					.setLong("classId", getClazz().getUniqueId()).list();
+    		else
+    			return (List<Long>)new ExamDAO().getSession().createQuery(
+    					"select e.student.uniqueId from StudentClassEnrollment e where e.clazz.uniqueId = :classId and e.courseOffering.uniqueId = :courseId")
+    					.setLong("classId", getClazz().getUniqueId())
+    					.setLong("courseId", getCourse().getUniqueId()).list();
+    	}
+    	
+    	public boolean equals(Object o) {
+    		if (o == null || !(o instanceof CourseClass)) return false;
+    		CourseClass c = (CourseClass)o;
+    		return getClazz().equals(c.getClazz()) && getCourse().equals(c.getCourse());
+    	}
     }
 }

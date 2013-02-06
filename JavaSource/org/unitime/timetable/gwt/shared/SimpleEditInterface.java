@@ -23,49 +23,15 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
  */
-public class SimpleEditInterface implements IsSerializable {
-	
-	public static enum Type implements IsSerializable {
-		area("Academic Area"),
-		classification("Academic Classification"),
-		major("Major"),
-		minor("Minor"),
-		group("Student Group"),
-		consent("Offering Consent Type"),
-		creditFormat("Course Credit Format"),
-		creditType("Course Credit Type"),
-		creditUnit("Course Credit Unit"),
-		position("Position Type"),
-		sectioning("Student Scheduling Status Type"),
-		roles("Role"),
-		permissions("Permission"),
-		examType("Examination Type"),
-		eventStatus("Event Status", "Event Statuses"),
-		featureType("Room Feature Type"),
-		instructorRole("Instructor Role"),
-		dateMapping("Event Date Mapping"),
-		stdEvtNote("Standard Event Note"),
-		;
-	
-		private String iSingular, iPlural;
-		
-		Type(String singular, String plural) {
-			iSingular = singular; iPlural = plural;
-		}
-		
-		Type(String singular) {
-			this(singular, singular + "s");
-		}
-		
-		public String getTitle() { return iPlural; }
-		public String getTitlePlural() { return iPlural; }
-		public String getTitleSingular() { return iSingular; }
-	}
+public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 	
 	public static enum FieldType implements IsSerializable {
 		text, textarea, number, toggle, list, multi, students, person, date, parent;
@@ -86,19 +52,19 @@ public class SimpleEditInterface implements IsSerializable {
 		public boolean has(int flags) { return (flags & toInt()) == toInt(); }
 	}
 	
-	private Type iType = null;
+	// private Type iType = null;
 	private List<Record> iRecords = new ArrayList<Record>();
 	private Field[] iFields = null;
 	private boolean iEditable = true, iAddable = true, iSaveOrder = true;
 	private int[] iSort = null;
 	private Long iSessionId = null;
 	private String iSessionName = null;
+	private PageName iPageName = null;
 	
 	public SimpleEditInterface() {
 	}
 
-	public SimpleEditInterface(Type type, Field... fields) {
-		iType = type;
+	public SimpleEditInterface(Field... fields) {
 		iFields = fields;
 	}
 	
@@ -111,7 +77,11 @@ public class SimpleEditInterface implements IsSerializable {
 	public String getSessionName() { return iSessionName; }
 	public void setSessionName(String sessionName) { iSessionName = sessionName; }
 	
-	public Type getType() { return iType; }
+	public void setPageName(PageName name) { iPageName = name; }
+	
+	public boolean hasPageName() { return iPageName != null; }
+	
+	public PageName getPageName() { return iPageName; } 
 	
 	public List<Record> getRecords() { return iRecords; }
 	public Record addRecord(Long uniqueId, boolean deletable) {
@@ -225,7 +195,7 @@ public class SimpleEditInterface implements IsSerializable {
 		}
 	}
 	
-	public static class Record implements IsSerializable {
+	public static class Record implements IsSerializable, GwtRpcResponse {
 		private Long iUniqueId = null;
 		private String[] iValues = null;
 		private boolean[] iEditable = null;
@@ -329,6 +299,26 @@ public class SimpleEditInterface implements IsSerializable {
 			if (getUniqueId() != null) return getUniqueId().equals(r.getUniqueId());
 			return (r.getUniqueId() != null ? false : super.equals(o));
 		}
+		
+		public void copyFrom(Record record) {
+			iUniqueId = record.iUniqueId;
+			iValues = record.iValues;
+			iEditable = record.iEditable;
+			iDeletable = record.iDeletable;
+		}
+		
+		public void copyTo(Record record) {
+			record.copyFrom(this);
+		}
+		
+		public Record cloneRecord() {
+			Record r = new Record(iUniqueId, iValues.length, iDeletable);
+			for (int i = 0; i < iValues.length; i++) {
+				r.iValues[i] = iValues[i];
+				r.iEditable[i] = iEditable[i];
+			}
+			return r;
+		}
 	}
 	
 	public static class ListItem implements IsSerializable {
@@ -400,6 +390,101 @@ public class SimpleEditInterface implements IsSerializable {
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof Field)) return false;
 			return getName().equals(((Field)o).getName());
+		}
+	}
+	
+	public static class PageName implements IsSerializable, GwtRpcResponse {
+		private String iSingular = null, iPlural = null;
+		
+		public PageName() {}
+		public PageName(String name) { iSingular = name; }
+		public PageName(String singularName, String pluralName) { iSingular = singularName; iPlural = pluralName; }
+		
+		protected String singular() { return iSingular; }
+		protected String plural() { return iPlural == null ? iSingular + "s" : iPlural; }
+		
+		public String list() { return plural(); }
+		public String edit() { return "Edit " + plural(); }
+		public String addOne() {  return "Add " + singular(); }
+		public String editOne() { return "Edit " + singular(); }
+		
+		public String toString() { return plural(); }
+	}
+	
+	public static abstract class SimpleEditRpcRequest implements IsSerializable {
+		private String iType;
+		
+		public SimpleEditRpcRequest() {}
+		
+		public String getType() { return iType; }
+		public void setType(String type) { iType = type; }
+
+		@Override
+		public String toString() {
+			return getType();
+		}
+	}
+	
+	public static class GetPageNameRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<PageName> {
+		public GetPageNameRpcRequest() {}
+		
+		public static GetPageNameRpcRequest getPageName(String type) {
+			GetPageNameRpcRequest request = new GetPageNameRpcRequest();
+			request.setType(type);
+			return request;
+		}
+	}
+	
+	public static class LoadDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<SimpleEditInterface> {
+		public LoadDataRpcRequest() {}
+		
+		public static LoadDataRpcRequest loadData(String type) {
+			LoadDataRpcRequest request = new LoadDataRpcRequest();
+			request.setType(type);
+			return request;
+		}
+	}
+	
+	public static class SaveDataRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<SimpleEditInterface> {
+		private SimpleEditInterface iData;
+		
+		public SaveDataRpcRequest() {}
+
+		public SimpleEditInterface getData() { return iData; }
+		public void setData(SimpleEditInterface data) { iData = data; }
+
+		public static SaveDataRpcRequest saveData(String type, SimpleEditInterface data) {
+			SaveDataRpcRequest request = new SaveDataRpcRequest();
+			request.setType(type);
+			request.setData(data);
+			return request;
+		}
+	}
+	
+	public static class SaveRecordRpcRequest extends SimpleEditRpcRequest implements GwtRpcRequest<Record> {
+		private Record iRecord;
+		
+		public SaveRecordRpcRequest() {}
+
+		public Record getRecord() { return iRecord; }
+		public void setRecord(Record record) { iRecord = record; }
+
+		public static SaveRecordRpcRequest saveRecord(String type, Record record) {
+			SaveRecordRpcRequest request = new SaveRecordRpcRequest();
+			request.setType(type);
+			request.setRecord(record);
+			return request;
+		}
+	}
+	
+	public static class DeleteRecordRpcRequest extends SaveRecordRpcRequest {
+		public DeleteRecordRpcRequest() {}
+		
+		public static DeleteRecordRpcRequest deleteRecord(String type, Record record) {
+			DeleteRecordRpcRequest request = new DeleteRecordRpcRequest();
+			request.setType(type);
+			request.setRecord(record);
+			return request;
 		}
 	}
 }
