@@ -222,7 +222,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 					n.setId(note.getUniqueId()); n.setReference(note.getReference()); n.setNote(note.getNote());
 					response.addStandardNote(n);
 				}
-			} else {
+			} else if (!departments.isEmpty()) {
 				for (StandardEventNote note: (List<StandardEventNote>)StandardEventNoteDepartmentDAO.getInstance().getSession().createQuery(
 						"from StandardEventNoteDepartment where department.uniqueId in (" + departments + ")").setCacheable(true).list()) {
 					StandardEventNoteInterface n = new StandardEventNoteInterface();
