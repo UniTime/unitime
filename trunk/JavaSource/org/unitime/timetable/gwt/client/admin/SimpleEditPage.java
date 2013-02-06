@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.events.SingleDateSelector;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -48,20 +49,20 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.DataChangedListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasFocus;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
-import org.unitime.timetable.gwt.services.SimpleEditService;
-import org.unitime.timetable.gwt.services.SimpleEditServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.PersonInterface;
-import org.unitime.timetable.gwt.shared.SimpleEditException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.ListItem;
+import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.RecordComparator;
 
@@ -104,12 +105,13 @@ public class SimpleEditPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private final SimpleEditServiceAsync iService = GWT.create(SimpleEditService.class);
+	private final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
 
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iHeader, iBottom;
-	private SimpleEditInterface.Type iType;
+	private String iType;
+	private PageName iPageName = null;
 	private UniTimeTable<Record> iTable;
 	
 	private SimpleEditInterface iData;
@@ -138,12 +140,9 @@ public class SimpleEditPage extends Composite {
 		public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {}
 	};
 	
-	public SimpleEditPage() throws SimpleEditException {
-		String typeString = Window.Location.getParameter("type");
-		if (typeString == null) throw new SimpleEditException("Edit type is not provided.");
-		iType = SimpleEditInterface.Type.valueOf(typeString);
-		if (iType == null) throw new SimpleEditException("Edit type not recognized.");
-		UniTimePageLabel.getInstance().setPageName(iType.getTitle());
+	public SimpleEditPage() {
+		iType = Window.Location.getParameter("type");
+		if (iType == null) throw new RuntimeException("Edit type is not provided.");
 		
 		ClickHandler save = new ClickHandler() {
 			@Override
@@ -156,7 +155,7 @@ public class SimpleEditPage extends Composite {
 				iData.getRecords().clear();
 				iData.getRecords().addAll(iTable.getData());
 				iHeader.setMessage("Saving data...");
-				iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+				RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData), new AsyncCallback<SimpleEditInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iHeader.setErrorMessage("Save failed (" + caught.getMessage() + ").");
@@ -270,7 +269,20 @@ public class SimpleEditPage extends Composite {
 			}
 		});
 		
-		load(null);
+		RPC.execute(SimpleEditInterface.GetPageNameRpcRequest.getPageName(iType), new AsyncCallback<PageName>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				iHeader.setErrorMessage("Edit type not recognized:" + caught.getMessage());
+				UniTimeNotifications.error(caught.getMessage());
+			}
+
+			@Override
+			public void onSuccess(PageName result) {
+				iPageName = result;
+				UniTimePageLabel.getInstance().setPageName(iPageName.list());
+				load(null);
+			}
+		});
 	}
 	
 	private Record next(Record record) {
@@ -302,10 +314,11 @@ public class SimpleEditPage extends Composite {
 	private void detail(final Record record) {
 		SimpleForm detail = new SimpleForm();
 		final List<MyCell> cells = new ArrayList<SimpleEditPage.MyCell>();
-		UniTimePageLabel.getInstance().setPageName((record.getUniqueId() == null ? "Add " : "Edit ") + iData.getType().getTitleSingular());
+		UniTimePageLabel.getInstance().setPageName(record.getUniqueId() == null ? iPageName.addOne() : iPageName.editOne());
 		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
 		Record prev = previous(record);
 		Record next = next(record);
+		final Record backup = record.cloneRecord();
 		
 		header.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
 			@Override
@@ -315,42 +328,25 @@ public class SimpleEditPage extends Composite {
 					header.setErrorMessage(valid);
 					return;
 				}
-				final Set<Long> old = new HashSet<Long>();
-				if (record.getUniqueId() == null) {
-					for (Record r: iData.getRecords())
-						old.add(r.getUniqueId());
-				}
-				iData.getRecords().clear();
-				iData.getRecords().addAll(iTable.getData());
-				if (record.getUniqueId() == null)
-					iData.getRecords().add(record);
-				header.setMessage("Saving data...");
-				iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+				header.setMessage("Saving record...");
+				RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
 					}
 					@Override
-					public void onSuccess(SimpleEditInterface result) {
-						iData = result;
+					public void onSuccess(Record result) {
+						record.copyFrom(result);
 						iEditable = false;
 						iSimple.setWidget(iPanel);
 						refreshTable();
 						saveOrder();
 						for (int r = 0; r < iTable.getRowCount(); r++) {
 							if (iTable.getData(r) == null) continue;
-							if (record.getUniqueId() == null) {
-								if (!old.contains(iTable.getData(r).getUniqueId())) {
-									iTable.setSelected(r, true);
-									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
-									break;
-								}
-							} else {
-								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
-									iTable.setSelected(r, true);
-									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
-									break;
-								}
+							if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
+								iTable.setSelected(r, true);
+								ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+								break;
 							}
 						}
 						Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -363,18 +359,15 @@ public class SimpleEditPage extends Composite {
 			header.addButton("delete", "<u>D</u>elete", 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					iData.getRecords().clear();
-					iData.getRecords().addAll(iTable.getData());
-					iData.getRecords().remove(record);
-					header.setMessage("Saving data...");
-					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+					header.setMessage("Deleting record...");
+					RPC.execute(SimpleEditInterface.DeleteRecordRpcRequest.deleteRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
 						}
 						@Override
-						public void onSuccess(SimpleEditInterface result) {
-							iData = result;
+						public void onSuccess(Record result) {
+							iData.getRecords().remove(result);
 							iEditable = false;
 							iSimple.setWidget(iPanel);
 							refreshTable();
@@ -395,19 +388,15 @@ public class SimpleEditPage extends Composite {
 						header.setErrorMessage(valid);
 						return;
 					}
-					iData.getRecords().clear();
-					iData.getRecords().addAll(iTable.getData());
-					if (record.getUniqueId() == null)
-						iData.getRecords().add(record);
-					header.setMessage("Saving data...");
-					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+					header.setMessage("Saving record...");
+					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
 						}
 						@Override
-						public void onSuccess(SimpleEditInterface result) {
-							iData = result;
+						public void onSuccess(Record result) {
+							record.copyFrom(result);
 							refreshTable();
 							Record prev = previous(record);
 							if (prev != null) {
@@ -431,19 +420,15 @@ public class SimpleEditPage extends Composite {
 						header.setErrorMessage(valid);
 						return;
 					}
-					iData.getRecords().clear();
-					iData.getRecords().addAll(iTable.getData());
-					if (record.getUniqueId() == null)
-						iData.getRecords().add(record);
-					header.setMessage("Saving data...");
-					iService.save(iData, new AsyncCallback<SimpleEditInterface>() {
+					header.setMessage("Saving record...");
+					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
 						}
 						@Override
-						public void onSuccess(SimpleEditInterface result) {
-							iData = result;
+						public void onSuccess(Record result) {
+							record.copyFrom(result);
 							refreshTable();
 							Record next = next(record);
 							if (next != null) {
@@ -462,23 +447,21 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				iSimple.setWidget(iPanel);
-				load(new AsyncCallback<Boolean>() {
-					@Override
-					public void onFailure(Throwable caught) {}
-					@Override
-					public void onSuccess(Boolean result) {
-						if (record.getUniqueId() != null) {
-							for (int r = 0; r < iTable.getRowCount(); r++) {
-								if (iTable.getData(r) == null) continue;
-								if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
-									iTable.setSelected(r, true);
-									ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
-									break;
-								}
-							}
-						}					
+				record.copyFrom(backup);
+				iEditable = false;
+				iSimple.setWidget(iPanel);
+				refreshTable();
+				saveOrder();
+				if (record.getUniqueId() != null) {
+					for (int r = 0; r < iTable.getRowCount(); r++) {
+						if (iTable.getData(r) == null) continue;
+						if (record.getUniqueId().equals(iTable.getData(r).getUniqueId())) {
+							iTable.setSelected(r, true);
+							ToolBox.scrollToElement(iTable.getRowFormatter().getElement(r - 1));
+							break;
+						}
 					}
-				});
+				}
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}
 		});
@@ -541,8 +524,8 @@ public class SimpleEditPage extends Composite {
 		iHeader.setMessage("Loading data...");
 		iTable.clearTable();
 
-		iService.load(iType, new AsyncCallback<SimpleEditInterface>() {
-			
+		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType), new AsyncCallback<SimpleEditInterface>() {
+
 			@Override
 			public void onSuccess(SimpleEditInterface result) {
 				iData = result;
@@ -873,7 +856,7 @@ public class SimpleEditPage extends Composite {
 	}
 	
 	private void refreshTable(String hidden) {
-		UniTimePageLabel.getInstance().setPageName((iEditable ? "Edit " : "") + iData.getType().getTitlePlural());
+		UniTimePageLabel.getInstance().setPageName(iEditable ? iPageName.edit() : iPageName.list());
 		iTable.clearTable();
 		
 		iTable.setAllowSelection(!hasDetails());
