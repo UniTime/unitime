@@ -466,12 +466,19 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		return (limit <= 0 || ret.size() < limit ? ret : ret.subList(0, limit));
 	}
 	
+	private String suggestionQuery(String query) {
+		if (query == null || query.isEmpty()) return query;
+		if (!query.contains(":") && !query.contains("\""))
+			return "starts:\"" + query + "\"";
+		return query;
+	}
+	
 	@Override
 	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		fixRoomFeatureTypes(request);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
-		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(request.getText()), 20, distances, null)) {
+		for (Location location: locations(request.getSessionId(), request.getOptions(), new Query(suggestionQuery(request.getText())), 20, distances, null)) {
 			String hint = location.getRoomTypeLabel() + ", " + location.getCapacity() + " seats";
 			Double dist = distances.get(location.getUniqueId());
 			if (dist != null) hint += ", " + Math.round(dist) + " m";
@@ -561,9 +568,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		@Override
 		public boolean match(String attr, String term) {
 			if (attr == null || attr.isEmpty()) {
-				return (has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term) ||
-						getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || 
-						(getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase())));
+				return has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term);
 			} else if ("feature".equals(attr) || (iFeatureTypes != null && iFeatureTypes.contains(attr.toLowerCase()))) {
 				for (RoomFeature rf: getLocation().getFeatures())
 					if (rf instanceof GlobalRoomFeature && (eq(rf.getAbbv(), term) || has(rf.getLabel(), term))) return true;
@@ -574,6 +579,12 @@ public class RoomFilterBackend extends FilterBoxBackend {
 				return false;
 			} else if ("type".equals(attr)) {
 				return eq(getLocation().getRoomType().getReference(), term) || has(getLocation().getRoomType().getLabel(), term);
+			} else if ("room".equals(attr)) {
+				return eq(getLocation().getLabel(), term) || has(getLocation().getRoomType().getLabel(), term);
+			} else if ("starts".equals(attr)) {
+				return getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase()));
+			} else if ("contains".equals(attr)) {
+				return getLocation().getLabel().toLowerCase().contains(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().contains(term.toLowerCase()));
 			} else if ("building".equals(attr)) {
 				if (getLocation() instanceof Room) {
 					Building building = ((Room)getLocation()).getBuilding();
