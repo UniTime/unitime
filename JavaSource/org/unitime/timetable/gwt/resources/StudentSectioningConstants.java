@@ -31,11 +31,11 @@ public interface StudentSectioningConstants extends Constants {
 		"Tip: Use Ctrl+F to open the Course Finder dialog.",
 		"Tip: Use Ctrl+N (or Ctrl+Alt+N in some browsers) to validate the screen and go next.",
 		"Tip: Start entering the name (e.g., ENGL 10600) of the course or a part of its title (e.g., History) to see suggestions.",
-		"Tip: The Alternatives below are here to ensure that you get a desired number of courses even when a course (and its alternatives) are not available.",
+		"Tip: The Alternate Course Selections below can be used to ensure that the desired number of courses are scheduled even when a Course Selection (and its alternatives) are not available.",
 		"Tip: Enter a free time to aviod getting classes in time you need for something else.",
 		"Tip: All courses above a free time should not overlap with the free time (you will get the course even when the only possibility is to break the free time).",
 		"Tip: All courses below a free time can not overlap with the free time (you will only get the course if there are sections that do not break the free time).",
-		"Tip: Clik this tip to see another tip.",
+		"Tip: Click this tip to see another tip.",
 		"Tip: There are no alternative free times.",
 		"Tip: Try not to break too many standard time patterns with a free time (see the numbers in the Course Finder dialog).",
 		"Tip: Use Esc to hide suggestions, Ctrl+S to show suggestions."

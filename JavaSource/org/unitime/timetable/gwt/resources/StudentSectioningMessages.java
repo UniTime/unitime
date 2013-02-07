@@ -178,16 +178,16 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course does not exist.")
 	String validationUnknownCourseNotExists();
 	
-	@DefaultMessage("Courses")
+	@DefaultMessage("Course Selections")
 	String courseRequestsCourses();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
 	
-	@DefaultMessage("Alternatives")
+	@DefaultMessage("Alternate Course Selections (used only if course selection above is not available)")
 	String courseRequestsAlternatives();
 	
-	@DefaultMessage("{0}. Alternative")
+	@DefaultMessage("{0}. Alternate")
 	String courseRequestsAlternative(int i);
 	
 	@DefaultMessage("Alternative to {0}")
@@ -208,7 +208,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course with the lowest priority.")
 	String courseRequestsHint8();
 	
-	@DefaultMessage("Alternative(s) to all the courses above.")
+	@DefaultMessage("Alternate selection if course(s) above not available.")
 	String courseRequestsHintA0();
 	
 	/* Course Selection Box messages
@@ -313,7 +313,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("(~{0} min)")
 	String distanceConflict(int distanceInMinutes);
 	
-	/* Student Sectioning widget messags
+	/* Student Sectioning widget messages
 	 */
 	@DefaultMessage("<u>R</u>equests")
 	String buttonRequests();
