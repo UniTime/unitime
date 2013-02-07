@@ -248,8 +248,9 @@ public class ExamListAction extends Action {
                 	}
                 } else {
                     PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), ea, exam.getExamType().getUniqueId());
+                    RequiredTimeTable rtt = new RequiredTimeTable(px);
                     px.load(exam);
-                    String hint = "'" + px.toString() + (ea == null ? "" : ", assigned " + ea.getPeriodName()) + "'";
+                    String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
                     perPref = "<img border='0' src='" +
                     	"pattern?v=" + (timeVertical ? 1 : 0) + "&x="+exam.getUniqueId() + (ea == null ? "" : "&ap=" + ea.getPeriodId()) +
             			"' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">";
