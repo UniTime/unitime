@@ -71,7 +71,7 @@ public class SessionImport extends BaseImport {
                 session.setAcademicInitiative(campus);
                 session.setAcademicYear(year);
                 session.setAcademicTerm(term);
-                DateFormat df = new SimpleDateFormat(element.attributeValue("dateFormat","M/d/y k:m:s"));
+                DateFormat df = new SimpleDateFormat(root.attributeValue("dateFormat","M/d/y"));
                 session.setSessionBeginDateTime(df.parse(beginDate));
                 session.setSessionEndDateTime(df.parse(endDate));
                 session.setClassesEndDateTime(df.parse(classesEnd));
@@ -79,6 +79,9 @@ public class SessionImport extends BaseImport {
                 session.setEventBeginDate(df.parse(eventBegin));
                 session.setEventEndDate(df.parse(eventEnd));
                 session.setStatusType(statusType);
+                session.setLastWeekToEnroll(Integer.valueOf(element.attributeValue("lastWeekToEnroll", "1")));
+                session.setLastWeekToChange(Integer.valueOf(element.attributeValue("lastWeekToChange", "1")));
+                session.setLastWeekToDrop(Integer.valueOf(element.attributeValue("lastWeekToDrop", "4")));
                 getHibSession().saveOrUpdate(session);
                 
                 flushIfNeeded(false);
