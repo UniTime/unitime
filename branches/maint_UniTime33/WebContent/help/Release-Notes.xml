@@ -37,6 +37,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Add Curriculum</name>
+			<description>
+				<line>Fixed 500 The call failed on the server error that is thrown under some circumstances.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
