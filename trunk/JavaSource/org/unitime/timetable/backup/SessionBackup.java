@@ -495,7 +495,16 @@ public class SessionBackup {
 			return size;
 		}
 		
+		boolean hasBlob() {
+			for (String property: iMeta.getPropertyNames()) {
+				if (iMeta.getPropertyType(property) instanceof BinaryType) return true;
+			}
+			return false;
+		}
+		
 		boolean distinct() {
+			if (hasBlob())
+				return true;
 			switch (relation()) {
 			case Many:
 				return false;
@@ -576,7 +585,7 @@ public class SessionBackup {
 
             Session session = Session.getSessionUsingInitiativeYearTerm(
                     ApplicationProperties.getProperty("initiative", "PWL"),
-                    ApplicationProperties.getProperty("year","2010"),
+                    ApplicationProperties.getProperty("year","2012"),
                     ApplicationProperties.getProperty("term","Spring")
                     );
             
