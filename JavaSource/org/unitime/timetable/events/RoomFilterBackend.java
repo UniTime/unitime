@@ -568,7 +568,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		@Override
 		public boolean match(String attr, String term) {
 			if (attr == null || attr.isEmpty()) {
-				return has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term);
+				return term.isEmpty() || has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term);
 			} else if ("feature".equals(attr) || (iFeatureTypes != null && iFeatureTypes.contains(attr.toLowerCase()))) {
 				for (RoomFeature rf: getLocation().getFeatures())
 					if (rf instanceof GlobalRoomFeature && (eq(rf.getAbbv(), term) || has(rf.getLabel(), term))) return true;
