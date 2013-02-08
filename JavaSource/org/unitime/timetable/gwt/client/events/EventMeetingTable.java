@@ -433,6 +433,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
     				}
     				return true;
     			} else if (allowNoSelection()) {
+    				boolean canSelect = false;
     				for (int row = 1; row < getRowCount(); row++) {
     					Widget w =  getWidget(row, 0);
     					if (w != null && w instanceof CheckBox) {
@@ -440,9 +441,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
     						if (!isApplicable(e)) return false;
 							if (start == null) { start = e.getMeeting().getStartSlot(); end = e.getMeeting().getEndSlot(); }
 							else if (start != e.getMeeting().getStartSlot() || end != e.getMeeting().getEndSlot()) return false;
+							canSelect = true;
     					}
     				}
-    				return true;
+    				return canSelect;
     			} else {
     				return false;
     			}
