@@ -178,13 +178,13 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course does not exist.")
 	String validationUnknownCourseNotExists();
 	
-	@DefaultMessage("Course Selections")
+	@DefaultMessage("Course Requests")
 	String courseRequestsCourses();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
 	
-	@DefaultMessage("Alternate Course Selections (used only if course selection above is not available)")
+	@DefaultMessage("Alternate Course Requests (used only if a course requested above is not available)")
 	String courseRequestsAlternatives();
 	
 	@DefaultMessage("{0}. Alternate")
@@ -208,7 +208,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course with the lowest priority.")
 	String courseRequestsHint8();
 	
-	@DefaultMessage("Alternate selection if course(s) above not available.")
+	@DefaultMessage("Alternate request if course(s) above not available.")
 	String courseRequestsHintA0();
 	
 	/* Course Selection Box messages
@@ -692,7 +692,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No schedule stored for the student.")
 	String exceptionNoSchedule();
 	
-	@DefaultMessage("No courses provided.")
+	@DefaultMessage("No courses requested.")
 	String exceptionNoCourse();
 	
 	@DefaultMessage("Unable to compute a schedule (no solution found).")
