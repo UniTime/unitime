@@ -246,7 +246,7 @@ public class Query implements Serializable {
 		private String iAttr, iBody;
 		
 		public AtomTerm(String attr, String body) {
-			if (body.startsWith("\"") && body.endsWith("\""))
+			if (body.startsWith("\"") && body.endsWith("\"") && body.length()>1)
 				body = body.substring(1, body.length() - 1);
 			iAttr = attr; iBody = body;
 		}
