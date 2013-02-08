@@ -179,7 +179,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	}
 	
 	public int hashCode() {
-		return getId().hashCode();
+		return (getId() == null ? 0 : getId().hashCode());
 	}
 	
 	public int compareTo(CurriculumInterface curriculum) {
@@ -371,9 +371,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 		
 		public int compareTo(CurriculumClassificationInterface clasf) {
-			int cmp = getAcademicClassification().compareTo(clasf.getAcademicClassification());
-			if (cmp != 0) return cmp;
-			return getId().compareTo(clasf.getId());
+			return getAcademicClassification().compareTo(clasf.getAcademicClassification());
 		}
 	}
 	
@@ -479,9 +477,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 					a++;
 				}
 			}
-			int cmp = getCourseName().compareTo(course.getCourseName());
-			if (cmp != 0) return cmp;
-			return getId().compareTo(course.getId());
+			return getCourseName().compareTo(course.getCourseName());
 		}
 		
 	}
@@ -528,9 +524,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		}
 		
 		public int compareTo(CurriculumCourseInterface course) {
-			int cmp = getCourseName().compareTo(course.getCourseName());
-			if (cmp != 0) return cmp;
-			return getId().compareTo(course.getId());
+			return getCourseName().compareTo(course.getCourseName());
 		}
 	}
 	
