@@ -236,6 +236,18 @@
                 not-null="false"
                 length="200"/>
 
+	        <set
+    	        name="types"
+            	table="sectioning_course_types"
+            	lazy="true">
+            	<cache include="non-lazy" usage="read-write"/>
+            	<key column="sectioning_status_id" foreign-key="fk_sect_course_status"/>
+            	<many-to-many
+	                class="CourseType"
+                	column="course_type_id"
+                	foreign-key="fk_sect_course_type"/>
+        </set>
+
         </union-subclass>
         
         <union-subclass name="ExamType"
@@ -258,5 +270,9 @@
                 not-null="true"/>
         </union-subclass>
 
+        <union-subclass name="CourseType"
+        	table="course_type"
+        	abstract="false">
+        </union-subclass>
     </class>
 </hibernate-mapping>

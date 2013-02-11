@@ -417,7 +417,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					}
 			}
 			if (ret.isEmpty() && !iQuery.isEmpty()) {
-				for (CourseInfo c: server.findCourses(iQuery, iLimit)) {
+				for (CourseInfo c: server.findCourses(iQuery, iLimit, null)) {
 					ret.add(new String[] {
 							c.getSubjectArea() + " " + c.getCourseNbr(),
 							c.getSubjectArea() + " " + c.getCourseNbr() + (c.getTitle() == null ? "" : " - " + c.getTitle())

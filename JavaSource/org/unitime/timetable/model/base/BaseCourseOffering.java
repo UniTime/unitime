@@ -22,6 +22,7 @@ package org.unitime.timetable.model.base;
 import java.io.Serializable;
 
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SubjectArea;
@@ -48,6 +49,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private InstructionalOffering iInstructionalOffering;
 	private CourseOffering iDemandOffering;
 	private DemandOfferingType iDemandOfferingType;
+	private CourseType iCourseType;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_IS_CONTROL = "isControl";
@@ -128,6 +130,9 @@ public abstract class BaseCourseOffering implements Serializable {
 	public DemandOfferingType getDemandOfferingType() { return iDemandOfferingType; }
 	public void setDemandOfferingType(DemandOfferingType demandOfferingType) { iDemandOfferingType = demandOfferingType; }
 
+	public CourseType getCourseType() { return iCourseType; }
+	public void setCourseType(CourseType courseType) { iCourseType = courseType; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseOffering)) return false;
 		if (getUniqueId() == null || ((CourseOffering)o).getUniqueId() == null) return false;
@@ -146,6 +151,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	public String toDebugString() {
 		return "CourseOffering[" +
 			"\n	CourseNbr: " + getCourseNbr() +
+			"\n	CourseType: " + getCourseType() +
 			"\n	Demand: " + getDemand() +
 			"\n	DemandOffering: " + getDemandOffering() +
 			"\n	DemandOfferingType: " + getDemandOfferingType() +

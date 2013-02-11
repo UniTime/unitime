@@ -476,6 +476,9 @@ public enum Right {
 	EventDateMappings(Session.class),
 	EventDateMappingEdit(Session.class),
 	
+	CourseTypes,
+	CourseTypeEdit,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,

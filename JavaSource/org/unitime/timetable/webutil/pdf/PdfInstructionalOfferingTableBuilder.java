@@ -470,10 +470,10 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
     private PdfPCell pdfSubjectAndCourseInfo(InstructionalOffering io, CourseOffering co) {
     	PdfPCell cell = createCell();
-        addText(cell, (co!=null? co.getSubjectAreaAbbv()+" "+co.getCourseNbr():""), true, false, Element.ALIGN_LEFT, (co.isIsControl().booleanValue()?sEnableColor:sDisableColor), true);
+        addText(cell, (co!=null? co.getSubjectAreaAbbv()+" "+co.getCourseNbr():"") + (co != null && co.getCourseType() != null ? " (" + co.getCourseType().getReference() + ")" : ""), true, false, Element.ALIGN_LEFT, (co.isIsControl().booleanValue()?sEnableColor:sDisableColor), true);
         for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext(); ) {
         	CourseOffering tempCo = (org.unitime.timetable.model.CourseOffering) it.next();
-            addText(cell,  indent+""+tempCo.getSubjectAreaAbbv()+" "+tempCo.getCourseNbr(), false, false, Element.ALIGN_LEFT, sDisableColor, true);
+            addText(cell,  indent+""+tempCo.getSubjectAreaAbbv()+" "+tempCo.getCourseNbr() + " " + (tempCo.getCourseType() != null ? " (" + tempCo.getCourseType().getReference() + ")" : ""), false, false, Element.ALIGN_LEFT, sDisableColor, true);
         }
         return cell;
     }  

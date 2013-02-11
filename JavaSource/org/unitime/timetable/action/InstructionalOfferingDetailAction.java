@@ -244,7 +244,7 @@ public class InstructionalOfferingDetailAction extends Action {
 				"instructionalOfferingDetail.do?io="+frm.getInstrOfferingId(),
 				MSG.backInstructionalOffering(frm.getInstrOfferingName()),
 				true, false);
-		
+        
 		// Go back to instructional offerings
         return mapping.findForward("showInstructionalOfferings");
         

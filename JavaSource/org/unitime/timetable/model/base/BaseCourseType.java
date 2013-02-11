@@ -20,52 +20,30 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.RefTableEntry;
-import org.unitime.timetable.model.StudentSectioningStatus;
 
-public abstract class BaseStudentSectioningStatus extends RefTableEntry implements Serializable {
+public abstract class BaseCourseType extends RefTableEntry implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private Integer iStatus;
-	private String iMessage;
 
-	private Set<CourseType> iTypes;
 
-	public static String PROP_STATUS = "status";
-	public static String PROP_MESSAGE = "message";
-
-	public BaseStudentSectioningStatus() {
+	public BaseCourseType() {
 		initialize();
 	}
 
-	public BaseStudentSectioningStatus(Long uniqueId) {
+	public BaseCourseType(Long uniqueId) {
 		setUniqueId(uniqueId);
 		initialize();
 	}
 
 	protected void initialize() {}
 
-	public Integer getStatus() { return iStatus; }
-	public void setStatus(Integer status) { iStatus = status; }
-
-	public String getMessage() { return iMessage; }
-	public void setMessage(String message) { iMessage = message; }
-
-	public Set<CourseType> getTypes() { return iTypes; }
-	public void setTypes(Set<CourseType> types) { iTypes = types; }
-	public void addTotypes(CourseType courseType) {
-		if (iTypes == null) iTypes = new HashSet<CourseType>();
-		iTypes.add(courseType);
-	}
-
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof StudentSectioningStatus)) return false;
-		if (getUniqueId() == null || ((StudentSectioningStatus)o).getUniqueId() == null) return false;
-		return getUniqueId().equals(((StudentSectioningStatus)o).getUniqueId());
+		if (o == null || !(o instanceof CourseType)) return false;
+		if (getUniqueId() == null || ((CourseType)o).getUniqueId() == null) return false;
+		return getUniqueId().equals(((CourseType)o).getUniqueId());
 	}
 
 	public int hashCode() {
@@ -74,15 +52,13 @@ public abstract class BaseStudentSectioningStatus extends RefTableEntry implemen
 	}
 
 	public String toString() {
-		return "StudentSectioningStatus["+getUniqueId()+" "+getLabel()+"]";
+		return "CourseType["+getUniqueId()+" "+getLabel()+"]";
 	}
 
 	public String toDebugString() {
-		return "StudentSectioningStatus[" +
+		return "CourseType[" +
 			"\n	Label: " + getLabel() +
-			"\n	Message: " + getMessage() +
 			"\n	Reference: " + getReference() +
-			"\n	Status: " + getStatus() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

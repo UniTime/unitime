@@ -44,7 +44,7 @@ public interface OnlineSectioningServer {
 	public DistanceMetric getDistanceMetric();
 	public DataProperties getConfig();
 	
-	public Collection<CourseInfo> findCourses(String query, Integer limit);
+	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher);
 	public Collection<CourseInfo> findCourses(CourseInfoMatcher matcher);
 	public List<Section> getSections(CourseInfo courseInfo);
 	public Collection<Student> findStudents(StudentMatcher matcher);
