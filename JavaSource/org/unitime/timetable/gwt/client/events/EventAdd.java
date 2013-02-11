@@ -577,7 +577,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onChange(ChangeEvent event) {
 				EventType type = getEventType();
-				iName.setReadOnly(type == EventType.Class || type == EventType.MidtermExam || type != EventType.FinalExam);
+				iName.setReadOnly(type == EventType.Class || type == EventType.MidtermExam || type == EventType.FinalExam);
 				iEvent.setType(type);
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
