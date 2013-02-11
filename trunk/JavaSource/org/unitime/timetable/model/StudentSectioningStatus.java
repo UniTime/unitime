@@ -27,7 +27,8 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	public static enum Option {
 		enabled("Access Enabled"),
 		advisor("Advisor Can Enroll"),
-		email("Email Notifications");
+		email("Email Notifications"),
+		notype("Must Have Course Type");
 		
 		private String iName;
 		

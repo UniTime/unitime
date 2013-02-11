@@ -133,7 +133,39 @@
 			</TR>
 		</logic:notEmpty>
 		<html:hidden property="title"/>
-	</sec:authorize>	
+	</sec:authorize>
+	
+	<logic:notEmpty scope="request" name="courseTypes">
+		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+			<TR>
+				<TD><loc:message name="propertyCourseType"/></TD>
+				<TD>
+					<html:select
+						name="courseOfferingEditForm"
+						property="courseTypeId"
+						onfocus="setUp();"
+						onkeypress="return selectSearch(event, this);"
+						onkeydown="return checkKey(event, this);" >
+						<html:option value=""></html:option>
+						<html:options collection="courseTypes" property="uniqueId" labelProperty="label" />
+					</html:select>
+				</TD>
+			</TR>
+		</sec:authorize>
+		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+			<html:hidden property="courseTypeId"/>
+			<logic:notEmpty name="courseOfferingEditForm" property="courseTypeId">
+				<logic:iterate name="courseTypes" scope="request" id="type" type="org.unitime.timetable.model.CourseType">
+					<logic:equal name="courseOfferingEditForm" property="courseTypeId" value="<%=type.getUniqueId().toString()%>">
+						<TR>
+							<TD><loc:message name="propertyCourseType"/></TD>
+							<TD><bean:write name="type" property="label"/></TD>
+						</TR>
+					</logic:equal>
+				</logic:iterate>
+			</logic:notEmpty>
+		</sec:authorize>
+	</logic:notEmpty>
 
 	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')">
 		<TR>

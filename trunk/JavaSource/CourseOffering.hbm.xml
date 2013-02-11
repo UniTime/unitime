@@ -178,5 +178,11 @@
             column="demand_offering_type"
             not-null="false"/>
 
+        <many-to-one
+            name="courseType"
+            class="CourseType"
+            column="course_type_id"
+            not-null="false"
+            foreign-key="fk_course_offering_type"/>
     </class>
 </hibernate-mapping>

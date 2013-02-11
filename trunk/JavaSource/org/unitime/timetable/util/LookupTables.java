@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.util.LabelValueBean;
 import org.hibernate.Query;
+import org.hibernate.criterion.Order;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.model.Building;
@@ -55,6 +56,7 @@ import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
+import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
@@ -371,5 +373,9 @@ public class LookupTables {
     
     public static void setupExamTypes(HttpServletRequest request, Long sessionId) {
     	request.setAttribute("examTypes", sessionId == null ? ExamType.findAll() : ExamType.findAllUsed(sessionId));
+    }
+    
+    public static void setupCourseTypes(HttpServletRequest request) {
+    	request.setAttribute("courseTypes", CourseTypeDAO.getInstance().findAll(Order.asc("reference")));
     }
 }

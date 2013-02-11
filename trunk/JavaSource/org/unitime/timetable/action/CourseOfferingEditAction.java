@@ -58,6 +58,7 @@ import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
 import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
+import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.security.SessionContext;
@@ -265,6 +266,12 @@ public class CourseOfferingEditAction extends Action {
 		        	CourseOffering dco = cdao.get(frm.getDemandCourseOfferingId(),hibSession);
 		        	co.setDemandOffering(dco==null?null:dco);
 		        }
+		        
+		        if (frm.getCourseTypeId() == null || frm.getCourseTypeId().isEmpty()) {
+		        	co.setCourseType(null);
+		        } else {
+		        	co.setCourseType(CourseTypeDAO.getInstance().get(Long.valueOf(frm.getCourseTypeId()), hibSession));
+		        }
 
 		        // Update consent only if course is controlling
 		        if (co.isIsControl().booleanValue()) {
@@ -442,7 +449,7 @@ public class CourseOfferingEditAction extends Action {
         frm.setWkDrop(io.getLastWeekToDrop() == null ? "" : io.getLastWeekToDrop().toString());
         frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
-        
+        frm.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
         
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
             frm.getInstructors().add(instructor.getUniqueId().toString());
@@ -518,6 +525,8 @@ public class CourseOfferingEditAction extends Action {
 				return course.getDemand() != null && course.getDemand() > 0;
 			}
 		});
+        
+        LookupTables.setupCourseTypes(request);
     }
 
     /**

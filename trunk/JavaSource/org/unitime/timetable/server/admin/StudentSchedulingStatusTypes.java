@@ -19,9 +19,14 @@
 */
 package org.unitime.timetable.server.admin;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import net.sf.cpsolver.ifs.util.ToolBox;
 
 import org.hibernate.Session;
+import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
@@ -31,9 +36,11 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Flag;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
+import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
+import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -48,14 +55,20 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('StudentSchedulingStatusTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
-		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field("Access", FieldType.toggle, 40),
-				new Field("Advisor", FieldType.toggle, 40),
-				new Field("Email", FieldType.toggle, 40),
-				new Field("Message", FieldType.text, 400, 200)
-				);
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 6 : 7 + courseTypes.size()];
+		fields[0] = new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE);
+		fields[1] = new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE);
+		fields[2] = new Field("Access", FieldType.toggle, 40);
+		fields[3] = new Field("Advisor", FieldType.toggle, 40);
+		fields[4] = new Field("Email", FieldType.toggle, 40);
+		fields[5] = new Field("Message", FieldType.text, 400, 200);
+		if (!courseTypes.isEmpty()) {
+			for (int i = 0; i < courseTypes.size(); i++)
+				fields[6 + i] = new Field(courseTypes.get(i).getReference(), FieldType.toggle, 40);
+			fields[fields.length - 1] = new Field("Other", FieldType.toggle, 40);
+		}
+		SimpleEditInterface data = new SimpleEditInterface(fields);
 		data.setSortBy(0, 1);
 		for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll()) {
 			Record r = data.addRecord(status.getUniqueId());
@@ -65,6 +78,11 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 			r.setField(3, status.hasOption(StudentSectioningStatus.Option.advisor) ? "true" : "false");
 			r.setField(4, status.hasOption(StudentSectioningStatus.Option.email) ? "true" : "false");
 			r.setField(5, status.getMessage());
+			if (!courseTypes.isEmpty()) {
+				for (int i = 0; i < courseTypes.size(); i++)
+					r.setField(6 + i, status.getTypes().contains(courseTypes.get(i)) ? "true" : "false");
+				r.setField(fields.length - 1, status.hasOption(StudentSectioningStatus.Option.notype) ? "false" : "true");
+			}
 		}
 		data.setEditable(context.hasPermission(Right.StudentSchedulingStatusTypeEdit));
 		return data;
@@ -92,6 +110,13 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		if ("true".equals(record.getField(2))) value += StudentSectioningStatus.Option.enabled.toggle();
 		if ("true".equals(record.getField(3))) value += StudentSectioningStatus.Option.advisor.toggle();
 		if ("true".equals(record.getField(4))) value += StudentSectioningStatus.Option.email.toggle();
+		status.setTypes(new HashSet<CourseType>());
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		if (!courseTypes.isEmpty()) {
+			for (int i = 0; i < courseTypes.size(); i++)
+				if ("true".equals(record.getField(6 + i))) status.getTypes().add(courseTypes.get(i));
+			if (!"true".equals(record.getField(6 + courseTypes.size()))) value += StudentSectioningStatus.Option.notype.toggle();
+		}
 		status.setReference(record.getField(0));
 		status.setLabel(record.getField(1));
 		status.setStatus(value);
@@ -113,14 +138,23 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		if ("true".equals(record.getField(2))) value += StudentSectioningStatus.Option.enabled.toggle();
 		if ("true".equals(record.getField(3))) value += StudentSectioningStatus.Option.advisor.toggle();
 		if ("true".equals(record.getField(4))) value += StudentSectioningStatus.Option.email.toggle();
+		Set<CourseType> types = new HashSet<CourseType>();
+		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
+		if (!courseTypes.isEmpty()) {
+			for (int i = 0; i < courseTypes.size(); i++)
+				if ("true".equals(record.getField(6 + i))) types.add(courseTypes.get(i));
+			if (!"true".equals(record.getField(6 + courseTypes.size()))) value += StudentSectioningStatus.Option.notype.toggle();
+		}
 		boolean changed = 
 			!ToolBox.equals(status.getReference(), record.getField(0)) ||
 			!ToolBox.equals(status.getLabel(), record.getField(1)) ||
 			!ToolBox.equals(status.getStatus(), value) ||
+			!ToolBox.equals(status.getTypes(), types) ||
 			!ToolBox.equals(status.getMessage(), record.getField(5));
 		status.setReference(record.getField(0));
 		status.setLabel(record.getField(1));
 		status.setStatus(value);
+		status.setTypes(types);
 		status.setMessage(record.getField(5));
 		hibSession.saveOrUpdate(status);
 		if (changed)

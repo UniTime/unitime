@@ -706,6 +706,12 @@
 					<hasPermission name="RoomFeatureTypes"/>
 				</condition>
 			</item>
+			<item name="Course Types" page="admin" type="gwt">
+				<parameter name="type">courseType</parameter>
+				<condition>
+					<hasPermission name="CourseTypes"/>
+				</condition>
+			</item>
 			<item name="Sponsoring Organizations" page="sponsoringOrgList.do">
 				<condition>
 					<hasPermission name="SponsoringOrganizations"/>
