@@ -19,6 +19,8 @@
 */
 package org.unitime.timetable.onlinesectioning;
 
+import java.util.Set;
+
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
@@ -31,6 +33,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	private String iSubjectArea;
 	private String iDepartment;
 	private String iCourseNbr;
+	private String iType;
 	private String iTitle;
 	private String iCourseNameLowerCase;
 	private String iTitleLowerCase;
@@ -46,6 +49,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		iSubjectArea = course.getSubjectArea().getSubjectAreaAbbreviation();
 		iDepartment = (course.getSubjectArea().getDepartment().getDeptCode() == null ? course.getSubjectArea().getDepartment().getAbbreviation() : course.getSubjectArea().getDepartment().getDeptCode());
 		iCourseNbr = course.getCourseNbr().trim();
+		iType = (course.getCourseType() == null ? null : course.getCourseType().getReference());
 		iTitle = (course.getTitle() == null ? null : course.getTitle().trim());
 		iNote = course.getScheduleBookNote();
 		if (course.getInstructionalOffering().getConsentType() != null) {
@@ -75,6 +79,8 @@ public class CourseInfo implements Comparable<CourseInfo> {
 	public void setHasUniqueName(boolean hasUniqueName) { iHasUniqueName = hasUniqueName; }
 	public String getConsent() { return iConsent; }
 	public String getConsentAbbv() { return iConsentAbbv; }
+	public boolean hasType() { return iType != null && !iType.isEmpty(); }
+	public String getType() { return iType; }
 
 	public int compareTo(CourseInfo c) {
 		int cmp = getSubjectArea().compareToIgnoreCase(c.getSubjectArea());
@@ -98,6 +104,15 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		if (iTitleLowerCase == null) return false;
 		if (!matchCourseName(queryInLowerCase) && iTitleLowerCase.contains(queryInLowerCase)) return true;
 		return false;
+	}
+	
+	public boolean matchType(boolean allCourseTypes, boolean noCourseType, Set<String> allowedCourseTypes) {
+		if (allCourseTypes) return true;
+		if (hasType()) {
+			return allowedCourseTypes != null && allowedCourseTypes.contains(getType());
+		} else {
+			return noCourseType;
+		}
 	}
 
 	public String getDetails(AcademicSessionInfo session, CourseDetailsProvider provider) throws SectioningException {

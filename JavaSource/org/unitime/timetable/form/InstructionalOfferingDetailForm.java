@@ -333,4 +333,11 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     public boolean isDisplayEnrollmentDeadlineNote() {
     	return (wkEnroll != null && !wkEnroll.isEmpty()) || (wkChange != null && !wkChange.isEmpty()) || (wkDrop != null && !wkDrop.isEmpty());
     }
+    
+    public boolean getHasCourseTypes() {
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getCourseType()!=null) return true;
+    	return false;
+    }
 }

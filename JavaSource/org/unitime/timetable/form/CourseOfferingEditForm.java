@@ -81,6 +81,7 @@ public class CourseOfferingEditForm extends ActionForm {
     private String wkEnroll, wkChange, wkDrop;
     private Integer wkEnrollDefault, wkChangeDefault, wkDropDefault;
     private String weekStartDayOfWeek;
+    private String courseTypeId;
 
     // --------------------------------------------------------- Methods
 
@@ -168,6 +169,7 @@ public class CourseOfferingEditForm extends ActionForm {
         wkEnroll = null; wkChange = null; wkDrop = null;
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
         weekStartDayOfWeek = null;
+        courseTypeId = null;
     }
 
     public Long getCourseOfferingId() {
@@ -357,5 +359,7 @@ public class CourseOfferingEditForm extends ActionForm {
     
     public String getWeekStartDayOfWeek() { return weekStartDayOfWeek; }
     public void setWeekStartDayOfWeek(String weekStartDayOfWeek) { this.weekStartDayOfWeek = weekStartDayOfWeek; }
-
+    
+    public String getCourseTypeId() { return courseTypeId; }
+    public void setCourseTypeId(String courseTypeId) { this.courseTypeId = courseTypeId; }
 }

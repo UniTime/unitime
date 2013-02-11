@@ -227,6 +227,9 @@
 				<TABLE border="0" width="100%" cellspacing="0" cellpadding="2">
 					<TR>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseTypes" value="true">
+							<TD align="left" class="WebTableHeader"><loc:message name="columnCourseType"/></TD>
+						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnTitle"/></TD>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnReserved"/></TD>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnScheduleOfClassesNote"/></TD>
@@ -235,7 +238,7 @@
 						</logic:equal>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
-				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" >
+				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" type="org.unitime.timetable.model.CourseOffering">
 					<TR>
 						<TD align="center" class="BottomBorderGray">
 							&nbsp;
@@ -244,6 +247,13 @@
 							</logic:equal>
 							&nbsp;
 						</TD>
+						<logic:equal name="instructionalOfferingDetailForm" property="hasCourseTypes" value="true">
+							<TD class="BottomBorderGray">
+								<logic:notEmpty name="co" property="courseType">
+									<span title='<%=co.getCourseType().getLabel()%>'><%=co.getCourseType().getReference()%></span>
+								</logic:notEmpty>
+							</TD>
+						</logic:equal>
 						<TD class="BottomBorderGray"><bean:write name="co" property="courseNameWithTitle"/></TD>
 						<TD class="BottomBorderGray">
 							<logic:notEmpty name="co" property="reservation">

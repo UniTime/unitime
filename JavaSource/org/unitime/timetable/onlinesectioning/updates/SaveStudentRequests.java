@@ -154,7 +154,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 		Map<Long, CourseRequest> course2request = new HashMap<Long, CourseRequest>();
 		List<CourseRequest> unusedRequests = new ArrayList<CourseRequest>();
 		for (CourseRequestInterface.Request r: request.getCourses()) {
-			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && server.getCourseInfo(r.getRequestedCourse()) != null)
+			if (r.hasRequestedFreeTime() && r.hasRequestedCourse() && ((server == null && getCourse(helper.getHibSession(), request.getAcademicSessionId(), r.getRequestedCourse()) != null) || (server != null && server.getCourseInfo(r.getRequestedCourse()) != null)))
 				r.getRequestedFreeTime().clear();			
 			if (r.hasRequestedFreeTime()) {
 				for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {

@@ -253,18 +253,18 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
     }	
 		
 	@Override
-	public Collection<CourseInfo> findCourses(String query, Integer limit) {
+	public Collection<CourseInfo> findCourses(String query, Integer limit, CourseInfoMatcher matcher) {
 		iLock.readLock().lock();
 		try {
 			List<CourseInfo> ret = new ArrayList<CourseInfo>(limit == null ? 100 : limit);
 			String queryInLowerCase = query.toLowerCase();
 			for (CourseInfo c : iCourses) {
-				if (c.matchCourseName(queryInLowerCase)) ret.add(c);
+				if (c.matchCourseName(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 				if (limit != null && ret.size() == limit) return ret;
 			}
 			if (queryInLowerCase.length() > 2) {
 				for (CourseInfo c : iCourses) {
-					if (c.matchTitle(queryInLowerCase)) ret.add(c);
+					if (c.matchTitle(queryInLowerCase) && (matcher == null || matcher.match(c))) ret.add(c);
 					if (limit != null && ret.size() == limit) return ret;
 				}
 			}

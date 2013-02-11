@@ -204,6 +204,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Title:")
 	String propertyCourseTitle();
 	
+	@DefaultMessage("Type:")
+	String propertyCourseType();
+	
 	@DefaultMessage("Schedule of Classes Note:")
 	String propertyScheduleOfClassesNote();
 	
@@ -614,6 +617,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Department")
 	String columnDepartment();
+	
+	@DefaultMessage("Type")
+	String columnCourseType();
 	
 	@DefaultMessage("Total")
 	String rowCrossListsTotal();
@@ -1804,6 +1810,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Not Found")
 	String valueInstructorAccountNameNotFound();
+	
+	@DefaultMessage("Not Set")
+	String valueNotSet();
 	
 	@DefaultMessage("am")
 	String timeAm();

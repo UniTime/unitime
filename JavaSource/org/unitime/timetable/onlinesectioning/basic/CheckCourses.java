@@ -22,39 +22,70 @@ package org.unitime.timetable.onlinesectioning.basic;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import net.sf.cpsolver.studentsct.model.Course;
+import net.sf.cpsolver.studentsct.model.CourseRequest;
+import net.sf.cpsolver.studentsct.model.Request;
+import net.sf.cpsolver.studentsct.model.Student;
+
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
+import org.unitime.timetable.onlinesectioning.CourseInfo;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.CourseInfoMatcher;
+import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 
 public class CheckCourses implements OnlineSectioningAction<Collection<String>> {
 	private static final long serialVersionUID = 1L;
 	private CourseRequestInterface iRequest;
+	private CourseInfoMatcher iMatcher;
 	
-	public CheckCourses(CourseRequestInterface request) {
-		iRequest = request;
+	public CheckCourses(CourseRequestInterface request, CourseInfoMatcher matcher) {
+		iRequest = request; iMatcher = matcher;
 	}
 
 	@Override
 	public Collection<String> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		ArrayList<String> notFound = new ArrayList<String>();
-		for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
-			if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && server.getCourseInfo(cr.getRequestedCourse()) == null)
-				notFound.add(cr.getRequestedCourse());
-			if (cr.hasFirstAlternative() && server.getCourseInfo(cr.getFirstAlternative()) == null)
-				notFound.add(cr.getFirstAlternative());
-			if (cr.hasSecondAlternative() && server.getCourseInfo(cr.getSecondAlternative()) == null)
-				notFound.add(cr.getSecondAlternative());
+		Lock lock = server.lockStudent(iRequest.getStudentId(), null, true);
+		try {
+			Student student = server.getStudent(iRequest.getStudentId());
+			for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
+				if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
+					notFound.add(cr.getRequestedCourse());
+				if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
+					notFound.add(cr.getFirstAlternative());
+				if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
+					notFound.add(cr.getSecondAlternative());
+			}
+			for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
+				if (cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
+					notFound.add(cr.getRequestedCourse());
+				if (cr.hasFirstAlternative() && lookup(server, student, cr.getFirstAlternative()) == null)
+					notFound.add(cr.getFirstAlternative());
+				if (cr.hasSecondAlternative() && lookup(server, student, cr.getSecondAlternative()) == null)
+					notFound.add(cr.getSecondAlternative());
+			}
+			return notFound;
+		} finally {
+			lock.release();
 		}
-		for (CourseRequestInterface.Request cr: iRequest.getAlternatives()) {
-			if (cr.hasRequestedCourse() && server.getCourseInfo(cr.getRequestedCourse()) == null)
-				notFound.add(cr.getRequestedCourse());
-			if (cr.hasFirstAlternative() && server.getCourseInfo(cr.getFirstAlternative()) == null)
-				notFound.add(cr.getFirstAlternative());
-			if (cr.hasSecondAlternative() && server.getCourseInfo(cr.getSecondAlternative()) == null)
-				notFound.add(cr.getSecondAlternative());
+	}
+	
+	public CourseInfo lookup(OnlineSectioningServer server, Student student, String course) {
+		CourseInfo c = server.getCourseInfo(course);
+		if (iMatcher != null && !iMatcher.match(c)) {
+			if (student != null) {
+				for (Request r: student.getRequests())
+					if (r instanceof CourseRequest) {
+						for (Course x: ((CourseRequest)r).getCourses()) {
+							if (x.getId() == c.getUniqueId()) return c; // already requested
+						}
+					}
+			}
+			return null;
 		}
-		return notFound;
+		return c;
 	}
 
 	@Override

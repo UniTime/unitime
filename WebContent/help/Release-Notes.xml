@@ -523,6 +523,14 @@
 				<line>Designators page and Designator Required toggle (on the offering) removed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Types</name>
+			<description>
+				<line>Course types can be defined under Administration &gt; Other &gt; Course Types</line>
+				<line>Each course offering can have a course type (to be edited on Edit Course Offering page).</line>
+				<line>Through student scheduling status types, a student can be allowed to request only courses of certain course types.</line>
+			</description>
+		</item>
 	</category>
 </release>
 </release-history>

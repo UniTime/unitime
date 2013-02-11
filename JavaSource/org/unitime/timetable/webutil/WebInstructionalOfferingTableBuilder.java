@@ -519,6 +519,7 @@ public class WebInstructionalOfferingTableBuilder {
         cell.addContent(co != null? ("<span title='" + co.getCourseNameWithTitle() + "'><b>" + co.getSubjectAreaAbbv() + "</b>") :"");
         cell.addContent(" ");
         cell.addContent(co!= null? ("<b>" + co.getCourseNbr() + "</b></span>") :"");
+        if (co != null && co.getCourseType() != null) cell.addContent(" (<span title='" + co.getCourseType().getLabel() + "'>" + co.getCourseType().getReference() + "</span>)");
         Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator();
         StringBuffer addlCos = new StringBuffer();
         CourseOffering tempCo = null;
@@ -532,6 +533,7 @@ public class WebInstructionalOfferingTableBuilder {
             addlCos.append(tempCo.getSubjectAreaAbbv());
             addlCos.append(" ");
             addlCos.append(tempCo.getCourseNbr());
+            if (tempCo != null && tempCo.getCourseType() != null) addlCos.append(" (<span title='" + tempCo.getCourseType().getLabel() + "'>" + tempCo.getCourseType().getReference() + "</span>)");
             addlCos.append("</span>");
             //addlCos.append("</A>");
         }
