@@ -305,7 +305,7 @@ public class RoomGroupEditAction extends SpringAwareLookupDispatchAction {
             rg.setAbbv(roomGroupEditForm.getAbbv());
         }
 		if (roomGroupEditForm.getDesc() != null) {
-			rg.setDescription(roomGroupEditForm.getDesc());
+			rg.setDescription(roomGroupEditForm.getDesc().length() > 200 ? roomGroupEditForm.getDesc().substring(0, 200) : roomGroupEditForm.getDesc());
 		}
 		if (sessionContext.hasPermission(rg, Right.GlobalRoomGroupEditSetDefault)) {
 			if (roomGroupEditForm.isDeft()) {

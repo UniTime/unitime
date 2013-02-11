@@ -148,7 +148,7 @@ public class RoomGroupAddAction extends Action {
 		rg.setName(roomGroupEditForm.getName());
         rg.setAbbv(roomGroupEditForm.getAbbv());
 		rg.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
-		rg.setDescription(roomGroupEditForm.getDesc());
+		rg.setDescription(roomGroupEditForm.getDesc().length() > 200 ? roomGroupEditForm.getDesc().substring(0, 200) : roomGroupEditForm.getDesc());
 		
 		rg.setGlobal(d == null);
 		rg.setDepartment(d);
