@@ -43,7 +43,6 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.ScrollEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
@@ -54,7 +53,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 /**
  * @author Tomas Muller
  */
-public class UniTimeMenuBar extends Composite {
+public class UniTimeMenuBar extends UniTimeMenu {
 	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
 	
 	private MenuBar iMenu;
@@ -118,6 +117,20 @@ public class UniTimeMenuBar extends Composite {
 				rootPanel.add(UniTimeMenuBar.this);
 				if (iSimple != null)
 					iSimple.setHeight(iMenu.getOffsetHeight() + "px");
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+		});
+	}
+	
+	@Override
+	public void reload() {
+		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
+			@Override
+			public void onSuccess(List<MenuInterface> result) {
+				iMenu.clearItems();
+				initMenu(iMenu, result, 0);
 			}
 			@Override
 			public void onFailure(Throwable caught) {

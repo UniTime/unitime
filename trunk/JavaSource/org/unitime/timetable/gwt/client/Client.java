@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.page.UniTimeMenu;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
@@ -152,4 +153,15 @@ public class Client implements EntryPoint {
 		if ($wnd.gwtOnLoad)
 			$wnd.gwtOnLoad();
 	}-*/;
+	
+	public static void reloadMenu() {
+		for (final Components c: Components.values()) {
+			final RootPanel p = RootPanel.get(c.id());
+			if (p != null) {
+				for (int i = 0; i < p.getWidgetCount(); i++)
+					if (p.getWidget(i) instanceof UniTimeMenu)
+						((UniTimeMenu)p.getWidget(i)).reload();
+			}
+		}
+	}
 }
