@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
@@ -257,6 +258,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 					h.onLogIn(e);
 				if (iOnLoginCommand != null) iOnLoginCommand.execute();
+				Client.reloadMenu();
 			}
 		};
 	}
@@ -306,7 +308,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogIn(e);
-					if (iOnLoginCommand != null) iOnLoginCommand.execute();						
+					if (iOnLoginCommand != null) iOnLoginCommand.execute();
+					Client.reloadMenu();
 				}
 			});
 			return;
@@ -330,6 +333,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogOut(e);
 					iLoggedIn = false;
+					Client.reloadMenu();
 				} else {
 					sSectioningService.whoAmI(new AsyncCallback<String>() {
 						@Override
@@ -340,7 +344,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 							iLastUser = null;
 							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 								h.onLogOut(e);
-							iLoggedIn = false;					
+							iLoggedIn = false;
+							Client.reloadMenu();
 						}
 
 						@Override
@@ -349,6 +354,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 								h.onLogOut(e);
+							Client.reloadMenu();
 						}
 					});
 				}
