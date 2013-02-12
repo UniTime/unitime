@@ -241,6 +241,7 @@ public class UniTimeSideBar extends UniTimeMenu {
 		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
 			@Override
 			public void onSuccess(List<MenuInterface> result) {
+				iStackPanel.setActive(false);
 				iTree.clear();
 				iStackPanel.clear();
 				initMenu(result);
