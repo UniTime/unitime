@@ -57,7 +57,6 @@ import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DisclosurePanel;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -73,7 +72,7 @@ import com.google.gwt.user.client.ui.TreeItem;
 /**
  * @author Tomas Muller
  */
-public class UniTimeSideBar extends Composite {
+public class UniTimeSideBar extends UniTimeMenu {
 	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
 
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
@@ -230,6 +229,21 @@ public class UniTimeSideBar extends Composite {
 				rootPanel.add(UniTimeSideBar.this);
 				rootPanel.getElement().getStyle().clearWidth();
 				saveState();
+			}
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+		});
+	}
+	
+	@Override
+	public void reload() {
+		iService.getMenu(new AsyncCallback<List<MenuInterface>>() {
+			@Override
+			public void onSuccess(List<MenuInterface> result) {
+				iTree.clear();
+				iStackPanel.clear();
+				initMenu(result);
 			}
 			@Override
 			public void onFailure(Throwable caught) {
