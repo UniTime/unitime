@@ -47,9 +47,9 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 	@Override
 	public Collection<String> execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		ArrayList<String> notFound = new ArrayList<String>();
-		Lock lock = server.lockStudent(iRequest.getStudentId(), null, true);
+		Lock lock = (iRequest.getStudentId() == null ? null : server.lockStudent(iRequest.getStudentId(), null, true));
 		try {
-			Student student = server.getStudent(iRequest.getStudentId());
+			Student student = (iRequest.getStudentId() == null ? null : server.getStudent(iRequest.getStudentId()));
 			for (CourseRequestInterface.Request cr: iRequest.getCourses()) {
 				if (!cr.hasRequestedFreeTime() && cr.hasRequestedCourse() && lookup(server, student, cr.getRequestedCourse()) == null)
 					notFound.add(cr.getRequestedCourse());
@@ -68,7 +68,8 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 			}
 			return notFound;
 		} finally {
-			lock.release();
+			if (lock != null)
+				lock.release();
 		}
 	}
 	
