@@ -42,9 +42,4 @@ public abstract class BaseInstructionalOfferingDAO extends _RootDAO<Instructiona
 	public List<InstructionalOffering> findBySession(org.hibernate.Session hibSession, Long sessionId) {
 		return hibSession.createQuery("from InstructionalOffering x where x.session.uniqueId = :sessionId").setLong("sessionId", sessionId).list();
 	}
-
-	@SuppressWarnings("unchecked")
-	public List<InstructionalOffering> findByConsentType(org.hibernate.Session hibSession, Long consentTypeId) {
-		return hibSession.createQuery("from InstructionalOffering x where x.consentType.uniqueId = :consentTypeId").setLong("consentTypeId", consentTypeId).list();
-	}
 }

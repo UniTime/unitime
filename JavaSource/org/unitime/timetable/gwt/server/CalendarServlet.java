@@ -684,8 +684,8 @@ public class CalendarServlet extends HttpServlet {
         out.println("SEQUENCE:0");
         out.println("SUMMARY:" + clazz.getClassLabel(course));
         String desc = (course.getTitle() == null ? "" : course.getTitle());
-        if (course.getInstructionalOffering().getConsentType() != null)
-        	desc += " (" + course.getInstructionalOffering().getConsentType().getLabel() + ")";
+        if (course.getConsentType() != null)
+        	desc += " (" + course.getConsentType().getLabel() + ")";
 			out.println("DESCRIPTION:" + desc);
 		if (!assignment.getRooms().isEmpty()) {
 			String loc = "";

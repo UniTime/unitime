@@ -273,15 +273,15 @@ public class CourseOfferingEditAction extends Action {
 		        	co.setCourseType(CourseTypeDAO.getInstance().get(Long.valueOf(frm.getCourseTypeId()), hibSession));
 		        }
 
+		        if (frm.getConsent()==null || frm.getConsent().intValue()<=0)
+		            co.setConsentType(null);
+		        else {
+		            OfferingConsentType oct = odao.get(frm.getConsent());
+		            co.setConsentType(oct);
+		        }
+
 		        // Update consent only if course is controlling
 		        if (co.isIsControl().booleanValue()) {
-			        if (frm.getConsent()==null || frm.getConsent().intValue()<=0)
-			            io.setConsentType(null);
-			        else {
-			            OfferingConsentType oct = odao.get(frm.getConsent());
-			            io.setConsentType(oct);
-			        }
-
 			        if (frm.getCreditFormat() == null || frm.getCreditFormat().length() == 0 || frm.getCreditFormat().equals(Constants.BLANK_OPTION_VALUE)){
 			        	CourseCreditUnitConfig origConfig = io.getCredit();
 			        	if (origConfig != null){
@@ -450,7 +450,13 @@ public class CourseOfferingEditAction extends Action {
         frm.setWkDropDefault(io.getSession().getLastWeekToDrop());
         frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(io.getSession().getSessionBeginDateTime()));
         frm.setCourseTypeId(co.getCourseType() == null ? "" : co.getCourseType().getUniqueId().toString());
-        
+
+        if (co.getConsentType()!=null)
+            frm.setConsent(co.getConsentType().getUniqueId());
+        else
+            frm.setConsent(new Long(-1));
+        LookupTables.setupConsentType(request);
+
         for (DepartmentalInstructor instructor: new TreeSet<DepartmentalInstructor>(io.getCoordinators()))
             frm.getInstructors().add(instructor.getUniqueId().toString());
 
@@ -461,12 +467,6 @@ public class CourseOfferingEditAction extends Action {
         
         // Consent Type and Credit can be edited only on the controlling course offering
         if (co.isIsControl().booleanValue()) {
-            if (io.getConsentType()!=null)
-                frm.setConsent(io.getConsentType().getUniqueId());
-            else
-                frm.setConsent(new Long(-1));
-
-            LookupTables.setupConsentType(request);
 
             if (frm.getCreditFormat() == null){
     	        if (io.getCredit() != null){
@@ -516,8 +516,7 @@ public class CourseOfferingEditAction extends Action {
                 deptsIdsArray[idx++] = departmentId;
 
             LookupTables.setupInstructors(request, sessionContext, deptsIdsArray);
-        } else
-            frm.setConsent(null);
+        }
 
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {
 			@Override
@@ -546,16 +545,11 @@ public class CourseOfferingEditAction extends Action {
 
         // Consent Type and Credit can be edited only on the controlling course offering
         if (frm.getIsControl().booleanValue()) {
-            if (frm.getConsent()==null)
-                frm.setConsent(new Long(-1));
-
             LookupTables.setupConsentType(request);
             LookupTables.setupCourseCreditFormats(request); // Course Credit Formats
             LookupTables.setupCourseCreditTypes(request); //Course Credit Types
             LookupTables.setupCourseCreditUnitTypes(request); //Course Credit Unit Types
         }
-        else
-            frm.setConsent(null);
 
         CourseOffering co = new CourseOfferingDAO().get(frm.getCourseOfferingId());
         LookupTables.setupCourseOfferings(request, sessionContext, new LookupTables.CourseFilter() {

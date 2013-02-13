@@ -560,11 +560,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
          	changed = true;
         }
 
-		if (elementConsent(element, io)){
-         	addNote("\tconsent changed");
-			changed = true;
-		}
-		
 		if (elementCourse(element, io, action)){
          	addNote("\tcourses changed");
 			changed = true;
@@ -715,7 +710,16 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				}
 				if (title != null && title.trim().length() > 0){
 					newCourseOffering.setTitle(title.trim());
-				}		
+				}
+				
+				Element consentElement = courseElement.element("consent");
+				if (consentElement == null)
+					consentElement = element.element("consent");
+				if (consentElement != null) { // no consent on course -- try to take consent from the parent (offering)
+					String consentType = getRequiredStringAttribute(consentElement, "type", "consent");
+					newCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(consentType));
+				}
+				
 				ImportCourseOffering importcourseOffering = new ImportCourseOffering(newCourseOffering, courseElement);
 				courses.add(importcourseOffering);
 			}
@@ -1356,6 +1360,19 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							addNote("\tchanged title: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						}	
+						if (oco.getConsentType() == null && nco.getConsentType() != null) {
+							oco.setConsentType(nco.getConsentType());
+							addNote("\tadded consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getConsentType() != null && nco.getConsentType() == null) {
+							oco.setConsentType(null);
+							addNote("\tremoved consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						} else if (oco.getConsentType() != null && nco.getConsentType() != null && !oco.getConsentType().equals(nco.getConsentType())) {
+							oco.setConsentType(nco.getConsentType());
+							addNote("\tchanged consent: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
+							changed = true;
+						}
 						if (oco.getPermId() == null){
 							oco.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), this).toString());
 							addNote("\tadded missing permId: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
@@ -2214,20 +2231,6 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(changed);
 	}
 
-	private boolean elementConsent(Element element, InstructionalOffering io) throws Exception{
-		boolean changed = false;
-		Element consentElement = element.element("consent");
-		if (consentElement != null){
-			String consentType = getRequiredStringAttribute(consentElement, "type", "consent");
-			if (io.getConsentType() == null || !io.getConsentType().getReference().equals(consentType)){
-				io.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(consentType));				
-				changed = true;
-				addNote("\tconsent changed");
-			} 
-		}
-		return(changed);
-	}
-	
 	private void deleteDistributionPref(DistributionPref dp){
 		addNote("\tdeleting meets with distribution preference:  " + dp.preferenceText(true, false, "", ", ", ""));
         HashSet relatedInstructionalOfferings = new HashSet();

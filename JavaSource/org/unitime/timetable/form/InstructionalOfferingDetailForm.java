@@ -68,7 +68,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private List courseOfferings;
     private String subjectAreaAbbr;
     private String courseNbr;
-    private String consentType;
     private String creditText;
     private String nextId;
     private String previousId;
@@ -247,13 +246,6 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         this.instrOfferingNameNoTitle = instrOfferingNameNoTitle;
     }    
         
-    public String getConsentType() {
-        return consentType;
-    }
-    public void setConsentType(String consentType) {
-        this.consentType = consentType;
-    }
-    
     public String getCatalogLinkLabel() {
 		return catalogLinkLabel;
 	}
@@ -338,6 +330,13 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
     	for (Iterator i=courseOfferings.iterator();i.hasNext();)
     		if (((CourseOffering)i.next()).getCourseType()!=null) return true;
+    	return false;
+    }
+    
+    public boolean getHasConsent() {
+    	if (courseOfferings==null || courseOfferings.isEmpty()) return false;
+    	for (Iterator i=courseOfferings.iterator();i.hasNext();)
+    		if (((CourseOffering)i.next()).getConsentType()!=null) return true;
     	return false;
     }
 }

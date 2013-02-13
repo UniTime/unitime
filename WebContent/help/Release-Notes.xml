@@ -434,6 +434,24 @@
 		</item>
 	</category>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Course Types</name>
+			<description>
+				<line>Course types can be defined under Administration &gt; Other &gt; Course Types</line>
+				<line>Each course offering can have a course type (to be edited on Edit Course Offering page).</line>
+				<line>Through student scheduling status types, a student can be allowed to request only courses of certain course types.</line>
+			</description>
+		</item>
+		<item>
+			<name>Consent Types</name>
+			<description>
+				<line>Consent of department / instructor moved from instructional offering to course offering level.</line>
+				<line>This (together with course reservations) allows for the use case when a consent is only needed for students that enroll into the offering through one of the cross-listed courses.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Changes</title>
 		<item>
 			<name>Rooms</name>
@@ -521,14 +539,6 @@
 			<name>Designators</name>
 			<description>
 				<line>Designators page and Designator Required toggle (on the offering) removed.</line>
-			</description>
-		</item>
-		<item>
-			<name>Course Types</name>
-			<description>
-				<line>Course types can be defined under Administration &gt; Other &gt; Course Types</line>
-				<line>Each course offering can have a course type (to be edited on Edit Course Offering page).</line>
-				<line>Through student scheduling status types, a student can be allowed to request only courses of certain course types.</line>
 			</description>
 		</item>
 	</category>

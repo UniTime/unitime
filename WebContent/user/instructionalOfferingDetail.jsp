@@ -236,6 +236,7 @@
 						<logic:equal name="instructionalOfferingDetailForm" property="hasDemandOfferings" value="true">
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
 						</logic:equal>
+						<TD align="left" class="WebTableHeader"><loc:message name="columnConsent"/></TD>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" type="org.unitime.timetable.model.CourseOffering">
@@ -269,6 +270,15 @@
 							 %>
 							</TD>
 						</logic:equal>
+						<TD class="BottomBorderGray">
+							<logic:empty name="co" property="consentType">
+								<loc:message name="noConsentRequired"/>
+							</logic:empty>
+							<logic:notEmpty name="co" property="consentType">
+								<bean:define name="co" property="consentType" id="consentType"/>
+								<bean:write name="consentType" property="abbv"/>
+							</logic:notEmpty>
+						</TD>
 						<TD align="right" class="BottomBorderGray">
 							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
 								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
@@ -336,13 +346,6 @@
 				<logic:equal name="instructionalOfferingDetailForm" property="unlimited" value="true">
 					<span title="<%=MSG.titleUnlimitedEnrollment() %>"><font size="+1">&infin;</font></span>
 				</logic:equal>
-			</TD>
-		</TR>
-
-		<TR>
-			<TD><loc:message name="propertyConsent"/> </TD>
-			<TD>
-				<bean:write name="instructionalOfferingDetailForm" property="consentType" /> 
 			</TD>
 		</TR>
 

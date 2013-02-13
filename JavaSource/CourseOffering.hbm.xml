@@ -184,5 +184,12 @@
             column="course_type_id"
             not-null="false"
             foreign-key="fk_course_offering_type"/>
+
+        <many-to-one
+            name="consentType"
+            class="OfferingConsentType"
+            column="consent_type"
+            not-null="false"
+            foreign-key="fk_course_consent_type"/>
     </class>
 </hibernate-mapping>

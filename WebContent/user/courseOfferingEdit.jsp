@@ -189,17 +189,15 @@
 	
 		
 	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
-		<logic:notEmpty name="courseOfferingEditForm" property="consent">
 		<TR>
 			<TD valign="top"><loc:message name="propertyConsent" /></TD>
 			<TD>
 				<html:select name="courseOfferingEditForm" property="consent">
-					<html:option value="<%=Constants.BLANK_OPTION_VALUE%>"><%=Constants.BLANK_OPTION_LABEL%></html:option>
+					<html:option value="-1"><loc:message name="noConsentRequired"/></html:option>
 					<html:options collection="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" labelProperty="label" property="uniqueId" />
 				</html:select>
 			</TD>
 		</TR>
-		</logic:notEmpty>
 
 		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 		<%
@@ -278,21 +276,19 @@
 	</sec:authorize>
 	
 	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
-		<logic:notEmpty name="courseOfferingEditForm" property="consent">
-			<logic:notEqual name="courseOfferingEditForm" property="consent" value="-1">
-				<TR>
-					<TD valign="top"><loc:message name="propertyConsent" /></TD>
-					<TD>
-						<logic:iterate name="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" scope="request" id="consent" type="org.unitime.timetable.model.OfferingConsentType">
-							<logic:equal name="courseOfferingEditForm" property="consent" value="<%=consent.getUniqueId().toString()%>">
-								<bean:write name="consent" property="label"/>
-							</logic:equal>
-						</logic:iterate>
-					</TD>
-				</TR>
-			</logic:notEqual>
-			<html:hidden property="consent"/>
-		</logic:notEmpty>
+		<logic:notEqual name="courseOfferingEditForm" property="consent" value="-1">
+			<TR>
+				<TD valign="top"><loc:message name="propertyConsent" /></TD>
+				<TD>
+					<logic:iterate name="<%=OfferingConsentType.CONSENT_TYPE_ATTR_NAME%>" scope="request" id="consent" type="org.unitime.timetable.model.OfferingConsentType">
+						<logic:equal name="courseOfferingEditForm" property="consent" value="<%=consent.getUniqueId().toString()%>">
+							<bean:write name="consent" property="label"/>
+						</logic:equal>
+					</logic:iterate>
+				</TD>
+			</TR>
+		</logic:notEqual>
+		<html:hidden property="consent"/>
 
 		<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 			<logic:notEmpty name="courseOfferingEditForm" property="creditText">
