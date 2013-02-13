@@ -117,14 +117,6 @@
             <one-to-many class="Reservation"/>
         </set>
 
-        <many-to-one
-            name="consentType"
-            class="OfferingConsentType"
-            column="consent_type"
-            not-null="false"
-            insert="true"
-            update="true"/>
-
         <set
             name="creditConfigs"
             inverse="true"

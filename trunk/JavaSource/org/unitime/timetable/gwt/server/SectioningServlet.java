@@ -331,7 +331,7 @@ public class SectioningServlet implements SectioningService {
 					a.setParentSection(clazz.getParentClass().getClassSuffix(courseOffering));
 				a.setSubpartId(clazz.getSchedulingSubpart().getUniqueId());
 				if (a.getParentSection() == null)
-					a.setParentSection(courseOffering.getInstructionalOffering().getConsentType() == null ? null : courseOffering.getInstructionalOffering().getConsentType().getLabel());
+					a.setParentSection(courseOffering.getConsentType() == null ? null : courseOffering.getConsentType().getLabel());
 				//TODO: Do we want to populate expected space?
 				a.setExpected(0.0);
 				results.add(a);
@@ -1085,7 +1085,7 @@ public class SectioningServlet implements SectioningService {
 		return getSessionContext().hasPermission(Right.StudentSchedulingAdmin);
 	}
 	
-	public Boolean canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
+	public List<Long> canApprove(Long classOrOfferingId) throws SectioningException, PageAccessException {
 		try {
 			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
@@ -1103,9 +1103,14 @@ public class SectioningServlet implements SectioningService {
 			
 			OnlineSectioningServer server = OnlineSectioningService.getInstance(offering.getControllingCourseOffering().getSubjectArea().getSessionId());
 			
-			if (server == null) return false; //?? !server.getAcademicSession().isSectioningEnabled()
+			if (server == null) return null; //?? !server.getAcademicSession().isSectioningEnabled()
 			
-			return getSessionContext().hasPermissionAnyAuthority(offering, Right.ConsentApproval);
+			List<Long> coursesToApprove = new ArrayList<Long>();
+			for (CourseOffering course: offering.getCourseOfferings()) {
+				if (getSessionContext().hasPermissionAnyAuthority(course, Right.ConsentApproval))
+					coursesToApprove.add(course.getUniqueId());
+			}
+			return coursesToApprove;
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {
@@ -1459,7 +1464,9 @@ public class SectioningServlet implements SectioningService {
 		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
-			if (!canApprove(classOrOfferingId))
+			List<Long> courseIdsCanApprove = canApprove(classOrOfferingId);
+			
+			if (courseIdsCanApprove == null || courseIdsCanApprove.isEmpty())
 				throw new SectioningException(MSG.exceptionInsufficientPrivileges());
 
 			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1474,7 +1481,7 @@ public class SectioningServlet implements SectioningService {
 			
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
-			server.execute(new ApproveEnrollmentsAction(offering.getUniqueId(), studentIds, approval), currentUser());
+			server.execute(new ApproveEnrollmentsAction(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 			
 			return approval;
 		} catch (PageAccessException e) {
@@ -1492,7 +1499,8 @@ public class SectioningServlet implements SectioningService {
 		try {
 			org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 			
-			if (!canApprove(classOrOfferingId))
+			List<Long> courseIdsCanApprove = canApprove(classOrOfferingId);
+			if (courseIdsCanApprove == null || courseIdsCanApprove.isEmpty())
 				throw new SectioningException(MSG.exceptionInsufficientPrivileges());
 			
 			InstructionalOffering offering = (classOrOfferingId >= 0 ? InstructionalOfferingDAO.getInstance().get(classOrOfferingId, hibSession) : null);
@@ -1508,7 +1516,7 @@ public class SectioningServlet implements SectioningService {
 			UserContext user = getSessionContext().getUser();
 			String approval = new Date().getTime() + ":" + user.getExternalUserId() + ":" + user.getName();
 			
-			return server.execute(new RejectEnrollmentsAction(offering.getUniqueId(), studentIds, approval), currentUser());
+			return server.execute(new RejectEnrollmentsAction(offering.getUniqueId(), studentIds, courseIdsCanApprove, approval), currentUser());
 		} catch (PageAccessException e) {
 			throw e;
 		} catch (SectioningException e) {

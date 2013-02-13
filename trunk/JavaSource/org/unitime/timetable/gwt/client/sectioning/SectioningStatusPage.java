@@ -309,9 +309,9 @@ public class SectioningStatusPage extends Composite {
 				else
 					LoadingWidget.getInstance().show(MESSAGES.loadingEnrollments(MESSAGES.clazz(event.getData().getSubject(), event.getData().getCourseNbr(), event.getData().getSubpart(), event.getData().getClazz())));
 				if (iOnline) {
-					iSectioningService.canApprove(id, new AsyncCallback<Boolean>() {
+					iSectioningService.canApprove(id, new AsyncCallback<List<Long>>() {
 						@Override
-						public void onSuccess(final Boolean canApprove) {
+						public void onSuccess(final List<Long> courseIdsCanApprove) {
 							iSectioningService.findEnrollments(iOnline, iCourseFilter, event.getData().getCourseId(), event.getData().getClazzId(), new AsyncCallback<List<Enrollment>>() {
 								@Override
 								public void onFailure(Throwable caught) {
@@ -328,7 +328,7 @@ public class SectioningStatusPage extends Composite {
 									setLoading(false);
 									iEnrollmentTable.clear();
 									iEnrollmentTable.setId(id);
-									iEnrollmentTable.populate(result, canApprove);
+									iEnrollmentTable.populate(result, courseIdsCanApprove);
 									if (event.getData().getConfigId() == null)
 										iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 									else
@@ -365,7 +365,7 @@ public class SectioningStatusPage extends Composite {
 							setLoading(false);
 							iEnrollmentTable.clear();
 							iEnrollmentTable.setId(id);
-							iEnrollmentTable.populate(result, false);
+							iEnrollmentTable.populate(result, null);
 							if (event.getData().getConfigId() == null)
 								iEnrollmentDialog.setText(MESSAGES.titleEnrollments(MESSAGES.course(event.getData().getSubject(), event.getData().getCourseNbr())));
 							else

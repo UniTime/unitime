@@ -1437,7 +1437,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	}
     	if (isShowConsent()){
     	    PdfPCell cell = createCell();
-    	    addText(cell, (io.getConsentType()!=null ? io.getConsentType().getAbbv() : ""), false, false, Element.ALIGN_CENTER, color, true);
+    	    addText(cell, co.getConsentType() != null ? co.getConsentType().getAbbv() : MSG.noConsentRequired(), true, false, Element.ALIGN_LEFT, isManagedAs ? sDisableColor : color, true);
+    	    for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+            	CourseOffering x = (CourseOffering)it.next();
+            	addText(cell, (x.getConsentType() != null ? x.getConsentType().getAbbv() : MSG.noConsentRequired()), false, false, Element.ALIGN_LEFT, sDisableColor, true);
+    	    }
     	    iPdfTable.addCell(cell);
     	} 
     	if (isShowSchedulePrintNote()){

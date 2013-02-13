@@ -44,11 +44,13 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Long iOfferingId;
 	private Collection<Long> iStudentIds;
+	private Collection<Long> iCourseIdsCanApprove;
 	private String iApproval;
 	
-	public RejectEnrollmentsAction(Long offeringId, Collection<Long> studentIds, String approval) {
+	public RejectEnrollmentsAction(Long offeringId, Collection<Long> studentIds, Collection<Long> courseIdsCanApprove, String approval) {
 		iOfferingId = offeringId;
 		iStudentIds = studentIds;
+		iCourseIdsCanApprove = courseIdsCanApprove;
 		iApproval = approval;
 	}
 	
@@ -75,7 +77,7 @@ public class RejectEnrollmentsAction implements OnlineSectioningAction<Boolean> 
 				
 				for (Config config: offering.getConfigs())
 					for (Enrollment enrollment: new ArrayList<Enrollment>(config.getEnrollments())) {
-						if (getStudentIds().contains(enrollment.getStudent().getId())) {
+						if (getStudentIds().contains(enrollment.getStudent().getId()) && iCourseIdsCanApprove.contains(enrollment.getCourse().getId())) {
 							
 							OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 							action.setStudent(

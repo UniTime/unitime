@@ -1204,7 +1204,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
 						iEnrollmentHeader.clearMessage();
 						iEnrollments.clear();
-						iEnrollments.populate(result, false);
+						iEnrollments.populate(result, null);
 					}
 				}
 			});

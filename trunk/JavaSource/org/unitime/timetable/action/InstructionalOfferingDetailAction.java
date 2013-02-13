@@ -352,11 +352,6 @@ public class InstructionalOfferingDetailAction extends Action {
         }
         frm.setCoordinators(coordinators);
         
-        if (io.getConsentType()==null)
-            frm.setConsentType(MSG.noConsentRequired());
-        else
-            frm.setConsentType(io.getConsentType().getLabel());
-        
         for (Iterator i=io.getInstrOfferingConfigs().iterator();i.hasNext();)
         	if (((InstrOfferingConfig)i.next()).isUnlimitedEnrollment().booleanValue()) {
         		frm.setUnlimited(Boolean.TRUE); break;

@@ -8397,4 +8397,16 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value = 'PositionTypeEdit'
 		</sql>
 	</update>
+	<update version="111" date="13-Feb-2013" comment="Course Consent Type">
+		<plsql>alter table %SCHEMA%.course_offering add consent_type number(20,0)</plsql>
+		<mysql>alter table %SCHEMA%.course_offering add consent_type decimal(20,0)</mysql>
+		<sql>
+			alter table %SCHEMA%.course_offering add constraint fk_course_consent_type foreign key (consent_type)
+			references %SCHEMA%.offr_consent_type (uniqueid) on delete cascade
+		</sql>
+		<sql>update %SCHEMA%.course_offering set consent_type = (select o.consent_type from %SCHEMA%.instructional_offering o where o.uniqueid = instr_offr_id)</sql>
+		<mysql>alter table %SCHEMA%.instructional_offering drop foreign key fk_instr_offr_consent_type</mysql>
+		<plsql>alter table %SCHEMA%.instructional_offering drop constraint fk_instr_offr_consent_type</plsql>
+		<sql>alter table %SCHEMA%.instructional_offering drop column consent_type</sql>
+	</update>
 </dbupdate>

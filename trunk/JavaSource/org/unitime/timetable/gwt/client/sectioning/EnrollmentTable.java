@@ -554,13 +554,13 @@ public class EnrollmentTable extends Composite {
 		iHeader.setEnabled("approve", false);
 		iHeader.setEnabled("reject", false);
 		if (iOfferingId != null) {
-			iSectioningService.canApprove(iOfferingId, new AsyncCallback<Boolean>() {
+			iSectioningService.canApprove(iOfferingId, new AsyncCallback<List<Long>>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 				}
 				@Override
-				public void onSuccess(final Boolean canApprove) {
+				public void onSuccess(final List<Long> courseIdsToApprove) {
 					iSectioningService.listEnrollments(iOfferingId, new AsyncCallback<List<ClassAssignmentInterface.Enrollment>>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -576,14 +576,14 @@ public class EnrollmentTable extends Composite {
 							} else {
 								iHeader.clearMessage();
 								iHeader.setCollapsible(true);
-								populate(result, canApprove);
+								populate(result, courseIdsToApprove);
 								if (iEnrollments.getRowCount() > 2) {
 									for (int row = 1; row < iEnrollments.getRowCount() - 1; row++) {
 										iEnrollments.getRowFormatter().setVisible(row, SectioningCookie.getInstance().getEnrollmentCoursesDetails());
 									}
 								}
-								iHeader.setEnabled("approve", canApprove && iApprove != null && iApprove.isApplicable());
-								iHeader.setEnabled("reject", canApprove && iReject != null && iReject.isApplicable());
+								iHeader.setEnabled("approve", courseIdsToApprove != null && !courseIdsToApprove.isEmpty() && iApprove != null && iApprove.isApplicable());
+								iHeader.setEnabled("reject", courseIdsToApprove != null && !courseIdsToApprove.isEmpty() && iReject != null && iReject.isApplicable());
 							}
 						}
 					});					
@@ -600,7 +600,7 @@ public class EnrollmentTable extends Composite {
 	}
 
 
-	public void populate(List<ClassAssignmentInterface.Enrollment> enrollments, boolean canApprove) {
+	public void populate(List<ClassAssignmentInterface.Enrollment> enrollments, List<Long> courseIdsCanApprove) {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		Collections.sort(enrollments, new Comparator<ClassAssignmentInterface.Enrollment>() {
@@ -1336,7 +1336,7 @@ public class EnrollmentTable extends Composite {
 			header.add(hConflictRoom);
 		}
 		
-		if (canApprove) {
+		if (courseIdsCanApprove != null && !courseIdsCanApprove.isEmpty()) {
 			final UniTimeTableHeader hApproved = new UniTimeTableHeader(MESSAGES.colApproved());
 			//hTimeStamp.setWidth("100px");
 			hApproved.addOperation(new Operation() {
@@ -1590,8 +1590,10 @@ public class EnrollmentTable extends Composite {
 					line.add(new HTML("&nbsp;", false));
 				}
 			}
-			if (canApprove) {
+			if (courseIdsCanApprove != null && !courseIdsCanApprove.isEmpty()) {
 				if (!enrollment.hasClasses()) { // not enrolled
+					line.add(new HTML("&nbsp;"));
+				} else if (!courseIdsCanApprove.contains(enrollment.getCourseId())) { // cannot approve this course
 					line.add(new HTML("&nbsp;"));
 				} else if (enrollment.getApprovedDate() == null) { // not yet approved
 					CheckBox ch = new CheckBox();
