@@ -354,7 +354,7 @@ public class PdfWorksheet {
                 lpad(courseLimit<=0?unlimited?"  inf":"":String.valueOf(courseLimit),5)+" "+
                 lpad(enrl<=0?"":String.valueOf(enrl),5)+" "+
                 lpad(lastLikeEnrl<=0?"":String.valueOf(lastLikeEnrl),5)+" "+
-                rpad(offering.getConsentType()==null?"":offering.getConsentType().getAbbv(),10)+" "+
+                rpad(co.getConsentType()==null?"":co.getConsentType().getAbbv(),10)+" "+
                 rpad(offering.getCourseOfferings().size()>1?offering.getCourseName():"",10)
                 );
         while (title.length()>37) {

@@ -28,7 +28,6 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
-import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Session;
 
@@ -50,7 +49,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	private Integer iLastWeekToDrop;
 
 	private Session iSession;
-	private OfferingConsentType iConsentType;
 	private Set<CourseOffering> iCourseOfferings;
 	private Set<InstrOfferingConfig> iInstrOfferingConfigs;
 	private Set<Reservation> iReservations;
@@ -122,9 +120,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
 
-	public OfferingConsentType getConsentType() { return iConsentType; }
-	public void setConsentType(OfferingConsentType consentType) { iConsentType = consentType; }
-
 	public Set<CourseOffering> getCourseOfferings() { return iCourseOfferings; }
 	public void setCourseOfferings(Set<CourseOffering> courseOfferings) { iCourseOfferings = courseOfferings; }
 	public void addTocourseOfferings(CourseOffering courseOffering) {
@@ -178,7 +173,6 @@ public abstract class BaseInstructionalOffering implements Serializable {
 	public String toDebugString() {
 		return "InstructionalOffering[" +
 			"\n	ByReservationOnly: " + getByReservationOnly() +
-			"\n	ConsentType: " + getConsentType() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	InstrOfferingPermId: " + getInstrOfferingPermId() +
 			"\n	LastWeekToChange: " + getLastWeekToChange() +

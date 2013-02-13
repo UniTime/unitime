@@ -1606,7 +1606,23 @@ public class WebInstructionalOfferingTableBuilder {
             row.addContent(initNormalCell("", isEditable));
     	} 
     	if (isShowConsent()){
-            row.addContent(initNormalCell(io.getConsentType()!=null ? "<span title='"+io.getConsentType().getLabel()+"'>"+io.getConsentType().getAbbv()+"</span>" : "&nbsp;", isEditable));     		
+    		String consent = "";
+    		if (co.isIsControl().booleanValue()) consent += "<b>";
+    		if (isManagedAs)
+    			consent = "<font color=\"" + disabledColor + "\"><b>" + (co.getConsentType() == null ? MSG.noConsentRequired() : "<span title='"+co.getConsentType().getLabel()+"'>" + co.getConsentType().getAbbv() + "</span>") + "</b></font>";
+    		else
+    			consent = "<b>" + (co.getConsentType() == null ? MSG.noConsentRequired() : "<span title='"+co.getConsentType().getLabel()+"'>" + co.getConsentType().getAbbv() + "</span>") + "</b>";
+    		if (co.isIsControl().booleanValue()) consent += "</b>";
+    		for (Iterator it = io.courseOfferingsMinusSortCourseOfferingForSubjectArea(co.getSubjectArea().getUniqueId()).iterator(); it.hasNext();) {
+            	CourseOffering x = (CourseOffering)it.next();
+            	consent += "<br>";
+            	if (x.getConsentType() != null) {
+            		consent += "<font color=\"" + disabledColor + "\"><span title='"+x.getConsentType().getLabel()+"'>"+x.getConsentType().getAbbv()+"</span></font>";
+            	} else {
+            		consent += "<font color=\"" + disabledColor + "\">"+MSG.noConsentRequired()+"</font>";
+            	}
+    		}
+            row.addContent(initNormalCell(consent, isEditable));     		
     	}
     	if (isShowSchedulePrintNote()){
             row.addContent(buildSchedulePrintNote(io, isEditable, context.getUser()));     		

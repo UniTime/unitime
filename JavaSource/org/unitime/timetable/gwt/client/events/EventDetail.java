@@ -515,7 +515,7 @@ public class EventDetail extends Composite {
 						if (result == null) result = new GwtRpcResponseList<Enrollment>();
 						iEnrollmentHeader.clearMessage();
 						iEnrollments.clear();
-						iEnrollments.populate(result, false);
+						iEnrollments.populate(result, null);
 						int conf = 0;
 						for (Enrollment e: result)
 							if (e.hasConflict()) conf ++;

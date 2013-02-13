@@ -165,8 +165,6 @@ public class CourseOfferingExport extends BaseExport {
         offeringElement.addAttribute("id", (offering.getExternalUniqueId()!=null?offering.getExternalUniqueId():offering.getUniqueId().toString()));
         offeringElement.addAttribute("offered", (offering.isNotOffered()?"false":"true"));
         offeringElement.addAttribute("action", "insert");
-        if (offering.getConsentType()!=null)
-            offeringElement.addElement("consent").addAttribute("type", offering.getConsentType().getReference());
         for (Iterator i=offering.getCreditConfigs().iterator();i.hasNext();) {
             CourseCreditUnitConfig credit = (CourseCreditUnitConfig)i.next();
             exportCredit(offeringElement.addElement("courseCredit"), credit, session);
@@ -215,6 +213,8 @@ public class CourseOfferingExport extends BaseExport {
         courseElement.addAttribute("subject", course.getSubjectArea().getSubjectAreaAbbreviation());
         courseElement.addAttribute("courseNbr", course.getCourseNbr());
         courseElement.addAttribute("controlling", course.isIsControl()?"true":"false");
+        if (course.getConsentType()!=null)
+        	courseElement.addElement("consent").addAttribute("type", course.getConsentType().getReference());
         if (course.getTitle()!=null)
             courseElement.addAttribute("title", course.getTitle());
         if (course.getScheduleBookNote()!=null)

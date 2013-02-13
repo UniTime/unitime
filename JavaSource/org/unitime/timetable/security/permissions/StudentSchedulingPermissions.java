@@ -20,6 +20,7 @@
 package org.unitime.timetable.security.permissions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -83,28 +84,28 @@ public class StudentSchedulingPermissions {
 	}
 
 	@PermissionForRight(Right.ConsentApproval)
-	public static class ConsentApproval implements Permission<InstructionalOffering> {
+	public static class ConsentApproval implements Permission<CourseOffering> {
 		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
-		public boolean check(UserContext user, InstructionalOffering source) {
+		public boolean check(UserContext user, CourseOffering source) {
 			if (source.getConsentType() == null) return false;
 			
 			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
 				if (!"IN".equals(source.getConsentType().getReference())) return false;
 				
-				for (DepartmentalInstructor instructor: source.getCoordinators()) {
+				for (DepartmentalInstructor instructor: source.getInstructionalOffering().getCoordinators()) {
 					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
 				}
 
 				return false;
 			} else {
-				return permissionDepartment.check(user, source.getControllingCourseOffering().getSubjectArea().getDepartment());
+				return permissionDepartment.check(user, source.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getDepartment());
 			}
 		}
 
 		@Override
-		public Class<InstructionalOffering> type() { return InstructionalOffering.class; }
+		public Class<CourseOffering> type() { return CourseOffering.class; }
 		
 	}
 	

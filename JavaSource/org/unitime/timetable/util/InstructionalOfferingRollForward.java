@@ -401,7 +401,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			return(null);
 		}
 		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
-		toInstructionalOffering.setConsentType(fromInstructionalOffering.getConsentType());
 		toInstructionalOffering.setNotOffered(fromInstructionalOffering.isNotOffered());
 		toInstructionalOffering.setSession(toSession);
 		toInstructionalOffering.setUniqueIdRolledForwardFrom(fromInstructionalOffering.getUniqueId());
@@ -459,6 +458,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setUniqueIdRolledForwardFrom(fromCourseOffering.getUniqueId());
 			toCourseOffering.setInstructionalOffering(toInstructionalOffering);
 			toCourseOffering.setReservation(fromCourseOffering.getReservation());
+			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 		}
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
@@ -474,7 +474,6 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			return(null);
 		}
 		InstructionalOffering toInstructionalOffering = new InstructionalOffering();
-		toInstructionalOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
 		toInstructionalOffering.setNotOffered(new Boolean(false));
 		toInstructionalOffering.setSession(session);
 		toInstructionalOffering.setByReservationOnly(false);
@@ -557,6 +556,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 		toCourseOffering.setTitle(courseCatalogEntry.getTitle());
 		toCourseOffering.setNbrExpectedStudents(new Integer(0));
 		toCourseOffering.setDemand(new Integer(0));
+		toCourseOffering.setConsentType(OfferingConsentType.getOfferingConsentTypeForReference(courseCatalogEntry.getApprovalType()));
 		return(toCourseOffering);
 	}
 	

@@ -25,6 +25,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.CourseType;
 import org.unitime.timetable.model.DemandOfferingType;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.SubjectArea;
 
 public abstract class BaseCourseOffering implements Serializable {
@@ -50,6 +51,7 @@ public abstract class BaseCourseOffering implements Serializable {
 	private CourseOffering iDemandOffering;
 	private DemandOfferingType iDemandOfferingType;
 	private CourseType iCourseType;
+	private OfferingConsentType iConsentType;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_IS_CONTROL = "isControl";
@@ -133,6 +135,9 @@ public abstract class BaseCourseOffering implements Serializable {
 	public CourseType getCourseType() { return iCourseType; }
 	public void setCourseType(CourseType courseType) { iCourseType = courseType; }
 
+	public OfferingConsentType getConsentType() { return iConsentType; }
+	public void setConsentType(OfferingConsentType consentType) { iConsentType = consentType; }
+
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof CourseOffering)) return false;
 		if (getUniqueId() == null || ((CourseOffering)o).getUniqueId() == null) return false;
@@ -150,6 +155,7 @@ public abstract class BaseCourseOffering implements Serializable {
 
 	public String toDebugString() {
 		return "CourseOffering[" +
+			"\n	ConsentType: " + getConsentType() +
 			"\n	CourseNbr: " + getCourseNbr() +
 			"\n	CourseType: " + getCourseType() +
 			"\n	Demand: " + getDemand() +

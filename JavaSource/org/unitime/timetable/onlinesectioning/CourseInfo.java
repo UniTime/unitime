@@ -52,9 +52,9 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		iType = (course.getCourseType() == null ? null : course.getCourseType().getReference());
 		iTitle = (course.getTitle() == null ? null : course.getTitle().trim());
 		iNote = course.getScheduleBookNote();
-		if (course.getInstructionalOffering().getConsentType() != null) {
-			iConsent = course.getInstructionalOffering().getConsentType().getLabel();
-			iConsentAbbv = course.getInstructionalOffering().getConsentType().getAbbv();
+		if (course.getConsentType() != null) {
+			iConsent = course.getConsentType().getLabel();
+			iConsentAbbv = course.getConsentType().getAbbv();
 		}
 		iCourseNameLowerCase = (iSubjectArea + " " + iCourseNbr).toLowerCase();
 		iTitleLowerCase = (iTitle == null ? null : iTitle.toLowerCase());
