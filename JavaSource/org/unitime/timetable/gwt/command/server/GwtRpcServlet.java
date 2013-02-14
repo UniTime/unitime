@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.filter.QueryLogFilter;
 import org.unitime.timetable.gwt.command.client.GwtRpcCancelledException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -221,6 +222,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		Thread iWaitingThread = null;
 		long iExecutionId;
 		boolean iRunning = false;
+		String iLocale = null;
 		
 		Execution(R request) {
 			setName("RPC:" + request);
@@ -228,11 +230,13 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			iRequest = request;
 			iExecutionId = sIdGenerator.generatedId();
 			iContext = new GwtRpcHelper(getSessionContext(), getPermissionCheck());
+			iLocale = Localization.getLocale();
 		}
 
 		@Override
 		public void run() {
 			iRunning = true;
+			Localization.setLocale(iLocale);
 			// start time
 			long t0 = JProf.currentTimeMillis();
 			try {
