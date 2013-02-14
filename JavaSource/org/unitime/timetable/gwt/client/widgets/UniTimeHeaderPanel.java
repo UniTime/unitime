@@ -208,7 +208,7 @@ public class UniTimeHeaderPanel extends Composite {
 		if (accessKey != null)
 			button.setAccessKey(accessKey);
 		if (width != null)
-			button.getElement().getStyle().setProperty("min-width", width);
+			ToolBox.setMinWidth(button.getElement().getStyle(), width);
 		iOperations.put(operation, iButtons.getWidgetCount());
 		iButtons.add(button);
 		button.getElement().getStyle().setMarginLeft(4, Unit.PX);
@@ -250,7 +250,7 @@ public class UniTimeHeaderPanel extends Composite {
 				if (entry.getValue() == i) op = entry.getKey();
 			if (op == null) continue;
 			final Button button = (Button)iButtons.getWidget(i);
-			String width = button.getElement().getStyle().getProperty("min-width");
+			String width = ToolBox.getMinWidth(button.getElement().getStyle());
 			clone.addButton(op, button.getHTML(), null, width, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
