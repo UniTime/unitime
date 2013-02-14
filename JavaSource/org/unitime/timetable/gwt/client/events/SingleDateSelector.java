@@ -710,7 +710,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date>, Has
 
 		@Override
 		public Date getValue() {
-			if (iDay < 0 || iDay > iDays.size()) return null;
+			if (iDay <= 0 || iDay > iDays.size()) return null;
 			return DateTimeFormat.getFormat("yyyy/MM/dd").parse(iYear + "/" + iMonth + "/" + iDay);
 		}
 
