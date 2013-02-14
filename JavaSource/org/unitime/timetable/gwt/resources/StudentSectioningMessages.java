@@ -78,6 +78,21 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Requires")
 	String colParent();
 	
+	@DefaultMessage("Conflict")
+	String colConflictName();
+
+	@DefaultMessage("Type")
+	String colConflictType();
+
+	@DefaultMessage("Date")
+	String colConflictDate();
+
+	@DefaultMessage("Time")
+	String colConflictTime();
+
+	@DefaultMessage("Room")
+	String colConflictRoom();
+
 	@DefaultMessage("&nbsp;")
 	String colSaved();
 	
@@ -163,16 +178,16 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course does not exist.")
 	String validationUnknownCourseNotExists();
 	
-	@DefaultMessage("Courses")
+	@DefaultMessage("Course Requests")
 	String courseRequestsCourses();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
 	
-	@DefaultMessage("Alternatives")
+	@DefaultMessage("Alternate Course Requests (used only if a course requested above is not available)")
 	String courseRequestsAlternatives();
 	
-	@DefaultMessage("{0}. Alternative")
+	@DefaultMessage("{0}. Alternate")
 	String courseRequestsAlternative(int i);
 	
 	@DefaultMessage("Alternative to {0}")
@@ -193,7 +208,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course with the lowest priority.")
 	String courseRequestsHint8();
 	
-	@DefaultMessage("Alternative(s) to all the courses above.")
+	@DefaultMessage("Alternate request if course(s) above not available.")
 	String courseRequestsHintA0();
 	
 	/* Course Selection Box messages
@@ -298,7 +313,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("(~{0} min)")
 	String distanceConflict(int distanceInMinutes);
 	
-	/* Student Sectioning widget messags
+	/* Student Sectioning widget messages
 	 */
 	@DefaultMessage("<u>R</u>equests")
 	String buttonRequests();
@@ -677,7 +692,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("No schedule stored for the student.")
 	String exceptionNoSchedule();
 	
-	@DefaultMessage("No courses provided.")
+	@DefaultMessage("No courses requested.")
 	String exceptionNoCourse();
 	
 	@DefaultMessage("Unable to compute a schedule (no solution found).")
@@ -794,7 +809,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Available {0} out of {1} spaces, reservation required for {2} of them")
 	String availableSomeReservation(int available, int limit, int availableWithReservation);
 	
-	@DefaultMessage("<sup><font color='#9CB0CE'>r)</font></sup>")
+	@DefaultMessage("<sup><font color='#2066CE'>r)</font></sup>")
 	String htmlReservationSign();
 	
 	@DefaultMessage("No results matching filter {0} found.")
@@ -846,7 +861,7 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Change <u>L</u>og")
 	String tabChangeLog();
 
-	@DefaultMessage("<sup><font color='#9CB0CE'>({0}p)</font></sup>")
+	@DefaultMessage("<sup><font color='#2066CE'>({0}p)</font></sup>")
 	String firstWaitListedPrioritySign(int priority);
 	
 	@DefaultMessage("r) Space available only with a reservation.")
@@ -1020,4 +1035,7 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Mass cancellation is an irreversible operation that will delete all class enrollments and course requests for the selected student(s). Are you sure to do that?")
 	String massCancelConfirmation();
+	
+	@DefaultMessage("<i>Arrange Hours</i>")
+	String arrangeHours();
 }
