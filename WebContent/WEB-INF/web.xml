@@ -110,6 +110,11 @@
     	<servlet-class>org.unitime.timetable.export.ExportServlet</servlet-class>
     </servlet>
     
+    <servlet>
+    	<servlet-name>remoteLogging</servlet-name>
+    	<servlet-class>org.unitime.timetable.gwt.server.UniTimeRemoteLoggingService</servlet-class>
+    </servlet>
+    
     <servlet-mapping>
         <servlet-name>gwt-dispatcher</servlet-name>
         <url-pattern>*.gwt</url-pattern>
@@ -145,6 +150,11 @@
 		<servlet-name>action</servlet-name>
 		<url-pattern>*.do</url-pattern>
 	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>remoteLogging</servlet-name>
+		<url-pattern>/unitime/remote_logging</url-pattern>
+	</servlet-mapping> 
 
 	<!-- Filter to automatically close any open hibernate sessions -->
 	<filter>
