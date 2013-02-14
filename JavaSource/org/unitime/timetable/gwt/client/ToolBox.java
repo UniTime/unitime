@@ -183,17 +183,25 @@ public class ToolBox {
 	}
 	
 	public native static void setWhiteSpace(Style style, String value) /*-{
-		style["white-space"] = value;
+		style.whiteSpace = value;
 	}-*/;
 	
 	public native static void setMaxHeight(Style style, String value) /*-{
-		style["max-height"] = value;
+		style.maxHeight = value;
 	}-*/;
 
 	public native static void setMaxWidth(Style style, String value) /*-{
-		style["max-width"] = value;
+		style.maxWidth = value;
 	}-*/;
 	
+	public native static void setMinWidth(Style style, String value) /*-{
+		style.minWidth = value;
+	}-*/;
+	
+	public native static String getMinWidth(Style style) /*-{
+		return style.minWidth;
+	}-*/;
+
 	public native static int getClientWidth() /*-{
 		var sideMenu = $doc.getElementById("unitime-SideMenu").getElementsByTagName("span");
     	if (sideMenu.length > 0) {
