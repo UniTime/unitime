@@ -667,6 +667,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		EventInterface event = data.getEvent();
 		MeetingInterface meeting = data.getMeeting();
 		MeetingConflictInterface conflict = (meeting instanceof MeetingConflictInterface ? (MeetingConflictInterface) meeting : null );
+		if (conflict != null && conflict.getType() == EventType.Message && getMode().hasFlag(ModeFlag.ShowEventDetails)) return;
 		
 		if (data.hasParent()) {
 			if (conflict != null && conflict.getType() == EventType.Message)
@@ -766,11 +767,11 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		String approval = "";
 		boolean allCancelledOrRejected = false;
 		if (meeting != null) {
-			if (conflict != null && (conflict.getType() == EventType.Message || conflict.getType() == EventType.Unavailabile) && conflict.isAllDay()) {
+			if (conflict != null && (conflict.getType() == EventType.Message || conflict.getType() == EventType.Unavailabile) && conflict.isAllDay() && !getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 				row.add(new HTMLWithColSpan(conflict.getName(), true, 5));
 				row.get(row.size() - 1).addStyleName("indent");
 			} else {
-				if (conflict != null) {
+				if (conflict != null && !getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 					row.add(new HTML(conflict.getType() == EventType.Unavailabile || conflict.getType() == EventType.Message ? conflict.getName() : MESSAGES.conflictWith(conflict.getName()), false));
 					row.get(row.size() - 1).addStyleName("indent");
 				} else {
