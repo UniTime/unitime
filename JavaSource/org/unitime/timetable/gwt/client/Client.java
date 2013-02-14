@@ -21,17 +21,22 @@ package org.unitime.timetable.gwt.client;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.page.UniTimeMenu;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -42,8 +47,36 @@ import com.google.gwt.user.client.ui.RootPanel;
 public class Client implements EntryPoint {
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
+	public static Logger sLogger = Logger.getLogger(Client.class.getName()); 
 	
 	public void onModuleLoad() {
+		GWT.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
+			public void onUncaughtException(Throwable e) {
+				Throwable u = unwrap(e);
+				UniTimeNotifications.error("Uncaught exception: " + u.getMessage());
+				sLogger.log(Level.WARNING, "Uncaught exception: " + u.getMessage(), u);
+			}
+		});
+		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+			@Override
+			public void execute() {
+				onModuleLoadDeferred();
+			}
+		});
+	}
+	
+	public Throwable unwrap(Throwable e) {
+		if (e instanceof UmbrellaException) {
+			UmbrellaException ue = (UmbrellaException) e;
+			if (ue.getCauses().size() == 1) {
+				return unwrap(ue.getCauses().iterator().next());
+			}
+		}
+		return e;
+	}
+	
+	public void onModuleLoadDeferred() {
 		// register triggers
 		GWT.runAsync(new RunAsyncCallback() {
 			@Override
