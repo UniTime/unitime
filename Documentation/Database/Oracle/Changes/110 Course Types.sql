@@ -19,8 +19,8 @@
 
 create table course_type (
 		uniqueid number(20,0) constraint nn_course_type_uniqueid not null,
-		reference varchar2(20) constraint nn_course_type_reference not null,
-		label varchar2(60) constraint nn_course_type_label not null
+		reference varchar2(20 char) constraint nn_course_type_reference not null,
+		label varchar2(60 char) constraint nn_course_type_label not null
 	);
 
 alter table course_type add constraint pk_course_type primary key (uniqueid);
