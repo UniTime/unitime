@@ -52,6 +52,7 @@ public abstract class BaseLocation implements Serializable {
 	private String iEventAvailability;
 	private Integer iExamCapacity;
 	private String iDisplayName;
+	private String iExternalUniqueId;
 
 	private Session iSession;
 	private Department iEventDepartment;
@@ -78,6 +79,7 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_AVAILABILITY = "eventAvailability";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_DISPLAY_NAME = "displayName";
+	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 
 	public BaseLocation() {
 		initialize();
@@ -139,6 +141,9 @@ public abstract class BaseLocation implements Serializable {
 
 	public String getDisplayName() { return iDisplayName; }
 	public void setDisplayName(String displayName) { iDisplayName = displayName; }
+
+	public String getExternalUniqueId() { return iExternalUniqueId; }
+	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -215,6 +220,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	EventDepartment: " + getEventDepartment() +
 			"\n	EventStatus: " + getEventStatus() +
 			"\n	ExamCapacity: " + getExamCapacity() +
+			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	IgnoreRoomCheck: " + getIgnoreRoomCheck() +
 			"\n	IgnoreTooFar: " + getIgnoreTooFar() +
 			"\n	ManagerIds: " + getManagerIds() +

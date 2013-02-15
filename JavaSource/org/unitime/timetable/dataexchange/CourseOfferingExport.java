@@ -354,6 +354,8 @@ public class CourseOfferingExport extends BaseExport {
                 roomElement.addAttribute("roomNbr", room.getRoomNumber());
             } else {
                 Element roomElement = classElement.addElement("location");
+                if (location.getExternalUniqueId()!=null)
+                    roomElement.addAttribute("id", location.getExternalUniqueId());
                 roomElement.addAttribute("name", location.getLabel());
             }
         }
@@ -426,6 +428,8 @@ public class CourseOfferingExport extends BaseExport {
                     roomElement.addAttribute("roomNbr", room.getRoomNumber());
                 } else {
                     Element roomElement = classElement.addElement("location");
+                    if (rp.getRoom().getExternalUniqueId()!=null)
+                        roomElement.addAttribute("id", rp.getRoom().getExternalUniqueId());
                     roomElement.addAttribute("name", rp.getRoom().getLabel());
                 }
             }
@@ -536,6 +540,8 @@ public class CourseOfferingExport extends BaseExport {
                     roomElement.addAttribute("roomNbr", room.getRoomNumber());
                 } else {
                     Element roomElement = examElement.addElement("location");
+                    if (location.getExternalUniqueId()!=null)
+                        roomElement.addAttribute("id", location.getExternalUniqueId());
                     roomElement.addAttribute("name", location.getLabel());
                 }
             }

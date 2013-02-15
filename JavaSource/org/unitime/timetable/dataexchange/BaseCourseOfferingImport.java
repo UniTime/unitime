@@ -855,8 +855,9 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				Element roomElement = (Element) it.next();
 				
 				String name = getRequiredStringAttribute(roomElement, "name", elementName);
+				String id = getOptionalStringAttribute(roomElement, "id");
 				
-				NonUniversityLocation location = findNonUniversityLocation(name, c);
+				NonUniversityLocation location = findNonUniversityLocation(id, name, c);
 				if (location != null){
 					locations.add(location);
 				} else {
@@ -934,7 +935,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addMissingLocation(building + " " + roomNbr + " - " + c.getSchedulingSubpart().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation());
 					}
 				} else if (location != null){
-					NonUniversityLocation nul = findNonUniversityLocation(location, c);
+					NonUniversityLocation nul = findNonUniversityLocation(null, location, c);
 					if (nul != null) {
 						nonUniversityLocations.add(nul);
 					} else {
@@ -2505,25 +2506,23 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 		return(room);
 	}
 	
-	private NonUniversityLocation findNonUniversityLocation(String name, Class_ c){
+	private NonUniversityLocation findNonUniversityLocation(String id, String name, Class_ c){
 		NonUniversityLocation location = null;
-		if (name != null) {
-			List<?> possibleLocations = findNonUniversityLocationsWithName(name);
-			if (possibleLocations != null){
-				for(Iterator<?> lIt = possibleLocations.iterator(); lIt.hasNext(); ){
-					NonUniversityLocation l = (NonUniversityLocation) lIt.next();
-					if (l.getRoomDepts() != null) {
-						for(Iterator<?> rdIt = l.getRoomDepts().iterator(); rdIt.hasNext(); ){
-							RoomDept rd = (RoomDept) rdIt.next();
-							if (rd.getDepartment().getUniqueId().equals(c.getSchedulingSubpart().getControllingDept().getUniqueId())){
-								location = l;
-								break;
-							}
+		List<?> possibleLocations = findNonUniversityLocationsWithIdOrName(id, name);
+		if (possibleLocations != null){
+			for(Iterator<?> lIt = possibleLocations.iterator(); lIt.hasNext(); ){
+				NonUniversityLocation l = (NonUniversityLocation) lIt.next();
+				if (l.getRoomDepts() != null) {
+					for(Iterator<?> rdIt = l.getRoomDepts().iterator(); rdIt.hasNext(); ){
+						RoomDept rd = (RoomDept) rdIt.next();
+						if (rd.getDepartment().getUniqueId().equals(c.getSchedulingSubpart().getControllingDept().getUniqueId())){
+							location = l;
+							break;
 						}
 					}
-					if(location != null){
-						break;
-					}
+				}
+				if(location != null){
+					break;
 				}
 			}
 		}
