@@ -163,6 +163,9 @@ public class AddNonUnivLocationAction extends Action {
 				
 			nonUniv.setCoordinateX(nonUnivLocationForm.getCoordX()==null || nonUnivLocationForm.getCoordX().length()==0 ? null : Double.valueOf(nonUnivLocationForm.getCoordX()));
 			nonUniv.setCoordinateY(nonUnivLocationForm.getCoordY()==null || nonUnivLocationForm.getCoordY().length()==0 ? null : Double.valueOf(nonUnivLocationForm.getCoordY()));
+			
+			if (nonUnivLocationForm.getExternalId() != null && !nonUnivLocationForm.getExternalId().isEmpty())
+				nonUniv.setExternalUniqueId(nonUnivLocationForm.getExternalId());
 
             Double area = null;
             if (nonUnivLocationForm.getArea() != null && !nonUnivLocationForm.getArea().isEmpty()) {

@@ -205,6 +205,13 @@
             class="Department"
             column="event_dept_id"
             not-null="false"/>
+            
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
 
         <union-subclass
             name="Room"
@@ -221,13 +228,6 @@
                 type="java.lang.String"
                 not-null="true"
                 length="10"/>
-
-            <property
-                name="externalUniqueId"
-                column="external_uid"
-                type="java.lang.String"
-                not-null="false"
-                length="40"/>
 
             <many-to-one
                 name="roomType"

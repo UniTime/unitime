@@ -149,19 +149,17 @@
 			</TR>
 		</logic:notEmpty>
 			
-		<logic:equal name="<%=frmName%>" property="room" value="true">
-			<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
-				<TR>
-					<TD>External Id:</TD>
-					<TD width='100%'>
-						<html:text property="externalId" maxlength="40" size="40" />
-					</TD>
-				</TR>
-			</sec:authorize>
-			<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
-				<html:hidden property="externalId"/>
-			</sec:authorize>
-		</logic:equal>
+		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
+			<TR>
+				<TD>External Id:</TD>
+				<TD width='100%'>
+					<html:text property="externalId" maxlength="40" size="40" />
+				</TD>
+			</TR>
+		</sec:authorize>
+		<sec:authorize access="#editRoomForm.id != null and !hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeExternalId')">
+			<html:hidden property="externalId"/>
+		</sec:authorize>
 		
 		<sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeType')">
 			<TR>
