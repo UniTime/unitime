@@ -270,7 +270,11 @@ public class Building extends BaseBuilding implements Comparable {
     	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
     	if (minimap != null && getCoordinateX() != null && getCoordinateY() != null) {
     		hint += "<br><img src=\\'" + 
-			minimap.replace("%x", getCoordinateX().toString()).replace("%y", getCoordinateY().toString()) +
+			minimap
+				.replace("%x", getCoordinateX().toString())
+				.replace("%y", getCoordinateY().toString())
+				.replace("%n", getAbbreviation())
+				.replace("%i", getExternalUniqueId() == null ? "" : getExternalUniqueId()) +
 			"\\' border=\\'0\\' style=\\'border: 1px solid #9CB0CE;\\'/>";
     	}
     	return hint;

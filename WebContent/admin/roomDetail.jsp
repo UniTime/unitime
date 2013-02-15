@@ -335,7 +335,11 @@
 			<% if (frm.getCoordinateX() != null && frm.getCoordinateY() != null) { %>
 						</table>
 					</td><td width="1%" nowrap="nowrap" style="padding-right: 3px;">
-						<img src="<%=ApplicationProperties.getProperty("unitime.minimap.url").replace("%x",frm.getCoordinateX().toString()).replace("%y",frm.getCoordinateY().toString())%>" border='0' alt="Minimap" style="border: 1px solid #9CB0CE;"/>
+						<img src="<%=ApplicationProperties.getProperty("unitime.minimap.url")
+							.replace("%x",frm.getCoordinateX().toString())
+							.replace("%y",frm.getCoordinateY().toString())
+							.replace("%n",frm.getName())
+							.replace("%i",frm.getExternalId() == null ? "" : frm.getExternalId())%>" border='0' alt="Minimap" style="border: 1px solid #9CB0CE;"/>
 					</td></tr>
 				</table>
 				<table width="100%" border="0" cellspacing="0" cellpadding="3">

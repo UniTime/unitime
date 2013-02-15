@@ -57,7 +57,11 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 			
 			String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
 	    	if (minimap != null && location.getCoordinateX() != null && location.getCoordinateY() != null)
-	    		response.setMiniMapUrl(minimap.replace("%x", location.getCoordinateX().toString()).replace("%y", location.getCoordinateY().toString()));
+	    		response.setMiniMapUrl(minimap
+	    				.replace("%x", location.getCoordinateX().toString())
+	    				.replace("%y", location.getCoordinateY().toString())
+	    				.replace("%n", location.getLabel())
+	    				.replace("%i", location.getExternalUniqueId() == null ? "" : location.getExternalUniqueId()));
 	    	
 	    	response.setCapacity(location.getCapacity());
 	    	if (location.getExamCapacity() != null && location.getExamCapacity() > 0 && !location.getExamCapacity().equals(location.getCapacity()) && !location.getExamTypes().isEmpty()) {
@@ -98,7 +102,11 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 			
 	    	String minimap = ApplicationProperties.getProperty("unitime.minimap.hint");
 	    	if (minimap != null && building.getCoordinateX() != null && building.getCoordinateY() != null)
-	    		response.setMiniMapUrl(minimap.replace("%x", building.getCoordinateX().toString()).replace("%y", building.getCoordinateY().toString()));
+	    		response.setMiniMapUrl(minimap
+	    				.replace("%x", building.getCoordinateX().toString())
+	    				.replace("%y", building.getCoordinateY().toString())
+	    				.replace("%n", building.getAbbreviation())
+	    				.replace("%i", building.getExternalUniqueId() == null ? "" : building.getExternalUniqueId()));
 	    	
 	    	return response;
 		}
