@@ -88,6 +88,13 @@
 			</TR>
 			
 			<TR>
+				<TD>External Id:</TD>
+				<TD width='100%'>
+					<html:text property="externalId" maxlength="40" size="40" />
+				</TD>
+			</TR>
+
+			<TR>
 				<TD>Type:</TD>
 				<TD width='100%'>
 					<html:select property="type">

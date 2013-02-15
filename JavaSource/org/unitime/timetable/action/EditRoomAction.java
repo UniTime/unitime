@@ -150,14 +150,13 @@ public class EditRoomAction extends Action {
                 editRoomForm.setName(r.getRoomNumber());
                 editRoomForm.setBldgName(r.getBuildingAbbv());
                 editRoomForm.setRoom(true);
-                editRoomForm.setExternalId(r.getExternalUniqueId());
             } else {
             	sessionContext.checkPermission((NonUniversityLocation)location, Right.NonUniversityLocationEdit);
                 editRoomForm.setName(((NonUniversityLocation)location).getName());
                 editRoomForm.setBldgName("");
                 editRoomForm.setRoom(false);
-                editRoomForm.setExternalId(null);
             }
+            editRoomForm.setExternalId(location.getExternalUniqueId());
             editRoomForm.setType(location.getRoomType().getUniqueId());
             editRoomForm.setCapacity(location.getCapacity().toString());
             if (location.getExamCapacity() != null && (location.hasAnyExamsEnabled() || location.getExamCapacity() != 0)) {
@@ -321,10 +320,7 @@ public class EditRoomAction extends Action {
 				location.setIgnoreRoomCheck(Boolean.TRUE);
 			}
             
-            if (location instanceof Room) {
-                ((Room)location).setExternalUniqueId(editRoomForm.getExternalId());
-            }
-            
+            location.setExternalUniqueId(editRoomForm.getExternalId());
             location.setRoomType(RoomTypeDAO.getInstance().get(editRoomForm.getType()));
 			
 			location.setCoordinateX(editRoomForm.getCoordX()==null || editRoomForm.getCoordX().length()==0 ? null : Double.valueOf(editRoomForm.getCoordX()));

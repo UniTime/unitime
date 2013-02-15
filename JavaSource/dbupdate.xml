@@ -8409,4 +8409,12 @@
 		<plsql>alter table %SCHEMA%.instructional_offering drop constraint fk_instr_offr_consent_type</plsql>
 		<sql>alter table %SCHEMA%.instructional_offering drop column consent_type</sql>
 	</update>
+	<update version="112" date="15-Feb-2013" comment="Non-university Location External Id">
+		<plsql>
+			alter table %SCHEMA%.non_university_location add external_uid varchar2(40 char)
+		</plsql>
+		<mysql>
+			alter table %SCHEMA%.non_university_location add external_uid varchar(40)
+		</mysql>
+	</update>
 </dbupdate>

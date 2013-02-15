@@ -128,6 +128,28 @@ public abstract class EventRelatedImports extends BaseImport {
 		uniqueResult();
 	}
 	
+	protected List findNonUniversityLocationsWithIdOrName(String id, String name){
+		if (id != null) {
+			return(this.
+			getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.externalUniqueId=:id and l.session.uniqueId=:sessionId").
+			setLong("sessionId", session.getUniqueId().longValue()).
+			setString("id", id).
+			setCacheable(true).
+			list());
+		}
+		if (name != null) {
+			return(this.
+			getHibSession().
+			createQuery("select distinct l from NonUniversityLocation as l where l.name=:name and l.session.uniqueId=:sessionId").
+			setLong("sessionId", session.getUniqueId().longValue()).
+			setString("name", name).
+			setCacheable(true).
+			list());
+		}
+		return(new ArrayList());
+	}
+	
 	protected List findNonUniversityLocationsWithName(String name){
 		if (name != null) {
 			return(this.

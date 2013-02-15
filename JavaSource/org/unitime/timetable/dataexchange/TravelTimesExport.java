@@ -88,13 +88,13 @@ public class TravelTimesExport extends BaseExport {
 	private void fillLocationData(Location location, Element element) {
 		if (location instanceof Room) {
 			Room room = (Room)location;
-			if (room.getExternalUniqueId() != null && !room.getExternalUniqueId().isEmpty())
-				element.addAttribute("id", room.getExternalUniqueId());
 			element.addAttribute("building", room.getBuilding().getAbbreviation());
 			element.addAttribute("roomNbr", room.getRoomNumber());
 		} else {
 			element.addAttribute("name", location.getLabel());
 		}
+		if (location.getExternalUniqueId() != null && !location.getExternalUniqueId().isEmpty())
+			element.addAttribute("id", location.getExternalUniqueId());
 	}
 
 }

@@ -31,14 +31,12 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	private String iBuildingAbbv;
 	private String iRoomNumber;
-	private String iExternalUniqueId;
 	private String iClassification;
 
 	private RoomType iRoomType;
 	private Building iBuilding;
 
 	public static String PROP_ROOM_NUMBER = "roomNumber";
-	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_CLASSIFICATION = "classification";
 
 	public BaseRoom() {
@@ -57,9 +55,6 @@ public abstract class BaseRoom extends Location implements Serializable {
 
 	public String getRoomNumber() { return iRoomNumber; }
 	public void setRoomNumber(String roomNumber) { iRoomNumber = roomNumber; }
-
-	public String getExternalUniqueId() { return iExternalUniqueId; }
-	public void setExternalUniqueId(String externalUniqueId) { iExternalUniqueId = externalUniqueId; }
 
 	public String getClassification() { return iClassification; }
 	public void setClassification(String classification) { iClassification = classification; }

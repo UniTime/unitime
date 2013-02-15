@@ -46,6 +46,7 @@ public class NonUnivLocationForm extends ActionForm {
 	// --------------------------------------------------------- Instance Variables
 	private String doit;
 	private String name;
+	private String externalId;
 	private String capacity;
 	private boolean ignoreTooFar;
 	private boolean ignoreRoomCheck;
@@ -123,6 +124,7 @@ public class NonUnivLocationForm extends ActionForm {
 		ignoreRoomCheck = false;
 		coordX=null; coordY=null;
 		area = null;
+		externalId = null;
 	}
 
 	public String getCapacity() {
@@ -156,6 +158,14 @@ public class NonUnivLocationForm extends ActionForm {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+    public String getExternalId() {
+        return externalId;
+    }
+
+    public void setExternalId(String externalId) {
+        this.externalId = externalId;
+    }
 
 	public String getDeptCode() {
 		return deptCode;
