@@ -1162,6 +1162,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		if (placement.getTimeLocation().getStartSlot()!=startSlot) continue;
     		if (!placement.getTimeLocation().getTimePatternId().equals(patternId)) continue;
     		if (datePattern != null && !placement.getTimeLocation().getDatePatternId().equals(datePattern.getUniqueId())) continue;
+    		if (rooms.size() != placement.getNrRooms()) continue;
     		boolean sameRooms = true;
     		for (Iterator i=rooms.iterator();sameRooms && i.hasNext();) {
     			Location r = (Location)i.next();
