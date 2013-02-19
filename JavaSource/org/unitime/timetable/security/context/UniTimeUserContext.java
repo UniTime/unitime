@@ -319,7 +319,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			if (settings != null && getCurrentAuthority() != null && !getCurrentAuthority().getQualifiers("TimetableManager").isEmpty()) {
 				ManagerSettings managerData = (ManagerSettings)hibSession.createQuery(
 						"from ManagerSettings where key.key = :key and manager.externalUniqueId = :id")
-						.setString("key", key).setString("id", getExternalUserId()).setMaxResults(1).uniqueResult();
+						.setString("key", key).setString("id", getExternalUserId()).setCacheable(true).setMaxResults(1).uniqueResult();
 				
 				if (value == null && managerData == null) return;
 				if (value != null && managerData != null && value.equals(managerData.getValue())) return;
