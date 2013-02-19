@@ -712,6 +712,57 @@ public class TimetableGridTable {
 		return true;*/
 	}
 	
+    private static enum Size {
+		eq, lt, gt, le, ge
+	};
+    
+    private boolean match(final Location location) {
+    	return iQuery == null || iQuery.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(location.getLabel(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return location.getLabel().matches(term);
+				} else if ("find".equals(attr)) {
+					return location.getLabel().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("size".equals(attr)) {
+					int min = 0, max = Integer.MAX_VALUE;
+					Size prefix = Size.eq;
+					String number = term;
+					if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
+					else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
+					else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
+					else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
+					else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+					try {
+						int a = Integer.parseInt(number);
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					} catch (NumberFormatException e) {}
+					if (term.contains("..")) {
+						try {
+							String a = term.substring(0, term.indexOf('.'));
+							String b = term.substring(term.indexOf("..") + 2);
+							min = Integer.parseInt(a); max = Integer.parseInt(b);
+						} catch (NumberFormatException e) {}
+					}
+					return min <= location.getCapacity() && location.getCapacity() <= max;
+				}
+				return false;
+			}
+		});
+	}
+	
 	private void showUselessTimesIfDesired() {
 		if (iShowUselessTimes && iModels!=null) {
 			for (Enumeration e=iModels.elements();e.hasMoreElements();)
@@ -767,7 +818,7 @@ public class TimetableGridTable {
 				q.setCacheable(true);
 				for (Iterator i=q.list().iterator();i.hasNext();) {
 					Location room = (Location)i.next();
-					if (!match(room.getLabel())) continue;
+					if (!match(room)) continue;
 					iModels.add(new SolutionGridModel(solutionIdsStr, room, hibSession, startDay, getBgMode(), getShowEvents()));
 				}
 			} else if (getResourceType()==TimetableGridModel.sResourceTypeInstructor) {
