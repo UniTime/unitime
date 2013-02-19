@@ -621,7 +621,58 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
 				return false;
 			}
 		});
-	}    
+	}
+    
+    private static enum Size {
+		eq, lt, gt, le, ge
+	};
+    
+    private boolean match(Query q, final RoomConstraint rc) {
+    	return q == null || q.match(new TermMatcher() {
+			@Override
+			public boolean match(String attr, String term) {
+				if (term.isEmpty()) return true;
+				if (attr == null) {
+					for (StringTokenizer s = new StringTokenizer(rc.getName(), " ,"); s.hasMoreTokens(); ) {
+						String token = s.nextToken();
+						if (term.equalsIgnoreCase(token)) return true;
+					}
+				} else if ("regex".equals(attr) || "regexp".equals(attr) || "re".equals(attr)) {
+					return rc.getName().matches(term);
+				} else if ("find".equals(attr)) {
+					return rc.getName().toLowerCase().indexOf(term.toLowerCase()) >= 0;
+				} else if ("size".equals(attr)) {
+					int min = 0, max = Integer.MAX_VALUE;
+					Size prefix = Size.eq;
+					String number = term;
+					if (number.startsWith("<=")) { prefix = Size.le; number = number.substring(2); }
+					else if (number.startsWith(">=")) { prefix = Size.ge; number = number.substring(2); }
+					else if (number.startsWith("<")) { prefix = Size.lt; number = number.substring(1); }
+					else if (number.startsWith(">")) { prefix = Size.gt; number = number.substring(1); }
+					else if (number.startsWith("=")) { prefix = Size.eq; number = number.substring(1); }
+					try {
+						int a = Integer.parseInt(number);
+						switch (prefix) {
+							case eq: min = max = a; break; // = a
+							case le: max = a; break; // <= a
+							case ge: min = a; break; // >= a
+							case lt: max = a - 1; break; // < a
+							case gt: min = a + 1; break; // > a
+						}
+					} catch (NumberFormatException e) {}
+					if (term.contains("..")) {
+						try {
+							String a = term.substring(0, term.indexOf('.'));
+							String b = term.substring(term.indexOf("..") + 2);
+							min = Integer.parseInt(a); max = Integer.parseInt(b);
+						} catch (NumberFormatException e) {}
+					}
+					return min <= rc.getCapacity() && rc.getCapacity() <= max;
+				}
+				return false;
+			}
+		});
+	}
     
     public Vector getTimetableGridTables(String findString, int resourceType, int startDay, int bgMode, boolean showEvents) {
     	Vector models = new Vector();
@@ -631,7 +682,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     		switch (resourceType) {
     		case TimetableGridModel.sResourceTypeRoom:
     			for (RoomConstraint rc: model.getRoomConstraints()) {
-    				if (!match(q, rc.getName())) continue;
+    				if (!match(q, rc)) continue;
     				models.add(new SolverGridModel(this,rc,startDay,bgMode,showEvents));
     			}
     			break;
