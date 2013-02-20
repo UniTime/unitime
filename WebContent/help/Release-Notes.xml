@@ -77,6 +77,12 @@
 				<line>Fixed 500 The call failed on the server error that is thrown under some circumstances.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling</name>
+			<description>
+				<line>Student Sectioning: Fixed null pointer exception when there is no joint enrollment constraint between two (committed) classes that share a student.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
