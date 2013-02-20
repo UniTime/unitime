@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
@@ -59,7 +60,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
@@ -80,7 +80,7 @@ public class CurriculaPage extends Composite {
 	private VerticalPanel iCurriculaPanel = null;
 	
 	private SimplePanel iPanel = null;
-	private HorizontalPanel iFilterPanel = null;
+	private HorizontalPanelWithHint iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -105,6 +105,12 @@ public class CurriculaPage extends Composite {
 				"<br><br>Example: area: A and (major: AGFN or major: AGMG)",
 				false));
 		iFilterPanel.setSpacing(3);
+		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
+			@Override
+			public void onChange(GwtPageChangeEvent event) {
+				iFilterPanel.hideHint();
+			}
+		});
 		
 		Label filterLabel = new Label("Filter:");
 		iFilterPanel.add(filterLabel);

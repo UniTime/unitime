@@ -78,6 +78,7 @@ public class WebTable extends Composite {
 		iTable = new RowSelectingFlexTable();
 		iTable.setCellPadding(2);
 		iTable.setCellSpacing(0);
+		iTable.setStyleName("unitime-WebTable");
 		initWidget(iTable);
 	}
 	

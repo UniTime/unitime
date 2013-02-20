@@ -29,8 +29,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
+import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable.TopCell;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
@@ -89,7 +92,6 @@ import com.google.gwt.user.client.ui.FocusPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -126,7 +128,7 @@ public class SectioningStatusPage extends Composite {
 	private VerticalPanel iSectioningPanel = null;
 	
 	private VerticalPanel iPanel = null;
-	private HorizontalPanel iFilterPanel = null;
+	private HorizontalPanelWithHint iFilterPanel = null;
 	
 	private UniTimeTable<EnrollmentInfo> iCourseTable = null;
 	private UniTimeTable<StudentInfo> iStudentTable = null;
@@ -157,6 +159,12 @@ public class SectioningStatusPage extends Composite {
 		
 		iFilterPanel = new HorizontalPanelWithHint(new HTML(MESSAGES.sectioningStatusFilterHint(), false));
 		iFilterPanel.setSpacing(3);
+		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
+			@Override
+			public void onChange(GwtPageChangeEvent event) {
+				iFilterPanel.hideHint();
+			}
+		});
 		
 		Label filterLabel = new Label(MESSAGES.filter());
 		iFilterPanel.add(filterLabel);

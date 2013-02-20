@@ -193,7 +193,7 @@ public class EnrollmentTable extends Composite {
 					if (course.isAssigned()) {
 						boolean firstClazz = true;
 						for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
-							String style = "unitime-ClassRow" + (firstClazz && !rows.isEmpty() ? "First": "");
+							String style = (firstClazz && !rows.isEmpty() ? "top-border-dashed": "");
 							final WebTable.Row row = new WebTable.Row(
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject() : ""),
 									new WebTable.Cell(firstClazz ? course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr() : ""),
@@ -214,7 +214,7 @@ public class EnrollmentTable extends Composite {
 							firstClazz = false;
 						}
 					} else {
-						String style = "unitime-ClassRowRed" + (!rows.isEmpty() ? "First": "");
+						String style = "text-red" + (!rows.isEmpty() ? " top-border-dashed": "");
 						WebTable.Row row = null;
 						String unassignedMessage = MESSAGES.courseNotAssigned();
 						if (course.getOverlaps()!=null && !course.getOverlaps().isEmpty()) {
@@ -260,7 +260,7 @@ public class EnrollmentTable extends Composite {
 						}
 						for (WebTable.Cell cell: row.getCells())
 							cell.setStyleName(style);
-						row.getCell(row.getNrCells() - 1).setStyleName("unitime-ClassRowProblem" + (!rows.isEmpty() ? "First": ""));
+						row.getCell(row.getNrCells() - 1).setStyleName("text-gray" + (!rows.isEmpty() ? " top-border-dashed": ""));
 						rows.add(row);
 					}
 				}
@@ -1395,7 +1395,7 @@ public class EnrollmentTable extends Composite {
 		
 		@Override
 		public String getStyleName() {
-			return "unitime-ClassRowRed";
+			return "text-red";
 		}
 		
 	}

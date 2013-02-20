@@ -28,6 +28,40 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Online Student Scheduling</title>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>A few label changes based on user input:
+					<line>Courses → Course Requests</line>
+					<line>Alternatives → Alternate Course Requests</line>
+				</line>
+				<line>Display "Arrange Hours" for classes with no time assignment.</line>
+				<line>List of classes, Alternatives: For all changes in the format of "old value → new value": display the old value in a lighter color.</line>
+				<line>Table headers: Using gradient instead of an image for the header background (avoids the horizontal line artifacts on blank columns).</line>
+				<line>Alternatives: Changed the default column widths so that the table does not look too crumpled in the middle when there are both time and room changes displayed.</line>
+				<line>List of classes, Alternatives: Added a small padding between columns.</line>
+				<line>Alternatives: Made sure that the filter hint does not stay displayed when the page changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Scheduling Dashboard</name>
+			<description>
+				<line>Reservation footnote r) made a little darker.</line>
+				<line>Indication of the priority of the first wait-listed course request (?p) made a little darker.</line>
+				<line>Made sure that the filter hint does not stay displayed when the page changes.</line>
+			</description>
+		</item>
+		<item>
+			<name>Online Student Scheduling Server</name>
+			<description>
+				<line>Find Enrollment Info: changed action name to fit 20 character limit.</line>
+				<line>Reload Offering: fixed an issue with not loading new students when there are no student course demands (i.e., only student class enrollments are populated from an external system in the assistant mode).</line>
+				<line>Reload Offering: improved performance by fetching relevant student data while loading all students of the offering.</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Bug Fixes</title>
 		<item>
 			<name>Google Web Toolkit</name>
