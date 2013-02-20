@@ -103,13 +103,13 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				List<Long> studentIds = (List<Long>)helper.getHibSession().createQuery(
 						"select distinct s.uniqueId from Student s " +
 						"left outer join s.classEnrollments e " +
-						"left outer join s.courseDemands d inner join d.courseRequests r " +
+						"left outer join s.courseDemands d left outer join d.courseRequests r left outer join r.courseOffering co " +
 						"where e.courseOffering.instructionalOffering.uniqueId = :offeringId or " +
-						"r.courseOffering.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
+						"co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list();
 				Lock lock = server.lockOffering(offeringId, studentIds, true);
 				try {
 
-					reloadOffering(server, helper, offeringId, studentIds);
+					reloadOffering(server, helper, offeringId);
 					
 				} finally {
 					lock.release();
@@ -126,7 +126,25 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		}
 	}
 		
-	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId, List<Long> newStudentIds) {
+	public void reloadOffering(final OnlineSectioningServer server, OnlineSectioningHelper helper, Long offeringId) {
+		// Load new students
+		Map<Long, org.unitime.timetable.model.Student> newStudents = new HashMap<Long, org.unitime.timetable.model.Student>();
+		for (org.unitime.timetable.model.Student student : (List<org.unitime.timetable.model.Student>)helper.getHibSession().createQuery(
+                "select distinct s from Student s " +
+                "left join fetch s.courseDemands as cd " +
+                "left join fetch cd.courseRequests as cr " +
+                "left join fetch cr.courseOffering as co " +
+                "left join fetch cr.classWaitLists as cwl " + 
+                "left join fetch s.classEnrollments as e " +
+                "left join fetch s.academicAreaClassifications as a " +
+                "left join fetch s.posMajors as mj " +
+                "left join fetch s.waitlists as w " +
+                "left join fetch cr.classEnrollments as cre "+
+                "left join fetch s.groups as g " +
+                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId or co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list()) {
+			newStudents.put(student.getUniqueId(), student);
+		}
+		
 		// Persist expected spaces if needed
 		if (server.needPersistExpectedSpaces(offeringId))
 			PersistExpectedSpacesAction.persistExpectedSpaces(offeringId, false, server, helper);
@@ -210,20 +228,21 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				for (CourseRequest request: new ArrayList<CourseRequest>(course.getRequests())) {
 					Student oldStudent = request.getStudent();
 					server.remove(oldStudent);
-					org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(oldStudent.getId(), helper.getHibSession());
+					org.unitime.timetable.model.Student student = newStudents.get(oldStudent.getId());
+					if (student == null)
+						student = StudentDAO.getInstance().get(oldStudent.getId(), helper.getHibSession());
 					Student newStudent = (student == null ? null : ReloadAllData.loadStudent(student, server, helper));
 					if (newStudent != null)
 						server.update(newStudent);
 					students.add(new Student[] {oldStudent, newStudent});
-					newStudentIds.remove(oldStudent.getId());
+					newStudents.remove(oldStudent.getId());
 				}	
 		}
-		for (Long studentId: newStudentIds) {
-			Student oldStudent = server.getStudent(studentId);
+		for (org.unitime.timetable.model.Student student: newStudents.values()) {
+			Student oldStudent = server.getStudent(student.getUniqueId());
 			if (oldStudent != null)
 				server.remove(oldStudent);
-			org.unitime.timetable.model.Student student = StudentDAO.getInstance().get(studentId, helper.getHibSession());
-			Student newStudent = (student == null ? null : ReloadAllData.loadStudent(student, server, helper));
+			Student newStudent = ReloadAllData.loadStudent(student, server, helper);
 			if (newStudent != null)
 				server.update(newStudent);
 			students.add(new Student[] {oldStudent, newStudent});

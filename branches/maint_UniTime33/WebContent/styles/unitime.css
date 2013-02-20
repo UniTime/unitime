@@ -207,7 +207,21 @@ h1 {
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
-  	background: #e3e8f3 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+  	background-color: #e3e8f3;
   	border-bottom: 1px dashed #9CB0CE;
 }
 
@@ -351,82 +365,37 @@ h1 {
 	padding: 2px;
 }
 
-.unitime-ClassRow {
+.unitime-WebTable {
 }
 
-.unitime-ClassRowFirst {
+.unitime-WebTable td {
+	padding-left: 10px;
+}
+
+.unitime-WebTable .top-border-dashed {
 	border-top: 1px dashed #9CB0CE;
 }
 
-.unitime-ClassRowFirst2 {
+.unitime-WebTable .top-border-solid {
 	border-top: 1px solid #9CB0CE;
 }
 
-.unitime-ClassRowRed {
+.unitime-WebTable .text-red {
 	color: red;
 }
 
-.unitime-ClassRowRedFirst {
-	border-top: 1px dashed #9CB0CE;
-	color: red;
-}
-
-.unitime-ClassRowRedFirst2 {
-	border-top: 1px solid #9CB0CE;
-	color: red;
-}
-
-.unitime-ClassRowBlue {
+.unitime-WebTable .text-blue {
 	color: blue;
 }
 
-.unitime-ClassRowBlueFirst {
-	border-top: 1px dashed #9CB0CE;
-	color: blue;
-}
-
-.unitime-ClassRowBlueFirst2 {
-	border-top: 1px solid #9CB0CE;
-	color: blue;
-}
-
-.unitime-ClassRowUnused {
+.unitime-WebTable .text-gray {
 	color: gray;
 	font-style: italic;
 }
 
-.unitime-ClassRowUnusedFirst {
-	color: gray;
-	font-style: italic;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowUnavail {
-	color: #AAAAAA;
-	font-style: italic;;
-}
-
-.unitime-ClassRowFirstUnavail {
-	color: #AAAAAA;
-	font-style: italic;;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowProblem {
+.unitime-WebTable .text-red-centered {
 	color: red;
 	text-align: center;
-}
-
-.unitime-ClassRowProblemFirst {
-	color: red;
-	text-align: center;
-	border-top: 1px dashed #9CB0CE;
-}
-
-.unitime-ClassRowProblemFirst2 {
-	color: red;
-	text-align: center;
-	border-top: 1px solid #9CB0CE;
 }
 
 .gwt-TabPanelBottom {
@@ -1012,7 +981,21 @@ h1 {
 	padding-top: 5px;
 	font-weight: bold;
 	color: #666666;
-  	background: #e3e8f3 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -2003px;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+	background-color: #e3e8f3;
   	cursor: pointer;
   	border-bottom: 1px dashed #9CB0CE;
 }
@@ -1251,6 +1234,10 @@ h1 {
 
 .unitime-Wrap {
 	white-space: normal;
+}
+
+.gwt-PopupPanel {
+	z-index: 495000;
 }
 
 .gwt-DialogBox .dialogContainer {

@@ -264,8 +264,8 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
 		
-		public String getTimeString(String[] shortDays, boolean useAmPm) {
-			if (!isAssigned()) return "";
+		public String getTimeString(String[] shortDays, boolean useAmPm, String arrangeHours) {
+			if (!isAssigned()) return (iClassId == null ? "" : arrangeHours);
 			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
 		}
 		
@@ -317,6 +317,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iRooms.add(room);
 		}
 		public ArrayList<String> getRooms() { return iRooms; }
+		
 		public String getRooms(String delim) {
 			if (iRooms == null) return "";
 			String ret = "";
@@ -375,7 +376,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubpart() + " " + getSection()) + 
-					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}, true) : "") +
+					(isAssigned() ? " " + getTimeString(new String[] {"M","T","W","R","F","S","X"}, true, "") : "") +
 					(hasRoom() ? " " + getRooms(",") : "") +
 					(isSaved() || isPinned() || isOfHighDemand() || hasAlternatives() || hasDistanceConflict() || isUnlimited() ? "[" +
 							(isSaved() ? "s" : "") + (isPinned() ? "p" : "") + (isOfHighDemand() ? "h" : "") + (hasAlternatives() ? "a" : "") + (hasDistanceConflict() ? "d" : "") + (isUnlimited() ? "u" : "") +

@@ -446,7 +446,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 
 	@Override
 	public String name() {
-		return "find-enrollment-infos";
+		return "find-enrollment-info";
 	}
 
 }
