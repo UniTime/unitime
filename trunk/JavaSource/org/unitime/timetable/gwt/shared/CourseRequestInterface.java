@@ -47,7 +47,7 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 	
 	public boolean isSaved() { return iSaved; }
 	public void setSaved(boolean saved) { iSaved = saved; }
-
+	
 	public static class FreeTime implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Integer> iDays = new ArrayList<Integer>();
@@ -103,12 +103,9 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		private String iRequestedCourse = null;
 		private String iFirstAlternative = null;
 		private String iSecondAlternative = null;;
-		private boolean iAlternative = false;
+		private Boolean iWaitList = false;
 		
 		public Request() {}
-		
-		public boolean isAlternative() { return iAlternative; }
-		public void setAlternative(boolean alternative) { iAlternative = alternative; }
 		
 		public String getRequestedCourse() { return iRequestedCourse; }
 		public void setRequestedCourse(String requestedCourse) { iRequestedCourse = requestedCourse; }
@@ -130,10 +127,15 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		public void setSecondAlternative(String secondAlternative) { iSecondAlternative = secondAlternative; }
 		public boolean hasSecondAlternative() { return iSecondAlternative != null && !iSecondAlternative.isEmpty(); }
 		
+		public boolean hasWaitList() { return iWaitList != null; }
+		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
+		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
+		
 		public String toString() {
 			return (hasRequestedFreeTime() ? iRequestedFreeTime.toString() : hasRequestedCourse() ? iRequestedCourse : "-") +
 				(hasFirstAlternative() ? ", " + iFirstAlternative : "") +
-				(hasSecondAlternative() ? ", " + iSecondAlternative : "");
+				(hasSecondAlternative() ? ", " + iSecondAlternative : "") +
+				(isWaitList() ? " (w)" : "");
 		}
 	}
 	

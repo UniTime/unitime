@@ -52,6 +52,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.EnrollmentInfo;
@@ -452,37 +453,34 @@ public class SectioningServlet implements SectioningService {
 		}
 	}
 
-	public Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
-		ArrayList<String[]> ret = new ArrayList<String[]>();
+	public Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException {
+		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		if (sectioning) {
 			for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
 				if (getStudentId(s.getUniqueId()) != null) continue;
-				ret.add(new String[] {
-						String.valueOf(s.getUniqueId()),
-						s.getYear(),
-						s.getTerm(),
-						s.getCampus()
-				});
+				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
+						s.getUniqueId(),
+						s.getYear(), s.getTerm(), s.getCampus(),
+						MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
+						s.isSectioningEnabled()));
 			}
 			if (ret.isEmpty())
 				for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
-					ret.add(new String[] {
-							String.valueOf(s.getUniqueId()),
-							s.getYear(),
-							s.getTerm(),
-							s.getCampus()
-					});
+					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
+							s.getUniqueId(),
+							s.getYear(), s.getTerm(), s.getCampus(),
+							MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
+							s.isSectioningEnabled()));
 				}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
 				if (session.getStatusType().isTestSession()) continue;
 				if (session.getStatusType().canPreRegisterStudents() && !session.getStatusType().canSectionAssistStudents() && !session.getStatusType().canOnlineSectionStudents())
-					ret.add(new String[] {
-							String.valueOf(session.getUniqueId()),
-							session.getAcademicYear(),
-							session.getAcademicTerm(),
-							session.getAcademicInitiative()
-					});
+					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
+							session.getUniqueId(),
+							session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+							MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
+							true));
 			}
 		}
 		if (ret.isEmpty()) {
@@ -790,7 +788,7 @@ public class SectioningServlet implements SectioningService {
 			getSessionContext().setAttribute("request", request);
 	}
 	
-	public String[] lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException {
+	public AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException {
 		if (getSessionContext().isHttpSessionNew()) throw new PageAccessException(MSG.exceptionUserNotLoggedIn());
 		Long sessionId = getLastSessionId();
 		if (sessionId == null) throw new SectioningException(MSG.exceptionNoAcademicSession());
@@ -799,24 +797,22 @@ public class SectioningServlet implements SectioningService {
 			if (server == null) throw new SectioningException(MSG.exceptionNoServerForSession());
 			AcademicSessionInfo s = server.getAcademicSession();
 			if (s == null) throw new SectioningException(MSG.exceptionNoServerForSession());
-			return new String[] {
-					String.valueOf(s.getUniqueId()),
-					s.getYear(),
-					s.getTerm(),
-					s.getCampus()
-			};
+			return new AcademicSessionProvider.AcademicSessionInfo(
+					s.getUniqueId(),
+					s.getYear(), s.getTerm(), s.getCampus(),
+					MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
+					s.isSectioningEnabled());
 		} else {
 			Session session = SessionDAO.getInstance().get(sessionId);
 			if (session == null || session.getStatusType().isTestSession())
 				throw new SectioningException(MSG.exceptionNoSuitableAcademicSessions());
 			if (!session.getStatusType().canPreRegisterStudents() || session.getStatusType().canSectionAssistStudents() || session.getStatusType().canOnlineSectionStudents())
 				throw new SectioningException(MSG.exceptionNoServerForSession());
-			return new String[] {
-					session.getUniqueId().toString(),
-					session.getAcademicYear(),
-					session.getAcademicTerm(),
-					session.getAcademicInitiative()
-			};
+			return new AcademicSessionProvider.AcademicSessionInfo(
+					session.getUniqueId(),
+					session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative(),
+					MSG.sessionName(session.getAcademicYear(), session.getAcademicTerm(), session.getAcademicInitiative()),
+					true);
 		}
 	}
 	
@@ -908,6 +904,7 @@ public class SectioningServlet implements SectioningService {
 										request.getCourses().add(r);
 								}
 							}
+							r.setWaitList(cd.getWaitlist());
 							lastRequest = r;
 							lastRequestPriority = cd.getPriority();
 						}
@@ -1227,6 +1224,7 @@ public class SectioningServlet implements SectioningService {
 									}
 									e.setApprovedBy(name == null ? enrollment.getApprovedBy() : name);
 								}
+								e.setWaitList(enrollment.getCourseRequest().getCourseDemand().isWaitlist());
 							} else {
 								e.setPriority(-1);
 							}
@@ -1265,6 +1263,7 @@ public class SectioningServlet implements SectioningService {
 							c.setSubject(request.getCourseOffering().getSubjectAreaAbbv());
 							c.setCourseNbr(request.getCourseOffering().getCourseNbr());
 							e.setCourse(c);
+							e.setWaitList(request.getCourseDemand().isWaitlist());
 							student2enrollment.put(request.getCourseDemand().getStudent().getUniqueId(), e);
 							e.setPriority(1 + request.getCourseDemand().getPriority());
 							if (request.getCourseDemand().getCourseRequests().size() > 1) {
@@ -1335,6 +1334,7 @@ public class SectioningServlet implements SectioningService {
 								course.setCourseNbr(enrollment.getCourseOffering().getCourseNbr());
 								course.setSubject(enrollment.getCourseOffering().getSubjectAreaAbbv());
 								course.setTitle(enrollment.getCourseOffering().getTitle());
+								course.setWaitListed(enrollment.getCourseRequest() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist() != null && enrollment.getCourseRequest().getCourseDemand().getWaitlist().booleanValue()); 
 							}
 							ClassAssignment clazz = course.addClassAssignment();
 							clazz.setClassId(enrollment.getClazz().getUniqueId());
@@ -1424,6 +1424,7 @@ public class SectioningServlet implements SectioningService {
 								courses.put(request.getCourseOffering().getUniqueId(), course);
 								ret.add(course);
 								course.setAssigned(false);
+								course.setWaitListed(demand.getWaitlist() != null && demand.getWaitlist().booleanValue());
 								course.setCourseId(request.getCourseOffering().getUniqueId());
 								course.setCourseNbr(request.getCourseOffering().getCourseNbr());
 								course.setSubject(request.getCourseOffering().getSubjectAreaAbbv());

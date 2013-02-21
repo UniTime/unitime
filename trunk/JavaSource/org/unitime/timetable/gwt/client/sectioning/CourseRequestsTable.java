@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
+import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -45,6 +46,7 @@ import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.dom.client.MouseUpEvent;
 import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -82,10 +84,17 @@ public class CourseRequestsTable extends Composite {
 		
 		int idx = 0;
 		
-		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 6);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 4);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-MainTableHeader");
 		iGrid.getRowFormatter().setStyleName(idx, "unitime-MainTableHeaderRow");
-		iGrid.setText(idx++, 0, MESSAGES.courseRequestsCourses());
+		iGrid.setText(idx, 0, MESSAGES.courseRequestsCourses());
+		
+		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 3);
+		iGrid.getFlexCellFormatter().setStyleName(idx, 1, "unitime-MainTableHeaderNote");
+		iGrid.setHTML(idx, 1, MESSAGES.courseRequestsWaitList());
+		iGrid.getFlexCellFormatter().getElement(idx, 1).getStyle().setVerticalAlign(VerticalAlign.BOTTOM);
+		
+		idx++;
 		
 		iCourses = new ArrayList<CourseSelectionBox[]>();
 		iAlternatives = new ArrayList<CourseSelectionBox[]>();
@@ -101,6 +110,7 @@ public class CourseRequestsTable extends Composite {
 				c[0].setAccessKey((char)((int)'1'+i));
 			else if (i == 9)
 				c[0].setAccessKey('0');
+			final CheckBox ch = new CheckBox();
 			if (i>0) {
 				final CourseSelectionBox[] x = iCourses.get(i - 1);
 				for (int j=0; j<3; j++) {
@@ -134,7 +144,7 @@ public class CourseRequestsTable extends Composite {
 						c[0].swapUp();
 					}
 				});
-				iGrid.setWidget(idx, 4, up);
+				iGrid.setWidget(idx, 5, up);
 			}
 			if (i<=CONSTANTS.numberOfCourses()) {
 				final Image down = new Image(RESOURCES.down());
@@ -164,7 +174,7 @@ public class CourseRequestsTable extends Composite {
 						c[0].swapDown();
 					}
 				});
-				iGrid.setWidget(idx, 5, down);
+				iGrid.setWidget(idx, 6, down);
 			}
 			c[0].setWidth("260px");
 			c[1].setWidth("170px");
@@ -172,8 +182,10 @@ public class CourseRequestsTable extends Composite {
 			iGrid.setWidget(idx, 1, c[0]);
 			iGrid.setWidget(idx, 2, c[1]);
 			iGrid.setWidget(idx, 3, c[2]);
+			iGrid.setWidget(idx, 4, ch);
 			iGrid.getRowFormatter().setVerticalAlign(idx, HasVerticalAlignment.ALIGN_TOP);
 			iCourses.add(c);
+			c[0].setWaitList(ch);
 			idx++;
 		}
 		iCourses.get(1)[0].setHint(MESSAGES.courseRequestsHint1());
@@ -191,13 +203,18 @@ public class CourseRequestsTable extends Composite {
 				} while (oldText.equals(iTip.getText()));
 			}
 		});
-		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 6);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 7);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-Hint");
 		iGrid.setWidget(idx++, 0, iTip);
 
-		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 6);
+		iGrid.getFlexCellFormatter().setColSpan(idx, 0, 2);
 		iGrid.getFlexCellFormatter().setStyleName(idx, 0, "unitime-MainTableHeader");
-		iGrid.setText(idx++, 0, MESSAGES.courseRequestsAlternatives());
+		iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternatives());
+		iGrid.getFlexCellFormatter().setColSpan(idx, 1, 5);
+		iGrid.getFlexCellFormatter().setStyleName(idx, 1, "unitime-MainTableHeaderNote");
+		iGrid.setHTML(idx, 1, MESSAGES.courseRequestsAlternativesNote());
+		iGrid.getFlexCellFormatter().getElement(idx, 1).getStyle().setVerticalAlign(VerticalAlign.BOTTOM);
+		idx++;
 
 		for (int i=0; i<CONSTANTS.numberOfAlternatives(); i++) {
 			iGrid.setText(idx, 0, MESSAGES.courseRequestsAlternative(i+1));
@@ -284,9 +301,18 @@ public class CourseRequestsTable extends Composite {
 		}
 		iAlternatives.get(0)[0].setHint(MESSAGES.courseRequestsHintA0());
 		
+		iSessionProvider.addAcademicSessionChangeHandler(new AcademicSessionProvider.AcademicSessionChangeHandler() {
+			@Override
+			public void onAcademicSessionChange(AcademicSessionProvider.AcademicSessionChangeEvent event) {
+				sessionChanged();
+			}
+		});
+		
 		initWidget(iGrid);
 		
 		initAsync();
+		
+		sessionChanged();
 	}
 	
 	private void initAsync() {
@@ -463,6 +489,13 @@ public class CourseRequestsTable extends Composite {
 		}
 	}
 	
+	public void sessionChanged() {
+		boolean showWaitLists = (iSessionProvider != null && iSessionProvider.getAcademicSessionInfo() != null && iSessionProvider.getAcademicSessionInfo().isCanWaitListCourseRequests());
+		iGrid.setHTML(0, 1, showWaitLists ? MESSAGES.courseRequestsWaitList() : "");
+		for (int i = 0; i < iCourses.size(); i++)
+			iGrid.getCellFormatter().setVisible(1 + i, 4, showWaitLists);
+	}
+	
 	public void validate(final AsyncCallback<Boolean> callback) {
 		String failed = null;
 		LoadingWidget.getInstance().show(MESSAGES.courseRequestsValidating());
@@ -516,6 +549,7 @@ public class CourseRequestsTable extends Composite {
 			req.setRequestedCourse(course[0].getCourse());
 			req.setFirstAlternative(course[1].getCourse());
 			req.setSecondAlternative(course[2].getCourse());
+			req.setWaitList(course[0].getWaitList());
 			cr.getCourses().add(req);
 		}
 	}
@@ -543,6 +577,7 @@ public class CourseRequestsTable extends Composite {
 			iCourses.get(idx)[0].setCourse(request.getCourses().get(idx).getRequestedCourse(), true);
 			iCourses.get(idx)[1].setCourse(request.getCourses().get(idx).getFirstAlternative(), true);
 			iCourses.get(idx)[2].setCourse(request.getCourses().get(idx).getSecondAlternative(), true);
+			iCourses.get(idx)[0].setWaitList(request.getCourses().get(idx).isWaitList());
 		}
 		for (int idx = 0; idx < (iAlternatives.size() < request.getAlternatives().size() ? iAlternatives.size() : request.getAlternatives().size()); idx++) {
 			iAlternatives.get(idx)[0].setCourse(request.getAlternatives().get(idx).getRequestedCourse(), true);
@@ -561,6 +596,7 @@ public class CourseRequestsTable extends Composite {
 					c[i].setHint("");
 				}
 			}
+			c[0].setWaitList(false);
 		}
 		for (CourseSelectionBox[] c: iAlternatives) {
 			for (int i=0;i<3;i++) {

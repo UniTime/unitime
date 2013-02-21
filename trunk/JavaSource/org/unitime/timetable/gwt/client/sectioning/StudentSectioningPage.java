@@ -119,7 +119,7 @@ public class StudentSectioningPage extends Composite {
 		userAuthentication.addUserAuthenticatedHandler(new UserAuthentication.UserAuthenticatedHandler() {
 			public void onLogIn(UserAuthenticatedEvent event) {
 				if (!mode.isSectioning())
-					sessionSelector.selectSession(null);
+					sessionSelector.selectSession(null, false);
 				sessionSelector.selectSession();
 			}
 
@@ -142,13 +142,13 @@ public class StudentSectioningPage extends Composite {
 		});
 		
 		if (Window.Location.getParameter("session") == null)
-			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<String[]>() {
+			iSectioningService.lastAcademicSession(mode.isSectioning(), new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				public void onFailure(Throwable caught) {
 					if (!userAuthentication.isShowing())
 						sessionSelector.selectSession();
 				}
-				public void onSuccess(String[] result) {
-					sessionSelector.selectSession(result);
+				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
+					sessionSelector.selectSession(result, false);
 					widget.lastRequest(sessionSelector.getAcademicSessionId());
 					userAuthentication.setLookupOptions("mustHaveExternalId,source=students,session=" + sessionSelector.getAcademicSessionId());
 				}

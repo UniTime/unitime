@@ -226,7 +226,7 @@ public class SaveStudentRequests implements OnlineSectioningAction<Boolean>{
 				}
 				cd.setAlternative(false);
 				cd.setPriority(priority);
-				cd.setWaitlist(false);
+				cd.setWaitlist(r.isWaitList());
 				Iterator<CourseRequest> requests = new TreeSet<CourseRequest>(cd.getCourseRequests()).iterator();
 				int order = 0;
 				for (CourseOffering co: courses) {

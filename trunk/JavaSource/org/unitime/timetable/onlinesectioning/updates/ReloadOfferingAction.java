@@ -309,8 +309,8 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 				action.addRequest(OnlineSectioningHelper.toProto(newRequest));
 			}
 			
-			if (oldEnrollment == null) {
-				if (newRequest.getStudent().canAssign(newRequest))
+			if (oldEnrollment == null && newEnrollment == null) {
+				if (newRequest.getStudent().canAssign(newRequest) && CheckOfferingAction.isWaitListed(newRequest, server, helper))
 					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action,
 							options.get(student[0] == null ? student[1].getId() : student[0].getId())));
 				continue;

@@ -48,6 +48,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
@@ -99,6 +100,20 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		return true;
 	}
 	
+	public static boolean isWaitListed(CourseRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
+		// Check wait-list toggle first
+		if (request == null || !request.isWaitlist()) return false;
+		
+		// Check student status
+		if (!StudentSectioningStatus.hasOption(
+				StudentSectioningStatus.Option.waitlist,
+				request.getStudent().getStatus(),
+				server.getAcademicSession().getUniqueId()))
+			return false;
+		
+		return true;
+	}
+	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
 		if (!server.getAcademicSession().isSectioningEnabled() || offering == null) return;
 		
@@ -107,6 +122,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		for (Course course: offering.getCourses()) {
 			for (CourseRequest request: course.getRequests()) {
 				if (request.getAssignment() == null) {
+					if (!request.getStudent().canAssign(request) || !isWaitListed(request, server, helper)) continue;
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(
 							OnlineSectioningLog.Entity.newBuilder()
@@ -117,8 +133,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 							.setName(offering.getName())
 							.setType(OnlineSectioningLog.Entity.EntityType.OFFERING));
 					action.addRequest(OnlineSectioningHelper.toProto(request));
-					if (request.getStudent().canAssign(request)) 
-						queue.add(new SectioningRequest(offering, request, null, null, action, null));
+					queue.add(new SectioningRequest(offering, request, null, null, action, null));
 				} else if (!check(request.getAssignment())) {
 					OnlineSectioningLog.Action.Builder action = helper.addAction(this, server.getAcademicSession());
 					action.setStudent(

@@ -180,13 +180,19 @@ public interface StudentSectioningMessages extends Messages {
 	
 	@DefaultMessage("Course Requests")
 	String courseRequestsCourses();
+	
+	@DefaultMessage("&darr; Wait-List")
+	String courseRequestsWaitList();
 
 	@DefaultMessage("{0}. Priority")
 	String courseRequestsPriority(int i);
 	
-	@DefaultMessage("Alternate Course Requests (used only if a course requested above is not available)")
+	@DefaultMessage("Alternate Course Requests")
 	String courseRequestsAlternatives();
 	
+	@DefaultMessage("(used only if a course requested above is not available)")
+	String courseRequestsAlternativesNote();
+
 	@DefaultMessage("{0}. Alternate")
 	String courseRequestsAlternative(int i);
 	
@@ -438,6 +444,9 @@ public interface StudentSectioningMessages extends Messages {
 	String courseNotAssigned();
 
 	@DefaultMessage("Not Enrolled")
+	String courseNotEnrolled();
+
+	@DefaultMessage("Wait-Listed")
 	String courseWaitListed();
 
 	@DefaultMessage("Conflicts with {0}")
@@ -534,6 +543,9 @@ public interface StudentSectioningMessages extends Messages {
 	String totalRequested(int count);
 
 	@DefaultMessage("Total Not Enrolled: {0}")
+	String totalNotEnrolled(int count);
+	
+	@DefaultMessage("Total Wait-Listed: {0}")
 	String totalWaitListed(int count);
 	
 	@DefaultMessage("{0} by {1}")
@@ -987,6 +999,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Course is wait-listed alternative.")
 	String emailCourseWaitListedAlternative();
 	
+	@DefaultMessage("Course is not enrolled.")
+	String emailCourseNotEnrolled();
+	
+	@DefaultMessage("Course is not enrolled alternative.")
+	String emailCourseNotEnrolledAlternative();
+
 	@DefaultMessage("Course {0} {1} dropped due to a reject.")
 	String emailCourseDropReject(String subject, String courseNbr);
 	
@@ -1012,6 +1030,12 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("wait-listed alternative")
 	String emailWaitListedAlternativeRequest();
 	
+	@DefaultMessage("not enrolled")
+	String emailNotEnrolledRequest();
+	
+	@DefaultMessage("not enrolled alternative")
+	String emailNotEnrolledAlternativeRequest();
+
 	@DefaultMessage("Arrange Hours")
 	String emailArrangeHours();
 	

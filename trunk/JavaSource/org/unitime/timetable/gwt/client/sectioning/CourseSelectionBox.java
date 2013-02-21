@@ -70,6 +70,7 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -141,6 +142,8 @@ public class CourseSelectionBox extends Composite {
 	
 	private CourseSelectionBox iPrev, iNext;
 	private CourseSelectionBox iPrimary, iAlternative;
+	
+	private CheckBox iWaitList;
 	
 	private String iLastCourseLookup = null;
 	
@@ -692,6 +695,10 @@ public class CourseSelectionBox extends Composite {
 	public void setPrev(CourseSelectionBox prev) { iPrev = prev; }
 	public void setPrimary(CourseSelectionBox primary) { iPrimary = primary; }
 	public void setAlternative(CourseSelectionBox alternative) { iAlternative = alternative; }
+	public void setWaitList(CheckBox waitList) { iWaitList = waitList; }
+	
+	public void setWaitList(boolean waitList) { if (iWaitList != null) iWaitList.setValue(waitList); }
+	public Boolean getWaitList() { return iWaitList == null ? null : iWaitList.getValue(); }
 	
 	private void swapWith(CourseSelectionBox other) {
 		hideSuggestionList();
@@ -714,6 +721,9 @@ public class CourseSelectionBox extends Composite {
 		setCourse(other.getCourse(), false);
 		other.setCourse(x, false);
 		if (iAlternative!=null) iAlternative.swapWith(other.iAlternative);
+		if (iWaitList != null && other.iWaitList != null) {
+			Boolean ch = iWaitList.getValue(); iWaitList.setValue(other.iWaitList.getValue()); other.iWaitList.setValue(ch);
+		}
 	}
 	
 	private void clearAllAlternatives() {

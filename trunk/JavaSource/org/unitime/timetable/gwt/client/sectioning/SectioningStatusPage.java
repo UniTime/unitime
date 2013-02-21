@@ -57,6 +57,7 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
@@ -521,7 +522,7 @@ public class SectioningStatusPage extends Composite {
 				}
 			});
 			
-			iSectioningService.lastAcademicSession(true, new AsyncCallback<String[]>() {
+			iSectioningService.lastAcademicSession(true, new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					UniTimePageHeader header = (UniTimePageHeader)RootPanel.get(Components.header.id()).getWidget(0);
@@ -548,7 +549,7 @@ public class SectioningStatusPage extends Composite {
 				}
 
 				@Override
-				public void onSuccess(String[] result) {
+				public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
 					checkLastQuery();
 				}
 			});

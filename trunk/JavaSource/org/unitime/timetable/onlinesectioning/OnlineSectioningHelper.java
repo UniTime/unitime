@@ -485,6 +485,7 @@ public class OnlineSectioningHelper {
     		}
     		if (cr.getTimeStamp() != null)
     			request.setTimeStamp(cr.getTimeStamp());
+        	request.setWaitList(cr.isWaitlist());
     	}
     	return request;
     }
@@ -496,6 +497,7 @@ public class OnlineSectioningHelper {
     		if (!r.hasRequestedCourse() && !r.hasRequestedFreeTime()) continue;
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
     		rq.setPriority(priority++);
+    		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
     		rq.setAlternative(false);
     		if (r.hasRequestedFreeTime()) {
         		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
@@ -525,6 +527,7 @@ public class OnlineSectioningHelper {
     		OnlineSectioningLog.Request.Builder rq = OnlineSectioningLog.Request.newBuilder();
     		rq.setPriority(priority++);
     		rq.setAlternative(true);
+    		rq.setWaitList(r.hasRequestedCourse() && r.isWaitList());
     		if (r.hasRequestedFreeTime()) {
         		for (CourseRequestInterface.FreeTime ft: r.getRequestedFreeTime()) {
         			rq.addFreeTime(OnlineSectioningLog.Time.newBuilder()

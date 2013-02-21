@@ -730,6 +730,11 @@ public class TravelTimes extends Composite {
 			iHandlers.add(handler);
 		}
 		
+		@Override
+		public AcademicSessionInfo getAcademicSessionInfo() {
+			return null;
+		}
+		
 		private void fireChange() {
 			AcademicSessionProvider.AcademicSessionChangeEvent event = new AcademicSessionProvider.AcademicSessionChangeEvent() {
 				@Override

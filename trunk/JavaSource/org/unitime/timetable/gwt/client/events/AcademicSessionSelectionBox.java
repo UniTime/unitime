@@ -333,4 +333,9 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 	public static interface AcademicSessionFilter {
 		public boolean accept(AcademicSession session);
 	}
+
+	@Override
+	public AcademicSessionInfo getAcademicSessionInfo() {
+		return null;
+	}
 }

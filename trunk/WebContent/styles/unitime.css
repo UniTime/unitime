@@ -169,6 +169,16 @@ h1 {
 	text-align: left;
 }
 
+.unitime-MainTableHeaderNote {
+	border-bottom: 1px solid #9CB0CE;
+	font-size: small;
+	font-weight: normal;
+	font-style: italic;
+	color: black;
+	text-align: left;
+	padding-left: 7px;
+}
+
 .unitime-MainHeader {
 	font-size: large;
 	font-weight: bold;
