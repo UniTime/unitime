@@ -130,7 +130,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		// Load new students
 		Map<Long, org.unitime.timetable.model.Student> newStudents = new HashMap<Long, org.unitime.timetable.model.Student>();
 		for (org.unitime.timetable.model.Student student : (List<org.unitime.timetable.model.Student>)helper.getHibSession().createQuery(
-                "select distinct s from Student s " +
+                "select s from Student s " +
                 "left join fetch s.courseDemands as cd " +
                 "left join fetch cd.courseRequests as cr " +
                 "left join fetch cr.courseOffering as co " +
@@ -141,7 +141,9 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
                 "left join fetch s.waitlists as w " +
                 "left join fetch cr.classEnrollments as cre "+
                 "left join fetch s.groups as g " +
-                "where e.courseOffering.instructionalOffering.uniqueId = :offeringId or co.instructionalOffering.uniqueId = :offeringId").setLong("offeringId", offeringId).list()) {
+                "where s.uniqueId in (select xe.student.uniqueId from StudentClassEnrollment xe where xe.courseOffering.instructionalOffering.uniqueId = :offeringId) " +
+                "or s.uniqueId in (select xr.courseDemand.student.uniqueId from CourseRequest xr where xr.courseOffering.instructionalOffering.uniqueId = :offeringId)"
+                ).setLong("offeringId", offeringId).list()) {
 			newStudents.put(student.getUniqueId(), student);
 		}
 		
