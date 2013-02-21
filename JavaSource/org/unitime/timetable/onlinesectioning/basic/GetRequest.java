@@ -107,6 +107,7 @@ public class GetRequest implements OnlineSectioningAction<CourseRequestInterface
 							}
 						order++;
 						}
+					r.setWaitList(((CourseRequest)cd).isWaitlist());
 					if (r.hasRequestedCourse()) {
 						if (cd.isAlternative())
 							request.getAlternatives().add(r);

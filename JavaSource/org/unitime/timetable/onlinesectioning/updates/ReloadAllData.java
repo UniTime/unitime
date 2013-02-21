@@ -496,7 +496,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             cd.isAlternative(),
                             student,
                             courses,
-                            (cd.isWaitlist() != null && cd.isWaitlist()) || assignedConfig != null,
+                            (cd.isWaitlist() != null && cd.isWaitlist()), // || assignedConfig != null,
                             (cd.getTimestamp() == null ? ts.getTime() : cd.getTimestamp().getTime()));
                     if (!classSelections.isEmpty()) {
                     	request.getSelectedChoices().addAll(classSelections);
@@ -568,7 +568,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                             false,
                             student,
                             cx,
-                            true,
+                            false,
                             timeStamp.get(course.getId()));
         		}
                 HashSet<Section> assignedSections = new HashSet<Section>();

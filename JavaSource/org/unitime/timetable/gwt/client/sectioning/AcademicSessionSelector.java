@@ -22,13 +22,15 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.Collection;
 import java.util.Vector;
 
-import org.unitime.timetable.gwt.client.widgets.WebTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.FontStyle;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -38,7 +40,6 @@ import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Hidden;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -49,11 +50,10 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 
 	private Label iSessionLabel;
-	private Hidden iSessionId;
+	private AcademicSessionInfo iSession = null;
 	
 	private DialogBox iDialog;
-	private WebTable iSessions;
-	private String iName = null;
+	private UniTimeTable<AcademicSessionInfo> iSessions;
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
@@ -65,11 +65,8 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iSessionLabel = new Label(MESSAGES.sessionSelectorNoSession(), false);
 		iSessionLabel.setStyleName("unitime-SessionSelector");
 		
-		iSessionId = new Hidden("sessionId");
-		
 		VerticalPanel vertical = new VerticalPanel();
 		vertical.add(iSessionLabel);
-		vertical.add(iSessionId);
 		
 		Label hint = new Label(MESSAGES.sessionSelectorHint());
 		hint.setStyleName("unitime-Hint");
@@ -82,15 +79,14 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iDialog.setGlassEnabled(true);
 		iDialog.setModal(true);
 		
-		iSessions = new WebTable();
-		iSessions.setHeader(
-				new WebTable.Row(
-						new WebTable.Cell(MESSAGES.colYear(), 1, "80"),
-						new WebTable.Cell(MESSAGES.colTerm(), 1, "80"),
-						new WebTable.Cell(MESSAGES.colCampus(), 1, "100")
-						));
-		iSessions.setEmptyMessage(MESSAGES.sessionSelectorLoading());
-
+		iSessions = new UniTimeTable<AcademicSessionInfo>();
+		iSessions.addRow(null,
+				new UniTimeTableHeader(MESSAGES.colYear()),
+				new UniTimeTableHeader(MESSAGES.colTerm()),
+				new UniTimeTableHeader(MESSAGES.colCampus()));
+		iSessions.addRow(null, new EmptyTableCell(MESSAGES.sessionSelectorLoading()));
+		iSessions.setAllowSelection(true);
+		iSessions.setWidth("100%");
 		
 		iDialog.add(iSessions);
 		
@@ -103,53 +99,54 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iSessionLabel.addClickHandler(ch);
 		hint.addClickHandler(ch);
 		
-		iSessions.addRowClickHandler(new WebTable.RowClickHandler() {
-			public void onRowClick(WebTable.RowClickEvent event) {
-				rowSelected(event.getRow());
+		iSessions.addMouseClickListener(new UniTimeTable.MouseClickListener<AcademicSessionInfo>() {
+
+			@Override
+			public void onMouseClick(UniTimeTable.TableEvent<AcademicSessionInfo> event) {
+				if (event.getData() != null)
+					rowSelected(event.getRow(), event.getData());
 			}
+			
 		});
-		
 		
 		initWidget(vertical);
 	}
 	
-	private void rowSelected(WebTable.Row row) {
+	private void rowSelected(int row, AcademicSessionInfo session) {
 		iDialog.hide();
-		iSessionLabel.setText(MESSAGES.sessionSelectorLabel(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue()));
-		iName = MESSAGES.sessionName(row.getCell(0).getValue(), row.getCell(1).getValue(), row.getCell(2).getValue());
-		Long oldValue = (iSessionId.getValue().isEmpty() ? null : Long.valueOf(iSessionId.getValue()));
-		iSessionId.setValue(row.getId());
-		AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(oldValue, Long.valueOf(row.getId()));
-		for (AcademicSessionChangeHandler handler: iAcademicSessionChangeHandlers)
-			handler.onAcademicSessionChange(changeEvent);
-		iSessions.setSelectedRow(row.getRowIdx());
+		iSessionLabel.setText(MESSAGES.sessionSelectorLabel(session.getYear(), session.getTerm(), session.getCampus()));
+		selectSession(session, true);
+		if (iSessions.getSelectedRow() >= 0)
+			iSessions.setSelected(iSessions.getSelectedRow(), false);
+		iSessions.setSelected(row, true);
 	}
 	
 	public void selectSession() {
 		iDialog.setAutoHideEnabled(getAcademicSessionId()!=null);
-		iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<String[]>>() {
-			public void onSuccess(Collection<String[]> result) {
-				WebTable.Row[] records = new WebTable.Row[result.size()];
-				int idx = 0;
+		iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<AcademicSessionInfo>>() {
+			public void onSuccess(Collection<AcademicSessionInfo> result) {
+				iSessions.clearTable(1);
+				int row = 1;
 				int lastSession = -1;
-				for (String[] record: result) {
-					WebTable.Row row = new WebTable.Row(record[1], record[2], record[3]);
-					row.setId(record[0]);
-					if (row.getId().equals(iSessionId.getValue())) lastSession = idx;
-					records[idx++] = row;
+				for (AcademicSessionInfo session: result) {
+					iSessions.addRow(session, 
+							new Label(session.getYear()),
+							new Label(session.getTerm()),
+							new Label(session.getCampus()));
+					if (session.equals(iSession)) lastSession = row;
+					row++;
 				}
-				iSessions.setData(records);
-				if (records.length == 1) iSessions.setSelectedRow(0);
-				if (lastSession >= 0) iSessions.setSelectedRow(lastSession);
-				if (records.length == 1)
-					rowSelected(iSessions.getRows()[0]);
+				if (result.size() == 1) iSessions.setSelected(1, true);
+				else if (lastSession >= 0) iSessions.setSelected(lastSession, true);
+				if (result.size() == 1)
+					rowSelected(1, iSessions.getData(1));
 				else
 					iDialog.center();
 			}
 			
 			public void onFailure(Throwable caught) {
-				iSessions.clearData(true);
-				iSessions.setEmptyMessage(caught.getMessage());
+				iSessions.clearTable(1);
+				iSessions.addRow(null, new EmptyTableCell(caught.getMessage()));
 				iDialog.center();
 			}
 		});
@@ -162,11 +159,11 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		} else if (sessionId.equals(getAcademicSessionId())) {
 			callback.onSuccess(true);
 		} else {
-			iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<String[]>>() {
-				public void onSuccess(Collection<String[]> result) {
-					for (String[] record: result) {
-						if (sessionId.toString().equals(record[0])) {
-							selectSession(record);
+			iSectioningService.listAcademicSessions(iMode.isSectioning(), new AsyncCallback<Collection<AcademicSessionInfo>>() {
+				public void onSuccess(Collection<AcademicSessionInfo> result) {
+					for (AcademicSessionInfo session: result) {
+						if (session.getSessionId().equals(sessionId)) {
+							selectSession(session, false);
 							callback.onSuccess(true);
 							return;
 						}
@@ -175,8 +172,8 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 					callback.onSuccess(false);
 				}
 				public void onFailure(Throwable caught) {
-					iSessions.clearData(true);
-					iSessions.setEmptyMessage(caught.getMessage());
+					iSessions.clearTable(1);
+					iSessions.addRow(null, new EmptyTableCell(caught.getMessage()));
 					iDialog.center();
 					callback.onSuccess(false);
 				}
@@ -184,28 +181,32 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		}
 	}
 	
-	public void selectSession(String[] session) {
-		if (session == null) {
+	public void selectSession(AcademicSessionInfo session, boolean fireChangeEvent) {
+		Long oldSessionId = (iSession == null ? null : iSession.getSessionId());
+		iSession = session;
+		if (iSession == null) {
 			iSessionLabel.setText(MESSAGES.sessionSelectorNoSession());
-			iSessionId.setValue(null);
-			iName = null;
-			return;
+		} else {
+			iSessionLabel.setText(MESSAGES.sessionSelectorLabel(iSession.getYear(), iSession.getTerm(), iSession.getCampus()));
+			if (fireChangeEvent || !iSession.getSessionId().equals(oldSessionId)) {
+				AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(oldSessionId, iSession.getSessionId());
+				for (AcademicSessionChangeHandler handler: iAcademicSessionChangeHandlers)
+					handler.onAcademicSessionChange(changeEvent);
+			}
 		}
-		iSessionLabel.setText(MESSAGES.sessionSelectorLabel(session[1], session[2], session[3]));
-		iName = MESSAGES.sessionName(session[1], session[2], session[3]);
-		iSessionId.setValue(session[0]);
 	}
 	
 	public Long getAcademicSessionId() {
-		try {
-			return Long.valueOf(iSessionId.getValue());
-		} catch (Exception e) {
-			return null;
-		}
+		return iSession == null ? null : iSession.getSessionId();
 	}
 	
 	public String getAcademicSessionName() {
-		return iName;
+		return iSession == null ? null : iSession.getName();
+	}
+	
+	@Override
+	public AcademicSessionInfo getAcademicSessionInfo() {
+		return iSession;
 	}
 	
 	public static class AcademicSessionChangeEvent implements AcademicSessionProvider.AcademicSessionChangeEvent {
@@ -236,15 +237,45 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 			super.onPreviewNativeEvent(event);
 			if (DOM.eventGetType((Event) event.getNativeEvent()) == Event.ONKEYUP) {
 				if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_DOWN) {
-					iSessions.setSelectedRow(iSessions.getSelectedRow()+1);
+					int row = iSessions.getSelectedRow();
+					if (row >= 0) iSessions.setSelected(row, false);
+					if (row < 0)
+						row = 1;
+					else {
+						row ++;
+						if (row >= iSessions.getRowCount()) row = 1;
+					}
+					iSessions.setSelected(row, true);
 				} else if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_UP) {
-					iSessions.setSelectedRow(iSessions.getSelectedRow()==0?iSessions.getRowsCount()-1:iSessions.getSelectedRow()-1);
+					int row = iSessions.getSelectedRow();
+					if (row >= 0) iSessions.setSelected(row, false);
+					if (row < 0)
+						row = iSessions.getRowCount() - 1;
+					else {
+						row --;
+						if (row <= 0) row = iSessions.getRowCount() - 1;
+					}
+					iSessions.setSelected(row, true);
 				} else if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ENTER && iSessions.getSelectedRow()>=0) {
-					rowSelected(iSessions.getRows()[iSessions.getSelectedRow()]);
+					int row = iSessions.getSelectedRow();
+					if (row >= 0 && iSessions.getData(row) != null)
+						rowSelected(row, iSessions.getData(row));
 				}  else if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ESCAPE && getAcademicSessionId()!=null) {
 					iDialog.hide();
 				}
 			}
+		}
+	}
+	
+	private class EmptyTableCell extends Label implements UniTimeTable.HasColSpan {
+		EmptyTableCell(String text) {
+			super(text, false);
+			getElement().getStyle().setFontStyle(FontStyle.ITALIC);
+		}
+
+		@Override
+		public int getColSpan() {
+			return 3;
 		}
 	}
 }

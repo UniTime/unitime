@@ -426,7 +426,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					Collection<LinkedSections> links = server.getLinkedSections(clonedCourse.getOffering().getId());
 					if (links != null) linkedSections.addAll(links);
 				}
-				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, false, null);
+				CourseRequest clonnedRequest = new CourseRequest(student.getRequests().size() + 1, student.getRequests().size(), alternative, student, cr, request.isWaitList(), null);
 				if (originalStudent != null)
 					for (Request originalRequest: originalStudent.getRequests()) {
 						Enrollment originalEnrollment = originalRequest.getAssignment();
@@ -498,6 +498,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					ca.setCourseId(course.getId());
 					ca.setSubject(course.getSubjectArea());
 					ca.setCourseNbr(course.getCourseNumber());
+					ca.setWaitListed(r.isWaitlist());
 					if (computeOverlaps) {
 						TreeSet<Enrollment> overlap = new TreeSet<Enrollment>(new Comparator<Enrollment>() {
 							public int compare(Enrollment e1, Enrollment e2) {
@@ -596,6 +597,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 				if (server.isOfferingLocked(course.getOffering().getId()))
 					ca.setLocked(true);
 				ca.setAssigned(true);
+				ca.setWaitListed(r.isWaitlist());
 				ca.setCourseId(course.getId());
 				ca.setSubject(course.getSubjectArea());
 				ca.setCourseNbr(course.getCourseNumber());

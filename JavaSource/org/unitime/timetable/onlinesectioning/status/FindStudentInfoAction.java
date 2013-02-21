@@ -169,7 +169,7 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							else
 								s.setApprovedDate(new Date(Math.max(ts, s.getApprovedDate().getTime())));
 						}
-					} else if (m.student().canAssign(m.request())) {
+					} else if (m.student().canAssign(m.request()) && m.request().isWaitlist()) {
 						s.setWaitlist(s.getWaitlist() + 1); gWait ++;
 						if (s.getTopWaitingPriority() == null)
 							s.setTopWaitingPriority(1 + m.request().getPriority());

@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import org.unitime.timetable.model.base.BaseStudentSectioningStatus;
+import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 
 public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	private static final long serialVersionUID = -33276457852954947L;
@@ -28,7 +29,9 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		enabled("Access Enabled"),
 		advisor("Advisor Can Enroll"),
 		email("Email Notifications"),
-		notype("Must Have Course Type");
+		notype("Must Have Course Type"),
+		waitlist("Wait-Listing Enabled"),
+		;
 		
 		private String iName;
 		
@@ -56,5 +59,29 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 	public StudentSectioningStatus() {
 		super();
 	}
-
+	
+	public static StudentSectioningStatus getStatus(String reference, Long sessionId) {
+		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
+		try {
+			if (reference != null) {
+				StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference")
+						.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+				if (status != null)
+					return status;
+			}
+			if (sessionId != null) {
+				StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId")
+						.setLong("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
+				if (status != null) return status;
+			}
+			return null;
+		} finally {
+			hibSession.close();
+		}
+	}
+	
+	public static boolean hasOption(Option option, String reference, Long sessionId) {
+		StudentSectioningStatus status = getStatus(reference, sessionId);
+		return status == null || status.hasOption(option);
+	}
 }

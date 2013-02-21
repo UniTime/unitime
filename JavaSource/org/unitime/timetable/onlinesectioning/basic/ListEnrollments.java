@@ -92,6 +92,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 						c.setSubject(course.getSubjectArea());
 						c.setCourseNbr(course.getCourseNumber());
 						e.setCourse(c);
+						e.setWaitList(request.isWaitlist());
 						if (!request.getCourses().get(0).equals(course))
 							e.setAlternative(request.getCourses().get(0).getName());
 						if (request.isAlternative()) {
@@ -235,6 +236,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 					c.setSubject(course.getSubjectArea());
 					c.setCourseNbr(course.getCourseNumber());
 					e.setCourse(c);
+					e.setWaitList(request.isWaitlist());
 					if (!request.getCourses().get(0).equals(course))
 						e.setAlternative(request.getCourses().get(0).getName());
 					if (request.isAlternative()) {
