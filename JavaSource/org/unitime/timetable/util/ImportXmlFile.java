@@ -19,48 +19,57 @@
 */
 package org.unitime.timetable.util;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
+import java.io.File;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
-
+import org.apache.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.io.SAXReader;
-import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.dataexchange.DataExchangeHelper;
 
 /**
- * @author says
- *
+ * Usage:
+ * <code>
+ * 		java -Xmx2g -Dtmtbl.custom.properties=~/Tomcat/conf/unitime.properties -cp timetable.jar \
+ * 		     org.unitime.timetable.util.ImportXmlFile fileToImport.xml myExternalId
+ * </code>
+ * Where tmtbl.custom.properties points to UniTime custom properties (if there are any) and the fileToImport.xml is
+ * the XML file to import.
+ * The second parameter (external id of the timetabling manager under which the import is to be done) is optional.
  */
 public class ImportXmlFile {
 
-	/**
-	 * @param args
-	 */
 	public static void main(String[] args) {
 		try {
-            ToolBox.configureLogging();
-            HibernateUtil.configureHibernate(new Properties());
-         	String fileName = args[0];
-         	Debug.info("filename = " + fileName);
-        	FileInputStream fis = null;
-        	try {
-                fis = new FileInputStream(fileName);
-        		Document document = (new SAXReader()).read(fis);
-        		DataExchangeHelper.importDocument(document, null, null);           
-			} catch (IOException e) {
-			    throw e;
-			} finally {
-			    if (fis != null) {
-			        try { fis.close(); } catch (IOException e) {}
-			    }
-			}
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+			// Configure logging
+	        org.apache.log4j.BasicConfigurator.configure();
+	        
+	        // Configure hibernate
+	        HibernateUtil.configureHibernate(ApplicationProperties.getProperties());
+	        
+	        // Load an XML file
+	        Document document = (new SAXReader()).read(new File(args[0]));
+	        
+	        // External id of the manager doing the import (can be null)
+	        String managerId = (args.length >= 2 ? args[1] : null);
+	        
+	        // Log writer to print messages from the import (can be null)
+	        DataExchangeHelper.LogWriter logger = new DataExchangeHelper.LogWriter() {
+	        	@Override
+	        	public void println(String message) {
+	        		Logger.getLogger(ImportXmlFile.class).info(message);
+	        	}
+	        };
+	        
+	        // Import document
+	        DataExchangeHelper.importDocument(document, managerId, logger);
+	        
+	        // Close hibernate
+	        HibernateUtil.closeHibernate();
+		} catch (Exception e) {
+			Logger.getLogger(ImportXmlFile.class).error("Error: " +e.getMessage(), e);
+		}
     }
 	
 }
