@@ -512,6 +512,7 @@ public class SuggestionsBox extends DialogBox {
 			@Override
 			public void onRowMove(WebTable.RowMoveEvent event) {
 				if (iHint.isShowing()) {
+					if (event.getRowIdx() < 0) { iHint.hide(); return; }
 					Element tr = iSuggestions.getTable().getRowFormatter().getElement(event.getRowIdx());
 					boolean top = (tr.getAbsoluteBottom() - Window.getScrollTop() + 30 + iHint.getOffsetHeight() > Window.getClientHeight());
 					iHint.setPopupPosition(
