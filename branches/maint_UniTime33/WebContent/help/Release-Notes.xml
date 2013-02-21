@@ -81,6 +81,7 @@
 			<name>Course Timetabling</name>
 			<description>
 				<line>Student Sectioning: Fixed null pointer exception when there is no joint enrollment constraint between two (committed) classes that share a student.</line>
+				<line>Database Loader - Purge invalid values: Also print a warning message when a class has no placement in its domain to start with.</line>
 			</description>
 		</item>
 	</category>
