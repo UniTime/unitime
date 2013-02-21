@@ -998,22 +998,15 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private void purgeInvalidValues() {
     	iProgress.setPhase("Purging invalid placements ...", getModel().variables().size());
-    	HashSet alreadyEmpty = new HashSet();
-    	for (Lecture lecture: getModel().variables()) {
-    		if (lecture.values().isEmpty()) 
-    			alreadyEmpty.add(lecture);
-    	}
     	for (Lecture lecture: new ArrayList<Lecture>(getModel().variables())) {
     		List<Placement> oldValues = new ArrayList<Placement>(lecture.values());
     		lecture.purgeInvalidValues(iInteractiveMode);
     		if (lecture.values().isEmpty()) {
-    			if (!alreadyEmpty.contains(lecture)) {
-                    String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
-	    			for (Placement p: oldValues) {
-                        warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason();
-	    			}
-                    iProgress.message(msglevel("noPlacementAfterCommit", Progress.MSGLEVEL_WARN), warn);
+	            String warn = "Class "+getClassLabel(lecture)+" has no available placement (after enforcing consistency between the problem and committed solutions"+(iInteractiveMode?"":", class not loaded")+")."; 
+    			for (Placement p: oldValues) {
+                    warn += "<br>&nbsp;&nbsp;&nbsp;&nbsp;"+p.getNotValidReason();
     			}
+                iProgress.message(msglevel("noPlacementAfterCommit", Progress.MSGLEVEL_WARN), warn);
     			if (!iInteractiveMode) {
     				getModel().removeVariable(lecture);
     				for (Constraint c: new ArrayList<Constraint>(lecture.constraints())) {
