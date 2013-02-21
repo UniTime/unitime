@@ -89,6 +89,13 @@ public class EnrollStudent implements OnlineSectioningAction<ClassAssignmentInte
 					throw new SectioningException(MSG.exceptionEnrollNotAvailable(ca.getSubject() + " " + ca.getCourseNbr() + " " + ca.getSubpart() + " " + ca.getSection()));
 				if (server.isOfferingLocked(course.getOffering().getId())) {
 					lockedCourses.add(course.getId());
+					for (CourseRequestInterface.Request r: getRequest().getCourses())
+						if (!r.isWaitList() && !r.hasRequestedFreeTime()) {
+							if ((r.hasRequestedCourse() && r.getRequestedCourse().equalsIgnoreCase(course.getName())) ||
+								(r.hasFirstAlternative() && r.getFirstAlternative().equalsIgnoreCase(course.getName())) ||
+								(r.hasSecondAlternative() && r.getSecondAlternative().equalsIgnoreCase(course.getName())))
+								r.setWaitList(true);
+						}
 					// throw new SectioningException(SectioningExceptionType.COURSE_LOCKED, course.getName());
 				} else {
 					offeringIds.add(course.getOffering().getId());

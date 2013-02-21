@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.shared;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
@@ -27,6 +28,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 public interface AcademicSessionProvider {
 	public Long getAcademicSessionId();
 	public String getAcademicSessionName();
+	public AcademicSessionInfo getAcademicSessionInfo();
 	public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler);
 	
 	public static interface AcademicSessionChangeEvent {
@@ -41,4 +43,50 @@ public interface AcademicSessionProvider {
 	}
 	
 	public void selectSession(Long sessionId, AsyncCallback<Boolean> callback);
+	
+	public static class AcademicSessionInfo implements IsSerializable {
+		private Long iSessionId;
+		private Boolean iCanWaitListCourseRequests;
+		private String iYear, iTerm, iCampus, iName;
+		
+		public AcademicSessionInfo() {}
+		
+		public AcademicSessionInfo(Long sessionId, String year, String term, String campus, String name, Boolean canWaitListCourseRequests) {
+			iSessionId = sessionId;
+			iTerm = term;
+			iYear = year;
+			iCampus = campus;
+			iName = name;
+			iCanWaitListCourseRequests = canWaitListCourseRequests;
+		}
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public Boolean isCanWaitListCourseRequests() { return iCanWaitListCourseRequests; }
+		public void setCanWaitListCourseRequests(Boolean canWaitListCourseRequests) { iCanWaitListCourseRequests = canWaitListCourseRequests; }
+		
+		public String getYear() { return iYear; }
+		public void setYear(String year) { iYear = year; }
+		
+		public String getCampus() { return iCampus; }
+		public void setCampus(String campus) { iCampus = campus; }
+		
+		public String getTerm() { return iTerm; }
+		public void setTerm(String term) { iTerm = term; }
+		
+		public String getName() { return (iName == null || iName.isEmpty() ? iTerm + " " + iYear + " (" + iCampus + ")" : iName); }
+		public void setname(String name) { iName = name; }
+		
+		@Override
+		public String toString() {
+			return getName();
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o == null || !(o instanceof AcademicSessionInfo)) return false;
+			return getSessionId().equals(((AcademicSessionInfo)o).getSessionId());
+		}
+	}
 }

@@ -689,9 +689,9 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				out.println("	<td style= \"white-space: nowrap; " + style + "\">&nbsp;</td>");
 				if (request.isAlternative())
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + MSG.emailWaitListedAlternativeRequest() + "</td>");
+					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + (cr.isWaitlist() ? MSG.emailWaitListedAlternativeRequest() : MSG.emailNotEnrolledAlternativeRequest()) + "</td>");
 				else
-					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + MSG.emailWaitListedRequest() + "</td>");
+					out.println("	<td style= \"white-space: nowrap; " + style + "\" colspan=\"9\" align=\"center\">" + (cr.isWaitlist() ? MSG.emailWaitListedRequest() : MSG.emailNotEnrolledRequest()) + "</td>");
 				out.println("</tr>");
 			}
 			return;
@@ -809,7 +809,10 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 				CourseInfo info = server.getCourseInfo(getOldEnrollment().getCourse().getId());
 				String consent = (info == null ? null : info.getConsent());
 				if (newRequest !=  null && newRequest.getStudent().canAssign(newRequest))
-					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + (newRequest.isAlternative() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseWaitListed()) + "</td></tr></table>");
+					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + 
+							(newRequest.isAlternative() ?
+									newRequest instanceof CourseRequest && ((CourseRequest)newRequest).isWaitlist() ? MSG.emailCourseWaitListedAlternative() : MSG.emailCourseNotEnrolledAlternative() :
+									newRequest instanceof CourseRequest && ((CourseRequest)newRequest).isWaitlist() ? MSG.emailCourseWaitListed() : MSG.emailCourseNotEnrolled()) + "</td></tr></table>");
 				else if (newRequest == null && consent != null) {
 					out.println("<table width=\"100%\"><tr><td class=\"unitime-ErrorMessage\">" + MSG.emailConsentRejected(consent.toLowerCase()) + "</td></tr></table>");
 				}

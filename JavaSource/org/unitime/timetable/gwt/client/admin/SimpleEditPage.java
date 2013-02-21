@@ -138,6 +138,11 @@ public class SimpleEditPage extends Composite {
 		
 		@Override
 		public void addAcademicSessionChangeHandler(AcademicSessionChangeHandler handler) {}
+
+		@Override
+		public AcademicSessionInfo getAcademicSessionInfo() {
+			return null;
+		}
 	};
 	
 	public SimpleEditPage() {

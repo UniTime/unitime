@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.ClassAssignment;
@@ -104,7 +105,7 @@ public class OnlineSectioningTest extends Composite {
 					UniTimeNotifications.error("Only administrators can use this page.");
 					return;
 				}
-				iSectioningService.listAcademicSessions(true, new AsyncCallback<Collection<String[]>>() {
+				iSectioningService.listAcademicSessions(true, new AsyncCallback<Collection<AcademicSessionProvider.AcademicSessionInfo>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						iSessions.setErrorHint(caught.getMessage());
@@ -113,15 +114,15 @@ public class OnlineSectioningTest extends Composite {
 					}
 
 					@Override
-					public void onSuccess(Collection<String[]> result) {
-						for (String[] s: result) {
-							iSessions.getWidget().addItem(s[2] + " " + s[1] + " (" + s[2] + ")", s[0]);
+					public void onSuccess(Collection<AcademicSessionProvider.AcademicSessionInfo> result) {
+						for (AcademicSessionProvider.AcademicSessionInfo s: result) {
+							iSessions.getWidget().addItem(s.getName(), s.getSessionId().toString());
 						}
-						iSectioningService.lastAcademicSession(true, new AsyncCallback<String[]>() {
+						iSectioningService.lastAcademicSession(true, new AsyncCallback<AcademicSessionProvider.AcademicSessionInfo>() {
 							@Override
-							public void onSuccess(String[] result) {
+							public void onSuccess(AcademicSessionProvider.AcademicSessionInfo result) {
 								for (int i = 0; i < iSessions.getWidget().getItemCount(); i++) {
-									if (iSessions.getWidget().getValue(i).equals(result[0]))
+									if (iSessions.getWidget().getValue(i).equals(result.getSessionId().toString()))
 										iSessions.getWidget().setSelectedIndex(i);
 								}
 							}

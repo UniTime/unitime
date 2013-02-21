@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
@@ -38,7 +39,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("sectioning.gwt")
 public interface SectioningService extends RemoteService {
 	Collection<ClassAssignmentInterface.CourseAssignment> listCourseOfferings(Long sessionId, String query, Integer limit) throws SectioningException, PageAccessException;
-	Collection<String[]> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
+	Collection<AcademicSessionProvider.AcademicSessionInfo> listAcademicSessions(boolean sectioning) throws SectioningException, PageAccessException;
 	String retrieveCourseDetails(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Collection<ClassAssignmentInterface.ClassAssignment> listClasses(Long sessionId, String course) throws SectioningException, PageAccessException;
 	Long retrieveCourseOfferingId(Long sessionId, String course) throws SectioningException, PageAccessException;
@@ -48,7 +49,7 @@ public interface SectioningService extends RemoteService {
 	String logIn(String userName, String password) throws SectioningException, PageAccessException;
 	Boolean logOut() throws SectioningException, PageAccessException;
 	String whoAmI() throws SectioningException, PageAccessException;
-	String[] lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
+	AcademicSessionProvider.AcademicSessionInfo lastAcademicSession(boolean sectioning) throws SectioningException, PageAccessException;
 	CourseRequestInterface lastRequest(boolean online, Long sessionId) throws SectioningException, PageAccessException;
 	ClassAssignmentInterface lastResult(boolean online, Long sessionId) throws SectioningException, PageAccessException;
     Boolean saveRequest(CourseRequestInterface request) throws SectioningException, PageAccessException;

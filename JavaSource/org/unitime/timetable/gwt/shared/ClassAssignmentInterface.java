@@ -77,6 +77,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private ArrayList<String> iOverlaps = null;
 		private boolean iNotAvailable = false, iLocked = false;
 		private String iInstead;
+		private boolean iWaitListed = false;
 
 		private ArrayList<ClassAssignment> iAssignments = new ArrayList<ClassAssignment>();
 
@@ -160,6 +161,9 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			if (iEnrollment < 0) return "&infin;";
 			return iEnrollment.toString();
 		}
+		
+		public boolean isWaitListed() { return iWaitListed; }
+		public void setWaitListed(boolean waitListed) { iWaitListed = waitListed; }
 		
 		public String toString() {
 			return (isFreeTime() ? "Free Time" : getSubject() + " " + getCourseNbr()) + ": " + (isAssigned() ? getClassAssignments() : "NOT ASSIGNED");
@@ -532,6 +536,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private String iReservation = null;
 		private String iApprovedBy = null;
 		private List<Conflict> iConflicts = null;
+		private Boolean iWaitList = null; 
 		
 		public Enrollment() {}
 		
@@ -558,6 +563,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		public void setApprovedDate(Date ts) { iApprovedDate = ts; }
 		public String getApprovedBy() { return iApprovedBy; }
 		public void setApprovedBy(String approvedBy) { iApprovedBy = approvedBy; }
+		
+		public boolean hasWaitList() { return iWaitList != null; }
+		public boolean isWaitList() { return iWaitList != null && iWaitList.booleanValue(); }
+		public void setWaitList(Boolean waitList) { iWaitList = waitList; }
 		
 		public String getClasses(String subpart, String delim, boolean showClassNumbers) {
 			if (getCourse() == null || getCourse().getClassAssignments().isEmpty()) return "";

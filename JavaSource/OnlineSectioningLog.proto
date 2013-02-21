@@ -78,6 +78,8 @@ message Request {
 	repeated Section section = 6;
 	
 	optional int64 time_stamp = 8;
+	
+	optional bool wait_list = 9 [default = false];
 }
 
 message Enrollment {

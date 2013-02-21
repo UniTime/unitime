@@ -394,6 +394,10 @@ public class EnrollmentTable extends Composite {
 					@Override
 					public void selectSession(Long sessionId, AsyncCallback<Boolean> callback) {
 					}
+					@Override
+					public AcademicSessionInfo getAcademicSessionInfo() {
+						return null;
+					}
 				};
 												
 				final StudentSectioningWidget widget = new StudentSectioningWidget(iOnline, session, user, StudentSectioningPage.Mode.SECTIONING, false);
@@ -1534,7 +1538,7 @@ public class EnrollmentTable extends Composite {
 				
 		iEnrollments.addRow(null, header);
 		
-		int enrolled = 0; int waitlisted = 0;
+		int enrolled = 0; int waitlisted = 0; int unassigned = 0;
 		boolean suffix = SectioningCookie.getInstance().getShowClassNumbers();
 		for (ClassAssignmentInterface.Enrollment enrollment: enrollments) {
 			List<Widget> line = new ArrayList<Widget>();
@@ -1557,7 +1561,7 @@ public class EnrollmentTable extends Composite {
 				line.add(new HTML(enrollment.getReservation() == null ? "&nbsp;" : enrollment.getReservation(), false));
 			if (!subparts.isEmpty()) {
 				if (!enrollment.hasClasses()) {
-					line.add(new WarningLabel(MESSAGES.courseWaitListed(), subparts.size()));
+					line.add(new WarningLabel(enrollment.isWaitList() ? MESSAGES.courseWaitListed() : MESSAGES.courseNotEnrolled(), subparts.size()));
 				} else for (String subpart: subparts) {
 					line.add(new HTML(enrollment.getClasses(subpart, ", ", suffix), false));
 				}
@@ -1614,20 +1618,29 @@ public class EnrollmentTable extends Composite {
 			iEnrollments.getRowFormatter().setVerticalAlign(iEnrollments.getRowCount() - 1, HasVerticalAlignment.ALIGN_TOP);
 			if (enrollment.hasClasses())
 				enrolled++;
-			else
+			else if (enrollment.isWaitList())
 				waitlisted++;
+			else
+				unassigned++;
 		}
 		
-		List<Widget> footer = new ArrayList<Widget>();
-		if (waitlisted == 0) {
+		List<TotalLabel> footer = new ArrayList<TotalLabel>();
+		if (enrolled > 0)
 			footer.add(new TotalLabel(MESSAGES.totalEnrolled(enrolled), header.size()));
-		} else if (enrolled == 0) {
-			footer.add(new TotalLabel(MESSAGES.totalRequested(waitlisted), header.size()));
-		} else {
-			footer.add(new TotalLabel(MESSAGES.totalEnrolled(enrolled), header.size() / 2)); 
-			footer.add(new TotalLabel(MESSAGES.totalWaitListed(waitlisted), header.size() - (header.size() / 2)));
+		if (waitlisted > 0)
+			footer.add(new TotalLabel(MESSAGES.totalWaitListed(waitlisted), header.size()));
+		if (unassigned > 0)
+			footer.add(new TotalLabel(MESSAGES.totalNotEnrolled(unassigned + waitlisted), header.size()));
+		if (footer.size() == 2) {
+			footer.get(0).setColSpan(header.size() / 2);
+			footer.get(1).setColSpan(header.size() - (header.size() / 2));
+		} else if (footer.size() == 3) {
+			footer.get(0).setColSpan(header.size() / 3);
+			footer.get(1).setColSpan(header.size() / 3);
+			footer.get(2).setColSpan(header.size() - 2 * (header.size() / 3));
 		}
-		iEnrollments.addRow(null, footer);
+		if (!footer.isEmpty())
+			iEnrollments.addRow(null, footer);
 	}
 	
 	private static class TotalLabel extends HTML implements HasColSpan, HasStyleName {
@@ -1641,6 +1654,11 @@ public class EnrollmentTable extends Composite {
 		@Override
 		public int getColSpan() {
 			return iColSpan;
+		}
+		
+		public void setColSpan(int colSpan) {
+			iColSpan = colSpan;
+			
 		}
 		
 		@Override
