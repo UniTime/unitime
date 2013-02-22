@@ -331,7 +331,7 @@
 		<TR>
 			<TD><loc:message name="propertyDatePattern"/></TD>
 			<TD>
-				<html:select style="width:200;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
+				<html:select style="width:200px;" property="datePattern" onchange='<%= "datePatternChanged();"%>'>
 					<html:options collection="<%=org.unitime.timetable.model.DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
 				</html:select>
 				<img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" onclick="showGwtDialog('Preview of '+ClassEditForm.datePattern.options[ClassEditForm.datePattern.selectedIndex].text, 'user/dispDatePattern.jsp?id='+ClassEditForm.datePattern.value+'&class='+ClassEditForm.classId.value,'840','520');">
@@ -417,7 +417,7 @@
 					<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 						<TR>
 							<TD align="left" nowrap>	
-								<html:select style="width:250;" 
+								<html:select style="width:250px;" 
 									styleId='<%= "instructors" + ctr %>' 
 									property='<%= "instructors[" + ctr + "]" %>'
 									onchange='<%= "instructorChanged("+ctr+", this);"%>'

@@ -190,7 +190,7 @@
 					<%
 						}
 					%>
-					<html:select style="width:350;" property='<%= "roomGroups[" + ctr + "]" %>'
+					<html:select style="width:350px;" property='<%= "roomGroups[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -253,7 +253,7 @@
 					<%
 						}
 					%>
-					<html:select style="width:350;" property='<%= "roomPrefs[" + ctr + "]" %>'
+					<html:select style="width:350px;" property='<%= "roomPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -315,7 +315,7 @@
 					<%
 						}
 					%>
-					<html:select style="width:350;" property='<%= "bldgPrefs[" + ctr + "]" %>'
+					<html:select style="width:350px;" property='<%= "bldgPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -377,7 +377,7 @@
 					<%
 						}
 					%>
-					<html:select style="width:350;" property='<%= "roomFeaturePrefs[" + ctr + "]" %>'
+					<html:select style="width:350px;" property='<%= "roomFeaturePrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 
@@ -439,7 +439,7 @@
 					<%
 						}
 					%>
-					<html:select style="width:350;" property='<%= "distPrefs[" + ctr + "]" %>'
+					<html:select style="width:350px;" property='<%= "distPrefs[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);" 
 						onkeydown="return checkKey(event, this);" 

@@ -122,7 +122,7 @@
 		<TR>
 			<TD nowrap valign='top'>Distribution Type: <font class="reqField">*</font></TD>
 			<TD colspan='2' width='100%'>
-				<html:select style="width:300;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
+				<html:select style="width:300px;" property="distType" onchange="javascript: distTypeChanged(this.value);"> <!-- op2.value='DistTypeChange';submit(); -->
 					<html:option value="-">-</html:option>
 					<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
 				</html:select>
@@ -148,7 +148,7 @@
 		<TR>
 			<TD>Preference: <font class="reqField">*</font></TD>
 			<TD>
-				<html:select style="width:200;" property="prefLevel">					
+				<html:select style="width:200px;" property="prefLevel">					
 					<html:option value="-">-</html:option>
 					<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
 					<% PreferenceLevel pr = (PreferenceLevel)prLevel; %>			
@@ -179,7 +179,7 @@
 			<TD colspan="3">
 			
 				<!-- Class / Subpart -->
-				<html:select style="width:90;" 
+				<html:select style="width:90px;" 
 					property='<%= "subjectArea[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('subjectArea', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
@@ -190,7 +190,7 @@
 					<html:options collection="<%=DistributionPrefsForm.SUBJ_AREA_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
 				</html:select>
 
-				<html:select style="width:470;" 
+				<html:select style="width:470px;" 
 					property='<%= "courseNbr[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('courseNbr', '\" + ctr + \"');\" %>"
 					onfocus="setUp();" 
@@ -201,7 +201,7 @@
 					<html:options collection="<%=DistributionPrefsForm.CRS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
 				</html:select>
 
-				<html:select style="width:150;" 
+				<html:select style="width:150px;" 
 					property='<%= "itype[" + ctr + "]" %>' 
 					onchange="<%= \"javascript: doReload('itype', '\" + ctr + \"');\" %>"
 					styleId='<%="itype"+ctr%>' >
@@ -209,7 +209,7 @@
 					<html:options collection="<%=DistributionPrefsForm.ITYPE_ATTR_LIST+ctr%>" property="value" labelProperty="label" filter="false"/>
 				</html:select>
 
-				<html:select style="width:80;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
+				<html:select style="width:80px;" property='<%= "classNumber[" + ctr + "]" %>' styleId='<%="classNumber"+ctr%>'>
 					<html:option value="-">-</html:option>
 					<html:option value="-1">All</html:option>
 					<html:options collection="<%=DistributionPrefsForm.CLASS_NUM_ATTR_LIST+ctr%>" property="value" labelProperty="label" />
