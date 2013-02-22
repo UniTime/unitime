@@ -77,7 +77,7 @@
 	</TD></TR>
 		<tr>
 			<td valign="middle" nowrap ><b>Session To Roll Forward To: </b>
-			<html:select style="width:200;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
+			<html:select style="width:200px;" property="sessionToRollForwardTo" onchange="displayElement('loading', true);submit();">
 			<html:optionsCollection property="toSessions" value="uniqueId" label="label"  /></html:select>
 			</td>			
 		</tr>
@@ -87,49 +87,49 @@
 		</tr>
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDepartments"/> Roll Departments Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollDeptsFowardFrom">
+			<html:select style="width:200px;" property="sessionToRollDeptsFowardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollManagersForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollManagersForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardRoomData"/> Roll Building and Room Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollRoomDataForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollRoomDataForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardDatePatterns"/> Roll Date Pattern Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollDatePatternsForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollDatePatternsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardTimePatterns"/> Roll Time Pattern Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollTimePatternsForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollTimePatternsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSubjectAreas"/> Roll Subject Areas Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollSubjectAreasForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollSubjectAreasForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardInstructorData"/> Roll Instructor Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollInstructorDataForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollInstructorDataForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCourseOfferings"/> Roll Course Offerings Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollCourseOfferingsForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollCourseOfferingsForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
@@ -178,7 +178,7 @@
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardExamConfiguration"/> Roll Exam Configuration Data Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollExamConfigurationForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollExamConfigurationForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			</td>			
 		</tr>
@@ -213,7 +213,7 @@
 		</tr>
 		<tr>
 			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardCurricula"/> Roll Curricula Forward From Session: 
-			<html:select style="width:200;" property="sessionToRollCurriculaForwardFrom">
+			<html:select style="width:200px;" property="sessionToRollCurriculaForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
 			<br/><i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This will also roll academic areas, classifications, majors, minors, and projection rules forward (if these are not already present in the target academic session).</i>
 			</td>
