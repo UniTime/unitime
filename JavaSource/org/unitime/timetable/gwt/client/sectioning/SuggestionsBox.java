@@ -24,6 +24,7 @@ import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowClickEvent;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -53,7 +54,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -68,7 +68,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 /**
  * @author Tomas Muller
  */
-public class SuggestionsBox extends DialogBox {
+public class SuggestionsBox extends UniTimeDialogBox {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
@@ -100,7 +100,7 @@ public class SuggestionsBox extends DialogBox {
 	private Timer iHideHint;
 	
 	public SuggestionsBox(TimeGrid.ColorProvider color, boolean online) {
-		super();
+		super(true, false);
 		
 		iOnline = online;
 		
