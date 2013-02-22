@@ -42,6 +42,7 @@
 				<line>Alternatives: Changed the default column widths so that the table does not look too crumpled in the middle when there are both time and room changes displayed.</line>
 				<line>List of classes, Alternatives: Added a small padding between columns.</line>
 				<line>Alternatives: Made sure that the filter hint does not stay displayed when the page changes.</line>
+				<line>Alternatives: Show the little x on the top right corner of the dialog (to close the dialog).</line>
 			</description>
 		</item>
 		<item>
