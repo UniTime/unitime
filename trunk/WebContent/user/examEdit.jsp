@@ -146,7 +146,7 @@
 				<table border='0'>
 				<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 					<tr><td nowrap>
-					<html:select style="width:200;"
+					<html:select style="width:200px;"
 						property='<%= "instructors[" + ctr + "]" %>'
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);"
@@ -196,7 +196,7 @@
 				</tr>
 				<logic:iterate name="<%=frmName%>" property="subjectAreaList" id="m" indexId="idx">
 					<tr><td>
-					<html:select style="width:90;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
+					<html:select style="width:90px;" property='<%="subjectArea["+idx+"]"%>' styleId='<%="subjectArea"+idx%>' 
 						onfocus="setUp();" 
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('subjectArea', '\"+idx+\"');\" %>" >
@@ -204,19 +204,19 @@
 						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:340;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
+					<html:select style="width:340px;" property='<%="courseNbr["+idx+"]"%>' styleId='<%="courseNbr"+idx%>'
 						onfocus="setUp();"
 						onkeypress="return selectSearch(event, this);"
 						onchange="<%= \"javascript: doAjax('courseNbr', '\"+idx+\"');\" %>" >
 						<html:optionsCollection property='<%="courseNbrs["+idx+"]"%>' label="value" value="id"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:150;" property='<%="itype["+idx+"]"%>' styleId='<%="itype"+idx%>'
+					<html:select style="width:150px;" property='<%="itype["+idx+"]"%>' styleId='<%="itype"+idx%>'
 						onchange="<%= \"javascript: doAjax('itype', '\"+idx+\"');\" %>" >
 						<html:optionsCollection property='<%="itypes["+idx+"]"%>' label="value" value="id" filter="false"/>
 					</html:select>
 					</td><td>
-					<html:select style="width:140;" property='<%="classNumber["+idx+"]"%>' styleId='<%="classNumber"+idx%>'>
+					<html:select style="width:140px;" property='<%="classNumber["+idx+"]"%>' styleId='<%="classNumber"+idx%>'>
 						<html:optionsCollection property='<%="classNumbers["+idx+"]"%>' label="value" value="id"/>
 					</html:select>
 					</td><td>

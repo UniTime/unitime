@@ -443,7 +443,7 @@
 							</TD>
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<html:select style="width:200;" onfocus="<%= \"setUp(); changeWidth('departments[\" + ctr + \"]', 210)\" %>" 
+									<html:select style="width:200px;" onfocus="<%= \"setUp(); changeWidth('departments[\" + ctr + \"]', 210)\" %>" 
 												 onblur="<%= \" changeWidth('departments[\" + ctr + \"]', 200);\" %>" property='<%= "departments[" + ctr + "]" %>' 
 												 tabindex="<%=java.lang.Integer.toString(10000 + ctr.intValue())%>">
 										<html:option value="-1"><loc:message name="dropDeptDepartment"/></html:option>
@@ -461,7 +461,7 @@
 							</TD>
 							<TD align="left" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<html:select style="width:100;"  onfocus="<%= \"setUp(); changeWidth('datePatterns[\" + ctr + \"]', 200)\" %>" 
+									<html:select style="width:100px;"  onfocus="<%= \"setUp(); changeWidth('datePatterns[\" + ctr + \"]', 200)\" %>" 
 											     onblur="<%= \" changeWidth('datePatterns[\" + ctr + \"]', 100);\" %>" property='<%= "datePatterns[" + ctr + "]" %>' 
 											     tabindex="<%=java.lang.Integer.toString(12000 + ctr.intValue())%>">
 										<html:options collection="<%=DatePattern.DATE_PATTERN_LIST_ATTR%>" property="id" labelProperty="value" />
