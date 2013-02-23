@@ -316,6 +316,9 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 					clonedSection.setNote(section.getNote());
 					clonedSection.setSpaceExpected(section.getSpaceExpected());
 					clonedSection.setSpaceHeld(section.getSpaceHeld());
+			        if (section.getIgnoreConflictWithSectionIds() != null)
+			        	for (Long id: section.getIgnoreConflictWithSectionIds())
+			        		clonedSection.addIgnoreConflictWith(id);
 			        if (limit > 0) {
 			        	double available = Math.round(section.getSpaceExpected() - limit);
 						clonedSection.setPenalty(available / section.getLimit());
@@ -669,7 +672,7 @@ public class FindAssignmentAction implements OnlineSectioningAction<List<ClassAs
 							if (d > s.getTime().getBreakTime()) {
 								a.setDistanceConflict(true);
 							}
-							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+							if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 								overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
 							}
 						}

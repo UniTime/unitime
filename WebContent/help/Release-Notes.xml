@@ -474,6 +474,14 @@
 				<line>This (together with course reservations) allows for the use case when a consent is only needed for students that enroll into the offering through one of the cross-listed courses.</line>
 			</description>
 		</item>
+		<item>
+			<name>Ignore Student Conflicts Constraint</name>
+			<description>
+				<line>It is now allowed for a student to be enrolled in conflicting classes (overlapping in time or back-to-back too far a part) if there is a required Ignore Student Conflicts between them.
+					<line>Such a conflict is completely ignored (e.g., the two classes are not marked as conflicting in the Student Scheduling Assistant).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
