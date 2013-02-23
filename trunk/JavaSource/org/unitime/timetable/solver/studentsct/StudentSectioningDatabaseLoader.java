@@ -86,6 +86,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStude
 import org.unitime.timetable.util.DateUtils;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomLocation;
@@ -1177,6 +1178,36 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
         
+        List<DistributionPref> distPrefs = hibSession.createQuery(
+        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
+        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+        		.setString("pref", PreferenceLevel.sRequired)
+        		.setLong("sessionId", iSessionId)
+        		.list();
+        if (!distPrefs.isEmpty()) {
+        	iProgress.setPhase("Loading distribution preferences...", distPrefs.size());
+        	SectionProvider p = new SectionProvider() {
+				@Override
+				public Section get(Long classId) {
+					return classTable.get(classId);
+				}
+			};
+        	for (DistributionPref pref: distPrefs) {
+        		iProgress.incProgress();
+        		for (Collection<Section> sections: getSections(pref, p)) {
+        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+        				getModel().addLinkedSections(sections);        				
+        			} else {
+        				for (Section s1: sections)
+                			for (Section s2: sections)
+                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+        			}
+        		}
+        	}
+        }
+        
         iProgress.setPhase("Checking for student conflicts...", getModel().getStudents().size());
         for (Student student: getModel().getStudents()) {
         	iProgress.incProgress();
@@ -1316,28 +1347,6 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
             }
         }
 		*/
-        
-        List<DistributionPref> linkedSectionsPrefs = hibSession.createQuery(
-        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId" +
-        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-        		.setString("pref", PreferenceLevel.sRequired)
-        		.setLong("sessionId", iSessionId)
-        		.list();
-        if (!linkedSectionsPrefs.isEmpty()) {
-        	iProgress.setPhase("Loading linked sections...", linkedSectionsPrefs.size());
-        	SectionProvider p = new SectionProvider() {
-				@Override
-				public Section get(Long classId) {
-					return classTable.get(classId);
-				}
-			};
-        	for (DistributionPref pref: linkedSectionsPrefs) {
-        		iProgress.incProgress();
-        		for (Collection<Section> sections: getSections(pref, p))
-        			getModel().addLinkedSections(sections);
-        	}
-        }
         
         if (iLoadSectioningInfos) {
         	List<SectioningInfo> infos = hibSession.createQuery(
