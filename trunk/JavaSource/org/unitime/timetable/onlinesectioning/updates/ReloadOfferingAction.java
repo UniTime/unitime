@@ -32,11 +32,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
 import net.sf.cpsolver.studentsct.extension.DistanceConflict;
 import net.sf.cpsolver.studentsct.extension.TimeOverlapsCounter;
 import net.sf.cpsolver.studentsct.model.Assignment;
+import net.sf.cpsolver.studentsct.model.Config;
 import net.sf.cpsolver.studentsct.model.Course;
 import net.sf.cpsolver.studentsct.model.CourseRequest;
 import net.sf.cpsolver.studentsct.model.Enrollment;
@@ -44,6 +46,7 @@ import net.sf.cpsolver.studentsct.model.Offering;
 import net.sf.cpsolver.studentsct.model.Request;
 import net.sf.cpsolver.studentsct.model.Section;
 import net.sf.cpsolver.studentsct.model.Student;
+import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -172,6 +175,20 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 		if (oldOffering != null) {
 			server.remove(oldOffering);
 			server.removeLinkedSections(offeringId);
+			// Remove ignore student conflict relations that involve the old offering
+			for (Config config: oldOffering.getConfigs()) {
+				for (Subpart subpart: config.getSubparts()) {
+					for (Section section: subpart.getSections()) {
+						if (section.getIgnoreConflictWithSectionIds() != null && !section.getIgnoreConflictWithSectionIds().isEmpty()) {
+							for (Long otherSectionId: section.getIgnoreConflictWithSectionIds()) {
+								Section other = server.getSection(otherSectionId);
+								if (other != null && other.getIgnoreConflictWithSectionIds() != null) other.getIgnoreConflictWithSectionIds().remove(section.getId());
+							}
+							section.getIgnoreConflictWithSectionIds().clear();
+						}
+					}
+				}
+			}
 		}
 		
 		// New offering
@@ -184,28 +201,36 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			for (CourseOffering co: io.getCourseOfferings())
 				server.update(new CourseInfo(co));
 			
-			// Load linked sections
-	    	List<DistributionPref> linkedSectionsPrefs = helper.getHibSession().createQuery(
+			// Load linked sections and ignore student conflict constraints
+	    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
 	        		"select distinct p from DistributionPref p inner join p.distributionObjects o, Department d, " +
 	        		"Class_ c inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering io " +
-	        		"where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId " +
+	        		"where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId " +
 	        		"and io.uniqueId = :offeringId and (o.prefGroup = c or o.prefGroup = c.schedulingSubpart) " +
 	        		"and p.owner = d and p.prefLevel.prefProlog = :pref")
-	        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+	        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+	        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
 	        		.setString("pref", PreferenceLevel.sRequired)
 	        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
 	        		.setLong("offeringId", offeringId)
 	        		.list();
-	        if (!linkedSectionsPrefs.isEmpty()) {
+	        if (!distPrefs.isEmpty()) {
 	        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
 					@Override
 					public Section get(Long classId) {
 						return server.getSection(classId);
 					}
 				};
-	        	for (DistributionPref pref: linkedSectionsPrefs) {
-	        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p))
-	        			server.addLinkedSections(new LinkedSections(sections));
+	        	for (DistributionPref pref: distPrefs) {
+	        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p)) {
+	        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+	        				server.addLinkedSections(new LinkedSections(sections));   				
+	        			} else {
+	        				for (Section s1: sections)
+	                			for (Section s2: sections)
+	                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+	        			}
+	        		}
 	        	}
 	        }
 			
