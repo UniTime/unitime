@@ -36,6 +36,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.TimeLocation;
 import net.sf.cpsolver.studentsct.constraint.LinkedSections;
@@ -169,23 +170,31 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    		}
 		    	}
 		    	
-		    	List<DistributionPref> linkedSectionsPrefs = helper.getHibSession().createQuery(
-		        		"select p from DistributionPref p, Department d where p.distributionType.reference=:ref and d.session.uniqueId = :sessionId" +
+		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
+		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
 		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-		        		.setString("ref", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+		        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+		        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
 		        		.setString("pref", PreferenceLevel.sRequired)
 		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
 		        		.list();
-		        if (!linkedSectionsPrefs.isEmpty()) {
+		        if (!distPrefs.isEmpty()) {
 		        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
 						@Override
 						public Section get(Long classId) {
 							return server.getSection(classId);
 						}
 					};
-		        	for (DistributionPref pref: linkedSectionsPrefs) {
-		        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p))
-		        			server.addLinkedSections(new LinkedSections(sections));
+		        	for (DistributionPref pref: distPrefs) {
+		        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p)) {
+		        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+		        				server.addLinkedSections(new LinkedSections(sections));
+		        			} else {
+		        				for (Section s1: sections)
+		                			for (Section s2: sections)
+		                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+		        			}
+		        		}
 		        	}
 		        }
 		        

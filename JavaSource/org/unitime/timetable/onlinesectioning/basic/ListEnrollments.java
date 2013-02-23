@@ -180,7 +180,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 										if (d > s.getTime().getBreakTime()) {
 											a.setDistanceConflict(true);
 										}
-										if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+										if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 											overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
 										}
 									}
@@ -317,7 +317,7 @@ public class ListEnrollments implements OnlineSectioningAction<List<ClassAssignm
 									if (d > s.getTime().getBreakTime()) {
 										a.setDistanceConflict(true);
 									}
-									if (section.getTime() != null && section.getTime().hasIntersection(s.getTime())) {
+									if (section.getTime() != null && section.getTime().hasIntersection(s.getTime()) && !section.isToIgnoreStudentConflictsWith(s.getId())) {
 										overlap.add(MSG.clazz(x.getCourse().getSubjectArea(), x.getCourse().getCourseNumber(), s.getSubpart().getName(), s.getName(x.getCourse().getId())));
 									}
 								}
