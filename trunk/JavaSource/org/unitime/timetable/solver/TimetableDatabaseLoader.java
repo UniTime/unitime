@@ -2495,18 +2495,29 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
 		}
 		
-		if (iAutoPrecedence != null && !PreferenceLevel.sNeutral.equals(iAutoPrecedence)) {
-			iProgress.setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
-    		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
-    			Class_ clazz = (Class_)i1.next();
-    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
-    			if (lecture==null) continue;
-    			
-    			if (!lecture.hasAnyChildren())
-    				postPrecedenceConstraint(clazz, iAutoPrecedence);
-    			
-    			iProgress.incProgress();
-    		}
+		if (iAutoPrecedence != null) {
+			PreferenceLevel pref = PreferenceLevel.getPreferenceLevel(iAutoPrecedence);
+			if (pref == null) { // Lookup preference if needed
+				for (PreferenceLevel p: PreferenceLevel.getPreferenceLevelList())
+					if (iAutoPrecedence.equalsIgnoreCase(p.getPrefProlog()) || iAutoPrecedence.equalsIgnoreCase(p.getPrefName()) || iAutoPrecedence.equals(PreferenceLevel.prolog2abbv(p.getPrefProlog()))) {
+						pref = p; break;
+					}
+			}
+			if (pref == null) {
+				iProgress.message(msglevel("autoPrecedence", Progress.MSGLEVEL_WARN), "Preference " + iAutoPrecedence + " not recognized.");
+			} else if (!PreferenceLevel.sNeutral.equals(pref.getPrefProlog())) {
+				iProgress.setPhase("Posting automatic precedence constraints ...",iAllClasses.size());
+	    		for (Iterator i1=iAllClasses.iterator();i1.hasNext();) {
+	    			Class_ clazz = (Class_)i1.next();
+	    			Lecture lecture = (Lecture)iLectures.get(clazz.getUniqueId());
+	    			if (lecture==null) continue;
+	    			
+	    			if (!lecture.hasAnyChildren())
+	    				postPrecedenceConstraint(clazz, pref.getPrefProlog());
+	    			
+	    			iProgress.incProgress();
+	    		}				
+			}
 		}
 		
 		assignCommited();
