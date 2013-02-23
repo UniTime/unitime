@@ -241,7 +241,7 @@ public class Suggestion implements Serializable, Comparable {
 
 			for (JenrlConstraint jenrl: lecture.jenrlConstraints()) {
         		long j = jenrl.jenrl(lecture, dummyPlacement);
-        		if (j>0) {
+        		if (j>0 && !jenrl.isToBeIgnored()) {
         			//if (lecture.getAssignment()==null && jenrl.areStudentConflictsDistance(dummyPlacement)) continue;
         			if (jenrl.areStudentConflictsDistance(dummyPlacement)) continue;
         			JenrlInfo jInfo = new JenrlInfo();
