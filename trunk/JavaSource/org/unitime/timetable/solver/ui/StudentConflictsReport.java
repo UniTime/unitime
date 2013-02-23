@@ -39,7 +39,7 @@ public class StudentConflictsReport implements Serializable {
 	public StudentConflictsReport(Solver solver) {
 		TimetableModel model = (TimetableModel)solver.currentSolution().getModel();
 		for (JenrlConstraint jenrl: model.getJenrlConstraints()) {
-			if (jenrl.isInConflict())
+			if (jenrl.isInConflict() && !jenrl.isToBeIgnored())
 				iGroups.add(new JenrlInfo(solver, jenrl));
 		}
 		for (Lecture lecture: model.assignedVariables()) {

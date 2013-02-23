@@ -214,7 +214,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			for (Iterator e=lecture.activeJenrls().iterator();e.hasNext();) {
 				JenrlConstraint jenrl = (JenrlConstraint)e.next();
 				Lecture another = (Lecture)jenrl.another(lecture);
-				iStudentConflicts.add(new StudentConflictInfo(another.getClassId(),new JenrlInfo(jenrl), StudentConflictInfo.CLASS_CONFLICT_TYPE));
+				if (!jenrl.isToBeIgnored())
+					iStudentConflicts.add(new StudentConflictInfo(another.getClassId(),new JenrlInfo(jenrl), StudentConflictInfo.CLASS_CONFLICT_TYPE));
 			}
 			if (placement!=null) {
 				Hashtable infos = JenrlInfo.getCommitedJenrlInfos(lecture);
