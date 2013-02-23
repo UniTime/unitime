@@ -356,6 +356,19 @@
 				<line>Use Case: Rare timetabling exceptions usually caused by following a different day schedule on a certain dates (e.g., because there is too many Monday holidays in the term).</line>
 			</description>
 		</item>
+		<item>
+			<name>Ignore Student Conflicts Constraint</name>
+			<description>
+				<line>A new distribution constraint Ignore Student Conflicts was created.
+					<line>If put (with Required preference) on a set of classes, all student conflicts are ignored between these classes.</line>
+					<line>It is ignored when Neutral preference is used (it only allows for Required or Neutral preference).</line>
+				</line>
+				<line>The Same Students distribution constraint allows for classes that are also connected with a required Ignore Student Conflicts distribution constraint to be put on top of each other or back-to-back too far apart.</line>
+				<line>If the number of student conflicts that are being ignored is to be displayed in the solution info, the following two classes need to be added to General.AdditionalCriteria solver parameter:
+					<line>General.AdditionalCriteria=net.sf.cpsolver.coursett.criteria.additional.IgnoredStudentConflict;net.sf.cpsolver.coursett.criteria.additional.IgnoredCommittedStudentConflict</line>   
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

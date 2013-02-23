@@ -42,6 +42,7 @@ import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
+import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
 import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
 import net.sf.cpsolver.coursett.constraint.MinimizeNumberOfUsedGroupsOfTime;
@@ -1413,8 +1414,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private Constraint createGroupConstraint(DistributionPref pref) {
     	Constraint gc = null;
-    	if ("SAME_INSTR".equals(pref.getDistributionType().getReference()) && PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog())) {
-    		gc = new InstructorConstraint(new Long(-(int)pref.getUniqueId().longValue()),null, pref.getDistributionType().getLabel(),false);
+    	if ("SAME_INSTR".equals(pref.getDistributionType().getReference())) {
+    		if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
+    			gc = new InstructorConstraint(new Long(-(int)pref.getUniqueId().longValue()),null, pref.getDistributionType().getLabel(),false);
     	} else if ("SPREAD".equals(pref.getDistributionType().getReference())) {
     		gc = new SpreadConstraint(getModel().getProperties(), "spread");
     	} else if ("MIN_ROOM_USE".equals(pref.getDistributionType().getReference())) {
@@ -1442,6 +1444,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     			gc = new MinimizeNumberOfUsedGroupsOfTime(getModel().getProperties(),"2x5h",MinimizeNumberOfUsedGroupsOfTime.sGroups2of5h);
     		else
     			iProgress.message(msglevel("constraintNotUsed", Progress.MSGLEVEL_INFO), "Minimize number of used groups of time constraint not loaded due to the interactive mode of the solver.");
+    	} else if (IgnoreStudentConflictsConstraint.REFERENCE.equals(pref.getDistributionType().getReference())) {
+    		if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
+    			gc = new IgnoreStudentConflictsConstraint();
     	} else {
     		GroupConstraint.ConstraintType type = GroupConstraint.ConstraintType.get(pref.getDistributionType().getReference());
     		if (type == null) {
