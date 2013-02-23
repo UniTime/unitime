@@ -48,11 +48,9 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseDemand;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.StudentClassEnrollment;
-import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
@@ -60,7 +58,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.solver.ResectioningWeights;
 import org.unitime.timetable.onlinesectioning.solver.SectioningRequest;
 
-public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
+public class CheckOfferingAction extends WaitlistedOnlineSectioningAction<Boolean>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private Collection<Long> iOfferingIds;
@@ -81,6 +79,7 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		if (!server.getAcademicSession().isSectioningEnabled())
 			throw new SectioningException(MSG.exceptionNotSupportedFeature());
+		
 		for (Long offeringId: getOfferingIds()) {
 			// offering is locked -> assuming that the offering will get checked when it is unlocked
 			if (server.isOfferingLocked(offeringId)) continue;
@@ -100,25 +99,11 @@ public class CheckOfferingAction implements OnlineSectioningAction<Boolean>{
 		return true;
 	}
 	
-	public static boolean isWaitListed(CourseRequest request, OnlineSectioningServer server, OnlineSectioningHelper helper) {
-		// Check wait-list toggle first
-		if (request == null || !request.isWaitlist()) return false;
-		
-		// Check student status
-		if (!StudentSectioningStatus.hasOption(
-				StudentSectioningStatus.Option.waitlist,
-				request.getStudent().getStatus(),
-				server.getAcademicSession().getUniqueId()))
-			return false;
-		
-		return true;
-	}
-	
 	public void checkOffering(OnlineSectioningServer server, OnlineSectioningHelper helper, Offering offering) {
 		if (!server.getAcademicSession().isSectioningEnabled() || offering == null) return;
 		
 		Set<SectioningRequest> queue = new TreeSet<SectioningRequest>();
-
+		
 		for (Course course: offering.getCourses()) {
 			for (CourseRequest request: course.getRequests()) {
 				if (request.getAssignment() == null) {

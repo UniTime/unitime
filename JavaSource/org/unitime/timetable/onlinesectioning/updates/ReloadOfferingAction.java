@@ -63,7 +63,6 @@ import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.onlinesectioning.CourseInfo;
-import org.unitime.timetable.onlinesectioning.OnlineSectioningAction;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
@@ -75,7 +74,7 @@ import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
 /**
  * @author Tomas Muller
  */
-public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
+public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private List<Long> iOfferingIds;
@@ -335,7 +334,7 @@ public class ReloadOfferingAction implements OnlineSectioningAction<Boolean> {
 			}
 			
 			if (oldEnrollment == null && newEnrollment == null) {
-				if (newRequest.getStudent().canAssign(newRequest) && CheckOfferingAction.isWaitListed(newRequest, server, helper))
+				if (newRequest.getStudent().canAssign(newRequest) && isWaitListed(newRequest, server, helper))
 					queue.add(new SectioningRequest(newOffering, newRequest, student[0], null, action,
 							options.get(student[0] == null ? student[1].getId() : student[0].getId())));
 				continue;

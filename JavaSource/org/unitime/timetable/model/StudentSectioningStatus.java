@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.unitime.timetable.model.base.BaseStudentSectioningStatus;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 
@@ -60,28 +63,37 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		super();
 	}
 	
-	public static StudentSectioningStatus getStatus(String reference, Long sessionId) {
+	public static StudentSectioningStatus getStatus(String reference, Long sessionId, org.hibernate.Session hibSession) {
+		if (reference != null) {
+			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference")
+					.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
+			if (status != null)
+				return status;
+		}
+		if (sessionId != null) {
+			StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId")
+					.setLong("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
+			if (status != null) return status;
+		}
+		return null;
+	}
+	
+	public static boolean hasOption(Option option, String reference, Long sessionId, org.hibernate.Session hibSession) {
+		StudentSectioningStatus status = getStatus(reference, sessionId, hibSession);
+		return status == null || status.hasOption(option);
+	}
+	
+	public static Set<String> getMatchingStatuses(Option option) {
 		org.hibernate.Session hibSession = StudentSectioningStatusDAO.getInstance().createNewSession();
 		try {
-			if (reference != null) {
-				StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("from StudentSectioningStatus s where s.reference = :reference")
-						.setString("reference", reference).setMaxResults(1).setCacheable(true).uniqueResult();
-				if (status != null)
-					return status;
+			Set<String> statuses = new HashSet<String>();
+			for (StudentSectioningStatus status: StudentSectioningStatusDAO.getInstance().findAll(hibSession)) {
+				if (status.hasOption(option))
+					statuses.add(status.getReference());
 			}
-			if (sessionId != null) {
-				StudentSectioningStatus status = (StudentSectioningStatus)hibSession.createQuery("select s.defaultSectioningStatus from Session s where s.uniqueId = :sessionId")
-						.setLong("sessionId", sessionId).setMaxResults(1).setCacheable(true).uniqueResult();
-				if (status != null) return status;
-			}
-			return null;
+			return statuses;
 		} finally {
 			hibSession.close();
 		}
-	}
-	
-	public static boolean hasOption(Option option, String reference, Long sessionId) {
-		StudentSectioningStatus status = getStatus(reference, sessionId);
-		return status == null || status.hasOption(option);
 	}
 }
