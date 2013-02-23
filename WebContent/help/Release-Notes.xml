@@ -447,6 +447,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Batch Student Scheduling</title>
+		<item>
+			<name>Ignore Student Conflicts Constraint</name>
+			<description>
+				<line>It is now allowed for a student to be enrolled in conflicting classes (overlapping in time or back-to-back too far a part) if there is a required Ignore Student Conflicts between them.
+					<line>Such a conflict is completely ignored (e.g., unlike with classes that allow for overlap, it does not try to minimize the overlapping time).</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Course Types</name>
