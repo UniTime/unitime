@@ -791,6 +791,12 @@
 					<hasPermission name="SettingsAdmin"/>
 				</condition>
 			</item>
+			<item name="Logging" page="admin" type="gwt">
+				<parameter name="type">logging</parameter>
+				<condition>
+					<hasPermission name="ApplicationConfig"/>
+				</condition>
+			</item>
 		</menu>
 		<menu name="Utilities">
 			<item name="Page Statistics" page="stats.do">
