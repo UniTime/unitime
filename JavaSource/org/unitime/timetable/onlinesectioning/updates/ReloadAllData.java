@@ -133,6 +133,34 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 						server.update(new CourseInfo(co));
 				}
 				
+		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
+		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
+		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
+		        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
+		        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
+		        		.setString("pref", PreferenceLevel.sRequired)
+		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
+		        		.list();
+		        if (!distPrefs.isEmpty()) {
+		        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
+						@Override
+						public Section get(Long classId) {
+							return server.getSection(classId);
+						}
+					};
+		        	for (DistributionPref pref: distPrefs) {
+		        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p)) {
+		        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
+		        				server.addLinkedSections(new LinkedSections(sections));
+		        			} else {
+		        				for (Section s1: sections)
+		                			for (Section s2: sections)
+		                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
+		        			}
+		        		}
+		        	}
+		        }
+				
 				if ("true".equals(ApplicationProperties.getProperty("unitime.enrollment.load", "true"))) {
 					List<org.unitime.timetable.model.Student> students = helper.getHibSession().createQuery(
 		                    "select distinct s from Student s " +
@@ -169,34 +197,6 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 		    						", expected: " + section.getSpaceExpected() + ")");
 		    		}
 		    	}
-		    	
-		    	List<DistributionPref> distPrefs = helper.getHibSession().createQuery(
-		        		"select p from DistributionPref p, Department d where p.distributionType.reference in (:ref1, :ref2) and d.session.uniqueId = :sessionId" +
-		        		" and p.owner = d and p.prefLevel.prefProlog = :pref")
-		        		.setString("ref1", GroupConstraint.ConstraintType.LINKED_SECTIONS.reference())
-		        		.setString("ref2", IgnoreStudentConflictsConstraint.REFERENCE)
-		        		.setString("pref", PreferenceLevel.sRequired)
-		        		.setLong("sessionId", server.getAcademicSession().getUniqueId())
-		        		.list();
-		        if (!distPrefs.isEmpty()) {
-		        	StudentSectioningDatabaseLoader.SectionProvider p = new StudentSectioningDatabaseLoader.SectionProvider() {
-						@Override
-						public Section get(Long classId) {
-							return server.getSection(classId);
-						}
-					};
-		        	for (DistributionPref pref: distPrefs) {
-		        		for (Collection<Section> sections: StudentSectioningDatabaseLoader.getSections(pref, p)) {
-		        			if (GroupConstraint.ConstraintType.LINKED_SECTIONS.reference().equals(pref.getDistributionType().getReference())) {
-		        				server.addLinkedSections(new LinkedSections(sections));
-		        			} else {
-		        				for (Section s1: sections)
-		                			for (Section s2: sections)
-		                				if (!s1.equals(s2)) s1.addIgnoreConflictWith(s2.getId());
-		        			}
-		        		}
-		        	}
-		        }
 		        
 				long t1 = System.currentTimeMillis();
 				helper.info("  Update of session " + server.getAcademicSession() + " done " + new DecimalFormat("0.0").format((t1 - t0) / 1000.0) + " seconds.");
