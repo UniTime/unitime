@@ -108,6 +108,12 @@ public class QueryLogFilter implements Filter {
 		}
 		long t1 = JProf.currentTimeMillis();
 		
+		if (exception == null) {
+			Object ex = request.getAttribute("__exception");
+			if (ex != null && ex instanceof Throwable)
+				exception = (Throwable)ex;
+		}
+		
 		if (request instanceof HttpServletRequest) {
 			HttpServletRequest r = (HttpServletRequest)request;
 			QueryLog q = new QueryLog();

@@ -39,6 +39,7 @@
 <%
  	}
  %>
+ <% if (exception != null) request.setAttribute("__exception", exception); %>
 <HTML>
 <HEAD>
 	<META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
