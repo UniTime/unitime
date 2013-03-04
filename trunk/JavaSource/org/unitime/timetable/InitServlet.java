@@ -67,6 +67,9 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Initializing Hibernate ... ");							
 			_RootDAO.initialize();
 			
+			// Now, when hibernate is initialized, we can re-initialize logging with application configuration included
+			Debug.init(ApplicationProperties.getProperties());
+			
 			Debug.info(" - Initializing Solver Register ... ");							
 			SolverRegisterService.startService();
 			SolverRegisterService.addShutdownHook();

@@ -194,6 +194,13 @@ public class ApplicationProperties {
         return props.getProperty(key, defaultValue);
 	}
 	
+	/**
+	 * Return default properties (excluding application configuration)
+	 */
+	public static Properties getDefaultProperties() {
+		return props;
+	}
+	
     /**
 	 * Gets the properties used to configure the application 
 	 * @return Properties object
