@@ -197,5 +197,6 @@
 	<mapping resource="OnlineSectioningLog.hbm.xml"/>
 	<mapping resource="SavedHQL.hbm.xml"/>
 	<mapping resource="EventDateMapping.hbm.xml"/>
+	<mapping resource="MessageLog.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>
