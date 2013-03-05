@@ -8765,4 +8765,52 @@
 			drop table %SCHEMA%.param_ord_fix
 		</sql>
 	</update>
+	<update version="115" date="05-Mar-2014" comment="Message Log">
+		<mysql>
+			create table %SCHEMA%.message_log (
+				uniqueid decimal(20,0) primary key not null,
+				time_stamp datetime not null,
+				log_level decimal(10,0) not null,
+				message longtext binary null,
+				logger varchar(255) not null,
+				thread varchar(100) null,
+				ndc longtext binary null,
+				exception longtext binary null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create index idx_message_log on %SCHEMA%.message_log(time_stamp, log_level)
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.message_log (
+				uniqueid number(20,0) constraint nn_message_log_id not null,
+				time_stamp timestamp constraint nn_message_log_ts not null,
+				log_level decimal(10,0) constraint nn_message_log_level not null,
+				message clob,
+				logger varchar2(255 char) constraint nn_message_log_logger not null,
+				thread varchar2(255 char),
+				ndc clob,
+				exception clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.message_log add constraint pk_message_log primary key (uniqueid)</plsql>
+		<plsql>
+			create index %SCHEMA%.idx_message_log on %SCHEMA%.message_log(time_stamp, log_level)
+		</plsql>
+		<mysql into="ID">select 32767 * next_hi from %SCHEMA%.hibernate_unique_key</mysql>
+		<mysql>update %SCHEMA%.hibernate_unique_key set next_hi=next_hi+1</mysql>
+		<mysql><![CDATA[
+			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
+			(%ID%, 'Message Log', 'Display message log', 'select\n  timeStamp as Time,\n  (case level when 50000 then \'<font color=\"red\">Fatal</font>\' when 40000 then \'<font color=\"red\">Error</font>\' when 30000 then \'<font color=\"orange\">Warning</font>\' when 20000 then \'Info\' when 10000 then \'Debug\' else \'Other\' end) as Level,\n  logger as Logger,\n  (case when exception is null then message when message is null then exception else (message || \'\\\\n\' || exception) end) as Message,\n  (case when ndc is null then thread else (thread || \'\\\\n\' || ndc) end) as Context\nfrom MessageLog order by timeStamp desc', 16),
+			(%ID% + 1, 'Query Log', 'Display query log', 'select\n  m.lastName || \' \' || m.firstName as User,\n  case\n    when q.uri like \'%.gwt: %\' then substring(q.uri, instr(q.uri, \':\') + 1)\n    else q.uri end as Query,\n  case\n    when q.uri like \'%.gwt: %\' and length(q.query) <= 165 + instr(q.query, \'org.unitime.timetable.gwt.services.\')\n      then substring(q.query, instr(q.query, \'org.unitime.timetable.gwt.services.\') + 35)\n    when q.uri like \'%.gwt: %\'\n      then (substring(substring(q.query, instr(q.query, \'org.unitime.timetable.gwt.services.\') + 35), 1, 130) || \'...\')\n    when q.query is null or length(q.query) < 130 then q.query\n    else (substring(q.query, 1, 130) || \'...\') end as Parameters,\n  q.timeStamp as Time_Stamp,\n  q.timeSpent / 1000.0 as Time\nfrom QueryLog q, TimetableManager m\nwhere \n  q.uid = m.externalUniqueId and q.uri not like \'menu.gwt%\'\norder by q.timeStamp desc',16)
+		]]></mysql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
+			(%SCHEMA%.pref_group_seq.nextval, 'Message Log', 'Display message log', 'select timeStamp as Time, (case level when 50000 then ''<font color="red">Fatal</font>'' when 40000 then ''<font color="red">Error</font>'' when 30000 then ''<font color="orange">Warning</font>'' when 20000 then ''Info'' when 10000 then ''Debug'' else ''Other'' end) as Level, logger as Logger, (case when exception is null then message when message is null then exception else (message || ''\\n'' || exception) end) as Message, (case when ndc is null then thread else (thread || ''\\n'' || ndc) end) as Context from MessageLog order by timeStamp desc', 16)
+		]]></plsql>
+		<plsql><![CDATA[
+			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
+			(%SCHEMA%.pref_group_seq.nextval, 'Query Log', 'Display query log', 'select m.lastName || '' '' || m.firstName as User, case when q.uri like ''%.gwt: %'' then substring(q.uri, instr(q.uri, '':'') + 1) else q.uri end as Query, case when q.uri like ''%.gwt: %'' and length(q.query) <= 130 + instr(q.query, ''|'', 1, 7) then substring(q.query, instr(q.query, ''|'', 1, 7) + 1, length(q.query) - instr(q.query, ''|'', 1, 7) - 3) when q.uri like ''%.gwt: %'' then (substring(q.query, instr(q.query, ''|'', 1, 7) + 1, 130) || ''...'') when q.query is null or length(q.query) < 130 then q.query else (substring(q.query, 1, 130) || ''...'') end as Parameters, q.timeStamp as Time_Stamp, q.timeSpent / 1000.0 as Time from QueryLog q, TimetableManager m where q.uid = m.externalUniqueId and q.uri not like ''menu.gwt%'' order by q.timeStamp desc',16)
+		]]></plsql>	
+	</update>	
 </dbupdate>
