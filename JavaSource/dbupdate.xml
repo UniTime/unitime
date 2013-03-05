@@ -8806,7 +8806,7 @@
 		]]></mysql>
 		<plsql><![CDATA[
 			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
-			(%SCHEMA%.pref_group_seq.nextval, 'Message Log', 'Display message log', 'select timeStamp as Time, (case level when 50000 then ''<font color="red">Fatal</font>'' when 40000 then ''<font color="red">Error</font>'' when 30000 then ''<font color="orange">Warning</font>'' when 20000 then ''Info'' when 10000 then ''Debug'' else ''Other'' end) as Level, logger as Logger, (case when exception is null then message when message is null then exception else (message || ''\\n'' || exception) end) as Message, (case when ndc is null then thread else (thread || ''\\n'' || ndc) end) as Context from MessageLog order by timeStamp desc', 16)
+			(%SCHEMA%.pref_group_seq.nextval, 'Message Log', 'Display message log', 'select timeStamp as Time, (case level when 50000 then ''<font color="red">Fatal</font>'' when 40000 then ''<font color="red">Error</font>'' when 30000 then ''<font color="orange">Warning</font>'' when 20000 then ''Info'' when 10000 then ''Debug'' else ''Other'' end) as Level, logger as Logger, (case when exception is null then to_char(message) when message is null then to_char(exception) else (to_char(message) || ''\n'' || to_char(exception)) end) as Message, (case when ndc is null then thread else (thread || ''\n'' || to_char(ndc)) end) as Context from MessageLog order by timeStamp desc', 16)
 		]]></plsql>
 		<plsql><![CDATA[
 			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
