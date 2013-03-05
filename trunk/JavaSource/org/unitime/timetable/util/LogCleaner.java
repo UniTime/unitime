@@ -89,10 +89,31 @@ public class LogCleaner {
 		}
 	}
 	
+	public static void cleanupMessageLog(int days) {
+		if (days < 0) return;
+		org.hibernate.Session hibSession = new _RootDAO().createNewSession();
+		Transaction tx = null;
+		try {
+			tx = hibSession.beginTransaction();
+			int rows = hibSession.createQuery(
+					"delete from MessageLog where timeStamp < " + HibernateUtil.addDate("current_date()", ":days")
+					).setInteger("days", - days).executeUpdate();
+			if (rows > 0)
+				sLog.info("All records older than " + days + " days deleted from the message log (" + rows + " records).");
+			tx.commit();
+		} catch (Throwable t) {
+			sLog.warn("Failed to cleanup message log: " + t.getMessage(), t);
+			if (tx != null) tx.rollback();
+		} finally {
+			hibSession.close();
+		}
+	}
+	
 	public static void cleanupLogs() {
 		cleanupChangeLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.changeLog", "366")));
 		cleanupQueryLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.queryLog", "92")));
 		cleanupOnlineSectioningLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.cleanup.sectioningLog", "366")));
+		cleanupMessageLog(Integer.parseInt(ApplicationProperties.getProperty("unitime.message.log.cleanup.days", "14")));
 	}
 
 }

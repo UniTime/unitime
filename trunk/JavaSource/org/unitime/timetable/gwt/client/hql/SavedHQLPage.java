@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.gwt.client.hql;
 
 import java.util.ArrayList;
@@ -36,7 +55,6 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
@@ -593,7 +611,7 @@ public class SavedHQLPage extends Composite {
 					}
 				} else {
 					for (String x: row) {
-						line.add(new Label(x));
+						line.add(new HTML(x == null ? "" : x.replace("\\n", "<br>")));
 					}
 				}
 				iTable.addRow(i == 0 ? null : row, line);
