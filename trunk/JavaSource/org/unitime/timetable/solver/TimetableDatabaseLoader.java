@@ -2632,13 +2632,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		totalCourseLimit += courseLimit;
         		}
         		
+        		if (totalCourseLimit == 0) continue;
+        		
         		if (totalCourseLimit < offeringLimit)
         			iProgress.message(msglevel("courseReservationsBelowLimit", Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offeringLimit+").");
 
         		if (totalCourseLimit > offeringLimit)
         			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), "Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offeringLimit+").");
-        		
-        		if (totalCourseLimit == 0) continue;
         		
         		if (totalCourseLimit != offeringLimit)
         			factor = new Double(((double)offeringLimit) / totalCourseLimit);    			
