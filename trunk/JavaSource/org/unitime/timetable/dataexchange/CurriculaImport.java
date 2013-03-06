@@ -142,7 +142,7 @@ public class CurriculaImport extends BaseImport {
                 	String abbreviation = areaElement.attributeValue("abbreviation");
                 	area = (externalId != null ? areasByExtId.get(externalId) : areasByAbbv.get(abbreviation));
                 	if (area == null) {
-                		error("Academic area " + areaElement + " does not exist.");
+                		error("Academic area " + areaElement.asXML() + " does not exist.");
                 		continue curricula;
                 	}
                 }
@@ -159,7 +159,7 @@ public class CurriculaImport extends BaseImport {
                 	String code = deptElement.attributeValue("code");
                 	dept = (externalId != null ? departmentsByExtId.get(externalId) : departmentsByCode.get(code));
                 	if (dept == null) {
-                		error("Department " + deptElement + " does not exist.");
+                		error("Department " + deptElement.asXML() + " does not exist.");
                 	}
                 }
                 
@@ -171,7 +171,7 @@ public class CurriculaImport extends BaseImport {
                 	String code = majorElement.attributeValue("code");
                 	PosMajor major = (externalId != null ? majorsByExtId.get(externalId) : majorsByCode.get(code));
                 	if (major == null) {
-                		error("Major " + majorElement + " does not exist.");
+                		error("Major " + majorElement.asXML() + " does not exist.");
                 	} else {
                 		curriculum.getMajors().add(major);
                 		majors.add(major);
@@ -216,7 +216,7 @@ public class CurriculaImport extends BaseImport {
                     	String code = acadClasfElement.attributeValue("code");
                     	acadClasf = (externalId != null ? clasfsByExtId.get(externalId) : clasfsByCode.get(code));
                     	if (acadClasf == null) {
-                    		error("Academic classification " + acadClasfElement + " does not exist.");
+                    		error("Academic classification " + acadClasfElement.asXML() + " does not exist.");
                     		continue classifications;
                     	}
                     }
@@ -245,7 +245,7 @@ public class CurriculaImport extends BaseImport {
                     	String subjectCourseNbr = courseElement.attributeValue("subject") + "|" + courseElement.attributeValue("courseNbr");
                     	CourseOffering courseOffering = (externalId != null ? corusesByExtId.get(externalId) : corusesBySubjectCourseNbr.get(subjectCourseNbr));
                     	if (courseOffering == null) {
-                    		error("Course " + courseElement + " does not exist.");
+                    		error("Course " + courseElement.asXML() + " does not exist.");
                     		continue;
                     	}
 
