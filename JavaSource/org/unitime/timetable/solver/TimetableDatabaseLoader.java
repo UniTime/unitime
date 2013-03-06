@@ -2619,7 +2619,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             			if (offering.getCourseOfferings().size() == 1)
             				courseLimit = offeringLimit;
             			else {
-            				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_WARN), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
+            				iProgress.message(msglevel("crossListWithoutReservation", Progress.MSGLEVEL_INFO), "Cross-listed course "+getOfferingLabel(course)+" does not have any course reservation.");
             				if (course.getProjectedDemand() != null)
             					courseLimit = course.getProjectedDemand();
             				else if (course.getDemand() != null)
@@ -2632,13 +2632,13 @@ public class TimetableDatabaseLoader extends TimetableLoader {
             		totalCourseLimit += courseLimit;
         		}
         		
-        		if (totalCourseLimit == 0) continue;
-        		
         		if (totalCourseLimit < offeringLimit)
-        			iProgress.message(msglevel("courseReservationsBelowLimit", Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offeringLimit+").");
+        			iProgress.message(msglevel("courseReservationsBelowLimit", totalCourseLimit == 0 ? Progress.MSGLEVEL_INFO : Progress.MSGLEVEL_WARN), "Total number of course reservations is below the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+"<"+offeringLimit+").");
 
         		if (totalCourseLimit > offeringLimit)
         			iProgress.message(msglevel("courseReservationsOverLimit", Progress.MSGLEVEL_INFO), "Total number of course reservations exceeds the offering limit for instructional offering "+getOfferingLabel(offering)+" ("+totalCourseLimit+">"+offeringLimit+").");
+        		
+        		if (totalCourseLimit == 0) continue;
         		
         		if (totalCourseLimit != offeringLimit)
         			factor = new Double(((double)offeringLimit) / totalCourseLimit);    			
