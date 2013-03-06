@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.TimetableManager;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -94,12 +95,13 @@ public class DataExchangeHelper {
     public void log(String level, String message, Throwable t) {
         if (iTextLog==null) return;
         if (message!=null) {
-            if (sLogLevelDebug.equals(level)) iTextLog.println("<font color='gray'>&nbsp;&nbsp;--"+message+"</font><br>");
-            else if (sLogLevelInfo.equals(level)) iTextLog.println(message+"<br>");
-            else if (sLogLevelWarn.equals(level)) iTextLog.println("<font color='orange'>"+message+"</font><br>");
-            else if (sLogLevelError.equals(level)) iTextLog.println("<font color='red'>"+message+"</font><br>");
-            else if (sLogLevelFatal.equals(level)) iTextLog.println("<font color='red'><b>"+message+"</b></font><br>");
-            else iTextLog.println(message);
+        	String escapedMessage = HtmlUtils.htmlEscape(message);
+            if (sLogLevelDebug.equals(level)) iTextLog.println("<font color='gray'>&nbsp;&nbsp;--"+escapedMessage+"</font>");
+            else if (sLogLevelInfo.equals(level)) iTextLog.println(escapedMessage+"");
+            else if (sLogLevelWarn.equals(level)) iTextLog.println("<font color='orange'>"+escapedMessage+"</font>");
+            else if (sLogLevelError.equals(level)) iTextLog.println("<font color='red'>"+escapedMessage+"</font>");
+            else if (sLogLevelFatal.equals(level)) iTextLog.println("<font color='red'><b>"+escapedMessage+"</b></font>");
+            else iTextLog.println(escapedMessage);
         }
     }
 
