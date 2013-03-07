@@ -1987,7 +1987,7 @@ public class SectioningServlet implements SectioningService {
 
 		@Override
 		public boolean match(CourseInfo course) {
-			return course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes);
+			return course != null && course.matchType(iAllCourseTypes, iNoCourseType, iAllowedCourseTypes);
 		}
 	}
 }
