@@ -134,13 +134,15 @@
 		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 			tx = hibSession.beginTransaction();
 		Solution solution[] = null;
-		boolean canCommit = true;
+		boolean canCommit = true, canOverwrite = true;
 		if (iSolutionId!=null && iSolutionId.length>0) {
 			solution = new Solution[iSolutionId.length];
 			for (int i=0;i<iSolutionId.length;i++) {
 				solution[i] = dao.get(iSolutionId[i],hibSession);
 				if (solution[i]==null || !sessionContext.hasPermission(solution[i].getOwner(), Right.TimetablesSolutionCommit))
 					canCommit = false;
+				if (solution[i] != null && solution[i].getCommited())
+					canOverwrite = false;
 			}
 		}
 		SolverGroup owner[] = new SolverGroup[0];
@@ -241,7 +243,7 @@
 			<TD align="right" colspan="2">
 <%
 		if (!solver.isWorking()) {
-			if (solution!=null) {
+			if (solution!=null && canOverwrite) {
 %>
 					<html:submit onclick="confirmSave();displayLoading();" property="op" value="Save"/>
 <%

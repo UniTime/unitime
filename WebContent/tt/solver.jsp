@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.security.rights.Right"%>
 <%@page import="java.text.DecimalFormat"%>
 <%@page import="org.unitime.timetable.security.SessionContext"%>
 <%@ page language="java" autoFlush="true"%>
@@ -303,10 +304,13 @@ try {
 		if (hibSession.getTransaction()==null || !hibSession.getTransaction().isActive())
 			tx = hibSession.beginTransaction();
 		boolean hasSolution = false;
+		boolean canOverwrite = true;
 		if (iSolutionIds!=null && iSolutionIds.length>0) {
 			for (int i=0;i<iSolutionIds.length;i++) {
-				if (iSolutionIds[i]!=null && dao.get(iSolutionIds[i],hibSession)!=null) {
-					hasSolution=true; break;
+				Solution solution = (iSolutionIds[i] == null ? null : dao.get(iSolutionIds[i],hibSession));
+				if (solution != null) {
+					hasSolution=true;
+					if (solution.getCommited()) canOverwrite = false;
 				}
 			}
 		}
@@ -335,7 +339,7 @@ try {
 				<TR>
 					<TD align="right" colspan="2">
 <%
-				if (hasSolution) {
+				if (hasSolution && canOverwrite) {
 %>
 						<html:submit onclick="confirmSave();displayLoading();" property="op" value="Save"/>
 <%
