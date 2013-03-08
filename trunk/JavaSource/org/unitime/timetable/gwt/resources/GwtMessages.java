@@ -1089,6 +1089,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Events:")
 	String propRoomEventStatus();
 
+	@DefaultMessage("Department:")
+	String propRoomEventDepartment();
+
 	@DefaultMessage("Distance:")
 	String propRoomDistance();
 
