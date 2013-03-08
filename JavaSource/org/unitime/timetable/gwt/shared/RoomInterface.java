@@ -303,6 +303,7 @@ public class RoomInterface implements IsSerializable {
 		private String iArea = null;
 		private String iGroups = null;
 		private String iEventStatus = null;
+		private String iEventDepartment = null;
 		private String iNote = null;
 		
 		private Map<String, String> iFeatures = null;
@@ -366,6 +367,10 @@ public class RoomInterface implements IsSerializable {
 		public String getEventStatus() { return iEventStatus; }
 		public void setEventStatus(String eventStatus) { iEventStatus = eventStatus; }
 		public boolean hasEventStatus() { return iEventStatus != null && !iEventStatus.isEmpty(); }
+
+		public String getEventDepartment() { return iEventDepartment; }
+		public void setEventDepartment(String eventDepartment) { iEventDepartment = eventDepartment; }
+		public boolean hasEventDepartment() { return iEventDepartment != null && !iEventDepartment.isEmpty(); }
 
 		public String getNote() { return iNote; }
 		public void setNote(String note) { iNote = note; }

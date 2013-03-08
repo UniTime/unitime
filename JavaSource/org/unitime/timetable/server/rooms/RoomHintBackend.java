@@ -85,7 +85,8 @@ public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, Ro
 	    	if (!groups.isEmpty())
 	    		response.setGroups(groups);
 	    	
-	    	response.setEventStatus(location.getEventDepartment() == null ? MESSAGES.noEventDepartment() : location.getEffectiveEventStatus().toString());
+	    	response.setEventStatus(location.getEventDepartment() == null ? null : location.getEffectiveEventStatus().toString());
+	    	response.setEventDepartment(location.getEventDepartment() == null ? MESSAGES.noEventDepartment() : location.getEventDepartment().getDeptCode() + " - " + location.getEventDepartment().getName());
 	    	
 	    	response.setNote(location.getEventMessage());
 	    	

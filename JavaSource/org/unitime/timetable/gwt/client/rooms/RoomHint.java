@@ -75,6 +75,9 @@ public class RoomHint {
 		if (room.hasEventStatus())
 			form.addRow(MESSAGES.propRoomEventStatus(), new Label(room.getEventStatus()));
 		
+		if (room.hasEventDepartment())
+			form.addRow(MESSAGES.propRoomEventDepartment(), new Label(room.getEventDepartment()));
+
 		if (room.hasBreakTime())
 			form.addRow(MESSAGES.propRoomBreakTime(), new Label(MESSAGES.breakTime(room.getBreakTime().toString())));
 				
