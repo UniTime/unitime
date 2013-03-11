@@ -96,7 +96,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<input type='text' name='j_username' value='<c:if test="${not empty param.login_error}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>'/>
+									<input type='text' name='j_username' value='<c:if test="${not empty param.login_error}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/>
 								</DIV>
 								<DIV class="H20px"></DIV>
 								<DIV>
@@ -105,7 +105,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<input type='password' name='j_password'>
+									<input type='password' name='j_password' aria-label='Enter password'>
 								</DIV>
 							</DIV>
 						</DIV>
@@ -114,7 +114,7 @@
 					</TD>
 				</TR>
 				<TR>
-					<TD><DIV align="center" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in"><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
+					<TD><DIV align="center" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
 				</TR>
 			</TABLE>
 		</FORM>
