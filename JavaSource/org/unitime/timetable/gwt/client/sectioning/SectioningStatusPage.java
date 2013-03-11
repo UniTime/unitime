@@ -317,7 +317,7 @@ public class SectioningStatusPage extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught.getMessage());
+									UniTimeNotifications.error(caught);
 									setLoading(false);
 									iError.setHTML(caught.getMessage());
 									iError.setVisible(true);
@@ -342,7 +342,7 @@ public class SectioningStatusPage extends Composite {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							UniTimeNotifications.error(caught.getMessage());
+							UniTimeNotifications.error(caught);
 							setLoading(false);
 							iError.setHTML(caught.getMessage());
 							iError.setVisible(true);
@@ -354,7 +354,7 @@ public class SectioningStatusPage extends Composite {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							UniTimeNotifications.error(caught.getMessage());
+							UniTimeNotifications.error(caught);
 							setLoading(false);
 							iError.setHTML(caught.getMessage());
 							iError.setVisible(true);
@@ -1255,7 +1255,7 @@ public class SectioningStatusPage extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught.getMessage());
+									UniTimeNotifications.error(caught);
 									for (int row = 0; row < iStudentTable.getRowCount(); row++) {
 										StudentInfo i = iStudentTable.getData(row);
 										if (i != null && i.getStudent() != null && studentIds.contains(i.getStudent().getId())) {
@@ -1308,7 +1308,7 @@ public class SectioningStatusPage extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught.getMessage());
+									UniTimeNotifications.error(caught);
 								}
 
 								@Override

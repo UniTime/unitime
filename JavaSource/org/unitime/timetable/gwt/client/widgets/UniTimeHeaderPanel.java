@@ -48,6 +48,7 @@ import com.google.gwt.user.client.ui.Image;
 public class UniTimeHeaderPanel extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private static RegExp sAcessKeyRegExp = RegExp.compile("<u>(\\w)</u>", "i");
+	private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");
 
 	private HashMap<String, Integer> iOperations = new HashMap<String, Integer>();
 	private HTML iMessage;
@@ -200,6 +201,12 @@ public class UniTimeHeaderPanel extends Composite {
 		if (name == null || name.isEmpty()) return null;
 		MatchResult result = sAcessKeyRegExp.exec(name);
 		return (result == null ? null : result.getGroup(1).toLowerCase().charAt(0));
+	}
+	
+	public static String stripAccessKey(String name) {
+		if (name == null || name.isEmpty()) return "";
+		MatchResult result = sStripAcessKeyRegExp.exec(name);
+		return (result == null ? name : result.getGroup(1) + result.getGroup(2) + result.getGroup(3));
 	}
 
 	private void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {

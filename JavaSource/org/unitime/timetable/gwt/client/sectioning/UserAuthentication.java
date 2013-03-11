@@ -23,6 +23,12 @@ import java.util.ArrayList;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaPasswordTextBox;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.ClickableHint;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
@@ -44,16 +50,13 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.PasswordTextBox;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -61,14 +64,15 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class UserAuthentication extends Composite implements UserAuthenticationProvider {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
 	private Label iUserLabel;
-	private Label iHint;
+	private ClickableHint iHint;
 	
-	private Button iLogIn, iSkip, iLookup;
+	private AriaButton iLogIn, iSkip, iLookup;
 	
-	private TextBox iUserName;
-	private PasswordTextBox iUserPassword;
+	private AriaTextBox iUserName;
+	private AriaPasswordTextBox iUserPassword;
 	
 	private DialogBox iDialog;
 	
@@ -97,8 +101,8 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		VerticalPanel vertical = new VerticalPanel();
 		vertical.add(iUserLabel);
 		
-		iHint = new Label(MESSAGES.userHint());
-		iHint.setStyleName("unitime-Hint");
+		iHint = new ClickableHint(MESSAGES.userHint());
+		iHint.setAriaLabel(ARIA.userNotAuthenticated());
 		vertical.add(iHint);
 		
 		iDialog = new DialogBox();
@@ -119,12 +123,14 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		grid.setCellPadding(5);
 		grid.setCellSpacing(0);
 		grid.setText(0, 0, MESSAGES.username());
-		iUserName = new TextBox();
+		iUserName = new AriaTextBox();
 		iUserName.setStyleName("gwt-SuggestBox");
+		iUserName.setAriaLabel(ARIA.propUserName());
 		grid.setWidget(0, 1, iUserName);
 		grid.setText(1, 0, MESSAGES.password());
-		iUserPassword = new PasswordTextBox();
+		iUserPassword = new AriaPasswordTextBox();
 		iUserPassword.setStyleName("gwt-SuggestBox");
+		iUserPassword.setAriaLabel(ARIA.propPassword());
 		grid.setWidget(1, 1, iUserPassword);
 		
 		iError = new Label();
@@ -144,12 +150,13 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		grid.getFlexCellFormatter().setColSpan(3, 0, 2);
 		grid.setWidget(3, 0, buttonPanelWithPad);
 		
-		iLogIn = new Button(MESSAGES.buttonUserLogin());
+		iLogIn = new AriaButton(MESSAGES.buttonUserLogin());
 		buttonPanel.add(iLogIn);
 		
-		iSkip = new Button(MESSAGES.buttonUserSkip());
+		iSkip = new AriaButton(MESSAGES.buttonUserSkip());
 		buttonPanel.add(iSkip);
 		iSkip.setVisible(iAllowGuest);
+		iSkip.setAriaLabel(ARIA.buttonLogInAsGuest());
 		
 		iLookupDialog = new Lookup();
 		iLookupDialog.setOptions("mustHaveExternalId,source=students");
@@ -160,7 +167,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					sSectioningService.logIn("LOOKUP", event.getValue().getId(), sAuthenticateCallback);
 			}
 		});
-		iLookup = new Button(MESSAGES.buttonUserLookup());
+		iLookup = new AriaButton(MESSAGES.buttonUserLookup());
 		buttonPanel.add(iLookup);
 		iLookup.setVisible(false);
 		
@@ -228,6 +235,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		
 		sAuthenticateCallback = new AsyncCallback<String>() {
 			public void onFailure(Throwable caught) {
+				AriaStatus.getInstance().setText(caught.getMessage());
 				iError.setText(caught.getMessage());
 				iError.setVisible(true);
 				iUserName.setEnabled(true);
@@ -252,6 +260,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				iUserLabel.setText(MESSAGES.userLabel(result));
 				iLastUser = result;
 				iHint.setText(MESSAGES.userHintLogout());
+				iHint.setAriaLabel(ARIA.userAuthenticated(result));
 				iLoggedIn = true;
 				iGuest = false;
 				UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
@@ -274,6 +283,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 	}
 	
 	public void authenticate() {
+		AriaStatus.getInstance().setText(ARIA.authenticationDialogOpened());
 		iError.setVisible(false);
 		iDialog.center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -292,6 +302,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		iUserLabel.setText(MESSAGES.userLabel(user));
 		iLastUser = user;
 		iHint.setText(iGuest ? MESSAGES.userHintLogin() : MESSAGES.userHintLogout());
+		iHint.setAriaLabel(iGuest ? ARIA.userGuest() : ARIA.userAuthenticated(user));
 	}
 	
 	private void logIn(boolean guest) {
@@ -304,6 +315,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					iDialog.hide();
 					iUserLabel.setText(MESSAGES.userLabel(MESSAGES.userGuest()));
 					iHint.setText(MESSAGES.userHintLogin());
+					iHint.setAriaLabel(ARIA.userGuest());
 					iLastUser = MESSAGES.userGuest();
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
@@ -329,6 +341,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 					UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 					iHint.setText(MESSAGES.userHintClose());
 					iUserLabel.setText(MESSAGES.userNotAuthenticated());
+					iHint.setAriaLabel(ARIA.userNotAuthenticated());
 					iLastUser = null;
 					for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 						h.onLogOut(e);
@@ -341,6 +354,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 							UserAuthenticatedEvent e = new UserAuthenticatedEvent(iGuest);
 							iHint.setText(MESSAGES.userHintClose());
 							iUserLabel.setText(MESSAGES.userNotAuthenticated());
+							iHint.setAriaLabel(ARIA.userNotAuthenticated());
 							iLastUser = null;
 							for (UserAuthenticatedHandler h: iUserAuthenticatedHandlers)
 								h.onLogOut(e);
@@ -383,6 +397,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 				}
 			};
 			iUserLabel.setText(user);
+			iHint.setAriaLabel(ARIA.userAuthenticated(user));
 			authenticate();
 		}
 	}

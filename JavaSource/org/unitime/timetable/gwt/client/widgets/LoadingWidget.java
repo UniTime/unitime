@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.command.client.GwtRpc;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -142,6 +143,7 @@ public class LoadingWidget extends Composite {
 			} else if (showing && iMessage.getText().isEmpty()) {
 				RootPanel.get().remove(iMessage);
 			}
+			AriaStatus.getInstance().setText(message.replace("...", "."));
 		}
 		iCount ++;
 	}

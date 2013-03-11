@@ -21,9 +21,13 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
 
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
+import org.unitime.timetable.gwt.client.aria.AriaHiddenLabel;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.Unit;
@@ -34,7 +38,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.FlowPanel;
@@ -79,6 +82,7 @@ public class WebTable extends Composite {
 		iTable.setCellSpacing(0);
 		iTable.setStyleName("unitime-WebTable");
 		initWidget(iTable);
+		Roles.getGridRole().set(iTable.getElement());
 	}
 	
 	public Widget getPrintWidget(int... skipColumns) {
@@ -141,9 +145,11 @@ public class WebTable extends Composite {
 		for (int i=0; i<header.length; i++) {
 			for (int j=0; j<header[i].getNrCells(); j++) {
 				Cell cell = header[i].getCell(j);
-				if (cell.getWidget() == null)
+				if (cell.getWidget() == null) {
 					iTable.setHTML(i, j, (cell.getValue() == null || cell.getValue().isEmpty() ? "&nbsp;" : cell.getValue()));
-				else
+					if (cell.getAriaLabel() != null && !cell.getAriaLabel().isEmpty())
+						Roles.getGridcellRole().setAriaLabelProperty(iTable.getCellFormatter().getElement(i, j), cell.getAriaLabel());
+				} else
 					iTable.setWidget(i, j, cell.getWidget());
 				iTable.getFlexCellFormatter().setWordWrap(i, j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setStyleName(i, j, (cell.getStyleName() == null ? "unitime-TableHeader" : cell.getStyleName()));
@@ -151,7 +157,18 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setColSpan(i, j, cell.getColSpan());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i, j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i, j, cell.getHorizontalAlignment());
+				Roles.getColumnheaderRole().set(iTable.getCellFormatter().getElement(i, j));
 			}
+			Roles.getRowRole().set(iTable.getRowFormatter().getElement(i));
+			
+			if (header[i].getAriaLabel() != null && !header[i].getAriaLabel().isEmpty()) {
+				iTable.setWidget(i, header[i].getNrCells(), new AriaHiddenLabel(header[i].getAriaLabel()));
+			} else {
+				iTable.setHTML(i, header[i].getNrCells(), "");
+			}
+			Roles.getRowheaderRole().set(iTable.getCellFormatter().getElement(i, header[i].getNrCells()));
+			iTable.getFlexCellFormatter().setStyleName(i, header[i].getNrCells(), "unitime-TableHeader");
+			iTable.getFlexCellFormatter().addStyleName(i, header[i].getNrCells(), "rowheader");
 		}
 	}
 	
@@ -208,6 +225,10 @@ public class WebTable extends Composite {
 		}
 	}
 	
+	public boolean isEmpty() {
+		return iRows == null || iRows.length == 0;
+	}
+	
 	public void setData(Row... rows) {
 		setSelectedRow(-1);
 		if (rows==null || rows.length==0) {
@@ -225,9 +246,11 @@ public class WebTable extends Composite {
 				Cell cell = iRows[i].getCell(j);
 				cell.setColIdx(j);
 				cell.setRow(iRows[i]);
-				if (cell.getWidget() == null)
+				if (cell.getWidget() == null) {
 					iTable.setHTML(i+getHeaderRowsCount(), j, (cell.getValue() == null || cell.getValue().isEmpty() ? "&nbsp;" : cell.getValue()));
-				else
+					if (cell.getAriaLabel() != null && !cell.getAriaLabel().isEmpty())
+						Roles.getGridcellRole().setAriaLabelProperty(iTable.getCellFormatter().getElement(i + getHeaderRowsCount(), j), cell.getAriaLabel());
+				} else
 					iTable.setWidget(i+getHeaderRowsCount(), j, cell.getWidget());
 				iTable.getFlexCellFormatter().setWordWrap(i+getHeaderRowsCount(), j, cell.getWordWrap());
 				iTable.getFlexCellFormatter().setColSpan(i+getHeaderRowsCount(), j, cell.getColSpan());
@@ -235,9 +258,21 @@ public class WebTable extends Composite {
 				iTable.getFlexCellFormatter().setWidth(i+getHeaderRowsCount(), j, cell.getWidth());
 				iTable.getFlexCellFormatter().setVerticalAlignment(i+getHeaderRowsCount(), j, cell.getVerticalAlignment());
 				iTable.getFlexCellFormatter().setHorizontalAlignment(i+getHeaderRowsCount(), j, cell.getHorizontalAlignment());
+				Roles.getGridcellRole().set(iTable.getCellFormatter().getElement(i + getHeaderRowsCount(), j));
 			}
+			Roles.getRowRole().set(iTable.getRowFormatter().getElement(i + getHeaderRowsCount()));
+			
 			for (int j=iTable.getCellCount(i+getHeaderRowsCount()) - 1; j >= iRows[i].getNrCells(); j--)
 				iTable.removeCell(i+getHeaderRowsCount(), j);
+			
+			if (iRows[i].getAriaLabel() != null && !iRows[i].getAriaLabel().isEmpty()) {
+				iTable.setWidget(i + getHeaderRowsCount(), iRows[i].getNrCells(), new AriaHiddenLabel(iRows[i].getAriaLabel()));
+			} else {
+				iTable.setHTML(i + getHeaderRowsCount(), iRows[i].getNrCells(), "");
+			}
+			Roles.getRowheaderRole().set(iTable.getCellFormatter().getElement(i + getHeaderRowsCount(), iRows[i].getNrCells()));
+			iTable.getFlexCellFormatter().setStyleName(i + getHeaderRowsCount(), iRows[i].getNrCells(), iRows[i].getCell(iRows[i].getNrCells() - 1).getStyleName());
+			iTable.getFlexCellFormatter().addStyleName(i + getHeaderRowsCount(), iRows[i].getNrCells(), "rowheader");
 		}
 	}
 	
@@ -330,12 +365,13 @@ public class WebTable extends Composite {
 		return iRows[iSelectedRow].getId();
 	}
 
-	public static class Row {
+	public static class Row implements HasAriaLabel {
 		private String iId;
 		private Cell[] iCells;
 		private int iRowIdx = -1;
 		private WebTable iTable;
 		private boolean iSelectable = true;
+		private String iAriaLabel = null;
 		public Row(Cell... cells) {
 			iCells = cells;
 		}
@@ -378,9 +414,17 @@ public class WebTable extends Composite {
 				t.getFlexCellFormatter().setHorizontalAlignment(getRowIdx() + iTable.getHeaderRowsCount(), col, cell.getHorizontalAlignment());
 			}
 		}
+		@Override
+		public String getAriaLabel() {
+			return iAriaLabel;
+		}
+		@Override
+		public void setAriaLabel(String text) {
+			iAriaLabel = text;
+		}
 	}
 	
-	public static class Cell {
+	public static class Cell implements HasAriaLabel {
 		String iValue;
 		int iColSpan = 1;
 		String iStyleName = null;
@@ -390,6 +434,7 @@ public class WebTable extends Composite {
 		boolean iWrap = false;
 		VerticalAlignmentConstant iVerticalAlignment = HasVerticalAlignment.ALIGN_TOP;
 		HorizontalAlignmentConstant iHorizontalAlignment = HasHorizontalAlignment.ALIGN_LEFT;
+		String iAriaLabel = null;
 		
 		public Cell(String value) {
 			iValue = value;
@@ -425,12 +470,30 @@ public class WebTable extends Composite {
 		public void setHorizontalAlignment(HorizontalAlignmentConstant vertical) { iHorizontalAlignment = vertical; }
 		public boolean getWordWrap() { return iWrap; }
 		public void setWordWrap(boolean wrap) { iWrap = wrap; }
+		
+		@Override
+		public String toString() {
+			return getValue();
+		}
+		@Override
+		public String getAriaLabel() {
+			return iAriaLabel;
+		}
+		@Override
+		public void setAriaLabel(String text) {
+			iAriaLabel = text;
+		}
+		
+		public Cell aria(String text) {
+			iAriaLabel = text;
+			return this;
+		}
 	}
 	
-	public static class CheckboxCell extends Cell {
-		private CheckBox iCheck = new CheckBox();
+	public static class CheckboxCell extends Cell implements HasAriaLabel {
+		private AriaCheckBox iCheck = new AriaCheckBox();
 		
-		public CheckboxCell(boolean check) {
+		public CheckboxCell(boolean check, String ariaLabel) {
 			super(null);
 			iCheck.setValue(check);
 			iCheck.addClickHandler(new ClickHandler() {
@@ -438,11 +501,21 @@ public class WebTable extends Composite {
 					event.stopPropagation();
 				}
 			});
+			if (ariaLabel != null) setAriaLabel(ariaLabel);
 		}
 		
 		public boolean isChecked() { return iCheck.getValue(); }
 		public String getValue() { return iCheck.getValue().toString(); }
 		public Widget getWidget() { return iCheck; }
+
+		@Override
+		public String getAriaLabel() {
+			return iCheck.getAriaLabel();
+		}
+		@Override
+		public void setAriaLabel(String text) {
+			iCheck.setAriaLabel(text);
+		}
 	}
 	
 	public static class IconCell extends Cell {
@@ -454,20 +527,61 @@ public class WebTable extends Composite {
 			super(null);
 			iIcon = new Image(resource);
 			iIcon.setTitle(title);
-			iLabel = new HTML(text, false);
-			iPanel = new HorizontalPanel();
-			iPanel.add(iIcon);
-			iPanel.add(iLabel);
-			iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
-			iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
+			iIcon.setAltText(title);
+			if (text != null && !text.isEmpty()) {
+				iLabel = new HTML(text, false);
+				iPanel = new HorizontalPanel();
+				iPanel.setStyleName("icon");
+				iPanel.add(iIcon);
+				iPanel.add(iLabel);
+				iIcon.getElement().getStyle().setPaddingRight(3, Unit.PX);
+				iPanel.setCellVerticalAlignment(iIcon, HasVerticalAlignment.ALIGN_MIDDLE);
+			}
 		}
 		
-		public String getValue() { return iLabel.getText(); }
+		public String getValue() { return (iPanel == null ? iIcon.getTitle() : iLabel.getText()); }
+		public Widget getWidget() { return (iPanel == null ? iIcon : iPanel); }
+		public void setStyleName(String styleName) {
+			super.setStyleName(styleName);
+			if (iLabel != null) {
+				iLabel.setStyleName(styleName);
+				iLabel.getElement().getStyle().setBorderWidth(0, Unit.PX);
+			}
+		}
+	}
+	
+	public static class IconsCell extends Cell {
+		private HorizontalPanel iPanel = null;
+		
+		public IconsCell() {
+			super(null);
+			iPanel = new HorizontalPanel();
+			iPanel.setStyleName("icons");
+		}
+		
+		public IconsCell add(ImageResource resource, String title) {
+			if (resource == null) return this;
+			Image icon = new Image(resource);
+			icon.setTitle(title);
+			icon.setAltText(title);
+			if (iPanel.getWidgetCount() > 0)
+				icon.getElement().getStyle().setPaddingLeft(3, Unit.PX);
+			iPanel.add(icon);
+			iPanel.setCellVerticalAlignment(icon, HasVerticalAlignment.ALIGN_MIDDLE);
+			return this;
+		}
+		
+		public String getValue() { 
+			String value = "";
+			for (int i = 0; i < iPanel.getWidgetCount(); i++) {
+				if (i > 0) value += ", ";
+				value += ((Image)iPanel.getWidget(i)).getTitle();
+			}
+			return value;
+		}
 		public Widget getWidget() { return iPanel; }
 		public void setStyleName(String styleName) {
 			super.setStyleName(styleName);
-			iLabel.setStyleName(styleName);
-			iLabel.getElement().getStyle().setBorderWidth(0, Unit.PX);
 		}
 	}
 	
@@ -570,6 +684,7 @@ public class WebTable extends Composite {
 					if (email != null && !email.isEmpty()) {
 						iText += text;
 						HorizontalPanel p = new HorizontalPanel();
+						p.setStyleName("instructor");
 						Anchor a = new Anchor();
 						a.setHref("mailto:" + email);
 						a.setHTML(DOM.toString(new Image(RESOURCES.email()).getElement()));

@@ -36,6 +36,7 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -113,7 +114,7 @@ public class UniTimePageHeader extends Composite {
 				HTML sessionLabel = new HTML(result.get("0Session"), false);
 				sessionLabel.setStyleName("unitime-SessionSelector");
 				iSessionInfo.add(sessionLabel);
-				HTML hint = new HTML("Click here to change the session / role.", false);
+				Anchor hint = new Anchor("Click here to change the session / role.", true);
 				hint.setStyleName("unitime-Hint");
 				iSessionInfo.add(hint);
 				ClickHandler c = new ClickHandler() {

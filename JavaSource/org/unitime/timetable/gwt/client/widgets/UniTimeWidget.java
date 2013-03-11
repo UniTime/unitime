@@ -19,6 +19,12 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
@@ -30,11 +36,12 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class UniTimeWidget<T extends Widget> extends Composite {
+public class UniTimeWidget<T extends Widget> extends Composite implements HasAriaLabel {
 	private T iWidget;
 	private HTML iReadOnly = null, iPrint = null;
 	private Label iHint;
 	private VerticalPanel iPanel;
+	private Element iAriaLabel = null;
 	
 	public UniTimeWidget(T widget, String hint) {
 		iPanel = new VerticalPanel();
@@ -49,6 +56,30 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 		iPanel.add(iHint);
 		
 		initWidget(iPanel);
+	}
+	
+	@Override
+	public void setAriaLabel(String text) {
+		if (iWidget instanceof HasAriaLabel) {
+			((HasAriaLabel)iWidget).setAriaLabel(text);
+		} else {
+			if (iAriaLabel == null) {
+				iAriaLabel = DOM.createLabel();
+				iAriaLabel.setId(DOM.createUniqueId());
+				iAriaLabel.setClassName("unitime-AriaStatus");
+				DOM.appendChild(getElement(), iAriaLabel);
+				Roles.getCheckboxRole().setAriaLabelledbyProperty(iWidget.getElement(), Id.of(iAriaLabel));
+			}
+			iAriaLabel.setInnerText(text);
+		}
+	}
+	
+	@Override
+	public String getAriaLabel() {
+		if (iWidget instanceof HasAriaLabel)
+			return ((HasAriaLabel)iWidget).getAriaLabel();
+		else
+			return (iAriaLabel == null ? "" : iAriaLabel.getInnerText());
 	}
 	
 	public void setText(String html) {
@@ -109,6 +140,7 @@ public class UniTimeWidget<T extends Widget> extends Composite {
 			iHint.setStyleName("unitime-NotClickableHint");
 			iHint.setText(hint);
 			iHint.setVisible(true);
+			setAriaLabel(hint);
 		}
 	}
 	

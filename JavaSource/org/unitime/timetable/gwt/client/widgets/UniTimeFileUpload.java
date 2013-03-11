@@ -84,7 +84,7 @@ public class UniTimeFileUpload extends FormPanel {
 		RPC.execute(new FileUploadRpcRequest(true), new AsyncCallback<FileUploadRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(caught.getMessage());
+				UniTimeNotifications.error(caught);
 			}
 
 			@Override
@@ -97,7 +97,7 @@ public class UniTimeFileUpload extends FormPanel {
 		RPC.execute(new FileUploadRpcRequest(), new AsyncCallback<FileUploadRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(caught.getMessage());
+				UniTimeNotifications.error(caught.getMessage(), caught);
 			}
 			@Override
 			public void onSuccess(FileUploadRpcResponse result) {

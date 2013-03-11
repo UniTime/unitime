@@ -278,7 +278,7 @@ public class SimpleEditPage extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage("Edit type not recognized:" + caught.getMessage());
-				UniTimeNotifications.error(caught.getMessage());
+				UniTimeNotifications.error(caught.getMessage(), caught);
 			}
 
 			@Override

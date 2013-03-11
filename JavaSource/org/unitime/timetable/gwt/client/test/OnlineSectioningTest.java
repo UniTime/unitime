@@ -93,7 +93,7 @@ public class OnlineSectioningTest extends Composite {
 			public void onFailure(Throwable caught) {
 				iHeader.setErrorMessage(caught.getMessage());
 				LoadingWidget.getInstance().hide();
-				UniTimeNotifications.error(caught.getMessage());
+				UniTimeNotifications.error(caught);
 				ToolBox.checkAccess(caught);
 			}
 
@@ -110,7 +110,7 @@ public class OnlineSectioningTest extends Composite {
 					public void onFailure(Throwable caught) {
 						iSessions.setErrorHint(caught.getMessage());
 						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(caught.getMessage());
+						UniTimeNotifications.error(caught);
 					}
 
 					@Override
