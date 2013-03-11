@@ -235,12 +235,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iDays.add(day);
 		}
 		public ArrayList<Integer> getDays() { return iDays; }
-		public String getDaysString(String[] shortDays) {
+		public String getDaysString(String[] shortDays, String separator) {
 			if (iDays == null) return "";
 			String ret = "";
 			for (int day: iDays)
-				ret += shortDays[day];
+				ret += (ret.isEmpty() ? "" : separator) + shortDays[day];
 			return ret;
+		}
+		public String getDaysString(String[] shortDays) {
+			return getDaysString(shortDays, "");
 		}
 		public boolean isAssigned() { return iDays != null && !iDays.isEmpty(); }
 		
@@ -252,6 +255,15 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	        int m = 5 * (iStart % 12);
 	        if (useAmPm)
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? "a" : h >= 12 ? "p" : "a");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
+		public String getStartStringAria(boolean useAmPm) {
+			if (!isAssigned()) return "";
+	        int h = iStart / 12;
+	        int m = 5 * (iStart % 12);
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
@@ -267,10 +279,38 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			else
 				return h + ":" + (m < 10 ? "0" : "") + m;
 		}
+		public String getEndStringAria(boolean useAmPm) {
+			if (!isAssigned()) return "";
+			int h = (5 * (iStart + iLength) - iBreakTime) / 60;
+			int m = (5 * (iStart + iLength) - iBreakTime) % 60;
+	        if (useAmPm)
+	        	return (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
+	        else
+				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
 		
 		public String getTimeString(String[] shortDays, boolean useAmPm, String arrangeHours) {
 			if (!isAssigned()) return (iClassId == null ? "" : arrangeHours);
 			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
+		}
+		
+		public String getTimeStringAria(String[] longDays, boolean useAmPm, String arrangeHours) {
+			if (!isAssigned()) return (iClassId == null ? "" : arrangeHours);
+	        int h = iStart / 12;
+	        int m = 5 * (iStart % 12);
+	        String ret = getDaysString(longDays, " ") + " from ";
+	        if (useAmPm)
+	        	ret += (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
+	        else
+	        	ret += h + " " + (m < 10 ? "0" : "") + m;
+	        h = (iStart + iLength) / 12;
+			m = 5 * ((iStart + iLength) % 12);
+			ret += " to ";
+	        if (useAmPm)
+	        	ret += (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
+	        else
+	        	ret += h + " " + (m < 10 ? "0" : "") + m;
+	        return ret;  
 		}
 		
 		public int getBreakTime() { return iBreakTime; }

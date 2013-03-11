@@ -22,8 +22,11 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.ClickableHint;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.services.SectioningService;
 import org.unitime.timetable.gwt.services.SectioningServiceAsync;
@@ -48,8 +51,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class AcademicSessionSelector extends Composite implements AcademicSessionProvider {
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
 	private Label iSessionLabel;
+	private ClickableHint iSessionHint;
 	private AcademicSessionInfo iSession = null;
 	
 	private DialogBox iDialog;
@@ -68,9 +73,9 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		VerticalPanel vertical = new VerticalPanel();
 		vertical.add(iSessionLabel);
 		
-		Label hint = new Label(MESSAGES.sessionSelectorHint());
-		hint.setStyleName("unitime-Hint");
-		vertical.add(hint);
+		iSessionHint = new ClickableHint(MESSAGES.sessionSelectorHint());
+		iSessionHint.setAriaLabel(ARIA.sessionNoSession());
+		vertical.add(iSessionHint);
 		
 		iDialog = new MyDialogBox();
 		iDialog.setText(MESSAGES.sessionSelectorSelect());
@@ -97,7 +102,7 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		};
 		
 		iSessionLabel.addClickHandler(ch);
-		hint.addClickHandler(ch);
+		iSessionHint.addClickHandler(ch);
 		
 		iSessions.addMouseClickListener(new UniTimeTable.MouseClickListener<AcademicSessionInfo>() {
 
@@ -115,10 +120,12 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 	private void rowSelected(int row, AcademicSessionInfo session) {
 		iDialog.hide();
 		iSessionLabel.setText(MESSAGES.sessionSelectorLabel(session.getYear(), session.getTerm(), session.getCampus()));
+		iSessionHint.setAriaLabel(ARIA.sessionCurrent(session.getYear(), session.getTerm(), session.getCampus()));
 		selectSession(session, true);
 		if (iSessions.getSelectedRow() >= 0)
 			iSessions.setSelected(iSessions.getSelectedRow(), false);
 		iSessions.setSelected(row, true);
+		AriaStatus.getInstance().setText(ARIA.sessionSelectorDialogSelected(session.getYear(), session.getTerm(), session.getCampus()));
 	}
 	
 	public void selectSession() {
@@ -140,11 +147,19 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 				else if (lastSession >= 0) iSessions.setSelected(lastSession, true);
 				if (result.size() == 1)
 					rowSelected(1, iSessions.getData(1));
-				else
+				else {
+					if (iSessions.getSelectedRow() >= 0) {
+						AcademicSessionInfo session = iSessions.getData(iSessions.getSelectedRow());
+						AriaStatus.getInstance().setText(ARIA.sessionSelectorDialogOpenedWithSelection(iSessions.getSelectedRow(), result.size(), session.getYear(), session.getTerm(), session.getCampus()));
+					} else {
+						AriaStatus.getInstance().setText(ARIA.sessionSelectorDialogOpened());
+					}
 					iDialog.center();
+				}
 			}
 			
 			public void onFailure(Throwable caught) {
+				AriaStatus.getInstance().setText(caught.getMessage());
 				iSessions.clearTable(1);
 				iSessions.addRow(null, new EmptyTableCell(caught.getMessage()));
 				iDialog.center();
@@ -186,8 +201,10 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iSession = session;
 		if (iSession == null) {
 			iSessionLabel.setText(MESSAGES.sessionSelectorNoSession());
+			iSessionHint.setAriaLabel(ARIA.sessionNoSession());
 		} else {
 			iSessionLabel.setText(MESSAGES.sessionSelectorLabel(iSession.getYear(), iSession.getTerm(), iSession.getCampus()));
+			iSessionHint.setAriaLabel(ARIA.sessionCurrent(iSession.getYear(), iSession.getTerm(), iSession.getCampus()));
 			if (fireChangeEvent || !iSession.getSessionId().equals(oldSessionId)) {
 				AcademicSessionChangeEvent changeEvent = new AcademicSessionChangeEvent(oldSessionId, iSession.getSessionId());
 				for (AcademicSessionChangeHandler handler: iAcademicSessionChangeHandlers)
@@ -245,6 +262,9 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 						row ++;
 						if (row >= iSessions.getRowCount()) row = 1;
 					}
+					AcademicSessionInfo session = iSessions.getData(row);
+					if (session != null)
+						AriaStatus.getInstance().setText(ARIA.sessionSelectorShowingSession(row, iSessions.getRowCount() - 1, session.getYear(), session.getTerm(), session.getCampus()));
 					iSessions.setSelected(row, true);
 				} else if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_UP) {
 					int row = iSessions.getSelectedRow();
@@ -255,6 +275,9 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 						row --;
 						if (row <= 0) row = iSessions.getRowCount() - 1;
 					}
+					AcademicSessionInfo session = iSessions.getData(row);
+					if (session != null)
+						AriaStatus.getInstance().setText(ARIA.sessionSelectorShowingSession(row, iSessions.getRowCount() - 1, session.getYear(), session.getTerm(), session.getCampus()));
 					iSessions.setSelected(row, true);
 				} else if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ENTER && iSessions.getSelectedRow()>=0) {
 					int row = iSessions.getSelectedRow();

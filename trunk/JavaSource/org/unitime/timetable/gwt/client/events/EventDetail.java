@@ -150,7 +150,7 @@ public class EventDetail extends Composite {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(caught.getMessage());
+						UniTimeNotifications.error(caught.getMessage(), caught);
 					}
 
 					@Override
@@ -503,7 +503,7 @@ public class EventDetail extends Composite {
 				public void onFailure(Throwable caught) {
 					if (eventId.equals(iEvent.getId())) {
 						iEnrollmentHeader.clearMessage();
-						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()), caught);
 						iForm.getRowFormatter().setVisible(enrollmentsRow, false);
 						iForm.getRowFormatter().setVisible(enrollmentsRow + 1, false);
 					}

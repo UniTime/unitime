@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.AnchorElement; 
 import com.google.gwt.dom.client.Document; 
 import com.google.gwt.dom.client.SpanElement;
@@ -31,7 +34,7 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * @author Tomas Muller
  */
-public class ImageLink extends Widget { 
+public class ImageLink extends Widget implements HasAriaLabel { 
     private Image iImage;
     private String iUrl; 
     private String iTarget; 
@@ -109,4 +112,17 @@ public class ImageLink extends Widget {
     public String getText() {
     	return (iTextElement == null ? null : iTextElement.getInnerText());
     }
+
+	@Override
+	public String getAriaLabel() {
+		return Roles.getLinkRole().getAriaLabelProperty(iAnchor);
+	}
+
+	@Override
+	public void setAriaLabel(String text) {
+		if (text == null || text.isEmpty())
+			Roles.getLinkRole().removeAriaLabelledbyProperty(iElement);
+		else
+			Roles.getLinkRole().setAriaLabelProperty(iElement, text);
+	}
 } 

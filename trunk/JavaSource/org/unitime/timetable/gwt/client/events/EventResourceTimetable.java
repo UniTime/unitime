@@ -269,7 +269,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			
 			@Override
 			protected void onInitializationFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedLoadSessions(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedLoadSessions(caught.getMessage()), caught);
 			}
 		};
 		iSession.setFilter(this);
@@ -668,7 +668,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(event.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedLoad(event.getName(), caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(EventInterface result) {
@@ -718,7 +718,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), modified.getId()), new AsyncCallback<EventInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							UniTimeNotifications.error(MESSAGES.failedLoad(detail.getName(), caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedLoad(detail.getName(), caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(EventInterface result) {
@@ -748,7 +748,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), event.getEvent().getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(event.getEvent().getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedLoad(event.getEvent().getName(), caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(EventInterface result) {
@@ -780,7 +780,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), e.getId()), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(e.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedLoad(e.getName(), caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(EventInterface result) {
@@ -840,7 +840,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								UniTimeNotifications.error(caught.getMessage());
+								UniTimeNotifications.error(caught);
 								onSubmit(operation, events, event2meetings, message, data);
 							}
 							@Override
@@ -1034,7 +1034,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				LoadingWidget.execute(EventDetailRpcRequest.requestEventDetails(iSession.getAcademicSessionId(), eventId), new AsyncCallback<EventInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.anEvent(), caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(EventInterface result) {
@@ -1119,7 +1119,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 							new AsyncCallback<GwtRpcResponseList<ResourceInterface>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							UniTimeNotifications.error(MESSAGES.failedLoad(getResourceName(), caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedLoad(getResourceName(), caught.getMessage()), caught);
 							hideResults();
 						}
 						@Override
@@ -1166,7 +1166,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		LoadingWidget.execute(iRooms.getElementsRequest(), new AsyncCallback<FilterRpcResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedLoad(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedLoad(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), caught.getMessage()), caught);
 				hideResults();
 			}
 
@@ -1196,7 +1196,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedLoad(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedLoad(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), caught.getMessage()), caught);
 						hideResults();
 					}
 				}, MESSAGES.waitLoadingTimetable(resource.getType() == ResourceType.ROOM ? MESSAGES.resourceRoom().toLowerCase() : resource.getName(), iSession.getAcademicSessionName()));
@@ -1571,7 +1571,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()));
+					UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()), caught);
 					if (callback != null)
 						callback.onFailure(caught);
 				}
@@ -1580,7 +1580,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					RPC.execute(new RequestSessionDetails(iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()), caught);
 							if (callback != null)
 								callback.onFailure(caught);
 						}

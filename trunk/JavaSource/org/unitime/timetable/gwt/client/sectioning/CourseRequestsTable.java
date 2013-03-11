@@ -23,7 +23,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -37,20 +40,10 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.MouseDownEvent;
-import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
-import com.google.gwt.event.dom.client.MouseUpEvent;
-import com.google.gwt.event.dom.client.MouseUpHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -61,7 +54,7 @@ public class CourseRequestsTable extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
-
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 	
@@ -106,75 +99,39 @@ public class CourseRequestsTable extends Composite {
 					new CourseSelectionBox(iSessionProvider, "c"+i+"a", false, false),
 					new CourseSelectionBox(iSessionProvider, "c"+i+"b", false, false)
 			};
+			c[0].setLabel(ARIA.titleRequestedCourse(1 + i), ARIA.altRequestedCourseFinder(1 + i));
+			c[1].setLabel(ARIA.titleRequestedCourseFirstAlternative(1 + i), ARIA.altRequestedCourseFirstAlternativeFinder(1 + i));
+			c[2].setLabel(ARIA.titleRequestedCourseSecondAlternative(1 + i), ARIA.altRequestedCourseSecondAlternativeFinder(1 + i));
 			if (i < 9)
 				c[0].setAccessKey((char)((int)'1'+i));
 			else if (i == 9)
 				c[0].setAccessKey('0');
-			final CheckBox ch = new CheckBox();
+			final AriaCheckBox ch = new AriaCheckBox();
+			ch.setAriaLabel(ARIA.titleRequestedWaitList(1 + i));
 			if (i>0) {
 				final CourseSelectionBox[] x = iCourses.get(i - 1);
 				for (int j=0; j<3; j++) {
 					c[j].setPrev(x[j]);
 					x[j].setNext(c[j]);
 				}
-				final Image up = new Image(RESOURCES.up());
-				up.addMouseOverHandler(new MouseOverHandler() {
-					public void onMouseOver(MouseOverEvent event) {
-						up.setResource(RESOURCES.up_Over());
-					}
-				});
-				up.addMouseOutHandler(new MouseOutHandler() {
-					public void onMouseOut(MouseOutEvent event) {
-						up.setResource(RESOURCES.up());
-					}
-				});
-				up.addMouseDownHandler(new MouseDownHandler() {
-					public void onMouseDown(MouseDownEvent event) {
-						up.setResource(RESOURCES.up_Down());
-					}
-				});
-				up.addMouseUpHandler(new MouseUpHandler() {
-					public void onMouseUp(MouseUpEvent event) {
-						up.setResource(RESOURCES.up());
-						
-					}
-				});
+				final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
 				up.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						c[0].swapUp();
 					}
 				});
 				iGrid.setWidget(idx, 5, up);
+				up.setAltText(ARIA.altSwapCourseRequest(i + 1, i));
 			}
 			if (i<=CONSTANTS.numberOfCourses()) {
-				final Image down = new Image(RESOURCES.down());
-				down.addMouseOverHandler(new MouseOverHandler() {
-					public void onMouseOver(MouseOverEvent event) {
-						down.setResource(RESOURCES.down_Over());
-					}
-				});
-				down.addMouseOutHandler(new MouseOutHandler() {
-					public void onMouseOut(MouseOutEvent event) {
-						down.setResource(RESOURCES.down());
-					}
-				});
-				down.addMouseDownHandler(new MouseDownHandler() {
-					public void onMouseDown(MouseDownEvent event) {
-						down.setResource(RESOURCES.down_Down());
-					}
-				});
-				down.addMouseUpHandler(new MouseUpHandler() {
-					public void onMouseUp(MouseUpEvent event) {
-						down.setResource(RESOURCES.down());
-						
-					}
-				});
+				final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
 				down.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						c[0].swapDown();
 					}
 				});
 				iGrid.setWidget(idx, 6, down);
+				down.setAltText(i + 1 == CONSTANTS.numberOfCourses() ? ARIA.altSwapCourseAlternateRequest(i + 1, 1) : ARIA.altSwapCourseRequest(i + 1, i + 2));
 			}
 			c[0].setWidth("260px");
 			c[1].setWidth("170px");
@@ -223,6 +180,9 @@ public class CourseRequestsTable extends Composite {
 					new CourseSelectionBox(iSessionProvider, "a"+i+"a", false, false),
 					new CourseSelectionBox(iSessionProvider, "a"+i+"b", false, false)
 			};
+			c[0].setLabel(ARIA.titleRequestedAlternate(1 + i, String.valueOf((char)((int)'a'+i))), ARIA.altRequestedAlternateFinder(1 + i));
+			c[1].setLabel(ARIA.titleRequestedAlternateFirstAlternative(1 + i), ARIA.altRequestedAlternateFirstFinder(1 + i));
+			c[2].setLabel(ARIA.titleRequestedAlternateSecondAlternative(1 + i), ARIA.altRequestedAlternateSecondFinder(1 + i));
 			c[0].setAccessKey((char)((int)'a'+i));
 			if (i>=0) {
 				final CourseSelectionBox[] x = (i==0 ? iCourses.get(CONSTANTS.numberOfCourses() - 1) : iAlternatives.get(i - 1));
@@ -230,64 +190,24 @@ public class CourseRequestsTable extends Composite {
 					c[j].setPrev(x[j]);
 					x[j].setNext(c[j]);
 				}
-				final Image up = new Image(RESOURCES.up());
-				up.addMouseOverHandler(new MouseOverHandler() {
-					public void onMouseOver(MouseOverEvent event) {
-						up.setResource(RESOURCES.up_Over());
-					}
-				});
-				up.addMouseOutHandler(new MouseOutHandler() {
-					public void onMouseOut(MouseOutEvent event) {
-						up.setResource(RESOURCES.up());
-					}
-				});
-				up.addMouseDownHandler(new MouseDownHandler() {
-					public void onMouseDown(MouseDownEvent event) {
-						up.setResource(RESOURCES.up_Down());
-					}
-				});
-				up.addMouseUpHandler(new MouseUpHandler() {
-					public void onMouseUp(MouseUpEvent event) {
-						up.setResource(RESOURCES.up());
-						
-					}
-				});
+				final ImageButton up = new ImageButton(RESOURCES.up(), RESOURCES.up_Down(), RESOURCES.up_Over());
 				up.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						c[0].swapUp();
 					}
 				});
 				iGrid.setWidget(idx, 4, up);
+				up.setAltText(i == 0 ? ARIA.altSwapCourseAlternateRequest(CONSTANTS.numberOfCourses(), 1) : ARIA.altSwapAlternateRequest(i + 1, i));
 			}
 			if (i<CONSTANTS.numberOfAlternatives() - 1) {
-				final Image down = new Image(RESOURCES.down());
-				down.addMouseOverHandler(new MouseOverHandler() {
-					public void onMouseOver(MouseOverEvent event) {
-						down.setResource(RESOURCES.down_Over());
-					}
-				});
-				down.addMouseOutHandler(new MouseOutHandler() {
-					public void onMouseOut(MouseOutEvent event) {
-						down.setResource(RESOURCES.down());
-					}
-				});
-				down.addMouseDownHandler(new MouseDownHandler() {
-					public void onMouseDown(MouseDownEvent event) {
-						down.setResource(RESOURCES.down_Down());
-					}
-				});
-				down.addMouseUpHandler(new MouseUpHandler() {
-					public void onMouseUp(MouseUpEvent event) {
-						down.setResource(RESOURCES.down());
-						
-					}
-				});
+				final ImageButton down = new ImageButton(RESOURCES.down(), RESOURCES.down_Down(), RESOURCES.down_Over());
 				down.addClickHandler(new ClickHandler() {
 					public void onClick(ClickEvent event) {
 						c[0].swapDown();
 					}
 				});
 				iGrid.setWidget(idx, 5, down);
+				down.setAltText(ARIA.altSwapAlternateRequest(i + 1, i + 2));
 			}
 			c[0].setWidth("260px");
 			c[1].setWidth("170px");
@@ -608,5 +528,19 @@ public class CourseRequestsTable extends Composite {
 			}
 		}
 		iCourses.get(0)[0].setFocus(true);
+	}
+	
+	public String getFirstError() {
+		for (CourseSelectionBox[] c: iCourses) {
+			for (int i=0;i<3;i++) {
+				if (c[i].hasError()) return c[i].getError();
+			}
+		}
+		for (CourseSelectionBox[] c: iAlternatives) {
+			for (int i=0;i<3;i++) {
+				if (c[i].hasError()) return c[i].getError();
+			}
+		}
+		return null;
 	}
 }

@@ -22,10 +22,14 @@ package org.unitime.timetable.gwt.client.page;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.ToolBox;
 
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -44,6 +48,7 @@ public class UniTimeNotifications {
 	private List<Notification> iNotifications = new ArrayList<Notification>();
 	private Timer iMoveTimer = null;
 	private NotificationAnimation iAnimation = new NotificationAnimation();
+	public static Logger sLogger = Logger.getLogger(UniTimeNotifications.class.getName());
 	
 	private UniTimeNotifications() {
 		Window.addResizeHandler(new ResizeHandler() {
@@ -126,15 +131,31 @@ public class UniTimeNotifications {
 	}
 	
 	public static void info(String text) {
+		AriaStatus.getInstance().setText(text);
+		sLogger.log(Level.FINE, text);
 		getInstance().addNotification(new Notification(text, "unitime-NotificationInfo"));
 	}
 	
 	public static void warn(String text) {
+		AriaStatus.getInstance().setText(text);
+		sLogger.log(Level.INFO, text);
 		getInstance().addNotification(new Notification(text, "unitime-NotificationWarning"));
 	}
+	
+	public static void error(Throwable t) {
+		if (t == null) return;
+		Throwable u = ToolBox.unwrap(t);
+		error(u.getMessage(), u);
+	}
 
-	public static void error(String text) {
+	public static void error(String text, Throwable t) {
+		AriaStatus.getInstance().setText(text);
+		sLogger.log(t == null ? Level.INFO : Level.WARNING, text, ToolBox.unwrap(t));
 		getInstance().addNotification(new Notification(text, "unitime-NotificationError"));
+	}
+	
+	public static void error(String text) {
+		error(text, null);
 	}
 
 	private class NotificationAnimation extends Animation {
@@ -155,6 +176,15 @@ public class UniTimeNotifications {
 			super(text);
 			setStyleName("unitime-Notification");
 			addStyleName(style);
+			/*
+			if ("unitime-NotificationError".equals(style)) {
+				Roles.getAlertRole().set(getElement());
+				Roles.getAlertRole().setAriaLiveProperty(getElement(), LiveValue.ASSERTIVE);
+			} else {
+				Roles.getStatusRole().set(getElement());
+				Roles.getStatusRole().setAriaLiveProperty(getElement(), "unitime-NotificationWarning".equals(style) ? LiveValue.ASSERTIVE : LiveValue.POLITE);
+			}
+			*/
 		}
 		
 		Notification(String text) {

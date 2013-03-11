@@ -146,7 +146,7 @@ public class EnrollmentTable extends Composite {
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
 						if (showHeader) {
-							UniTimeNotifications.error(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToLoadEnrollments(caught.getMessage()), caught);
 						} else {
 							iHeader.setErrorMessage(MESSAGES.failedToLoadEnrollments(caught.getMessage()));
 						}
@@ -177,19 +177,19 @@ public class EnrollmentTable extends Composite {
 				callback.onSuccess(true);
 				WebTable assignments = new WebTable();
 				assignments.setHeader(new WebTable.Row(
-						new WebTable.Cell(MESSAGES.colSubject(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colCourse(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
-						new WebTable.Cell(MESSAGES.colClass(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
-						new WebTable.Cell(MESSAGES.colDays(), 1, "50"),
-						new WebTable.Cell(MESSAGES.colStart(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colEnd(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colDate(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
-						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
-						new WebTable.Cell(MESSAGES.colParent(), 1, "75"),
-						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
+						new WebTable.Cell(MESSAGES.colSubject(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colCourse(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
+						new WebTable.Cell(MESSAGES.colClass(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
+						new WebTable.Cell(MESSAGES.colDays(), 1, "50px"),
+						new WebTable.Cell(MESSAGES.colStart(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colEnd(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colDate(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
+						new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
+						new WebTable.Cell(MESSAGES.colParent(), 1, "75px"),
+						new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
 					));
 				
 				ArrayList<WebTable.Row> rows = new ArrayList<WebTable.Row>();
@@ -288,7 +288,7 @@ public class EnrollmentTable extends Composite {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								UniTimeNotifications.error(caught.getMessage());
+								UniTimeNotifications.error(caught);
 							}
 							@Override
 							public void onSuccess(Boolean result) {
@@ -309,7 +309,7 @@ public class EnrollmentTable extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.getInstance().hide();
-									UniTimeNotifications.error(caught.getMessage());
+									UniTimeNotifications.error(caught);
 								}
 								@Override
 								public void onSuccess(Boolean result) {

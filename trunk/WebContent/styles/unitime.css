@@ -302,6 +302,12 @@ h1 {
 	margin-top: -2px;
 	white-space: nowrap;
 	cursor: pointer;
+	text-decoration: none;
+}
+
+A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:hover {
+	color: #9CB0CE;
+    text-decoration: none;
 }
 
 .unitime-NotClickableHint{
@@ -402,6 +408,11 @@ h1 {
 	padding-left: 10px;
 }
 
+.unitime-WebTable .rowheader {
+	padding-left: 0px;
+	width: 1px;
+}
+
 .unitime-WebTable .top-border-dashed {
 	border-top: 1px dashed #9CB0CE;
 }
@@ -426,6 +437,18 @@ h1 {
 .unitime-WebTable .text-red-centered {
 	color: red;
 	text-align: center;
+}
+
+.unitime-WebTable .icon td {
+	padding-left: 0px;
+}
+
+.unitime-WebTable .icons td {
+	padding-left: 0px;
+}
+
+.unitime-WebTable .instructor td {
+	padding-left: 0px;
 }
 
 .gwt-TabPanelBottom {
@@ -2834,4 +2857,67 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-VerticalScrollPanel {
 	overflow-x: hidden !important;
     overflow-y: auto !important;
+}
+
+.unitime-ImageButton {
+	cursor: pointer;
+  	cursor: hand;
+}
+
+.unitime-ImageButton-disabled {
+  cursor: default;
+}
+
+.unitime-AriaStatus {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+}
+
+.unitime-AriaHiddenLabel {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+}
+
+.unitime-AriaLabel {
+	display: none;
+}
+
+.unitime-SuggestBoxPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+	min-width: 150px;
+	z-index: 1000000;
+}
+
+
+.unitime-SuggestBoxPopup .scroll {
+	max-height: 200px;
+}
+
+.unitime-SuggestBoxPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-SuggestBoxPopup .item-selected {
+	background-color: #92c1f0;
 }

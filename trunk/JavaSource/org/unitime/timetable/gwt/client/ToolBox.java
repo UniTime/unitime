@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style;
+import com.google.gwt.event.shared.UmbrellaException;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.DateTimeFormat.PredefinedFormat;
@@ -214,4 +215,15 @@ public class ToolBox {
 	public native static void scrollToElement(Element element)/*-{
 		element.scrollIntoView();
 	}-*/;
+	
+	public static Throwable unwrap(Throwable e) {
+		if (e == null) return null;
+		if (e instanceof UmbrellaException) {
+			UmbrellaException ue = (UmbrellaException) e;
+			if (ue.getCauses().size() == 1) {
+				return unwrap(ue.getCauses().iterator().next());
+			}
+		}
+		return e;
+	}
 }

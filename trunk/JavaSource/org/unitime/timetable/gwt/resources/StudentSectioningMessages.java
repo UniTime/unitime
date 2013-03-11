@@ -92,6 +92,9 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Room")
 	String colConflictRoom();
+	
+	@DefaultMessage("&nbsp;")
+	String colIcons();
 
 	@DefaultMessage("&nbsp;")
 	String colSaved();
@@ -153,9 +156,12 @@ public interface StudentSectioningMessages extends Messages {
 
 	@DefaultMessage("Loading...")
 	String courseRequestsLoading();
-
+	
 	@DefaultMessage("Validation failed, see above for errors.")
 	String validationFailed();
+
+	@DefaultMessage("Validation failed: {0}")
+	String validationFailedWithMessage(String message);
 
 	@DefaultMessage("Course {0} used multiple times.")
 	String validationMultiple(String course);

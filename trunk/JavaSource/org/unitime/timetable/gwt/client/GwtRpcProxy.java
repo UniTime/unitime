@@ -39,7 +39,7 @@ public class GwtRpcProxy extends RemoteServiceProxy {
 		return super.doInvoke(responseReader, methodName, statsContext, requestData, new AsyncCallback<T>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error("Request " + methodName.replace("_Proxy", "") + " failed: " + caught.getMessage());
+				UniTimeNotifications.error("Request " + methodName.replace("_Proxy", "") + " failed: " + caught.getMessage(), caught);
 				callback.onFailure(caught);
 			}
 			@Override

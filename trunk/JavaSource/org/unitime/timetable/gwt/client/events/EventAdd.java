@@ -223,7 +223,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				validate(new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(Boolean result) {
@@ -237,7 +237,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 									LoadingWidget.getInstance().hide();
 									String message = (event.getId() == null ? MESSAGES.failedCreate(event.getName(), caught.getMessage()) : MESSAGES.failedUpdate(event.getName(), caught.getMessage()));
 									iHeader.setErrorMessage(message);
-									UniTimeNotifications.error(message);
+									UniTimeNotifications.error(message, caught);
 								}
 
 								@Override
@@ -275,7 +275,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
 						iHeader.setErrorMessage(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedDelete(event.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedDelete(event.getName(), caught.getMessage()), caught);
 					}
 
 					@Override
@@ -318,7 +318,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
 						iHeader.setErrorMessage(MESSAGES.failedCancel(event.getName(), caught.getMessage()));
-						UniTimeNotifications.error(MESSAGES.failedCancel(event.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedCancel(event.getName(), caught.getMessage()), caught);
 					}
 
 					@Override
@@ -588,7 +588,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
 						}
 
 						@Override
@@ -605,7 +605,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEventAddMeetings = new AddMeetingsDialog(session, new AsyncCallback<List<MeetingInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()), caught);
 			}
 
 			@Override
@@ -615,7 +615,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
 					}
 
 					@Override
@@ -630,7 +630,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iEventModifyMeetings = new AddMeetingsDialog(session, new AsyncCallback<List<MeetingInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimeNotifications.error(MESSAGES.failedChangeMeetings(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedChangeMeetings(caught.getMessage()), caught);
 			}
 
 			@Override
@@ -642,7 +642,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
 					}
 
 					@Override
@@ -1031,7 +1031,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedRoomAvailability(caught.getMessage()), caught);
 					}
 
 					@Override
@@ -1195,7 +1195,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				public void onFailure(Throwable caught) {
 					if (relatedObjects.equals(iLastRelatedObjects) && meetings.equals(iLastMeetings)) {
 						iEnrollments.clear();
-						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedNoEnrollments(caught.getMessage()), caught);
 					}
 				}
 
@@ -1254,7 +1254,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 
 				@Override
 				public void onFailure(Throwable caught) {
-					UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colSubjects(), caught.getMessage()));
+					UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colSubjects(), caught.getMessage()), caught);
 				}
 
 				@Override
@@ -1293,7 +1293,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colCourses(), caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colCourses(), caught.getMessage()), caught);
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -1342,7 +1342,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject, rCourse), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colConfigsOrSubparts(), caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colConfigsOrSubparts(), caught.getMessage()), caught);
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {
@@ -1410,7 +1410,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						RPC.execute(RelatedObjectLookupRpcRequest.getChildren(iSession.getAcademicSessionId(), rSubject, rCourse, rSubpart), new AsyncCallback<GwtRpcResponseList<RelatedObjectLookupRpcResponse>>() {
 							@Override
 							public void onFailure(Throwable caught) {
-								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colClasses(), caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedLoad(MESSAGES.colClasses(), caught.getMessage()), caught);
 							}
 							@Override
 							public void onSuccess(GwtRpcResponseList<RelatedObjectLookupRpcResponse> result) {

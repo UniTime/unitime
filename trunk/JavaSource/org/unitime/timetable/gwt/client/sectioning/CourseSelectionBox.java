@@ -23,13 +23,20 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
-import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -39,11 +46,11 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
@@ -59,17 +66,13 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.event.logical.shared.SelectionHandler;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -77,14 +80,11 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
@@ -98,20 +98,21 @@ public class CourseSelectionBox extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
-
+	public static Logger sLogger = Logger.getLogger(CourseSelectionBox.class.getName());
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	
 	private AcademicSessionProvider iAcademicSessionProvider;
 	
-	private TextBox iTextField;
-	private SuggestBox iSuggest;
+	private AriaSuggestBox iSuggest;
 	private String iLastSuggestion;
-	private Image iImage;
+	private ImageButton iFinderButton;
 	private HorizontalPanel iHPanel;
 	private VerticalPanel iVPanel;
 	private Label iError;
 	private Set<String> iValidCourseNames = new HashSet<String>();
 	
-	private TextBox iFilter;
-	private Button iFilterSelect;
+	private AriaTextBox iFilter;
+	private AriaButton iFilterSelect;
 	private DialogBox iDialog;
 	private ScrollPanel iCoursesPanel;
 	private VerticalPanel iDialogPanel, iCoursesTab, iFreeTimeTab;
@@ -148,7 +149,7 @@ public class CourseSelectionBox extends Composite {
 	private String iLastCourseLookup = null;
 	
 	private static int sLastSelectedCourseDetailsTab = 0;
-		
+	
 	public CourseSelectionBox(AcademicSessionProvider acadSession, String name, boolean enabled, boolean allowFreeTime) {
 		iAcademicSessionProvider = acadSession;
 		iAllowFreeTime = allowFreeTime;
@@ -161,42 +162,28 @@ public class CourseSelectionBox extends Composite {
 			public boolean isDisplayStringHTML() { return true; }			
 		};
 		
-		iTextField = new TextBox();
-		iTextField.setStyleName("gwt-SuggestBox");
-		iTextField.setName(name);
-		iSuggest = new SuggestBox(courseOfferingOracle, iTextField);
-		
-		iTextField.setStyleName("unitime-TextBoxHint");
+		iSuggest = new AriaSuggestBox(courseOfferingOracle);
+		iSuggest.setStyleName("unitime-TextBoxHint");
 
-		iImage = new Image(RESOURCES.search_picker());
-		iImage.addMouseOverHandler(new MouseOverHandler() {
-			public void onMouseOver(MouseOverEvent event) {
-				if (iTextField.isEnabled())
-					iImage.setResource(RESOURCES.search_picker_Over());
-			}
-		});
-		iImage.addMouseOutHandler(new MouseOutHandler() {
-			public void onMouseOut(MouseOutEvent event) {
-				if (iTextField.isEnabled())
-					iImage.setResource(RESOURCES.search_picker());
-			}
-		});
+		iFinderButton = new ImageButton(RESOURCES.search_picker(), RESOURCES.search_picker_Down(), RESOURCES.search_picker_Over(), RESOURCES.search_picker_Disabled());
+		iFinderButton.setTabIndex(-1);
 		
 		iVPanel = new VerticalPanel();
 		
 		iHPanel = new HorizontalPanel();
 		iHPanel.add(iSuggest);
-		iHPanel.add(iImage);
+		iHPanel.add(iFinderButton);
 		iVPanel.add(iHPanel);
 		
 		iError = new Label();
 		iError.setStyleName("unitime-ErrorHint");
 		iError.setVisible(false);
+		Roles.getPresentationRole().setAriaHiddenState(iError.getElement(), true);
 		iVPanel.add(iError);
 				
-		iImage.addClickHandler(new ClickHandler() {
+		iFinderButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				if (iTextField.isEnabled()) {
+				if (iSuggest.isEnabled()) {
 					openDialogAsync();
 				}
 			}
@@ -212,10 +199,10 @@ public class CourseSelectionBox extends Composite {
 					h.onChange(text, !text.isEmpty());
 			}
 		});
-		iTextField.addChangeHandler(new ChangeHandler() {
+		iSuggest.getValueBox().addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
 				boolean valid = false;
-				String text = iTextField.getText();
+				String text = iSuggest.getText();
 				if (text.equalsIgnoreCase(iLastSuggestion))
 					valid = true;
 				else for (String course: iValidCourseNames) {
@@ -227,9 +214,9 @@ public class CourseSelectionBox extends Composite {
 					h.onChange(text, valid);
 			}
 		});
-		iTextField.addKeyDownHandler(new KeyDownHandler() {
+		iSuggest.getValueBox().addKeyDownHandler(new KeyDownHandler() {
 			public void onKeyDown(KeyDownEvent event) {
-				if (!iTextField.isEnabled()) return;
+				if (!iSuggest.isEnabled()) return;
 				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && event.isControlKeyDown()) {
 					hideSuggestionList();
 					openDialogAsync();
@@ -275,37 +262,68 @@ public class CourseSelectionBox extends Composite {
 				}
 			}
 		});
-		iTextField.addBlurHandler(new BlurHandler() {
+		iSuggest.getValueBox().addBlurHandler(new BlurHandler() {
 			public void onBlur(BlurEvent event) {
-				if (iTextField.getText().isEmpty()) {
+				if (iSuggest.getText().isEmpty()) {
 					if (iError.isVisible()) iError.setVisible(false);
-					if (iHint!=null) iTextField.setText(iHint);
-					iTextField.setStyleName("unitime-TextBoxHint");
+					if (iHint!=null) iSuggest.setText(iHint);
+					iSuggest.setStyleName("unitime-TextBoxHint");
 				}
 			}
 		});
-		iTextField.addFocusHandler(new FocusHandler() {
+		iSuggest.getValueBox().addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
-				iTextField.setStyleName("gwt-SuggestBox");
-				if (iTextField.getText().equals(iHint)) iTextField.setText("");
+				iSuggest.setStyleName("gwt-SuggestBox");
+				if (iSuggest.getText().equals(iHint)) iSuggest.setText("");
+				if (!iError.getText().isEmpty())
+					AriaStatus.getInstance().setText(iError.getText());
 			}
 		});
 		
 		initWidget(iVPanel);
 	}
 	
+	public void setLabel(String title, String finderTitle) {
+		iSuggest.setAriaLabel(title);
+		iFinderButton.setAltText(finderTitle);
+	}
+	
 	private void openDialogAsync() {
 		GWT.runAsync(new RunAsyncCallback() {
+			@Override
 			public void onSuccess() {
 				openDialog();
 			}
-			public void onFailure(Throwable reason) {
-				Label error = new Label(MESSAGES.failedToLoadTheApp(reason.getMessage()));
-				error.setStyleName("unitime-ErrorMessage");
-				RootPanel.get("loading").setVisible(false);
-				RootPanel.get("body").add(error);
+			@Override
+			public void onFailure(Throwable caught) {
+				UniTimeNotifications.error(caught);
 			}
 		});
+	}
+	
+	private void courseSelectionChanged() {
+		if (iCourses.getSelectedRow() >= 0 && iCourses.getRows() != null && iCourses.getSelectedRow() < iCourses.getRows().length) {
+			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
+			if (row != null) {
+				String title = row.getCell(3).getValue();
+				String note = row.getCell(4).getValue();
+				if (title.isEmpty()) {
+					if (note.isEmpty()) {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue()));
+					} else {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), note));
+					}
+				} else {
+					if (note.isEmpty()) {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitle(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title));
+					} else {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitleAndNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title, note));
+					}
+				}
+			}
+		} else {
+			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
+		}
 	}
 	
 	private void openDialog() {
@@ -313,21 +331,23 @@ public class CourseSelectionBox extends Composite {
 			iDialog = new UniTimeDialogBox(true, false);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
-			iFilter = new TextBox();
+			iFilter = new AriaTextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
 			iFilter.getElement().getStyle().setWidth(600, Unit.PX);
+			iFilter.setAriaLabel(iAllowFreeTime ? ARIA.courseFinderFilterAllowsFreeTime() : ARIA.courseFinderFilter());
 			
-			iFilterSelect = new Button(MESSAGES.buttonSelect(), new ClickHandler() {
+			iFilterSelect = new AriaButton(MESSAGES.buttonSelect());
+			iFilterSelect.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length && iTabPanel.getSelectedTab() == 0) {
 						WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
 						if ("true".equals(r.getId()))
-							iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+							iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 						else
-							iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+							iSuggest.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
 						for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-							h.onChange(iTextField.getText(), true);
+							h.onChange(iSuggest.getText(), true);
 					} else {
 						try {
 							iFreeTimePicker.clearFreeTime();
@@ -335,10 +355,9 @@ public class CourseSelectionBox extends Composite {
 							iFreeTimePicker.setFreeTime(freeTimes, false);
 							iFilter.setText(freeTimesToString(freeTimes));
 						} catch (IllegalArgumentException e) {}
-						iTextField.setText(iFilter.getText());
+						iSuggest.setText(iFilter.getText());
 					}
 					iDialog.hide();
-					iImage.setResource(RESOURCES.search_picker());
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
 							setFocus(true);
@@ -346,17 +365,15 @@ public class CourseSelectionBox extends Composite {
 					});
 				}
 			});
-			Character selectAccessKey = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonSelect());
-			if (selectAccessKey != null) iFilterSelect.setAccessKey(selectAccessKey);
 			
 			iCourses = new WebTable();
 			iCourses.setHeader(
 					new WebTable.Row(
-							new WebTable.Cell(MESSAGES.colSubject(), 1, "80"),
-							new WebTable.Cell(MESSAGES.colCourse(), 1, "80"),
-							new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
-							new WebTable.Cell(MESSAGES.colTitle(), 1, "300"),
-							new WebTable.Cell(MESSAGES.colNote(), 1, "300")
+							new WebTable.Cell(MESSAGES.colSubject(), 1, "80px"),
+							new WebTable.Cell(MESSAGES.colCourse(), 1, "80px"),
+							new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
+							new WebTable.Cell(MESSAGES.colTitle(), 1, "300px"),
+							new WebTable.Cell(MESSAGES.colNote(), 1, "300px")
 							));
 			
 			HorizontalPanel filterWithSelect = new HorizontalPanel();
@@ -374,7 +391,6 @@ public class CourseSelectionBox extends Composite {
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
 					RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
-					iImage.setResource(RESOURCES.search_picker());
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
 							setFocus(true);
@@ -396,18 +412,18 @@ public class CourseSelectionBox extends Composite {
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
-					new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
-					new WebTable.Cell(MESSAGES.colClass(), 1, "90"),
-					new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colDays(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colStart(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colEnd(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colDate(), 1, "100"),
-					new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
-					new WebTable.Cell(MESSAGES.colInstructor(), 1, "120"),
-					new WebTable.Cell(MESSAGES.colParent(), 1, "90"),
-					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10"),
-					new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
+					new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
+					new WebTable.Cell(MESSAGES.colClass(), 1, "90px"),
+					new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colDays(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colStart(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colEnd(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colDate(), 1, "100px"),
+					new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
+					new WebTable.Cell(MESSAGES.colInstructor(), 1, "120px"),
+					new WebTable.Cell(MESSAGES.colParent(), 1, "90px"),
+					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10px"),
+					new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
 				));
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);
@@ -501,11 +517,11 @@ public class CourseSelectionBox extends Composite {
 							if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length && iTabPanel.getSelectedTab() == 0) {
 								WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
 								if ("true".equals(r.getId()))
-									iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+									iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 								else
-									iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+									iSuggest.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
 								for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-									h.onChange(iTextField.getText(), true);
+									h.onChange(iSuggest.getText(), true);
 							} else {
 								try {
 									iFreeTimePicker.clearFreeTime();
@@ -513,11 +529,10 @@ public class CourseSelectionBox extends Composite {
 									iFreeTimePicker.setFreeTime(freeTimes, false);
 									iFilter.setText(freeTimesToString(freeTimes));
 								} catch (IllegalArgumentException e) {}
-								iTextField.setText(iFilter.getText());
+								iSuggest.setText(iFilter.getText());
 							}
 						}					
 						iDialog.hide();
-						iImage.setResource(RESOURCES.search_picker());
 						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 							public void execute() {
 								setFocus(true);
@@ -528,19 +543,23 @@ public class CourseSelectionBox extends Composite {
 						iCourses.setSelectedRow(iCourses.getSelectedRow()+1);
 						scrollToSelectedRow();
 						updateCourseDetails();
+						courseSelectionChanged();
 					}
 					if (event.getNativeKeyCode()==KeyCodes.KEY_UP) {
 						iCourses.setSelectedRow(iCourses.getSelectedRow()==0?iCourses.getRowsCount()-1:iCourses.getSelectedRow()-1);
 						scrollToSelectedRow();
 						updateCourseDetails();
+						courseSelectionChanged();
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C') && !isFreeTime()) {
 						iTabPanel.selectTab(0);
 						event.preventDefault();
+						AriaStatus.getInstance().setText(ARIA.courseFinderCoursesTab());
 					}
 					if (iAllowFreeTime && event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T')) {
-						iTabPanel.selectTab(iCourseDetailsTabPanel == null ? 1 : 3);
+						iTabPanel.selectTab(iCourseDetailsTabPanel != null ? 1 : 3);
 						event.preventDefault();
+						AriaStatus.getInstance().setText(ARIA.courseFinderFreeTimeTab());
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
 						if (iCourseDetailsTabPanel == null)
@@ -548,6 +567,10 @@ public class CourseSelectionBox extends Composite {
 						else
 							iCourseDetailsTabPanel.selectTab(0);
 						event.preventDefault();
+						if (iCourses.getSelectedRow() >= 0 && iCourses.getRows() != null && iCourses.getSelectedRow() < iCourses.getRows().length)
+							AriaStatus.getInstance().setHTML(iCourseDetails.getHTML());
+						else
+							AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 					}
 					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
 						if (iCourseDetailsTabPanel == null)
@@ -555,6 +578,7 @@ public class CourseSelectionBox extends Composite {
 						else
 							iCourseDetailsTabPanel.selectTab(1);
 						event.preventDefault();
+						courseSelectionChanged();
 					}
 				}
 			});
@@ -567,13 +591,12 @@ public class CourseSelectionBox extends Composite {
 				public void onRowDoubleClick(RowDoubleClickEvent event) {
 					WebTable.Row r = event.getRow();
 					if ("true".equals(r.getId()))
-						iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+						iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 					else
-						iTextField.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+						iSuggest.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
 					iDialog.hide();
-					iImage.setResource(RESOURCES.search_picker());
 					for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-						h.onChange(iTextField.getText(), true);
+						h.onChange(iSuggest.getText(), true);
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
 							setFocus(true);
@@ -585,6 +608,7 @@ public class CourseSelectionBox extends Composite {
 				public void onRowClick(WebTable.RowClickEvent event) {
 					iCourses.setSelectedRow(event.getRowIdx());
 					updateCourseDetails();
+					courseSelectionChanged();
 				}
 			});
 			
@@ -600,14 +624,14 @@ public class CourseSelectionBox extends Composite {
 				}
 			});
 		}
-		
-		iImage.setResource(RESOURCES.search_picker_Down());
-		iFilter.setText(iTextField.getText().equals(iHint)?"":iTextField.getText());
+
+		iFilter.setText(iSuggest.getText().equals(iHint)?"":iSuggest.getText());
 		iTabPanel.selectTab(0);
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iFreeTimeTip.setText(CONSTANTS.freeTimeTips()[(int)(Math.random() * CONSTANTS.freeTimeTips().length)]);
 		if (iCourseDetailsTabPanel != null)
 			iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
+		AriaStatus.getInstance().setText(ARIA.courseFinderDialogOpened());
 		iDialog.center();
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -618,7 +642,6 @@ public class CourseSelectionBox extends Composite {
 		});
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void hideSuggestionList() {
 		iSuggest.hideSuggestionList();
 	}
@@ -628,7 +651,7 @@ public class CourseSelectionBox extends Composite {
 	}
 
 	public void setAccessKey(char a) {
-		iTextField.setAccessKey(a);
+		iSuggest.setAccessKey(a);
 	}
 	
 	public void setWidth(String width) {
@@ -636,9 +659,9 @@ public class CourseSelectionBox extends Composite {
 	}
 	
 	public void clear() {
-		iTextField.setText(iHint);
+		iSuggest.setText(iHint);
 		if (!iHint.isEmpty())
-			iTextField.setStyleName("unitime-TextBoxHint");
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		iError.setText(""); iError.setVisible(false);
 	}
 	
@@ -646,10 +669,16 @@ public class CourseSelectionBox extends Composite {
 		iError.setText(error);
 		iError.setTitle(null);
 		iError.setVisible(!iError.getText().isEmpty());
+		iSuggest.setStatus(error);
+		AriaStatus.getInstance().setText(error);
 	}
 	
 	public boolean hasError() {
 		return iError.isVisible();
+	}
+	
+	public String getError() {
+		return iError.getText();
 	}
 	
 	private void scrollToSelectedRow() {
@@ -657,7 +686,7 @@ public class CourseSelectionBox extends Composite {
 		
 		Element scroll = iCoursesPanel.getElement();
 		
-		Element item = iCourses.getTable().getRowFormatter().getElement(iCourses.getSelectedRow());
+		com.google.gwt.dom.client.Element item = iCourses.getTable().getRowFormatter().getElement(iCourses.getSelectedRow());
 		if (item==null) return;
 		
 		int realOffset = 0;
@@ -675,20 +704,20 @@ public class CourseSelectionBox extends Composite {
 	}
 	
 	public String getCourse() {
-		return (iTextField.getText().equals(iHint) ? "" : iTextField.getText());
+		return (iSuggest.getText().equals(iHint) ? "" : iSuggest.getText());
 	}
 	
 	public void setCourse(String course, boolean fireChangeEvent) {
-		iTextField.setText(course);
-		if (iTextField.getText().isEmpty()) {
-			if (iHint!=null) iTextField.setText(iHint);
-			iTextField.setStyleName("unitime-TextBoxHint");
+		iSuggest.setText(course);
+		if (iSuggest.getText().isEmpty()) {
+			if (iHint!=null) iSuggest.setText(iHint);
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		} else {
-			iTextField.setStyleName("gwt-SuggestBox");
+			iSuggest.setStyleName("gwt-SuggestBox");
 		}
 		if (fireChangeEvent)
 			for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
-				h.onChange(iTextField.getText(), course != null && !course.isEmpty());
+				h.onChange(iSuggest.getText(), course != null && !course.isEmpty());
 	}
 	
 	public void setNext(CourseSelectionBox next) { iNext = next; }
@@ -783,7 +812,7 @@ public class CourseSelectionBox extends Composite {
 
 	public boolean isFreeTime() {
 		try {
-			parseFreeTime(iTextField.getText());
+			parseFreeTime(iSuggest.getText());
 			return true;
 		} catch (IllegalArgumentException e) {
 			return false;
@@ -792,7 +821,7 @@ public class CourseSelectionBox extends Composite {
 	
 	public boolean fillInFreeTime(CourseRequestInterface.Request request) {
 		try {
-			for (CourseRequestInterface.FreeTime ft: parseFreeTime(iTextField.getText()))
+			for (CourseRequestInterface.FreeTime ft: parseFreeTime(iSuggest.getText()))
 				request.addRequestedFreeTime(ft);
 			return request.hasRequestedFreeTime();
 		} catch (IllegalArgumentException e) {
@@ -802,28 +831,39 @@ public class CourseSelectionBox extends Composite {
 	
 	public void setEnabled(boolean enabled) {
 		if (enabled) {
-			iTextField.setEnabled(true);
-			iImage.setResource(RESOURCES.search_picker());
+			iSuggest.setEnabled(true);
+			iFinderButton.setEnabled(true);
+			iFinderButton.setTabIndex(0);
 		} else {
-			iTextField.setEnabled(false);
-			iImage.setResource(RESOURCES.search_picker_Disabled());
+			iSuggest.setEnabled(false);
+			iFinderButton.setEnabled(false);
+			iFinderButton.setTabIndex(-1);
 		}
 	}
 	
 	public boolean isEnabled() {
-		return iTextField.isEnabled();
+		return iSuggest.isEnabled();
 	}
 	
 	private void updateCourses() {
 		if (iAllowFreeTime) {
 			try {
 				iFreeTimePicker.clearFreeTime();
-				iFreeTimePicker.setFreeTime(parseFreeTime(iFilter.getText()), false);
+				ArrayList<CourseRequestInterface.FreeTime> freeTimes = parseFreeTime(iFilter.getText()); 
+				iFreeTimePicker.setFreeTime(freeTimes, false);
 				iFreeTimeError.setVisible(false);
 				iTabPanel.selectTab(iTabPanel.getTabCount() - 1);
+				String status = "";
+				for (CourseRequestInterface.FreeTime ft: freeTimes) {
+					status += ft.toAriaString(CONSTANTS.longDays(), CONSTANTS.useAmPm()) + " ";
+				}
+				if (!status.isEmpty())
+					AriaStatus.getInstance().setText(ARIA.courseFinderSelectedFreeTime(status));
 			} catch (IllegalArgumentException e) {
 				iFreeTimeError.setText(e.getMessage());
 				iFreeTimeError.setVisible(true);
+				if (iTabPanel.getSelectedTab() != 0)
+					AriaStatus.getInstance().setText(e.getMessage());
 			}
 		}
 		if (iCourseOfferingsCallback==null) {
@@ -831,6 +871,8 @@ public class CourseSelectionBox extends Composite {
 				public void onFailure(Throwable caught) {
 					iCourses.clearData(true);
 					iCourses.setEmptyMessage(caught.getMessage());
+					if (iTabPanel.getSelectedTab() == 0)
+						AriaStatus.getInstance().setText(caught.getMessage());
 				}
 				public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
 					WebTable.Row[] records = new WebTable.Row[result.size()];
@@ -856,6 +898,7 @@ public class CourseSelectionBox extends Composite {
 						if (iTabPanel.getSelectedTab() != 0)
 							iTabPanel.selectTab(0);
 						updateCourseDetails();
+						courseSelectionChanged();
 					}
 				}
 	        };
@@ -959,8 +1002,8 @@ public class CourseSelectionBox extends Composite {
 	}
 	
 	public void setFocus(boolean focus) {
-		iTextField.setFocus(focus);
-		if (focus) iTextField.selectAll();
+		iSuggest.setFocus(focus);
+		if (focus) iSuggest.getValueBox().selectAll();
 
 	}
 		
@@ -982,16 +1025,27 @@ public class CourseSelectionBox extends Composite {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
 			if (iAllowFreeTime) {
 				try {
-					suggestions.add(new SimpleSuggestion(freeTimesToString(parseFreeTime(iRequest.getQuery()))));
+					ArrayList<CourseRequestInterface.FreeTime> freeTimes = parseFreeTime(iRequest.getQuery());
+					String status = "Free time ";
+					for (CourseRequestInterface.FreeTime ft: freeTimes) {
+						status += ft.toAriaString(CONSTANTS.longDays(), CONSTANTS.useAmPm()) + " ";
+					}
+					String ft = freeTimesToString(freeTimes);
+					Suggestion suggestion = new SimpleSuggestion(ft, ft, status); 
+					suggestions.add(suggestion);
+					// setStatus(status + " matches the entered text. Press enter to select it.");
 				} catch (IllegalArgumentException e) {
 					if (iRequest.getQuery().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
-						suggestions.add(new SimpleSuggestion("<font color='red'>"+e.getMessage()+"</font>", ""));
+						suggestions.add(new SimpleSuggestion("<font color='red'>"+e.getMessage()+"</font>", "", e.getMessage()));
+						// setStatus(e.getMessage());
 					} else {
-						suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
+						suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", "", caught.getMessage()));
+						// setStatus(caught.getMessage());
 					}
 				}
 			} else {
-				suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
+				suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", "", caught.getMessage()));
+				// setStatus(caught.getMessage());
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 		}
@@ -1001,13 +1055,12 @@ public class CourseSelectionBox extends Composite {
 			iValidCourseNames.clear();
 			for (ClassAssignmentInterface.CourseAssignment suggestion: result) {
 				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
-				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName :
-					MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
+				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName : MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
 				if (suggestion.hasUniqueName()) {
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName));
+					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
 					iValidCourseNames.add(courseName);
 				} else {
-					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle));
+					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
 					iValidCourseNames.add(courseNameWithTitle);
 				}
 			}
@@ -1016,31 +1069,43 @@ public class CourseSelectionBox extends Composite {
 		
 	}
 	
-	public static class SimpleSuggestion implements Suggestion {
-		private String iDisplay, iReplace;
+	public static class SimpleSuggestion implements Suggestion, AriaSuggestBox.HasStatus {
+		private String iDisplay, iReplace, iStatus;
 
-		public SimpleSuggestion(String display, String replace) {
+		public SimpleSuggestion(String display, String replace, String status) {
 			iDisplay = display;
 			iReplace = replace;
+			iStatus = status;
+		}
+		
+		public SimpleSuggestion(String display, String replace) {
+			this(display, replace, display);
 		}
 		
 		public SimpleSuggestion(String replace) {
-			this(replace, replace);
+			this(replace, replace, replace);
 		}
 
+		@Override
 		public String getDisplayString() {
 			return iDisplay;
 		}
 
+		@Override
 		public String getReplacementString() {
 			return iReplace;
+		}
+
+		@Override
+		public String getStatusString() {
+			return iStatus;
 		}
 	}
 	
 	public void setHint(String hint) {
-		if (iTextField.getText().equals(iHint)) {
-			iTextField.setText(hint);
-			iTextField.setStyleName("unitime-TextBoxHint");
+		if (iSuggest.getText().equals(iHint)) {
+			iSuggest.setText(hint);
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		}
 		iHint = hint;
 	}
@@ -1062,17 +1127,17 @@ public class CourseSelectionBox extends Composite {
 	}
 	
 	public String validate() {
-		if (iTextField.getText().isEmpty() || iTextField.getText().equals(iHint)) {
+		if (iSuggest.getText().isEmpty() || iSuggest.getText().equals(iHint)) {
 			iError.setVisible(false);
 			return null;
 		}
 		if (iAllowFreeTime) {
 			try {
-				parseFreeTime(iTextField.getText());
+				parseFreeTime(iSuggest.getText());
 				iError.setVisible(false);
 				return null;
 			} catch (IllegalArgumentException e) {
-				if (iTextField.getText().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
+				if (iSuggest.getText().toLowerCase().startsWith(CONSTANTS.freePrefix().toLowerCase())) {
 					iError.setText(MESSAGES.invalidFreeTime());
 					iError.setTitle(e.getMessage());
 					iError.setVisible(true);
@@ -1265,7 +1330,7 @@ public class CourseSelectionBox extends Composite {
 		String lastDays = null;
 		for (CourseRequestInterface.FreeTime ft: freeTimes) {
 			if (ret.length() > 0) ret += ", ";
-			String days = ft.getDaysString(CONSTANTS.shortDays());
+			String days = ft.getDaysString(CONSTANTS.shortDays(), "");
 			if (ft.getDays().size() == CONSTANTS.freeTimeDays().length && !ft.getDays().contains(5) && !ft.getDays().contains(6)) days = "";
 			ret += (days.isEmpty() || days.equals(lastDays) ? "" : days + " ") + ft.getStartString(CONSTANTS.useAmPm()) + " - " + ft.getEndString(CONSTANTS.useAmPm());
 			lastDays = days;
