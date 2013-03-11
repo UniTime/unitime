@@ -57,11 +57,11 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		
 		public void addDay(int day) { iDays.add(day); }
 		public ArrayList<Integer> getDays() { return iDays; }
-		public String getDaysString(String[] shortDays) {
+		public String getDaysString(String[] shortDays, String separator) {
 			if (iDays == null) return "";
 			String ret = "";
 			for (int day: iDays)
-				ret += shortDays[day];
+				ret += (ret.isEmpty() ? "" : separator) + shortDays[day];
 			return ret;
 		}
 		
@@ -89,11 +89,29 @@ public class CourseRequestInterface implements IsSerializable, Serializable {
 		}
 		
 		public String toString(String[] shortDays, boolean useAmPm) {
-			return getDaysString(shortDays) + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
+			return getDaysString(shortDays, "") + " " + getStartString(useAmPm) + " - " + getEndString(useAmPm);
 		}
 		
 		public String toString() {
 			return "Free " + toString(new String[] {"M", "T", "W", "R", "F", "S", "U"}, true);
+		}
+		
+		public String toAriaString(String[] longDays, boolean useAmPm) {
+	        int h = iStart / 12;
+	        int m = 5 * (iStart % 12);
+	        String ret = getDaysString(longDays, " ") + " from ";
+	        if (useAmPm)
+	        	ret += (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
+	        else
+	        	ret += h + " " + (m < 10 ? "0" : "") + m;
+	        h = (iStart + iLength) / 12;
+			m = 5 * ((iStart + iLength) % 12);
+			ret += " to ";
+	        if (useAmPm)
+	        	ret += (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " AM" : h >= 12 ? " PM" : " AM");
+	        else
+	        	ret += h + " " + (m < 10 ? "0" : "") + m;
+	        return ret;  
 		}
 	}
 	

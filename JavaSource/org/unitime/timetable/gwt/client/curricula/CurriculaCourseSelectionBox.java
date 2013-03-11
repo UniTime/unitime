@@ -264,13 +264,13 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCourses = new WebTable();
 			iCourses.setHeader(
 					new WebTable.Row(
-							new WebTable.Cell(MESSAGES.colSubject(), 1, "80"),
-							new WebTable.Cell(MESSAGES.colCourse(), 1, "80"),
-							new WebTable.Cell(MESSAGES.colTitle(), 1, "400"),
-							new WebTable.Cell("Limit", 1, "60"),
-							new WebTable.Cell("Last&#8209;Like", 1, "60"),
-							new WebTable.Cell("Projected", 1, "60"),
-							new WebTable.Cell("Enrolled", 1, "60")
+							new WebTable.Cell(MESSAGES.colSubject(), 1, "80px"),
+							new WebTable.Cell(MESSAGES.colCourse(), 1, "80px"),
+							new WebTable.Cell(MESSAGES.colTitle(), 1, "400px"),
+							new WebTable.Cell("Limit", 1, "60px"),
+							new WebTable.Cell("Last&#8209;Like", 1, "60px"),
+							new WebTable.Cell("Projected", 1, "60px"),
+							new WebTable.Cell("Enrolled", 1, "60px")
 							));
 			
 			iDialogPanel = new VerticalPanel();
@@ -317,18 +317,18 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
-					new WebTable.Cell(MESSAGES.colSubpart(), 1, "50"),
-					new WebTable.Cell(MESSAGES.colClass(), 1, "90"),
-					new WebTable.Cell(MESSAGES.colLimit(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colDays(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colStart(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colEnd(), 1, "60"),
-					new WebTable.Cell(MESSAGES.colDate(), 1, "100"),
-					new WebTable.Cell(MESSAGES.colRoom(), 1, "100"),
-					new WebTable.Cell(MESSAGES.colInstructor(), 1, "120"),
-					new WebTable.Cell(MESSAGES.colParent(), 1, "90"),
-					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10"),
-					new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
+					new WebTable.Cell(MESSAGES.colSubpart(), 1, "50px"),
+					new WebTable.Cell(MESSAGES.colClass(), 1, "90px"),
+					new WebTable.Cell(MESSAGES.colLimit(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colDays(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colStart(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colEnd(), 1, "60px"),
+					new WebTable.Cell(MESSAGES.colDate(), 1, "100px"),
+					new WebTable.Cell(MESSAGES.colRoom(), 1, "100px"),
+					new WebTable.Cell(MESSAGES.colInstructor(), 1, "120px"),
+					new WebTable.Cell(MESSAGES.colParent(), 1, "90px"),
+					new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10px"),
+					new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10px")
 				));
 			iClasses.setEmptyMessage(MESSAGES.courseSelectionNoCourseSelected());
 			iClassesPanel = new ScrollPanel(iClasses);

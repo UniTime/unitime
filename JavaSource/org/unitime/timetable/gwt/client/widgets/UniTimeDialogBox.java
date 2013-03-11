@@ -19,6 +19,10 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -39,6 +43,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTimeDialogBox> {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private FlowPanel iContainer, iControls;
 	private Anchor iClose;
 	private boolean iEscapeToHide = false;
@@ -67,6 +72,11 @@ public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTi
         iControls = new FlowPanel();
         iControls.setStyleName("dialogControls");        
         iControls.add(iClose);
+    }
+    
+    @Override public void center() {
+    	AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()));
+    	super.center();
     }
     
     public void setAutoHideEnabled(boolean autoHide) {

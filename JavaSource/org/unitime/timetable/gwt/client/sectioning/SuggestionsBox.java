@@ -22,11 +22,14 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowClickEvent;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -35,6 +38,8 @@ import org.unitime.timetable.gwt.services.SectioningServiceAsync;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CourseRequestInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -63,7 +68,6 @@ import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -73,6 +77,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
 	private final SectioningServiceAsync iSectioningService = GWT.create(SectioningService.class);
 
@@ -88,7 +93,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private HTML iLegend;
 	private ScrollPanel iSuggestionsScroll;
 	private String iSource;
-	private TextBox iFilter;
+	private AriaTextBox iFilter;
 	private int iIndex;
 	private CourseRequestInterface iRequest;
 	private HorizontalPanelWithHint iFilterPanel;
@@ -121,11 +126,17 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		iFilter = new TextBox();
+		iFilter = new AriaTextBox();
 		iFilter.setStyleName("gwt-SuggestBox");
 		iFilter.getElement().getStyle().setWidth(600, Unit.PX);
 		iFilter.getElement().getStyle().setHeight(26, Unit.PX);
 		iFilterPanel.add(iFilter);
+		
+		HTML ariaDescription = new HTML(MESSAGES.suggestionsFilterHint(), false);
+		ariaDescription.setStyleName("unitime-AriaStatus");
+		ariaDescription.getElement().setId(DOM.createUniqueId());
+		iFilterPanel.add(ariaDescription);
+		Roles.getTextboxRole().setAriaDescribedbyProperty(iFilter.getElement(), Id.of(ariaDescription.getElement()));
 		
 		iSearch = new Button(MESSAGES.buttonSearch());
 		iSearch.setAccessKey('s');
@@ -138,22 +149,20 @@ public class SuggestionsBox extends UniTimeDialogBox {
 
 		iSuggestions = new WebTable();
 		iSuggestions.setHeader(new WebTable.Row(
-				new WebTable.Cell("", 1, "10"),
-				new WebTable.Cell(MESSAGES.colSubject(), 1, "50"),
-				new WebTable.Cell(MESSAGES.colCourse(), 1, "50"),
-				new WebTable.Cell(MESSAGES.colSubpart(), 1, "40"),
-				new WebTable.Cell(MESSAGES.colClass(), 1, "40"),
-				new WebTable.Cell(MESSAGES.colTime(), 1, "75"),
-				new WebTable.Cell("", 1, "1"),
-				new WebTable.Cell(MESSAGES.colDate(), 1, "50"),
-				new WebTable.Cell("", 1, "1"),
-				new WebTable.Cell(MESSAGES.colRoom(), 1, "50"),
-				new WebTable.Cell("", 1, "1"),
-				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100"),
-				new WebTable.Cell(MESSAGES.colParent(), 1, "50"),
-				new WebTable.Cell(MESSAGES.colSaved(), 1, "10"),
-				new WebTable.Cell(MESSAGES.colHighDemand(), 1, "10"),
-				new WebTable.Cell(MESSAGES.colNoteIcon(), 1, "10")
+				new WebTable.Cell("", 1, "10px"),
+				new WebTable.Cell(MESSAGES.colSubject(), 1, "50px"),
+				new WebTable.Cell(MESSAGES.colCourse(), 1, "50px"),
+				new WebTable.Cell(MESSAGES.colSubpart(), 1, "40px"),
+				new WebTable.Cell(MESSAGES.colClass(), 1, "40px"),
+				new WebTable.Cell(MESSAGES.colTime(), 1, "75px").aria(ARIA.colTimeCurrent()),
+				new WebTable.Cell("", 1, "1px").aria(ARIA.colTimeNew()),
+				new WebTable.Cell(MESSAGES.colDate(), 1, "50px").aria(ARIA.colDateCurrent()),
+				new WebTable.Cell("", 1, "1px").aria(ARIA.colDateNew()),
+				new WebTable.Cell(MESSAGES.colRoom(), 1, "50px").aria(ARIA.colRoomCurrent()),
+				new WebTable.Cell("", 1, "1px").aria(ARIA.colRoomNew()),
+				new WebTable.Cell(MESSAGES.colInstructor(), 1, "100px"),
+				new WebTable.Cell(MESSAGES.colParent(), 1, "50px"),
+				new WebTable.Cell(MESSAGES.colIcons(), 1, "10px")
 			));
 		iSuggestions.setSelectSameIdRows(true);
 		iSuggestions.setEmptyMessage(MESSAGES.suggestionsLoading());
@@ -176,6 +185,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				iSuggestions.setEmptyMessage("<font color='red'>" + caught.getMessage() + "</font>");
 				iMessages.setHTML("");
 				LoadingWidget.getInstance().hide();
+				iFilter.setAriaLabel(caught.getMessage());
 				center();
 			}
 
@@ -185,10 +195,13 @@ public class SuggestionsBox extends UniTimeDialogBox {
  
 				if (result.isEmpty()) {
 					iSuggestions.clearData(true);
-					if (iFilter.getText().isEmpty())
+					if (iFilter.getText().isEmpty()) {
 						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
-					else
+						iFilter.setAriaLabel(ARIA.suggestionsNoAlternative(iSource));
+					} else {
 						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+						iFilter.setAriaLabel(ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+					}
 					LoadingWidget.getInstance().hide();
 					center();
 				} else {
@@ -252,10 +265,21 @@ public class SuggestionsBox extends UniTimeDialogBox {
 									}
 									if (old == null && clazzIdx < sameCourse.size()) old = sameCourse.get(clazzIdx);
 									if (old == null && sameCourse.size() == 1 && !sameCourse.get(0).isAssigned()) old = sameCourse.get(0);
+									
+									WebTable.IconsCell icons = new WebTable.IconsCell();
+									if (clazz != null && clazz.isSaved())
+										icons.add(RESOURCES.saved(), MESSAGES.saved(MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())));
+									if (course.isLocked())
+										icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
+									if (clazz != null && clazz.isOfHighDemand())
+										icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()));
+									if (clazz != null && clazz.hasNote())
+										icons.add(RESOURCES.note(), clazz.getNote());
+									
 									final WebTable.Row row = new WebTable.Row(
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
-											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()).aria(clazzIdx == 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+											new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()).aria(clazzIdx == 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, selected, clazz == null)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, selected, clazz == null)),
 											new WebTable.Cell(compare(old == null ? null : old.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), clazz == null ? null : clazz.getTimeString(CONSTANTS.shortDays(), CONSTANTS.useAmPm(), MESSAGES.arrangeHours()), CmpMode.BOTH_OLD, selected, clazz == null)),
@@ -269,58 +293,38 @@ public class SuggestionsBox extends UniTimeDialogBox {
 											new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), CmpMode.BOTH_NEW, selected, clazz == null)),
 											new WebTable.InstructorCell(clazz == null ? null : clazz.getInstructors(), clazz == null ? null : clazz.getInstructorEmails(), ", "),
 											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, selected, clazz == null)),
-											(clazz != null && clazz.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
-											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) :
-											(clazz != null && clazz.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(clazz.getExpected(), clazz.getAvailableLimit()), null) : new WebTable.Cell(""))),
-											(clazz != null && clazz.hasNote() ? new WebTable.IconCell(RESOURCES.note(), clazz.getNote(), "") : new WebTable.Cell("")));
+											icons);
 									String style = (selected?"text-blue":"") + (lastSize > 0 && rows.size() == lastSize ? " top-border-solid" : clazzIdx == 0 && !rows.isEmpty() ? " top-border-dashed": "");
 									row.setId(String.valueOf(suggestionId));
 									for (WebTable.Cell cell: row.getCells())
 										cell.setStyleName(style.trim());
 									row.getCell(0).setStyleName((lastSize > 0 && rows.size() == lastSize ? "top-border-solid" : ""));
 									rows.add(row);
+									row.setAriaLabel(ARIA.assigned(
+											(course.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())) + " " +
+											clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + clazz.getRooms(", ")));
 									clazzIdx++;
 								}
-								/*
-								if (sameCourse.size() > course.getClassAssignments().size()) {
-									for (int idx = course.getClassAssignments().size(); idx < sameCourse.size(); idx++) {
-										ClassAssignmentInterface.ClassAssignment old = sameCourse.get(idx);
-										ClassAssignmentInterface.ClassAssignment clazz = null;
-										final WebTable.Row row = new WebTable.Row(
-												new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
-												new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? "Free" : course.getSubject()),
-												new WebTable.Cell(clazzIdx > 0 ? "" : course.isFreeTime() ? "Time" : course.getCourseNbr()),
-												new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), false)),
-												new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), false)),
-												//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
-												new WebTable.Cell(compare(old == null ? null : old.getTimeString(), clazz == null ? null : clazz.getTimeString(), true)),
-												new WebTable.Cell(compare(old == null ? null : old.getDatePattern(), clazz == null ? null : clazz.getDatePattern(), true)),
-												(old != null && old.hasDistanceConflict() ? 
-														new WebTable.IconCell(RESOURCES.distantConflict(), old.getBackToBackDistanceMessage(),
-																compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), true)) : 
-														new WebTable.Cell(compare(old == null ? null : old.getRooms(", "), clazz == null ? null : clazz.getRooms(", "), true))),
-												new WebTable.Cell(compare(old == null ? null : old.getInstructors(", "), clazz == null ? null : clazz.getInstructors(", "), true)),
-												new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), false)),
-												(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")));
-										row.setId(String.valueOf(suggestionId));
-										String style =  (lastSize > 0 && rows.size() == lastSize ? "top-border-solid" : clazzIdx == 0 && !rows.isEmpty() ? "top-border-solid": "");
-										for (WebTable.Cell cell: row.getCells())
-											cell.setStyleName(style.trim());
-										row.getCell(0).setStyleName((lastSize > 0 && rows.size() == lastSize ? "top-border-solid" : ""));
-										rows.add(row);
-										clazzIdx++;
-									}
-								}
-								*/
 							} else {
 								if (sameCourse.isEmpty() || !sameCourse.get(0).isCourseAssigned()) continue;
 								for (int idx = 0; idx < sameCourse.size(); idx++) {
 									ClassAssignmentInterface.ClassAssignment old = sameCourse.get(idx);
 									ClassAssignmentInterface.ClassAssignment clazz = null;
+									
+									WebTable.IconsCell icons = new WebTable.IconsCell();
+									if (old != null && old.isSaved())
+										icons.add(RESOURCES.saved(), MESSAGES.saved(MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())));
+									if (course.isLocked())
+										icons.add(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()));
+									if (old != null && old.isOfHighDemand())
+										icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()));
+									if (old != null && old.hasNote())
+										icons.add(RESOURCES.note(), old.getNote());
+									
 									WebTable.Row row = new WebTable.Row(
 											new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
-											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
-											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
+											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()).aria(idx == 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeSubject() : course.getSubject()),
+											new WebTable.Cell(idx > 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()).aria(idx == 0 ? "" : course.isFreeTime() ? MESSAGES.freeTimeCourse() : course.getCourseNbr()),
 											new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, false, clazz == null)),
 											new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, false, clazz == null)),
 											//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
@@ -336,15 +340,15 @@ public class SuggestionsBox extends UniTimeDialogBox {
 											//new WebTable.Cell(compare(old == null ? null : old.getInstructors(", "), clazz == null ? null : clazz.getInstructors(", "), true)),
 											new WebTable.InstructorCell(old == null ? null : old.getInstructors(), old == null ? null : old.getInstructorEmails(), ", "),
 											new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, false, clazz == null)),
-											(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
-											(course.isLocked() ? new WebTable.IconCell(RESOURCES.courseLocked(), MESSAGES.courseLocked(course.getSubject() + " " + course.getCourseNbr()), null) : 
-											(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell(""))),
-											(old != null && old.hasNote() ? new WebTable.IconCell(RESOURCES.note(), old.getNote(), "") : new WebTable.Cell("")));
+											icons);
 									row.setId(String.valueOf(suggestionId));
 									String style = "text-red" + (lastSize > 0 && rows.size() == lastSize ? " top-border-solid" : idx == 0 && !rows.isEmpty() ? " top-border-dashed": "");
 									for (WebTable.Cell cell: row.getCells())
 										cell.setStyleName(style);
 									row.getCell(0).setStyleName((lastSize > 0 && rows.size() == lastSize ? "top-border-solid" : ""));
+									row.setAriaLabel(ARIA.unassigned(
+											(course.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())) + " " +
+											old.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + old.getRooms(", ")));
 									rows.add(row);
 								}
 							}
@@ -356,10 +360,19 @@ public class SuggestionsBox extends UniTimeDialogBox {
 								if (old.getCourseId().equals(course.getCourseId())) continue current;
 							}
 							ClassAssignmentInterface.ClassAssignment clazz = null;
+							
+							WebTable.IconsCell icons = new WebTable.IconsCell();
+							if (old != null && old.isSaved())
+								icons.add(RESOURCES.saved(), MESSAGES.saved(MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())));
+							if (old != null && old.isOfHighDemand())
+								icons.add(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()));
+							if (old != null && old.hasNote())
+								icons.add(RESOURCES.note(), old.getNote());
+							
 							WebTable.Row row = new WebTable.Row(
 									new WebTable.Cell(rows.size() == lastSize ? suggestionId + "." : ""),
-									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeSubject() : old.getSubject()),
-									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeCourse() : old.getCourseNbr()),
+									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeSubject() : old.getSubject()).aria(!old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeSubject() : old.getSubject()),
+									new WebTable.Cell(old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeCourse() : old.getCourseNbr()).aria(!old.getCourseId().equals(lastCourseId) ? "" : old.isFreeTime() ? MESSAGES.freeTimeCourse() : old.getCourseNbr()),
 									new WebTable.Cell(compare(old == null ? null : old.getSubpart(), clazz == null ? null : clazz.getSubpart(), CmpMode.SINGLE, false, clazz == null)),
 									new WebTable.Cell(compare(old == null ? null : old.getSection(), clazz == null ? null : clazz.getSection(), CmpMode.SINGLE, false, clazz == null)),
 									//new WebTable.Cell(compare(old == null ? null : old.getLimitString(), clazz == null ? null : clazz.getLimitString(), false)),
@@ -375,14 +388,15 @@ public class SuggestionsBox extends UniTimeDialogBox {
 									//new WebTable.Cell(compare(old == null ? null : old.getInstructors(", "), clazz == null ? null : clazz.getInstructors(", "), true)),
 									new WebTable.InstructorCell(old == null ? null : old.getInstructors(), old == null ? null : old.getInstructorEmails(), ", "),
 									new WebTable.Cell(compare(old == null ? null : old.getParentSection(), clazz == null ? null : clazz.getParentSection(), CmpMode.SINGLE, false, clazz == null)),
-									(old != null && old.isSaved() ? new WebTable.IconCell(RESOURCES.saved(), null, null) : new WebTable.Cell("")),
-									(old != null && old.isOfHighDemand() ? new WebTable.IconCell(RESOURCES.highDemand(), MESSAGES.highDemand(old.getExpected(), old.getAvailableLimit()), null) : new WebTable.Cell("")),
-									(old != null && old.hasNote() ? new WebTable.IconCell(RESOURCES.note(), old.getNote(), "") : new WebTable.Cell("")));
+									icons);
 							row.setId(String.valueOf(suggestionId));
 							String style = "text-red" + (lastSize > 0 && rows.size() == lastSize ? " top-border-solid" : !old.getCourseId().equals(lastCourseId) && !rows.isEmpty() ? " top-border-dashed": "");
 							for (WebTable.Cell cell: row.getCells())
 								cell.setStyleName(style);
 							row.getCell(0).setStyleName((lastSize > 0 && rows.size() == lastSize ? " top-border-solid" : ""));
+							row.setAriaLabel(ARIA.unassigned(
+									(old.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())) + " " +
+									old.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + old.getRooms(", ")));
 							rows.add(row);
 							lastCourseId = old.getCourseId();
 						}
@@ -394,10 +408,15 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					for (WebTable.Row row: rows) rowArray[idx++] = row;
 					iSuggestions.setData(rowArray);
 					if (rows.isEmpty()) {
-						if (iFilter.getText().isEmpty())
+						if (iFilter.getText().isEmpty()) {
 							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
-						else
+							iFilter.setAriaLabel(ARIA.suggestionsNoAlternative(iSource));
+						} else {
 							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+							iFilter.setAriaLabel(ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+						}
+					} else {
+						iFilter.setAriaLabel(ARIA.showingAlternatives(Integer.valueOf(rows.get(rows.size() - 1).getId()), iSource));
 					}
 					LoadingWidget.getInstance().hide();
 					center();
@@ -545,11 +564,14 @@ public class SuggestionsBox extends UniTimeDialogBox {
 	private static enum CmpMode {
 		SINGLE,
 		BOTH_OLD,
-		BOTH_NEW
+		BOTH_NEW,
+		ARIA
 	};
 	
 	private String compare(String oldVal, String newVal, CmpMode mode, boolean selected, boolean conflict) {
 		switch (mode) {
+		case ARIA:
+			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? oldVal : "");
 		case SINGLE:
 			return (newVal != null && !newVal.isEmpty() ? newVal : oldVal != null ? "<font color='"+ (conflict ? "red" : selected ? "#9999FF" : "#999999") +"'>" + oldVal + "</font>" : null);
 		case BOTH_OLD:
@@ -604,6 +626,9 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					int row = iSuggestions.getSelectedRow() + 1;
 					while (id != null && id.equals(iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId())) row++;
 					iSuggestions.setSelectedRow(row % iSuggestions.getRowsCount());
+					
+					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
+					AriaStatus.getInstance().setText(ARIA.showingAlternative(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()), Integer.parseInt(iSuggestions.getRows()[iSuggestions.getRows().length - 1].getId()), toString(suggestion)));
 				}
 			}
 			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_UP) {
@@ -612,11 +637,17 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					String id = iSuggestions.getRows()[row % iSuggestions.getRowsCount()].getId();
 					while (id.equals(iSuggestions.getRows()[(iSuggestions.getRowsCount() + row - 1) % iSuggestions.getRowsCount()].getId())) row--;
 					iSuggestions.setSelectedRow((iSuggestions.getRowsCount() + row) % iSuggestions.getRowsCount());
+					
+					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
+					AriaStatus.getInstance().setText(ARIA.showingAlternative(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()), Integer.parseInt(iSuggestions.getRows()[iSuggestions.getRows().length - 1].getId()), toString(suggestion)));
 				}
 			}
 			if (DOM.eventGetKeyCode((Event) event.getNativeEvent()) == KeyCodes.KEY_ENTER) {
 				if (iSuggestions.getSelectedRow() >= 0) {
 					ClassAssignmentInterface suggestion = iResult.get(Integer.parseInt(iSuggestions.getRows()[iSuggestions.getSelectedRow()].getId()));
+					
+					AriaStatus.getInstance().setText(ARIA.selectedAlternative(toString(suggestion)));
+
 					SuggestionSelectedEvent e = new SuggestionSelectedEvent(suggestion);
 					for (SuggestionSelectedHandler h: iSuggestionSelectedHandlers)
 						h.onSuggestionSelected(e);
@@ -625,6 +656,64 @@ public class SuggestionsBox extends UniTimeDialogBox {
 			}
 			break;
 	    }
+	}
+	
+	private String toString(ClassAssignmentInterface suggestion) {
+		String ret = "";
+		for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
+			ArrayList<ClassAssignmentInterface.ClassAssignment> sameCourse = new ArrayList<ClassAssignmentInterface.ClassAssignment>();
+			if (!course.isFreeTime()) {
+				for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+					if (x == null) continue;
+					if (course.getCourseId().equals(x.getCourseId())) sameCourse.add(x);
+				}
+			} else {
+				ClassAssignmentInterface.ClassAssignment clazz = course.getClassAssignments().get(0);
+				for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+					if (x == null) continue;
+					if (x.isFreeTime() && x.getDaysString(CONSTANTS.shortDays()).equals(clazz.getDaysString(CONSTANTS.shortDays())) && x.getStart() == clazz.getStart() && x.getLength() == clazz.getLength()) sameCourse.add(x);
+				}
+			}
+			if (course.isAssigned()) {
+				clazz: for (ClassAssignmentInterface.ClassAssignment clazz: course.getClassAssignments()) {
+					for (ClassAssignmentInterface.ClassAssignment x: iCurrent) {
+						if (x == null) continue;
+						if (course.isFreeTime()) {
+							if (x.isFreeTime() && x.isCourseAssigned() && x.getDaysString(CONSTANTS.shortDays()).equals(clazz.getDaysString(CONSTANTS.shortDays())) &&
+								x.getStart() == clazz.getStart() && x.getLength() == clazz.getLength()) continue clazz;
+						} else {
+							if (clazz.getCourseId().equals(x.getCourseId()) && clazz.getClassId().equals(x.getClassId())) continue clazz; // the exact same assignment
+							if (clazz.getCourseId().equals(x.getCourseId()) && clazz.getSubpartId().equals(x.getSubpartId())) { break; }
+						}
+					}
+					
+					ret += ARIA.assigned(
+							(course.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection())) + " " +
+							clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + clazz.getRooms(", "));
+				}
+			} else {
+				if (sameCourse.isEmpty() || !sameCourse.get(0).isCourseAssigned()) continue;
+				for (int idx = 0; idx < sameCourse.size(); idx++) {
+					ClassAssignmentInterface.ClassAssignment old = sameCourse.get(idx);
+
+					ret += ARIA.unassigned(
+							(course.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())) + " " +
+							old.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + old.getRooms(", "));
+				}
+			}
+		}
+		current: for (ClassAssignmentInterface.ClassAssignment old: iCurrent) {
+			if (old == null || old.isFreeTime()) continue;
+			for (ClassAssignmentInterface.CourseAssignment course: suggestion.getCourseAssignments()) {
+				if (old.getCourseId().equals(course.getCourseId())) continue current;
+			}
+			
+			ret += ARIA.unassigned(
+					(old.isFreeTime() ? MESSAGES.course(MESSAGES.freeTimeSubject(), MESSAGES.freeTimeCourse()) : MESSAGES.clazz(old.getSubject(), old.getCourseNbr(), old.getSubpart(), old.getSection())) + " " +
+					old.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + old.getRooms(", "));
+		}
+		
+		return ret;
 	}
 	
 	public interface SuggestionSelectedHandler {
