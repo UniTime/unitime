@@ -134,7 +134,7 @@
     		<table class="unitime-MainTable" cellpadding="2" cellspacing="0" width="100%" style="min-width: 800px">
 		   		<tr><td rowspan="3">
 	    			<a href='main.jsp' tabindex="-1">
-	    				<img src="images/unitime.png" border="0"/>
+	    				<img src="images/unitime.png" border="0" alt="UniTime logo, click here to get to the welcome page."/>
 	    			</a>
 	    		</td><td nowrap="nowrap" class="unitime-Title" width="100%" align="right" valign="middle" style="padding-right: 20px; height: 55px;">
 	    			<span id='UniTimeGWT:Title'></span>
