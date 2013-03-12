@@ -2873,6 +2873,16 @@ unitime-RoomSharingWidget .legend .blank {
 	clip: rect(1px, 1px, 1px, 1px);
 }
 
+.unitime-VisibleAriaStatus {
+	color: #777777;
+	text-align: center;
+	max-width: 800px;
+}
+
+.unitime-VisibleAriaStatus .message {
+	padding-right: 10px;
+}
+
 .unitime-AriaHiddenLabel {
 	position: absolute !important;
 	clip: rect(1px, 1px, 1px, 1px);
