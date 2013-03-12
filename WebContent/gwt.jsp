@@ -170,6 +170,7 @@
     				</td>
     			</tr>
     		</tt:hasProperty>
+    		<tr><td colspan="3" class="unitime-VisibleAriaStatus" id='UniTimeGWT:AriaStatus'></td></tr>
     	</table>
 	</td></tr></table>
     <script type="text/javascript" language="javascript" src="unitime/unitime.nocache.js"></script>

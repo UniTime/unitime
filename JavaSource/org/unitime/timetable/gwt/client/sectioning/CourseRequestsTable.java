@@ -25,6 +25,7 @@ import java.util.Collection;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
@@ -45,7 +46,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Label;
-import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * @author Tomas Muller
@@ -241,10 +241,7 @@ public class CourseRequestsTable extends Composite {
 				init();
 			}
 			public void onFailure(Throwable reason) {
-				Label error = new Label(MESSAGES.failedToLoadTheApp(reason.getMessage()));
-				error.setStyleName("unitime-ErrorMessage");
-				RootPanel.get("loading").setVisible(false);
-				RootPanel.get("body").add(error);
+				UniTimeNotifications.error(reason);
 			}
 		});
 	}
@@ -527,7 +524,6 @@ public class CourseRequestsTable extends Composite {
 				}
 			}
 		}
-		iCourses.get(0)[0].setFocus(true);
 	}
 	
 	public String getFirstError() {
