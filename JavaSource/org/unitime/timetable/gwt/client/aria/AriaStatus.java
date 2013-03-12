@@ -22,19 +22,26 @@ package org.unitime.timetable.gwt.client.aria;
 import com.google.gwt.aria.client.LiveValue;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasHTML;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-public class AriaStatus extends Widget implements HasText, HasHTML {
+public class AriaStatus extends Widget implements HasHTML, HasText {
 	private static AriaStatus sStatus = null;
 	
 	public AriaStatus(boolean assertive) {
-		setElement(DOM.createSpan());
+		this(DOM.createSpan(), assertive);
+	}
+	
+	protected AriaStatus(Element element, boolean assertive) {
+		setElement(element);
 		setStyleName("unitime-AriaStatus");
 		Roles.getStatusRole().set(getElement());
-		Roles.getStatusRole().setAriaLiveProperty(getElement(), assertive ? LiveValue.ASSERTIVE : LiveValue.POLITE);		
+		Roles.getStatusRole().setAriaLiveProperty(getElement(), assertive ? LiveValue.ASSERTIVE : LiveValue.POLITE);
+		Roles.getStatusRole().setAriaAtomicProperty(getElement(), false);
 	}
 	
 	public AriaStatus() {
@@ -43,8 +50,14 @@ public class AriaStatus extends Widget implements HasText, HasHTML {
 	
 	public static AriaStatus getInstance() {
 		if (sStatus == null) {
-			sStatus = new AriaStatus(true);
-			RootPanel.get().add(sStatus);
+			RootPanel statusPanel = RootPanel.get("UniTimeGWT:AriaStatus");
+			if (statusPanel != null && "1".equals(Window.Location.getParameter("aria"))) {
+				sStatus = new AriaStatus(statusPanel.getElement(), false);
+				sStatus.setStyleName("unitime-VisibleAriaStatus");
+			} else {
+				sStatus  = new AriaStatus(false);
+				RootPanel.get().add(sStatus);
+			}
 		}
 		return sStatus;
 	}
@@ -68,5 +81,4 @@ public class AriaStatus extends Widget implements HasText, HasHTML {
 	public void setHTML(String html) {
 		getElement().setInnerHTML(html);
 	}
-	
 }
