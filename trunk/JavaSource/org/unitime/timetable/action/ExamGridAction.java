@@ -21,7 +21,7 @@ package org.unitime.timetable.action;
 
 import java.io.OutputStream;
 import java.util.Date;
-import java.util.List;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -75,9 +75,9 @@ public class ExamGridAction extends Action {
         myForm.load(sessionContext);
         
         if (myForm.getExamType() == null) {
-			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 			if (!types.isEmpty())
-				myForm.setExamType(types.get(0).getUniqueId());
+				myForm.setExamType(types.first().getUniqueId());
         }
         
         if ("Cbs".equals(op)) {
