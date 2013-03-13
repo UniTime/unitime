@@ -440,6 +440,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Events:")
 	String propEvents();
+	
+	@DefaultMessage("Curriculum:")
+	String propCurriculum();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();

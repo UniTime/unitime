@@ -57,6 +57,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInte
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
@@ -88,10 +89,10 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
-import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.curricula.CurriculumFilterBackend;
 import org.unitime.timetable.test.MakeCurriculaFromLastlikeDemands;
 import org.unitime.timetable.util.Constants;
 
@@ -118,47 +119,38 @@ public class CurriculaServlet implements CurriculaService {
 	private SessionContext getSessionContext() { return sessionContext; }
 	
 	@PreAuthorize("checkPermission('CurriculumView')")
-	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException {
+	public TreeSet<CurriculumInterface> findCurricula(FilterRpcRequest filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
 			Long s0 = System.currentTimeMillis();
 			TreeSet<CurriculumInterface> results = new TreeSet<CurriculumInterface>();
-			Query q = new Query(filter);
-			getSessionContext().setAttribute("Curricula.LastFilter", filter);
-			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
-			try {
-				List<Curriculum> curricula = findAllCurricula(hibSession);
-				for (Curriculum c: curricula) {
-					if (q.match(new CurriculaMatcher(c))) {
-						CurriculumInterface ci = new CurriculumInterface();
-						ci.setId(c.getUniqueId());
-						ci.setAbbv(c.getAbbv());
-						ci.setName(c.getName());
-						ci.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
-						DepartmentInterface di = new DepartmentInterface();
-						di.setId(c.getDepartment().getUniqueId());
-						di.setAbbv(c.getDepartment().getAbbreviation());
-						di.setCode(c.getDepartment().getDeptCode());
-						di.setName(c.getDepartment().getName());
-						ci.setDepartment(di);
-						AcademicAreaInterface ai = new AcademicAreaInterface();
-						ai.setId(c.getAcademicArea().getUniqueId());
-						ai.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
-						ai.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
-						ci.setAcademicArea(ai);
-						for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
-							PosMajor major = i.next();
-							MajorInterface mi = new MajorInterface();
-							mi.setId(major.getUniqueId());
-							mi.setCode(major.getCode());
-							mi.setName(Constants.curriculaToInitialCase(major.getName()));
-							ci.addMajor(mi);
-						}
-						results.add(ci);
-					}
+			getSessionContext().setAttribute("Curricula.LastFilter", filter.toQueryString());
+			for (Curriculum c: CurriculumFilterBackend.curricula(getSessionContext().getUser().getCurrentAcademicSessionId(), filter.getOptions(), new Query(filter.getText()), -1, null, Department.getUserDepartments(getSessionContext().getUser()))) {
+				CurriculumInterface ci = new CurriculumInterface();
+				ci.setId(c.getUniqueId());
+				ci.setAbbv(c.getAbbv());
+				ci.setName(c.getName());
+				ci.setEditable(sessionContext.hasPermission(c, Right.CurriculumEdit));
+				DepartmentInterface di = new DepartmentInterface();
+				di.setId(c.getDepartment().getUniqueId());
+				di.setAbbv(c.getDepartment().getAbbreviation());
+				di.setCode(c.getDepartment().getDeptCode());
+				di.setName(c.getDepartment().getName());
+				ci.setDepartment(di);
+				AcademicAreaInterface ai = new AcademicAreaInterface();
+				ai.setId(c.getAcademicArea().getUniqueId());
+				ai.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
+				ai.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+				ci.setAcademicArea(ai);
+				for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
+					PosMajor major = i.next();
+					MajorInterface mi = new MajorInterface();
+					mi.setId(major.getUniqueId());
+					mi.setCode(major.getCode());
+					mi.setName(Constants.curriculaToInitialCase(major.getName()));
+					ci.addMajor(mi);
 				}
-			} finally {
-				hibSession.close();
+				results.add(ci);
 			}
 			sLog.debug("Found " + results.size() + " curricula (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 			return results;
@@ -1677,13 +1669,8 @@ public class CurriculaServlet implements CurriculaService {
 		sLog.debug("lastCurriculaFilter()");
 		Long s0 = System.currentTimeMillis();
 		String filter = (String)getSessionContext().getAttribute("Curricula.LastFilter");
-		if (filter == null) {
-			filter = "";
-			for (Qualifiable q: getSessionContext().getUser().getCurrentAuthority().getQualifiers("Department")) {
-				if (!filter.isEmpty()) filter += " or ";
-				filter += "dept:" + q.getQualifierReference();
-			}
-		}
+		if (filter == null)
+			filter = "department:Managed";
 		sLog.debug("Last filter is '" + filter + "'  (took " + sDF.format(0.001 * (System.currentTimeMillis() - s0)) +" s).");
 		return filter;
 	}
@@ -2551,54 +2538,6 @@ public class CurriculaServlet implements CurriculaService {
 	/* Support functions (lookups etc.) */
 	private Long getAcademicSessionId() {
 		return getSessionContext().getUser().getCurrentAcademicSessionId();
-	}
-	
-	private class CurriculaMatcher implements Query.TermMatcher {
-		private Curriculum iCurriculum;
-		
-		private CurriculaMatcher(Curriculum c) {
-			iCurriculum = c;
-		}
-		
-		public boolean match(String attr, String term) {
-			if (term.isEmpty()) return true;
-			if (attr == null || "dept".equals(attr)) {
-				if (eq(iCurriculum.getDepartment().getDeptCode(), term) ||
-					eq(iCurriculum.getDepartment().getAbbreviation(), term) ||
-					has(iCurriculum.getDepartment().getName(), term)) return true;
-			}
-			if (attr == null || "abbv".equals(attr) || "curricula".equals(attr)) {
-				if (eq(iCurriculum.getAbbv(), term)) return true;
-			}
-			if (attr == null || "name".equals(attr) || "curricula".equals(attr)) {
-				if (has(iCurriculum.getName(), term)) return true;
-			}
-			if (attr == null || "area".equals(attr)) {
-				if (eq(iCurriculum.getAcademicArea().getAcademicAreaAbbreviation(), term) ||
-					has(iCurriculum.getAcademicArea().getShortTitle(), term) ||
-					has(iCurriculum.getAcademicArea().getLongTitle(), term)) return true;
-			}
-			if (attr == null || "major".equals(attr)) {
-				for (Iterator<PosMajor> i = iCurriculum.getMajors().iterator(); i.hasNext(); ) {
-					PosMajor m = i.next();
-					if (eq(m.getCode(), term) || has(m.getName(), term)) return true;
-				}
-			}
-			return false;
-		}
-		
-		private boolean eq(String name, String term) {
-			if (name == null) return false;
-			return name.equalsIgnoreCase(term);
-		}
-
-		private boolean has(String name, String term) {
-			if (name == null) return false;
-			for (String t: name.split(" "))
-				if (t.equalsIgnoreCase(term)) return true;
-			return false;
-		}
-	
 	}
 	
 	private List<Curriculum> findAllCurricula(org.hibernate.Session hibSession) {

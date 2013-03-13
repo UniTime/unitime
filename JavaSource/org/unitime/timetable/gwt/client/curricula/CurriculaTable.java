@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage.ProjectionRulesEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
@@ -43,6 +44,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -80,8 +82,8 @@ public class CurriculaTable extends Composite {
 	private Image iLoadingImage = null;
 	private Label iErrorLabel = null;
 	private UniTimeTable<CurriculumInterface> iTable = null;
-	private String iLastQuery = null;
-	private Button iOperations = null;
+	private FilterRpcRequest iLastQuery = null;
+	private AriaButton iOperations = null;
 	
 	private AsyncCallback<List<CurriculumClassificationInterface>> iLoadClassifications;
 	
@@ -102,8 +104,7 @@ public class CurriculaTable extends Composite {
 	private EditClassificationHandler iEditClassificationHandler = null;
 	
 	public CurriculaTable() {
-		iOperations = new Button("<u>M</u>ore &or;");
-		iOperations.setAccessKey('m');
+		iOperations = new AriaButton("<u>M</u>ore &or;");
 		iOperations.addStyleName("unitime-NoPrint");
 
 		iTable = new UniTimeTable<CurriculumInterface>();
@@ -1172,7 +1173,7 @@ public class CurriculaTable extends Composite {
 			iService.loadClassifications(ids, iLoadClassifications);
 	}
 
-	public void query(String filter, final Command next) {
+	public void query(FilterRpcRequest filter, final Command next) {
 		iLastQuery = filter;
 		iTable.clearTable(1);
 		setMessage(null);
