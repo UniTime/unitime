@@ -35,6 +35,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllKeyHandlers;
 import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
 import com.google.gwt.event.dom.client.HasFocusHandlers;
@@ -42,6 +43,7 @@ import com.google.gwt.event.dom.client.HasKeyDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
@@ -61,6 +63,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
@@ -72,7 +75,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText {
+public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText, Focusable, HasAllKeyHandlers {
 	private static String[] sColors = new String[] {
 		"blue", "green", "orange", "yellow", "pink",
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
@@ -93,6 +96,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	private Chip2Color iChip2Color = new DefaultChip2Color();
 	private List<Filter> iFilters = new ArrayList<Filter>();
 	
+	private boolean iShowSuggestionsOnFocus = true;
+	
 	public FilterBox() {
 		setStyleName("unitime-FilterBox");
 		
@@ -109,7 +114,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			public void onFocus(FocusEvent event) {
 				iFocus = true;
 				addStyleName("unitime-FilterBoxFocus");
-				refreshSuggestions();
+				if (iShowSuggestionsOnFocus) refreshSuggestions();
 			}
 		};
 		
@@ -360,7 +365,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			};
 			if (suggestion.getDisplayString() == null ) {
 				Chip chip = (suggestion.getChipToAdd() == null ? suggestion.getChipToRemove() : suggestion.getChipToAdd()); 
-				item = new MenuItem(chip.getValue() + " <span class='item-command'>" + chip.getCommand().replace('_', ' ') + "</span>", true, command);
+				item = new MenuItem(chip.getName() + " <span class='item-command'>" + chip.getCommand().replace('_', ' ') + "</span>", true, command);
 			} else {
 				item = new MenuItem(SafeHtmlUtils.htmlEscape(suggestion.getDisplayString()) + (suggestion.getHint() == null ? "" : " " + suggestion.getHint()), true, command);
 			}
@@ -592,17 +597,21 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public static class Chip implements IsSerializable {
-		private String iCommand, iValue, iHint;
+		private String iCommand, iName, iValue, iHint;
 		public Chip() {}
+		public Chip(String command, String value, String name, String hint) {
+			iCommand = command; iValue = value; iName = name; iHint = hint;
+		}
 		public Chip(String command, String value, String hint) {
-			iCommand = command; iValue = value; iHint = hint;
+			this(command, value, null, hint);
 		}
 		public Chip(String command, String value) {
-			this(command, value, null);
+			this(command, value, null, null);
 		}
 		public String getCommand() { return iCommand; }
 		public String getValue() { return iValue; }
 		public String getHint() { return iHint; }
+		public String getName() { return iName == null ? iValue : iName; }
 		public void setHint(String hint) { iHint = hint; }
 		@Override
 		public boolean equals(Object other) {
@@ -739,6 +748,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 						} else {
 							for (Chip chip: result)
 								if (chip.getValue().toLowerCase().startsWith(text.toLowerCase()) ||
+									chip.getName().toLowerCase().startsWith(text.toLowerCase()) ||
 									(getCommand() + " " + chip.getValue()).toLowerCase().startsWith(text.toLowerCase()) ||
 									(getCommand() + ":" + chip.getValue()).toLowerCase().startsWith(text.toLowerCase())) {
 									if (chips.contains(chip)) { // already in there -- remove
@@ -776,7 +786,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					label.addStyleName("command");
 					popup.add(label);
 					for (final Chip value: values) {
-						HTML item = new HTML(SafeHtmlUtils.htmlEscape(value.getValue()) +
+						HTML item = new HTML(SafeHtmlUtils.htmlEscape(value.getName()) +
 								(value.getHint() == null ? "" : "<span class='item-hint'>" + value.getHint() + "</span>") , false);
 						item.addStyleName("value");
 						item.addMouseDownHandler(new MouseDownHandler() {
@@ -1103,5 +1113,43 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				selected.getScheduledCommand().execute();
 		}
 	}
+
+	@Override
+	public int getTabIndex() {
+		return iFilter.getTabIndex();
+	}
+
+
+	@Override
+	public void setTabIndex(int index) {
+		iFilter.setTabIndex(index);
+	}
+
+	@Override
+	public void setAccessKey(char key) {
+		iFilter.setAccessKey(key);
+	}
+
+	@Override
+	public void setFocus(boolean focused) {
+		iFilter.setFocus(focused);
+	}
+
+	@Override
+	public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
+		return iFilter.addKeyUpHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+		return iFilter.addKeyDownHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+		return iFilter.addKeyPressHandler(handler);
+	}
 	
+	public boolean isShowSuggestionsOnFocus() { return iShowSuggestionsOnFocus; }
+	public void setShowSuggestionsOnFocus(boolean showSuggestionsOnFocus) { iShowSuggestionsOnFocus = showSuggestionsOnFocus; }
 }

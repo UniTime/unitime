@@ -41,15 +41,20 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.HasAllKeyHandlers;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 
-public abstract class UniTimeFilterBox extends Composite implements HasValue<String> {
+public abstract class UniTimeFilterBox extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
@@ -62,12 +67,12 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		iFilter.getWidget().setSuggestionsProvider(new SuggestionsProvider() {
 			@Override
 			public void getSuggestions(List<Chip> chips, String text, final AsyncCallback<Collection<Suggestion>> callback) {
-				Long sessionId = iAcademicSession.getAcademicSessionId();
-				if (sessionId == null) {
+				Long sessionId = (iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId());
+				if (sessionId == null && iAcademicSession != null) {
 					callback.onSuccess(null);
 					return;
 				}
-				RPC.execute(createRpcRequest(FilterRpcRequest.Command.SUGGESTIONS, iAcademicSession.getAcademicSessionId(), chips, text), new AsyncCallback<FilterRpcResponse>() {
+				RPC.execute(createRpcRequest(FilterRpcRequest.Command.SUGGESTIONS, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), chips, text), new AsyncCallback<FilterRpcResponse>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -92,17 +97,18 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		
 		iAcademicSession = session;
 		
-		iAcademicSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
-			@Override
-			public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
-				if (event.isChanged()) init(true, event.getNewAcademicSessionId(), null);
-			}
-		});
+		if (iAcademicSession != null)
+			iAcademicSession.addAcademicSessionChangeHandler(new AcademicSessionChangeHandler() {
+				@Override
+				public void onAcademicSessionChange(AcademicSessionChangeEvent event) {
+					if (event.isChanged()) init(true, event.getNewAcademicSessionId(), null);
+				}
+			});
 		
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
-				init(true, iAcademicSession.getAcademicSessionId(), null);
+				init(true, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), null);
 			}
 		});
 	}
@@ -116,11 +122,11 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	}
 
 	protected void init(final boolean init, Long academicSessionId, final Command onSuccess) {
-		if (academicSessionId == null) {
+		if (academicSessionId == null && iAcademicSession != null) {
 			iFilter.setHint(MESSAGES.hintNoSession());
 		} else {
 			if (init) {
-				iFilter.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
+				iFilter.setHint(MESSAGES.waitLoadingData(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
 				iInitialized = false;
 			}
 			final String value = iFilter.getWidget().getValue();
@@ -185,7 +191,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	public void setValue(String value, boolean fireEvents) {
 		iFilter.getWidget().setValue(value, fireEvents);
 		if (fireEvents)
-			init(false, iAcademicSession.getAcademicSessionId(), new Command() {
+			init(false, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), new Command() {
 				@Override
 				public void execute() {
 					if (iFilter.getWidget().isFilterPopupShowing())
@@ -235,7 +241,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	}
 	
 	public FilterRpcRequest getElementsRequest() {
-		return createRpcRequest(FilterRpcRequest.Command.ENUMERATE, iAcademicSession.getAcademicSessionId(), iFilter.getWidget().getChips(null), iFilter.getWidget().getText());
+		return createRpcRequest(FilterRpcRequest.Command.ENUMERATE, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), iFilter.getWidget().getChips(null), iFilter.getWidget().getText());
 	}
 	
 	public void addFilter(FilterBox.Filter filter) {
@@ -271,6 +277,51 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	}
 	
 	protected Long getAcademicSessionId() {
-		return iAcademicSession.getAcademicSessionId();
+		return iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId();
 	}
+	
+	@Override
+	public int getTabIndex() {
+		return iFilter.getWidget().getTabIndex();
+	}
+
+
+	@Override
+	public void setTabIndex(int index) {
+		iFilter.getWidget().setTabIndex(index);
+	}
+
+	@Override
+	public void setAccessKey(char key) {
+		iFilter.getWidget().setAccessKey(key);
+	}
+
+	@Override
+	public void setFocus(boolean focused) {
+		iFilter.getWidget().setFocus(focused);
+	}
+
+	@Override
+	public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
+		return iFilter.getWidget().addKeyUpHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+		return iFilter.getWidget().addKeyDownHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+		return iFilter.getWidget().addKeyPressHandler(handler);
+	}
+	
+	public boolean isShowSuggestionsOnFocus() {
+		return iFilter.getWidget().isShowSuggestionsOnFocus();
+	}
+	
+	public void setShowSuggestionsOnFocus(boolean showSuggestionsOnFocus) {
+		iFilter.getWidget().setShowSuggestionsOnFocus(showSuggestionsOnFocus);
+	}
+
 }

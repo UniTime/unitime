@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -625,5 +627,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		public void setLastLikeStudents(HashMap<String, Set<Long>> students) { iLastLike = students; }
 		
 		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
+	}
+	
+	public static class CurriculumFilterRpcRequest extends FilterRpcRequest {
+		public CurriculumFilterRpcRequest() {}
 	}
 }

@@ -2770,6 +2770,7 @@ unitime-RoomSharingWidget .legend .blank {
 
 .gwt-Button {
 	white-space: nowrap;
+	height: 22px;
 }
 
 .unitime-TimeGrid .unavailability {

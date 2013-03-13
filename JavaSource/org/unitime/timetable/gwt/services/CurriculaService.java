@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicAreaInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 
 import com.google.gwt.user.client.rpc.RemoteService;
@@ -41,7 +42,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("curricula.gwt")
 public interface CurriculaService extends RemoteService {
-	public TreeSet<CurriculumInterface> findCurricula(String filter) throws CurriculaException, PageAccessException;
+	public TreeSet<CurriculumInterface> findCurricula(FilterRpcRequest filter) throws CurriculaException, PageAccessException;
 	public List<CurriculumInterface.CurriculumClassificationInterface> loadClassifications(List<Long> curriculumIds) throws CurriculaException, PageAccessException;
 	public HashMap<String, CurriculumInterface.CurriculumStudentsInterface[]> computeEnrollmentsAndLastLikes(Long acadAreaId, List<Long> majors) throws CurriculaException, PageAccessException;
 	public TreeSet<CurriculumInterface.AcademicAreaInterface> loadAcademicAreas() throws CurriculaException, PageAccessException;

@@ -1227,6 +1227,20 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			} else return true;
 		}
 		
+		public String toQueryString() {
+			String ret = "";
+			if (hasOptions()) {
+				for (Map.Entry<String, Set<String>> option: getOptions().entrySet()) {
+					for (String value: option.getValue()) {
+						ret += (ret.isEmpty() ? "" : " ") + option.getKey() + ":\"" + value + "\"";
+					}
+				}
+			}
+			if (hasText())
+				ret += (ret.isEmpty() ? "" : " ") + getText();
+			return ret;
+		}
+		
 		@Override
 		public String toString() { return (getCommand() == null ? "NULL" : getCommand().name()) + "(" + getSessionId() + "," + iOptions + "," + getText() + ")"; }
 	}
