@@ -143,8 +143,8 @@ public class ExamEditForm extends PreferencesForm {
         if (request.getSession().getAttribute("Exam.Type")!=null)
         	examType = (Long)request.getSession().getAttribute("Exam.Type");
         if (examType == null) {
-        	List<ExamType> types = ExamType.findAllUsed(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
-        	if (!types.isEmpty()) examType = types.get(0).getUniqueId();
+        	TreeSet<ExamType> types = ExamType.findAllUsed(HttpSessionContext.getSessionContext(request.getSession().getServletContext()).getUser().getCurrentAcademicSessionId());
+        	if (!types.isEmpty()) examType = types.first().getUniqueId();
         }
         clone = false;
         super.reset(mapping, request);

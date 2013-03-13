@@ -20,6 +20,7 @@
 package org.unitime.timetable.model;
 
 import java.util.List;
+import java.util.TreeSet;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
@@ -54,10 +55,10 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 				.setInteger("type", type).setCacheable(true).list();
 	}
 
-	public static List<ExamType> findAllUsed(Long sessionId) {
-		return (List<ExamType>)ExamTypeDAO.getInstance().getSession().createQuery(
-				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId order by p.examType.type, p.examType.label")
-				.setLong("sessionId", sessionId).setCacheable(true).list();
+	public static TreeSet<ExamType> findAllUsed(Long sessionId) {
+		return new TreeSet<ExamType>(ExamTypeDAO.getInstance().getSession().createQuery(
+				"select distinct p.examType from ExamPeriod p where p.session.uniqueId = :sessionId")
+				.setLong("sessionId", sessionId).setCacheable(true).list());
 	}
 
 	public static List<ExamType> findAll() {
