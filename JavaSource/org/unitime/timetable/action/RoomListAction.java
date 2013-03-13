@@ -228,9 +228,9 @@ public class RoomListAction extends Action {
 
 			}
 		} else if (form.getDeptCodeX().equals("Exam")) {
-			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 			if (!types.isEmpty()) {
-				examTypeId = types.get(0).getUniqueId();
+				examTypeId = types.first().getUniqueId();
 				form.setDeptCodeX("Exam" + examTypeId);
 				where += " and xt.uniqueId = :examTypeId";
 			}

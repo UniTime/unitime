@@ -22,7 +22,6 @@ package org.unitime.timetable.action;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -183,9 +182,9 @@ public class RoomFeatureListAction extends Action {
         Long examType = null;
         Department department = null;
         if ("Exam".equals(roomFeatureListForm.getDeptCodeX())) {
-			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 			if (!types.isEmpty()) {
-				examType =  types.get(0).getUniqueId();
+				examType =  types.first().getUniqueId();
 				roomFeatureListForm.setDeptCodeX("Exam" + examType);
 			}
         } else if (roomFeatureListForm.getDeptCodeX() != null && roomFeatureListForm.getDeptCodeX().matches("Exam[0-9]*"))

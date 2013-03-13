@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.List;
 import java.util.TreeSet;
 import java.util.Vector;
 
@@ -97,9 +96,9 @@ public class ExamListAction extends Action {
         	myForm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
         }
         if (myForm.getExamType() == null) {
-			List<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 			if (!types.isEmpty())
-				myForm.setExamType(types.get(0).getUniqueId());
+				myForm.setExamType(types.first().getUniqueId());
         }
         
         WebTable.setOrder(sessionContext, "ExamList.ord", request.getParameter("ord"), 1);
