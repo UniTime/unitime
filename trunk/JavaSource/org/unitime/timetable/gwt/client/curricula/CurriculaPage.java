@@ -25,13 +25,11 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
-import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -46,23 +44,18 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -71,16 +64,16 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class CurriculaPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
-	private TextBox iFilter = null;
-	private Button iSearch = null;
-	private Button iNew = null;
-	private Button iPrint = null;
+	private CurriculumFilterBox iFilter = null;
+	private AriaButton iSearch = null;
+	private AriaButton iNew = null;
+	private AriaButton iPrint = null;
 	private CurriculaTable iCurriculaTable = null;
 	
 	private VerticalPanel iCurriculaPanel = null;
 	
 	private SimplePanel iPanel = null;
-	private HorizontalPanelWithHint iFilterPanel = null;
+	private HorizontalPanel iFilterPanel = null;
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	
@@ -92,47 +85,25 @@ public class CurriculaPage extends Composite {
 		
 		iCurriculaPanel = new VerticalPanel();
 		
-		iFilterPanel = new HorizontalPanelWithHint(new HTML(
-				"Filter curricula by any word from the name, code, or abbreviation<br>of a curricula, academic area, major, or department." +
-				"<br><br>You can also use the following tags:" +
-				"<ul>" +
-				"<li><i>abbv:</i> curriculum abbreviation" + 
-				"<li><i>name:</i> curriculum name" + 
-				"<li><i>area:</i> academic area abbreviation or name" +
-				"<li><i>major:</i> major code or name" +
-				"<li><i>dept:</i> department code, name, or abbreviation" +
-				"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
-				"<br><br>Example: area: A and (major: AGFN or major: AGMG)",
-				false));
+		iFilterPanel = new HorizontalPanel();
 		iFilterPanel.setSpacing(3);
-		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
-			@Override
-			public void onChange(GwtPageChangeEvent event) {
-				iFilterPanel.hideHint();
-			}
-		});
 		
 		Label filterLabel = new Label("Filter:");
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		iFilter = new UniTimeTextBox();
-		iFilter.setWidth("400px");
-		iFilter.setHeight("26px");
+		iFilter = new CurriculumFilterBox();
 		iFilterPanel.add(iFilter);
 		
-		iSearch = new Button("<u>S</u>earch");
-		iSearch.setAccessKey('s');
+		iSearch = new AriaButton("<u>S</u>earch");
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		
-		iPrint = new Button("<u>P</u>rint");
-		iPrint.setAccessKey('p');
+		iPrint = new AriaButton("<u>P</u>rint");
 		iPrint.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iPrint);		
 
-		iNew = new Button("<u>A</u>dd New");
-		iNew.setAccessKey('a');
+		iNew = new AriaButton("<u>A</u>dd New");
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iNew);
@@ -186,12 +157,14 @@ public class CurriculaPage extends Composite {
 			}
 		});
 		
+		/*
 		iFilter.addKeyUpHandler(new KeyUpHandler() {
 			public void onKeyUp(KeyUpEvent event) {
 				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
 					loadCurricula();
 			}
 		});
+		*/
 		
 		iPrint.addClickHandler(new ClickHandler() {
 			@Override
@@ -208,7 +181,7 @@ public class CurriculaPage extends Composite {
 		});
 
 		if (Window.Location.getParameter("q") != null) {
-			iFilter.setText(Window.Location.getParameter("q"));
+			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadCurricula();
 		} else {
 			showLoading("Loading curricula ...");
@@ -216,8 +189,8 @@ public class CurriculaPage extends Composite {
 				
 				@Override
 				public void onSuccess(String result) {
-					if (iFilter.getText().isEmpty()) {
-						iFilter.setText(result);
+					if (iFilter.getValue().isEmpty()) {
+						iFilter.setValue(result, true);
 						loadCurricula();
 					}
 					hideLoading();
@@ -260,7 +233,7 @@ public class CurriculaPage extends Composite {
 					Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				} else {
 					if (!"requests".equals(command))
-						iFilter.setText(command.replace("%20", " "));
+						iFilter.setValue(command.replace("%20", " "), true);
 					loadCurricula();
 					if (iCurriculumPanel.isVisible()) {
 						UniTimePageLabel.getInstance().setPageName("Curricula");
@@ -327,7 +300,7 @@ public class CurriculaPage extends Composite {
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
-				History.newItem(iFilter.getText(), false);
+				History.newItem(iFilter.getValue(), false);
 			}
 			
 			@Override
@@ -336,7 +309,7 @@ public class CurriculaPage extends Composite {
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
-				History.newItem(iFilter.getText(), false);
+				History.newItem(iFilter.getValue(), false);
 			}
 			
 			@Override
@@ -345,7 +318,7 @@ public class CurriculaPage extends Composite {
 				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
-				History.newItem(iFilter.getText(), false);
+				History.newItem(iFilter.getValue(), false);
 			}
 		});
 		
@@ -357,7 +330,7 @@ public class CurriculaPage extends Composite {
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
-				History.newItem(iFilter.getText(), false);
+				History.newItem(iFilter.getValue(), false);
 			}
 			
 			@Override
@@ -366,7 +339,7 @@ public class CurriculaPage extends Composite {
 				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
-				History.newItem(iFilter.getText(), false);
+				History.newItem(iFilter.getValue(), false);
 			}
 		});
 		
@@ -409,8 +382,8 @@ public class CurriculaPage extends Composite {
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
-		History.newItem(iFilter.getText(), false);
-		iCurriculaTable.query(iFilter.getText(), new Command() {
+		History.newItem(iFilter.getValue(), false);
+		iCurriculaTable.query(iFilter.getElementsRequest(), new Command() {
 			@Override
 			public void execute() {
 				iSearch.setEnabled(true);
