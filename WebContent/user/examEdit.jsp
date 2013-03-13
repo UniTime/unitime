@@ -110,9 +110,19 @@
 		</TR>
 		<TR>
 			<TD>Type:</TD><TD>
-				<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
-					<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
-				</html:select>
+				<logic:empty name="<%=frmName%>" property="examId">
+					<html:select property="examType" onchange="javascript: doDel('examType', this.value); submit();">
+						<html:options collection="examTypes" property="uniqueId" labelProperty="label"/>
+					</html:select>
+				</logic:empty>
+				<logic:notEmpty name="<%=frmName%>" property="examId">
+					<logic:iterate name="examTypes" scope="request" id="type">
+						<bean:define name="type" property="uniqueId" id="typeId" type="Long"/>
+						<logic:equal name="<%=frmName%>" property="examType" value="<%=typeId.toString()%>">
+							<bean:write name="type" property="label"/>
+						</logic:equal>
+					</logic:iterate>
+				</logic:notEmpty>
 			</TD>
 		</TR>
 		<TR>
