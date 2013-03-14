@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -965,10 +964,6 @@ public class ClassInfoModel implements Serializable {
 
     		Date[] bounds = DatePattern.getBounds(clazz.getSessionId());
     		
-            boolean reqRoom = false;
-            boolean reqBldg = false;
-            boolean reqGroup = false;
-
  			Set availRooms = clazz.getAvailableRooms();
         	rooms: for (Iterator i1=availRooms.iterator();i1.hasNext();) {
         		Location room = (Location)i1.next();
@@ -1052,95 +1047,54 @@ public class ClassInfoModel implements Serializable {
         		
         		// --- group preference ----------
         		PreferenceCombination groupPref = PreferenceCombination.getDefault();
+        		boolean reqGroup = false;
         		for (Iterator i2=groupPrefs.iterator();i2.hasNext();) {
         			RoomGroupPref p = (RoomGroupPref)i2.next();
-        			if (p.getRoomGroup().getRooms().contains(room))
-        				groupPref.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
+        			if (p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) reqGroup = true;
+        			if (p.getRoomGroup().getRooms().contains(room)) groupPref.addPreferenceProlog(p.getPrefLevel().getPrefProlog());
         		}
-        		
-        		if (groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited)) {
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+        		if (reqGroup) {
+        			if (!PreferenceLevel.sRequired.equals(groupPref.getPreferenceProlog()))
+        				pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+        		} else {
+            		pref.addPreferenceProlog(groupPref.getPreferenceProlog());
         		}
-        		
-                if (reqGroup && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired)) {
-                  	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
-                
-                if (!reqGroup && (groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))) {
-                	reqGroup=true; 
-                    for (Enumeration e=rooms.elements();e.hasMoreElements();) {
-                    	ClassRoomInfo r = (ClassRoomInfo)e.nextElement();
-                        r.setPreference(r.getPreference()+100);
-                    }
-                }
-
-                if (!groupPref.getPreferenceProlog().equals(PreferenceLevel.sProhibited) && !groupPref.getPreferenceProlog().equals(PreferenceLevel.sRequired))
-                	pref.addPreferenceProlog(groupPref.getPreferenceProlog());
-        		
+        			
                 
                 // --- room preference ------------
         		String roomPref = null;
-        		
         		PreferenceLevel roomPreference = getRoomPreference(clazz.getManagingDept(),room.getUniqueId());
         		if (roomPreference!=null) {
         			roomPref = roomPreference.getPrefProlog();
     			}
-    			
+    			boolean reqRoom = false;
     			for (Iterator i2=roomPrefs.iterator();i2.hasNext();) {
         			RoomPref p = (RoomPref)i2.next();
-        			if (room.equals(p.getRoom())) {
-        				roomPref = p.getPrefLevel().getPrefProlog();
-        				break;
-        			}
+        			if (p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) reqRoom = true;
+        			if (room.equals(p.getRoom())) roomPref = p.getPrefLevel().getPrefProlog();
         		}
-        		
-                if (roomPref!=null && roomPref.equals(PreferenceLevel.sProhibited)) {
-                    pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
-                
-                if (reqRoom && (roomPref==null || !roomPref.equals(PreferenceLevel.sRequired))) {
-                  	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
-                
-                if (!reqRoom && (roomPref!=null && roomPref.equals(PreferenceLevel.sRequired))) {
-                    reqRoom=true; 
-                    for (Enumeration e=rooms.elements();e.hasMoreElements();) {
-                        ClassRoomInfo r = (ClassRoomInfo)e.nextElement();
-                        r.setPreference(r.getPreference()+100);
-                    }
-                }
-                
-                if (roomPref!=null && !roomPref.equals(PreferenceLevel.sProhibited) && !roomPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(roomPref);
-
+    			if (reqRoom) {
+    				if (!PreferenceLevel.sRequired.equals(roomPref))
+    					pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+    			} else if (roomPref != null) {
+    				pref.addPreferenceProlog(roomPref);
+    			}
+    			
                 // --- building preference ------------
         		Building bldg = (room instanceof Room ? ((Room)room).getBuilding() : null);
-
+        		boolean reqBldg = false;
         		String bldgPref = null;
         		for (Iterator i2=bldgPrefs.iterator();i2.hasNext();) {
         			BuildingPref p = (BuildingPref)i2.next();
-        			if (bldg!=null && bldg.equals(p.getBuilding())) {
-        				bldgPref = p.getPrefLevel().getPrefProlog();
-        				break;
-        			}
+        			if (p.getPrefLevel().getPrefProlog().equals(PreferenceLevel.sRequired)) reqBldg = true;
+        			if (bldg!=null && bldg.equals(p.getBuilding())) bldgPref = p.getPrefLevel().getPrefProlog();
         		}
-        		
-                if (bldgPref!=null && bldgPref.equals(PreferenceLevel.sProhibited)) {
-                  	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
-                
-                if (reqBldg && (bldgPref==null || !bldgPref.equals(PreferenceLevel.sRequired))) {
-                   	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
-                
-                if (!reqBldg && (bldgPref!=null && bldgPref.equals(PreferenceLevel.sRequired))) {
-                    reqBldg = true;
-                    for (Enumeration e=rooms.elements();e.hasMoreElements();) {
-                        ClassRoomInfo r = (ClassRoomInfo)e.nextElement();
-                        r.setPreference(r.getPreference()+100);
-                    }
-                }
-
-                if (bldgPref!=null && !bldgPref.equals(PreferenceLevel.sProhibited) && !bldgPref.equals(PreferenceLevel.sRequired)) pref.addPreferenceProlog(bldgPref);
+        		if (reqBldg) {
+        			if (!PreferenceLevel.sRequired.equals(bldgPref))
+        				pref.addPreferenceProlog(PreferenceLevel.sProhibited);
+        		} else if (bldgPref != null) {
+        			pref.addPreferenceProlog(bldgPref);
+        		}
                 
                 // --- room features preference --------  
                 boolean acceptableFeatures = true;
@@ -1161,10 +1115,8 @@ public class ClassInfoModel implements Serializable {
                     	featurePref.addPreferenceProlog(p);
                 }
                 pref.addPreferenceInt(featurePref.getPreferenceInt());
-                
-                if (!acceptableFeatures) {
+                if (!acceptableFeatures)
                   	pref.addPreferenceProlog(PreferenceLevel.sProhibited);
-                }
                 
                 
         		// --- room size ----------------- 
