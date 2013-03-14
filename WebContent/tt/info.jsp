@@ -138,7 +138,7 @@
 					<logic:greaterEqual name="model" property="roomSize" value="<%=String.valueOf(classLimit)%>">
 						<bean:write name="model" property="roomSize"/>
 					</logic:greaterEqual>
-					</span> of <bean:write name="clazz" property="classLimit"/> ) 
+					</span> of <bean:write name="clazz" property="minRoomCapacity"/> ) 
 			</tt:section-title></td></tr>
 			<tr><td colspan='2'>
 				<table border='0' width='100%'>
