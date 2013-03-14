@@ -299,7 +299,8 @@ public class SectioningServlet implements SectioningService {
             	int maxLimit = clazz.getMaxExpectedCapacity();
             	int limit = maxLimit;
             	if (minLimit < maxLimit && p != null) {
-            		int roomLimit = Math.round((clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()) * p.getRoomSize());
+            		// int roomLimit = Math.round((clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()) * p.getRoomSize());
+            		int roomLimit = (int) Math.floor(p.getRoomSize() / (clazz.getRoomRatio() == null ? 1.0f : clazz.getRoomRatio()));
             		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
             	}
                 if (clazz.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
@@ -1359,7 +1360,8 @@ public class SectioningServlet implements SectioningService {
 		                	int maxLimit = enrollment.getClazz().getMaxExpectedCapacity();
 		                	int limit = maxLimit;
 		                	if (minLimit < maxLimit && placement != null) {
-		                		int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+		                		// int roomLimit = Math.round((enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()) * placement.getRoomSize());
+		                		int roomLimit = (int) Math.floor(placement.getRoomSize() / (enrollment.getClazz().getRoomRatio() == null ? 1.0f : enrollment.getClazz().getRoomRatio()));
 		                		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
 		                	}
 		                    if (enrollment.getClazz().getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment() || limit >= 9999) limit = -1;
