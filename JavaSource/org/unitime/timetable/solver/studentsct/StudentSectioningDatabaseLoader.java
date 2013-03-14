@@ -397,7 +397,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 	int maxLimit = c.getMaxExpectedCapacity();
                 	int limit = maxLimit;
                 	if (minLimit < maxLimit && p != null) {
-                		int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
+                		int roomLimit = (int) Math.floor(p.getRoomSize() / (c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()));
+                		// int roomLimit = Math.round((c.getRoomRatio() == null ? 1.0f : c.getRoomRatio()) * p.getRoomSize());
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
