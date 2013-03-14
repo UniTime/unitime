@@ -629,7 +629,7 @@ public class SolutionReportAction extends Action {
             	    		new String[] {
                 				String.valueOf(Math.round(g.getJenrl())),
                 				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
-                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
+                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
                 				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
                 				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
@@ -656,7 +656,7 @@ public class SolutionReportAction extends Action {
             	    		new String[] {
                 				String.valueOf(Math.round(g.getJenrl())),
                 				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
-                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(!g.isCommited(),true)),
+                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
                 				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
                 				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
                 				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
