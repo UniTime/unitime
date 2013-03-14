@@ -841,7 +841,7 @@ public class Class_ extends BaseClass_ {
     		// Assignment -> take smaller from MaxClassLimit and RoomSize / RoomRatio
     		maxClassLimit = Math.min(
     				getMaxExpectedCapacity().intValue(),
-    				(int)Math.floor(assignment.getPlacement().minRoomSize()/getRoomRatio().floatValue()));
+    				(int)Math.floor(assignment.getPlacement().getRoomSize()/getRoomRatio().floatValue()));
     	}
 
     	if (getChildClasses().isEmpty()) return maxClassLimit;
