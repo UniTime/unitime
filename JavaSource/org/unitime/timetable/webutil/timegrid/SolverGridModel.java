@@ -44,7 +44,6 @@ import net.sf.cpsolver.coursett.constraint.RoomConstraint;
 import net.sf.cpsolver.coursett.criteria.TooBigRooms;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
-import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.RoomSharingModel;
 import net.sf.cpsolver.coursett.model.Student;
 import net.sf.cpsolver.ifs.model.Constraint;
@@ -357,14 +356,8 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 				background = TimetableGridCell.conflicts2colorFast(deptConstraint.getMaxPenalty(placement));
 		} else if (bgMode==sBgModeTooBigRooms) {
 			long minRoomSize = lecture.minRoomSize();
-			int roomSize = 0;
-			if (placement.isMultiRoom()) {
-				for (RoomLocation r: placement.getRoomLocations()) {
-					roomSize += r.getRoomSize();
-				}
-			} else
-				roomSize += placement.getRoomLocation().getRoomSize();
-			if (roomSize<lecture.minRoomSize())
+			int roomSize = placement.getRoomSize();
+			if (roomSize < lecture.minRoomSize())
 				background = TimetableGridCell.pref2color(PreferenceLevel.sRequired);
 			else
 				background = TimetableGridCell.pref2color(TooBigRooms.getTooBigRoomPreference(placement));
