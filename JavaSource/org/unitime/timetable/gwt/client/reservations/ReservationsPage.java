@@ -21,13 +21,10 @@ package org.unitime.timetable.gwt.client.reservations;
 
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
-import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit.EditFinishedEvent;
-import org.unitime.timetable.gwt.client.widgets.HorizontalPanelWithHint;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
-import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
@@ -38,9 +35,6 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.Command;
@@ -49,12 +43,11 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
@@ -66,7 +59,7 @@ public class ReservationsPage extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 
-	private TextBox iFilter = null;
+	private ReservationFilterBox iFilter = null;
 	private Button iSearch = null;
 	private Button iNew = null;
 	private Button iPrint = null;
@@ -75,7 +68,7 @@ public class ReservationsPage extends Composite {
 	private VerticalPanel iReservationPanel = null;
 	
 	private SimplePanel iPanel = null;
-	private HorizontalPanelWithHint iFilterPanel = null;
+	private HorizontalPanel iFilterPanel = null;
 	
 	private ReservationEdit iReservationEdit = null;
 	private Long iLastReservationId = null;
@@ -86,36 +79,14 @@ public class ReservationsPage extends Composite {
 		
 		iReservationPanel = new VerticalPanel();
 		
-		iFilterPanel = new HorizontalPanelWithHint(new HTML(
-				"Filter reservations by any course number, subject area, department, or reservation type." +
-				"<br><br>You can also use the following tags:" +
-				"<ul>" +
-				"<li><i>subject:</i> subject area name or abbreviation" + 
-				"<li><i>dept:</i> department code, name, or abbreviation" + 
-				"<li><i>type:</i> reservation type (individual, group, course, curriculum)" +
-				"<li><i>student:</i> student name or external id (individual reservations)" +
-				"<li><i>group:</i> student group name or abbreviation (student group reservaions)" +
-				"<li><i>area:</i> academic area (curriculum reservations)" +
-				"<li><i>expiration:</i>, <i>before:</i>, <i>after:</i> expiration date (in MM/dd/yyyy format)" +
-				"<li>use <i>expired</i> for expired reservations" +
-				"</ul>Use <i>or</i>, <i>and</i>, <i>not</i>, and brackets to build a boolean query." +
-				"<br><br>Example: subject:ENGL and (type:individual or type:group) and not expired",
-				false));
+		iFilterPanel = new HorizontalPanel();
 		iFilterPanel.setSpacing(3);
-		Client.addGwtPageChangedHandler(new GwtPageChangedHandler() {
-			@Override
-			public void onChange(GwtPageChangeEvent event) {
-				iFilterPanel.hideHint();
-			}
-		});
 		
 		Label filterLabel = new Label("Filter:");
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
-		iFilter = new UniTimeTextBox();
-		iFilter.setWidth("400px");
-		iFilter.setHeight("26px");
+		iFilter = new ReservationFilterBox();
 		iFilterPanel.add(iFilter);
 		
 		iSearch = new Button("<u>S</u>earch");
@@ -165,13 +136,6 @@ public class ReservationsPage extends Composite {
 			}
 		});
 		
-		iFilter.addKeyUpHandler(new KeyUpHandler() {
-			public void onKeyUp(KeyUpEvent event) {
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER)
-					loadReservations();
-			}
-		});
-		
 		iPrint.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -187,7 +151,7 @@ public class ReservationsPage extends Composite {
 		});
 
 		if (Window.Location.getParameter("q") != null) {
-			iFilter.setText(Window.Location.getParameter("q"));
+			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadReservations();
 		} else {
 			LoadingWidget.getInstance().show("Loading reservations ...");
@@ -195,8 +159,8 @@ public class ReservationsPage extends Composite {
 				
 				@Override
 				public void onSuccess(String result) {
-					if (iFilter.getText().isEmpty()) {
-						iFilter.setText(result);
+					if (iFilter.getValue().isEmpty()) {
+						iFilter.setValue(result, true);
 						loadReservations();
 					}
 					LoadingWidget.getInstance().hide();
@@ -216,7 +180,7 @@ public class ReservationsPage extends Composite {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (event.getValue() != null && !event.getValue().isEmpty()) {
-					iFilter.setText(event.getValue().replace("%20", " "));
+					iFilter.setValue(event.getValue().replace("%20", " "), true);
 					loadReservations();
 				}
 			}
@@ -289,8 +253,8 @@ public class ReservationsPage extends Composite {
 		final boolean newEnabled = iNew.isEnabled();
 		if (newEnabled)
 			iNew.setEnabled(false);
-		History.newItem(iFilter.getText(), false);
-		iReservationTable.query(iFilter.getText(), new Command() {
+		History.newItem(iFilter.getValue(), false);
+		iReservationTable.query(iFilter.getElementsRequest(), new Command() {
 			@Override
 			public void execute() {
 				iSearch.setEnabled(true);

@@ -19,18 +19,13 @@
 */
 package org.unitime.timetable.gwt.server;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Locale;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
@@ -42,6 +37,7 @@ import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
@@ -52,8 +48,6 @@ import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumProjectionRule;
 import org.unitime.timetable.model.CurriculumReservation;
-import org.unitime.timetable.model.Department;
-import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.IndividualReservation;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
@@ -77,11 +71,11 @@ import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
-import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.permissions.Permission;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.server.reservation.ReservationFilterBackend;
 import org.unitime.timetable.util.Constants;
 
 /**
@@ -90,7 +84,6 @@ import org.unitime.timetable.util.Constants;
 @Service("reservation.gwt")
 public class ReservationServlet implements ReservationService {
 	private static Logger sLog = Logger.getLogger(ReservationServlet.class);
-	private static DateFormat sDateFormat = new SimpleDateFormat("MM/dd/yyyy");
 
 	private @Autowired SessionContext sessionContext;
 	private SessionContext getSessionContext() { return sessionContext; }
@@ -725,22 +718,17 @@ public class ReservationServlet implements ReservationService {
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public List<ReservationInterface> findReservations(String filter) throws ReservationException, PageAccessException {
+	public List<ReservationInterface> findReservations(FilterRpcRequest filter) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
-			Query q = new Query(filter);
-			getSessionContext().setAttribute("Reservations.LastFilter", filter);
+			getSessionContext().setAttribute("Reservations.LastFilter", filter.toQueryString());
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			String nameFormat = UserProperty.NameFormat.get(getSessionContext().getUser());
 			try {
-				for (Reservation reservation: (List<Reservation>)hibSession.createQuery(
-					"select r from Reservation r where r.instructionalOffering.session.uniqueId = :sessionId")
-					.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
-					if (q.match(new ReservationMatcher(reservation))) {
-						ReservationInterface r = convert(reservation, nameFormat, hibSession);
-						r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
-						results.add(r);
-					}
+				for (Reservation reservation: ReservationFilterBackend.reservations(filter, getSessionContext())) {
+					ReservationInterface r = convert(reservation, nameFormat, hibSession);
+					r.setEditable(getSessionContext().hasPermission(reservation, Right.ReservationEdit));
+					results.add(r);
 				}
 			} finally {
 				hibSession.close();
@@ -761,119 +749,7 @@ public class ReservationServlet implements ReservationService {
 	@PreAuthorize("checkPermission('Reservations')")
 	public String lastReservationFilter() throws ReservationException, PageAccessException {
 		String filter = (String)getSessionContext().getAttribute("Reservations.LastFilter");
-		if (filter == null) {
-			filter = "";
-			for (Qualifiable q: getSessionContext().getUser().getCurrentAuthority().getQualifiers("Department")) {
-				if (!filter.isEmpty()) filter += " or ";
-				filter += "dept:" + q.getQualifierReference();
-			}
-			filter = (filter.isEmpty() ? "not expired" : filter.contains(" or ") ? "(" + filter + ") and not expired" : filter + " and not expired");
-		}
-		return filter;
-	}
-
-	private class ReservationMatcher implements Query.TermMatcher {
-		private Reservation iReservation;
-		private Date iExpDate;
-		
-		private ReservationMatcher(Reservation r) {
-			iReservation = r;
-			Calendar c = Calendar.getInstance(Locale.US);
-			c.set(Calendar.HOUR_OF_DAY, 0);
-			c.set(Calendar.MINUTE, 0);
-			c.set(Calendar.SECOND, 0);
-			c.set(Calendar.MILLISECOND, 0);
-			iExpDate = c.getTime();
-		}
-		
-		public boolean match(String attr, String term) {
-			if (term.isEmpty()) return true;
-			if (attr == null || "course".equals(attr)) {
-				for (CourseOffering co: iReservation.getInstructionalOffering().getCourseOfferings()) {
-					if (eq(co.getCourseName(), term) || has(co.getCourseName(), term)) return true;
-				}
-			}
-			if (attr == null || "dept".equals(attr)) {
-				Department d = iReservation.getInstructionalOffering().getDepartment();
-				if (eq(d.getDeptCode(), term) || eq(d.getAbbreviation(), term) || has(d.getName(), term)) return true;
-			}
-			if (attr == null || "subject".equals(attr) || "subj".equals(attr)) {
-				for (CourseOffering co: iReservation.getInstructionalOffering().getCourseOfferings()) {
-					if (eq(co.getSubjectAreaAbbv(), term) || has(co.getSubjectArea().getShortTitle(), term) || has(co.getSubjectArea().getLongTitle(), term)) return true;
-				}
-			}
-			if (attr == null || "type".equals(attr)) {
-				if (iReservation instanceof IndividualReservation && "individual".equals(term)) return true;
-				if (iReservation instanceof StudentGroupReservation && "group".equals(term)) return true;
-				if (iReservation instanceof CourseReservation && "course".equals(term)) return true;
-				if (iReservation instanceof CurriculumReservation && "curriculum".equals(term)) return true;
-			}
-			if ("group".equals(attr)) {
-				if (iReservation instanceof StudentGroupReservation) {
-					StudentGroupReservation gr = (StudentGroupReservation)iReservation;
-					if (eq(gr.getGroup().getGroupAbbreviation(), term) || has(gr.getGroup().getGroupName(), term)) return true;
-				}
-			}
-			if ("student".equals(attr)) {
-				if (iReservation instanceof IndividualReservation) {
-					IndividualReservation ir = (IndividualReservation)iReservation;
-					for (Student s: ir.getStudents()) {
-						if (has(s.getName(DepartmentalInstructor.sNameFormatFirstMiddleLast), term) || eq(s.getExternalUniqueId(), term)) return true;
-					}
-				}
-			}
-			if ("area".equals(attr)) {
-				if (iReservation instanceof CurriculumReservation) {
-					CurriculumReservation cr = (CurriculumReservation)iReservation;
-					if (eq(cr.getArea().getAcademicAreaAbbreviation(), term) || has(cr.getArea().getShortTitle(), term) || has(cr.getArea().getLongTitle(), term))
-						return true;
-				}
-			}
-			if ("class".equals(attr)) {
-				for (Class_ c: iReservation.getClasses()) {
-					if (eq(c.getClassLabel(), term) || has(c.getClassLabel(), term) || eq(c.getClassSuffix(), term)) return true;
-				}
-			}
-			if ("config".equals(attr)) {
-				for (InstrOfferingConfig c: iReservation.getConfigurations()) {
-					if (eq(c.getName(), term) || has(c.getName(), term)) return true;
-				}
-			}
-			if (attr == null && "expired".equalsIgnoreCase(term)) {
-				if (iReservation.getExpirationDate() != null && iReservation.getExpirationDate().before(iExpDate)) {
-					return true;
-				}
-			}
-			if (attr == null || "expiration".equals(attr) || "exp".equals(attr)) {
-				if (iReservation.getExpirationDate() != null && eq(sDateFormat.format(iReservation.getExpirationDate()), term)) return true;
-			}
-			if ("before".equals(attr)) {
-				try {
-					Date x = ("today".equalsIgnoreCase(term) ? iExpDate : sDateFormat.parse(term));
-					if (iReservation.getExpirationDate() != null && iReservation.getExpirationDate().before(x)) return true;
-				} catch (Exception e) {}
-			}
-			if ("after".equals(attr)) {
-				try {
-					Date x = ("today".equalsIgnoreCase(term) ? iExpDate : sDateFormat.parse(term));
-					if (iReservation.getExpirationDate() == null || iReservation.getExpirationDate().after(x)) return true;
-				} catch (Exception e) {}
-			}
-			return false;
-		}
-		
-		private boolean eq(String name, String term) {
-			if (name == null) return false;
-			return name.equalsIgnoreCase(term);
-		}
-
-		private boolean has(String name, String term) {
-			if (name == null) return false;
-			for (String t: name.split(" "))
-				if (t.equalsIgnoreCase(term)) return true;
-			return false;
-		}
-	
+		return (filter == null ? "mode:\"Not Expired\"" : filter);
 	}
 
 	@Override
