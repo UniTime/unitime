@@ -114,7 +114,13 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 	}
 	
 	protected void addSuggestion(List<FilterBox.Suggestion> suggestions, FilterRpcResponse.Entity entity) {
-		suggestions.add(new FilterBox.Suggestion(entity.getName(), entity.getAbbreviation(), entity.getProperty("hint", null)));
+		String command = entity.getProperty("command", null);
+		if (command == null) {
+			suggestions.add(new FilterBox.Suggestion(entity.getName(), entity.getAbbreviation(), entity.getProperty("hint", null)));
+		} else {
+			Chip old = ("true".equals(entity.getProperty("single", "true")) ? getChip(command) : null);
+			suggestions.add(new FilterBox.Suggestion(new Chip(command, entity.getAbbreviation(), entity.getName(), entity.getProperty("hint", null)), old));
+		}
 	}
 	
 	protected void initAsync() {
