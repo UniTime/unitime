@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
@@ -43,5 +44,5 @@ public interface ReservationServiceAsync {
 	public void delete(Long reservationId, AsyncCallback<Boolean> callback) throws ReservationException, PageAccessException;
 	public void canAddReservation(AsyncCallback<Boolean> callback) throws ReservationException, PageAccessException;
 	public void lastReservationFilter(AsyncCallback<String> callback) throws ReservationException, PageAccessException;
-	public void findReservations(String query, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
+	public void findReservations(FilterRpcRequest filter, AsyncCallback<List<ReservationInterface>> callback) throws ReservationException, PageAccessException;
 }
