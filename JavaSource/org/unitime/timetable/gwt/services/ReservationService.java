@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.services;
 
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
@@ -46,6 +47,6 @@ public interface ReservationService extends RemoteService {
 	public Boolean delete(Long reservationId) throws ReservationException, PageAccessException;
 	public Boolean canAddReservation() throws ReservationException, PageAccessException;
 	public String lastReservationFilter() throws ReservationException, PageAccessException;
-	public List<ReservationInterface> findReservations(String query) throws ReservationException, PageAccessException;
+	public List<ReservationInterface> findReservations(FilterRpcRequest filter) throws ReservationException, PageAccessException;
 
 }

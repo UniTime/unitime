@@ -1306,6 +1306,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			add("suggestion", new Entity(0l, replacement, message, "hint", hint));
 		}
 		
+		public void addSuggestion(String message, String replacement, String hint, String command) {
+			add("suggestion", new Entity(0l, replacement, message, "hint", hint, "command", command));
+		}
+		
 		public boolean hasSuggestions() { return hasEntities("suggestion"); }
 		
 		public List<Entity> getSuggestions() { return getEntities("suggestion"); }

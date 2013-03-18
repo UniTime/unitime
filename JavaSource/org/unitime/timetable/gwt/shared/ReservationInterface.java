@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
@@ -261,5 +263,9 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 		public void setLimit(Integer limit) { iLimit = limit; }
 
 		public String toString() { return super.toString() + " " + getArea().toString() + " " + getClassifications().toString() + " " + getMajors().toString(); }
+	}
+	
+	public static class ReservationFilterRpcRequest extends FilterRpcRequest {
+		public ReservationFilterRpcRequest() {}
 	}
 }
