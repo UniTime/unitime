@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.reservations;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeEvent;
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourseSelectionBox.CourseSelectionChangeHandler;
+import org.unitime.timetable.gwt.client.events.SingleDateSelector;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -51,15 +53,12 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.Offering;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Subpart;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.Style.Cursor;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
@@ -70,11 +69,8 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
-import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextArea;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.ValueBoxBase;
@@ -87,14 +83,13 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class ReservationEdit extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
-	private static DateTimeFormat sDF = DateTimeFormat.getFormat("MM/dd/yyyy");
 
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
 	
 	private SimpleForm iPanel;
 	private UniTimeHeaderPanel iTitleAndButtons;
 	private UniTimeWidget<UniTimeTextBox> iLimit;
-	private UniTimeWidget<DateBox> iExpirationDate;
+	private UniTimeWidget<SingleDateSelector> iExpirationDate;
 	private Tree iStructure;
 	private HashMap<Long, ConfigSelection> iConfigs = new HashMap<Long, ConfigSelection>();
 	private HashMap<Long, ClassSelection> iClasses = new HashMap<Long, ClassSelection>();
@@ -226,10 +221,10 @@ public class ReservationEdit extends Composite {
 		});
 		iPanel.addRow("Reserved Space:", iLimit);
 		
-		iExpirationDate = new UniTimeWidget<DateBox>(new DateBox());
-		iExpirationDate.getWidget().getTextBox().addChangeHandler(new ChangeHandler() {
+		iExpirationDate = new UniTimeWidget<SingleDateSelector>(new SingleDateSelector());
+		iExpirationDate.getWidget().addValueChangeHandler(new ValueChangeHandler<Date>() {
 			@Override
-			public void onChange(ChangeEvent event) {
+			public void onValueChange(ValueChangeEvent<Date> event) {
 				iExpirationDate.clearHint();
 			}
 		});
@@ -568,7 +563,7 @@ public class ReservationEdit extends Composite {
 			iCourseBox.setEnabled(true);
 			iCourseBox.setCourse("", false);
 			iLimit.getWidget().setValue("", true);
-			iExpirationDate.getWidget().setText("");
+			iExpirationDate.getWidget().setValue(null);
 			iStructure.clear(); iClasses.clear(); iConfigs.clear();
 			iType.getWidget().setSelectedIndex(0);
 			iGroup.getWidget().setSelectedIndex(0);
@@ -761,11 +756,7 @@ public class ReservationEdit extends Composite {
 	public void populate() {
 		if (iReservation == null) return;
 		iLimit.getWidget().setValue(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
-		if (iReservation.getExpirationDate() == null) {
-			iExpirationDate.getWidget().setText("");
-		} else {
-			iExpirationDate.getWidget().setText(sDF.format(iReservation.getExpirationDate()));
-		}
+		iExpirationDate.getWidget().setValue(iReservation.getExpirationDate());
 		for (Clazz c: iReservation.getClasses()) {
 			ClassSelection s = iClasses.get(c.getId());
 			if (s != null) {
@@ -934,14 +925,12 @@ public class ReservationEdit extends Composite {
 			iType.setErrorHint("Reservation type not supported.");
 			return null;
 		}
-		if (!iExpirationDate.getWidget().getText().isEmpty()) {
-			try {
-				r.setExpirationDate(sDF.parse(iExpirationDate.getWidget().getText()));
-				iType.clearHint();
-			} catch (Exception e) {
-				iExpirationDate.setErrorHint("Expiration date is not valid.");
-				ok = false;
-			}
+		if (iExpirationDate.getWidget().getValue() == null && !iExpirationDate.getWidget().getText().isEmpty()) {
+			iExpirationDate.setErrorHint("Expiration date is not valid.");
+			ok = false;
+		} else {
+			r.setExpirationDate(iExpirationDate.getWidget().getValue());
+			iExpirationDate.clearHint();
 		}
 		if (!"individual".equals(type)) {
 			if (iLimit.getWidget().getText().isEmpty()) {
@@ -1132,53 +1121,6 @@ public class ReservationEdit extends Composite {
 		}
 	}
 	
-	private static class DateBox extends Composite {
-		private static int sIdCounter = 0;
-		private String iId;
-		private UniTimeTextBox iText;
-		private Image iImage;
-		
-		public DateBox() {
-			iId = "date_box_" + (sIdCounter++);
-			HorizontalPanel hp = new HorizontalPanel();
-			hp.setSpacing(0);
-			iText = new UniTimeTextBox();
-			iImage = new Image();
-			iImage.getElement().getStyle().setMarginLeft(2, Unit.PX);
-			iImage.getElement().getStyle().setMarginTop(4, Unit.PX);
-			iText.getElement().setId(iId);
-			iText.getElement().getStyle().setMarginLeft(-1, Unit.PX);
-			iImage.getElement().setId("show_" + iId);
-			iImage.getElement().getStyle().setCursor(Cursor.POINTER);
-			iImage.setUrl("scripts/jscalendar/calendar_1.gif");
-			hp.add(iText);
-			hp.add(iImage);
-			initWidget(hp);
-		}
-		
-		public String getText() { return iText.getText(); }
-		public void setText(String text) { iText.setText(text); }
-		public TextBox getTextBox() { return iText; }
-		
-		@Override
-		protected void onAttach() {
-			super.onAttach();
-			setup(iId);
-		}
-		
-		private native void setup(String id) /*-{
-			$wnd.Calendar.setup( {
-				cache      : true,
-				electric   : false,
-				inputField : id,
-				ifFormat   : "%m/%d/%Y",
-				showOthers : true,
-				button     : "show_" + id
-			} );			
-		}-*/;
-	}
-	
-
 	public static class EditFinishedEvent {
 		private Long iReservationId;
 		public EditFinishedEvent(Long reservationId) {
