@@ -285,5 +285,7 @@ public class UniTimeHeaderPanel extends Composite {
 	public void setVisible(boolean visible) {
 		setVisible(visible, false);
 	}
+	
+	public HorizontalPanel getPanel() { return iPanel; }
 
 }

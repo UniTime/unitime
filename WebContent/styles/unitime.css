@@ -169,6 +169,14 @@ h1 {
 	text-align: left;
 }
 
+.unitime-MainTableHeader .toggle {
+	font-style: italic;
+	font-size: small;
+	font-weight: normal;
+	white-space: nowrap;
+	padding-right: 10px;
+}
+
 .unitime-MainTableHeaderNote {
 	border-bottom: 1px solid #9CB0CE;
 	font-size: small;
@@ -192,6 +200,14 @@ h1 {
 	color: black;
 	padding-top: 5px;
 	text-align: right;
+}
+
+.unitime-MainTableBottomHeader .toggle {
+	font-style: italic;
+	font-size: small;
+	font-weight: normal;
+	white-space: nowrap;
+	padding-right: 10px;
 }
 
 .unitime-MainTable {

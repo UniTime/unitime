@@ -136,7 +136,7 @@ public class EventDetail extends Composite {
 		
 		iApproveDialog = new ApproveDialog(iProperties) {
 			@Override
-			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message){
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message, boolean emailConfirmation){
 				switch (operation) {
 				case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(iEvent.getName())); break;
 				case INQUIRE: LoadingWidget.getInstance().show(MESSAGES.waitForInquiry(iEvent.getName())); break;
@@ -146,7 +146,7 @@ public class EventDetail extends Composite {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (EventMeetingRow item: items)
 					meetings.add(item.getMeeting());
-				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+				RPC.execute(ApproveEventRpcRequest.createRequest(operation, iProperties.getSessionId(), iEvent, meetings, message, emailConfirmation), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
