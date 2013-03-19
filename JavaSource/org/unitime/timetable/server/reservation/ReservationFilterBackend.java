@@ -37,6 +37,7 @@ import java.util.TreeSet;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query;
@@ -59,7 +60,6 @@ import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.FilterBoxBackend;
@@ -117,29 +117,30 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 			int count = ((Number)o[1]).intValue();
 			dept2count.put(type, count);
 		}
+		TreeSet<Entity> depts = new TreeSet<Entity>();
+		for (Department department: Department.getUserDepartments(context.getUser())) {
+			Integer count = dept2count.get(department.getUniqueId());
+			if (count == null) continue;
+			Entity dept = new Entity(department.getUniqueId(), department.getDeptCode(), department.getDeptCode() + " - " + department.getName() + (department.isExternalManager() ? " (" + department.getExternalMgrLabel() + ")" : ""));
+			dept.setCount(count);
+			depts.add(dept);
+		}
+		response.add("department", depts);
+
 		Map<Long, Integer> subject2count = new HashMap<Long, Integer>();
 		for (Object[] o: (List<Object[]>)query.select("co.subjectArea.uniqueId, count(distinct r)").group("co.subjectArea.uniqueId").exclude("department").exclude("subject").query(hibSession).list()) {
 			Long type = (Long)o[0];
 			int count = ((Number)o[1]).intValue();
 			subject2count.put(type, count);
 		}
-		TreeSet<Entity> depts = new TreeSet<Entity>();
 		TreeSet<Entity> subjects = new TreeSet<Entity>();
-		for (Department department: Department.getUserDepartments(context.getUser())) {
-			Integer count = dept2count.get(department.getUniqueId());
-			Entity dept = new Entity(department.getUniqueId(), department.getDeptCode(), department.getDeptCode() + " - " + department.getName() + (department.isExternalManager() ? " (" + department.getExternalMgrLabel() + ")" : ""));
-			if (count != null)
-				dept.setCount(count);
-			depts.add(dept);
-			for (SubjectArea area: department.getSubjectAreas()) {
-				Entity subject = new Entity(area.getUniqueId(), area.getSubjectAreaAbbreviation(), area.getSubjectAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
-				Integer subjectCnt = subject2count.get(area.getUniqueId());
-				if (subjectCnt != null)
-					subject.setCount(subjectCnt);
-				subjects.add(subject);
-			}
+		for (SubjectArea area: SubjectArea.getUserSubjectAreas(context.getUser(), true)) {
+			Integer count = subject2count.get(area.getUniqueId());
+			if (count == null) continue;
+			Entity subject = new Entity(area.getUniqueId(), area.getSubjectAreaAbbreviation(), area.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
+			subject.setCount(count);
+			subjects.add(subject);
 		}
-		response.add("department", depts);
 		response.add("subject", subjects);
 		
 		Entity all = new Entity(0l, "All", "All Reservations");
@@ -290,16 +291,23 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 			query.addWhere("department", "co.subjectArea.department.deptCode = :deptCode");
 			query.addParameter("department", "deptCode", request.getOption("department"));
 		} else if (!context.hasPermission(Right.DepartmentIndependent)) {
-			String deptIds = "";
-			int id = 0;
-			for (Qualifiable q: context.getUser().getCurrentAuthority().getQualifiers("Department")) {
-				deptIds += (deptIds.isEmpty() ? "" : ",") + ":deptId" + id;
-				query.addParameter("department", "deptId" + id, q.getQualifierId());
+			boolean external = false;
+			Set<Department> departments = Department.getUserDepartments(context.getUser());
+			for (Department department: departments) {
+				if (department.isExternalManager()) { external = true; break; }
 			}
-			if (deptIds.isEmpty()) 
-				query.addWhere("department", "1 = 0");
-			else
-				query.addWhere("department", "co.subjectArea.department.uniqueId in (" + deptIds + ")");
+			if (!external) {
+				String deptIds = "";
+				int id = 0;
+				for (Department department: departments) {
+					deptIds += (deptIds.isEmpty() ? "" : ",") + ":deptId" + id;
+					query.addParameter("department", "deptId" + id, department.getUniqueId());
+				}
+				if (deptIds.isEmpty()) 
+					query.addWhere("department", "1 = 0");
+				else
+					query.addWhere("department", "co.subjectArea.department.uniqueId in (" + deptIds + ")");
+			}
 		}
 		
 		if (request.hasOptions("subject")) {
