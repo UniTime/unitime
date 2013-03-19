@@ -77,6 +77,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -317,7 +320,7 @@ public class SimpleEditPage extends Composite {
 	}
 	
 	private void detail(final Record record) {
-		SimpleForm detail = new SimpleForm();
+		SimpleForm detail = new SimpleFormWithMouseOver();
 		final List<MyCell> cells = new ArrayList<SimpleEditPage.MyCell>();
 		UniTimePageLabel.getInstance().setPageName(record.getUniqueId() == null ? iPageName.addOne() : iPageName.editOne());
 		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
@@ -1594,6 +1597,41 @@ public class SimpleEditPage extends Composite {
 			}
 		}
 		return valid;
+	}
+	
+	public static class SimpleFormWithMouseOver extends SimpleForm {
+		public SimpleFormWithMouseOver() {
+			super();
+			
+			sinkEvents(Event.ONMOUSEOVER);
+			sinkEvents(Event.ONMOUSEOUT);
+		}
+		
+		public void onBrowserEvent(final Event event) {
+			Element td = getEventTargetCell(event);
+			if (td==null) return;
+		    final Element tr = DOM.getParent(td);
+			int col = DOM.getChildIndex(tr, td);
+		    Element body = DOM.getParent(tr);
+		    int row = DOM.getChildIndex(body, tr);
+		    
+		    Widget widget = getWidget(row, col);
+		    if (widget != null && widget instanceof UniTimeHeaderPanel) {
+		    	super.onBrowserEvent(event);
+		    	return;
+		    }
+		    
+			switch (DOM.eventGetType(event)) {
+			case Event.ONMOUSEOVER:
+				getRowFormatter().addStyleName(row, "hover");
+				break;
+			case Event.ONMOUSEOUT:
+				getRowFormatter().removeStyleName(row, "hover");
+				break;
+			}
+			
+			super.onBrowserEvent(event);
+		}
 	}
 
 }
