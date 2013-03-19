@@ -743,6 +743,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("All locations")
 	String checkAllLocations();
+	
+	@DefaultMessage("Send email confirmation")
+	String checkSendEmailConfirmation();
 
 	@DefaultMessage("One email per line please.")
 	String hintAdditionalEmails();
@@ -998,6 +1001,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("All Matching Rooms")
 	String itemAllRoomsWithFilter();
+	
+	@DefaultMessage("Select...")
+	String itemSelect();
 	
 	@DefaultMessage("{0} seats")
 	String hintRoomCapacity(String size);

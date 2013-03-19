@@ -97,6 +97,7 @@ import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
@@ -129,6 +130,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	
 	private SimpleForm iForm;
 	private UniTimeHeaderPanel iHeader, iFooter, iMeetingsHeader;
+	private CheckBox iEmailConfirmationHeader, iEmailConfirmationFooter;
 	
 	private EventMeetingTable iMeetings;
 	
@@ -230,7 +232,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						if (result) {
 							final EventInterface event = getEvent();
 							LoadingWidget.getInstance().show(event.getId() == null ? MESSAGES.waitCreate(event.getName()) : MESSAGES.waitUpdate(event.getName()));
-							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+							RPC.execute(SaveEventRpcRequest.saveEvent(getEvent(), iSession.getAcademicSessionId(), getMessage(), isSendEmailConformation()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 
 								@Override
 								public void onFailure(Throwable caught) {
@@ -269,7 +271,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				final EventInterface event = getEvent();
 				if (event.hasMeetings()) event.getMeetings().clear();
 				LoadingWidget.getInstance().show(MESSAGES.waitDelete(event.getName()));
-				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage(), isSendEmailConformation()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -312,7 +314,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					}
 				}
 				LoadingWidget.getInstance().show(MESSAGES.waitCancel(event.getName()));
-				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+				RPC.execute(SaveEventRpcRequest.saveEvent(event, iSession.getAcademicSessionId(), getMessage(), isSendEmailConformation()), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -581,7 +583,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iEvent.setType(type);
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
-				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
 				if (iMeetings.getRowCount() > 1) {
 					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -778,6 +780,29 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		iFooter = iHeader.clonePanel("");
 		
+		iEmailConfirmationHeader = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
+		iEmailConfirmationHeader.addStyleName("toggle");
+		iHeader.getPanel().insert(iEmailConfirmationHeader, 4);
+		iHeader.getPanel().setCellVerticalAlignment(iEmailConfirmationHeader, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		iEmailConfirmationFooter = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
+		iEmailConfirmationFooter.addStyleName("toggle");
+		iFooter.getPanel().insert(iEmailConfirmationFooter, 4);
+		iFooter.getPanel().setCellVerticalAlignment(iEmailConfirmationFooter, HasVerticalAlignment.ALIGN_MIDDLE);
+		
+		iEmailConfirmationHeader.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iEmailConfirmationFooter.setValue(event.getValue(), false);
+			}
+		});
+		iEmailConfirmationFooter.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Boolean> event) {
+				iEmailConfirmationHeader.setValue(event.getValue(), false);
+			}
+		});
+		
 		iForm.addNotPrintableBottomRow(iFooter);
 		
 		iMeetings.addMouseClickListener(new UniTimeTable.MouseClickListener<EventMeetingRow>() {
@@ -805,6 +830,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	
 	public String getMessage() {
 		return iNotes.getText();
+	}
+	
+	public boolean isSendEmailConformation() {
+		return !iEmailConfirmationHeader.isVisible() || iEmailConfirmationHeader.getValue();
 	}
 	
 	public boolean isEventAdd() { return iEvent == null || iEvent.getId() == null; }
@@ -943,19 +972,23 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	public void setup(EventPropertiesRpcResponse properties) {
+		iSponsors.clear();
 		if (properties.hasSponsoringOrganizations()) {
-			iSponsors.clear();
-			iSponsors.addItem("Select...", "");
+			iSponsors.addItem(MESSAGES.itemSelect(), "");
 			for (SponsoringOrganizationInterface sponsor: properties.getSponsoringOrganizations())
 				iSponsors.addItem(sponsor.getName(), sponsor.getUniqueId().toString());
-		} else {
-			iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), false);
 		}
-		if (isAttached()  && isVisible() && (iEvent != null && iEvent.getId() == null))
+		EventType type = getEventType();
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
+		if (isAttached() && isVisible() && (iEvent != null && iEvent.getId() == null))
 			setEvent(null);
 	}
 	
 	public void setEvent(EventInterface event) {
+		iEmailConfirmationHeader.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
+		iEmailConfirmationHeader.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
+		iEmailConfirmationFooter.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
+		iEmailConfirmationFooter.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
 		iFileUpload.reset();
 		iShowDeleted.setValue(EventCookie.getInstance().isShowDeletedMeetings(), true);
 		iForm.getRowFormatter().setVisible(iSessionRow, event == null);
@@ -963,6 +996,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iSavedEvent = null;
 		iHeader.clearMessage();
 		iName.getWidget().setText(iEvent.getName() == null ? "" : iEvent.getName());
+		iName.clearHint();
 		iName.setText(iEvent.getName() == null ? "" : iEvent.getName());
 		if (iEvent.hasSponsor()) {
 			for (int i = 1; i < iSponsors.getItemCount(); i++) {

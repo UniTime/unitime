@@ -75,6 +75,8 @@ public class EventEmail {
 	
 	public void send(SessionContext context) throws UnsupportedEncodingException, MessagingException {
 		try {
+			if (!request().isEmailConfirmation()) return;
+			
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true")))) {
 				response().info(MESSAGES.emailDisabled());
 				return;
