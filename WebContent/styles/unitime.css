@@ -205,6 +205,10 @@ h1 {
 	max-height: 200px;
 }
 
+.unitime-MainTable .hover {
+	background-color: #d0e4f6;
+}
+
 .unitime-LoadingPanel {
 	position: absolute;
 	top: 0px;
