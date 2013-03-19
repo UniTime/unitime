@@ -134,7 +134,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 			subject2count.put(type, count);
 		}
 		TreeSet<Entity> subjects = new TreeSet<Entity>();
-		for (SubjectArea area: SubjectArea.getUserSubjectAreas(context.getUser(), true)) {
+		for (SubjectArea area: SubjectArea.getUserSubjectAreas(context.getUser())) {
 			Integer count = subject2count.get(area.getUniqueId());
 			if (count == null) continue;
 			Entity subject = new Entity(area.getUniqueId(), area.getSubjectAreaAbbreviation(), area.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
@@ -202,7 +202,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 		}
 		
 		if (!response.hasSuggestions()) {
-			Set<Department> departments = Department.getUserDepartments(context.getUser()); 
+			Set<SubjectArea> subjects = SubjectArea.getUserSubjectAreas(context.getUser()); 
 			Query q = new Query(request.getText());
 			TreeSet<Entity> suggestions = new TreeSet<Entity>();
 			
@@ -210,7 +210,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				if (!q.match(new ReservationMatcher(reservation))) continue;
 				
 				for (CourseOffering course: reservation.getInstructionalOffering().getCourseOfferings()) {
-					if (departments.contains(course.getSubjectArea().getDepartment())) {
+					if (subjects.contains(course.getSubjectArea())) {
 						suggestions.add(new Entity(0l, course.getCourseName(), course.getCourseName(), "hint", course.getTitle() == null ? "Course" : course.getTitle()));		
 					}
 				}
@@ -252,17 +252,25 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 		if (request.getSessionId() == null) request.setSessionId(context.getUser().getCurrentAcademicSessionId());
 		
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
-
-		Query query = new Query(request.getText());
 		
-		for (Reservation reservation: (List<Reservation>)getQuery(request, context).select("distinct r").query(hibSession).list()) {
-
-			CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();
-			if (reservation instanceof CourseReservation)
-				course = ((CourseReservation)reservation).getCourse();
-
-			if (course.getCourseName().equalsIgnoreCase(request.getText()) || query.match(new ReservationMatcher(reservation)))
-				ret.add(reservation);
+		if (request.hasText())
+			request.setOption("course", request.getText());
+		
+		String fetch = "inner join fetch r.instructionalOffering io inner join fetch io.courseOfferings co " +
+				"left join fetch r.classes xclz left join fetch r.configurations xcfg " +
+				"left join fetch r.area xarea left join fetch r.majors xmjr left join fetch r.classifications xclf " +
+				"left join fetch r.course xcrs left join fetch r.students xstd left join fetch r.group xgrp";
+		
+		for (Reservation reservation: (List<Reservation>)getQuery(request, context).select("distinct r").from(fetch).query(hibSession).list())
+			ret.add(reservation);
+		
+		if (ret.isEmpty() && request.hasText()) {
+			Query query = new Query(request.getText());
+			
+			for (Reservation reservation: (List<Reservation>)getQuery(request, context).select("distinct r").from(fetch).exclude("course").query(hibSession).list()) {
+				if (query.match(new ReservationMatcher(reservation)))
+					ret.add(reservation);
+			}	
 		}
 		
 		return ret;
@@ -284,7 +292,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				if ("curriculum".equalsIgnoreCase(t))
 					type += "CurriculumReservation";
 			}
-			query.addWhere("type", "r.class in (" + type + ")");
+			query.addWhere("type", "r.class " + (type.indexOf(',') < 0 ? "= " + type : "in (" + type + ")"));
 		}
 		
 		if (request.hasOption("department")) {
@@ -306,7 +314,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				if (deptIds.isEmpty()) 
 					query.addWhere("department", "1 = 0");
 				else
-					query.addWhere("department", "co.subjectArea.department.uniqueId in (" + deptIds + ")");
+					query.addWhere("department", "co.subjectArea.department.uniqueId " + (id == 1 ? "= " + deptIds : "in (" + deptIds + ")"));
 			}
 		}
 		
@@ -318,7 +326,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				query.addParameter("subject", "subject" + id, t);
 				id ++;
 			}
-			query.addWhere("subject", "co.subjectArea.subjectAreaAbbreviation in (" + subjects + ")");
+			query.addWhere("subject", "co.subjectArea.subjectAreaAbbreviation " + (id == 1 ? "= " + subjects : "in (" + subjects + ")"));
 		}
 		
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
@@ -386,7 +394,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				query.addParameter("area", "area" + id, t);
 				id ++;
 			}
-			query.addWhere("area", "r.area.academicAreaAbbreviation in (" + areas + ")");
+			query.addWhere("area", "r.area.academicAreaAbbreviation " + (id == 1 ? "= " + areas : "in (" + areas + ")"));
 		}
 		
 		if (request.hasOptions("group")) {
@@ -397,7 +405,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 				query.addParameter("group", "group" + id, t);
 				id ++;
 			}
-			query.addWhere("group", "r.group.groupAbbreviation in (" + groups + ")");
+			query.addWhere("group", "r.group.groupAbbreviation " + (id == 1 ? "= " + groups : "in (" + groups + ")"));
 		}
 		
 		if (request.hasOptions("student")) {
@@ -411,6 +419,17 @@ public class ReservationFilterBackend extends FilterBoxBackend {
                 id++;
             }
 			query.addWhere("student", student);
+		}
+		
+		if (request.hasOptions("course")) {
+			String courses = "";
+			int id = 0;
+			for (String t: request.getOptions("course")) {
+				courses += (courses.isEmpty() ? "" : ",") + ":course" + id;
+				query.addParameter("course", "course" + id, t.toLowerCase());
+				id ++;
+			}
+			query.addWhere("course", "lower(co.subjectArea.subjectAreaAbbreviation || ' ' || co.courseNbr) " + (id == 1 ? "= " + courses : "in (" + courses + ")"));
 		}
 		
 		return query;

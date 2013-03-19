@@ -317,7 +317,7 @@ public class ReservationServlet implements ReservationService {
 						"from StudentClassEnrollment e where " +
 						"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
 						"and e.student.uniqueId in (" + sId + ")")
-						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId()).uniqueResult();
+						.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId()).setCacheable(true).uniqueResult();
 				if (enrollment.intValue() > 0)
 					r.setEnrollment(enrollment.intValue());
 			}
@@ -379,7 +379,7 @@ public class ReservationServlet implements ReservationService {
 					(mjIds.isEmpty() ? "" : " and m.uniqueId in (" + mjIds + ")") +
 					(cfIds.isEmpty() ? "" : " and a.academicClassification.uniqueId in (" + cfIds + ")"))
 					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("areaId", cr.getArea().getUniqueId()).uniqueResult();
+					.setLong("areaId", cr.getArea().getUniqueId()).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 			/*
@@ -414,7 +414,7 @@ public class ReservationServlet implements ReservationService {
 					" group by m.code, f.code")
 					.setLong("sessionId", getAcademicSessionId())
 					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setString("areaAbbv", cr.getArea().getAcademicAreaAbbreviation()).list()) {
+					.setString("areaAbbv", cr.getArea().getAcademicAreaAbbreviation()).setCacheable(true).list()) {
 				int nrStudents = ((Number)o[0]).intValue();
 				lastLike += nrStudents;
 				projection += getProjection(rules, (String)o[1], (String)o[2]) * nrStudents;
@@ -439,7 +439,7 @@ public class ReservationServlet implements ReservationService {
 					"e.courseOffering.instructionalOffering.uniqueId = :offeringId " +
 					"and g.uniqueId = :groupId")
 					.setLong("offeringId", reservation.getInstructionalOffering().getUniqueId())
-					.setLong("groupId", sg.getUniqueId()).uniqueResult();
+					.setLong("groupId", sg.getUniqueId()).setCacheable(true).uniqueResult();
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 		} else {
