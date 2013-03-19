@@ -22,6 +22,7 @@ package org.unitime.timetable.events;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -66,6 +67,12 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setCanAddUnavailableEvent(context.hasPermission(Right.EventAddUnavailable));
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
+		
+		if (response.isCanLookupContacts() && "true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail", "true")))) {
+			// email confirmations are enabled and user has enough permissions
+			// use unitime.email.confirm.default to determine the default value of the "Send email confirmation" toggle
+			response.setEmailConfirmation("true".equalsIgnoreCase(context.getUser().getProperty("unitime.email.confirm.default", "true")));
+		}
 		
 		setupSponsoringOrganizations(session,  response);
 		

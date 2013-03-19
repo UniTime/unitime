@@ -794,7 +794,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		
 		iApproveDialog = new ApproveDialog(this) {
 			@Override
-			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> data, String message) {
+			protected void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> data, String message, boolean emailConfirmation) {
 				Map<EventInterface, List<MeetingInterface>> event2meetings = new HashMap<EventInterface, List<MeetingInterface>>();
 				List<EventInterface> events = new ArrayList<EventInterface>();
 				for (EventMeetingRow row: data) {
@@ -810,25 +810,32 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						events.add(row.getEvent());
 					}
 				}
-				onSubmit(operation, events.iterator(), event2meetings, message, new GwtRpcResponseList<EventInterface>(iData));
+				onSubmit(operation, events.iterator(), event2meetings, message, emailConfirmation, new GwtRpcResponseList<EventInterface>(iData));
 			}
 			
-			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final Map<EventInterface, List<MeetingInterface>> event2meetings, final String message, final GwtRpcResponseList<EventInterface> data) {
+			protected void onSubmit(final ApproveEventRpcRequest.Operation operation, final Iterator<EventInterface> events, final Map<EventInterface, List<MeetingInterface>> event2meetings, final String message, final boolean emailConfirmation, final GwtRpcResponseList<EventInterface> data) {
 				if (events.hasNext()) {
 					final EventInterface event = events.next();
 					List<MeetingInterface> meetings = event2meetings.get(event);
 					if (meetings == null) {
 						meetings = new ArrayList<MeetingInterface>();
 						for (MeetingInterface meeting: event.getMeetings()) {
-							if (operation == ApproveEventRpcRequest.Operation.CANCEL) {
-								if (meeting.isCanCancel() && !filter(event, meeting)) meetings.add(meeting);
-							} else {
+							switch(operation) {
+							case APPROVE:
+							case REJECT:
 								if (meeting.isCanApprove() && !filter(event, meeting)) meetings.add(meeting);
+								break;
+							case CANCEL:
+								if (meeting.isCanCancel() && !filter(event, meeting)) meetings.add(meeting);
+								break;
+							case INQUIRE:
+								if (meeting.isCanInquire() && !filter(event, meeting)) meetings.add(meeting);
+								break;
 							}
 						}
 					}
 					if (meetings.isEmpty()) {
-                        onSubmit(operation, events, event2meetings, message, data);
+                        onSubmit(operation, events, event2meetings, message, emailConfirmation, data);
 					} else {
 						switch (operation) {
 						case APPROVE: LoadingWidget.getInstance().show(MESSAGES.waitForApproval(event.getName())); break;
@@ -836,12 +843,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						case REJECT: LoadingWidget.getInstance().show(MESSAGES.waitForRejection(event.getName())); break;
 						case CANCEL: LoadingWidget.getInstance().show(MESSAGES.waitForCancellation(event.getName())); break;
 						}
-						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
+						RPC.execute(ApproveEventRpcRequest.createRequest(operation, iSession.getAcademicSessionId(), event, meetings, message, emailConfirmation), new AsyncCallback<SaveOrApproveEventRpcResponse>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
 								UniTimeNotifications.error(caught);
-								onSubmit(operation, events, event2meetings, message, data);
+								onSubmit(operation, events, event2meetings, message, emailConfirmation, data);
 							}
 							@Override
 							public void onSuccess(SaveOrApproveEventRpcResponse result) {
@@ -861,7 +868,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 								case CANCEL:
 									tinker(data, event.getId(), result.getEvent());
 								}
-								onSubmit(operation, events, event2meetings, message, data);
+								onSubmit(operation, events, event2meetings, message, emailConfirmation, data);
 							}
 						});
 					}

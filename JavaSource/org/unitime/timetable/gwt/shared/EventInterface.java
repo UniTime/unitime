@@ -1530,6 +1530,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 		private Set<StandardEventNoteInterface> iStandardNotes = null;
+		private Boolean iEmailConfirmation = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1568,6 +1569,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (iStandardNotes == null) { iStandardNotes = new TreeSet<StandardEventNoteInterface>(); }
 			iStandardNotes.add(note);
 		}
+		
+		public boolean hasEmailConfirmation() { return iEmailConfirmation != null; }
+		public boolean isEmailConfirmation() { return iEmailConfirmation != null && iEmailConfirmation.booleanValue(); }
+		public void setEmailConfirmation(Boolean emailConfirmation) { iEmailConfirmation = emailConfirmation ;}
 	}
 	
 	@GwtRpcImplementedBy("org.unitime.timetable.events.EventDetailBackend")
@@ -1856,6 +1861,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		private EventInterface iEvent;
 		private String iMessage;
+		private boolean iEmailConfirmation = true;
 		
 		public EventInterface getEvent() { return iEvent; }
 		public void setEvent(EventInterface event) { iEvent = event; }
@@ -1863,6 +1869,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasMessage() { return iMessage != null && !iMessage.isEmpty(); }
 		public void setMessage(String message) { iMessage = message; }
 		public String getMessage() { return iMessage; }
+		
+		public boolean isEmailConfirmation() { return iEmailConfirmation; }
+		public void setEmailConfirmation(boolean emailConfirmation) { iEmailConfirmation = emailConfirmation ;}
 		
 		public abstract Operation getOperation();
 	}
@@ -1877,11 +1886,12 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			return (getEvent().hasMeetings() ? getEvent().getId() == null ? Operation.CREATE : Operation.UPDATE : Operation.DELETE);
 		}
 		
-		public static SaveEventRpcRequest saveEvent(EventInterface event, Long sessionId, String message) {
+		public static SaveEventRpcRequest saveEvent(EventInterface event, Long sessionId, String message, boolean emailConfirmation) {
 			SaveEventRpcRequest request = new SaveEventRpcRequest();
 			request.setEvent(event);
 			request.setSessionId(sessionId);
 			request.setMessage(message);
+			request.setEmailConfirmation(emailConfirmation);
 			return request;
 		}
 		
@@ -1994,10 +2004,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
 		public TreeSet<MeetingInterface> getMeetings() { return iMeetings; }
 		
-		public static ApproveEventRpcRequest createRequest(Operation operation, Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message) {
+		public static ApproveEventRpcRequest createRequest(Operation operation, Long sessionId, EventInterface event, List<MeetingInterface> meetings, String message, boolean emailConfirmation) {
 			ApproveEventRpcRequest request = new ApproveEventRpcRequest();
 			request.setOperation(operation);
 			request.setMessage(message);
+			request.setEmailConfirmation(emailConfirmation);
 			request.setSessionId(sessionId);
 			request.setEvent(event);
 			if (meetings != null)

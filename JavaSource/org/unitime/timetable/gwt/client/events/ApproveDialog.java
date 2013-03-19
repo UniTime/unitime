@@ -28,6 +28,8 @@ import com.google.gwt.event.dom.client.KeyPressEvent;
 import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.user.client.ui.CheckBox;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -43,6 +45,7 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	private ListBox iStandardNotes;
 	private UniTimeFileUpload iFileUpload;
 	private UniTimeHeaderPanel iFooter;
+	private CheckBox iEmailConfirmation;
 	
 	public ApproveDialog(EventPropertiesProvider properties) {
 		super(true, false);
@@ -99,28 +102,28 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		iFooter.addButton("approve", MESSAGES.opApproveMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onSubmit(ApproveEventRpcRequest.Operation.APPROVE, iTable.getValue(), iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.APPROVE, iTable.getValue(), iNotes.getText(), isSendEmailConformation());
 				hide();
 			}
 		});
 		iFooter.addButton("inquire", MESSAGES.opInquireMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onSubmit(ApproveEventRpcRequest.Operation.INQUIRE, iTable.getValue(), iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.INQUIRE, iTable.getValue(), iNotes.getText(), isSendEmailConformation());
 				hide();
 			}
 		});
 		iFooter.addButton("reject", MESSAGES.opRejectMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onSubmit(ApproveEventRpcRequest.Operation.REJECT, iTable.getValue(), iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.REJECT, iTable.getValue(), iNotes.getText(), isSendEmailConformation());
 				hide();
 			}
 		});
 		iFooter.addButton("cancel", MESSAGES.opCancelMeetings(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				onSubmit(ApproveEventRpcRequest.Operation.CANCEL, iTable.getValue(), iNotes.getText());
+				onSubmit(ApproveEventRpcRequest.Operation.CANCEL, iTable.getValue(), iNotes.getText(), isSendEmailConformation());
 				hide();
 			}
 		});
@@ -131,6 +134,11 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 				hide();
 			}
 		});
+		
+		iEmailConfirmation = new CheckBox(MESSAGES.checkSendEmailConfirmation(), true);
+		iEmailConfirmation.addStyleName("toggle");
+		iFooter.getPanel().insert(iEmailConfirmation, 4);
+		iFooter.getPanel().setCellVerticalAlignment(iEmailConfirmation, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iForm.addBottomRow(iFooter);
 		
@@ -144,10 +152,12 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 		setWidget(iForm);
 	}
 	
-	protected abstract void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message);
+	protected abstract void onSubmit(ApproveEventRpcRequest.Operation operation, List<EventMeetingRow> items, String message, boolean sendEmailConfirmation);
 	
 	public void reset(EventPropertiesRpcResponse properties) {
 		iNotes.setText("");
+		iEmailConfirmation.setValue(properties == null ||  properties.isEmailConfirmation());
+		iEmailConfirmation.setVisible(properties == null || properties.hasEmailConfirmation());
 		iStandardNotes.clear();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propStandardNotes()), properties != null && properties.hasStandardNotes());
 		if (properties != null && properties.hasStandardNotes()) {
@@ -180,6 +190,10 @@ public abstract class ApproveDialog extends UniTimeDialogBox implements EventMee
 	
 	public String getNote() {
 		return iNotes.getText();
+	}
+	
+	public boolean isSendEmailConformation() {
+		return !iEmailConfirmation.isVisible() || iEmailConfirmation.getValue();
 	}
 	
 	@Override
