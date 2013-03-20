@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -41,20 +43,22 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=roles]")
 public class UserRoles implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Role");
+		return new PageName(MESSAGES.pageRole(), MESSAGES.pageRoles());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('Roles')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 250, 40, Flag.UNIQUE),
-				new Field("Instructor", FieldType.toggle, 40),
-				new Field("Enabled", FieldType.toggle, 40),
-				new Field("Sort Order", FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
+				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 250, 40, Flag.UNIQUE),
+				new Field(MESSAGES.fieldInstructor(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldEnabled(), FieldType.toggle, 40),
+				new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
 				);
 		data.setSortBy(4);
 		int idx = 0;
@@ -133,7 +137,7 @@ public class UserRoles implements AdminTable {
 	protected void delete(Roles role, SessionContext context, Session hibSession) {
 		if (role == null) return;
 		if (!role.isManager())
-			throw new PageAccessException("Role "  + role.getAbbv() + " cannot be deleted.");
+			throw new PageAccessException(MESSAGES.failedDeleteRole(role.getAbbv()));
 		ChangeLog.addChange(hibSession,
 				context,
 				role,

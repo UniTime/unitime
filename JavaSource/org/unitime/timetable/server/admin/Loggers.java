@@ -32,7 +32,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -46,27 +48,29 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=logging]")
 public class Loggers implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Logging Level");
+		return new PageName(MESSAGES.pageLoggingLevel(), MESSAGES.pageLoggingLevels());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('ApplicationConfig')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<ListItem> levels = new ArrayList<ListItem>();
-		levels.add(new ListItem(String.valueOf(Level.ALL_INT), "All"));
-		levels.add(new ListItem(String.valueOf(Level.TRACE_INT), "Trace"));
-		levels.add(new ListItem(String.valueOf(Level.DEBUG_INT), "Debug"));
-		levels.add(new ListItem(String.valueOf(Level.INFO_INT), "Info"));
-		levels.add(new ListItem(String.valueOf(Level.WARN_INT), "Warning"));
-		levels.add(new ListItem(String.valueOf(Level.ERROR_INT), "Error"));
-		levels.add(new ListItem(String.valueOf(Level.FATAL_INT), "Fatal"));
-		levels.add(new ListItem(String.valueOf(Level.OFF_INT), "Off"));
+		levels.add(new ListItem(String.valueOf(Level.ALL_INT), MESSAGES.levelAll()));
+		levels.add(new ListItem(String.valueOf(Level.TRACE_INT), MESSAGES.levelTrace()));
+		levels.add(new ListItem(String.valueOf(Level.DEBUG_INT), MESSAGES.levelDebug()));
+		levels.add(new ListItem(String.valueOf(Level.INFO_INT), MESSAGES.levelInfo()));
+		levels.add(new ListItem(String.valueOf(Level.WARN_INT), MESSAGES.levelWarning()));
+		levels.add(new ListItem(String.valueOf(Level.ERROR_INT), MESSAGES.levelError()));
+		levels.add(new ListItem(String.valueOf(Level.FATAL_INT), MESSAGES.levelFatal()));
+		levels.add(new ListItem(String.valueOf(Level.OFF_INT), MESSAGES.levelOff()));
 		
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Logger", FieldType.text, 400, 1024, Flag.UNIQUE),
-				new Field("Level", FieldType.list, 100, levels, Flag.NOT_EMPTY));
+				new Field(MESSAGES.fieldLogger(), FieldType.text, 400, 1024, Flag.UNIQUE),
+				new Field(MESSAGES.fieldLevel(), FieldType.list, 100, levels, Flag.NOT_EMPTY));
 		data.setSortBy(0, 1);
 		
 		long id = 0;
@@ -145,7 +149,7 @@ public class Loggers implements AdminTable {
 			if (config == null) {
 				config = new ApplicationConfig();
 				config.setKey(root ? "log4j.rootLogger" : "log4j.logger." + logger.getName());
-				config.setDescription("Logging level for " + logger.getName());
+				config.setDescription(MESSAGES.descriptionLoggingLevelFor(logger.getName()));
 			}
 			config.setValue(value);
 			hibSession.saveOrUpdate(config);

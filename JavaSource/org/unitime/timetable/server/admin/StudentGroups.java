@@ -28,6 +28,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -47,19 +49,21 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=group]")
 public class StudentGroups implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Student Group");
+		return new PageName(MESSAGES.pageStudentGroup(), MESSAGES.pageStudentGroups());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('StudentGroups')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 50, Flag.UNIQUE),
-				new Field("Students", FieldType.students, 200));
+				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.UNIQUE),
+				new Field(MESSAGES.fieldStudents(), FieldType.students, 200));
 		data.setSortBy(1,2);
 		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.addRecord(group.getUniqueId());

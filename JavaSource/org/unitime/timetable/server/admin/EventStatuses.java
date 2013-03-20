@@ -27,7 +27,9 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -50,9 +52,11 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=eventStatus]")
 public class EventStatuses implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Event Status", "Event Statuses");
+		return new PageName(MESSAGES.pageEventStatus(), MESSAGES.pageEventStatuses());
 	}
 
 	@Override
@@ -64,12 +68,12 @@ public class EventStatuses implements AdminTable {
 		}
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field("&otimes;", FieldType.parent, 50, Flag.READ_ONLY),
-				new Field("Department|Type", FieldType.text, 160, Flag.READ_ONLY),
-				new Field("Room Type|Room", FieldType.text, 100, Flag.READ_ONLY),
-				new Field("Event Status", FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field("Room Note", FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field("Break Time", FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY),
-				new Field("Sort Order", FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
+				new Field(MESSAGES.fieldDepartment() + "|" + MESSAGES.fieldType(), FieldType.text, 160, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldRoomType() + "|" + MESSAGES.fieldRoom(), FieldType.text, 100, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldEventStatus(), FieldType.list, 300, states, Flag.PARENT_NOT_EMPTY, Flag.SHOW_PARENT_IF_EMPTY),
+				new Field(MESSAGES.fieldRoomNote(), FieldType.textarea, 50, 3, 2048, Flag.SHOW_PARENT_IF_EMPTY),
+				new Field(MESSAGES.fieldBreakTime(), FieldType.number, 50, 10, Flag.SHOW_PARENT_IF_EMPTY),
+				new Field(MESSAGES.fieldSortOrder(), FieldType.text, 80, 10, Flag.READ_ONLY, Flag.HIDDEN)
 				);
 		data.setSortBy(6);
 		data.setAddable(false);
@@ -209,7 +213,7 @@ public class EventStatuses implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('EventStatusEdit')")
 	public void save(Record record, SessionContext context, Session hibSession) {
-		throw new GwtRpcException("Operation not supported.");
+		throw new GwtRpcException(MESSAGES.errorOperationNotSupported());
 	}
 	
 	protected void update(Location location, Record record, SessionContext context, Session hibSession) {
@@ -317,6 +321,6 @@ public class EventStatuses implements AdminTable {
 	@Override
 	@PreAuthorize("checkPermission('EventStatusEdit')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
-		throw new GwtRpcException("Operation not supported.");
+		throw new GwtRpcException(MESSAGES.errorOperationNotSupported());
 	}
 }

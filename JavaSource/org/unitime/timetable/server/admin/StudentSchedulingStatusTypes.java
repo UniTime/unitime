@@ -29,6 +29,8 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Order;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -47,16 +49,18 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=sectioning]")
 public class StudentSchedulingStatusTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Student Scheduling Status Type");
+		return new PageName(MESSAGES.pageStudentSchedulingStatusType(), MESSAGES.pageStudentSchedulingStatusTypes());
 	}
 	
 	enum StatusOption {
-		Access("Access", StudentSectioningStatus.Option.enabled),
-		Advisor("Advisor", StudentSectioningStatus.Option.advisor),
-		Email("Email", StudentSectioningStatus.Option.email),
-		WaitListing("Wait-Listing", StudentSectioningStatus.Option.waitlist),
+		Access(MESSAGES.toggleAccess(), StudentSectioningStatus.Option.enabled),
+		Advisor(MESSAGES.toggleAdvisor(), StudentSectioningStatus.Option.advisor),
+		Email(MESSAGES.toggleEmail(), StudentSectioningStatus.Option.email),
+		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
 		;
 		
 		private StudentSectioningStatus.Option iOption;
@@ -76,15 +80,15 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		List<CourseType> courseTypes = CourseTypeDAO.getInstance().findAll(Order.asc("reference"));
 		SimpleEditInterface.Field[] fields = new SimpleEditInterface.Field[courseTypes.isEmpty() ? 3 + StatusOption.values().length : 4 + StatusOption.values().length + courseTypes.size()];
 		int idx = 0;
-		fields[idx++] = new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE);
-		fields[idx++] = new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE);
+		fields[idx++] = new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE);
+		fields[idx++] = new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE);
 		for (StatusOption t: StatusOption.values())
 			fields[idx++] = new Field(t.getLabel(), FieldType.toggle, 40);
-		fields[idx++] = new Field("Message", FieldType.text, 400, 200);
+		fields[idx++] = new Field(MESSAGES.fieldMessage(), FieldType.text, 400, 200);
 		if (!courseTypes.isEmpty()) {
 			for (int i = 0; i < courseTypes.size(); i++)
 				fields[idx++] = new Field(courseTypes.get(i).getReference(), FieldType.toggle, 40);
-			fields[idx++] = new Field("Other", FieldType.toggle, 40);
+			fields[idx++] = new Field(MESSAGES.toggleNoCourseType(), FieldType.toggle, 40);
 		}
 		SimpleEditInterface data = new SimpleEditInterface(fields);
 		data.setSortBy(0, 1);

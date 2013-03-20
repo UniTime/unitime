@@ -27,7 +27,9 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -45,21 +47,23 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=examType]")
 public class ExaminationTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Examination Type");
+		return new PageName(MESSAGES.pageExaminationType(), MESSAGES.pageExaminationTypes());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('ExamTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		List<ListItem> types = new ArrayList<ListItem>();
-		types.add(new ListItem(String.valueOf(ExamType.sExamTypeFinal), "Final Examinations"));
-		types.add(new ListItem(String.valueOf(ExamType.sExamTypeMidterm), "Midterm Examinations"));
+		types.add(new ListItem(String.valueOf(ExamType.sExamTypeFinal), MESSAGES.finalExaminations()));
+		types.add(new ListItem(String.valueOf(ExamType.sExamTypeMidterm), MESSAGES.midtermExaminations()));
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field("Type", FieldType.list, 300, types, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
+				new Field(MESSAGES.fieldType(), FieldType.list, 300, types, Flag.NOT_EMPTY)
 				);
 		data.setSortBy(2, 1);
 		for (ExamType xtype: ExamTypeDAO.getInstance().findAll()) {
@@ -133,7 +137,7 @@ public class ExaminationTypes implements AdminTable {
 	protected void delete(ExamType type, SessionContext context, Session hibSession) {
 		if (type == null) return;
 		if (type.isUsed(null))
-			throw new GwtRpcException("Attempted to delete an examination type " + type.getReference() + " that is being used.");
+			throw new GwtRpcException(MESSAGES.failedDeleteUsedExaminationType(type.getReference()));
 		ChangeLog.addChange(hibSession,
 				context,
 				type,
