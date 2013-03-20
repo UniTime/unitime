@@ -798,6 +798,7 @@ public class SessionRollForward {
 		DatePattern fromDatePattern = null;
 		DatePattern toDatePattern = null;
 		DatePatternDAO dpDao = new DatePatternDAO();
+		HashMap<DatePattern, DatePattern> fromToDatePatternMap = new HashMap<DatePattern, DatePattern>();
 		try {
 			for(Iterator it = fromDatePatterns.iterator(); it.hasNext();){
 				fromDatePattern = (DatePattern) it.next();
@@ -807,8 +808,20 @@ public class SessionRollForward {
 					rollDatePatternOntoDepartments(fromDatePattern, toDatePattern);
 					dpDao.saveOrUpdate(toDatePattern);
 					dpDao.getSession().flush();
+					fromToDatePatternMap.put(fromDatePattern, toDatePattern);
 				}
 			}
+			
+			for (DatePattern fromDp: fromToDatePatternMap.keySet()){
+				DatePattern toDp = fromToDatePatternMap.get(fromDp);
+				if (fromDp.getParents() != null && !fromDp.getParents().isEmpty()){
+					for (DatePattern fromParent: fromDp.getParents()){
+						toDp.addToparents(fromToDatePatternMap.get(fromParent));
+					}
+					dpDao.saveOrUpdate(toDp);
+				}
+			}
+			
 			if (fromSession.getDefaultDatePattern() != null){
 				DatePattern defDp = DatePattern.findByName(toSession, fromSession.getDefaultDatePattern().getName());
 				if (defDp != null){
