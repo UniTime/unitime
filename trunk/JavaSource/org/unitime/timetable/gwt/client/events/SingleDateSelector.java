@@ -264,7 +264,7 @@ public class SingleDateSelector extends Composite implements HasValue<Date>, Has
 		if (sessionId == null) {
 			if (iHint) iPicker.setHint(MESSAGES.hintNoSession());
 		} else {
-			if (iHint) iPicker.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
+			if (iHint) iPicker.setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession.getAcademicSessionName()));
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override

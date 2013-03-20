@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -41,19 +43,21 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=area]")
 public class AcademicAreas implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Academic Area");
+		return new PageName(MESSAGES.pageAcademicArea(), MESSAGES.pageAcademicAreas());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('AcademicAreas')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field("Abbreviation", FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field("Short Title", FieldType.text, 200, 50, Flag.UNIQUE),
-				new Field("Long Title", FieldType.text, 500, 100, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 80, 10, Flag.UNIQUE),
+				new Field(MESSAGES.fieldShortTitle(), FieldType.text, 200, 50, Flag.UNIQUE),
+				new Field(MESSAGES.fieldLongTitle(), FieldType.text, 500, 100, Flag.NOT_EMPTY)
 				);
 		data.setSortBy(1,2,3);
 		for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {

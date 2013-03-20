@@ -77,7 +77,6 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Modify ...")
 	String opModifyMeetings();
 
-	
 	@DefaultMessage("<b><i>+</i></b> Add Meetings ...")
 	String opAddMeetings();
 
@@ -140,6 +139,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Copy iCalendar URL")
 	String opCopyToClipboardICalendar();
+	
+	@DefaultMessage("Expand All")
+	String opExpandAll();
+	
+	@DefaultMessage("Collapse All")
+	String opCollapseAll();
+	
+	@DefaultMessage("Sort by default")
+	String opSortDefault();
+	
+	@DefaultMessage("Hide All")
+	String opHideAll();
+	
+	@DefaultMessage("Show All")
+	String opShowAll();
 	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
@@ -518,6 +532,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("S<u>o</u>rt&nbsp;by&nbsp;&or;")
 	String buttonSortBy();
+	
+	@DefaultMessage("<u>A</u>dd")
+	String buttonAdd();
+	
+	@DefaultMessage("<u>E</u>dit")
+	String buttonEdit();
+	
+	@DefaultMessage("<u>S</u>ave")
+	String buttonSave();
+	
+	@DefaultMessage("<u>D</u>elete")
+	String buttonDelete();
+	
+	@DefaultMessage("<u>C</u>lose")
+	String buttonClose();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -565,7 +594,7 @@ public interface GwtMessages extends Messages {
 	String waitCancel(String name);
 
 	@DefaultMessage("Loading data for {0} ...")
-	String waitLoadingData(String session);
+	String waitLoadingDataForSession(String session);
 	
 	@DefaultMessage("Loading {0} timetable for {1} ...")
 	String waitLoadingTimetable(String name, String session);
@@ -591,6 +620,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Loading room availability...")
 	String waitLoadingRoomAvailability();
 	
+	@DefaultMessage("Saving data...")
+	String waitSavingData();
+	
+	@DefaultMessage("Saving order...")
+	String waitSavingOrder();
+
+	@DefaultMessage("Saving record...")
+	String waitSavingRecord();
+
+	@DefaultMessage("Deleting record...")
+	String waitDeletingRecord();
+	
+	@DefaultMessage("Loading data ...")
+	String waitLoadingData();
+
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
 	
@@ -677,6 +721,21 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Failed to update room availability: {0}")
 	String failedToSaveRoomAvailability(String reason);
+	
+	@DefaultMessage("Save failed: {0}")
+	String failedSave(String reason);
+		
+	@DefaultMessage("Failed to load data: {0}")
+	String failedLoadData(String reason);
+	
+	@DefaultMessage("Edit type not recognized: {0}")
+	String failedWrongEditType(String reason);
+	
+	@DefaultMessage("Attempted to delete an examination type {0} that is being used.")
+	String failedDeleteUsedExaminationType(String reference);
+	
+	@DefaultMessage("Role {0} cannot be deleted.")
+	String failedDeleteRole(String role);
 
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -713,6 +772,24 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Wrong event id provided.")
 	String errorBadEventId();
+	
+	@DefaultMessage("Edit type is not provided.")
+	String errorNoEditType();
+	
+	@DefaultMessage("{0} must be set.")
+	String errorMustBeSet(String field);
+	
+	@DefaultMessage("{0} must be unique.")
+	String errorMustBeUnique(String field);
+
+	@DefaultMessage("{0} is not a valid date.")
+	String errorNotValidDate(String value);
+	
+	@DefaultMessage("{0} is too long.")
+	String errorTooLong(String field);
+	
+	@DefaultMessage("Operation not supported.")
+	String errorOperationNotSupported();
 
 	@DefaultMessage("Room")
 	String resourceRoom();
@@ -765,6 +842,138 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Room Event Availability")
 	String pageEditRoomEventAvailability();
 	
+	@DefaultMessage("Edit {0}")
+	String pageEdit(String name);
+	
+	@DefaultMessage("Add {0}")
+	String pageAdd(String name);
+	
+	@DefaultMessage("Academic Area")
+	String pageAcademicArea();
+	
+	@DefaultMessage("Academic Areas")
+	String pageAcademicAreas();
+	
+	@DefaultMessage("Academic Classification")
+	String pageAcademicClassification();
+
+	@DefaultMessage("Academic Classifications")
+	String pageAcademicClassifications();
+	
+	@DefaultMessage("Course Credit Format")
+	String pageCourseCreditFormat();
+
+	@DefaultMessage("Course Credit Formats")
+	String pageCourseCreditFormats();
+	
+	@DefaultMessage("Course Credit Type")
+	String pageCourseCreditType();
+
+	@DefaultMessage("Course Credit Types")
+	String pageCourseCreditTypes();
+	
+	@DefaultMessage("Course Credit Unit")
+	String pageCourseCreditUnit();
+
+	@DefaultMessage("Course Credit Units")
+	String pageCourseCreditUnits();
+	
+	@DefaultMessage("Course Type")
+	String pageCourseType();
+	
+	@DefaultMessage("Course Types")
+	String pageCourseTypes();
+
+	@DefaultMessage("Event Date Mapping")
+	String pageEventDateMapping();
+	
+	@DefaultMessage("Event Date Mappings")
+	String pageEventDateMappings();
+	
+	@DefaultMessage("Event Status")
+	String pageEventStatus();
+
+	@DefaultMessage("Event Statuses")
+	String pageEventStatuses();
+	
+	@DefaultMessage("Examination Type")
+	String pageExaminationType();
+
+	@DefaultMessage("Examination Types")
+	String pageExaminationTypes();
+	
+	@DefaultMessage("Instructor Role")
+	String pageInstructorRole();
+	
+	@DefaultMessage("Instructor Roles")
+	String pageInstructorRoles();
+	
+	@DefaultMessage("Logging Level")
+	String pageLoggingLevel();
+	
+	@DefaultMessage("Logging Levels")
+	String pageLoggingLevels();
+	
+	@DefaultMessage("Major")
+	String pageMajor();
+
+	@DefaultMessage("Majors")
+	String pageMajors();
+
+	@DefaultMessage("Minor")
+	String pageMinor();
+
+	@DefaultMessage("Minors")
+	String pageMinors();
+	
+	@DefaultMessage("Offering Consent Type")
+	String pageOfferingConsentType();
+	
+	@DefaultMessage("Offering Consent Types")
+	String pageOfferingConsentTypes();
+	
+	@DefaultMessage("Permission")
+	String pagePermission();
+	
+	@DefaultMessage("Permissions")
+	String pagePermissions();
+	
+	@DefaultMessage("Position Type")
+	String pagePositionType();
+	
+	@DefaultMessage("Position Types")
+	String pagePositionTypes();
+	
+	@DefaultMessage("Room Feature Type")
+	String pageRoomFeatureType();
+	
+	@DefaultMessage("Room Feature Types")
+	String pageRoomFeatureTypes();
+	
+	@DefaultMessage("Standard Event Note")
+	String pageStandardEventNote();
+	
+	@DefaultMessage("Standard Event Notes")
+	String pageStandardEventNotes();
+	
+	@DefaultMessage("Student Group")
+	String pageStudentGroup();
+	
+	@DefaultMessage("Student Groups")
+	String pageStudentGroups();
+	
+	@DefaultMessage("Student Scheduling Status Type")
+	String pageStudentSchedulingStatusType();
+	
+	@DefaultMessage("Student Scheduling Status Types")
+	String pageStudentSchedulingStatusTypes();
+	
+	@DefaultMessage("Role")
+	String pageRole();
+	
+	@DefaultMessage("Roles")
+	String pageRoles();
+
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -978,6 +1187,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("N/A")
 	String notApplicable();
 	
+	@DefaultMessage("Not set")
+	String notSet();
+	
 	@DefaultMessage("All")
 	String itemAll();
 	
@@ -1013,6 +1225,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Press ENTER or double click a standard note to add it to additional information.")
 	String hintStandardNoteDoubleClickToSelect();
+	
+	@DefaultMessage("Defaults to {0} when empty.")
+	String hintDefaultsToWhenEmpty(String value);
 	
 	@DefaultMessage("{2}, {0} {1}")
 	String formatName(String first, String middle, String last);
@@ -1130,4 +1345,148 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} minutes")
 	String breakTime(String breakTimeInMinutes);
+	
+	@DefaultMessage("Insert a new row above this row.")
+	String titleInsertRowAbove();
+	
+	@DefaultMessage("Delete this row.")
+	String titleDeleteRow();
+	
+	@DefaultMessage("External Id")
+	String fieldExternalId();
+	
+	@DefaultMessage("Abbreviation")
+	String fieldAbbreviation();
+	
+	@DefaultMessage("Short Title")
+	String fieldShortTitle();
+	
+	@DefaultMessage("Long Title")
+	String fieldLongTitle();
+
+	@DefaultMessage("Code")
+	String fieldCode();
+
+	@DefaultMessage("Name")
+	String fieldName();
+
+	@DefaultMessage("Reference")
+	String fieldReference();
+	
+	@DefaultMessage("Note")
+	String fieldNote();
+
+	@DefaultMessage("Class Date")
+	String fieldClassDate();
+
+	@DefaultMessage("Event Date")
+	String fieldEventDate();
+	
+	@DefaultMessage("Room Type")
+	String fieldRoomType();
+	
+	@DefaultMessage("Room")
+	String fieldRoom();
+	
+	@DefaultMessage("Event Status")
+	String fieldEventStatus();
+	
+	@DefaultMessage("Room Note")
+	String fieldRoomNote();
+	
+	@DefaultMessage("Break Time")
+	String fieldBreakTime();
+	
+	@DefaultMessage("Sort Order")
+	String fieldSortOrder();
+	
+	@DefaultMessage("Type")
+	String fieldType();
+	
+	@DefaultMessage("Department")
+	String fieldDepartment();
+	
+	@DefaultMessage("Instructor")
+	String fieldInstructor();
+
+	@DefaultMessage("Role")
+	String fieldRole();
+	
+	@DefaultMessage("Logger")
+	String fieldLogger();
+	
+	@DefaultMessage("Level")
+	String fieldLevel();
+	
+	@DefaultMessage("Academic Area")
+	String fieldAcademicArea();
+	
+	@DefaultMessage("Event Management")
+	String fieldEventManagement();
+	
+	@DefaultMessage("Applies To")
+	String fieldAppliesTo();
+	
+	@DefaultMessage("Students")
+	String fieldStudents();
+	
+	@DefaultMessage("Message")
+	String fieldMessage();
+	
+	@DefaultMessage("Enabled")
+	String fieldEnabled();
+	
+	@DefaultMessage("Access")
+	String toggleAccess();
+	
+	@DefaultMessage("Advisor")
+	String toggleAdvisor();
+	
+	@DefaultMessage("Email")
+	String toggleEmail();
+	
+	@DefaultMessage("Wait-Listing")
+	String toggleWaitList();
+	
+	@DefaultMessage("Other")
+	String toggleNoCourseType();
+	
+	@DefaultMessage("Final Examinations")
+	String finalExaminations();
+	
+	@DefaultMessage("Midterm Examinations")
+	String midtermExaminations();
+	
+	@DefaultMessage("No Role")
+	String noRole();
+	
+	@DefaultMessage("All")
+	String levelAll();
+	
+	@DefaultMessage("Trace")
+	String levelTrace();
+	
+	@DefaultMessage("Debug")
+	String levelDebug();
+	
+	@DefaultMessage("Info")
+	String levelInfo();
+	
+	@DefaultMessage("Warning")
+	String levelWarning();
+	
+	@DefaultMessage("Error")
+	String levelError();
+	
+	@DefaultMessage("Fatal")
+	String levelFatal();
+	
+	@DefaultMessage("Off")
+	String levelOff();
+	
+	@DefaultMessage("Global")
+	String levelGlobal();
+	
+	@DefaultMessage("Logging level for {0}.")
+	String descriptionLoggingLevelFor(String logger);
 }

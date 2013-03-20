@@ -89,7 +89,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		if (sessionId == null) {
 			iPanel.setHint(MESSAGES.hintNoSession());
 		} else {
-			iPanel.setHint(MESSAGES.waitLoadingData(iAcademicSession.getAcademicSessionName()));
+			iPanel.setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession.getAcademicSessionName()));
 			RPC.execute(new RequestSessionDetails(sessionId), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 
 				@Override

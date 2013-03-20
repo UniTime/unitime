@@ -27,6 +27,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -47,9 +49,11 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=instructorRole]")
 public class InstructorRoles implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Instructor Role");
+		return new PageName(MESSAGES.pageInstructorRole(), MESSAGES.pageInstructorRoles());
 	}
 
 	@Override
@@ -62,9 +66,9 @@ public class InstructorRoles implements AdminTable {
 			instructorRoles.add(new ListItem(role.getUniqueId().toString(), role.getAbbv()));
 		}
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Department", FieldType.list, 160, departments),
-				new Field("Instructor", FieldType.person, 300),
-				new Field("Role", FieldType.list, 300, instructorRoles)
+				new Field(MESSAGES.fieldDepartment(), FieldType.list, 160, departments),
+				new Field(MESSAGES.fieldInstructor(), FieldType.person, 300),
+				new Field(MESSAGES.fieldRole(), FieldType.list, 300, instructorRoles)
 				);
 		data.setSortBy(0, 1);
 		
@@ -165,7 +169,7 @@ public class InstructorRoles implements AdminTable {
 		ChangeLog.addChange(hibSession,
 				context,
 				instructor,
-				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? "No Role" : instructor.getRole().getAbbv()),
+				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? MESSAGES.noRole() : instructor.getRole().getAbbv()),
 				Source.SIMPLE_EDIT, 
 				(add ? Operation.CREATE : Operation.UPDATE),
 				null,
@@ -190,7 +194,7 @@ public class InstructorRoles implements AdminTable {
 		ChangeLog.addChange(hibSession,
 				context,
 				instructor,
-				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? "No Role" : instructor.getRole().getAbbv()),
+				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + (instructor.getRole() == null ? MESSAGES.noRole() : instructor.getRole().getAbbv()),
 				Source.SIMPLE_EDIT, 
 				Operation.UPDATE,
 				null,
@@ -215,7 +219,7 @@ public class InstructorRoles implements AdminTable {
 		ChangeLog.addChange(hibSession,
 				context,
 				instructor,
-				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": No Role",
+				instructor.getName(DepartmentalInstructor.sNameFormatLastInitial) + ": " + MESSAGES.noRole(),
 				Source.SIMPLE_EDIT, 
 				Operation.DELETE,
 				null,

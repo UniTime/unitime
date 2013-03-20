@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -40,18 +42,20 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=consent]")
 public class OfferingConsentTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Offering Consent Type");
+		return new PageName(MESSAGES.pageOfferingConsentType(), MESSAGES.pageOfferingConsentTypes());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('OfferingConsentTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE));
+				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
+				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE));
 		data.setSortBy(0, 1);
 		data.setAddable(false);
 		for (OfferingConsentType consent: OfferingConsentTypeDAO.getInstance().findAll()) {

@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -41,18 +43,20 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=classification]")
 public class AcademicClassifications implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Academic Classification");
+		return new PageName(MESSAGES.pageAcademicClassification(), MESSAGES.pageAcademicClassifications());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('AcademicClassifications')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("External Id", FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field("Code", FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 500, 50, Flag.UNIQUE));
+				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
+				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 500, 50, Flag.UNIQUE));
 		data.setSortBy(1,2);
 		for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.addRecord(clasf.getUniqueId());

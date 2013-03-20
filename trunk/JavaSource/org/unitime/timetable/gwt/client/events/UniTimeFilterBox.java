@@ -132,7 +132,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 			iFilter.setHint(MESSAGES.hintNoSession());
 		} else {
 			if (init) {
-				iFilter.setHint(MESSAGES.waitLoadingData(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
+				iFilter.setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
 				iInitialized = false;
 			}
 			final String value = iFilter.getWidget().getValue();

@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -40,18 +42,20 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=featureType]")
 public class RoomFeatureTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Room Feature Type");
+		return new PageName(MESSAGES.pageRoomFeatureType(), MESSAGES.pageRoomFeatureTypes());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('RoomFeatureTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field("Event Management", FieldType.toggle, 40)
+				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
+				new Field(MESSAGES.fieldEventManagement(), FieldType.toggle, 40)
 				);
 		data.setSortBy(2, 1);
 		for (RoomFeatureType ftype: RoomFeatureTypeDAO.getInstance().findAll()) {
