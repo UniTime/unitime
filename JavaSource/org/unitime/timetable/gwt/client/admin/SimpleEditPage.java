@@ -150,7 +150,7 @@ public class SimpleEditPage extends Composite {
 	
 	public SimpleEditPage() {
 		iType = Window.Location.getParameter("type");
-		if (iType == null) throw new RuntimeException("Edit type is not provided.");
+		if (iType == null) throw new RuntimeException(MESSAGES.errorNoEditType());
 		
 		ClickHandler save = new ClickHandler() {
 			@Override
@@ -162,11 +162,11 @@ public class SimpleEditPage extends Composite {
 				}
 				iData.getRecords().clear();
 				iData.getRecords().addAll(iTable.getData());
-				iHeader.setMessage("Saving data...");
+				iHeader.setMessage(MESSAGES.waitSavingData());
 				RPC.execute(SimpleEditInterface.SaveDataRpcRequest.saveData(iType, iData), new AsyncCallback<SimpleEditInterface>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iHeader.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+						iHeader.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
 					}
 					@Override
 					public void onSuccess(SimpleEditInterface result) {
@@ -206,10 +206,10 @@ public class SimpleEditPage extends Composite {
 
 		iPanel = new SimpleForm();
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("add", "<u>A</u>dd", 75, add);
-		iHeader.addButton("edit", "<u>E</u>dit", 75, edit);
-		iHeader.addButton("save", "<u>S</u>ave", 75, save);
-		iHeader.addButton("back", "<u>B</u>ack", 75, back);
+		iHeader.addButton("add", MESSAGES.buttonAdd(), 75, add);
+		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, edit);
+		iHeader.addButton("save", MESSAGES.buttonSave(), 75, save);
+		iHeader.addButton("back", MESSAGES.buttonBack(), 75, back);
 		iPanel.addHeaderRow(iHeader);
 		
 		iTable = new UniTimeTable<Record>();
@@ -280,14 +280,14 @@ public class SimpleEditPage extends Composite {
 		RPC.execute(SimpleEditInterface.GetPageNameRpcRequest.getPageName(iType), new AsyncCallback<PageName>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage("Edit type not recognized:" + caught.getMessage());
+				iHeader.setErrorMessage(MESSAGES.failedWrongEditType(caught.getMessage()));
 				UniTimeNotifications.error(caught.getMessage(), caught);
 			}
 
 			@Override
 			public void onSuccess(PageName result) {
 				iPageName = result;
-				UniTimePageLabel.getInstance().setPageName(iPageName.list());
+				UniTimePageLabel.getInstance().setPageName(iPageName.plural());
 				load(null);
 			}
 		});
@@ -322,13 +322,13 @@ public class SimpleEditPage extends Composite {
 	private void detail(final Record record) {
 		SimpleForm detail = new SimpleFormWithMouseOver();
 		final List<MyCell> cells = new ArrayList<SimpleEditPage.MyCell>();
-		UniTimePageLabel.getInstance().setPageName(record.getUniqueId() == null ? iPageName.addOne() : iPageName.editOne());
+		UniTimePageLabel.getInstance().setPageName(record.getUniqueId() == null ? MESSAGES.pageAdd(iPageName.singular()) : MESSAGES.pageEdit(iPageName.singular()));
 		final UniTimeHeaderPanel header = new UniTimeHeaderPanel();
 		Record prev = previous(record);
 		Record next = next(record);
 		final Record backup = record.cloneRecord();
 		
-		header.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
+		header.addButton("save", MESSAGES.buttonSave(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				String valid = validate(record, cells);
@@ -336,11 +336,11 @@ public class SimpleEditPage extends Composite {
 					header.setErrorMessage(valid);
 					return;
 				}
-				header.setMessage("Saving record...");
+				header.setMessage(MESSAGES.waitSavingRecord());
 				RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+						header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
 					}
 					@Override
 					public void onSuccess(Record result) {
@@ -364,14 +364,14 @@ public class SimpleEditPage extends Composite {
 		});
 		
 		if (record.getUniqueId() != null && record.isDeletable()) {
-			header.addButton("delete", "<u>D</u>elete", 75, new ClickHandler() {
+			header.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					header.setMessage("Deleting record...");
+					header.setMessage(MESSAGES.waitDeletingRecord());
 					RPC.execute(SimpleEditInterface.DeleteRecordRpcRequest.deleteRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+							header.setErrorMessage(MESSAGES.failedDelete(iPageName.singular().toLowerCase(), caught.getMessage()));
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -388,7 +388,7 @@ public class SimpleEditPage extends Composite {
 		}
 		
 		if (prev != null) {
-			header.addButton("prev", "<u>P</u>revious", 75, new ClickHandler() {
+			header.addButton("prev", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					String valid = validate(record, cells);
@@ -396,11 +396,11 @@ public class SimpleEditPage extends Composite {
 						header.setErrorMessage(valid);
 						return;
 					}
-					header.setMessage("Saving record...");
+					header.setMessage(MESSAGES.waitSavingRecord());
 					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+							header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -420,7 +420,7 @@ public class SimpleEditPage extends Composite {
 		}
 		
 		if (next != null) {
-			header.addButton("next", "<u>N</u>ext", 75, new ClickHandler() {
+			header.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					String valid = validate(record, cells);
@@ -428,11 +428,11 @@ public class SimpleEditPage extends Composite {
 						header.setErrorMessage(valid);
 						return;
 					}
-					header.setMessage("Saving record...");
+					header.setMessage(MESSAGES.waitSavingRecord());
 					RPC.execute(SimpleEditInterface.SaveRecordRpcRequest.saveRecord(iType, record), new AsyncCallback<Record>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							header.setErrorMessage("Save failed (" + caught.getMessage() + ").");
+							header.setErrorMessage(MESSAGES.failedSave(caught.getMessage()));
 						}
 						@Override
 						public void onSuccess(Record result) {
@@ -451,11 +451,13 @@ public class SimpleEditPage extends Composite {
 			});
 		}
 		
-		header.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
+		header.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iSimple.setWidget(iPanel);
 				record.copyFrom(backup);
+				if (record.isEmpty())
+					iData.getRecords().remove(record);
 				iEditable = false;
 				iSimple.setWidget(iPanel);
 				refreshTable();
@@ -529,7 +531,7 @@ public class SimpleEditPage extends Composite {
 		iHeader.setEnabled("save", false);
 		iHeader.setEnabled("edit", false);
 		iHeader.setEnabled("back", false);
-		iHeader.setMessage("Loading data...");
+		iHeader.setMessage(MESSAGES.waitLoadingData());
 		iTable.clearTable();
 
 		RPC.execute(SimpleEditInterface.LoadDataRpcRequest.loadData(iType), new AsyncCallback<SimpleEditInterface>() {
@@ -597,7 +599,7 @@ public class SimpleEditPage extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage("Unable to load data (" + caught.getMessage() + ")");
+				iHeader.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
 				ToolBox.checkAccess(caught);
 				if (callback != null) callback.onFailure(caught);
 			}
@@ -653,7 +655,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Expand All";
+						return MESSAGES.opExpandAll();
 					}
 				});
 				cell.addOperation(new UniTimeTableHeader.Operation() {
@@ -690,7 +692,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Collapse All";
+						return MESSAGES.opCollapseAll();
 					}
 				});
 			} else {
@@ -720,7 +722,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Sort by " + field.getName();
+						return MESSAGES.opSortBy(field.getName());
 					}
 				});			
 				if (col == 0) {
@@ -743,7 +745,7 @@ public class SimpleEditPage extends Composite {
 						
 						@Override
 						public String getName() {
-							return "Sort by default";
+							return MESSAGES.opSortDefault();
 						}
 					});
 				}
@@ -776,7 +778,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Hide All";
+						return MESSAGES.opHideAll();
 					}
 				});
 				cell.addOperation(new UniTimeTableHeader.Operation() {
@@ -809,7 +811,7 @@ public class SimpleEditPage extends Composite {
 					
 					@Override
 					public String getName() {
-						return "Show All";
+						return MESSAGES.opShowAll();
 					}
 				});
 			}
@@ -864,7 +866,7 @@ public class SimpleEditPage extends Composite {
 	}
 	
 	private void refreshTable(String hidden) {
-		UniTimePageLabel.getInstance().setPageName(iEditable ? iPageName.edit() : iPageName.list());
+		UniTimePageLabel.getInstance().setPageName(iEditable ? MESSAGES.pageEdit(iPageName.plural()) : iPageName.plural());
 		iTable.clearTable();
 		
 		iTable.setAllowSelection(!hasDetails());
@@ -911,7 +913,7 @@ public class SimpleEditPage extends Composite {
 		if (iData.isAddable() && iEditable) {
 			Image add = new Image(RESOURCES.add());
 			add.getElement().getStyle().setCursor(Cursor.POINTER);
-			add.setTitle("Insert a new row above this row.");
+			add.setTitle(MESSAGES.titleInsertRowAbove());
 			add.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
@@ -925,7 +927,7 @@ public class SimpleEditPage extends Composite {
 		}
 		if (iData.isEditable() && iEditable && record.isDeletable()) {
 			Image delete = new Image(RESOURCES.delete());
-			delete.setTitle("Delete this row.");
+			delete.setTitle(MESSAGES.titleDeleteRow());
 			delete.getElement().getStyle().setCursor(Cursor.POINTER);
 			delete.addClickHandler(new ClickHandler() {
 				@Override
@@ -1156,8 +1158,8 @@ public class SimpleEditPage extends Composite {
 						});
 						VerticalPanel students = new VerticalPanel();
 						students.add(area);
-						Button lookup = new Button("<u>L</u>ookup");
-						lookup.setAccessKey('l');
+						Button lookup = new Button(MESSAGES.buttonLookup());
+						lookup.setAccessKey(UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonLookup()));
 						lookup.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
@@ -1196,21 +1198,21 @@ public class SimpleEditPage extends Composite {
 								});
 								form.addRow(text);
 								UniTimeHeaderPanel header = new UniTimeHeaderPanel();
-								header.addButton("lookup", "<u>L</u>ookup", 75, new ClickHandler() {
+								header.addButton("lookup", MESSAGES.buttonLookup(), 75, new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
 										iStudentsText = text;
 										iLookup.center();
 									}
 								});
-								header.addButton("close", "<u>C</u>lose", 75, new ClickHandler() {
+								header.addButton("close", MESSAGES.buttonClose(), 75, new ClickHandler() {
 									@Override
 									public void onClick(ClickEvent event) {
 										dialog.hide();
 									}
 								});
 								form.addBottomRow(header);
-								dialog.setText("Group Students");
+								dialog.setText(field.getName());
 								dialog.setWidget(form);
 								dialog.setEscapeToHide(true);
 								dialog.center();
@@ -1222,7 +1224,7 @@ public class SimpleEditPage extends Composite {
 				case person:
 					HorizontalPanel hp = new HorizontalPanel();
 					String[] name = record.getValues(index);
-					final HTML label = new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
+					final HTML label = new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2]));
 					label.setWidth(field.getWidth() + "px");
 					hp.add(label);
 					Image change = new Image(RESOURCES.edit());
@@ -1236,7 +1238,7 @@ public class SimpleEditPage extends Composite {
 						public void onClick(ClickEvent event) {
 							Lookup lookup = new Lookup();
 							lookup.setOptions("mustHaveExternalId");
-							lookup.setText(label.getText().equals("<i>Not set</i>") ? "" : label.getText());
+							lookup.setText(label.getText().equals("<i>" + MESSAGES.notSet() + "</i>") ? "" : label.getText());
 							lookup.addValueChangeHandler(new ValueChangeHandler<PersonInterface>() {
 								@Override
 								public void onValueChange(ValueChangeEvent<PersonInterface> event) {
@@ -1297,7 +1299,7 @@ public class SimpleEditPage extends Composite {
 					break;
 				case person:
 					String[] name = record.getValues(index);
-					initWidget(new HTML(name.length <= 2 ? "<i>Not set</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
+					initWidget(new HTML(name.length <= 2 ? "<i>" + MESSAGES.notSet() + "</i>" : name[0] + ", " + name[1] + (name[2].isEmpty() ? "" : " " + name[2])));
 					break;
 				case textarea:
 					HTML html = new HTML(getValue());
@@ -1324,7 +1326,7 @@ public class SimpleEditPage extends Composite {
 					if (iDetail && iField.isShowParentWhenEmpty()) {
 						String parent = getParentValue();
 						if (parent != null && !parent.isEmpty()) {
-							w.setHint("Defaults to " + (parent.length() > 80 ? parent.substring(0, 77) + "..." : parent) + " when empty.");
+							w.setHint(MESSAGES.hintDefaultsToWhenEmpty(parent.length() > 80 ? parent.substring(0, 77) + "..." : parent));
 						}
 					}
 				} else
@@ -1411,7 +1413,7 @@ public class SimpleEditPage extends Composite {
 
 	public void saveOrder() {
 		if (!iData.isSaveOrder()) return;
-		iHeader.setMessage("Saving order...");
+		iHeader.setMessage(MESSAGES.waitSavingOrder());
 		String ord = "";
 		for (int i = 0; i < iTable.getRowCount(); i++) {
 			Record r = iTable.getData(i);
@@ -1444,7 +1446,6 @@ public class SimpleEditPage extends Composite {
 		iMenuService.setUserData(data, new AsyncCallback<Boolean>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				// iHeader.setErrorMessage("Failed to save table order (" + caught.getMessage() + ")");
 				iHeader.clearMessage();
 			}
 			@Override
@@ -1478,25 +1479,25 @@ public class SimpleEditPage extends Composite {
 						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
 					}
 					if (value == null || value.isEmpty()) {
-						widget.setError(field.getName() + " must be set.");
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null && detailRecord == null) {
-							valid = field.getName() + " must be set.";
+							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
 						MyCell old = values.put(value, widget);
 						if (old != null) {
-							widget.setError(field.getName() + " must be unique.");
-							old.setError(field.getName() + " must be unique.");
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
 							if (valid == null && detailRecord == null) {
-								valid = field.getName() + " must be unique.";
+								valid = MESSAGES.errorMustBeUnique(field.getName());
 							}
 						}
 					}
 				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
-						widget.setError(field.getName() + " must be set.");
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null && detailRecord == null) {
-							valid = field.getName() + " must be set.";
+							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					}
 				} else {
@@ -1506,23 +1507,23 @@ public class SimpleEditPage extends Composite {
 						try {
 							date = dateFormat.parse(value);
 						} catch (Exception e) {
-							widget.setError(value + " is not a valid date.");
+							widget.setError(MESSAGES.errorNotValidDate(value));
 							if (valid == null && detailRecord == null) {
-								valid = value + " is not a valid date.";
+								valid = MESSAGES.errorNotValidDate(value);
 							}
 						}
 						if (date == null && field.isNotEmpty()) {
-							widget.setError(field.getName() + " must be set.");
+							widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 							if (valid == null && detailRecord == null) {
-								valid = field.getName() + " must be set.";
+								valid = MESSAGES.errorMustBeSet(field.getName());
 							}
 						}
 						break;
 					case textarea:
 						if (value.length() > field.getLength()) {
-							widget.setError(field.getName() + " is too long.");
+							widget.setError(MESSAGES.errorTooLong(field.getName()));
 							if (valid == null && detailRecord == null) {
-								valid = field.getName() + " is too long.";
+								valid = MESSAGES.errorTooLong(field.getName());
 							}
 						}
 						break;
@@ -1544,25 +1545,25 @@ public class SimpleEditPage extends Composite {
 						values = new HashMap<String, MyCell>(); uniqueMap.put(col, values);
 					}
 					if (value == null || value.isEmpty()) {
-						widget.setError(field.getName() + " must be set.");
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null) {
-							valid = field.getName() + " must be set.";
+							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					} else {
 						MyCell old = values.put(value, widget);
 						if (old != null) {
-							widget.setError(field.getName() + " must be unique.");
-							old.setError(field.getName() + " must be unique.");
+							widget.setError(MESSAGES.errorMustBeUnique(field.getName()));
+							old.setError(MESSAGES.errorMustBeUnique(field.getName()));
 							if (valid == null) {
-								valid = field.getName() + " must be unique.";
+								valid = MESSAGES.errorMustBeUnique(field.getName());
 							}
 						}
 					}
 				} else if (field.isNotEmpty() || (isParent(record) && field.isParentNotEmpty())) {
 					if (value == null || value.isEmpty()) {
-						widget.setError(field.getName() + " must be set.");
+						widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 						if (valid == null) {
-							valid = field.getName() + " must be set.";
+							valid = MESSAGES.errorMustBeSet(field.getName());
 						}
 					}
 				} else {
@@ -1572,23 +1573,23 @@ public class SimpleEditPage extends Composite {
 						try {
 							date = dateFormat.parse(value);
 						} catch (Exception e) {
-							widget.setError(value + " is not a valid date.");
+							widget.setError(MESSAGES.errorNotValidDate(value));
 							if (valid == null) {
-								valid = value + " is not a valid date.";
+								valid = MESSAGES.errorNotValidDate(value);
 							}
 						}
 						if (date == null && field.isNotEmpty()) {
-							widget.setError(field.getName() + " must be set.");
+							widget.setError(MESSAGES.errorMustBeSet(field.getName()));
 							if (valid == null) {
-								valid = field.getName() + " must be set.";
+								valid = MESSAGES.errorMustBeSet(field.getName());
 							}
 						}
 						break;
 					case textarea:
 						if (value.length() > field.getLength()) {
-							widget.setError(field.getName() + " is too long.");
+							widget.setError(MESSAGES.errorTooLong(field.getName()));
 							if (valid == null) {
-								valid = field.getName() + " is too long.";
+								valid = MESSAGES.errorTooLong(field.getName());
 							}
 						}
 						break;
@@ -1633,5 +1634,4 @@ public class SimpleEditPage extends Composite {
 			super.onBrowserEvent(event);
 		}
 	}
-
 }

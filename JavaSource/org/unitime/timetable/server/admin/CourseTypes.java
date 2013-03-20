@@ -24,6 +24,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -40,17 +42,19 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=courseType]")
 public class CourseTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Course Type");
+		return new PageName(MESSAGES.pageCourseType(), MESSAGES.pageCourseTypes());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('CourseTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Abbreviation", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE)
+				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE)
 				);
 		data.setSortBy(1);
 		for (CourseType ctype: CourseTypeDAO.getInstance().findAll()) {

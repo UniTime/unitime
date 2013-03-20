@@ -400,13 +400,8 @@ public class SimpleEditInterface implements IsSerializable, GwtRpcResponse {
 		public PageName(String name) { iSingular = name; }
 		public PageName(String singularName, String pluralName) { iSingular = singularName; iPlural = pluralName; }
 		
-		protected String singular() { return iSingular; }
-		protected String plural() { return iPlural == null ? iSingular + "s" : iPlural; }
-		
-		public String list() { return plural(); }
-		public String edit() { return "Edit " + plural(); }
-		public String addOne() {  return "Add " + singular(); }
-		public String editOne() { return "Edit " + singular(); }
+		public String singular() { return iSingular; }
+		public String plural() { return iPlural == null ? iSingular + "s" : iPlural; }
 		
 		public String toString() { return plural(); }
 	}

@@ -27,6 +27,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -49,9 +51,11 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=stdEvtNote]")
 public class StandardEventNotes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Standard Event Note");
+		return new PageName(MESSAGES.pageStandardEventNote(), MESSAGES.pageStandardEventNotes());
 	}
 
 	@Override
@@ -60,14 +64,14 @@ public class StandardEventNotes implements AdminTable {
 		Long sessionId = context.getUser().getCurrentAcademicSessionId();
 		List<ListItem> appliesTo = new ArrayList<ListItem>();
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Reference", FieldType.text, 150, 20, Flag.NOT_EMPTY),
-				new Field("Note", FieldType.textarea, 50, 3, 1000, Flag.NOT_EMPTY),
-				new Field("Applies To", FieldType.list, 300, appliesTo, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldReference(), FieldType.text, 150, 20, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldNote(), FieldType.textarea, 50, 3, 1000, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldAppliesTo(), FieldType.list, 300, appliesTo, Flag.NOT_EMPTY)
 				);
 		data.setSortBy(2, 0, 1);
 
 		boolean editGlobal = context.hasPermission(Right.StandardEventNotesGlobalEdit);
-		if (editGlobal) appliesTo.add(new ListItem("_global", "Global"));
+		if (editGlobal) appliesTo.add(new ListItem("_global", MESSAGES.levelGlobal()));
 		for (StandardEventNote note: (List<StandardEventNote>)hibSession.createQuery("from StandardEventNoteGlobal order by reference").setCacheable(true).list()) {
 			Record r = data.addRecord(note.getUniqueId());
 			r.setField(0, note.getReference(), editGlobal);

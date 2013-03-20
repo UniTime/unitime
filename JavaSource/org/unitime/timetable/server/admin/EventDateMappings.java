@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -48,19 +49,20 @@ import org.unitime.timetable.security.rights.Right;
 @Service("gwtAdminTable[type=dateMapping]")
 public class EventDateMappings implements AdminTable {
 	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
 	public PageName name() {
-		return new PageName("Event Date Mapping");
+		return new PageName(MESSAGES.pageEventDateMapping(), MESSAGES.pageEventDateMappings());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('EventDateMappings')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Class Date", FieldType.date, 100, Flag.UNIQUE),
-				new Field("Event Date", FieldType.date, 100, Flag.UNIQUE),
-				new Field("Note", FieldType.text, 300, 1000)
+				new Field(MESSAGES.fieldClassDate(), FieldType.date, 100, Flag.UNIQUE),
+				new Field(MESSAGES.fieldEventDate(), FieldType.date, 100, Flag.UNIQUE),
+				new Field(MESSAGES.fieldNote(), FieldType.text, 300, 1000)
 				);
 		data.setSortBy(0, 1);
 		data.setSessionId(context.getUser().getCurrentAcademicSessionId());

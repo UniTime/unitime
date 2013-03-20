@@ -26,6 +26,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.hibernate.Session;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.FieldType;
@@ -42,18 +44,20 @@ import org.unitime.timetable.security.rights.Right;
 
 @Service("gwtAdminTable[type=position]")
 public class PositionTypes implements AdminTable {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
+	
 	@Override
 	public PageName name() {
-		return new PageName("Position Type");
+		return new PageName(MESSAGES.pagePositionType(), MESSAGES.pagePositionTypes());
 	}
 
 	@Override
 	@PreAuthorize("checkPermission('PositionTypes')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
-				new Field("Reference", FieldType.text, 160, 20, Flag.UNIQUE),
-				new Field("Name", FieldType.text, 300, 60, Flag.UNIQUE),
-				new Field("Sort Order", FieldType.number, 80, 10, Flag.UNIQUE)
+				new Field(MESSAGES.fieldReference(), FieldType.text, 160, 20, Flag.UNIQUE),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 60, Flag.UNIQUE),
+				new Field(MESSAGES.fieldSortOrder(), FieldType.number, 80, 10, Flag.UNIQUE)
 				);
 		data.setSortBy(2, 0, 1);
 		DecimalFormat df = new DecimalFormat("0000");
