@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
@@ -35,6 +36,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.SavedHQLService;
 import org.unitime.timetable.gwt.services.SavedHQLServiceAsync;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
@@ -60,6 +62,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.Widget;
 
 public class SavedHQLPage extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private final SavedHQLServiceAsync iService = GWT.create(SavedHQLService.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
@@ -81,26 +84,26 @@ public class SavedHQLPage extends Composite {
 	public SavedHQLPage() {
 		iAppearance = Window.Location.getParameter("appearance");
 		if ("courses".equalsIgnoreCase(iAppearance)) {
-			UniTimePageLabel.getInstance().setPageName("Course Reports");
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCourseReports());
 		} else if ("exams".equalsIgnoreCase(iAppearance)) {
-				UniTimePageLabel.getInstance().setPageName("Examination Reports");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageExaminationReports());
 		} else if ("sectioning".equalsIgnoreCase(iAppearance)) {
-			UniTimePageLabel.getInstance().setPageName("Student Sectioning Reports");
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageStudentSectioningReports());
 		} else if ("events".equalsIgnoreCase(iAppearance)) {
-			UniTimePageLabel.getInstance().setPageName("Event Reports");
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageEventReports());
 		} else if ("administration".equalsIgnoreCase(iAppearance)) {
-			UniTimePageLabel.getInstance().setPageName("Administration Reports");
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAdministrationReports());
 		} else {
 			iAppearance = "courses";
-			UniTimePageLabel.getInstance().setPageName("Course Reports");
+			UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCourseReports());
 		}
 		
 		iForm = new SimpleForm(2);
 		
 		iForm.removeStyleName("unitime-NotPrintableBottomLine");
 		
-		iHeader = new UniTimeHeaderPanel("Filter");
-		iHeader.addButton("execute", "E<u>x</u>ecute", 75, new ClickHandler() {
+		iHeader = new UniTimeHeaderPanel(MESSAGES.sectFilter());
+		iHeader.addButton("execute", MESSAGES.buttonExecute(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iFirstLine = 0;
@@ -109,14 +112,14 @@ public class SavedHQLPage extends Composite {
 			}
 		});
 		
-		iHeader.addButton("print", "<u>P</u>rint", 75, new ClickHandler() {
+		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				Window.print();
 			}
 		});
 
-		iHeader.addButton("export", "Export&nbsp;<u>C</u>SV", 85, new ClickHandler() {
+		iHeader.addButton("export", MESSAGES.buttonExportCSV(), 85, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				Long id = Long.valueOf(iQuerySelector.getWidget().getValue(iQuerySelector.getWidget().getSelectedIndex()));
@@ -127,7 +130,7 @@ public class SavedHQLPage extends Composite {
 					}
 				}
 				if (query == null) {
-					iHeader.setErrorMessage("No report is selected.");
+					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 					return;
 				}
 				String params = "";
@@ -149,7 +152,7 @@ public class SavedHQLPage extends Composite {
 							value = list.getValue(list.getSelectedIndex());
 						}
 						if (value.isEmpty()) {
-							iHeader.setErrorMessage(option.getName() + " not selected.");
+							iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
 							return;
 						}
 						if (!params.isEmpty()) params += ":";
@@ -171,7 +174,7 @@ public class SavedHQLPage extends Composite {
 		});
 
 		
-		iHeader.addButton("edit", "<u>E</u>dit", 75, new ClickHandler() {
+		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				SavedHQLInterface.Query query = null;
@@ -182,14 +185,14 @@ public class SavedHQLPage extends Composite {
 					}
 				}
 				if (query == null) {
-					iHeader.setErrorMessage("No report is selected.");
+					iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 					return;
 				}
 				openDialog(query);
 			}
 		});
 		
-		iHeader.addButton("add", "<u>A</u>dd New", 75, new ClickHandler() {
+		iHeader.addButton("add", MESSAGES.buttonAddNew(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				openDialog(null);
@@ -219,7 +222,7 @@ public class SavedHQLPage extends Composite {
 		iForm.getColumnFormatter().setWidth(1, "100%");
 
 		iQuerySelector = new UniTimeWidget<ListBox>(new ListBox());
-		iForm.addRow("Report:", iQuerySelector);
+		iForm.addRow(MESSAGES.propReport(), iQuerySelector);
 		iQuerySelector.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -229,10 +232,10 @@ public class SavedHQLPage extends Composite {
 			}
 		});
 		iDescription = new HTML("");
-		iForm.addRow("Description:", iDescription);
+		iForm.addRow(MESSAGES.propDescription(), iDescription);
 		iForm.getCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
 		
-		LoadingWidget.getInstance().show("Loading reports...");
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingReports());
 		iService.getFlags(new AsyncCallback<List<SavedHQLInterface.Flag>>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -258,7 +261,7 @@ public class SavedHQLPage extends Composite {
 							SavedHQLInterface.Option option = result.get(i);
 							ListBox list = new ListBox(option.isMultiSelect());
 							if (!option.isMultiSelect())
-								list.addItem("Select...", "-1");
+								list.addItem(MESSAGES.itemSelect(), "-1");
 							for (SavedHQLInterface.IdValue v: option.values())
 								list.addItem(v.getText(), v.getValue());
 							final UniTimeWidget<ListBox> u = new UniTimeWidget<ListBox>(list);
@@ -268,7 +271,7 @@ public class SavedHQLPage extends Composite {
 							if (list.isMultipleSelect()) {
 								for (int j = 0; j < list.getItemCount(); j++)
 									list.setItemSelected(j, true);
-								u.setPrintText("All");
+								u.setPrintText(MESSAGES.itemAll());
 							} else if (list.getItemCount() == 2) {
 								list.setSelectedIndex(1);
 								u.setPrintText(list.getItemText(1));
@@ -286,7 +289,7 @@ public class SavedHQLPage extends Composite {
 										} else hasAll = false;
 									}
 									if (hasAll && u.getWidget().getItemCount() > 5)
-										selected = "All";
+										selected = MESSAGES.itemAll();
 									if (selected.length() > 150)
 										selected = selected.substring(0, 147) + "...";
 									u.setPrintText(selected);
@@ -294,15 +297,15 @@ public class SavedHQLPage extends Composite {
 								}
 							});
 						}
-						iTableHeader = new UniTimeHeaderPanel("Results");
-						iTableHeader.addButton("previous", "Previous", 75, new ClickHandler() {
+						iTableHeader = new UniTimeHeaderPanel(MESSAGES.sectResults());
+						iTableHeader.addButton("previous", MESSAGES.buttonPrevious(), 75, new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
 								iFirstLine -= 100;
 								execute();
 							}
 						});
-						iTableHeader.addButton("next", "Next", 75, new ClickHandler() {
+						iTableHeader.addButton("next", MESSAGES.buttonNext(), 75, new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
 								iFirstLine += 100;
@@ -365,41 +368,41 @@ public class SavedHQLPage extends Composite {
 	public void openDialog(SavedHQLInterface.Query q) {
 		iDialogQuery = q;
 		if (iDialog == null) {
-			iDialog = new UniTimeDialogBox(false, true);
+			iDialog = new UniTimeDialogBox(true, false);
 			iDialogForm = new SimpleForm();
 			iDialogName = new UniTimeTextBox(100, 680);
-			iDialogForm.addRow("Name:", iDialogName);
+			iDialogForm.addRow(MESSAGES.propName(), iDialogName);
 			iDialogDescription = new TextArea();
 			iDialogDescription.setStyleName("unitime-TextArea");
 			iDialogDescription.setVisibleLines(5);
 			iDialogDescription.setCharacterWidth(120);
-			iDialogForm.addRow("Description:", iDialogDescription);
+			iDialogForm.addRow(MESSAGES.propDescription(), iDialogDescription);
 			iDialogForm.getCellFormatter().setVerticalAlignment(1, 0, HasVerticalAlignment.ALIGN_TOP);
 			iDialogQueryArea = new TextArea();
 			iDialogQueryArea.setStyleName("unitime-TextArea");
 			iDialogQueryArea.setVisibleLines(10);
 			iDialogQueryArea.setCharacterWidth(120);
-			iDialogForm.addRow("Query:", iDialogQueryArea);
+			iDialogForm.addRow(MESSAGES.propQuery(), iDialogQueryArea);
 			iDialogForm.getCellFormatter().setVerticalAlignment(2, 0, HasVerticalAlignment.ALIGN_TOP);
 			for (int i = 0; i < iFlags.size(); i++) {
 				SavedHQLInterface.Flag f = iFlags.get(i);
 				CheckBox ch = new CheckBox(f.getText());
-				iDialogForm.addRow(i == 0 ? "Flags:" : "", ch);
+				iDialogForm.addRow(i == 0 ? MESSAGES.propFlags() : "", ch);
 			}
 			iDialogHeader = new UniTimeHeaderPanel();
 			iDialogForm.addBottomRow(iDialogHeader);
-			iDialogHeader.addButton("save", "Save", 75, new ClickHandler() {
+			iDialogHeader.addButton("save", MESSAGES.opQuerySave(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iDialogQuery.setName(iDialogName.getText());
 					if (iDialogName.getText().isEmpty()) {
-						iDialogHeader.setErrorMessage("Name is required.");
+						iDialogHeader.setErrorMessage(MESSAGES.errorNameIsRequired());
 						return;
 					}
 					iDialogQuery.setDescription(iDialogDescription.getText());
 					iDialogQuery.setQuery(iDialogQueryArea.getText());
 					if (iDialogQueryArea.getText().isEmpty()) {
-						iDialogHeader.setErrorMessage("Query is required.");
+						iDialogHeader.setErrorMessage(MESSAGES.errorQueryIsRequired());
 						return;
 					}
 					int flags = 0;
@@ -409,11 +412,11 @@ public class SavedHQLPage extends Composite {
 						CheckBox ch = (CheckBox)iDialogForm.getWidget(3 + i, 1);
 						if (ch.getValue()) {
 							flags += f.getValue();
-							if (f.getText().startsWith("Appearance:")) hasAppearance = true;
+							if (f.isAppearance()) hasAppearance = true;
 						}
 					}
 					if (!hasAppearance) {
-						iDialogHeader.setErrorMessage("At least one appearance must be selected.");
+						iDialogHeader.setErrorMessage(MESSAGES.errorNoAppearanceSelected());
 						return;
 					}
 					iDialogQuery.setFlags(flags);
@@ -431,33 +434,32 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
-			iDialogHeader.addButton("test", "Test", 75, new ClickHandler() {
+			iDialogHeader.addButton("test", MESSAGES.opQueryTest(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (iDialogQueryArea.getText().isEmpty()) {
-						iDialogHeader.setErrorMessage("Query is required.");
+						iDialogHeader.setErrorMessage(MESSAGES.errorQueryIsRequired());
 						return;
 					}
 					iDialogQuery.setQuery(iDialogQueryArea.getText());
-					LoadingWidget.getInstance().show("Testing query...");
+					LoadingWidget.getInstance().show(MESSAGES.waitTestingQuery());
 					iService.execute(iDialogQuery, new ArrayList<SavedHQLInterface.IdValue>(), 0, 101, new AsyncCallback<List<String[]>>() {
 						@Override
 						public void onFailure(Throwable caught) {
-							iDialogHeader.setErrorMessage("Test failed.");
+							iDialogHeader.setErrorMessage(MESSAGES.failedTestNoReason());
 							LoadingWidget.getInstance().hide();
-							Window.alert(caught.getMessage());
+							UniTimeNotifications.error(MESSAGES.failedTest(caught.getMessage()), caught);
 						}
 
 						@Override
 						public void onSuccess(List<String[]> result) {
-							iDialogHeader.setMessage("Success (" +
-									(result.size() <= 1 ? "no row returned" : result.size() > 101 ? "100+ rows returned" : (result.size() - 1) + " rows returned") + ")");
+							iDialogHeader.setMessage(result.size() <= 1 ? MESSAGES.infoTestSucceededNoResults() : result.size() > 101 ? MESSAGES.infoTestSucceededWith100OrMoreRows() : MESSAGES.infoTestSucceededWithRows(result.size() - 1));
 							LoadingWidget.getInstance().hide();
 						}
 					});
 				}
 			});
-			iDialogHeader.addButton("delete", "Delete", 75, new ClickHandler() {
+			iDialogHeader.addButton("delete", MESSAGES.opQueryDelete(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iService.delete(iDialogQuery.getId(), new AsyncCallback<Boolean>() {
@@ -474,7 +476,7 @@ public class SavedHQLPage extends Composite {
 					});
 				}
 			});
-			iDialogHeader.addButton("back", "Back", 75, new ClickHandler() {
+			iDialogHeader.addButton("back", MESSAGES.opQueryBack(), 75, new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					iDialog.hide();
@@ -482,15 +484,16 @@ public class SavedHQLPage extends Composite {
 			});
 			iDialog.setWidget(iDialogForm);
 		}
-		iDialog.setText(q == null ? "New Report" : "Edit " + q.getName());
+		iDialog.setText(q == null ? MESSAGES.dialogNewReport() : MESSAGES.dialogEditReport(q.getName()));
 		iDialogHeader.setEnabled("delete", q != null);
+		iDialogHeader.clearMessage();
 		iDialogName.setText(q == null ? "" : q.getName());
 		iDialogDescription.setText(q == null ? "" : q.getDescription());
 		iDialogQueryArea.setText(q == null ? "" : q.getQuery());
 		for (int i = 0; i < iFlags.size(); i++) {
 			SavedHQLInterface.Flag f = iFlags.get(i);
 			CheckBox ch = (CheckBox)iDialogForm.getWidget(3 + i, 1);
-			ch.setValue(q == null ? f.getText().equalsIgnoreCase("Appearance: " + iAppearance) : (q.getFlags() & f.getValue()) != 0); 
+			ch.setValue(q == null ? iAppearance.equals(f.getAppearance()) : (q.getFlags() & f.getValue()) != 0); 
 		}
 		if (iDialogQuery == null) iDialogQuery = new SavedHQLInterface.Query();
 		iDialog.center();
@@ -498,7 +501,7 @@ public class SavedHQLPage extends Composite {
 	
 	public void loadQueries(final Long select, final boolean reload) {
 		if (!LoadingWidget.getInstance().isShowing())
-			LoadingWidget.getInstance().show("Loading reports...");
+			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReports());
 		iService.queries(iAppearance, new AsyncCallback<List<SavedHQLInterface.Query>>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -513,9 +516,9 @@ public class SavedHQLPage extends Composite {
 				}
 				iQuerySelector.getWidget().clear();
 				if (result.isEmpty()) {
-					iHeader.setErrorMessage("No reports are avaialable.");
+					iHeader.setErrorMessage(MESSAGES.errorNoReportsAvailable());
 				} else {
-					iQuerySelector.getWidget().addItem("Select...", "-1");
+					iQuerySelector.getWidget().addItem(MESSAGES.itemSelect(), "-1");
 					iQueries = result;
 					for (int i = 0; i < result.size(); i++) {
 						iQuerySelector.getWidget().addItem(result.get(i).getName(), result.get(i).getId().toString());
@@ -570,7 +573,7 @@ public class SavedHQLPage extends Composite {
 	
 	public void populate(List<String[]> result) {
 		if (result == null || result.size() <= 1) {
-			iTableHeader.setMessage("No results.");
+			iTableHeader.setMessage(MESSAGES.errorNoResults());
 		} else {
 			for (int i = 0; i < result.size(); i++) {
 				String[] row = result.get(i);
@@ -604,7 +607,7 @@ public class SavedHQLPage extends Composite {
 							}
 							@Override
 							public String getName() {
-								return "Sort by " + name;
+								return MESSAGES.opSortBy(name);
 							}
 						});
 						line.add(h);
@@ -621,11 +624,11 @@ public class SavedHQLPage extends Composite {
 			iHeader.setEnabled("print", true);
 			iHeader.setEnabled("export", iTable.getRowCount() > 1);
 			if (result.size() == 102)
-				iTableHeader.setMessage("Showing lines " + (iFirstLine + 1) + " -- " + (iFirstLine + 100));
+				iTableHeader.setMessage(MESSAGES.infoShowingLines(iFirstLine + 1, iFirstLine + 100));
 			else if (iFirstLine > 0)
-				iTableHeader.setMessage("Showing lines " + (iFirstLine + 1) + " -- " + (iFirstLine + result.size() - 1));
+				iTableHeader.setMessage(MESSAGES.infoShowingLines(iFirstLine + 1, iFirstLine + result.size() - 1));
 			else 
-				iTableHeader.setMessage("Showing all " + (result.size() - 1) + " lines.");
+				iTableHeader.setMessage(MESSAGES.infoShowingAllLines(result.size() - 1));
 			iTableHeader.setEnabled("next", result.size() > 101);
 			iTableHeader.setEnabled("previous", iFirstLine > 0);
 			if (iLastSort >= 0) {
@@ -721,7 +724,7 @@ public class SavedHQLPage extends Composite {
 			}
 		}
 		if (query == null) {
-			iHeader.setErrorMessage("No report is selected.");
+			iHeader.setErrorMessage(MESSAGES.errorNoReportSelected());
 			return;
 		}
 		List<SavedHQLInterface.IdValue> options = new ArrayList<SavedHQLInterface.IdValue>();
@@ -746,7 +749,7 @@ public class SavedHQLPage extends Composite {
 					value = list.getValue(list.getSelectedIndex());
 				}
 				if (value.isEmpty()) {
-					iHeader.setErrorMessage(option.getName() + " not selected.");
+					iHeader.setErrorMessage(MESSAGES.errorItemNotSelected(option.getName()));
 					return;
 				}
 				o.setText(value);
@@ -758,7 +761,7 @@ public class SavedHQLPage extends Composite {
 		iTable.clearTable(); iFirstField = null;
 		iTableHeader.clearMessage();
 		iHeader.clearMessage();
-		LoadingWidget.getInstance().show("Executing " + query.getName() + " ...");
+		LoadingWidget.getInstance().show(MESSAGES.waitExecuting(query.getName()));
 		History.newItem(iLastHistory + ":" + iFirstLine + ":" + iLastSort, false);
 		iService.execute(query, options, iFirstLine, 101, new AsyncCallback<List<String[]>>() {
 			@Override

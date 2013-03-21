@@ -35,9 +35,11 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.Exporter;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
 import org.unitime.timetable.gwt.shared.SavedHQLInterface;
@@ -48,6 +50,7 @@ import org.unitime.timetable.security.UserContext;
 
 @Service("org.unitime.timetable.export.Exporter:hql-report.csv")
 public class SavedHqlExportToCSV implements Exporter {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(SavedHqlExportToCSV.class);
 	
 	@Override
@@ -104,7 +107,7 @@ public class SavedHqlExportToCSV implements Exporter {
 					if (value == null || value.isEmpty()) {
 						Map<Long, String> vals = o.values(user);
 						if (vals == null || vals.isEmpty())
-							throw new SavedHQLException("Unable to set parameter " + o.name() + ": no available values.");
+							throw new SavedHQLException(MESSAGES.errorUnableToSetParameterNoValues(o.name()));
 						value = "";
 						for (Long id: vals.keySet()) {
 							if (!value.isEmpty()) value += ",";
@@ -141,7 +144,7 @@ public class SavedHqlExportToCSV implements Exporter {
 			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			throw new SavedHQLException("Execution failed: " + e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")"));
+			throw new SavedHQLException(MESSAGES.failedExecution(e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")")));
 		}
 	}
 	

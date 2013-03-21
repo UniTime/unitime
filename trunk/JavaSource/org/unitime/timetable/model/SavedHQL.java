@@ -37,20 +37,21 @@ public class SavedHQL extends BaseSavedHQL {
 	}
 	
 	public static enum Flag {
-		APPEARANCE_COURSES("Appearance: Courses", true),
-		APPEARANCE_EXAMS("Appearance: Examinations", true),
-		APPEARANCE_SECTIONING("Appearance: Student Sectioning", true),
-		APPEARANCE_EVENTS("Appearance: Events", true),
-		APPEARANCE_ADMINISTRATION("Appearance: Administration", true),
-		ADMIN_ONLY("Restrictions: Administrator Only", false)
+		APPEARANCE_COURSES("Appearance: Courses", "courses"),
+		APPEARANCE_EXAMS("Appearance: Examinations", "examinations"),
+		APPEARANCE_SECTIONING("Appearance: Student Sectioning", "sectioning"),
+		APPEARANCE_EVENTS("Appearance: Events", "events"),
+		APPEARANCE_ADMINISTRATION("Appearance: Administration", "administration"),
+		ADMIN_ONLY("Restrictions: Administrator Only")
 		;
 		private String iDescription;
-		private boolean iAppearance;
-		Flag(String desc, boolean appearance) { iDescription = desc; iAppearance = appearance; }
+		private String iAppearance;
+		Flag(String desc, String appearance) { iDescription = desc; iAppearance = appearance; }
+		Flag(String desc) { this(desc, null); }
 		public int flag() { return 1 << ordinal(); }
 		public boolean isSet(int type) { return (type & flag()) != 0; }
 		public String description() { return iDescription; }
-		public boolean isAppearance() { return iAppearance; }
+		public String getAppearance() { return iAppearance; }
 	}
 	
 	private static interface OptionImplementation {
@@ -98,7 +99,7 @@ public class SavedHQL extends BaseSavedHQL {
 			}
 		}),
 		SUBJECTS("Subject Areas", true, true, SUBJECT.iImplementation),
-		BUILDING("Buildings", true, false, new OptionImplementation() {
+		BUILDING("Building", true, false, new OptionImplementation() {
 			@Override
 			public Map<Long, String> getValues(UserContext user) {
 				Long sessionId = user.getCurrentAcademicSessionId();
