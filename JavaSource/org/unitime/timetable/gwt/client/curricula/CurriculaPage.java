@@ -28,8 +28,10 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumEdit.EditFinishedEvent;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -62,6 +64,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  * @author Tomas Muller
  */
 public class CurriculaPage extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
 	private CurriculumFilterBox iFilter = null;
@@ -88,22 +91,22 @@ public class CurriculaPage extends Composite {
 		iFilterPanel = new HorizontalPanel();
 		iFilterPanel.setSpacing(3);
 		
-		Label filterLabel = new Label("Filter:");
+		Label filterLabel = new Label(MESSAGES.propFilter());
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iFilter = new CurriculumFilterBox();
 		iFilterPanel.add(iFilter);
 		
-		iSearch = new AriaButton("<u>S</u>earch");
+		iSearch = new AriaButton(MESSAGES.buttonSearch());
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		
-		iPrint = new AriaButton("<u>P</u>rint");
+		iPrint = new AriaButton(MESSAGES.buttonPrint());
 		iPrint.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iPrint);		
 
-		iNew = new AriaButton("<u>A</u>dd New");
+		iNew = new AriaButton(MESSAGES.buttonAddNew());
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iNew);
@@ -184,7 +187,7 @@ public class CurriculaPage extends Composite {
 			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadCurricula();
 		} else {
-			showLoading("Loading curricula ...");
+			showLoading(MESSAGES.waitLoadingCurricula());
 			iService.lastCurriculaFilter(new AsyncCallback<String>() {
 				
 				@Override
@@ -198,7 +201,8 @@ public class CurriculaPage extends Composite {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					iCurriculaTable.setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
+					iCurriculaTable.setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
+					UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
 					hideLoading();
 					ToolBox.checkAccess(caught);
 				}
@@ -212,7 +216,7 @@ public class CurriculaPage extends Composite {
 				if (event.getValue() == null || "0:0".equals(event.getValue())) return;
 				String command = event.getValue();
 				if (command.startsWith("detail=")) {
-					showLoading("Loading curriculum ...");
+					showLoading(MESSAGES.waitLoadingCurriculum());
 					iService.loadCurriculum(Long.parseLong(command.substring("detail=".length())), new AsyncCallback<CurriculumInterface>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -227,7 +231,7 @@ public class CurriculaPage extends Composite {
 						}
 					});
 				} else if ("new".equals(command)) {
-					UniTimePageLabel.getInstance().setPageName("Add Curriculum");
+					UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddCurriculum());
 					iCurriculumPanel.addNew();
 					iPanel.setWidget(iCurriculumPanel);
 					Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -236,7 +240,7 @@ public class CurriculaPage extends Composite {
 						iFilter.setValue(command.replace("%20", " "), true);
 					loadCurricula();
 					if (iCurriculumPanel.isVisible()) {
-						UniTimePageLabel.getInstance().setPageName("Curricula");
+						UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 						iPanel.setWidget(iCurriculaPanel);
 						iCurriculaTable.scrollIntoView();
 						Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -249,7 +253,7 @@ public class CurriculaPage extends Composite {
 		iCurriculaTable.addCurriculumClickHandler(new CurriculaTable.CurriculumClickHandler() {
 			@Override
 			public void onClick(CurriculaTable.CurriculumClickedEvent evt) {
-				showLoading("Loading curriculum " + evt.getCurriculum().getName() + " ...");
+				showLoading(MESSAGES.waitLoadingCurriculumWithName(evt.getCurriculum().getName()));
 				iService.loadCurriculum(evt.getCurriculum().getId(), new AsyncCallback<CurriculumInterface>() {
 
 					@Override
@@ -272,7 +276,7 @@ public class CurriculaPage extends Composite {
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
 				History.newItem("new", false);
-				UniTimePageLabel.getInstance().setPageName("Add Curriculum");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddCurriculum());
 				iCurriculumPanel.addNew();
 				iPanel.setWidget(iCurriculumPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -284,7 +288,7 @@ public class CurriculaPage extends Composite {
 			@Override
 			public void doEdit(List<CurriculumInterface> curricula) {
 				iClassificationsEdit.setData(curricula);
-				UniTimePageLabel.getInstance().setPageName("Curriculum Requested Enrollments");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurriculumRequestedEnrollments());
 				iPanel.setWidget(iClassificationsEdit);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				History.newItem("requests", false);
@@ -296,7 +300,7 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onSave(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Curricula");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -305,7 +309,7 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onDelete(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Curricula");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -314,7 +318,7 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onBack(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Curricula");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -326,7 +330,7 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onSave(ClassificationsEdit.EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Curricula");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 				iPanel.setWidget(iCurriculaPanel);
 				loadCurricula();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -335,7 +339,7 @@ public class CurriculaPage extends Composite {
 			
 			@Override
 			public void onBack(ClassificationsEdit.EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Curricula");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageCurricula());
 				iPanel.setWidget(iCurriculaPanel);
 				iCurriculaTable.scrollIntoView();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());

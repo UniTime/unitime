@@ -42,7 +42,9 @@ import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculaException;
@@ -101,6 +103,7 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("curricula.gwt")
 public class CurriculaServlet implements CurriculaService {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(CurriculaServlet.class);
 	private static DecimalFormat sDF = new DecimalFormat("0.0");
 	private CourseDetailsProvider iCourseDetailsProvider;
@@ -179,7 +182,7 @@ public class CurriculaServlet implements CurriculaService {
 			try {
 				for (Long curriculumId: curriculumIds) {
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
-					if (c == null) throw new CurriculaException("curriculum " + curriculumId + " does not exist anymore, please refresh your data");
+					if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId == null ? "null" : curriculumId.toString()));
 					
 					Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
 					
@@ -272,7 +275,7 @@ public class CurriculaServlet implements CurriculaService {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
-				if (c == null) throw new CurriculaException("curriculum " + curriculumId + " does not exist");
+				if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId == null ? "null" : curriculumId.toString()));
 				Hashtable<String,HashMap<String, Float>> rules = getRules(hibSession, c.getAcademicArea().getUniqueId());
 				CurriculumInterface curriculumIfc = new CurriculumInterface();
 				curriculumIfc.setId(c.getUniqueId());
@@ -442,14 +445,14 @@ public class CurriculaServlet implements CurriculaService {
 				if (curriculum.hasCourses())
 					for (CourseInterface course: curriculum.getCourses()) {
 						CourseOffering courseOffering = getCourse(hibSession, course.getCourseName());
-						if (courseOffering == null) throw new CurriculaException("course " + course.getCourseName() + " does not exist");
+						if (courseOffering == null) throw new CurriculaException(MESSAGES.errorCourseDoesNotExist(course.getCourseName()));
 						courses.put(course.getCourseName(), courseOffering);
 					}
 			
 				Curriculum c = null;
 				if (curriculum.getId() != null) {
 					c = CurriculumDAO.getInstance().get(curriculum.getId(), hibSession);
-					if (c == null) throw new CurriculaException("Curriculum " + curriculum.getId() + " no longer exists.");
+					if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculum.getId().toString()));
 				} else {
 					c = new Curriculum();
 				}
@@ -756,10 +759,10 @@ public class CurriculaServlet implements CurriculaService {
 				tx = hibSession.beginTransaction();
 				
 				if (curriculumId == null) 
-					throw new CurriculaException("Unsaved curriculum cannot be deleted.");
+					throw new CurriculaException(MESSAGES.errorCannotDeleteUnsavedCurriculum());
 				
 				Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
-				if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+				if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId.toString()));
 				
 				ChangeLog.addChange(hibSession,
 						getSessionContext(),
@@ -806,10 +809,10 @@ public class CurriculaServlet implements CurriculaService {
 				
 				for (Long curriculumId: curriculumIds) {
 					if (curriculumId == null) 
-						throw new CurriculaException("Unsaved curriculum cannot be deleted.");
+						throw new CurriculaException(MESSAGES.errorCannotDeleteUnsavedCurriculum());
 					
 					Curriculum c = CurriculumDAO.getInstance().get(curriculumId, hibSession);
-					if (c == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+					if (c == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId.toString()));
 					
 					ChangeLog.addChange(hibSession,
 							getSessionContext(),
@@ -867,22 +870,22 @@ public class CurriculaServlet implements CurriculaService {
 				
 				for (Long curriculumId: curriculumIds) {
 					if (curriculumId == null) 
-						throw new CurriculaException("Unsaved curriculum cannot be merged.");
+						throw new CurriculaException(MESSAGES.errorCannotMergeUnsavedCurriculum());
 					
 					Curriculum curriculum = CurriculumDAO.getInstance().get(curriculumId, hibSession);
-					if (curriculum == null) throw new CurriculaException("Curriculum " + curriculumId + " no longer exists.");
+					if (curriculum == null) throw new CurriculaException(MESSAGES.errorCurriculumDoesNotExist(curriculumId.toString()));
 					
 					cidx++;
 						
 					if (mergedCurriculum.getAcademicArea() == null) {
 						mergedCurriculum.setAcademicArea(curriculum.getAcademicArea());
 					} else if (!mergedCurriculum.getAcademicArea().equals(curriculum.getAcademicArea()))
-						throw new CurriculaException("Selected curricula have different academic areas.");
+						throw new CurriculaException(MESSAGES.errorCannotMergeDifferentAcademicAreas());
 
 					if (mergedCurriculum.getDepartment() == null) {
 						mergedCurriculum.setDepartment(curriculum.getDepartment());
 					} else if (!mergedCurriculum.getDepartment().equals(curriculum.getDepartment()))
-						throw new CurriculaException("Selected curricula have different departments.");
+						throw new CurriculaException(MESSAGES.errorCannotMergeDifferentDepartments());
 						
 					mergedCurriculum.getMajors().addAll(curriculum.getMajors());
 					
@@ -1487,7 +1490,7 @@ public class CurriculaServlet implements CurriculaService {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				CourseOffering courseOffering = getCourse(hibSession, courseName);
-				if (courseOffering == null) throw new CurriculaException("course " + courseName + " does not exist");
+				if (courseOffering == null) throw new CurriculaException(MESSAGES.errorCourseDoesNotExist(courseName));
 				
 				results = loadCurriculaForACourse(hibSession, academicClassifications, academicAreas, courseOffering);
 			} finally {
@@ -1519,7 +1522,7 @@ public class CurriculaServlet implements CurriculaService {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
-				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
+				if (offering == null) throw new CurriculaException(MESSAGES.errorOfferingDoesNotExist(offeringId == null ? "null" : offeringId.toString()));
 				
 				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
 					CourseOffering courseOffering = i.next();
@@ -1741,9 +1744,9 @@ public class CurriculaServlet implements CurriculaService {
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			try {
 				CourseOffering courseOffering = getCourse(hibSession, course);
-				if (courseOffering == null) throw new CurriculaException("course " + course + " does not exist");
+				if (courseOffering == null) throw new CurriculaException(MESSAGES.errorCourseDoesNotExist(course));
 				if (iCourseDetailsProvider == null)
-					throw new CurriculaException("course detail interface not provided");
+					throw new CurriculaException(MESSAGES.errorCourseDetailsInterfaceNotProvided());
 				String details = iCourseDetailsProvider.getDetails(
 						new AcademicSessionInfo(courseOffering.getSubjectArea().getSession()),
 						courseOffering.getSubjectAreaAbbv(), courseOffering.getCourseNbr());
@@ -1781,7 +1784,7 @@ public class CurriculaServlet implements CurriculaService {
 						.setCacheable(true).setMaxResults(1).list()) {
 					courseOffering = c; break;
 				}
-				if (courseOffering == null) throw new CurriculaException("course " + course + " does not exist");
+				if (courseOffering == null) throw new CurriculaException(MESSAGES.errorCourseDoesNotExist(course));
 				List<Class_> classes = new ArrayList<Class_>();
 				for (Iterator<InstrOfferingConfig> i = courseOffering.getInstructionalOffering().getInstrOfferingConfigs().iterator(); i.hasNext(); ) {
 					InstrOfferingConfig config = i.next();
@@ -1884,7 +1887,7 @@ public class CurriculaServlet implements CurriculaService {
 		try {
 			UserContext user = getSessionContext().getUser();
 			if (user == null) throw new PageAccessException(
-					getSessionContext().isHttpSessionNew() ? "Your timetabling session has expired. Please log in again." : "Login is required to use this page.");
+					getSessionContext().isHttpSessionNew() ? MESSAGES.authenticationExpired() : MESSAGES.authenticationRequired());
 
 			HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>> rules = new HashMap<AcademicAreaInterface, HashMap<MajorInterface,HashMap<AcademicClassificationInterface, Number[]>>>();
 			
@@ -1992,7 +1995,7 @@ public class CurriculaServlet implements CurriculaService {
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!canEditProjectionRules())
-				throw new CurriculaException("not authorized to change curriculum projection rules");
+				throw new CurriculaException(MESSAGES.authenticationInsufficient());
 
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -2082,7 +2085,7 @@ public class CurriculaServlet implements CurriculaService {
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!isAdmin())
-				throw new CurriculaException("not authorized to (re)create curricula");
+				throw new CurriculaException(MESSAGES.authenticationInsufficient());
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -2315,7 +2318,7 @@ public class CurriculaServlet implements CurriculaService {
 		long s0 = System.currentTimeMillis();
 		try {
 			if (!isAdmin())
-				throw new CurriculaException("not authorized to populate course projected demands");
+				throw new CurriculaException(MESSAGES.authenticationInsufficient());
 			
 			org.hibernate.Session hibSession = CurriculumDAO.getInstance().getSession();
 			Transaction tx = null;
@@ -2441,7 +2444,7 @@ public class CurriculaServlet implements CurriculaService {
 				tx = hibSession.beginTransaction();
 				
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
-				if (offering == null) throw new CurriculaException("offering " + offeringId + " does not exist");
+				if (offering == null) throw new CurriculaException(MESSAGES.errorOfferingDoesNotExist(offeringId == null ? "null" : offeringId.toString()));
 				
 				for (Iterator<CourseOffering> i = offering.getCourseOfferings().iterator(); i.hasNext(); ) {
 					CourseOffering courseOffering = i.next();

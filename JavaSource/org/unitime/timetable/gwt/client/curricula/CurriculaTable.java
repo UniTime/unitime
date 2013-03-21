@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage.ProjectionRulesEvent;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -37,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HintProvider;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -74,6 +76,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class CurriculaTable extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
@@ -104,7 +107,7 @@ public class CurriculaTable extends Composite {
 	private EditClassificationHandler iEditClassificationHandler = null;
 	
 	public CurriculaTable() {
-		iOperations = new AriaButton("<u>M</u>ore &or;");
+		iOperations = new AriaButton(MESSAGES.buttonMoreOperations());
 		iOperations.addStyleName("unitime-NoPrint");
 
 		iTable = new UniTimeTable<CurriculumInterface>();
@@ -117,7 +120,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Select All";
+				return MESSAGES.opSelectAll();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -142,7 +145,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Clear All";
+				return MESSAGES.opClearSelection();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -166,7 +169,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Edit Requested Enrollments";
+				return MESSAGES.opEditRequestedEnrollments();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -187,7 +190,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Delete Selected Curricula";
+				return MESSAGES.opDeleteSelectedCurricula();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -201,14 +204,15 @@ public class CurriculaTable extends Composite {
 			public void execute() {
 				Set<Long> deleteIds = markSelected();
 				if (!deleteIds.isEmpty()) {
-					if (Window.confirm("Do you realy want to delete the selected " + (deleteIds.size() == 1 ? "curriculum" : "curricula") + "?")) {
-						LoadingWidget.getInstance().show("Deleting selected curricula ...");
+					if (Window.confirm(deleteIds.size() == 1 ? MESSAGES.confirmDeleteSelectedCurriculum() : MESSAGES.confirmDeleteSelectedCurricula())) {
+						LoadingWidget.getInstance().show(MESSAGES.waitDeletingSelectedCurricula());
 						iService.deleteCurricula(deleteIds, new AsyncCallback<Boolean>() {
 
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								setError("Unable to delete selected curricula (" + caught.getMessage() + ")");
+								setError(MESSAGES.failedToDeleteSelectedCurricula(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedToDeleteSelectedCurricula(caught.getMessage()), caught);
 								unmarkSelected();
 							}
 
@@ -228,7 +232,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Merge Selected Curricula";
+				return MESSAGES.opMergeSelectedCurricula();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -257,14 +261,15 @@ public class CurriculaTable extends Composite {
 			public void execute() {
 				Set<Long> mergeIds = markSelected();
 				if (!mergeIds.isEmpty()) {
-					if (Window.confirm("Do you realy want to merge the selected " + (mergeIds.size() == 1 ? "curriculum" : "curricula") + "?")) {
-						LoadingWidget.getInstance().show("Merging selected curricula ...");
+					if (Window.confirm(mergeIds.size() == 1 ? MESSAGES.confirmMergeSelectedCurriculum() : MESSAGES.confirmMergeSelectedCurricula())) {
+						LoadingWidget.getInstance().show(MESSAGES.waitMergingSelectedCurricula());
 						iService.mergeCurricula(mergeIds, new AsyncCallback<Boolean>() {
 
 							@Override
 							public void onFailure(Throwable caught) {
 								LoadingWidget.getInstance().hide();
-								setError("Unable to merge selected curricula (" + caught.getMessage() + ")");
+								setError(MESSAGES.failedToMergeSelectedCurricula(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedToMergeSelectedCurricula(caught.getMessage()), caught);
 								unmarkSelected();
 							}
 
@@ -284,7 +289,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Curriculum Projection Rules";
+				return MESSAGES.opCurriculumProjectionRules();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -302,7 +307,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Update Requested Enrollment by Projection Rules";
+				return MESSAGES.opUpdateRequestedEnrollmentByProjectionRules();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -316,14 +321,14 @@ public class CurriculaTable extends Composite {
 			public void execute() {
 				Set<Long> curIds = markSelected();
 				if (iSelectedCurricula.isEmpty()) curIds = null;
-				if (Window.confirm("Do you realy want to update " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + "?")) {
-					LoadingWidget.getInstance().show("Updating " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + " ... " +
-							"&nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...", 300000);
+				if (Window.confirm(curIds == null ? iIsAdmin ? MESSAGES.confirmUpdateAllCurricula() : MESSAGES.confirmUpdateYourCurricula() : curIds.size() == 1 ? MESSAGES.confirmUpdateSelectedCurriculum() : MESSAGES.confirmUpdateSelectedCurricula())) {
+					LoadingWidget.getInstance().show(MESSAGES.waitUpdatingCurricula(), 300000);
 					iService.updateCurriculaByProjections(curIds, false, new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							setError("Unable to update curricula (" + caught.getMessage() + ")");
+							setError(MESSAGES.failedToUpdateCurricula(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToUpdateCurricula(caught.getMessage()), caught);
 							unmarkSelected();
 						}
 
@@ -341,7 +346,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Update Requested Enrollment And Course Projections";
+				return MESSAGES.opUpdateRequestedEnrollmentAndCourseProjections();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -355,14 +360,14 @@ public class CurriculaTable extends Composite {
 			public void execute() {
 				Set<Long> curIds = markSelected();
 				if (iSelectedCurricula.isEmpty()) curIds = null;
-				if (Window.confirm("Do you realy want to update " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + "?")) {
-					LoadingWidget.getInstance().show("Updating " + (curIds == null ? "all " + (iIsAdmin ? "": "your ") + "curricula" : "the selected " + (curIds.size() == 1 ? "curriculum" : "curricula")) + " ... " +
-							"&nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...", 300000);
+				if (Window.confirm(curIds == null ? iIsAdmin ? MESSAGES.confirmUpdateAllCurricula() : MESSAGES.confirmUpdateYourCurricula() : curIds.size() == 1 ? MESSAGES.confirmUpdateSelectedCurriculum() : MESSAGES.confirmUpdateSelectedCurricula())) {
+					LoadingWidget.getInstance().show(MESSAGES.waitUpdatingCurricula(), 300000);
 					iService.updateCurriculaByProjections(curIds, true, new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							LoadingWidget.getInstance().hide();
-							setError("Unable to update curricula (" + caught.getMessage() + ")");
+							setError(MESSAGES.failedToUpdateCurricula(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToUpdateCurricula(caught.getMessage()), caught);
 							unmarkSelected();
 						}
 
@@ -380,7 +385,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Populate Course Projected Demands";
+				return MESSAGES.opPopulateCourseProjectedDemands();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -392,13 +397,14 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public void execute() {
-				if (Window.confirm("Do you really want to populate projected demands for all courses?")) {
-					LoadingWidget.getInstance().show("Populating projected demands for all courses ...");
+				if (Window.confirm(MESSAGES.confirmPopulateProjectedDemands())) {
+					LoadingWidget.getInstance().show(MESSAGES.waitPopulatingProjectedDemands());
 					iService.populateCourseProjectedDemands(false, new AsyncCallback<Boolean>(){
 
 						@Override
 						public void onFailure(Throwable caught) {
-							setError("Unable to populate course projected demands (" + caught.getMessage() + ")");
+							setError(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()), caught);
 							LoadingWidget.getInstance().hide();
 						}
 
@@ -416,7 +422,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Populate Course Projected Demands (Include Other Students)";
+				return MESSAGES.opPopulateCourseProjectedDemandsIncludeOther();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -428,13 +434,13 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public void execute() {
-				if (Window.confirm("Do you really want to populate projected demands for all courses?")) {
-					LoadingWidget.getInstance().show("Populating projected demands for all courses ... " +
-							"&nbsp;&nbsp;&nbsp;&nbsp;You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
+				if (Window.confirm(MESSAGES.confirmPopulateProjectedDemands())) {
+					LoadingWidget.getInstance().show(MESSAGES.waitPopulatingProjectedDemands());
 					iService.populateCourseProjectedDemands(true, new AsyncCallback<Boolean>(){
 						@Override
 						public void onFailure(Throwable caught) {
-							setError("Unable to populate course projected demands (" + caught.getMessage() + ")");
+							setError(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedToPopulateProjectedDemands(caught.getMessage()), caught);
 							LoadingWidget.getInstance().hide();
 						}
 
@@ -452,7 +458,7 @@ public class CurriculaTable extends Composite {
 		hSelect.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return (iTable.getRowCount() > 1 ? "Recreate" : "Create") + " Curricula from Last-Like Enrollments &amp; Projections";
+				return (iTable.getRowCount() > 1 ? MESSAGES.opRecreateCurriculaFromLastLike() : MESSAGES.opCreateCurriculaFromLastLike());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -465,15 +471,15 @@ public class CurriculaTable extends Composite {
 			@Override
 			public void execute() {
 				markAll();
-				if (Window.confirm("This will delete all existing curricula and create them from scratch. Are you sure you want to do it?")) {
-					if (Window.confirm("Are you REALLY sure you want to recreate all curricula?")) {
-						LoadingWidget.getInstance().show((iTable.getRowCount() > 1 ? "Recreating" : "Creating") + " all curricula ... " +
-								"&nbsp;&nbsp;&nbsp;&nbsp;You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...", 300000);
+				if (Window.confirm(MESSAGES.confirmDeleteAllCurricula())) {
+					if (Window.confirm(MESSAGES.confirmDeleteAllCurriculaSecondWarning())) {
+						LoadingWidget.getInstance().show(MESSAGES.waitCreatingAllCurricula(), 300000);
 						iService.makeupCurriculaFromLastLikeDemands(true, new AsyncCallback<Boolean>(){
 
 							@Override
 							public void onFailure(Throwable caught) {
-								setError("Unable to create curricula (" + caught.getMessage() + ")");
+								setError(MESSAGES.failedToCreateCurricula(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedToCreateCurricula(caught.getMessage()), caught);
 								unmarkAll();
 								LoadingWidget.getInstance().hide();
 							}
@@ -501,7 +507,7 @@ public class CurriculaTable extends Composite {
 		hCurriculum.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isCurriculumAbbv() ? "Show Names" : "Show Abbreviations";
+				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isCurriculumAbbv() ? MESSAGES.opShowNames() : MESSAGES.opShowAbbreviations();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -525,7 +531,7 @@ public class CurriculaTable extends Composite {
 		hCurriculum.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Curriculum";
+				return MESSAGES.opSortBy(MESSAGES.colCurriculum());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -551,13 +557,13 @@ public class CurriculaTable extends Composite {
 		});
 
 		
-		final UniTimeTableHeader hArea = new UniTimeTableHeader("Academic Area");
+		final UniTimeTableHeader hArea = new UniTimeTableHeader(MESSAGES.colAcademicArea());
 		header.add(hArea);
 		hArea.setWidth("100px");
 		hArea.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isAreaAbbv() ? "Show Names" : "Show Abbreviations";
+				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isAreaAbbv() ? MESSAGES.opShowNames() : MESSAGES.opShowAbbreviations();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -581,7 +587,7 @@ public class CurriculaTable extends Composite {
 		hArea.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Academic Area";
+				return MESSAGES.opSortBy(MESSAGES.colAcademicArea());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -607,13 +613,13 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hMajor = new UniTimeTableHeader("Major(s)");
+		final UniTimeTableHeader hMajor = new UniTimeTableHeader(MESSAGES.colMajors());
 		header.add(hMajor);
 		hMajor.setWidth("100px");
 		hMajor.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isMajorAbbv() ? "Show Names" : "Show Codes";
+				return CurriculumCookie.getInstance().getCurriculaDisplayMode().isMajorAbbv() ? MESSAGES.opShowNames() : MESSAGES.opShowAbbreviations();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -639,7 +645,7 @@ public class CurriculaTable extends Composite {
 		hMajor.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Major(s)";
+				return MESSAGES.opSortBy(MESSAGES.colMajors());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -665,14 +671,14 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hDept = new UniTimeTableHeader("Department");
+		final UniTimeTableHeader hDept = new UniTimeTableHeader(MESSAGES.colDepartment());
 		header.add(hDept);
 		hDept.setWidth("100px");
 		for (final DeptMode m: DeptMode.values()) {
 			hDept.addOperation(new Operation() {
 				@Override
 				public String getName() {
-					return "Show " + m.getName();
+					return MESSAGES.opShowItem(m.getName());
 				}
 				@Override
 				public boolean hasSeparator() {
@@ -697,7 +703,7 @@ public class CurriculaTable extends Composite {
 		hDept.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Department";
+				return MESSAGES.opSortBy(MESSAGES.colDepartment());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -722,13 +728,13 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
+		final UniTimeTableHeader hLastLike = new UniTimeTableHeader(MESSAGES.colLastLikeEnrollment());
 		header.add(hLastLike);
 		hLastLike.setWidth("90px");
 		hLastLike.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Last-Like Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.fieldLastLikeEnrollment());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -754,13 +760,13 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by&nbsp;Rule");
+		final UniTimeTableHeader hProjected = new UniTimeTableHeader(MESSAGES.colProjectedByRule());
 		header.add(hProjected);
 		hProjected.setWidth("90px");
 		hProjected.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Curriculum Projection Rules";
+				return MESSAGES.opCurriculumProjectionRules();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -778,7 +784,7 @@ public class CurriculaTable extends Composite {
 		hProjected.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Projection by Rule";
+				return MESSAGES.opSortBy(MESSAGES.fieldProjectedByRule());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -805,13 +811,13 @@ public class CurriculaTable extends Composite {
 		});
 
 
-		final UniTimeTableHeader hExpected = new UniTimeTableHeader("Requested<br>Enrollment");
+		final UniTimeTableHeader hExpected = new UniTimeTableHeader(MESSAGES.colRequestedEnrollment());
 		header.add(hExpected);
 		hExpected.setWidth("90px");
 		hExpected.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Requested Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.fieldRequestedEnrollment());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -837,13 +843,13 @@ public class CurriculaTable extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hEnrolled = new UniTimeTableHeader("Current<br>Enrollment");
+		final UniTimeTableHeader hEnrolled = new UniTimeTableHeader(MESSAGES.colCurrentEnrollment());
 		header.add(hEnrolled);
 		hEnrolled.setWidth("90px");
 		hEnrolled.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Current Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.fieldCurrentEnrollment());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -882,7 +888,7 @@ public class CurriculaTable extends Composite {
 		iPanel.setCellHorizontalAlignment(iLoadingImage, HasHorizontalAlignment.ALIGN_CENTER);
 		iPanel.setCellVerticalAlignment(iLoadingImage, HasVerticalAlignment.ALIGN_MIDDLE);
 
-		iErrorLabel = new Label("No data.");
+		iErrorLabel = new Label(MESSAGES.errorNoData());
 		iErrorLabel.setStyleName("unitime-Message");
 		iPanel.add(iErrorLabel);
 		iErrorLabel.setVisible(true);
@@ -1125,7 +1131,7 @@ public class CurriculaTable extends Composite {
 		iTable.clearTable(1);
 		
 		if (result.isEmpty()) {
-			setError("No curricula matching the above filter found.");
+			setError(MESSAGES.errorNoMatchingCurriculaFound());
 			return;
 		}
 		
@@ -1191,7 +1197,8 @@ public class CurriculaTable extends Composite {
 			@Override
 			public void onFailure(Throwable caught) {
 				iLoadingImage.setVisible(false);
-				setError("Unable to retrieve curricula (" + caught.getMessage() + ").");
+				setError(MESSAGES.failedToLoadCurricula(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadCurricula(caught.getMessage()), caught);
 				ToolBox.checkAccess(caught);
 				if (next != null)
 					next.execute();
@@ -1216,7 +1223,7 @@ public class CurriculaTable extends Composite {
 		panel.setHeight(Math.round(0.9 * Window.getClientHeight()) + "px");
 		panel.setStyleName("unitime-ScrollPanel");
 		dialog.setWidget(panel);
-		dialog.setText("Curriculum Projection Rules");
+		dialog.setText(MESSAGES.dialogCurriculumProjectionRules());
 		rules.addProjectionRulesHandler(new CurriculumProjectionRulesPage.ProjectionRulesHandler() {
 			@Override
 			public void onRulesSaved(ProjectionRulesEvent evt) {
@@ -1234,7 +1241,8 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public void onException(Throwable caught) {
-				setError("Unable to open curriculum projection rules (" + caught.getMessage() + ")");
+				setError(MESSAGES.failedToOpenCurriculumProjectionRules(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToOpenCurriculumProjectionRules(caught.getMessage()), caught);
 			}
 		});
 	}
@@ -1276,11 +1284,11 @@ public class CurriculaTable extends Composite {
 	}
 	
 	public static enum DeptMode {
-		CODE('0', "Code"),
-		ABBV('1', "Abbreviation"),
-		NAME('2', "Name"),
-		ABBV_NAME('3', "Abbv - Name"),
-		CODE_NAME('4', "Code - Name");
+		CODE('0', MESSAGES.fieldCode()),
+		ABBV('1', MESSAGES.fieldAbbreviation()),
+		NAME('2', MESSAGES.fieldName()),
+		ABBV_NAME('3', MESSAGES.fieldAbbv() + " - " + MESSAGES.fieldName()),
+		CODE_NAME('4', MESSAGES.fieldCode() + " - " + MESSAGES.fieldName());
 
 		private char iCode;
 		private String iName;

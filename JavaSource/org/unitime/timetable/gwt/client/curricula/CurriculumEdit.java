@@ -26,12 +26,14 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.ExpectedChangedEvent;
 import org.unitime.timetable.gwt.client.curricula.CurriculaClassifications.NameChangedEvent;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -60,6 +62,7 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
  * @author Tomas Muller
  */
 public class CurriculumEdit extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
 	private SimpleForm iCurriculaTable;
@@ -91,9 +94,9 @@ public class CurriculumEdit extends Composite {
 	private NavigationProvider iNavigation = null;
 	
 	public static enum Mode {
-		ADD("Add Curriculum", true, true),
-		EDIT("Edit Curriculum", true, true),
-		DETAILS("Curriculum Detail", false, false),
+		ADD(MESSAGES.pageAddCurriculum(), true, true),
+		EDIT(MESSAGES.pageEditCurriculum(), true, true),
+		DETAILS(MESSAGES.pageCurriculumDetails(), false, false),
 		DIALOG(null, true, false);
 		
 		private String iTitle;
@@ -129,12 +132,13 @@ public class CurriculumEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (saveCurriculum()) {
-					showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
+					showLoading(MESSAGES.waitSavingCurriculum(iCurriculum.getName()));
 					iService.saveCurriculum(iCurriculum, new AsyncCallback<Long>() {
 						@Override
 						public void onFailure(Throwable caught) {
 							hideLoading();
-							iTitleAndButtons.setErrorMessage("Validation failed (" + caught.getMessage() + ").");
+							iTitleAndButtons.setErrorMessage(MESSAGES.failedValidation(caught.getMessage()));
+							UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()), caught);
 						}
 						@Override
 						public void onSuccess(Long result) {
@@ -152,7 +156,7 @@ public class CurriculumEdit extends Composite {
 						}
 					});
 				} else {
-					iTitleAndButtons.setErrorMessage("Validation failed, see errors below.");
+					iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationSeeBelow());
 				}
 			}
 		};
@@ -160,12 +164,13 @@ public class CurriculumEdit extends Composite {
 		ClickHandler deleteHandler = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				if (!Window.confirm("Do you realy want to delete this curriculum?")) return;
-				showLoading("Deleting curriculum " + iCurriculum.getName() + " ...");
+				if (!Window.confirm(MESSAGES.confirmDeleteThisCurriculum())) return;
+				showLoading(MESSAGES.waitDeletingCurriculum(iCurriculum.getName()));
 				iService.deleteCurriculum(iCurriculum.getId(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iTitleAndButtons.setErrorMessage("Delete failed (" + caught.getMessage() + ").");
+						iTitleAndButtons.setErrorMessage(MESSAGES.failedDelete(iCurriculum.getName(), caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedDelete(iCurriculum.getName(), caught.getMessage()), caught);
 						hideLoading();
 					}
 					@Override
@@ -199,17 +204,18 @@ public class CurriculumEdit extends Composite {
 			public void onClick(ClickEvent event) {
 				final CurriculumInterface next = (iNavigation == null ? null : iNavigation.next(iCurriculum));
 				if (next == null) {
-					iTitleAndButtons.setErrorMessage("Next curriculum not provided.");
+					iTitleAndButtons.setErrorMessage(MESSAGES.errorNoNextCurriculum());
 					return;
 				}
 				if (getMode().isEditable()) {
 					if (saveCurriculum()) {
-						showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
+						showLoading(MESSAGES.waitSavingCurriculum(iCurriculum.getName()));
 						iService.saveCurriculum(iCurriculum, new AsyncCallback<Long>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								hideLoading();
-								iTitleAndButtons.setErrorMessage("Validation failed (" + caught.getMessage() + ").");
+								iTitleAndButtons.setErrorMessage(MESSAGES.failedValidation(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()), caught);
 							}
 							@Override
 							public void onSuccess(Long result) {
@@ -221,7 +227,7 @@ public class CurriculumEdit extends Composite {
 							}
 						});
 					} else {
-						iTitleAndButtons.setErrorMessage("Validation failed, see errors below.");
+						iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationSeeBelow());
 					}
 				} else {
 					iSaved = false;
@@ -237,17 +243,18 @@ public class CurriculumEdit extends Composite {
 			public void onClick(ClickEvent event) {
 				final CurriculumInterface previous = (iNavigation == null ? null : iNavigation.previous(iCurriculum));
 				if (previous == null) {
-					iTitleAndButtons.setErrorMessage("Previous curriculum not provided.");
+					iTitleAndButtons.setErrorMessage(MESSAGES.errorNoPreviousCurriculum());
 					return;
 				}
 				if (getMode().isEditable()) {
 					if (saveCurriculum()) {
-						showLoading("Saving curriculum " + iCurriculum.getName() + " ...");
+						showLoading(MESSAGES.waitSavingCurriculum(iCurriculum.getName()));
 						iService.saveCurriculum(iCurriculum, new AsyncCallback<Long>() {
 							@Override
 							public void onFailure(Throwable caught) {
 								hideLoading();
-								iTitleAndButtons.setErrorMessage("Validation failed (" + caught.getMessage() + ").");
+								iTitleAndButtons.setErrorMessage(MESSAGES.failedValidation(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedValidation(caught.getMessage()), caught);
 							}
 							@Override
 							public void onSuccess(Long result) {
@@ -259,7 +266,7 @@ public class CurriculumEdit extends Composite {
 							}
 						});
 					} else {
-						iTitleAndButtons.setErrorMessage("Validation failed, see errors below.");
+						iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationSeeBelow());
 					}
 				} else {
 					iSaved = false;
@@ -272,20 +279,20 @@ public class CurriculumEdit extends Composite {
 
 		iCurriculaTable = new SimpleForm();
 
-		iTitleAndButtons = new UniTimeHeaderPanel("Curriculum Details");
-		iTitleAndButtons.addButton("edit", "<u>E</u>dit", 75, editHandler);
-		iTitleAndButtons.addButton("save", "<u>S</u>ave", 75, saveHandler);
-		iTitleAndButtons.addButton("previous", "<u>P</u>revious", 75, previousHandler);
-		iTitleAndButtons.addButton("next", "<u>N</u>ext", 75, nextHandler);
-		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 75, deleteHandler);
-		iTitleAndButtons.addButton("print", "Prin<u>t</u>", 75, printHandler);
-		iTitleAndButtons.addButton("back", "<u>B</u>ack", 75, backHandler);
+		iTitleAndButtons = new UniTimeHeaderPanel(MESSAGES.headerCurriculumDetails());
+		iTitleAndButtons.addButton("edit", MESSAGES.buttonEdit(), 75, editHandler);
+		iTitleAndButtons.addButton("save", MESSAGES.buttonSave(), 75, saveHandler);
+		iTitleAndButtons.addButton("previous", MESSAGES.buttonPrevious(), 75, previousHandler);
+		iTitleAndButtons.addButton("next", MESSAGES.buttonNext(), 75, nextHandler);
+		iTitleAndButtons.addButton("delete", MESSAGES.buttonDelete(), 75, deleteHandler);
+		iTitleAndButtons.addButton("print", MESSAGES.buttonPrint(), 75, printHandler);
+		iTitleAndButtons.addButton("back", MESSAGES.buttonBack(), 75, backHandler);
 		
 		
 		iCurriculaTable.addHeaderRow(iTitleAndButtons);
 		
 		iCurriculumAbbv = new UniTimeWidget<TextBox>(new UniTimeTextBox(20, ValueBoxBase.TextAlignment.LEFT));
-		iCurriculaTable.addRow("Abbreviation:", iCurriculumAbbv);
+		iCurriculaTable.addRow(MESSAGES.propAbbreviation(), iCurriculumAbbv);
 		iCurriculumAbbv.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -295,7 +302,7 @@ public class CurriculumEdit extends Composite {
 		});
 
 		iCurriculumName = new UniTimeWidget<TextBox>(new UniTimeTextBox(60, 500));
-		iCurriculaTable.addRow("Name:", iCurriculumName);
+		iCurriculaTable.addRow(MESSAGES.propName(), iCurriculumName);
 		iCurriculumName.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -308,7 +315,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumArea.getWidget().setWidth("300px");
 		iCurriculumArea.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumArea.getWidget().setVisibleItemCount(1);
-		iCurriculaTable.addRow("Academic Area:", iCurriculumArea);
+		iCurriculaTable.addRow(MESSAGES.propAcademicArea(), iCurriculumArea);
 		
 		iCurriculumArea.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -335,7 +342,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumMajors.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumMajors.getWidget().setVisibleItemCount(3);
 		iCurriculumMajors.getWidget().setHeight("100px");
-		iCurriculaTable.addRow("Major(s):", iCurriculumMajors);
+		iCurriculaTable.addRow(MESSAGES.propMajors(), iCurriculumMajors);
 		
 		iCurriculumMajors.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -371,9 +378,9 @@ public class CurriculumEdit extends Composite {
 		iCurriculumDept.getWidget().setWidth("300px");
 		iCurriculumDept.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumDept.getWidget().setVisibleItemCount(1);
-		iCurriculaTable.addRow("Department:", iCurriculumDept);
+		iCurriculaTable.addRow(MESSAGES.propDepartment(), iCurriculumDept);
 		
-		iCurriculaTable.addRow("Last Change:", new Label("",false));
+		iCurriculaTable.addRow(MESSAGES.propLastChange(), new Label("",false));
 		iCurriculaTable.getRowFormatter().setVisible(6, false);
 		
 		iCurriculumDept.getWidget().addChangeHandler(new ChangeHandler() {
@@ -383,7 +390,7 @@ public class CurriculumEdit extends Composite {
 			}
 		});
 		
-		iCurriculaTable.addHeaderRow("Curriculum Classifications");
+		iCurriculaTable.addHeaderRow(MESSAGES.headerCurriculumClassifications());
 		
 		iCurriculumClasfTable = new CurriculaClassificationsPanel(new CurriculaClassifications());
 		
@@ -392,7 +399,7 @@ public class CurriculumEdit extends Composite {
 
 		iCurriculumCourses = new CurriculaCourses();
 
-		iCurriculaTable.addHeaderRow("Course Projections");
+		iCurriculaTable.addHeaderRow(MESSAGES.headerCourseProjections());
 	
 		iCurriculaTable.addRow(iCurriculumCourses);
 		
@@ -476,18 +483,18 @@ public class CurriculumEdit extends Composite {
 
 		iCurriculum.setAbbv(iCurriculumAbbv.getWidget().getText());
 		if (iCurriculum.getAbbv().isEmpty()) {
-			iCurriculumAbbv.setErrorHint("Curriculum abbreviation must be filled in.");
+			iCurriculumAbbv.setErrorHint(MESSAGES.hintCurriculumAbbreviationNotSet());
 			ret = false;
 		}
 
 		iCurriculum.setName(iCurriculumName.getWidget().getText());
 		if (iCurriculum.getName().isEmpty()) {
-			iCurriculumName.setErrorHint("Curriculum name must be filled in.");
+			iCurriculumName.setErrorHint(MESSAGES.hintCurriculumNameNotSet());
 			ret = false;
 		}
 		
 		if (iCurriculumArea.getWidget().getSelectedIndex() <= 0) {
-			iCurriculumArea.setErrorHint("An academic area must be selected.");
+			iCurriculumArea.setErrorHint(MESSAGES.hintAcademicAreaNotSelected());
 			ret = false;
 		} else {
 			AcademicAreaInterface a = new AcademicAreaInterface();
@@ -511,12 +518,12 @@ public class CurriculumEdit extends Composite {
 			}
 		
 		if (iCurriculumMajors.getWidget().getItemCount() == 0 && iCurriculumArea.getWidget().getSelectedIndex() > 0 && !iAreaHasNoMajors) {
-			iCurriculumArea.setErrorHint("Selected academic area has no majors without a curriculum.");
+			iCurriculumArea.setErrorHint(MESSAGES.hintAcademicAreaHasNoMajors());
 			ret = false;
 		}
 		
 		if (iCurriculumDept.getWidget().getSelectedIndex() <= 0) {
-			iCurriculumDept.setErrorHint("A controlling department must be selected.");
+			iCurriculumDept.setErrorHint(MESSAGES.hintControllingDepartmentNotSelected());
 			ret = false;
 		} else {
 			DepartmentInterface d = new DepartmentInterface();
@@ -528,7 +535,7 @@ public class CurriculumEdit extends Composite {
 			ret = false;
 		}
 		if (!iCurriculum.hasClassifications()) {
-			iCurriculumClasfTable.setErrorHint("At least some students must be expected.");
+			iCurriculumClasfTable.setErrorHint(MESSAGES.hintNoStudentExpectations());
 			ret = false;
 		}
 		
@@ -621,7 +628,7 @@ public class CurriculumEdit extends Composite {
 			}
 			if (majorIds.isEmpty() && !iAreaHasNoMajors) return;
 			
-			showLoading("Loading course enrollments ...");
+			showLoading(MESSAGES.waitLoadingCourseEnrollments());
 			iService.computeEnrollmentsAndLastLikes(areaId, majorIds, new AsyncCallback<HashMap<String,CurriculumStudentsInterface[]>>() {
 
 				@Override
@@ -687,7 +694,7 @@ public class CurriculumEdit extends Composite {
 	public void setupAreas(TreeSet<AcademicAreaInterface> result) {
 		iAreas.clear(); iAreas.addAll(result);
 		iCurriculumArea.getWidget().clear();
-		iCurriculumArea.getWidget().addItem("Select ...", "");
+		iCurriculumArea.getWidget().addItem(MESSAGES.itemSelect(), "");
 		for (AcademicAreaInterface area: result) {
 			iCurriculumArea.getWidget().addItem(area.getAbbv() + " - " + area.getName(), area.getId().toString());
 		}
@@ -696,7 +703,7 @@ public class CurriculumEdit extends Composite {
 	public void setupDepartments(TreeSet<DepartmentInterface> result) {
 		iDepts.clear(); iDepts.addAll(result);
 		iCurriculumDept.getWidget().clear();
-		iCurriculumDept.getWidget().addItem("Select ...", "");
+		iCurriculumDept.getWidget().addItem(MESSAGES.itemSelect(), "");
 		for (DepartmentInterface dept: result) {
 			iCurriculumDept.getWidget().addItem(dept.getLabel(), dept.getId().toString());
 		}
@@ -724,16 +731,16 @@ public class CurriculumEdit extends Composite {
 			iHint.addStyleName("unitime-NoPrint");
 			getPanel().insert(iHint, 1);
 			
-			iHint.setText("Show all columns.");
+			iHint.setText(MESSAGES.hintShowAllColumns());
 			iHint.addClickHandler(new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
 					if (isShowingAllColumns()) {
 						getWidget().hideEmptyColumns();
-						iHint.setText("Show all columns.");
+						iHint.setText(MESSAGES.hintShowAllColumns());
 					} else {
 						getWidget().showAllColumns();
-						iHint.setText("Hide empty columns.");
+						iHint.setText(MESSAGES.hintHideEmptyColumns());
 					}
 				}
 			});
@@ -753,7 +760,7 @@ public class CurriculumEdit extends Composite {
 			});
 		}
 		
-		public boolean isShowingAllColumns() { return iHint.getText().equals("Hide empty columns."); }
+		public boolean isShowingAllColumns() { return iHint.getText().equals(MESSAGES.hintHideEmptyColumns()); }
 		
 		public void populate(TreeSet<CurriculumClassificationInterface> classifications) {
 			getWidget().populate(classifications);
@@ -770,7 +777,7 @@ public class CurriculumEdit extends Composite {
 	}
 	
 	public void reload(final Mode mode) {
-		showLoading("Loading curriculum " + iCurriculum.getName() + " ...");
+		showLoading(MESSAGES.waitLoadingCurriculumWithName(iCurriculum.getName()));
 		iService.loadCurriculum(iCurriculum.getId(), new AsyncCallback<CurriculumInterface>() {
 			@Override
 			public void onFailure(Throwable caught) {
