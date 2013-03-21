@@ -38,7 +38,7 @@ public class SavedHQL extends BaseSavedHQL {
 	
 	public static enum Flag {
 		APPEARANCE_COURSES("Appearance: Courses", "courses"),
-		APPEARANCE_EXAMS("Appearance: Examinations", "examinations"),
+		APPEARANCE_EXAMS("Appearance: Examinations", "exams"),
 		APPEARANCE_SECTIONING("Appearance: Student Sectioning", "sectioning"),
 		APPEARANCE_EVENTS("Appearance: Events", "events"),
 		APPEARANCE_ADMINISTRATION("Appearance: Administration", "administration"),
