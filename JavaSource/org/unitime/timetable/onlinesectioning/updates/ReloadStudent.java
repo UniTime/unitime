@@ -78,7 +78,7 @@ public class ReloadStudent extends ReloadAllData {
 				
 				Lock lock = server.lockStudent(studentId, (List<Long>)helper.getHibSession().createQuery(
 						"select distinct e.courseOffering.instructionalOffering.uniqueId from StudentClassEnrollment e where "+
-                		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list(), false);
+                		"e.student.uniqueId = :studentId").setLong("studentId", studentId).list(), true);
 				try {
 					
 					// Unload student
