@@ -34,6 +34,8 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
@@ -71,9 +73,11 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class ReservationTable extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
-	private static DateTimeFormat sDF = DateTimeFormat.getFormat("MM/dd/yyyy");
+	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private Long iOfferingId = null;
 	
 	private SimpleForm iReservationPanel;
@@ -90,7 +94,7 @@ public class ReservationTable extends Composite {
 		iReservationPanel = new SimpleForm();
 		iReservationPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		
-		iHeader = new UniTimeHeaderPanel(showHeader ? "Reservations" : "");
+		iHeader = new UniTimeHeaderPanel(showHeader ? MESSAGES.sectReservations() : "");
 		iHeader.setCollapsible(showHeader ? ReservationCookie.getInstance().getReservationCoursesDetails() : null);
 		iHeader.setTitleStyleName("unitime3-HeaderTitle");
 		iHeader.addCollapsibleHandler(new ValueChangeHandler<Boolean>() {
@@ -111,7 +115,7 @@ public class ReservationTable extends Composite {
 			iReservationPanel.addHeaderRow(iHeader);
 			iHeader.getElement().getStyle().setMarginTop(10, Unit.PX);
 			if (editable) {
-				iHeader.addButton("add", "Add&nbsp;<u>R</u>eservation", new ClickHandler() {
+				iHeader.addButton("add", MESSAGES.buttonAddReservation(), new ClickHandler() {
 					@Override
 					public void onClick(ClickEvent event) {
 						ToolBox.open(GWT.getHostPageBaseURL() + "gwt.jsp?page=reservation&offering=" + iOfferingId);
@@ -150,14 +154,14 @@ public class ReservationTable extends Composite {
 			iLoadCallback = new AsyncCallback<List<ReservationInterface>>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iHeader.setErrorMessage("Failed to load reservations (" + caught.getMessage() + ").");
+					iHeader.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
 					iHeader.setCollapsible(null);
 					ReservationCookie.getInstance().setReservationCoursesDetails(false);
 				}
 				@Override
 				public void onSuccess(List<ReservationInterface> result) {
 					if (result.isEmpty()) {
-						iHeader.setMessage("The selected offering has no reservations.");
+						iHeader.setMessage(MESSAGES.hintOfferingHasNoReservations());
 						iHeader.setCollapsible(null);
 					} else {
 						populate(result);
@@ -198,7 +202,7 @@ public class ReservationTable extends Composite {
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
 		
 		if (iOfferingId == null) {
-			final UniTimeTableHeader hOffering = new UniTimeTableHeader("Instructional<br>Offering");
+			final UniTimeTableHeader hOffering = new UniTimeTableHeader(MESSAGES.colInstructionalOffering());
 			hOffering.setWidth("100px");
 			header.add(hOffering);
 			hOffering.addOperation(new Operation() {
@@ -221,12 +225,12 @@ public class ReservationTable extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Sort by Instructional Offering";
+					return MESSAGES.opSortBy(MESSAGES.fieldInstructionalOffering());
 				}
 			});
 		}
 
-		final UniTimeTableHeader hType = new UniTimeTableHeader("Reservation<br>Type");
+		final UniTimeTableHeader hType = new UniTimeTableHeader(MESSAGES.colReservationType());
 		hType.setWidth("100px");
 		hType.addOperation(new Operation() {
 			@Override
@@ -250,12 +254,12 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Reservation Type";
+				return MESSAGES.opSortBy(MESSAGES.fieldReservationType());
 			}
 		});
 		header.add(hType);
 		
-		final UniTimeTableHeader hOwner = new UniTimeTableHeader("Owner");
+		final UniTimeTableHeader hOwner = new UniTimeTableHeader(MESSAGES.colOwner());
 		hOwner.setWidth("250px");
 		header.add(hOwner);
 		hOwner.addOperation(new Operation() {
@@ -282,11 +286,11 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Owner";
+				return MESSAGES.opSortBy(MESSAGES.colOwner());
 			}
 		});
 
-		final UniTimeTableHeader hRestrict = new UniTimeTableHeader("Restrictions");
+		final UniTimeTableHeader hRestrict = new UniTimeTableHeader(MESSAGES.colRestrictions());
 		hRestrict.setWidth("160px");
 		hRestrict.addOperation(new Operation() {
 			@Override
@@ -314,12 +318,12 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Restrictions";
+				return MESSAGES.opSortBy(MESSAGES.colRestrictions());
 			}
 		});
 		header.add(hRestrict);
 
-		final UniTimeTableHeader hLimit = new UniTimeTableHeader("Reserved<br>Space");
+		final UniTimeTableHeader hLimit = new UniTimeTableHeader(MESSAGES.colReservedSpace());
 		hLimit.setWidth("80px");
 		header.add(hLimit);
 		hLimit.addOperation(new Operation() {
@@ -344,11 +348,11 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Reserved Space";
+				return MESSAGES.opSortBy(MESSAGES.fieldReservedSpace());
 			}
 		});
 
-		final UniTimeTableHeader hLastLike = new UniTimeTableHeader("Last-Like<br>Enrollment");
+		final UniTimeTableHeader hLastLike = new UniTimeTableHeader(MESSAGES.colLastLikeEnrollment());
 		hLastLike.setWidth("80px");
 		header.add(hLastLike);
 		hLastLike.addOperation(new Operation() {
@@ -373,11 +377,11 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Last-Like Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.fieldLastLikeEnrollment());
 			}
 		});
 
-		final UniTimeTableHeader hProjected = new UniTimeTableHeader("Projection<br>by Rule");
+		final UniTimeTableHeader hProjected = new UniTimeTableHeader(MESSAGES.colProjectedByRule());
 		hProjected.setWidth("80px");
 		header.add(hProjected);
 		hProjected.addOperation(new Operation() {
@@ -402,11 +406,11 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Projection by Rule";
+				return MESSAGES.opSortBy(MESSAGES.fieldProjectedByRule());
 			}
 		});
 
-		final UniTimeTableHeader hEnrollment = new UniTimeTableHeader("Current<br>Enrollment");
+		final UniTimeTableHeader hEnrollment = new UniTimeTableHeader(MESSAGES.colCurrentEnrollment());
 		hEnrollment.setWidth("80px");
 		header.add(hEnrollment);
 		hEnrollment.addOperation(new Operation() {
@@ -431,11 +435,11 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Current Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.fieldCurrentEnrollment());
 			}
 		});
 		
-		final UniTimeTableHeader hExpiration = new UniTimeTableHeader("Expiration<br>Date");
+		final UniTimeTableHeader hExpiration = new UniTimeTableHeader(MESSAGES.colExpirationDate());
 		hExpiration.setWidth("80px");
 		header.add(hExpiration);
 		hExpiration.addOperation(new Operation() {
@@ -460,7 +464,7 @@ public class ReservationTable extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Sort by Expiration Date";
+				return MESSAGES.opSortBy(MESSAGES.fieldExpirationDate());
 			}
 		});
 		
@@ -488,12 +492,12 @@ public class ReservationTable extends Composite {
 			
 			Integer limit = reservation.getLimit();
 			if (reservation instanceof CourseReservation) {
-				line.add(new Label("Course"));
+				line.add(new Label(MESSAGES.reservationCourseAbbv()));
 				Course course = ((CourseReservation) reservation).getCourse();
 				limit = course.getLimit();
 				line.add(new Label(course.getAbbv(), false));
 			} else if (reservation instanceof IndividualReservation) {
-				line.add(new Label("Individual"));
+				line.add(new Label(MESSAGES.reservationIndividualAbbv()));
 				VerticalPanel students = new VerticalPanel();
 				limit = ((IndividualReservation) reservation).getStudents().size();
 				for (IdName student: ((IndividualReservation) reservation).getStudents()) {
@@ -503,11 +507,11 @@ public class ReservationTable extends Composite {
 					students.addStyleName("unitime-Disabled");
 				line.add(students);
 			} else if (reservation instanceof GroupReservation) {
-				line.add(new Label("Student Group"));
+				line.add(new Label(MESSAGES.reservationStudentGroupAbbv()));
 				IdName group = ((GroupReservation) reservation).getGroup();
 				line.add(new Label(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", false));				
 			} else if (reservation instanceof CurriculumReservation) {
-				line.add(new Label("Curriculum"));
+				line.add(new Label(MESSAGES.reservationCurriculumAbbv()));
 				Area curriculum = ((CurriculumReservation) reservation).getCurriculum();
 				VerticalPanel owner = new VerticalPanel();
 				owner.add(new Label(curriculum.getAbbv() + " - " + curriculum.getName()));
@@ -525,12 +529,12 @@ public class ReservationTable extends Composite {
 					owner.addStyleName("unitime-Disabled");
 				line.add(owner);
 			} else {
-				line.add(new Label("Unknown"));
+				line.add(new Label(MESSAGES.reservationUnknownAbbv()));
 				line.add(new Label());
 			}
 			VerticalPanel restrictions = new VerticalPanel();
 			for (Config config: reservation.getConfigs()) {
-				restrictions.add(new Label("Configuration " + config.getName() + (config.getLimit() == null ? "" : " (" + config.getLimit() + ")") , false));
+				restrictions.add(new Label(MESSAGES.selectionConfiguration(config.getName(), config.getLimit() == null ? MESSAGES.configUnlimited() : config.getLimit().toString())));
 			}
 			for (Clazz clazz: reservation.getClasses()) {
 				restrictions.add(new Label(clazz.getName() + " (" + clazz.getLimit() + ")", false));
@@ -538,7 +542,7 @@ public class ReservationTable extends Composite {
 			line.add(restrictions);
 			if (!reservation.isEditable())
 				restrictions.addStyleName("unitime-Disabled");
-			line.add(new Number(limit == null ? "&infin;" : String.valueOf(limit)));
+			line.add(new Number(limit == null ? MESSAGES.infinity() : String.valueOf(limit)));
 			if (limit == null)
 				unlimited = true;
 			else
@@ -575,15 +579,15 @@ public class ReservationTable extends Composite {
 		
 		if (iOfferingId != null) {
 			List<Widget> footer = new ArrayList<Widget>();
-			footer.add(new TotalLabel("Total Reserved Space", 3)); 
-			footer.add(new TotalNumber(unlimited ? "&infin;" : String.valueOf(total)));
+			footer.add(new TotalLabel(MESSAGES.totalReservedSpace(), 3)); 
+			footer.add(new TotalNumber(unlimited ? MESSAGES.infinity() : String.valueOf(total)));
 			footer.add(new TotalNumber(lastLike <= 0 ? "" : String.valueOf(lastLike)));
 			footer.add(new TotalNumber(projection <= 0 ? "" : String.valueOf(projection)));
 			footer.add(new TotalNumber(enrollment <= 0 ? "" : String.valueOf(enrollment)));
 			footer.add(new TotalLabel("&nbsp;", 1));
 			iReservations.addRow(null, footer);
 		} else if (reservations.isEmpty()) {
-			iHeader.setErrorMessage("No reservation matching the above filter found.");
+			iHeader.setErrorMessage(MESSAGES.errorNoMatchingReservation());
 		}
 	}
 	
@@ -694,7 +698,7 @@ public class ReservationTable extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage("Unable to retrieve curricula (" + caught.getMessage() + ").");
+				iHeader.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
 				ToolBox.checkAccess(caught);
 				if (next != null)
 					next.execute();

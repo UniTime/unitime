@@ -32,7 +32,9 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
@@ -83,6 +85,7 @@ import org.unitime.timetable.util.Constants;
  */
 @Service("reservation.gwt")
 public class ReservationServlet implements ReservationService {
+	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(ReservationServlet.class);
 
 	private @Autowired SessionContext sessionContext;
@@ -200,7 +203,7 @@ public class ReservationServlet implements ReservationService {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
 				InstructionalOffering io = InstructionalOfferingDAO.getInstance().get(offeringId, hibSession);
-				if (io == null) { throw new ReservationException("Offering does not exist."); }
+				if (io == null) { throw new ReservationException(MESSAGES.errorOfferingDoesNotExist(offeringId == null ? "null" : offeringId.toString())); }
 				return convert(io, hibSession);
 			} finally {
 				hibSession.close();
@@ -234,7 +237,7 @@ public class ReservationServlet implements ReservationService {
 			org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 			try {
 				CourseOffering co = getCourse(hibSession, courseName);
-				if (co == null) { throw new ReservationException("Course " + courseName + " does not exist."); }
+				if (co == null) { throw new ReservationException(MESSAGES.errorCourseDoesNotExist(courseName)); }
 				return convert(co.getInstructionalOffering(), hibSession);
 			} finally {
 				hibSession.close();
@@ -443,7 +446,7 @@ public class ReservationServlet implements ReservationService {
 			if (enrollment.intValue() > 0)
 				r.setEnrollment(enrollment.intValue());
 		} else {
-			throw new ReservationException("Unknown reservation " + reservation.getClass().getName());
+			throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 		}
 		ReservationInterface.Offering offering = new ReservationInterface.Offering();
 		offering.setAbbv(reservation.getInstructionalOffering().getCourseName());
@@ -582,7 +585,7 @@ public class ReservationServlet implements ReservationService {
 			try {
 				InstructionalOffering offering = InstructionalOfferingDAO.getInstance().get(reservation.getOffering().getId(), hibSession);
 				if (offering == null)
-					throw new ReservationException("Offering " + reservation.getOffering().getName() + " does not exist.");
+					throw new ReservationException(MESSAGES.errorOfferingDoesNotExist(reservation.getOffering().getName()));
 				Reservation r = null;
 				if (reservation.getId() != null) {
 					r = ReservationDAO.getInstance().get(reservation.getId(), hibSession);
@@ -597,7 +600,7 @@ public class ReservationServlet implements ReservationService {
 					else if (reservation instanceof ReservationInterface.CourseReservation)
 						r = new CourseReservation();
 					else 
-						throw new ReservationException("Unknown reservation " + reservation.getClass().getName());
+						throw new ReservationException(MESSAGES.errorUnknownReservationType(reservation.getClass().getName()));
 				}
 				r.setLimit(r instanceof IndividualReservation ? null : reservation.getLimit());
 				r.setExpirationDate(reservation.getExpirationDate());

@@ -37,6 +37,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
@@ -82,6 +83,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  *
  */
 public class ReservationEdit extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
@@ -138,23 +140,23 @@ public class ReservationEdit extends Composite {
 			});
 			
 			if (Window.Location.getParameter("id") == null && Window.Location.getParameter("offering") == null) {
-				throw new ReservationException("Reservation or instructional offering id not provided.");
+				throw new ReservationException(MESSAGES.errorReservationOrOfferingIdNotProvided());
 			}
 		}
 		
 		iPanel = new SimpleForm();
 		initWidget(iPanel);
 
-		iTitleAndButtons = new UniTimeHeaderPanel("Reservation Details");
-		iTitleAndButtons.addButton("save", "<u>S</u>ave", 75, new ClickHandler() {
+		iTitleAndButtons = new UniTimeHeaderPanel(MESSAGES.sectReservationDetails());
+		iTitleAndButtons.addButton("save", MESSAGES.buttonSave(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iTitleAndButtons.clearMessage();
 				ReservationInterface r = validate();
 				if (r == null) {
-					iTitleAndButtons.setErrorMessage("Validation failed, please check the form for warnings.");
+					iTitleAndButtons.setErrorMessage(MESSAGES.failedValidationCheckForm());
 				} else {
-					LoadingWidget.getInstance().show("Saving reservation...");
+					LoadingWidget.getInstance().show(MESSAGES.waitSavingReservation());
 					iReservationService.save(r, new AsyncCallback<Long>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -172,13 +174,13 @@ public class ReservationEdit extends Composite {
 				}
 			}
 		});
-		iTitleAndButtons.addButton("delete", "<u>D</u>elete", 75, new ClickHandler() {
+		iTitleAndButtons.addButton("delete", MESSAGES.buttonDelete(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iReservation == null) {
-					iTitleAndButtons.setErrorMessage("Cannot delete unsaved reservation.");
+					iTitleAndButtons.setErrorMessage(MESSAGES.errorCannotDeleteUnsavedReservation());
 				} else {
-					LoadingWidget.getInstance().show("Deleting reservation...");
+					LoadingWidget.getInstance().show(MESSAGES.waitDeletingReservation());
 					iReservationService.delete(iReservation.getId(), new AsyncCallback<Boolean>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -197,7 +199,7 @@ public class ReservationEdit extends Composite {
 			}
 		});
 		iTitleAndButtons.setEnabled("delete", false);
-		iTitleAndButtons.addButton("back", "<u>B</u>ack", 75, new ClickHandler() {
+		iTitleAndButtons.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				EditFinishedEvent e = new EditFinishedEvent(iReservation == null ? null : iReservation.getId());
@@ -210,7 +212,7 @@ public class ReservationEdit extends Composite {
 		
 		iCourseBox = new CurriculaCourseSelectionBox("");
 		iCourseBox.setWidth("130px");
-		iPanel.addRow("Instructional Offering:", iCourseBox);
+		iPanel.addRow(MESSAGES.propInstructionalOffering(), iCourseBox);
 
 		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
 		iLimit.getWidget().addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -219,7 +221,7 @@ public class ReservationEdit extends Composite {
 				computeLimit();
 			}
 		});
-		iPanel.addRow("Reserved Space:", iLimit);
+		iPanel.addRow(MESSAGES.propReservedSpace(), iLimit);
 		
 		iExpirationDate = new UniTimeWidget<SingleDateSelector>(new SingleDateSelector());
 		iExpirationDate.getWidget().addValueChangeHandler(new ValueChangeHandler<Date>() {
@@ -228,19 +230,19 @@ public class ReservationEdit extends Composite {
 				iExpirationDate.clearHint();
 			}
 		});
-		iPanel.addRow("Expiration Date:", iExpirationDate);
+		iPanel.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
 		
 		iStructure = new Tree(RESOURCES, true);
-		iPanel.addRow("Restrictions:", iStructure);
+		iPanel.addRow(MESSAGES.propRestrictions(), iStructure);
 		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
 		
 		iType = new UniTimeWidget<ListBox>(new ListBox());
 		iType.getWidget().setStyleName("unitime-TextBox");
-		iType.getWidget().addItem("Select...", "");
-		iType.getWidget().addItem("Individual Reservation", "individual");
-		iType.getWidget().addItem("Student Group Reservation", "group");
-		iType.getWidget().addItem("Curriculum Reservation", "curriculum");
-		iType.getWidget().addItem("Course Reservation", "course");
+		iType.getWidget().addItem(MESSAGES.itemSelect(), "");
+		iType.getWidget().addItem(MESSAGES.reservationIndividual(), "individual");
+		iType.getWidget().addItem(MESSAGES.reservationStudentGroup(), "group");
+		iType.getWidget().addItem(MESSAGES.reservationCurriculum(), "curriculum");
+		iType.getWidget().addItem(MESSAGES.reservationCourse(), "course");
 		iType.getWidget().setSelectedIndex(0);
 		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -248,7 +250,7 @@ public class ReservationEdit extends Composite {
 				iType.clearHint();
 			}
 		});
-		iPanel.addRow("Type:", iType);
+		iPanel.addRow(MESSAGES.propType(), iType);
 		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -269,7 +271,7 @@ public class ReservationEdit extends Composite {
 		iStudents.getWidget().setCharacterWidth(80);
 		VerticalPanel students = new VerticalPanel();
 		students.add(iStudents);
-		Button lookup = new Button("<u>L</u>ookup");
+		Button lookup = new Button(MESSAGES.buttonLookup());
 		lookup.setAccessKey('l');
 		iLookup = new Lookup();
 		lookup.addClickHandler(new ClickHandler() {
@@ -292,7 +294,7 @@ public class ReservationEdit extends Composite {
 		});
 		students.add(lookup);
 		students.setCellHorizontalAlignment(lookup, HasHorizontalAlignment.ALIGN_RIGHT);
-		iPanel.addRow("Students:", students);
+		iPanel.addRow(MESSAGES.propStudents(), students);
 		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
 		iStudentsLine = iPanel.getRowCount() - 1;
 
@@ -305,9 +307,9 @@ public class ReservationEdit extends Composite {
 				iGroup.clearHint();
 			}
 		});
-		iGroup.getWidget().addItem("Select...", "");
+		iGroup.getWidget().addItem(MESSAGES.itemSelect(), "");
 		iGroup.getWidget().setSelectedIndex(0);
-		iPanel.addRow("Student Group:", iGroup);
+		iPanel.addRow(MESSAGES.propStudentGroup(), iGroup);
 		iGroupLine = iPanel.getRowCount() - 1;
 
 		iCourse = new UniTimeWidget<ListBox>(new ListBox());
@@ -323,34 +325,34 @@ public class ReservationEdit extends Composite {
 				}
 			}
 		});
-		iPanel.addRow("Course:", iCourse);
+		iPanel.addRow(MESSAGES.propCourse(), iCourse);
 		iCourseLine = iPanel.getRowCount() - 1;
 		
 		iCurriculum = new UniTimeWidget<ListBox>(new ListBox());
 		iCurriculum.getWidget().setStyleName("unitime-TextBox");
-		iCurriculum.getWidget().addItem("None", "");
+		iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 		iCurriculum.getWidget().setSelectedIndex(0);
 		iPanel.addRow("Curriculum:", iCurriculum);
 		iCurriculumLine = iPanel.getRowCount() - 1;
 		
 		iArea = new UniTimeWidget<ListBox>(new ListBox());
 		iArea.getWidget().setStyleName("unitime-TextBox");
-		iArea.getWidget().addItem("Select...", "");
+		iArea.getWidget().addItem(MESSAGES.itemSelect(), "");
 		iArea.getWidget().setSelectedIndex(0);
-		iPanel.addRow("Academic Area:", iArea);
+		iPanel.addRow(MESSAGES.propAcademicArea(), iArea);
 		iAreaLine = iPanel.getRowCount() - 1;
 		iClassifications = new ListBox(true);
 		iClassifications.setWidth("300px");
 		iClassifications.setStyleName("unitime-TextBox");
 		iClassifications.setVisibleItemCount(3);
 		iClassifications.setHeight("100px");
-		iPanel.addRow("Classifications:", iClassifications);
+		iPanel.addRow(MESSAGES.propClassifications(), iClassifications);
 		iMajors = new ListBox(true);
 		iMajors.setWidth("300px");
 		iMajors.setStyleName("unitime-TextBox");
 		iMajors.setVisibleItemCount(3);
 		iMajors.setHeight("100px");
-		iPanel.addRow("Majors:", iMajors);
+		iPanel.addRow(MESSAGES.propMajors(), iMajors);
 		iCurriculum.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -399,7 +401,7 @@ public class ReservationEdit extends Composite {
 		iPanel.addNotPrintableBottomRow(iTitleAndButtons.clonePanel(null));
 		
 		if (standAlone) {
-			LoadingWidget.getInstance().show("Loading reservation...");
+			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
 			if (Window.Location.getParameter("id") == null) {
 				initStudentGroupsAndCurricula(new AsyncCallback<Boolean>() {
 					@Override
@@ -455,7 +457,7 @@ public class ReservationEdit extends Composite {
 			initStudentGroupsAndCurricula(new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iTitleAndButtons.setErrorMessage("Load failed: " + caught.getMessage());
+					iTitleAndButtons.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
 				}
 				@Override
 				public void onSuccess(Boolean result) {
@@ -486,8 +488,8 @@ public class ReservationEdit extends Composite {
 	
 	private void loadingFailed(Throwable caught) {
 		LoadingWidget.getInstance().hide();
-		UniTimeNotifications.error("Load failed: " + caught.getMessage());
-		iTitleAndButtons.setErrorMessage("Load failed: " + caught.getMessage());
+		UniTimeNotifications.error(MESSAGES.failedLoadData(caught.getMessage()));
+		iTitleAndButtons.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
 		for (EditFinishedHandler h: iEditFinishedHandlers)
 			h.onFailure(caught);
 	}
@@ -547,7 +549,7 @@ public class ReservationEdit extends Composite {
 	
 	public void setReservation(ReservationInterface r) {
 		iReservation = r;
-		UniTimePageLabel.getInstance().setPageName(iReservation == null ? "Add Reservation" : "Edit Reservation");
+		UniTimePageLabel.getInstance().setPageName(iReservation == null ? MESSAGES.pageAddReservation() : MESSAGES.pageEditReservation());
 		iTitleAndButtons.setEnabled("delete", iReservation != null);
 		iTitleAndButtons.clearMessage();
 		iLimit.clearHint();
@@ -575,13 +577,13 @@ public class ReservationEdit extends Composite {
 			iType.setReadOnly(false);
 			iCurricula.clear();
 			iCurriculum.getWidget().clear();
-			iCurriculum.getWidget().addItem("None", "");
+			iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 			iCurriculum.getWidget().setSelectedIndex(0);
 			areaChanged();
 			typeChanged();
 		} else {
 			iCourseBox.setEnabled(false);
-			LoadingWidget.getInstance().show("Loading reservation...");
+			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
 			iReservationService.getOffering(offeringId, new AsyncCallback<Offering>() {
 				@Override
 				public void onFailure(Throwable caught) {
@@ -616,7 +618,7 @@ public class ReservationEdit extends Composite {
 		}
 		
 		iCourse.getWidget().clear();
-		iCourse.getWidget().addItem("Select...", "");
+		iCourse.getWidget().addItem(MESSAGES.itemSelect(), "");
 		for (Course course: iOffering.getCourses()) {
 			iCourse.getWidget().addItem(course.getAbbv() + (course.getName() == null || course.getName().isEmpty() ? "" : " - " + course.getName()), course.getId().toString());
 		}
@@ -626,7 +628,7 @@ public class ReservationEdit extends Composite {
 		
 		iCurricula.clear();
 		iCurriculum.getWidget().clear();
-		iCurriculum.getWidget().addItem("None", "");
+		iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 		iCurriculum.getWidget().setSelectedIndex(0);
 		iReservationService.getCurricula(iOffering.getId(), new AsyncCallback<List<Curriculum>>() {
 			@Override
@@ -833,7 +835,7 @@ public class ReservationEdit extends Composite {
 		boolean ok = true;
 		String type = iType.getWidget().getValue(iType.getWidget().getSelectedIndex());
 		if (type.isEmpty()) {
-			iType.setErrorHint("Reservation type must be selected.");
+			iType.setErrorHint(MESSAGES.hintReservationTypeNotSelected());
 			ok = false;
 		} else {
 			iType.clearHint();
@@ -842,7 +844,7 @@ public class ReservationEdit extends Composite {
 		if ("individual".equals(type)) {
 			r = new ReservationInterface.IndividualReservation();
 			if (iStudents.getWidget().getText().isEmpty()) {
-				iStudents.setErrorHint("No students provided.");
+				iStudents.setErrorHint(MESSAGES.hintNoStudentsProvided());
 				ok = false;
 			} else {
 				RegExp rx = RegExp.compile("^([a-zA-Z0-9]+)[ ,;\\|]?(.*)$");
@@ -851,7 +853,7 @@ public class ReservationEdit extends Composite {
 					try {
 						MatchResult m = rx.exec(student.trim());
 						if (m == null) {
-							iStudents.setErrorHint("Line '" + student + "' is not a valid student record.");
+							iStudents.setErrorHint(MESSAGES.hintLineXIsNotValidStudent(student));
 							ok = false;
 							break;
 						}
@@ -860,11 +862,11 @@ public class ReservationEdit extends Composite {
 						s.setName(m.getGroupCount() <= 2 ? "" : m.getGroup(2).trim());
 						((ReservationInterface.IndividualReservation) r).getStudents().add(s);
 						if (((ReservationInterface.IndividualReservation) r).getStudents().isEmpty()) {
-							iStudents.setErrorHint("No students provided.");
+							iStudents.setErrorHint(MESSAGES.hintNoStudentsProvided());
 							ok = false;
 						}
 					} catch (Exception e) {
-						iStudents.setErrorHint("Line '" + student + "' is not a valid student record (" + e.getMessage() + ").");
+						iStudents.setErrorHint(MESSAGES.hintLineXIsNotValidStudentException(student, e.getMessage()));
 						ok = false;
 					}
 				}
@@ -873,7 +875,7 @@ public class ReservationEdit extends Composite {
 			r = new ReservationInterface.GroupReservation();
 			String gid = iGroup.getWidget().getValue(iGroup.getWidget().getSelectedIndex());
 			if (gid.isEmpty()) {
-				iGroup.setErrorHint("A student group must be provided.");
+				iGroup.setErrorHint(MESSAGES.hintStudentGroupNotProvided());
 				ok = false;
 			} else {
 				IdName group = new IdName();
@@ -885,7 +887,7 @@ public class ReservationEdit extends Composite {
 			r = new ReservationInterface.CourseReservation();
 			String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
 			if (cid.isEmpty()) {
-				iCourse.setErrorHint("A course must be provided.");
+				iCourse.setErrorHint(MESSAGES.hintCourseNotProvided());
 				ok = false;
 			} else {
 				Course course = new Course();
@@ -897,7 +899,7 @@ public class ReservationEdit extends Composite {
 			r = new ReservationInterface.CurriculumReservation();
 			String aid = iArea.getWidget().getValue(iArea.getWidget().getSelectedIndex());
 			if (aid.isEmpty()) {
-				iArea.setErrorHint("An academic area must be provided.");
+				iArea.setErrorHint(MESSAGES.hintAcademicAreaNotProvided());
 				ok = false;
 			} else {
 				Area curriculum = new Area();
@@ -922,11 +924,11 @@ public class ReservationEdit extends Composite {
 				((ReservationInterface.CurriculumReservation) r).setCurriculum(curriculum);
 			}
 		} else {
-			iType.setErrorHint("Reservation type not supported.");
+			iType.setErrorHint(MESSAGES.hintReservationTypeNotSupported(type));
 			return null;
 		}
 		if (iExpirationDate.getWidget().getValue() == null && !iExpirationDate.getWidget().getText().isEmpty()) {
-			iExpirationDate.setErrorHint("Expiration date is not valid.");
+			iExpirationDate.setErrorHint(MESSAGES.hintExpirationDateNotValid());
 			ok = false;
 		} else {
 			r.setExpirationDate(iExpirationDate.getWidget().getValue());
@@ -939,7 +941,7 @@ public class ReservationEdit extends Composite {
 				try {
 					r.setLimit(Integer.parseInt(iLimit.getWidget().getText()));
 				} catch (Exception e) {
-					iLimit.setErrorHint("Reservation limit is not valid.");
+					iLimit.setErrorHint(MESSAGES.hintReservationLimitNotValid());
 					ok = false;
 				}
 			}
@@ -947,8 +949,13 @@ public class ReservationEdit extends Composite {
 		if (iReservation != null)
 			r.setId(iReservation.getId());
 		Offering o = new Offering();
-		o.setId(iOffering.getId());
-		o.setName(iOffering.getName());
+		if (iOffering == null) {
+			iCourseBox.setError(MESSAGES.hintOfferingNotProvided());
+			ok = false;
+		} else {
+			o.setId(iOffering.getId());
+			o.setName(iOffering.getName());
+		}
 		r.setOffering(o);
 		for (ConfigSelection config: iConfigs.values()) {
 			if (config.getValue() && config.isEnabled()) {
@@ -1040,7 +1047,7 @@ public class ReservationEdit extends Composite {
 		
 		public ConfigSelection(Config config) {
 			setStyleName("unitime-LabelInsteadEdit");
-			setText("Configuration " + config.getAbbv() + (config.getLimit() == null ? " (unlimited)" : " (" + config.getLimit() + ")"));
+			setText(MESSAGES.selectionConfiguration(config.getAbbv(), config.getLimit() == null ? MESSAGES.configUnlimited() : config.getLimit().toString()));
 			iConfig = config;
 			iConfigs.put(config.getId(), this);
 			addClickHandler(this);
@@ -1110,14 +1117,14 @@ public class ReservationEdit extends Composite {
 			if (unlimited || limit >= entered)
 				iLimit.clearHint();
 			else
-				iLimit.setHint((limit == 0 ? "No space" : limit == 1 ? "Only 1 space" : "Only " + limit + " spaces") + " selected");
+				iLimit.setHint(limit == 0 ? MESSAGES.hintNoSpaceSelected() : limit == 1 ? MESSAGES.hintOnlyOneSpaceSelected() : MESSAGES.hintOnlyNSpacesSelected(limit));
 		} else {
 			if (!iOffering.isOffered())
-				iLimit.setHint(iOffering.getAbbv() + " is not offered");
+				iLimit.setHint(MESSAGES.hintCourseNotOffered(iOffering.getAbbv()));
 			else if (totalUnlimited || total >= entered || entered == Integer.MAX_VALUE)
 				iLimit.clearHint();
 			else
-				iLimit.setHint((total == 0 ? "No space" : total == 1 ? "Only 1 space" : "Only " + total + " spaces") + " in " + iOffering.getAbbv());
+				iLimit.setHint(total == 0 ? MESSAGES.hintNoSpaceInCourse(iOffering.getAbbv()) : total == 1 ? MESSAGES.hintOnlyOneSpaceInCourse(iOffering.getAbbv()) : MESSAGES.hintOnlyNSpacesInCourse(total, iOffering.getAbbv()));
 		}
 	}
 	

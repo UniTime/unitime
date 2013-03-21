@@ -25,6 +25,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit.EditFinishedEvent;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
@@ -56,6 +57,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  *
  */
 public class ReservationsPage extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 
@@ -82,24 +84,24 @@ public class ReservationsPage extends Composite {
 		iFilterPanel = new HorizontalPanel();
 		iFilterPanel.setSpacing(3);
 		
-		Label filterLabel = new Label("Filter:");
+		Label filterLabel = new Label(MESSAGES.propFilter());
 		iFilterPanel.add(filterLabel);
 		iFilterPanel.setCellVerticalAlignment(filterLabel, HasVerticalAlignment.ALIGN_MIDDLE);
 		
 		iFilter = new ReservationFilterBox();
 		iFilterPanel.add(iFilter);
 		
-		iSearch = new Button("<u>S</u>earch");
+		iSearch = new Button(MESSAGES.buttonSearch());
 		iSearch.setAccessKey('s');
 		iSearch.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iSearch);		
 		
-		iPrint = new Button("<u>P</u>rint");
+		iPrint = new Button(MESSAGES.buttonPrint());
 		iPrint.setAccessKey('p');
 		iPrint.addStyleName("unitime-NoPrint");
 		iFilterPanel.add(iPrint);		
 
-		iNew = new Button("<u>A</u>dd New");
+		iNew = new Button(MESSAGES.buttonAddNew());
 		iNew.setAccessKey('a');
 		iNew.setEnabled(false);
 		iNew.addStyleName("unitime-NoPrint");
@@ -154,7 +156,7 @@ public class ReservationsPage extends Composite {
 			iFilter.setValue(Window.Location.getParameter("q"), true);
 			loadReservations();
 		} else {
-			LoadingWidget.getInstance().show("Loading reservations ...");
+			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservations());
 			iReservationService.lastReservationFilter(new AsyncCallback<String>() {
 				
 				@Override
@@ -168,7 +170,7 @@ public class ReservationsPage extends Composite {
 				
 				@Override
 				public void onFailure(Throwable caught) {
-					iReservationTable.setErrorMessage("Unable to retrieve reservations (" + caught.getMessage() + ").");
+					iReservationTable.setErrorMessage(MESSAGES.failedToLoadReservations(caught.getMessage()));
 					LoadingWidget.getInstance().hide();
 					ToolBox.checkAccess(caught);
 				}
@@ -199,7 +201,7 @@ public class ReservationsPage extends Composite {
 		
 		iNew.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				UniTimePageLabel.getInstance().setPageName("Add Reservation");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageAddReservation());
 				iPanel.setWidget(iReservationEdit);
 				iReservationEdit.setReservation(null);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -211,7 +213,7 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onSave(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Reservations");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageReservations());
 				iPanel.setWidget(iReservationPanel);
 				loadReservations();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -220,7 +222,7 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onDelete(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Reservations");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageReservations());
 				iPanel.setWidget(iReservationPanel);
 				loadReservations();
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
@@ -229,7 +231,7 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onBack(EditFinishedEvent evt) {
-				UniTimePageLabel.getInstance().setPageName("Reservations");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageReservations());
 				iPanel.setWidget(iReservationPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 				iLastReservationId = evt.getReservationId();
@@ -238,7 +240,7 @@ public class ReservationsPage extends Composite {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				UniTimePageLabel.getInstance().setPageName("Reservations");
+				UniTimePageLabel.getInstance().setPageName(MESSAGES.pageReservations());
 				iPanel.setWidget(iReservationPanel);
 				Client.fireGwtPageChanged(new GwtPageChangeEvent());
 			}

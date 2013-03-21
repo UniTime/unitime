@@ -342,7 +342,7 @@ public class CurriculumEdit extends Composite {
 		iCurriculumMajors.getWidget().setStyleName("unitime-TextBox");
 		iCurriculumMajors.getWidget().setVisibleItemCount(3);
 		iCurriculumMajors.getWidget().setHeight("100px");
-		iCurriculaTable.addRow(MESSAGES.propMajors(), iCurriculumMajors);
+		iCurriculaTable.addRow(MESSAGES.propMajorOrMajors(), iCurriculumMajors);
 		
 		iCurriculumMajors.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
