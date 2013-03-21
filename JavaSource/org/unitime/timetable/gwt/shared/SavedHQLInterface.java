@@ -32,6 +32,7 @@ public class SavedHQLInterface implements IsSerializable {
 	public static class Flag implements IsSerializable {
 		private int iValue;
 		private String iText;
+		private String iAppearance;
 		
 		public Flag() {}
 		
@@ -40,6 +41,10 @@ public class SavedHQLInterface implements IsSerializable {
 		
 		public String getText() { return iText; }
 		public void setText(String text) { iText = text; }
+		
+		public boolean isAppearance() { return iAppearance != null; }
+		public String getAppearance() { return iAppearance; }
+		public void setAppearance(String appearance) { iAppearance = appearance; }
 	}
 	
 	public static class IdValue implements IsSerializable, Comparable<IdValue> {
