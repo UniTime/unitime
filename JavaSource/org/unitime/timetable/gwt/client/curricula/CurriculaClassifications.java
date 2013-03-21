@@ -25,10 +25,12 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.user.client.ui.Composite;
@@ -41,6 +43,7 @@ import com.google.gwt.user.client.ui.ValueBoxBase;
  * @author Tomas Muller
  */
 public class CurriculaClassifications extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	
 	private UniTimeTable iTable;
 
@@ -62,15 +65,15 @@ public class CurriculaClassifications extends Composite {
 	public void setup(List<AcademicClassificationInterface> classifications) {
 		iTable.clear(true);
 		iClassifications = classifications;
-		iTable.setText(0, 0, "Name:");
-		iTable.setText(1, 0, "Classification:");
-		iTable.setText(2, 0, "Last-Like Enrollment:");
+		iTable.setText(0, 0, MESSAGES.propName());
+		iTable.setText(1, 0, MESSAGES.propClassification());
+		iTable.setText(2, 0, MESSAGES.propLastLikeEnrollment());
 		iTable.getCellFormatter().setWordWrap(2, 0, false);
-		iTable.setText(3, 0, "Projected by Rule:");
+		iTable.setText(3, 0, MESSAGES.propProjectedByRule());
 		iTable.getCellFormatter().setWordWrap(3, 0, false);
-		iTable.setText(4, 0, "Requested Enrollment:");
+		iTable.setText(4, 0, MESSAGES.propRequestedEnrollment());
 		iTable.getCellFormatter().setWordWrap(4, 0, false);
-		iTable.setText(5, 0, "Current Enrollment:");
+		iTable.setText(5, 0, MESSAGES.propCurrentEnrollment());
 		iTable.getCellFormatter().setWordWrap(5, 0, false);
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {

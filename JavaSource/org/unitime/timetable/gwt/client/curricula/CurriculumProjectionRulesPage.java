@@ -29,10 +29,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
@@ -76,6 +78,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class CurriculumProjectionRulesPage extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 	private final MenuServiceAsync iMenuService = GWT.create(MenuService.class);
@@ -100,11 +103,12 @@ public class CurriculumProjectionRulesPage extends Composite {
 		ClickHandler save = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show("Saving curriculum projection rules ...");
+				LoadingWidget.getInstance().show(MESSAGES.waitSavingCurriculumProjectionRules());
 				iService.saveProjectionRules(iRules, new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iHeader.setErrorMessage("Failed to save curricula projection rules (" + caught.getMessage() + ")");
+						iHeader.setErrorMessage(MESSAGES.failedToSaveCurriculumProjectionRules(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedToSaveCurriculumProjectionRules(caught.getMessage()), caught);
 						LoadingWidget.getInstance().hide();
 						for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 							h.onException(caught);
@@ -169,11 +173,11 @@ public class CurriculumProjectionRulesPage extends Composite {
 		};
 
 		iHeader = new UniTimeHeaderPanel();
-		iHeader.addButton("edit", "<u>E</u>dit", 75, edit);
-		iHeader.addButton("save", "<u>S</u>ave", 75, save);
-		iHeader.addButton("print", "<u>P</u>rint", 75, print);
-		iHeader.addButton("close", "<u>C</u>lose", 75, close);
-		iHeader.addButton("back", "<u>B</u>ack", 75, back);
+		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, edit);
+		iHeader.addButton("save", MESSAGES.buttonSave(), 75, save);
+		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, print);
+		iHeader.addButton("close", MESSAGES.buttonClose(), 75, close);
+		iHeader.addButton("back", MESSAGES.buttonBack(), 75, back);
 				
 		iPanel.addHeaderRow(iHeader);
 		
@@ -198,11 +202,12 @@ public class CurriculumProjectionRulesPage extends Composite {
 		iHeader.setEnabled("back", false);
 		iHeader.setEnabled("print", false);
 
-		LoadingWidget.getInstance().show("Loading curriculum projection rules ...");
+		LoadingWidget.getInstance().show(MESSAGES.waitLoadingCurriculumProjectionRules());
 		iService.loadProjectionRules(new AsyncCallback<HashMap<AcademicAreaInterface, HashMap<MajorInterface, HashMap<AcademicClassificationInterface, Number[]>>>>() {
 			@Override
 			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage("Loading failed (" + caught.getMessage() + ")");
+				iHeader.setErrorMessage(MESSAGES.failedToLoadCurriculumProjectionRules(caught.getMessage()));
+				UniTimeNotifications.error(MESSAGES.failedToLoadCurriculumProjectionRules(caught.getMessage()), caught);
 				LoadingWidget.getInstance().hide();
 				for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 					h.onException(caught);
@@ -260,7 +265,8 @@ public class CurriculumProjectionRulesPage extends Composite {
 			}
 			
 		} catch (Throwable t) {
-			iHeader.setErrorMessage("Loading failed (" + t.getMessage() + ")");
+			iHeader.setErrorMessage(MESSAGES.failedToLoadCurriculumProjectionRules(t.getMessage()));
+			UniTimeNotifications.error(MESSAGES.failedToLoadCurriculumProjectionRules(t.getMessage()), t);
 			for (ProjectionRulesHandler h: iProjectionRulesHandlers) {
 				h.onException(t);
 			}
@@ -312,7 +318,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			iTable.removeRow(row);
 
 		if (iRules == null || iRules.isEmpty())
-			throw new CurriculaException("No academic areas defined.");
+			throw new CurriculaException(MESSAGES.errorNoAcademicAreasDefined());
 
 		String areaOrd = (iOrder == null ? null : iOrder.get("CurProjRules.Order"));
 		TreeSet<AcademicAreaInterface> areas = null;
@@ -448,7 +454,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			}
 		}
 		if (classifications == null || classifications.isEmpty())
-			throw new CurriculaException("No academic classifications defined.");
+			throw new CurriculaException(MESSAGES.errorNoAcademicClassificationsDefined());
 		
 		ClickHandler menu = new ClickHandler() {
 			@Override
@@ -456,7 +462,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 				final PopupPanel popup = new PopupPanel(true);
 				MenuBar menu = new MenuBar(true);
 				if (CurriculumCookie.getInstance().getCurriculumProjectionRulesPercent())
-					menu.addItem(new MenuItem("Show Numbers", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opShowNumbers(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -465,7 +471,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 						}
 					}));
 				else
-					menu.addItem(new MenuItem("Show Percentages", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opShowPercentages(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -474,7 +480,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 						}
 					}));
 				if (CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike())
-					menu.addItem(new MenuItem("Hide Last-Like Enrollments", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opHideItem(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -483,7 +489,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 						}
 					}));
 				else
-					menu.addItem(new MenuItem("Show Last-Like Enrollments", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opShowItem(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -502,7 +508,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 					}
 				}
 				if (canCollapse) {
-					menu.addItem(new MenuItem("Collapse All", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opCollapseAll(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -517,7 +523,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 					}));
 				}
 				if (canExpand) {
-					menu.addItem(new MenuItem("Expand All", true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opExpandAll(), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -558,7 +564,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		iTable.getFlexCellFormatter().setStyleName(0, col2clasf.size() + 1, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, col2clasf.size() + 1, totals);
 		if (row == 1)
-			throw new CurriculaException("No last-like enrollments.");
+			throw new CurriculaException(MESSAGES.errorNoLastLikeEnrollemnts());
 		
 		iTable.setText(row, 0, "Total");
 		iTable.getCellFormatter().getElement(row, 0).getStyle().setBackgroundColor("#EEEEEE");
@@ -648,12 +654,12 @@ public class CurriculumProjectionRulesPage extends Composite {
 				}
 			});
 			
-			iFrontLabel = new HTML(String.valueOf(iRow.getLastLike(iClasf)) + "&nbsp;&rarr;&nbsp;", false);
+			iFrontLabel = new HTML(MESSAGES.curriculumProjectionRulesOldValue(iRow.getLastLike(iClasf)), false);
 			iFrontLabel.setWidth("55px");
 			iFrontLabel.setStyleName("unitime-Label");
 			iFrontLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			
-			iRearLabel = new HTML("&nbsp;(of&nbsp;" + String.valueOf(iRow.getLastLike(iClasf))+")", false);
+			iRearLabel = new HTML(MESSAGES.curriculumProjectionRulesOfTotal(iRow.getLastLike(iClasf)), false);
 			iRearLabel.setWidth("55px");
 			iRearLabel.setStyleName("unitime-Label");
 			iRearLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -671,9 +677,9 @@ public class CurriculumProjectionRulesPage extends Composite {
 			
 			update();
 			
-			iHint = new HTML("Academic Area: " + iRow.getArea().getAbbv() + " - " + iRow.getArea().getName() + "<br>" +
-					(iRow.getMajor() == null ? "" : "Major: " + iRow.getMajor().getCode() + " - " + iRow.getMajor().getName() + "<br>") +
-					"Academic Classification: " + iClasf.getCode() + " - " + iClasf.getName(), false);
+			iHint = new HTML(MESSAGES.propAcademicArea() + " " + iRow.getArea().getAbbv() + " - " + iRow.getArea().getName() + "<br>" +
+					(iRow.getMajor() == null ? "" : MESSAGES.propMajor() + " " + iRow.getMajor().getCode() + " - " + iRow.getMajor().getName() + "<br>") +
+					MESSAGES.propAcademicClassification() + " " + iClasf.getCode() + " - " + iClasf.getName(), false);
 			iHintPanel = new PopupPanel();
 			iHintPanel.setWidget(iHint);
 			iHintPanel.setStyleName("unitime-PopupHint");
@@ -757,7 +763,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			if (projection == 1.0f) {
 				iFrontLabel.setHTML("&nbsp;");
 			} else {
-				iFrontLabel.setHTML(String.valueOf(iRow.getLastLike(iClasf)) + "&nbsp;&rarr;&nbsp;");
+				iFrontLabel.setHTML(MESSAGES.curriculumProjectionRulesOldValue(iRow.getLastLike(iClasf)));
 			}
 		}
 		
@@ -837,12 +843,12 @@ public class CurriculumProjectionRulesPage extends Composite {
 				lastLike += cell.getRow().getLastLike(cell.getClassification());
 			}
 			
-			iFrontLabel = new HTML(String.valueOf(lastLike) + "&nbsp;&rarr;&nbsp;", false);
+			iFrontLabel = new HTML(MESSAGES.curriculumProjectionRulesOldValue(lastLike), false);
 			iFrontLabel.setWidth("55px");
 			iFrontLabel.setStyleName("unitime-Label");
 			iFrontLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
 			
-			iRearLabel = new HTML("&nbsp;(of&nbsp;" + String.valueOf(lastLike)+")", false);
+			iRearLabel = new HTML(MESSAGES.curriculumProjectionRulesOfTotal(lastLike), false);
 			iRearLabel.setWidth("55px");
 			iRearLabel.setStyleName("unitime-Label");
 			iRearLabel.setHorizontalAlignment(HasHorizontalAlignment.ALIGN_RIGHT);
@@ -902,7 +908,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 			if (projection == 1.0f) {
 				iFrontLabel.setHTML("&nbsp;");
 			} else {
-				iFrontLabel.setHTML(String.valueOf(lastLike) + "&nbsp;&rarr;&nbsp;");
+				iFrontLabel.setHTML(MESSAGES.curriculumProjectionRulesOldValue(lastLike));
 			}
 		}
 	}
@@ -1020,7 +1026,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 		}
 		
 		public void saveOrder() {
-			iHeader.setMessage("Saving order...");
+			iHeader.setMessage(MESSAGES.waitSavingOrder());
 			String areaOrd = "";
 			HashMap<String, String> area2majorOrd = new HashMap<String, String>();
 			for (int i = 1; i < getRowCount() - 1; i++) {
@@ -1042,7 +1048,6 @@ public class CurriculumProjectionRulesPage extends Composite {
 			iMenuService.setUserData(ord, new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iHeader.setErrorMessage("Failed to save table order (" + caught.getMessage() + ")");
 				}
 				@Override
 				public void onSuccess(Boolean result) {
