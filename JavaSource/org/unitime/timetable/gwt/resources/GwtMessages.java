@@ -263,6 +263,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Delete")
 	String opGroupDelete();
 	
+	@DefaultMessage("Save")
+	String opQuerySave();
+	
+	@DefaultMessage("Delete")
+	String opQueryDelete();
+	
+	@DefaultMessage("Test")
+	String opQueryTest();
+	
+	@DefaultMessage("Back")
+	String opQueryBack();
+	
 	@DefaultMessage("Edit Requested Enrollments")
 	String opEditRequestedEnrollments();
 	
@@ -775,6 +787,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Curricula&nbsp;<u>O</u>perations&nbsp;&or;")
 	String buttonCurriculaOperations();
+	
+	@DefaultMessage("E<u>x</u>ecute")
+	String buttonExecute();
+	
+	@DefaultMessage("Export&nbsp;<u>C</u>SV")
+	String buttonExportCSV();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -805,6 +823,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} meetings for {1}")
 	String sectMeetingList(String resource, String session);
+	
+	@DefaultMessage("Results")
+	String sectResults();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -910,6 +931,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading curriculum projection rules ...")
 	String waitLoadingCurriculumProjectionRules();
+	
+	@DefaultMessage("Loading reports ...")
+	String waitLoadingReports();
+	
+	@DefaultMessage("Testing query ...")
+	String waitTestingQuery();
+	
+	@DefaultMessage("Executing {0} ...")
+	String waitExecuting(String operation);
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1061,6 +1091,15 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load curriculum projection rules: {0}")
 	String failedToLoadCurriculumProjectionRules(String reason);
 	
+	@DefaultMessage("Test failed: {0}")
+	String failedTest(String reason);
+	
+	@DefaultMessage("Test failed.")
+	String failedTestNoReason();
+	
+	@DefaultMessage("Execution failed: {0}")
+	String failedExecution(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1120,6 +1159,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No data.")
 	String errorNoData();
+	
+	@DefaultMessage("No results.")
+	String errorNoResults();
 
 	@DefaultMessage("No curricula matching the above filter found.")
 	String errorNoMatchingCurriculaFound();
@@ -1162,6 +1204,45 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course detail interface not provided.")
 	String errorCourseDetailsInterfaceNotProvided();
+	
+	@DefaultMessage("No report is selected.")
+	String errorNoReportSelected();
+	
+	@DefaultMessage("No reports are avaialable.")
+	String errorNoReportsAvailable();
+	
+	@DefaultMessage("No report provided.")
+	String errorNoReportProvided();
+	
+	@DefaultMessage("{0} not selected")
+	String errorItemNotSelected(String item);
+	
+	@DefaultMessage("At least one appearance must be selected.")
+	String errorNoAppearanceSelected();
+	
+	@DefaultMessage("Name is required.")
+	String errorNameIsRequired();
+	
+	@DefaultMessage("Query is required.")
+	String errorQueryIsRequired();
+	
+	@DefaultMessage("Unable to set parameter {0}: no available values.")
+	String errorUnableToSetParameterNoValues(String parameter);
+	
+	@DefaultMessage("Success (no row returned)")
+	String infoTestSucceededNoResults();
+	
+	@DefaultMessage("Success ({0} rows returned)")
+	String infoTestSucceededWithRows(int rows);
+	
+	@DefaultMessage("Success (100+ rows returned)")
+	String infoTestSucceededWith100OrMoreRows();
+	
+	@DefaultMessage("Showing all {0} lines.")
+	String infoShowingAllLines(int lines);
+	
+	@DefaultMessage("Showing all lines {0} -- {1}.")
+	String infoShowingLines(int firstLine, int lastLine);
 	
 	@DefaultMessage("Room")
 	String resourceRoom();
@@ -1231,6 +1312,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Hide empty columns.")
 	String hintHideEmptyColumns();
+	
+	@DefaultMessage("Click here or outside of the dialog to close.")
+	String hintCloseDialog();
 	
 	@DefaultMessage("Total {0} Enrollment")
 	String totalEnrollmentOfType(String type);
@@ -1391,6 +1475,22 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Curricula")
 	String pageCurricula();
 	
+	@DefaultMessage("Course Reports")
+	String pageCourseReports();
+	
+	@DefaultMessage("Examination Reports")
+	String pageExaminationReports();
+	
+	@DefaultMessage("Student Sectioning Reports")
+	String pageStudentSectioningReports();
+	
+	@DefaultMessage("Event Reports")
+	String pageEventReports();
+	
+	@DefaultMessage("Administration Reports")
+	String pageAdministrationReports();
+	
+	
 	@DefaultMessage("Curriculum Requested Enrollments")
 	String pageCurriculumRequestedEnrollments();
 
@@ -1423,6 +1523,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Curriculum Projection Rules")
 	String dialogCurriculumProjectionRules();
+	
+	@DefaultMessage("New Report")
+	String dialogNewReport();
+	
+	@DefaultMessage("Edit {0}")
+	String dialogEditReport(String name);
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
@@ -1744,6 +1850,18 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Break Time:")
 	String propRoomBreakTime();
+	
+	@DefaultMessage("Report:")
+	String propReport();
+	
+	@DefaultMessage("Description:")
+	String propDescription();
+	
+	@DefaultMessage("Query:")
+	String propQuery();
+	
+	@DefaultMessage("Flags:")
+	String propFlags();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -2035,4 +2153,49 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0}&nbsp;&rarr;&nbsp;")
 	String curriculumProjectionRulesOldValue(int lastLike);
+	
+	@DefaultMessage("Appearance: Courses")
+	String flagAppearanceCourses();
+	
+	@DefaultMessage("Appearance: Examinations")
+	String flagAppearanceExaminations();
+	
+	@DefaultMessage("Appearance: Student Sectioning")
+	String flagAppearanceStudentSectioning();
+	
+	@DefaultMessage("Appearance: Events")
+	String flagAppearanceEvents();
+	
+	@DefaultMessage("Appearance: Administration")
+	String flagAppearanceAdministration();
+	
+	@DefaultMessage("Restrictions: Administrator Only")
+	String flagRestrictionsAdministratorOnly();
+	
+	@DefaultMessage("Academic Session")
+	String optionAcademicSession();
+	
+	@DefaultMessage("Department")
+	String optionDepartment();
+	
+	@DefaultMessage("Departments")
+	String optionDepartments();
+	
+	@DefaultMessage("Subject Area")
+	String optionSubjectArea();
+	
+	@DefaultMessage("Subject Areas")
+	String optionSubjectAreas();
+	
+	@DefaultMessage("Building")
+	String optionBuilding();
+	
+	@DefaultMessage("Buildings")
+	String optionBuildings();
+	
+	@DefaultMessage("Room")
+	String optionRoom();
+	
+	@DefaultMessage("Rooms")
+	String optionRooms();
 }

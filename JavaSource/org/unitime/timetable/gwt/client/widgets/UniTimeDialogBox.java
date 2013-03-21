@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -43,6 +44,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTimeDialogBox> {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private FlowPanel iContainer, iControls;
 	private Anchor iClose;
@@ -59,7 +61,7 @@ public class UniTimeDialogBox extends DialogBox implements HasOpenHandlers<UniTi
         iContainer.addStyleName("dialogContainer");
         
         iClose = new Anchor();
-    	iClose.setTitle("Click here or outside of the dialog to close.");
+    	iClose.setTitle(MESSAGES.hintCloseDialog());
         iClose.setStyleName("close");
         iClose.addClickHandler(new ClickHandler() {
         	@Override

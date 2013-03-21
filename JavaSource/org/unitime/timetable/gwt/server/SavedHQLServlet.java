@@ -10,8 +10,10 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.Exporter.Printer;
 import org.unitime.timetable.export.hql.SavedHqlExportToCSV;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.SavedHQLService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SavedHQLException;
@@ -26,6 +28,7 @@ import org.unitime.timetable.webutil.Navigation;
 
 @Service("hql.gwt")
 public class SavedHQLServlet implements SavedHQLService {
+	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	private static Logger sLog = Logger.getLogger(SavedHQLServlet.class);
 	
 	private @Autowired SessionContext sessionContext;
@@ -38,7 +41,8 @@ public class SavedHQLServlet implements SavedHQLService {
 		for (SavedHQL.Flag f: SavedHQL.Flag.values()) {
 			SavedHQLInterface.Flag flag = new SavedHQLInterface.Flag();
 			flag.setValue(f.flag());
-			flag.setText(f.description());
+			flag.setText(getLocalizedDescription(f));
+			flag.setAppearance(f.getAppearance());
 			ret.add(flag);
 		}
 		return ret;
@@ -52,7 +56,7 @@ public class SavedHQLServlet implements SavedHQLService {
 			if (!o.allowSingleSelection() && !o.allowMultiSelection()) continue;
 			SavedHQLInterface.Option option = new SavedHQLInterface.Option();
 			option.setMultiSelect(o.allowMultiSelection());
-			option.setName(o.text());
+			option.setName(getLocalizedText(o));
 			option.setType(o.name());
 			Map<Long, String> values = o.values(getSessionContext().getUser());
 			if (values == null || values.isEmpty()) continue;
@@ -77,7 +81,7 @@ public class SavedHQLServlet implements SavedHQLService {
 	@Override
 	@PreAuthorize("checkPermission('HQLReports')")
 	public List<SavedHQLInterface.Query> queries(String appearance) throws SavedHQLException, PageAccessException {
-		SavedHQL.Flag ap = SavedHQL.Flag.valueOf("APPEARANCE_" + (appearance == null ? "ADMINISTRATION" : appearance.toUpperCase()));
+		SavedHQL.Flag ap = getAppearanceFlag(appearance);
 		switch (ap) {
 		case APPEARANCE_ADMINISTRATION:
 			getSessionContext().checkPermission(Right.HQLReportsAdministration); break;
@@ -142,7 +146,7 @@ public class SavedHQLServlet implements SavedHQLService {
 			throw e;
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
-			throw new SavedHQLException("Execution failed: " + e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")"));
+			throw new SavedHQLException(MESSAGES.failedExecution(e.getMessage() + (e.getCause() == null ? "" : " (" + e.getCause().getMessage() + ")")));
 		}
 	}
 	
@@ -172,7 +176,7 @@ public class SavedHQLServlet implements SavedHQLService {
 	@Override
 	@PreAuthorize("checkPermission(#id, 'SavedHQL', 'HQLReportDelete')")
 	public Boolean delete(Long id) throws SavedHQLException, PageAccessException {
-		if (id == null) throw new SavedHQLException("No report provided.");
+		if (id == null) throw new SavedHQLException(MESSAGES.errorNoReportProvided());
 		org.hibernate.Session hibSession = SavedHQLDAO.getInstance().getSession();
 		SavedHQL hql = SavedHQLDAO.getInstance().get(id, hibSession);
 		if (hql != null) {
@@ -182,21 +186,73 @@ public class SavedHQLServlet implements SavedHQLService {
 		return hql != null;
 	}
 	
+	private SavedHQL.Flag getAppearanceFlag(String appearance) {
+		for (SavedHQL.Flag flag: SavedHQL.Flag.values())
+			if (flag.getAppearance() != null && flag.getAppearance().equalsIgnoreCase(appearance))
+				return flag;
+		return SavedHQL.Flag.APPEARANCE_COURSES;
+	}
+	
+	private String getLocalizedDescription(SavedHQL.Flag flag) {
+		switch (flag) {
+		case APPEARANCE_COURSES:
+			MESSAGES.flagAppearanceCourses();
+		case APPEARANCE_EXAMS:
+			MESSAGES.flagAppearanceExaminations();
+		case APPEARANCE_EVENTS:
+			MESSAGES.flagAppearanceEvents();
+		case APPEARANCE_SECTIONING:
+			MESSAGES.flagAppearanceStudentSectioning();
+		case APPEARANCE_ADMINISTRATION:
+			MESSAGES.flagAppearanceAdministration();
+		case ADMIN_ONLY:
+			MESSAGES.flagRestrictionsAdministratorOnly();
+		default:
+			return flag.description();
+		}
+	}
+	
+	private String getLocalizedText(SavedHQL.Option option) {
+		switch (option) {
+		case BUILDING:
+			return MESSAGES.optionBuilding();
+		case BUILDINGS:
+			return MESSAGES.optionBuildings();
+		case DEPARTMENT:
+			return MESSAGES.optionDepartment();
+		case DEPARTMENTS:
+			return MESSAGES.optionDepartments();
+		case ROOM:
+			return MESSAGES.optionRoom();
+		case ROOMS:
+			return MESSAGES.optionRooms();
+		case SESSION:
+			return MESSAGES.optionAcademicSession();
+		case SUBJECT:
+			return MESSAGES.optionSubjectArea();
+		case SUBJECTS:
+			return MESSAGES.optionSubjectAreas();
+		default:
+			return option.text();
+		}
+		
+	}
+	
 	@Override
 	@PreAuthorize("checkPermission('HQLReports')")
 	public Boolean setBack(String appearance, String history, List<Long> ids, String type) throws SavedHQLException, PageAccessException {
-		String title = "Reports";
-		switch (SavedHQL.Flag.valueOf("APPEARANCE_" + (appearance == null ? "ADMINISTRATION" : appearance.toUpperCase()))) {
+		String title = MESSAGES.pageCourseReports();
+		switch (getAppearanceFlag(appearance)) {
 		case APPEARANCE_COURSES:
-			title = "Course Reports"; break;
+			title = MESSAGES.pageCourseReports(); break;
 		case APPEARANCE_EXAMS:
-			title = "Examination Reports"; break;
+			title = MESSAGES.pageExaminationReports(); break;
 		case APPEARANCE_SECTIONING:
-			title = "Student Sectioning Reports"; break;
+			title = MESSAGES.pageStudentSectioningReports(); break;
 		case APPEARANCE_EVENTS:
-			title = "Event Reports"; break;
+			title = MESSAGES.pageEventReports(); break;
 		case APPEARANCE_ADMINISTRATION:
-			title = "Administration Reports"; break;
+			title = MESSAGES.pageAdministrationReports(); break;
 		}
 		BackTracker.markForBack(getSessionContext(), "gwt.jsp?page=hql&appearance=" + appearance + "#" + history, title, true, true);
 		if ("__Class".equals(type))
