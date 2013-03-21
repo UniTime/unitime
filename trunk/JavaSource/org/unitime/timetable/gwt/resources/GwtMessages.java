@@ -496,6 +496,24 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Current<br>Enrollment")
 	String colCurrentEnrollment();
+	
+	@DefaultMessage("Instructional<br>Offering")
+	String colInstructionalOffering();
+	
+	@DefaultMessage("Reservation<br>Type")
+	String colReservationType();
+	
+	@DefaultMessage("Owner")
+	String colOwner();
+	
+	@DefaultMessage("Restrictions")
+	String colRestrictions();
+	
+	@DefaultMessage("Reserved<br>Space")
+	String colReservedSpace();
+	
+	@DefaultMessage("Expiration<br>Date")
+	String colExpirationDate();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -660,6 +678,9 @@ public interface GwtMessages extends Messages {
 	String propMajor();
 	
 	@DefaultMessage("Major(s):")
+	String propMajorOrMajors();
+	
+	@DefaultMessage("Majors:")
 	String propMajors();
 	
 	@DefaultMessage("Academic Classification:")
@@ -670,6 +691,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Classification:")
 	String propClassification();
+	
+	@DefaultMessage("Classifications:")
+	String propClassifications();
 	
 	@DefaultMessage("Last-Like Enrollment:")
 	String propLastLikeEnrollment();
@@ -793,6 +817,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Export&nbsp;<u>C</u>SV")
 	String buttonExportCSV();
+	
+	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
+	String buttonAddReservation();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -826,6 +853,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Results")
 	String sectResults();
+	
+	@DefaultMessage("Reservation Details")
+	String sectReservationDetails();
+	
+	@DefaultMessage("Reservations")
+	String sectReservations();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -940,6 +973,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Executing {0} ...")
 	String waitExecuting(String operation);
+	
+	@DefaultMessage("Saving reservation...")
+	String waitSavingReservation();
+	
+	@DefaultMessage("Deleting reservation...")
+	String waitDeletingReservation();
+		
+	@DefaultMessage("Loading reservation...")
+	String waitLoadingReservation();
+
+	@DefaultMessage("Loading reservations...")
+	String waitLoadingReservations();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -973,6 +1018,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Validation failed, see errors below.")
 	String failedValidationSeeBelow();
+	
+	@DefaultMessage("Validation failed, please check the form for warnings.")
+	String failedValidationCheckForm();
 	
 	@DefaultMessage("Room availability failed: {0}")
 	String failedRoomAvailability(String reason);
@@ -1099,6 +1147,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Execution failed: {0}")
 	String failedExecution(String reason);
+	
+	@DefaultMessage("Failed to load reservations: {0}")
+	String failedToLoadReservations(String reason);
 	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
@@ -1229,6 +1280,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Unable to set parameter {0}: no available values.")
 	String errorUnableToSetParameterNoValues(String parameter);
 	
+	@DefaultMessage("Reservation or instructional offering id not provided.")
+	String errorReservationOrOfferingIdNotProvided();
+	
+	@DefaultMessage("Cannot delete unsaved reservation.")
+	String errorCannotDeleteUnsavedReservation();
+	
+	@DefaultMessage("No reservation matching the above filter found.")
+	String errorNoMatchingReservation();
+	
+	@DefaultMessage("Unknown reservation type {0}.")
+	String errorUnknownReservationType(String tpe);
+	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
 	
@@ -1315,6 +1378,69 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Click here or outside of the dialog to close.")
 	String hintCloseDialog();
+	
+	@DefaultMessage("Reservation type must be selected.")
+	String hintReservationTypeNotSelected();
+	
+	@DefaultMessage("No students provided.")
+	String hintNoStudentsProvided();
+	
+	@DefaultMessage("Line {0} is not a valid student record.")
+	String hintLineXIsNotValidStudent(String x);
+	
+	@DefaultMessage("Line {0} is not a valid student record: {1}")
+	String hintLineXIsNotValidStudentException(String x, String reason);
+	
+	@DefaultMessage("A student group must be provided.")
+	String hintStudentGroupNotProvided();
+	
+	@DefaultMessage("A course must be provided.")
+	String hintCourseNotProvided();
+	
+	@DefaultMessage("An offering must be provided.")
+	String hintOfferingNotProvided();
+	
+	@DefaultMessage("An academic area must be provided.")
+	String hintAcademicAreaNotProvided();
+	
+	@DefaultMessage("Reservation type {0} not supported.")
+	String hintReservationTypeNotSupported(String type);
+	
+	@DefaultMessage("Expiration date is not valid.")
+	String hintExpirationDateNotValid();
+	
+	@DefaultMessage("Reservation limit is not valid.")
+	String hintReservationLimitNotValid();
+	
+	@DefaultMessage("No space selected")
+	String hintNoSpaceSelected();
+	
+	@DefaultMessage("Only 1 space selected")
+	String hintOnlyOneSpaceSelected();
+	
+	@DefaultMessage("Only {0} spaces selected")
+	String hintOnlyNSpacesSelected(int n);
+	
+	@DefaultMessage("{0} not offered")
+	String hintCourseNotOffered(String course);
+	
+	@DefaultMessage("No space in {0}")
+	String hintNoSpaceInCourse(String course);
+	
+	@DefaultMessage("Only 1 space in {0}")
+	String hintOnlyOneSpaceInCourse(String course);
+	
+	@DefaultMessage("Only {0} spaces in {1}")
+	String hintOnlyNSpacesInCourse(int n, String course);
+
+	@DefaultMessage("The selected offering has no reservations.")
+	String hintOfferingHasNoReservations();
+	
+	@DefaultMessage("Configuration {0} ({1})")
+	String selectionConfiguration(String name, String limit);
+	
+	@DefaultMessage("unlimited")
+	String configUnlimited();
 	
 	@DefaultMessage("Total {0} Enrollment")
 	String totalEnrollmentOfType(String type);
@@ -1490,15 +1616,26 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Administration Reports")
 	String pageAdministrationReports();
 	
-	
 	@DefaultMessage("Curriculum Requested Enrollments")
 	String pageCurriculumRequestedEnrollments();
+	
+	@DefaultMessage("Reservation")
+	String pageReservations();
+	
+	@DefaultMessage("Add Reservation")
+	String pageAddReservation();
+	
+	@DefaultMessage("Edit Reservation")
+	String pageEditReservation();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
 	@DefaultMessage("All Departments")
 	String itemAllDepartments();
+	
+	@DefaultMessage("None")
+	String itemNone();
 	
 	@DefaultMessage("Add Meetings...")
 	String dialogAddMeetings();
@@ -1862,6 +1999,30 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Flags:")
 	String propFlags();
+	
+	@DefaultMessage("Instructional Offering:")
+	String propInstructionalOffering();
+	
+	@DefaultMessage("Reserved Space:")
+	String propReservedSpace();
+	
+	@DefaultMessage("Expiration Date:")
+	String propExpirationDate();
+	
+	@DefaultMessage("Restrictions:")
+	String propRestrictions();
+	
+	@DefaultMessage("Type:")
+	String propType();
+	
+	@DefaultMessage("Students:")
+	String propStudents();
+	
+	@DefaultMessage("Student Group:")
+	String propStudentGroup();
+	
+	@DefaultMessage("Course:")
+	String propCourse();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -1979,6 +2140,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Enabled")
 	String fieldEnabled();
+	
+	@DefaultMessage("Instructional Offering")
+	String fieldInstructionalOffering();
+	
+	@DefaultMessage("Reservation Type")
+	String fieldReservationType();
+	
+	@DefaultMessage("Reserved Space")
+	String fieldReservedSpace();
+	
+	@DefaultMessage("Expiration Date")
+	String fieldExpirationDate();
 	
 	@DefaultMessage("Access")
 	String toggleAccess();
@@ -2198,4 +2371,37 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Rooms")
 	String optionRooms();
+	
+	@DefaultMessage("Individual Reservation")
+	String reservationIndividual();
+	
+	@DefaultMessage("Student Group Reservation")
+	String reservationStudentGroup();
+	
+	@DefaultMessage("Curriculum Reservation")
+	String reservationCurriculum();
+	
+	@DefaultMessage("Course Reservation")
+	String reservationCourse();
+	
+	@DefaultMessage("Individual")
+	String reservationIndividualAbbv();
+	
+	@DefaultMessage("Student Group")
+	String reservationStudentGroupAbbv();
+	
+	@DefaultMessage("Curriculum")
+	String reservationCurriculumAbbv();
+	
+	@DefaultMessage("Course")
+	String reservationCourseAbbv();
+	
+	@DefaultMessage("Unknown")
+	String reservationUnknownAbbv();
+	
+	@DefaultMessage("Total Reserved Space")
+	String totalReservedSpace();
+	
+	@DefaultMessage("&infin;")
+	String infinity();
 }
