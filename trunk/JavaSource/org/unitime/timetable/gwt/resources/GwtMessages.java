@@ -155,6 +155,144 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Show All")
 	String opShowAll();
 	
+	@DefaultMessage("Hide {0}")
+	String opHideItem(String item);
+	
+	@DefaultMessage("Show {0}")
+	String opShowItem(String item);
+	
+	@DefaultMessage("Hide Details")
+	String opHideDetails();
+	
+	@DefaultMessage("Show Details")
+	String opShowDetails();
+	
+	@DefaultMessage("Show All Courses")
+	String opShowAllCourses();
+	
+	@DefaultMessage("Show Empty Courses")
+	String opShowEmptyCourses();
+	
+	@DefaultMessage("Hide Empty Courses")
+	String opHideEmptyCourses();
+	
+	@DefaultMessage("Select All Courses")
+	String opSelectAllCourses();
+	
+	@DefaultMessage("Remove Selected Courses")
+	String opRemoveSelectedCourses();
+
+	@DefaultMessage("Hide Empty Classifications")
+	String opHideEmptyClassifications();
+	
+	@DefaultMessage("Show All Classifications")
+	String opShowAllClassifications();
+	
+	@DefaultMessage("Show {0} Enrollment")
+	String opShowEnrollmentByType(String type);
+	
+	@DefaultMessage("Populate Course Projected Demands")
+	String opPopulateCourseProjectedDemands();
+	
+	@DefaultMessage("Populate Course Projected Demands (Include Other Students)")
+	String opPopulateCourseProjectedDemandsIncludeOther();
+	
+	@DefaultMessage("Show Numbers")
+	String opShowNumbers();
+	
+	@DefaultMessage("Show Percentages")
+	String opShowPercentages();
+	
+	@DefaultMessage("New group...")
+	String opNewGroup();
+	
+	@DefaultMessage("Clear Requested Enrollments")
+	String opClearRequestedEnrollment();
+	
+	@DefaultMessage("Clear Requested Enrollments (Selected Courses Only)")
+	String opClearRequestedEnrollmentSelectedCoursesOnly();
+	
+	@DefaultMessage("Clear Requested Enrollments (All Classifications)")
+	String opClearRequestedEnrollmentAllClassifications();
+	
+	@DefaultMessage("Clear Requested Enrollments (All Classifications, Selected Courses Only)")
+	String opClearRequestedEnrollmentAllClassificationsSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Last-Like &rarr; Requested")
+	String opCopyLastLikeToRequested();
+	
+	@DefaultMessage("Copy Last-Like &rarr; Requested (Selected Courses Only)")
+	String opCopyLastLikeToRequestedSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Last-Like &rarr; Requested (All Classifications)")
+	String opCopyLastLikeToRequestedAllClassifications();
+	
+	@DefaultMessage("Copy Last-Like &rarr; Requested (All Classifications, Selected Courses Only)")
+	String opCopyLastLikeToRequestedAllClassificationsSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Current &rarr; Requested")
+	String opCopyCurrentToRequested();
+	
+	@DefaultMessage("Copy Current &rarr; Requested (Selected Courses Only)")
+	String opCopyCurrentToRequestedSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Current &rarr; Requested (All Classifications)")
+	String opCopyCurrentToRequestedAllClassifications();
+	
+	@DefaultMessage("Copy Current &rarr; Requested (All Classifications, Selected Courses Only)")
+	String opCopyCurrentToRequestedAllClassificationsSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Projection &rarr; Requested")
+	String opCopyProjectionToRequested();
+	
+	@DefaultMessage("Copy Projection &rarr; Requested (Selected Courses Only)")
+	String opCopyProjectionToRequestedSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Projection &rarr; Requested (All Classifications)")
+	String opCopyProjectionToRequestedAllClassifications();
+	
+	@DefaultMessage("Copy Projection &rarr; Requested (All Classifications, Selected Courses Only)")
+	String opCopyProjectionToRequestedAllClassificationsSelectedCoursesOnly();
+	
+	@DefaultMessage("Assign")
+	String opGroupAssign();
+	
+	@DefaultMessage("Update")
+	String opGroupUpdate();
+	
+	@DefaultMessage("Delete")
+	String opGroupDelete();
+	
+	@DefaultMessage("Edit Requested Enrollments")
+	String opEditRequestedEnrollments();
+	
+	@DefaultMessage("Delete Selected Curricula")
+	String opDeleteSelectedCurricula();
+	
+	@DefaultMessage("Merge Selected Curricula")
+	String opMergeSelectedCurricula();
+	
+	@DefaultMessage("Curriculum Projection Rules")
+	String opCurriculumProjectionRules();
+	
+	@DefaultMessage("Update Requested Enrollment by Projection Rules")
+	String opUpdateRequestedEnrollmentByProjectionRules();
+	
+	@DefaultMessage("Update Requested Enrollment And Course Projections")
+	String opUpdateRequestedEnrollmentAndCourseProjections();
+	
+	@DefaultMessage("Create Curricula from Last-Like Enrollments &amp; Projections")
+	String opCreateCurriculaFromLastLike();
+	
+	@DefaultMessage("Re-Create Curricula from Last-Like Enrollments &amp; Projections")
+	String opRecreateCurriculaFromLastLike();
+	
+	@DefaultMessage("Show Names")
+	String opShowNames();
+	
+	@DefaultMessage("Show Abbreviations")
+	String opShowAbbreviations();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -301,6 +439,51 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Availability")
 	String colRoomAvailability();
+	
+	@DefaultMessage("Curriculum")
+	String colCurriculum();
+	
+	@DefaultMessage("Academic Area")
+	String colAcademicArea();
+	
+	@DefaultMessage("Major(s)")
+	String colMajors();
+	
+	@DefaultMessage("Total")
+	String colTotal();
+	
+	@DefaultMessage("Total {0}")
+	String colTotalOf(String what);
+	
+	@DefaultMessage("Other Students")
+	String colOtherStudents();
+	
+	@DefaultMessage("Group")
+	String colGroup();
+	
+	@DefaultMessage("Last&#8209;Like")
+	String colLastLike();
+	
+	@DefaultMessage("Projected")
+	String colProjected();
+	
+	@DefaultMessage("Enrolled")
+	String colEnrolled();
+	
+	@DefaultMessage("Department")
+	String colDepartment();
+	
+	@DefaultMessage("Last-Like<br>Enrollment")
+	String colLastLikeEnrollment();
+	
+	@DefaultMessage("Projected<br>by&nbsp;Rule")
+	String colProjectedByRule();
+	
+	@DefaultMessage("Requested<br>Enrollment")
+	String colRequestedEnrollment();
+	
+	@DefaultMessage("Current<br>Enrollment")
+	String colCurrentEnrollment();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -457,6 +640,45 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Curriculum:")
 	String propCurriculum();
+	
+	@DefaultMessage("Academic Area:")
+	String propAcademicArea();
+	
+	@DefaultMessage("Major:")
+	String propMajor();
+	
+	@DefaultMessage("Major(s):")
+	String propMajors();
+	
+	@DefaultMessage("Academic Classification:")
+	String propAcademicClassification();
+	
+	@DefaultMessage("Name:")
+	String propName();
+	
+	@DefaultMessage("Classification:")
+	String propClassification();
+	
+	@DefaultMessage("Last-Like Enrollment:")
+	String propLastLikeEnrollment();
+	
+	@DefaultMessage("Projected by Rule:")
+	String propProjectedByRule();
+	
+	@DefaultMessage("Requested Enrollment:")
+	String propRequestedEnrollment();
+	
+	@DefaultMessage("Current Enrollment:")
+	String propCurrentEnrollment();
+	
+	@DefaultMessage("Filter:")
+	String propFilter();
+	
+	@DefaultMessage("Abbreviation:")
+	String propAbbreviation();
+	
+	@DefaultMessage("Department:")
+	String propDepartment();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -479,7 +701,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd Meetings")
 	String buttonAddMeetings();
 	
-	@DefaultMessage("<u>P</u>rint")
+	@DefaultMessage("Prin<u>t</u>")
 	String buttonPrint();
 	
 	@DefaultMessage("E<u>x</u>port")
@@ -536,6 +758,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd")
 	String buttonAdd();
 	
+	@DefaultMessage("<u>A</u>dd New")
+	String buttonAddNew();
+	
 	@DefaultMessage("<u>E</u>dit")
 	String buttonEdit();
 	
@@ -547,6 +772,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("<u>C</u>lose")
 	String buttonClose();
+	
+	@DefaultMessage("Curricula&nbsp;<u>O</u>perations&nbsp;&or;")
+	String buttonCurriculaOperations();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -634,9 +862,60 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Loading data ...")
 	String waitLoadingData();
+	
+	@DefaultMessage("Saving curricula ...")
+	String waitSavingCurricula();
+	
+	@DefaultMessage("Saving curriculum {0} ...")
+	String waitSavingCurriculum(String name);
+	
+	@DefaultMessage("Deleting curriculum {0} ...")
+	String waitDeletingCurriculum(String name);
+	
+	@DefaultMessage("Loading curricula ...")
+	String waitLoadingCurricula();
+	
+	@DefaultMessage("Loading curriculum ...")
+	String waitLoadingCurriculum();
+	
+	@DefaultMessage("Loading curriculum {0} ...")
+	String waitLoadingCurriculumWithName(String name);
+	
+	@DefaultMessage("Populating projected demands for this offering ...")
+	String waitPopulateCourseProjectedDemands();
+	
+	@DefaultMessage("Loading details for {0} ...")
+	String waitLoadingDetailsOf(String name);
+	
+	@DefaultMessage("Deleting selected curricula ...")
+	String waitDeletingSelectedCurricula();
+	
+	@DefaultMessage("Merging selected curricula ...")
+	String waitMergingSelectedCurricula();
+	
+	@DefaultMessage("Updating curricula ... &nbsp;&nbsp;&nbsp;&nbsp;This could take a while ...")
+	String waitUpdatingCurricula();
+	
+	@DefaultMessage("Populating projected demands for all courses ...")
+	String waitPopulatingProjectedDemands();
+	
+	@DefaultMessage("Creating all curricula ... &nbsp;&nbsp;&nbsp;&nbsp;You may also go grab a coffee ... &nbsp;&nbsp;&nbsp;&nbsp;This will take a while ...")
+	String waitCreatingAllCurricula();
+	
+	@DefaultMessage("Loading course enrollments ...")
+	String waitLoadingCourseEnrollments();
+	
+	@DefaultMessage("Saving curriculum projection rules ...")
+	String waitSavingCurriculumProjectionRules();
+	
+	@DefaultMessage("Loading curriculum projection rules ...")
+	String waitLoadingCurriculumProjectionRules();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
+	
+	@DefaultMessage("Failed to load details of {0}: {1}")
+	String failedLoadDetails(String name, String reason);
 	
 	@DefaultMessage("Failed to create {0}: {1}")
 	String failedCreate(String name, String reason);
@@ -661,6 +940,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Validation failed: {0}")
 	String failedValidation(String reason);
+	
+	@DefaultMessage("Validation failed, see errors below.")
+	String failedValidationSeeBelow();
 	
 	@DefaultMessage("Room availability failed: {0}")
 	String failedRoomAvailability(String reason);
@@ -736,7 +1018,49 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Role {0} cannot be deleted.")
 	String failedDeleteRole(String role);
+	
+	@DefaultMessage("Failed to save curricula: {0}")
+	String failedToSaveCurricula(String reason);
+	
+	@DefaultMessage("Unable to populate course projected demands: {0}")
+	String failedPopulateCourseProjectedDemands(String reason);
+	
+	@DefaultMessage("Failed to load academic areas: {0}")
+	String failedToLoadAcademicAreas(String reason);
+	
+	@DefaultMessage("Failed to load departments: {0}")
+	String failedToLoadDepartments(String reason);
+	
+	@DefaultMessage("Failed to load classifications: {0}")
+	String failedToLoadClassifications(String reason);
+	
+	@DefaultMessage("Failed to load curricula: {0}")
+	String failedToLoadCurricula(String reason);
+	
+	@DefaultMessage("Failed to delete selected curricula: {0}")
+	String failedToDeleteSelectedCurricula(String reason);
+	
+	@DefaultMessage("Failed to merge selected curricula: {0}")
+	String failedToMergeSelectedCurricula(String reason);
+	
+	@DefaultMessage("Failed to update curricula: {0}")
+	String failedToUpdateCurricula(String reason);
 
+	@DefaultMessage("Failed to populate course projected demands: {0}")
+	String failedToPopulateProjectedDemands(String reason);
+	
+	@DefaultMessage("Failed to create curricula: {0}")
+	String failedToCreateCurricula(String reason);
+	
+	@DefaultMessage("Failed to open curriculum projection rules: {0}")
+	String failedToOpenCurriculumProjectionRules(String reason);
+	
+	@DefaultMessage("Failed to save curriculum projection rules: {0}")
+	String failedToSaveCurriculumProjectionRules(String reason);
+	
+	@DefaultMessage("Failed to load curriculum projection rules: {0}")
+	String failedToLoadCurriculumProjectionRules(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -790,7 +1114,55 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Operation not supported.")
 	String errorOperationNotSupported();
+	
+	@DefaultMessage("Duplicate course {0}")
+	String errorDuplicateCourse(String course);
+	
+	@DefaultMessage("No data.")
+	String errorNoData();
 
+	@DefaultMessage("No curricula matching the above filter found.")
+	String errorNoMatchingCurriculaFound();
+	
+	@DefaultMessage("Next curriculum not provided.")
+	String errorNoNextCurriculum();
+	
+	@DefaultMessage("Previous curriculum not provided.")
+	String errorNoPreviousCurriculum();
+	
+	@DefaultMessage("No academic areas defined.")
+	String errorNoAcademicAreasDefined();
+	
+	@DefaultMessage("No academic classifications defined.")
+	String errorNoAcademicClassificationsDefined();
+	
+	@DefaultMessage("No last-like enrollments.")
+	String errorNoLastLikeEnrollemnts();
+	
+	@DefaultMessage("Curriculum {0} does not exist anymore, please refresh your data.")
+	String errorCurriculumDoesNotExist(String id);
+	
+	@DefaultMessage("Course {0} does not exist.")
+	String errorCourseDoesNotExist(String name);
+	
+	@DefaultMessage("Offering {0} does not exist.")
+	String errorOfferingDoesNotExist(String name);
+	
+	@DefaultMessage("Unsaved curriculum cannot be deleted.")
+	String errorCannotDeleteUnsavedCurriculum();
+	
+	@DefaultMessage("Unsaved curriculum cannot be merged.")
+	String errorCannotMergeUnsavedCurriculum();
+	
+	@DefaultMessage("Selected curricula have different academic areas.")
+	String errorCannotMergeDifferentAcademicAreas();
+	
+	@DefaultMessage("Selected curricula have different departments.")
+	String errorCannotMergeDifferentDepartments();
+	
+	@DefaultMessage("Course detail interface not provided.")
+	String errorCourseDetailsInterfaceNotProvided();
+	
 	@DefaultMessage("Room")
 	String resourceRoom();
 	
@@ -802,6 +1174,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("List of <u>M</u>eetings")
 	String tabMeetingTable();
+	
+	@DefaultMessage("<u>C</u>urricula")
+	String tabCurricula();
 	
 	@DefaultMessage("Students are required to attend this event.")
 	String checkRequiredAttendance();
@@ -829,6 +1204,36 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("No academic session is selected.")
 	String hintNoSession();
+	
+	@DefaultMessage("Showing {0} Enrollment")
+	String hintEnrollmentOfType(String type);
+	
+	@DefaultMessage("Curriculum abbreviation must be filled in.")
+	String hintCurriculumAbbreviationNotSet();
+	
+	@DefaultMessage("Curriculum name must be filled in.")
+	String hintCurriculumNameNotSet();
+	
+	@DefaultMessage("An academic area must be selected.")
+	String hintAcademicAreaNotSelected();
+	
+	@DefaultMessage("Selected academic area has no majors without a curriculum.")
+	String hintAcademicAreaHasNoMajors();
+	
+	@DefaultMessage("A controlling department must be selected.")
+	String hintControllingDepartmentNotSelected();
+	
+	@DefaultMessage("At least some students must be expected.")
+	String hintNoStudentExpectations();
+	
+	@DefaultMessage("Show all columns.")
+	String hintShowAllColumns();
+	
+	@DefaultMessage("Hide empty columns.")
+	String hintHideEmptyColumns();
+	
+	@DefaultMessage("Total {0} Enrollment")
+	String totalEnrollmentOfType(String type);
 	
 	@DefaultMessage("Add Event")
 	String pageAddEvent();
@@ -973,6 +1378,21 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Roles")
 	String pageRoles();
+	
+	@DefaultMessage("Add Curriculum")
+	String pageAddCurriculum();
+	
+	@DefaultMessage("Edit Curriculum")
+	String pageEditCurriculum();
+	
+	@DefaultMessage("Curriculum Details")
+	String pageCurriculumDetails();
+	
+	@DefaultMessage("Curricula")
+	String pageCurricula();
+	
+	@DefaultMessage("Curriculum Requested Enrollments")
+	String pageCurriculumRequestedEnrollments();
 
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
@@ -1000,6 +1420,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Standard Notes")
 	String dialogStandardNotes();
+	
+	@DefaultMessage("Curriculum Projection Rules")
+	String dialogCurriculumProjectionRules();
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
@@ -1358,6 +1781,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Abbreviation")
 	String fieldAbbreviation();
 	
+	@DefaultMessage("Abbv")
+	String fieldAbbv();
+	
 	@DefaultMessage("Short Title")
 	String fieldShortTitle();
 	
@@ -1489,4 +1915,124 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Logging level for {0}.")
 	String descriptionLoggingLevelFor(String logger);
+	
+	@DefaultMessage("Last")
+	String abbvLastLikeEnrollment();
+	
+	@DefaultMessage("Last-Like")
+	String shortLastLikeEnrollment();
+	
+	@DefaultMessage("Last-Like Enrollment")
+	String fieldLastLikeEnrollment();
+	
+	@DefaultMessage("Proj")
+	String abbvProjectedByRule();
+	
+	@DefaultMessage("Projected")
+	String shortProjectedByRule();
+	
+	@DefaultMessage("Projected by Rule")
+	String fieldProjectedByRule();
+	
+	@DefaultMessage("Curr")
+	String abbvCurrentEnrollment();
+	
+	@DefaultMessage("Current")
+	String shortCurrentEnrollment();
+	
+	@DefaultMessage("Current Enrollment")
+	String fieldCurrentEnrollment();
+	
+	@DefaultMessage("Req")
+	String abbvRequestedEnrollment();
+	
+	@DefaultMessage("Requested")
+	String shortRequestedEnrollment();
+	
+	@DefaultMessage("Requested Enrollment")
+	String fieldRequestedEnrollment();
+	
+	@DefaultMessage("Curricula")
+	String headerCurricula();
+	
+	@DefaultMessage("Curriculum Details")
+	String headerCurriculumDetails();
+	
+	@DefaultMessage("Curriculum Classifications")
+	String headerCurriculumClassifications();
+	
+	@DefaultMessage("Course Projections")
+	String headerCourseProjections();
+	
+	@DefaultMessage("The selected offering has no curricula.")
+	String offeringHasNoCurricula();
+	
+	@DefaultMessage("Comparing {0} students with the other selected courses:")
+	String hintComparingStudentsWithOtherCourses(String students);
+	
+	@DefaultMessage("Students in at least 1 other course")
+	String hintStudentsInOneOtherCourse();
+	
+	@DefaultMessage("Students in at least 2 other courses")
+	String hintStudentsInTwoOtherCourses();
+	
+	@DefaultMessage("Students in at least 3 other courses")
+	String hintStudentsInThreeOtherCourses();
+	
+	@DefaultMessage("Students in all other courses")
+	String hintStudentsInAllOtherCourses();
+	
+	@DefaultMessage("Students not in any other course")
+	String hintStudentsNotInAnyOtherCourse();
+	
+	@DefaultMessage("Students shared with {0}")
+	String hinStudentsSharedWith(String course);
+	
+	@DefaultMessage("No conflict (different students)")
+	String groupDifferentStudents();
+	
+	@DefaultMessage("Conflict (same students)")
+	String groupSameStudents();
+
+	@DefaultMessage("Do you realy want to delete the selected curriculum?")
+	String confirmDeleteSelectedCurriculum();
+	
+	@DefaultMessage("Do you realy want to delete this curriculum?")
+	String confirmDeleteThisCurriculum();
+	
+	@DefaultMessage("Do you realy want to delete the selected curricula?")
+	String confirmDeleteSelectedCurricula();
+	
+	@DefaultMessage("Do you realy want to merge the selected curriculum?")
+	String confirmMergeSelectedCurriculum();
+	
+	@DefaultMessage("Do you realy want to merge the selected curricula?")
+	String confirmMergeSelectedCurricula();
+	
+	@DefaultMessage("Do you realy want to update all curricula?")
+	String confirmUpdateAllCurricula();
+	
+	@DefaultMessage("Do you realy want to update all your curricula?")
+	String confirmUpdateYourCurricula();
+	
+	@DefaultMessage("Do you realy want to update selected curricula?")
+	String confirmUpdateSelectedCurriculum();
+	
+	@DefaultMessage("Do you realy want to update selected curriculum?")
+	String confirmUpdateSelectedCurricula();
+	
+	@DefaultMessage("Do you really want to populate projected demands for all courses?")
+	String confirmPopulateProjectedDemands();
+	
+	@DefaultMessage("This will delete all existing curricula and create them from scratch. Are you sure you want to do it?")
+	String confirmDeleteAllCurricula();
+	
+	@DefaultMessage("Are you REALLY sure you want to recreate all curricula?")
+	String confirmDeleteAllCurriculaSecondWarning();
+	
+	@DefaultMessage("&nbsp;(of&nbsp;{0})")
+	String curriculumProjectionRulesOfTotal(int total);
+	
+	@DefaultMessage("{0}&nbsp;&rarr;&nbsp;")
+	String curriculumProjectionRulesOldValue(int lastLike);
 }

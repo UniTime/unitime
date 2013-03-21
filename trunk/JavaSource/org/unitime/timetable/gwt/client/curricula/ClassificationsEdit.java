@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.curricula.CurriculaCourses.Mode;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -40,6 +41,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseOutListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseOverListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.CurriculaService;
 import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
@@ -67,6 +69,7 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class ClassificationsEdit extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private final CurriculaServiceAsync iService = GWT.create(CurriculaService.class);
 
 	private SimpleForm iPanel;
@@ -83,12 +86,13 @@ public class ClassificationsEdit extends Composite {
 		ClickHandler save = new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				LoadingWidget.getInstance().show("Saving curricula ...");
+				LoadingWidget.getInstance().show(MESSAGES.waitSavingData());
 				iService.saveClassifications(iTable.getData(), new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.getInstance().hide();
-						iHeaderPanel.setErrorMessage("Failed to save curricula (" + caught.getMessage() + ").");
+						iHeaderPanel.setErrorMessage(MESSAGES.failedToSaveCurricula(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedToSaveCurricula(caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(Boolean result) {
@@ -122,9 +126,9 @@ public class ClassificationsEdit extends Composite {
 		
 		iHeaderPanel = new UniTimeHeaderPanel();
 		
-		iHeaderPanel.addButton("save", "<u>S</u>ave", 75, save);
-		iHeaderPanel.addButton("back", "<u>B</u>ack", 75, back);
-		iHeaderPanel.addButton("print", "<u>P</u>rint", 75, print);
+		iHeaderPanel.addButton("save", MESSAGES.buttonSave(), 75, save);
+		iHeaderPanel.addButton("back", MESSAGES.buttonBack(), 75, back);
+		iHeaderPanel.addButton("print", MESSAGES.buttonPrint(), 75, print);
 		
 		iPanel.addHeaderRow(iHeaderPanel);
 
@@ -167,9 +171,9 @@ public class ClassificationsEdit extends Composite {
 					CurriculumCookie.getInstance().setCurriculaCoursesMode(m);
 					int c = 1;
 					for (AcademicClassificationInterface clasf: academicClassifications) {
-						header.get(c++).setText(clasf.getCode() + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()));
+						header.get(c++).setText(clasf.getCode() + (m == Mode.NONE ? "" : " " + MESSAGES.abbvRequestedEnrollment() + " / " + m.getAbbv()));
 					}
-					header.get(c).setText("Total" + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()));
+					header.get(c).setText(m == Mode.NONE ? MESSAGES.colTotal() : MESSAGES.colTotalOf(MESSAGES.abbvRequestedEnrollment() + " / " + m.getAbbv()));
 					updateAll();
 				}
 				
@@ -185,7 +189,7 @@ public class ClassificationsEdit extends Composite {
 				
 				@Override
 				public String getName() {
-					return m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName();
+					return m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName());
 				}
 			});
 		}
@@ -211,11 +215,11 @@ public class ClassificationsEdit extends Composite {
 			
 			@Override
 			public String getName() {
-				return (hasEmptyColumns() ? "Hide Empty Classifications" : "Show All Classifications");
+				return (hasEmptyColumns() ? MESSAGES.opHideEmptyClassifications() : MESSAGES.opShowAllClassifications());
 			}
 		});
 		
-		final UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
+		final UniTimeTableHeader hCurriculum = new UniTimeTableHeader(MESSAGES.colCurriculum());
 		header.add(hCurriculum);
 		hCurriculum.getOperations().addAll(operations);
 		hCurriculum.addOperation(new Operation() {
@@ -241,13 +245,13 @@ public class ClassificationsEdit extends Composite {
 			
 			@Override
 			public String getName() {
-				return "Sort by Curriculum";
+				return MESSAGES.opSortBy(MESSAGES.colCurriculum());
 			}
 		});
 		
 		Mode m = CurriculumCookie.getInstance().getCurriculaCoursesMode();
 		for (final AcademicClassificationInterface clasf: academicClassifications) {
-			final UniTimeTableHeader hClasf = new UniTimeTableHeader(clasf.getCode() + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
+			final UniTimeTableHeader hClasf = new UniTimeTableHeader(clasf.getCode() + (m == Mode.NONE ? "" : " " + MESSAGES.abbvRequestedEnrollment() + " / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
 			header.add(hClasf);
 			hClasf.getOperations().addAll(operations);
 			hClasf.addOperation(new Operation() {
@@ -284,7 +288,7 @@ public class ClassificationsEdit extends Composite {
 				
 				@Override
 				public String getName() {
-					return "Sort by " + clasf.getCode() + " Requested Enrollment";
+					return MESSAGES.opSortBy(clasf.getCode() + " " + MESSAGES.fieldRequestedEnrollment());
 				}
 			});
 			hClasf.addOperation(new Operation() {
@@ -334,11 +338,11 @@ public class ClassificationsEdit extends Composite {
 				
 				@Override
 				public String getName() {
-					return "Sort by " + clasf.getCode() + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName();
+					return MESSAGES.opSortBy(clasf.getCode() + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName());
 				}
 			});
 		}
-		final UniTimeTableHeader hTotal = new UniTimeTableHeader("Total" + (m == Mode.NONE ? "" : " Req / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
+		final UniTimeTableHeader hTotal = new UniTimeTableHeader(m == Mode.NONE ? MESSAGES.colTotal() : MESSAGES.colTotalOf(MESSAGES.abbvRequestedEnrollment() + " / " + m.getAbbv()), HasHorizontalAlignment.ALIGN_CENTER);
 		header.add(hTotal);
 		hTotal.getOperations().addAll(operations);
 		hTotal.addOperation(new Operation() {
@@ -371,7 +375,7 @@ public class ClassificationsEdit extends Composite {
 			
 			@Override
 			public String getName() {
-				return "Sort by Total Requested Enrollment";
+				return MESSAGES.opSortBy(MESSAGES.colTotalOf(MESSAGES.fieldRequestedEnrollment()));
 			}
 		});
 		hTotal.addOperation(new Operation() {
@@ -424,7 +428,7 @@ public class ClassificationsEdit extends Composite {
 			
 			@Override
 			public String getName() {
-				return "Sort by Total " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName();
+				return MESSAGES.opSortBy(MESSAGES.colTotalOf(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()));
 			}
 		});
 		iTable.addRow(null, header);
@@ -571,10 +575,10 @@ public class ClassificationsEdit extends Composite {
 		
 		public String getHint() {
 			return 
-				"Curriculum: " + iCurriculum.getAbbv() + " - " + iCurriculum.getName() + "<br>" +
-				"Academic Area: " + iCurriculum.getAcademicArea().getAbbv() + " - " + iCurriculum.getAcademicArea().getName() + "<br>" +
-				(iCurriculum.hasMajors() ? "Major: " + iCurriculum.getCodeMajorNames(", ") + "<br>" : "" ) + 
-				"Academic Classification: " + (iClasf.getName() != null ? iClasf.getName() : iClasf.getAcademicClassification().getCode()) + " - " + iClasf.getAcademicClassification().getName();
+				MESSAGES.propCurriculum() + " " + iCurriculum.getAbbv() + " - " + iCurriculum.getName() + "<br>" +
+				MESSAGES.propAcademicArea() + " " + iCurriculum.getAcademicArea().getAbbv() + " - " + iCurriculum.getAcademicArea().getName() + "<br>" +
+				(iCurriculum.hasMajors() ? MESSAGES.propMajor() + " " + iCurriculum.getCodeMajorNames(", ") + "<br>" : "" ) + 
+				MESSAGES.propAcademicClassification() + " " + (iClasf.getName() != null ? iClasf.getName() : iClasf.getAcademicClassification().getCode()) + " - " + iClasf.getAcademicClassification().getName();
 		}
 		
 		public void update() {

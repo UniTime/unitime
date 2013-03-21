@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HintProvider;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CourseInterface;
@@ -45,6 +46,7 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseGrou
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsInterface;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -73,14 +75,15 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Tomas Muller
  */
 public class CurriculaCourses extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private UniTimeTable<String> iTable = null;
 	
 	private static NumberFormat NF = NumberFormat.getFormat("##0.0");
 	
 	public static enum Mode {
-		LAST ("Last", "Last-Like Enrollment"),
-		PROJ ("Proj", "Projection by Rule"),
-		ENRL ("Curr", "Current Enrollment"),
+		LAST (MESSAGES.abbvLastLikeEnrollment(), MESSAGES.fieldLastLikeEnrollment()),
+		PROJ (MESSAGES.abbvProjectedByRule(), MESSAGES.fieldProjectedByRule()),
+		ENRL (MESSAGES.abbvCurrentEnrollment(), MESSAGES.fieldCurrentEnrollment()),
 		NONE ("&nbsp;", "NONE");
 
 		private String iAbbv, iName;
@@ -180,7 +183,7 @@ public class CurriculaCourses extends Composite {
 		
 		// header
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		final UniTimeTableHeader hGroup = new UniTimeTableHeader("Group") {
+		final UniTimeTableHeader hGroup = new UniTimeTableHeader(MESSAGES.colGroup()) {
 			@Override
 			public List<Operation> getOperations() {
 				List<Operation> ret = new ArrayList<Operation>();
@@ -195,7 +198,7 @@ public class CurriculaCourses extends Composite {
 		hGroup.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "New group...";
+				return MESSAGES.opNewGroup();
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -214,7 +217,7 @@ public class CurriculaCourses extends Composite {
 		hGroup.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Group";
+				return MESSAGES.opSortBy(MESSAGES.colGroup());
 			}
 			@Override
 			public boolean hasSeparator() {
@@ -234,7 +237,7 @@ public class CurriculaCourses extends Composite {
 			}
 		});
 		
-		final UniTimeTableHeader hCourse = new UniTimeTableHeader("Course");
+		final UniTimeTableHeader hCourse = new UniTimeTableHeader(MESSAGES.colCourse());
 		header.add(hCourse);
 		hCourse.addOperation(new Operation() {
 			@Override
@@ -251,7 +254,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Show All Courses";
+				return MESSAGES.opShowAllCourses();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -270,7 +273,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Select All Courses";
+				return MESSAGES.opSelectAllCourses();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -296,7 +299,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Remove Selected Courses";
+				return MESSAGES.opRemoveSelectedCourses();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -315,7 +318,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Clear Selection";
+				return MESSAGES.opClearSelection();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -333,7 +336,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Show " + (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? "Numbers" : "Percentages");
+				return (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages());
 			}
 		});
 		for (final Mode m: Mode.values()) {
@@ -352,7 +355,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return (m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName());
+					return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
 				}
 			});
 		}
@@ -371,7 +374,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Show Empty Courses";
+				return MESSAGES.opShowEmptyCourses();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -405,7 +408,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Hide Empty Courses";
+				return MESSAGES.opHideEmptyCourses();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -431,7 +434,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Clear Requested Enrollments (All Classifications" + (iTable.getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")";
+				return iTable.getSelectedCount() > 0 ? MESSAGES.opClearRequestedEnrollmentAllClassificationsSelectedCoursesOnly() : MESSAGES.opClearRequestedEnrollmentAllClassifications();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -461,7 +464,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Copy Last-Like &rarr; Requested (All Classifications" + (iTable.getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")";
+				return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyLastLikeToRequestedAllClassificationsSelectedCoursesOnly() : MESSAGES.opCopyLastLikeToRequestedAllClassifications();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -491,7 +494,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Copy Current &rarr; Requested (All Classifications" + (iTable.getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")";
+				return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyCurrentToRequestedAllClassificationsSelectedCoursesOnly() : MESSAGES.opCopyCurrentToRequestedAllClassifications();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -521,7 +524,7 @@ public class CurriculaCourses extends Composite {
 			}
 			@Override
 			public String getName() {
-				return "Copy Projection &rarr; Requested (All Classifications" + (iTable.getSelectedCount() > 0 ? ", Selected Courses Only" : "") + ")";
+				return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyProjectionToRequestedAllClassificationsSelectedCoursesOnly() : MESSAGES.opCopyProjectionToRequestedAllClassifications();
 			}
 		});
 		hCourse.addOperation(new Operation() {
@@ -575,7 +578,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Select All";
+					return MESSAGES.opSelectAll();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -594,7 +597,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Clear Selection";
+					return MESSAGES.opClearSelection();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -612,7 +615,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Show " + (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? "Numbers" : "Percentages");
+					return CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages();
 				}
 			});
 			for (final Mode m: Mode.values()) {
@@ -631,7 +634,7 @@ public class CurriculaCourses extends Composite {
 					}
 					@Override
 					public String getName() {
-						return (m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName());
+						return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
 					}
 				});
 			}
@@ -655,7 +658,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Clear Requested Enrollments" + (iTable.getSelectedCount() > 0 ? " (Selected Courses Only)" : "");
+					return iTable.getSelectedCount() > 0 ? MESSAGES.opClearRequestedEnrollmentSelectedCoursesOnly() : MESSAGES.opClearRequestedEnrollment();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -682,7 +685,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Copy Last-Like &rarr; Requested" + (iTable.getSelectedCount() > 0 ? " (Selected Courses Only)" : "");
+					return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyLastLikeToRequestedSelectedCoursesOnly() : MESSAGES.opCopyLastLikeToRequested();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -709,7 +712,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Copy Current &rarr; Requested" + (iTable.getSelectedCount() > 0 ? " (Selected Courses Only)" : "");
+					return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyCurrentToRequestedSelectedCoursesOnly() : MESSAGES.opCopyCurrentToRequested();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -736,13 +739,13 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Copy Projection &rarr; Requested" + (iTable.getSelectedCount() > 0 ? " (Selected Courses Only)" : "");
+					return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyProjectionToRequestedSelectedCoursesOnly() : MESSAGES.opCopyProjectionToRequested();
 				}
 			});
 			hExp.addOperation(new Operation() {
 				@Override
 				public String getName() {
-					return "Sort by " + clasf.getCode();
+					return MESSAGES.opSortBy(clasf.getCode());
 				}
 				@Override
 				public boolean hasSeparator() {
@@ -781,7 +784,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Select All";
+					return MESSAGES.opSelectAll();
 				}
 			});
 			hCmp.addOperation(new Operation() {
@@ -800,7 +803,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Clear Selection";
+					return MESSAGES.opClearSelection();
 				}
 			});
 			hCmp.addOperation(new Operation() {
@@ -818,7 +821,7 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return "Show " + (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? "Numbers" : "Percentages");
+					return CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages();
 				}
 			});
 			for (final Mode m: Mode.values()) {
@@ -837,14 +840,14 @@ public class CurriculaCourses extends Composite {
 					}
 					@Override
 					public String getName() {
-						return (m == Mode.NONE ? "Hide " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName() : "Show " + m.getName());
+						return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
 					}
 				});
 			}
 			hCmp.addOperation(new Operation() {
 				@Override
 				public String getName() {
-					return "Sort by " + clasf.getCode() + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName();
+					return MESSAGES.opSortBy(clasf.getCode() + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName());
 				}
 				@Override
 				public boolean hasSeparator() {
@@ -930,7 +933,7 @@ public class CurriculaCourses extends Composite {
 			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
 			if (course.isEmpty()) continue;
 			if (!courses.add(course)) {
-				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setError("Duplicate course " + course);
+				((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).setError(MESSAGES.errorDuplicateCourse(course));
 				ret = false;
 				continue;
 			}
@@ -1252,7 +1255,7 @@ public class CurriculaCourses extends Composite {
 					setText("");
 				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getEnrollment(iColumn);
-					setText(total == null ? "N/A" : NF.format(100.0 * iEnrollment / total) + "%");
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iEnrollment / total) + "%");
 				} else {
 					setText(iEnrollment.toString());
 				}
@@ -1262,7 +1265,7 @@ public class CurriculaCourses extends Composite {
 					setText("");
 				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getLastLike(iColumn);
-					setText(total == null ? "N/A" : NF.format(100.0 * iLastLike / total) + "%");
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iLastLike / total) + "%");
 				} else {
 					setText(iLastLike.toString());
 				}
@@ -1272,7 +1275,7 @@ public class CurriculaCourses extends Composite {
 					setText("");
 				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
 					Integer total = iClassifications.getProjection(iColumn);
-					setText(total == null ? "N/A" : NF.format(100.0 * iProjection / total) + "%");
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iProjection / total) + "%");
 				} else {
 					setText(iProjection.toString());
 				}
@@ -1375,7 +1378,7 @@ public class CurriculaCourses extends Composite {
 				setText(NF.format(100.0 * iShare) + "%");
 			else {
 				Integer exp = iClassifications.getExpected(iColumn);
-				setText(exp == null ? "N/A" : String.valueOf(Math.round(exp * iShare)));	
+				setText(exp == null ? MESSAGES.notApplicable() : String.valueOf(Math.round(exp * iShare)));	
 			}
 		}
 	}
@@ -1608,7 +1611,7 @@ public class CurriculaCourses extends Composite {
 			
 			String course = ((CurriculaCourseSelectionBox)iTable.getWidget(currentRow, 1)).getCourse();
 			
-			iP.add(new Label("Comparing " + course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", "") + " students with the other selected courses:"));
+			iP.add(new Label(MESSAGES.hintComparingStudentsWithOtherCourses(course + " " + CurriculumCookie.getInstance().getCurriculaCoursesMode().getName().toLowerCase().replace(" enrollment", ""))));
 			iP.add(iT);
 			initWidget(iP);
 			
@@ -1626,11 +1629,11 @@ public class CurriculaCourses extends Composite {
 				column++;
 			}
 			
-			iT.setText(1, 0, "Students in at least 1 other course");
-			iT.setText(2, 0, "Students in at least 2 other courses");
-			iT.setText(3, 0, "Students in at least 3 other courses");
-			iT.setText(4, 0, "Students in all other courses");
-			iT.setText(5, 0, "Students not in any other course");
+			iT.setText(1, 0, MESSAGES.hintStudentsInOneOtherCourse());
+			iT.setText(2, 0, MESSAGES.hintStudentsInTwoOtherCourses());
+			iT.setText(3, 0, MESSAGES.hintStudentsInThreeOtherCourses());
+			iT.setText(4, 0, MESSAGES.hintStudentsInAllOtherCourses());
+			iT.setText(5, 0, MESSAGES.hintStudentsNotInAnyOtherCourse());
 			int row = 0;
 			List<CurriculumStudentsInterface[]> other = new ArrayList<CurriculumStudentsInterface[]>();
 			for (int r = 1; r < iTable.getRowCount(); r ++) {
@@ -1638,7 +1641,7 @@ public class CurriculaCourses extends Composite {
 				String c = ((CurriculaCourseSelectionBox)iTable.getWidget(r, 1)).getCourse();
 				if (c.isEmpty()) continue;
 				other.add(iLastCourses.get(c));
-				iT.setText(6 + row, 0, "Students shared with " + c);
+				iT.setText(6 + row, 0, MESSAGES.hinStudentsSharedWith(c));
 				row++;
 			}
 
@@ -1774,17 +1777,17 @@ public class CurriculaCourses extends Composite {
 			groupTable.setWidget(0, 1, iGrName);
 			groupTable.setText(1, 0, "Type:");
 			iGrType = new ListBox();
-			iGrType.addItem("No conflict (different students)");
-			iGrType.addItem("Conflict (same students)");
+			iGrType.addItem(MESSAGES.groupDifferentStudents());
+			iGrType.addItem(MESSAGES.groupSameStudents());
 			iGrType.setSelectedIndex(0);
 			groupTable.setWidget(1, 1, iGrType);
 			HorizontalPanel grButtons = new HorizontalPanel();
 			grButtons.setSpacing(2);
-			iGrAssign = new Button("Assign");
+			iGrAssign = new Button(MESSAGES.opGroupAssign());
 			grButtons.add(iGrAssign);
-			iGrUpdate = new Button("Update");
+			iGrUpdate = new Button(MESSAGES.opGroupUpdate());
 			grButtons.add(iGrUpdate);
-			iGrDelete = new Button("Delete");
+			iGrDelete = new Button(MESSAGES.opGroupDelete());
 			grButtons.add(iGrDelete);
 			groupTable.setWidget(2, 1, grButtons);
 			groupTable.getFlexCellFormatter().setHorizontalAlignment(2, 1, HasHorizontalAlignment.ALIGN_RIGHT);

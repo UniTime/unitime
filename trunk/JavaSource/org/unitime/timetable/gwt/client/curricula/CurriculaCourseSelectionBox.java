@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningResources;
@@ -92,6 +93,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 public class CurriculaCourseSelectionBox extends Composite implements Focusable {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
+	public static final GwtMessages MESSAGESGWT = GWT.create(GwtMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
 
 	private TextBox iTextField;
@@ -267,10 +269,10 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 							new WebTable.Cell(MESSAGES.colSubject(), 1, "80px"),
 							new WebTable.Cell(MESSAGES.colCourse(), 1, "80px"),
 							new WebTable.Cell(MESSAGES.colTitle(), 1, "400px"),
-							new WebTable.Cell("Limit", 1, "60px"),
-							new WebTable.Cell("Last&#8209;Like", 1, "60px"),
-							new WebTable.Cell("Projected", 1, "60px"),
-							new WebTable.Cell("Enrolled", 1, "60px")
+							new WebTable.Cell(MESSAGESGWT.colLimit(), 1, "60px"),
+							new WebTable.Cell(MESSAGESGWT.colLastLike(), 1, "60px"),
+							new WebTable.Cell(MESSAGESGWT.colProjected(), 1, "60px"),
+							new WebTable.Cell(MESSAGESGWT.colEnrolled(), 1, "60px")
 							));
 			
 			iDialogPanel = new VerticalPanel();
@@ -343,7 +345,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCurriculaPanel.setStyleName("unitime-ScrollPanel-inner");
 			iCurriculaPanel.getElement().getStyle().setWidth(780, Unit.PX);
 			iCurriculaPanel.getElement().getStyle().setHeight(200, Unit.PX);
-			iCourseDetailsTabPanel.add(iCurriculaPanel, "<u>C</u>urricula", true);
+			iCourseDetailsTabPanel.add(iCurriculaPanel, MESSAGESGWT.tabCurricula(), true);
 						
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
