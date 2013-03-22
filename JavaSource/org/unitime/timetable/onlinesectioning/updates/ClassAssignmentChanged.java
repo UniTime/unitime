@@ -80,8 +80,6 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 	@Override
 	public Boolean execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		helper.info(getClassIds().size() + " class assignments changed.");
-		Lock readLock = server.readLock();
-		try {
 			helper.beginTransaction();
 			try {
 				OnlineSectioningLog.Enrollment.Builder previous = OnlineSectioningLog.Enrollment.newBuilder()
@@ -160,9 +158,6 @@ public class ClassAssignmentChanged implements OnlineSectioningAction<Boolean> {
 					throw (SectioningException)e;
 				throw new SectioningException(MSG.exceptionUnknown(e.getMessage()), e);
 			}
-		} finally {
-			readLock.release();
-		}		
 	}
 
 	@Override
