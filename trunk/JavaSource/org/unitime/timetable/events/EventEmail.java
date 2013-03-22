@@ -52,8 +52,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
-import org.unitime.timetable.model.TimetableManager;
-import org.unitime.timetable.model.dao.TimetableManagerDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
@@ -102,10 +100,10 @@ public class EventEmail {
 			
 			email.setSubject(event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
 			
-			if (context.isAuthenticated()) {
-				TimetableManager manager = (TimetableManager)TimetableManagerDAO.getInstance().getSession().createQuery("from TimetableManager where externalUniqueId = :id").setString("id", context.getUser().getExternalUserId()).uniqueResult();
-				if (manager != null && manager.getEmailAddress() != null)
-					email.setReplyTo(manager.getEmailAddress(), manager.getName());
+			if (context.isAuthenticated() && context.getUser().getEmail() != null) {
+				email.setReplyTo(context.getUser().getEmail(), context.getUser().getName());
+			} else {
+				email.setReplyTo(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			}
 			
 			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
