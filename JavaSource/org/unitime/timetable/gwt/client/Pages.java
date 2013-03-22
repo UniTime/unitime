@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.sectioning.SectioningStatusPage;
 import org.unitime.timetable.gwt.client.sectioning.StudentSectioningPage;
 import org.unitime.timetable.gwt.client.test.OnlineSectioningTest;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.user.client.ui.Widget;
 
@@ -40,35 +41,93 @@ import com.google.gwt.user.client.ui.Widget;
  *
  */
 public enum Pages {
-	curricula("Curricula", new PageFactory() { public Widget create() { return new CurriculaPage(); } }),
-	curprojrules("Curriculum Projection Rules", new PageFactory() { public Widget create() { return new CurriculumProjectionRulesPage(); } }),
-	sectioning("Student Scheduling Assistant", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); } }),
-	requests("Student Course Requests", new PageFactory() { public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); } }),
-	admin("Administration", new PageFactory() { public Widget create() { return new SimpleEditPage(); } }),
-	events("Events", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Events); } }),
-	timetable("Event Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Timetable); } }),
-	roomtable("Room Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.RoomTimetable); } }),
-	reservation("Reservation", new PageFactory() { public Widget create() { return new ReservationEdit(true); } }),
-	reservations("Reservations", new PageFactory() { public Widget create() { return new ReservationsPage(); } }),
-	sectioningtest("Online Student Sectioning Test", new PageFactory() { public Widget create() { return new OnlineSectioningTest(); } }),
-	hql("Simple Reports", new PageFactory() { public Widget create() { return new SavedHQLPage(); } }),
-	onlinesctdash("Online Student Scheduling Dashboard", new PageFactory() { public Widget create() { return new SectioningStatusPage(true); } }),
-	batchsctdash("Student Sectioning Dashboard", new PageFactory() { public Widget create() { return new SectioningStatusPage(false); } }),
-	traveltimes("Travel Times", new PageFactory() { public Widget create() { return new TravelTimes(); } }),
-	classes("Classes", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Classes); } }),
-	exams("Examinations", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Exams); } }),
-	personal("Personal Timetable", new PageFactory() { public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Personal); } }),
-	roomavailability("Edit Room Availability", new PageFactory() { public Widget create() { return new RoomSharingPage(); } }),
+	curricula(new PageFactory() {
+		public Widget create() { return new CurriculaPage(); }
+		public String name(GwtMessages messages) { return messages.pageCurricula(); }
+		}),
+	curprojrules(new PageFactory() {
+		public Widget create() { return new CurriculumProjectionRulesPage(); }
+		public String name(GwtMessages messages) { return messages.pageCurriculumProjectionRules(); }
+		}),
+	sectioning(new PageFactory() {
+		public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.SECTIONING); }
+		public String name(GwtMessages messages) { return messages.pageStudentSchedulingAssistant(); }
+		}),
+	requests(new PageFactory() {
+		public Widget create() { return new StudentSectioningPage(StudentSectioningPage.Mode.REQUESTS); }
+		public String name(GwtMessages messages) { return messages.pageStudentCourseRequests(); }
+		}),
+	admin(new PageFactory() {
+		public Widget create() { return new SimpleEditPage(); }
+		public String name(GwtMessages messages) { return messages.pageAdministration(); }
+		}),
+	events(new PageFactory() {
+		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Events); }
+		public String name(GwtMessages messages) { return messages.pageEvents(); }
+		}),
+	timetable(new PageFactory() {
+		public Widget create() {return new EventResourceTimetable(EventResourceTimetable.PageType.Timetable); }
+		public String name(GwtMessages messages) { return messages.pageEventTimetable(); }
+		}),
+	roomtable(new PageFactory() {
+		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.RoomTimetable); }
+		public String name(GwtMessages messages) { return messages.pageRoomTimetable(); }
+		}),
+	reservation(new PageFactory() {
+		public Widget create() { return new ReservationEdit(true); }
+		public String name(GwtMessages messages) { return messages.pageEditReservation(); }
+		}),
+	reservations(new PageFactory() {
+		public Widget create() { return new ReservationsPage(); }
+		public String name(GwtMessages messages) { return messages.pageReservations(); }
+		}),
+	sectioningtest(new PageFactory() {
+		public Widget create() { return new OnlineSectioningTest(); }
+		public String name(GwtMessages messages) { return messages.pageOnlineStudentSectioningTest(); }
+		}),
+	hql(new PageFactory() {
+		public Widget create() { return new SavedHQLPage(); }
+		public String name(GwtMessages messages) { return messages.pageCourseReports(); }
+		}),
+	onlinesctdash(new PageFactory() {
+		public Widget create() { return new SectioningStatusPage(true); }
+		public String name(GwtMessages messages) { return messages.pageOnlineStudentSchedulingDashboard(); }
+		}),
+	batchsctdash(new PageFactory() {
+		public Widget create() { return new SectioningStatusPage(false); }
+		public String name(GwtMessages messages) { return messages.pageStudentSectioningDashboard(); }
+		}),
+	traveltimes(new PageFactory() { 
+		public Widget create() { return new TravelTimes(); }
+		public String name(GwtMessages messages) { return messages.pageTravelTimes(); }
+		}),
+	classes(new PageFactory() {
+		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Classes); }
+		public String name(GwtMessages messages) { return messages.pageClasses(); }
+		}),
+	exams(new PageFactory() {
+		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Exams); }
+		public String name(GwtMessages messages) { return messages.pageExaminations(); }
+		}),
+	personal(new PageFactory() {
+		public Widget create() { return new EventResourceTimetable(EventResourceTimetable.PageType.Personal); }
+		public String name(GwtMessages messages) { return messages.pagePersonalTimetable(); }
+		}),
+	roomavailability(new PageFactory() {
+		public Widget create() { return new RoomSharingPage(); }
+		public String name(GwtMessages messages) { return messages.pageEditRoomAvailability(); }
+		}),
 	;
 	
-	private String iTitle;
 	private PageFactory iFactory;
 	
-	Pages(String title, PageFactory factory) { iTitle = title; iFactory = factory; }
-	public String title() { return iTitle; }
+	Pages(String oldTitle, PageFactory factory) { iFactory = factory; }
+	Pages(PageFactory factory) { iFactory = factory; }
+	public String name(GwtMessages messages) { return iFactory.name(messages); }
 	public Widget widget() { return iFactory.create(); }
 	
 	public interface PageFactory {
 		Widget create();
+		String name(GwtMessages messages);
 	}
 }

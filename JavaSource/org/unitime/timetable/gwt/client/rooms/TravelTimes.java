@@ -25,7 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
 import org.unitime.timetable.gwt.client.events.RoomFilterBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -34,6 +36,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
@@ -61,7 +64,6 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
-import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -73,25 +75,27 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 
 public class TravelTimes extends Composite {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	private SimpleForm iForm;
 	private Matrix iMatrix;
 	private UniTimeHeaderPanel iHeader, iFooter;
 	private RoomFilterBox iRoomFilter;
-	private Button iShow;
+	private AriaButton iShow;
 	
 	public TravelTimes() {
 		iForm = new SimpleForm();
-		iHeader = new UniTimeHeaderPanel("Travel time in minutes");
-		iHeader.addButton("save", "<u>S</u>ave", 75, new ClickHandler(){
+		iHeader = new UniTimeHeaderPanel(MESSAGES.sectTravelTimesInMintes());
+		iHeader.addButton("save", MESSAGES.buttonSave(), 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.showLoading();
 				RPC.execute(TravelTimesRequest.saveRooms(iMatrix.getRooms()), new AsyncCallback<TravelTimeResponse>() {
 					@Override
 					public void onFailure(Throwable caught) {
-						iHeader.setErrorMessage("Failed to save the matrix: " + caught.getMessage());
+						iHeader.setErrorMessage(MESSAGES.failedToSaveMatrix(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedToSaveMatrix(caught.getMessage()), caught);
 					}
 					@Override
 					public void onSuccess(TravelTimeResponse result) {
@@ -106,7 +110,7 @@ public class TravelTimes extends Composite {
 				});
 			}
 		});
-		iHeader.addButton("back", "<u>B</u>ack", 75, new ClickHandler(){
+		iHeader.addButton("back", MESSAGES.buttonBack(), 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.clearMessage();
@@ -118,7 +122,7 @@ public class TravelTimes extends Composite {
 				iShow.setEnabled(true);
 			}
 		});
-		iHeader.addButton("edit", "<u>E</u>dit", 75, new ClickHandler(){
+		iHeader.addButton("edit", MESSAGES.buttonEdit(), 75, new ClickHandler(){
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.clearMessage();
@@ -138,33 +142,35 @@ public class TravelTimes extends Composite {
 		iRoomFilter.setValue("department:Managed");
 		HorizontalPanel hp = new HorizontalPanel();
 		hp.setSpacing(4);
-		Label label = new Label("Filter:"); 
+		Label label = new Label(MESSAGES.propFilter()); 
 		hp.add(label);
 		hp.setCellVerticalAlignment(label, HasVerticalAlignment.ALIGN_MIDDLE);
 		hp.add(iRoomFilter);
-		iShow = new Button("Show", new ClickHandler() {
+		iShow = new AriaButton(MESSAGES.buttonShow());
+		iShow.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				iHeader.setVisible(true);
 				iHeader.setEnabled("edit", false);
 				iFooter.setVisible(false);
 				iMatrix.clear();
-				LoadingWidget.showLoading("Loading travel times...");
+				LoadingWidget.showLoading(MESSAGES.waitLoadingTravelTimes());
 				iRoomFilter.getElements(new AsyncCallback<List<FilterRpcResponse.Entity>>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						LoadingWidget.hideLoading();
-						iHeader.setErrorMessage("Failed to load rooms: " + caught.getMessage());
+						iHeader.setErrorMessage(MESSAGES.failedToLoadRooms(caught.getMessage()));
+						UniTimeNotifications.error(MESSAGES.failedToLoadRooms(caught.getMessage()), caught);
 					}
 
 					@Override
 					public void onSuccess(List<FilterRpcResponse.Entity> result) {
 						if (result == null || result.isEmpty()) {
 							LoadingWidget.hideLoading();
-							iHeader.setErrorMessage("There are no rooms are matching the filter.");
+							iHeader.setErrorMessage(MESSAGES.errorNoRoomsMatchingFilter());
 						} else if (result.size() == 1) {
 							LoadingWidget.hideLoading();
-							iHeader.setErrorMessage("There is only one room matching the filter.");
+							iHeader.setErrorMessage(MESSAGES.errorOnlyOneRoomIsMatchingFilter());
 						} else {
 							TravelTimesRequest request = TravelTimesRequest.loadRooms();
 							for (FilterRpcResponse.Entity e: result) {
@@ -174,7 +180,8 @@ public class TravelTimes extends Composite {
 								@Override
 								public void onFailure(Throwable caught) {
 									LoadingWidget.hideLoading();
-									iHeader.setErrorMessage("Failed to load the matrix: " + caught.getMessage());
+									iHeader.setErrorMessage(MESSAGES.failedToLoadMatrix(caught.getMessage()));
+									UniTimeNotifications.error(MESSAGES.failedToLoadMatrix(caught.getMessage()), caught);
 								}
 
 								@Override
@@ -187,7 +194,7 @@ public class TravelTimes extends Composite {
 										iMatrix.setEditable(false);
 										iHeader.setEnabled("edit", true);
 									} else {
-										iHeader.setErrorMessage("Failed to load the matrix: there are no rooms.");
+										iHeader.setErrorMessage(MESSAGES.failedToLoadMatrixNoRooms());
 									}
 								}
 							});							
@@ -207,7 +214,7 @@ public class TravelTimes extends Composite {
 		iMatrix = new Matrix();
 		
 		ScrollPanel scroll = new ScrollPanel(iMatrix);
-		scroll.getElement().getStyle().setProperty("max-width", (Window.getClientWidth() - 100) + "px");
+		ToolBox.setMaxWidth(scroll.getElement().getStyle(), (Window.getClientWidth() - 100) + "px");
 		
 		iForm.addRow(scroll);
 		
@@ -218,30 +225,6 @@ public class TravelTimes extends Composite {
 		iFooter.setVisible(false);
 		
 		initWidget(iForm);
-		
-		/*
-		iHeader.showLoading();
-		RPC.execute(TravelTimesRequest.loadRooms(), new AsyncCallback<TravelTimeResponse>() {
-
-			@Override
-			public void onFailure(Throwable caught) {
-				iHeader.setErrorMessage("Failed to load the matrix: " + caught.getMessage());
-				ToolBox.checkAccess(caught);
-			}
-
-			@Override
-			public void onSuccess(TravelTimeResponse result) {
-				if (result.hasRooms()) {
-					iMatrix.init(result.getRooms());
-					iHeader.clearMessage();
-					iMatrix.setEditable(false);
-					iHeader.setEnabled("edit", true);
-				} else {
-					iHeader.setErrorMessage("Failed to load the matrix: there are no rooms.");
-				}
-			}
-		});
-		*/
 	}
 	
 	public static class P extends AbsolutePanel implements HasMouseDownHandlers {
