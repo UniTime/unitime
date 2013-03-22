@@ -51,6 +51,7 @@ public class ExpireReservationsAction extends CheckOfferingAction {
 					"r.expirationDate is not null and r.expirationDate < current_timestamp()")
 					.setLong("sessionId", server.getAcademicSession().getUniqueId()).list()) {
 				Offering offering = server.getOffering(expiredReservation.getInstructionalOffering().getUniqueId());
+				if (offering == null) continue;
 				Reservation reservation = null;
 				for (Reservation r: offering.getReservations())
 					if (r.getId() == expiredReservation.getUniqueId()) { reservation = r; break; }
