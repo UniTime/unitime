@@ -1188,7 +1188,7 @@ public interface GwtMessages extends Messages {
 	String failedToLoadPageNotProvided();
 	
 	@DefaultMessage("Failed to load the page: page {0} not registered.")
-	String failedToLoadPageNotProvided(String page);
+	String failedToLoadPageNotRegistered(String page);
 	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);

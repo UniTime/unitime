@@ -227,7 +227,7 @@ public class UniTimeMenuBar extends UniTimeMenu {
 					return;
 				}
 			}
-			Label error = new Label(page == null ? MESSAGES.failedToLoadPageNotProvided() : MESSAGES.failedToLoadPageNotProvided(page));
+			Label error = new Label(page == null ? MESSAGES.failedToLoadPageNotProvided() : MESSAGES.failedToLoadPageNotRegistered(page));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
 		} catch (Exception e) {
