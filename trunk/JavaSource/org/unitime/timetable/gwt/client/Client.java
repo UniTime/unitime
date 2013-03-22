@@ -27,6 +27,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -42,6 +43,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class Client implements EntryPoint {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static List<GwtPageChangedHandler> iGwtPageChangedHandlers = new ArrayList<GwtPageChangedHandler>();
 	
@@ -50,7 +52,7 @@ public class Client implements EntryPoint {
 			@Override
 			public void onUncaughtException(Throwable e) {
 				Throwable u = ToolBox.unwrap(e);
-				UniTimeNotifications.error("Uncaught exception: " + u.getMessage(), u);
+				UniTimeNotifications.error(MESSAGES.failedUncaughtException(u.getMessage()), u);
 			}
 		});
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
@@ -77,7 +79,7 @@ public class Client implements EntryPoint {
 		
 		// load page
 		if (RootPanel.get("UniTimeGWT:Body") != null) {
-			LoadingWidget.getInstance().show("Loading page ...");
+			LoadingWidget.getInstance().show(MESSAGES.waitLoadingPage());
 			Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				@Override
 				public void execute() {
@@ -107,7 +109,7 @@ public class Client implements EntryPoint {
 				LoadingWidget.getInstance().hide();
 			}
 			public void onFailure(Throwable reason) {
-				Label error = new Label("Failed to load the page (" + reason.getMessage() + ")");
+				Label error = new Label(MESSAGES.failedToLoadPage(reason.getMessage()));
 				error.setStyleName("unitime-ErrorMessage");
 				RootPanel loading = RootPanel.get("UniTimeGWT:Loading");
 				if (loading != null) loading.setVisible(false);
@@ -123,18 +125,18 @@ public class Client implements EntryPoint {
 			if (loading != null) loading.setVisible(false);
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
-					LoadingWidget.getInstance().setMessage("Loading " + p.title() + " ...");
-					UniTimePageLabel.getInstance().setPageName(p.title());
-					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + p.title());
+					LoadingWidget.getInstance().setMessage(MESSAGES.waitLoading(p.name(MESSAGES)));
+					UniTimePageLabel.getInstance().setPageName(p.name(MESSAGES));
+					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + p.name(MESSAGES));
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}
 			}
-			Label error = new Label("Failed to load the page (" + (page == null ? "page not provided" : "page " + page + " not registered" ) + ")");
+			Label error = new Label(page == null ? MESSAGES.failedToLoadPageNotProvided() :MESSAGES.failedToLoadPageNotProvided(page));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
 		} catch (Exception e) {
-			Label error = new Label("Failed to load the page (" + e.getMessage() + ")");
+			Label error = new Label(MESSAGES.failedToLoadPage(e.getMessage()));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
 		}

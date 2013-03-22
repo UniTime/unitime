@@ -514,6 +514,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Expiration<br>Date")
 	String colExpirationDate();
+	
+	@DefaultMessage("Source")
+	String colSource();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -820,6 +823,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Add&nbsp;<u>R</u>eservation")
 	String buttonAddReservation();
+	
+	@DefaultMessage("Show")
+	String buttonShow();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -859,6 +865,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Reservations")
 	String sectReservations();
+	
+	@DefaultMessage("Travel time in minutes")
+	String sectTravelTimesInMintes();
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -985,6 +994,12 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Loading reservations...")
 	String waitLoadingReservations();
+	
+	@DefaultMessage("Loading travel times...")
+	String waitLoadingTravelTimes();
+	
+	@DefaultMessage("Loading page ...")
+	String waitLoadingPage();
 
 	@DefaultMessage("Failed to load {0}: {1}")
 	String failedLoad(String name, String reason);
@@ -1151,6 +1166,30 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load reservations: {0}")
 	String failedToLoadReservations(String reason);
 	
+	@DefaultMessage("Failed to save the matrix: {0}")
+	String failedToSaveMatrix(String reason);
+	
+	@DefaultMessage("Failed to load the matrix: {0}")
+	String failedToLoadMatrix(String reason);
+	
+	@DefaultMessage("Failed to load the matrix: there are no rooms.")
+	String failedToLoadMatrixNoRooms();
+	
+	@DefaultMessage("Failed to load rooms: {0}")
+	String failedToLoadRooms(String reason);
+	
+	@DefaultMessage("Uncaught exception: {0}")
+	String failedUncaughtException(String reason);
+	
+	@DefaultMessage("Failed to load the page: {0}")
+	String failedToLoadPage(String reason);
+	
+	@DefaultMessage("Failed to load the page: page not provided.")
+	String failedToLoadPageNotProvided();
+	
+	@DefaultMessage("Failed to load the page: page {0} not registered.")
+	String failedToLoadPageNotProvided(String page);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1291,6 +1330,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Unknown reservation type {0}.")
 	String errorUnknownReservationType(String tpe);
+	
+	@DefaultMessage("There are no rooms are matching the filter.")
+	String errorNoRoomsMatchingFilter();
+	
+	@DefaultMessage("There is only one room matching the filter.")
+	String errorOnlyOneRoomIsMatchingFilter();
+	
+	@DefaultMessage("No person matching the query found.")
+	String errorNoPersonMatchingQuery();
 	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
@@ -1627,7 +1675,52 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Reservation")
 	String pageEditReservation();
-
+	
+	@DefaultMessage("Curriculum Projection Rules")
+	String pageCurriculumProjectionRules();
+	
+	@DefaultMessage("Student Scheduling Assistant")
+	String pageStudentSchedulingAssistant();
+	
+	@DefaultMessage("Student Course Requests")
+	String pageStudentCourseRequests();
+	
+	@DefaultMessage("Administration")
+	String pageAdministration();
+	
+	@DefaultMessage("Events")
+	String pageEvents();
+	
+	@DefaultMessage("Event Timetable")
+	String pageEventTimetable();
+	
+	@DefaultMessage("Room Timetable")
+	String pageRoomTimetable();
+	
+	@DefaultMessage("Online Student Sectioning Test")
+	String pageOnlineStudentSectioningTest();
+	
+	@DefaultMessage("Online Student Scheduling Dashboard")
+	String pageOnlineStudentSchedulingDashboard();
+	
+	@DefaultMessage("Student Sectioning Dashboard")
+	String pageStudentSectioningDashboard();
+	
+	@DefaultMessage("Travel Times")
+	String pageTravelTimes();
+	
+	@DefaultMessage("Classes")
+	String pageClasses();
+	
+	@DefaultMessage("Examinations")
+	String pageExaminations();
+	
+	@DefaultMessage("Personal Timetable")
+	String pagePersonalTimetable();
+	
+	@DefaultMessage("Edit Room Availability")
+	String pageEditRoomAvailability();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -1666,6 +1759,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit {0}")
 	String dialogEditReport(String name);
+	
+	@DefaultMessage("People Lookup")
+	String dialogPeopleLookup();
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);

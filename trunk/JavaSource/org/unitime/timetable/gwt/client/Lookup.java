@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 
@@ -70,6 +71,7 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
  */
 public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface> {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private VerticalPanel iPanel;
 	private UniTimeTable<PersonInterface> iTable;
@@ -84,14 +86,14 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 	
 	public Lookup() {
 		super(true, true);
-		setText("People Lookup");
+		setText(MESSAGES.dialogPeopleLookup());
 		setEscapeToHide(true);
 		iPanel = new VerticalPanel();
 		iPanel.setSpacing(2);
 		iQuery = new TextBox();
 		iQuery.setWidth("400px");
 		HorizontalPanel queryPanel = new HorizontalPanel();
-		Label filterText = new Label("Name:", false);
+		Label filterText = new Label(MESSAGES.propName(), false);
 		filterText.getElement().getStyle().setMarginRight(5, Unit.PX);
 		queryPanel.setWidth("75px");
 		queryPanel.add(filterText);
@@ -111,11 +113,11 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		setWidget(iPanel);
 		
 		List<UniTimeTableHeader> header = new ArrayList<UniTimeTableHeader>();
-		header.add(new UniTimeTableHeader("Name"));
-		header.add(new UniTimeTableHeader("Email"));
-		header.add(new UniTimeTableHeader("Phone"));
-		header.add(new UniTimeTableHeader("Department"));
-		header.add(new UniTimeTableHeader("Source"));
+		header.add(new UniTimeTableHeader(MESSAGES.colName()));
+		header.add(new UniTimeTableHeader(MESSAGES.colEmail()));
+		header.add(new UniTimeTableHeader(MESSAGES.colPhone()));
+		header.add(new UniTimeTableHeader(MESSAGES.colDepartment()));
+		header.add(new UniTimeTableHeader(MESSAGES.colSource()));
 		iTable.addRow(null, header);
 		iTable.setAllowSelection(true);
 		iTable.setWidth("100%");
@@ -247,7 +249,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 				}
 				if (result.isEmpty()) {
 					List<Widget> line = new ArrayList<Widget>();
-					line.add(new ErrorLine("No person matching the query found.", false));
+					line.add(new ErrorLine(MESSAGES.errorNoPersonMatchingQuery(), false));
 					iTable.addRow(null, line);
 				}
 			}

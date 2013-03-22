@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
+import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.services.MenuService;
 import org.unitime.timetable.gwt.services.MenuServiceAsync;
 import org.unitime.timetable.gwt.shared.MenuInterface;
@@ -54,6 +55,7 @@ import com.google.gwt.user.client.ui.SimplePanel;
  * @author Tomas Muller
  */
 public class UniTimeMenuBar extends UniTimeMenu {
+	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	protected final MenuServiceAsync iService = GWT.create(MenuService.class);
 	
 	private MenuBar iMenu;
@@ -219,17 +221,17 @@ public class UniTimeMenuBar extends UniTimeMenu {
 		try {
 			for (Pages p: Pages.values()) {
 				if (p.name().equals(page)) {
-					LoadingWidget.getInstance().setMessage("Loading " + p.title() + " ...");
-					UniTimePageLabel.getInstance().setTitle(p.title());
+					LoadingWidget.getInstance().setMessage(MESSAGES.waitLoading(p.name(MESSAGES)));
+					UniTimePageLabel.getInstance().setTitle(p.name(MESSAGES));
 					RootPanel.get("UniTimeGWT:Body").add(p.widget());
 					return;
 				}
 			}
-			Label error = new Label("Failed to load the page (" + (page == null ? "page not provided" : "page " + page + " not registered" ) + ")");
+			Label error = new Label(page == null ? MESSAGES.failedToLoadPageNotProvided() : MESSAGES.failedToLoadPageNotProvided(page));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
 		} catch (Exception e) {
-			Label error = new Label("Failed to load the page (" + e.getMessage() + ")");
+			Label error = new Label(MESSAGES.failedToLoadPage(e.getMessage()));
 			error.setStyleName("unitime-ErrorMessage");
 			RootPanel.get("UniTimeGWT:Body").add(error);
 		}
