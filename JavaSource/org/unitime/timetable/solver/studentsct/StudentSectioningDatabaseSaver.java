@@ -35,6 +35,7 @@ import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentSectioningQueue;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.WaitList;
 import org.unitime.timetable.model.dao.SessionDAO;
 
@@ -64,6 +65,8 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
     private Hashtable<Long,Class_> iClasses = null;
     private Hashtable<String,org.unitime.timetable.model.CourseRequest> iRequests = null;
     private Date iTimeStamp = null;
+    private StudentSectioningStatus iStatusToSet = null;
+    private boolean iResetStatus = false;
     
     private int iInsert = 0;
     
@@ -94,7 +97,7 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             Session session = Session.getSessionUsingInitiativeYearTerm(iInitiative, iYear, iTerm);
             
             if (session==null) throw new Exception("Session "+iInitiative+" "+iTerm+iYear+" not found!");
-            
+                        
             save(session, hibSession);
             
             StudentSectioningQueue.sessionStatusChanged(hibSession, null, session.getUniqueId(), true);
@@ -132,6 +135,11 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             iProgress.warn("Student "+student.getId()+" not found.");
             return;
         }
+        
+        if (iStatusToSet != null)
+        	s.setSectioningStatus(iStatusToSet);
+        else if (iResetStatus)
+        	s.setSectioningStatus(null);
         
         for (Iterator<StudentClassEnrollment> i = s.getClassEnrollments().iterator(); i.hasNext(); ) {
             StudentClassEnrollment sce = i.next();
@@ -254,6 +262,19 @@ public class StudentSectioningDatabaseSaver extends StudentSectioningSaver {
             iProgress.incProgress();
             
             iProgress.setPhase("Saving student enrollments...", getModel().getStudents().size());
+            String statusToSet = getSolver().getProperties().getProperty("Save.StudentSectioningStatusToSet");
+            if ("Default".equalsIgnoreCase(statusToSet)) {
+            	iStatusToSet = null; iResetStatus = true;
+            	iProgress.info("Setting student sectioning status to " + (session.getDefaultSectioningStatus() == null ? "System Default (All Enabled)" : "Session Default (" + session.getDefaultSectioningStatus().getLabel() + ")") + ".");
+            } else if (statusToSet != null && !statusToSet.isEmpty() && !statusToSet.equals("N/A")) {
+            	iStatusToSet = StudentSectioningStatus.getStatus(statusToSet, null, hibSession);
+            	if (iStatusToSet == null)
+            		iProgress.warn("Student sectioning status " + statusToSet + " does not exist.");
+            	else
+            		iProgress.info("Setting student sectioning status to " + iStatusToSet.getLabel());
+            }
+            if (iStatusToSet == null && !iResetStatus)
+            	iProgress.info("Keeping student sectioning status unchanged.");
             for (Iterator e=getModel().getStudents().iterator();e.hasNext();) {
                 Student student = (Student)e.next(); iProgress.incProgress();
                 if (student.isDummy()) continue;

@@ -456,6 +456,26 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Sectioning Status (No Batch option)</name>
+			<description>
+				<line>Added ability to exclude some students from batch student scheduling.
+					<line>Students with sectioning status that has "No Batch" option checked are not loaded into the solver.</line>
+					<line>If these students already enrolled into some classes, they enrollments are counted towards the class, configuration, course, and reservation limits.
+						<line>Internally, the appropriate limits (if not unlimited) are decreased by the number of students that are enrolled in and not being scheduled by the solver (during the data load).</line>
+					</line>
+					<line>This behavior is enabled by default, it can be switched off by setting the solver parameter Load.CheckForNoBatchStatus to false.</line>
+				</line>
+				<line>Added ability to set or reset student status (for the students that have been loaded into the solver) while a solution is being saved.
+					<line>This is done by solver parameter Save.StudentSectioningStatusToSet, that can have the following parameters (e.g., defined as an enum):
+						<line>N/A ... student status is kept as it is</line>
+						<line>Default ... student status is set to null (the status of a student is given by the default status on the academic session)</line>
+						<line>An abbreviation of the status (from Student Scheduling Status Types page) that is to be set to each student which has been loaded into the solver during the save.</line>
+					</line>
+					<line>If the parameter is not present (which is the default), student statuses are kept as they are during the save.</line> 
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>

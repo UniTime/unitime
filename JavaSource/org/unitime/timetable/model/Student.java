@@ -225,5 +225,13 @@ public class Student extends BaseStudent implements Comparable<Student> {
         }
         return table;
     }
+    
+    public boolean hasSectioningStatusOption(StudentSectioningStatus.Option option) {
+    	if (getSectioningStatus() != null)
+    		return getSectioningStatus().hasOption(option);
+    	if (getSession().getDefaultSectioningStatus() != null)
+    		return getSession().getDefaultSectioningStatus().hasOption(option);
+    	return false;
+    }
 
 }
