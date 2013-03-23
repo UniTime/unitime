@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -70,6 +71,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
+import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.TravelTime;
@@ -134,6 +136,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
 	private boolean iLoadSectioningInfos = false;
 	private boolean iProjections = false;
 	private boolean iFixWeights = true;
+	private boolean iCheckForNoBatchStatus = true;
     
     private Progress iProgress = null;
     
@@ -153,6 +156,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         iLoadSectioningInfos = model.getProperties().getPropertyBoolean("Load.LoadSectioningInfos",iLoadSectioningInfos);
         iProgress = Progress.getInstance(getModel());
         iFixWeights = model.getProperties().getPropertyBoolean("Load.FixWeights", iFixWeights);
+        iCheckForNoBatchStatus = model.getProperties().getPropertyBoolean("Load.CheckForNoBatchStatus", iCheckForNoBatchStatus);
         
         try {
         	String studentCourseDemandsClassName = getModel().getProperties().getProperty("StudentSct.ProjectedCourseDemadsClass", LastLikeStudentCourseDemands.class.getName());
@@ -469,9 +473,129 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         return offering;
     }
     
-    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
-        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
+    public void skipStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
+    	iProgress.debug("Skipping student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
+    	
+    	// If the student is enrolled in some classes, decrease the space in these classes accordingly
+    	Map<Course, List<Section>> assignment = new HashMap<Course, List<Section>>();
+    	for (StudentClassEnrollment enrollment: s.getClassEnrollments()) {
+    		Section section = classTable.get(enrollment.getClazz().getUniqueId());
+    		Course course = courseTable.get(enrollment.getCourseOffering().getUniqueId());
+    		if (section == null || course == null) continue;
+    		
+    		List<Section> sections = assignment.get(course);
+    		if (sections == null) {
+    			sections = new ArrayList<Section>();
+    			assignment.put(course, sections);
+    			
+				// If there is space in the course, decrease it by one
+				if (course.getLimit() > 0)
+					course.setLimit(course.getLimit() - 1);
 
+				// If there is space in the configuration, decrease it by one
+				Config config = section.getSubpart().getConfig();
+				if (config.getLimit() > 0) {
+					config.setLimit(config.getLimit() - 1);
+				}
+    		}
+    		
+    		// If there is space in the section, decrease it by one
+    		if (section.getLimit() > 0) {
+    			section.setLimit(section.getLimit() - 1);
+    		}
+    		sections.add(section);
+    	}
+    	
+    	// For each offering the student is enrolled in
+    	for (Map.Entry<Course, List<Section>> entry: assignment.entrySet()) {
+    		Course course = entry.getKey();
+    		List<Section> sections = entry.getValue();
+    		
+    		// Look for a matching reservation
+    		Reservation reservation = null;
+    		for (Reservation r: course.getOffering().getReservations()) {
+    			// Skip reservations with no space that can be skipped
+    			if (r.getLimit() >= 0.0 && r.getLimit() < 1.0 && !r.mustBeUsed()) continue;
+    			
+    			// Check applicability
+    			boolean applicable = false;
+    			if (r instanceof GroupReservation) {
+    				applicable = ((GroupReservation)r).getStudentIds().contains(s.getUniqueId());
+    			} else if (r instanceof IndividualReservation) {
+    				applicable = ((IndividualReservation)r).getStudentIds().contains(s.getUniqueId());
+    			}  else if (r instanceof CourseReservation) {
+    				applicable = course.equals(((CourseReservation)r).getCourse());
+    			} else if (r instanceof CurriculumReservation) {
+    				CurriculumReservation c = (CurriculumReservation)r;
+    				aac: for (AcademicAreaClassification aac: s.getAcademicAreaClassifications()) {
+    					if (aac.getAcademicArea().equals(c.getAcademicArea())) {
+    						if (c.getClassifications().isEmpty() || c.getClassifications().contains(aac.getAcademicClassification().getCode())) {
+    							if (c.getMajors().isEmpty()) {
+    								applicable = true; break aac;
+    							}
+    							for (PosMajor major: aac.getAcademicArea().getPosMajors()) {
+    								if (s.getPosMajors().contains(major) && c.getMajors().contains(major.getCode())) {
+    									applicable = true; break aac;        									
+    								}
+    							}
+    		                }
+    					}
+    				}
+    			}
+    			if (!applicable) continue;
+    			
+    			// If it does not need to be used, check if actually used
+				if (!r.mustBeUsed()) {
+    				boolean included = true;
+    				for (Section section: sections) {
+    					if (!r.getConfigs().isEmpty() && !r.getConfigs().contains(section.getSubpart().getConfig())) {
+    						included = false; break;
+    					}
+    					Set<Section> sectionsThisSubpart = r.getSections(section.getSubpart());
+    					if (sectionsThisSubpart != null && !sectionsThisSubpart.contains(section)) {
+    						included = false; break;
+    					}
+    				}
+    				if (!included) continue;
+				}
+				
+				if (reservation == null || r.compareTo(reservation) < 0)
+					reservation = r;
+    		}
+    		
+			// Update reservation
+    		if (reservation != null) {
+    			if (reservation instanceof GroupReservation) {
+					GroupReservation g = (GroupReservation)reservation;
+					g.getStudentIds().remove(s.getUniqueId());
+					if (g.getReservationLimit() >= 1.0)
+						g.setReservationLimit(g.getReservationLimit() - 1.0);
+				} else if (reservation instanceof IndividualReservation) {
+					IndividualReservation i = (IndividualReservation)reservation;
+					i.getStudentIds().remove(s.getUniqueId());
+				} else if (reservation instanceof CourseReservation) {
+					// nothing to do here
+				} else if (reservation instanceof CurriculumReservation) {
+					CurriculumReservation c = (CurriculumReservation)reservation;
+					if (c.getReservationLimit() >= 1.0)
+						c.setReservationLimit(c.getReservationLimit() - 1.0);
+				}
+    		}
+    	}
+    	
+    	// Update curriculum counts
+    	updateCurriculumCounts(s);    	
+    }
+    
+    public Student loadStudent(org.unitime.timetable.model.Student s, Hashtable<Long,Course> courseTable, Hashtable<Long,Section> classTable) {
+    	// Check for nobatch sectioning status
+        if (iCheckForNoBatchStatus && s.hasSectioningStatusOption(StudentSectioningStatus.Option.nobatch)) {
+        	skipStudent(s, courseTable, classTable);
+        	
+        	return null;
+        }
+        
+        iProgress.debug("Loading student "+s.getUniqueId()+" (id="+s.getExternalUniqueId()+", name="+s.getName(DepartmentalInstructor.sNameFormatLastFist)+")");
         Student student = new Student(s.getUniqueId().longValue());
         student.setExternalId(s.getExternalUniqueId());
         student.setName(s.getName(ApplicationProperties.getProperty("unitime.enrollment.student.name", DepartmentalInstructor.sNameFormatLastFirstMiddle)));
@@ -755,7 +879,22 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     
     private String curriculum(Student student) {
     	return (student.getAcademicAreaClasiffications().isEmpty() ? "" : student.getAcademicAreaClasiffications().get(0).getArea() + ":" + student.getAcademicAreaClasiffications().get(0).getCode()) + ":" +
-			(student.getMajors().isEmpty() ? "" : ":" + student.getMajors().get(0).getCode());
+			(student.getMajors().isEmpty() ? "" : student.getMajors().get(0).getCode());
+    }
+    
+    private String curriculum(org.unitime.timetable.model.Student student) {
+    	String curriculum = "";
+    	for (AcademicAreaClassification aac: student.getAcademicAreaClassifications()) {
+    		curriculum = aac.getAcademicArea().getAcademicAreaAbbreviation() + ":" + aac.getAcademicClassification().getCode();
+    		for (PosMajor major: aac.getAcademicArea().getPosMajors()) {
+    			if (student.getPosMajors().contains(major)) {
+    				curriculum += ":" + major.getCode();
+    				break;
+    			}
+    		}
+    		break;
+    	}
+    	return curriculum;
     }
     
     Map<Long, Map<String, Integer>> iCourse2Curricula2Weight = new Hashtable<Long, Map<String, Integer>>();
@@ -768,6 +907,42 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     			if (c2w == null) {
     				c2w = new Hashtable<String, Integer>();
     				iCourse2Curricula2Weight.put(course.getId(), c2w);
+    			}
+    			Integer cx = c2w.get(curriculum);
+    			c2w.put(curriculum, 1 + (cx == null ? 0 : cx));
+    		}
+    	}
+    }
+    
+    private void updateCurriculumCounts(org.unitime.timetable.model.Student student) {
+    	String curriculum = curriculum(student);
+    	Set<Long> courses = new HashSet<Long>();
+    	for (StudentClassEnrollment enrollment: student.getClassEnrollments()) {
+    		Long courseId = enrollment.getCourseOffering().getUniqueId();
+    		if (courses.add(courseId)) {
+    			Map<String, Integer> c2w = iCourse2Curricula2Weight.get(courseId);
+    			if (c2w == null) {
+    				c2w = new Hashtable<String, Integer>();
+    				iCourse2Curricula2Weight.put(courseId, c2w);
+    			}
+    			Integer cx = c2w.get(curriculum);
+    			c2w.put(curriculum, 1 + (cx == null ? 0 : cx));
+    		}
+    	}
+    	demands: for (CourseDemand demand: student.getCourseDemands()) {
+    		org.unitime.timetable.model.CourseRequest request = null;
+    		for (org.unitime.timetable.model.CourseRequest r: demand.getCourseRequests()) {
+    			if (courses.contains(r.getCourseOffering().getUniqueId())) continue demands;
+    			if (request == null || r.getOrder() < request.getOrder())
+    				request = r;
+    		}
+    		if (request != null) {
+    			Long courseId = request.getCourseOffering().getUniqueId();
+        		courses.add(courseId);
+    			Map<String, Integer> c2w = iCourse2Curricula2Weight.get(courseId);
+    			if (c2w == null) {
+    				c2w = new Hashtable<String, Integer>();
+    				iCourse2Curricula2Weight.put(courseId, c2w);
     			}
     			Integer cx = c2w.get(curriculum);
     			c2w.put(curriculum, 1 + (cx == null ? 0 : cx));
@@ -1158,12 +1333,14 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 			if (enrollment.getCourse() != null && enrollment.getCourse().getLimit() > 0)
                 				enrollment.getCourse().setLimit(enrollment.getCourse().getLimit() - 1);
                 			if (enrollment.getReservation() != null) {
-                				if (enrollment.getReservation() instanceof IndividualReservation)
-                					((IndividualReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
-                				else if (enrollment.getReservation() instanceof GroupReservation)
+                				if (enrollment.getReservation() instanceof GroupReservation && enrollment.getReservation().getReservationLimit() >= 1.0) {
                 					((GroupReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
-                				else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getReservationLimit() > 0)
-                					((CurriculumReservation)enrollment.getReservation()).setReservationLimit(enrollment.getReservation().getReservationLimit() - 1);
+                					((GroupReservation)enrollment.getReservation()).setReservationLimit(((GroupReservation)enrollment.getReservation()).getReservationLimit() - 1.0);
+                				} else if (enrollment.getReservation() instanceof IndividualReservation) {
+                					((IndividualReservation)enrollment.getReservation()).getStudentIds().remove(student.getId());
+                				} else if (enrollment.getReservation() instanceof CurriculumReservation && enrollment.getReservation().getReservationLimit() >= 1.0) {
+                					((CurriculumReservation)enrollment.getReservation()).setReservationLimit(enrollment.getReservation().getReservationLimit() - 1.0);
+                				}
                 			}
                 		}
                 		if (request instanceof CourseRequest) {
