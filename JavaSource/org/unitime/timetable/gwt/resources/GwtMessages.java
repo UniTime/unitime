@@ -2261,6 +2261,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Wait-Listing")
 	String toggleWaitList();
 	
+	@DefaultMessage("No Batch")
+	String toggleNoBatch();
+	
 	@DefaultMessage("Other")
 	String toggleNoCourseType();
 	

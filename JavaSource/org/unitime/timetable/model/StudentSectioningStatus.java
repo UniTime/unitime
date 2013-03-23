@@ -34,6 +34,7 @@ public class StudentSectioningStatus extends BaseStudentSectioningStatus {
 		email("Email Notifications"),
 		notype("Must Have Course Type"),
 		waitlist("Wait-Listing Enabled"),
+		nobatch("Do Not Schedule in Batch Solver"),
 		;
 		
 		private String iName;

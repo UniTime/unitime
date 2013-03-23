@@ -40,6 +40,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.StudentSolverForm;
+import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
@@ -112,6 +113,12 @@ public class StudentSolverAction extends Action {
         if (op.startsWith("Save")) {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+        	SolverParameterDef statusToSet = SolverParameterDef.findByName("Save.StudentSectioningStatusToSet");
+        	if (statusToSet != null) {
+        		DataProperties config = solver.getProperties();
+        		config.setProperty("Save.StudentSectioningStatusToSet", myForm.getParameterValue(statusToSet.getUniqueId()));
+        		solver.setProperties(config);
+        	}
         	solver.save();
         }
         

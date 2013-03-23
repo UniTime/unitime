@@ -61,6 +61,7 @@ public class StudentSchedulingStatusTypes implements AdminTable {
 		Advisor(MESSAGES.toggleAdvisor(), StudentSectioningStatus.Option.advisor),
 		Email(MESSAGES.toggleEmail(), StudentSectioningStatus.Option.email),
 		WaitListing(MESSAGES.toggleWaitList(), StudentSectioningStatus.Option.waitlist),
+		NoBatch(MESSAGES.toggleNoBatch(), StudentSectioningStatus.Option.nobatch),
 		;
 		
 		private StudentSectioningStatus.Option iOption;
