@@ -104,7 +104,7 @@ public class QueueProcessor extends Thread {
 		sInstance = null;
 	}
 	
-	public static QueueProcessor getInstance() {
+	public static synchronized QueueProcessor getInstance() {
 		if (sInstance == null) {
 			sInstance = new QueueProcessor();
 			sInstance.start();

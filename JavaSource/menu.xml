@@ -814,6 +814,11 @@
 					<hasPermission name="TestHQL"/>
 				</condition>
 			</item>
+			<item name="Scripts" page="scripts" type="gwt">
+				<condition>
+					<hasPermission name="Scripts"/>
+				</condition>
+			</item>
 		</menu>
 	</menu>
 	<menu name="Preferences">
@@ -860,6 +865,14 @@
 					<hasPermission name="IsAdmin"/>
 				</not>
 				<hasPermission name="StandardEventNotes"/>
+			</condition>
+		</item>
+		<item name="Scripts" page="scripts" type="gwt">
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="Scripts"/>
 			</condition>
 		</item>
 	</menu>

@@ -317,8 +317,14 @@
 			<scope>runtime</scope>
 		</dependency>
 		-->
+		<!-- Uncomment to enable python scripting on Scripts page.
+		<dependency>
+			<groupId>org.python</groupId>
+			<artifactId>jython-standalone</artifactId>
+			<version>2.5.3</version>
+		</dependency>
+		 -->
 	</dependencies>
-
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
 		<resources>

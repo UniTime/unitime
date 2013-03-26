@@ -198,5 +198,6 @@
 	<mapping resource="SavedHQL.hbm.xml"/>
 	<mapping resource="EventDateMapping.hbm.xml"/>
 	<mapping resource="MessageLog.hbm.xml"/>
+	<mapping resource="Script.hbm.xml"/>
 </session-factory>
 </hibernate-configuration>

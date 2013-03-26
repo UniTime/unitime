@@ -48,11 +48,19 @@ public abstract class QueueItem {
 	
 	private Long iId = null;
 	
-	public QueueItem(Session session, UserContext owner) {
-		iSessionId = session.getUniqueId();
+	public QueueItem(Long sessionId, UserContext owner) {
+		iSessionId = sessionId;
 		iOwnerId = owner.getExternalUserId();
 		iOwnerName = owner.getName();
 		iOwnerEmail = owner.getEmail();
+	}
+	
+	public QueueItem(Session session, UserContext owner) {
+		this(session.getUniqueId(), owner);
+	}
+	
+	public QueueItem(UserContext owner) {
+		this(owner.getCurrentAcademicSessionId(), owner);
 	}
 	
 	public Long getSessionId() { return iSessionId; }
