@@ -8812,5 +8812,61 @@
 			insert into %SCHEMA%.saved_hql (uniqueid, name, description, query, type) values
 			(%SCHEMA%.pref_group_seq.nextval, 'Query Log', 'Display query log', 'select m.lastName || '' '' || m.firstName as User, case when q.uri like ''%.gwt: %'' then substring(q.uri, instr(q.uri, '':'') + 1) else q.uri end as Query, case when q.uri like ''%.gwt: %'' and length(q.query) <= 130 + instr(q.query, ''|'', 1, 7) then substring(q.query, instr(q.query, ''|'', 1, 7) + 1, length(q.query) - instr(q.query, ''|'', 1, 7) - 3) when q.uri like ''%.gwt: %'' then (substring(q.query, instr(q.query, ''|'', 1, 7) + 1, 130) || ''...'') when q.query is null or length(q.query) < 130 then q.query else (substring(q.query, 1, 130) || ''...'') end as Parameters, q.timeStamp as Time_Stamp, q.timeSpent / 1000.0 as Time from QueryLog q, TimetableManager m where q.uid = m.externalUniqueId and q.uri not like ''menu.gwt%'' order by q.timeStamp desc',16)
 		]]></plsql>	
-	</update>	
+	</update>
+	<update version="116" date="25-Mar-2013" comment="Scripts">
+		<mysql>
+			create table %SCHEMA%.script (
+				uniqueid decimal(20,0) primary key not null,
+				name varchar(128) not null,
+				description varchar(1024) null,
+				engine varchar(32) not null,
+				permission varchar(128) null,
+				script longtext binary not null
+			) engine = INNODB
+		</mysql>
+		<mysql>
+			create table %SCHEMA%.script_parameter (
+				script_id decimal(20,0) not null,
+				name varchar(128) not null,
+				label varchar(256) null,
+				type varchar(2048) not null,
+				default_value varchar(2048) null,
+				primary key (script_id, name)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.script (
+				uniqueid number(20,0) constraint nn_script_id not null,
+				name varchar2(128 char) constraint nn_script_name not null,
+				description varchar2(1024 char),
+				engine varchar2(32 char) constraint nn_script_engine not null,
+				permission varchar2(128 char),
+				script clob
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.script add constraint pk_script primary key (uniqueid)</plsql>
+		<plsql>
+			create table %SCHEMA%.script_parameter (
+				script_id number(20,0) constraint nn_script_param_id not null,
+				name varchar2(128 char) constraint nn_script_param_name not null,
+				label varchar2(256 char),
+				type varchar2(2048 char) constraint nn_script_param_type not null,
+				default_value varchar2(2048 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.script_parameter add constraint pk_script_parameter primary key (script_id, name)</plsql>
+		<sql>
+			alter table %SCHEMA%.script_parameter add constraint fk_script_parameter foreign key (script_id) references %SCHEMA%.script(uniqueid) on delete cascade
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ScriptEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'PermissionEdit'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'Scripts'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'Permissions'
+		</sql>
+	</update>
 </dbupdate>

@@ -275,6 +275,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Back")
 	String opQueryBack();
 	
+	@DefaultMessage("Save")
+	String opScriptSave();
+	
+	@DefaultMessage("Delete")
+	String opScriptDelete();
+	
+	@DefaultMessage("Update")
+	String opScriptUpdate();
+	
+	@DefaultMessage("Back")
+	String opScriptBack();
+	
 	@DefaultMessage("Edit Requested Enrollments")
 	String opEditRequestedEnrollments();
 	
@@ -517,6 +529,30 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Source")
 	String colSource();
+	
+	@DefaultMessage("Label")
+	String colLabel();
+	
+	@DefaultMessage("Default")
+	String colDefaultValue();
+	
+	@DefaultMessage("Progress")
+	String colProgress();
+	
+	@DefaultMessage("Session")
+	String colSession();
+	
+	@DefaultMessage("Created")
+	String colCreated();
+	
+	@DefaultMessage("Started")
+	String colStarted();
+	
+	@DefaultMessage("Finished")
+	String colFinished();
+	
+	@DefaultMessage("Output")
+	String colOutput();
 
 	@DefaultMessage("Conflicts with {0}")
 	String conflictWith(String event);
@@ -826,6 +862,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Show")
 	String buttonShow();
+	
+	@DefaultMessage("<u>R</u>efresh")
+	String buttonRefresh();
 
 	@DefaultMessage("Filter")
 	String sectFilter();
@@ -868,6 +907,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Travel time in minutes")
 	String sectTravelTimesInMintes();
+	
+	@DefaultMessage("Script")
+	String sectScript();
+	
+	@DefaultMessage("Scripts in progress")
+	String sectScriptQueue();
+	
+	@DefaultMessage("Log of {0}")
+	String sectScriptLog(String name);
 	
 	@DefaultMessage("Loading {0}...")
 	String waitLoading(String name);
@@ -1340,6 +1388,21 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No person matching the query found.")
 	String errorNoPersonMatchingQuery();
 	
+	@DefaultMessage("Engine is required.")
+	String errorEngineIsRequired();
+	
+	@DefaultMessage("Script is required.")
+	String errorScriptIsRequired();
+	
+	@DefaultMessage("Name is not unique.")
+	String errorNameNotUnique();
+	
+	@DefaultMessage("Parameter name {0} is not unique.")
+	String errorParameterNameNotUnique(String name);
+	
+	@DefaultMessage("Parameter {0} has no type.")
+	String errorParameterTypeRequired(String name);
+	
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
 	
@@ -1721,6 +1784,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Edit Room Availability")
 	String pageEditRoomAvailability();
 	
+	@DefaultMessage("Scripts")
+	String pageScripts();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
@@ -1762,6 +1828,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("People Lookup")
 	String dialogPeopleLookup();
+	
+	@DefaultMessage("Add Script")
+	String dialogAddScript();
+	
+	@DefaultMessage("Edit Script")
+	String dialogEditScript();
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);
@@ -2119,6 +2191,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Course:")
 	String propCourse();
+	
+	@DefaultMessage("Engine:")
+	String propEngine();
+	
+	@DefaultMessage("Permission:")
+	String propPermission();
+	
+	@DefaultMessage("Script:")
+	String propScript();
+	
+	@DefaultMessage("Parameters:")
+	String propParameters();
 
 	@DefaultMessage("{0} ({1})")
 	String label(String name, String type);
@@ -2419,6 +2503,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Are you REALLY sure you want to recreate all curricula?")
 	String confirmDeleteAllCurriculaSecondWarning();
+	
+	@DefaultMessage("Do you really want to execute script {0}?")
+	String confirmScriptExecution(String name);
 	
 	@DefaultMessage("&nbsp;(of&nbsp;{0})")
 	String curriculumProjectionRulesOfTotal(int total);
