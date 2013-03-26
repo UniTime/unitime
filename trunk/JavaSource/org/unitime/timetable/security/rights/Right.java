@@ -519,6 +519,11 @@ public enum Right {
     HQLReportsEvents(Session.class),
     HQLReportsAdministration(Session.class),
     HQLReportsAdminOnly(Session.class),
+    
+    /** Scripting */
+    
+    Scripts,
+    ScriptEdit,
 
 	/** Obsolete */
     
