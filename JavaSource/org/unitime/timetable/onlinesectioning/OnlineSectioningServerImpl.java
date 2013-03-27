@@ -897,10 +897,12 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 
 	@Override
 	public <E> void execute(final OnlineSectioningAction<E> action, final OnlineSectioningLog.Entity user, final ServerCallback<E> callback) throws SectioningException {
+		final String locale = Localization.getLocale();
 		synchronized (iExecutorQueue) {
 			iExecutorQueue.offer(new Runnable() {
 				@Override
 				public void run() {
+					Localization.setLocale(locale);
 					try {
 						callback.onSuccess(execute(action, user));
 					} catch (Throwable t) {
@@ -926,23 +928,29 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 		}
 		
 		public void run() {
-			Runnable job;
-			while (!iStop) {
-				synchronized (iExecutorQueue) {
-					job = iExecutorQueue.poll();
-					if (job == null) {
-						try {
-							iLog.info("Executor is waiting for a new job...");
-							iExecutorQueue.wait();
-						} catch (InterruptedException e) {}
-						continue;
-					}		
+			try {
+				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
+				Runnable job;
+				while (!iStop) {
+					synchronized (iExecutorQueue) {
+						job = iExecutorQueue.poll();
+						if (job == null) {
+							try {
+								iLog.info("Executor is waiting for a new job...");
+								iExecutorQueue.wait();
+							} catch (InterruptedException e) {}
+							continue;
+						}		
+					}
+					job.run();
+					if (_RootDAO.closeCurrentThreadSessions())
+						iLog.warn("Job " + job + " did not close current-thread hibernate session.");
 				}
-				job.run();
-				if (_RootDAO.closeCurrentThreadSessions())
-					iLog.warn("Job " + job + " did not close current-thread hibernate session.");
+				iLog.info("Executor stopped.");
+			} finally {
+				ApplicationProperties.setSessionId(null);
+				Localization.removeLocale();
 			}
-			iLog.info("Executor stopped.");
 		}
 		
 	}

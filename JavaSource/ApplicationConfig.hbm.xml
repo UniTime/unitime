@@ -38,8 +38,39 @@
             name="description"
             column="description"
             type="java.lang.String"
-            length="100"
+            length="500"
             not-null="false"/>
 
     </class>
+    
+	<class name="SessionConfig" table="session_config">
+		<composite-id>
+        	<key-many-to-one
+        		name="session"
+        		class="Session"
+        		column="session_id"
+        		foreign-key="fk_session_config"
+        	/>
+            <key-property
+                name="key"
+                column="name"
+                type="java.lang.String"
+                length="255"/>
+        </composite-id>
+
+        <property
+            name="value"
+            column="value"
+            type="java.lang.String"
+            length="4000"
+            not-null="false"/>
+
+        <property
+            name="description"
+            column="description"
+            type="java.lang.String"
+            length="500"
+            not-null="false"/>
+
+    </class>    
 </hibernate-mapping>

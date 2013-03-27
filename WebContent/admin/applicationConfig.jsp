@@ -84,6 +84,26 @@
 		</TR>
 
 		<TR>
+			<TD valign="top" rowspan="2">Applies To:</TD>
+			<TD valign="top">
+				<html:checkbox property="allSessions" onchange="document.getElementById('sessionsCell').style.display = (this.checked ? 'none' : 'table-cell');"/> All Sessions
+			</TD>
+		</TR>
+		
+		<TR>
+			<TD valign="top" id="sessionsCell" style="max-width: 700px;">
+				<logic:iterate name="applicationConfigForm" property="listSessions" id="s" type="org.unitime.timetable.model.Session">
+					<div style="display: inline-block; width: 200px; white-space: nowrap; margin-left: 20px; overflow: hidden;">
+						<html:multibox property="sessions"><bean:write name="s" property="uniqueId"/></html:multibox> <bean:write name="s" property="label"/>
+					</div>
+				</logic:iterate>
+			</TD>
+			<logic:equal name="applicationConfigForm" property="allSessions" value="true">
+				<script>document.getElementById('sessionsCell').style.display = 'none';</script>
+			</logic:equal>
+		</TR>
+
+		<TR>
 			<TD valign="top">Value:</TD>
 			<TD valign="top">
 				<html:textarea property="value" rows="10" cols="120"/>
@@ -140,6 +160,11 @@
 		</TD>
 	</TR>
 	<%= request.getAttribute(org.unitime.timetable.model.ApplicationConfig.APP_CFG_ATTR_NAME) %> 
+	<TR>
+		<TD colspan="3" align="right">
+			<span class="unitime-Hint">s) Applies to current academic session.</span>
+		</TD>
+	</TR>
 </TABLE>
 
 <BR>&nbsp;<BR>

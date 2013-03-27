@@ -24,6 +24,7 @@ import net.sf.cpsolver.ifs.solver.Solver;
 import net.sf.cpsolver.ifs.util.Callback;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.ApplicationProperties;
 
 /**
  * @author Tomas Muller
@@ -51,12 +52,15 @@ public abstract class ExamSaver implements Runnable {
 
     public void run() { 
         try {
+        	if (getModel() != null)
+        		ApplicationProperties.setSessionId(getModel().getProperties().getPropertyLong("General.SessionId", (Long)null));
             save(); 
         } catch (Exception e) {
             Logger.getLogger(this.getClass()).error(e.getMessage(),e);
         } finally {
             if (iCallback!=null)
                 iCallback.execute();
+            ApplicationProperties.setSessionId(null);
         }
     }
 }

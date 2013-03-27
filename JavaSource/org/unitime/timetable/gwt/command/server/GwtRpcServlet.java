@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.filter.QueryLogFilter;
 import org.unitime.timetable.gwt.command.client.GwtRpcCancelledException;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -237,6 +238,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		public void run() {
 			iRunning = true;
 			Localization.setLocale(iLocale);
+			ApplicationProperties.setSessionId(iContext.getUser() == null ? null : iContext.getUser().getCurrentAcademicSessionId());
 			// start time
 			long t0 = JProf.currentTimeMillis();
 			try {
@@ -263,6 +265,9 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 					sLog.error("Seen exception: " + t.getMessage(), t);
 					iException = new GwtRpcException(t.getMessage());
 				}
+			} finally {
+				Localization.removeLocale();
+				ApplicationProperties.setSessionId(null);
 			}
 			synchronized (this) {
 				iWaitingThread = null;

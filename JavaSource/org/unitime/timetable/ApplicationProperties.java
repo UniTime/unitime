@@ -28,11 +28,14 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.ApplicationProperty;
 import org.unitime.timetable.model.ApplicationConfig;
+import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
 
@@ -49,6 +52,26 @@ public class ApplicationProperties {
     private static long appPropertiesLastModified = -1, custPropertiesLastModified = -1;  
     private static PropertyFileChangeListener pfc=null;
     private static Properties configProps = null;
+    private static Map<Long, Properties> sSessionProperties = new HashMap<Long, Properties>();
+    
+    private static final ThreadLocal<Long> sAcademicSession = new ThreadLocal<Long>() {
+		 @Override
+		 protected Long initialValue() {
+            return null;
+		 }
+	};
+	
+	public static Long getSessionId() {
+		return sAcademicSession.get();
+	}
+	
+	public static void setSessionId(Long sessionId) {
+		if (sessionId == null)
+			sAcademicSession.remove();
+		else {
+			sAcademicSession.set(sessionId);
+		}
+	}
 	
 	/**
 	 * Sets the properties 
@@ -165,6 +188,25 @@ public class ApplicationProperties {
 	    configProps = null;
 	}
 	
+	public static Properties getSessionProperties(Long sessionId) {
+		if (_RootDAO.getConfiguration() == null || sessionId == null)
+			return new Properties();
+		
+		Properties properties = sSessionProperties.get(sessionId);
+		if (properties == null) {
+			properties = SessionConfig.toProperties(sessionId);
+			sSessionProperties.put(sessionId, properties);
+		}
+		return properties;
+	}
+	
+	public static void clearSessionProperties(Long sessionId) {
+		if (sessionId == null)
+			sSessionProperties.clear();
+		else
+			sSessionProperties.remove(sessionId);
+	}
+	
 	/**
 	 * Retrieves value for the property key
 	 * @param key
@@ -187,6 +229,12 @@ public class ApplicationProperties {
 	public static String getProperty(String key, String defaultValue) {
 	    if(key==null || key.trim().length()==0)
 	        return defaultValue;
+	    
+	    Long sessionId = ApplicationProperties.getSessionId();
+	    if (sessionId != null) {
+	    	String value = getSessionProperties(sessionId).getProperty(key);
+	    	if (value != null) return value;
+	    }
         
         String value = getConfigProperties().getProperty(key);
         if (value!=null) return value;
@@ -208,6 +256,12 @@ public class ApplicationProperties {
 	public static Properties getProperties() {
         Properties ret = (Properties)props.clone();
         ret.putAll(getConfigProperties());
+        
+	    Long sessionId = ApplicationProperties.getSessionId();
+        if (sessionId != null) {
+	    	ret.putAll(getSessionProperties(sessionId));
+	    }
+        
 		return ret;
 	}
 

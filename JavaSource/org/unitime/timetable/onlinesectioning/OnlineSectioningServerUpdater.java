@@ -73,6 +73,8 @@ public class OnlineSectioningServerUpdater extends Thread {
 	public void run() {
 		try {
 			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater started.");
+			if (getAcademicSession() != null)
+				ApplicationProperties.setSessionId(getAcademicSession().getUniqueId());
 			while (iRun) {
 				checkForUpdates();
 				checkForExpiredReservations();
@@ -84,6 +86,8 @@ public class OnlineSectioningServerUpdater extends Thread {
 			iLog.info((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater stopped.");
 		} catch (Exception e) {
 			iLog.error((getAcademicSession() == null ? "Generic" : getAcademicSession().toString()) + " updater failed, " + e.getMessage(), e);
+		} finally {
+			ApplicationProperties.setSessionId(null);
 		}
 	}
 	

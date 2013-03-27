@@ -217,6 +217,14 @@ public class RollForwardSessionAction extends Action {
 	        }
 	        iProgress++;
 			if (iErrors.isEmpty()){
+				iForm.validateCurriculaRollForward(toAcadSession, iErrors);
+			}
+        	if (iErrors.isEmpty() && iForm.getRollForwardSessionConfig()) {
+				setStatus("Session Configuration ...");
+        	    sessionRollForward.rollSessionConfigurationForward(iErrors, iForm);
+        	}
+	        iProgress++;
+			if (iErrors.isEmpty()){
 				iForm.validateManagerRollForward(toAcadSession, iErrors);
 			}
         	if (iErrors.isEmpty() && iForm.getRollForwardManagers()) {
@@ -334,6 +342,7 @@ public class RollForwardSessionAction extends Action {
 		public String name() {
 			List<String> names = new ArrayList<String>();
         	if (iForm.getRollForwardDepartments()) names.add("departments");
+			if (iForm.getRollForwardSessionConfig()) names.add("configuration");
         	if (iForm.getRollForwardManagers()) names.add("managers");
         	if (iForm.getRollForwardRoomData()) names.add("rooms");
 			if (iForm.getRollForwardDatePatterns()) names.add("date patterns");
