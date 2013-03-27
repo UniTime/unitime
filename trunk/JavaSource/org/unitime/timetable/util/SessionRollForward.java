@@ -79,9 +79,13 @@ import org.unitime.timetable.model.RoomFeaturePref;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomGroupPref;
 import org.unitime.timetable.model.RoomPref;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.SolverGroup;
+import org.unitime.timetable.model.StandardEventNoteDepartment;
+import org.unitime.timetable.model.StandardEventNoteSession;
 import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
@@ -113,6 +117,7 @@ import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
 import org.unitime.timetable.model.dao.RoomGroupDAO;
+import org.unitime.timetable.model.dao.SessionConfigDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -2442,6 +2447,98 @@ public class SessionRollForward {
 		}
 		
         hibSession.flush(); hibSession.clear();
+	}
+	
+	public void rollSessionConfigurationForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+        Session toSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollForwardTo());
+        Session fromSession = Session.getSessionById(rollForwardSessionForm.getSessionToRollSessionConfigForwardFrom());
+        
+        org.hibernate.Session hibSession = SessionConfigDAO.getInstance().getSession();
+        
+        // remove old configuration
+        for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
+        		"from SessionConfig where session.uniqueId = :sessionId"
+        		).setLong("sessionId", toSession.getUniqueId()).list()) {
+        	hibSession.delete(config);
+        }
+        
+        // create new configuration
+        for (SessionConfig config: (List<SessionConfig>)hibSession.createQuery(
+        		"from SessionConfig where session.uniqueId = :sessionId"
+        		).setLong("sessionId", fromSession.getUniqueId()).list()) {
+        	
+        	SessionConfig newConfig = new SessionConfig();
+        	newConfig.setKey(config.getKey());
+        	newConfig.setDescription(config.getDescription());
+        	newConfig.setValue(config.getValue());
+        	newConfig.setSession(toSession);
+        	
+        	hibSession.save(newConfig);
+        }
+        
+        // remove old notes
+        for (StandardEventNoteSession note: (List<StandardEventNoteSession>)hibSession.createQuery(
+        		"from StandardEventNoteSession where session.uniqueId = :sessionId"
+        		).setLong("sessionId", toSession.getUniqueId()).list()) {
+        	hibSession.delete(note);
+        }
+        
+        for (StandardEventNoteDepartment note: (List<StandardEventNoteDepartment>)hibSession.createQuery(
+        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId"
+        		).setLong("sessionId", toSession.getUniqueId()).list()) {
+        	hibSession.delete(note);
+        }
+        
+        // create new notes
+        for (StandardEventNoteSession note: (List<StandardEventNoteSession>)hibSession.createQuery(
+        		"from StandardEventNoteSession where session.uniqueId = :sessionId"
+        		).setLong("sessionId", fromSession.getUniqueId()).list()) {
+        	StandardEventNoteSession newNote = new StandardEventNoteSession();
+        	newNote.setNote(note.getNote());
+        	newNote.setReference(note.getReference());
+        	newNote.setSession(toSession);
+        	hibSession.save(newNote);
+        }
+        
+        for (StandardEventNoteDepartment note: (List<StandardEventNoteDepartment>)hibSession.createQuery(
+        		"from StandardEventNoteDepartment where department.session.uniqueId = :sessionId"
+        		).setLong("sessionId", fromSession.getUniqueId()).list()) {
+        	Department newDepartment = note.getDepartment().findSameDepartmentInSession(toSession);
+        	if (newDepartment != null) {
+            	StandardEventNoteDepartment newNote = new StandardEventNoteDepartment();
+            	newNote.setNote(note.getNote());
+            	newNote.setReference(note.getReference());
+            	newNote.setDepartment(newDepartment);
+            	hibSession.save(newNote);
+        	}
+        }
+        
+        // remove room type options
+        for (RoomTypeOption option: (List<RoomTypeOption>)hibSession.createQuery(
+        		"from RoomTypeOption where department.session.uniqueId = :sessionId"
+        		).setLong("sessionId", toSession.getUniqueId()).list()) {
+        	hibSession.delete(option);
+        }
+        
+        // create new room type options
+        for (RoomTypeOption option: (List<RoomTypeOption>)hibSession.createQuery(
+        		"from RoomTypeOption where department.session.uniqueId = :sessionId"
+        		).setLong("sessionId", fromSession.getUniqueId()).list()) {
+        	Department newDepartment = option.getDepartment().findSameDepartmentInSession(toSession);
+        	if (newDepartment != null) {
+        		RoomTypeOption newOption = new RoomTypeOption();
+        		newOption.setBreakTime(option.getBreakTime());
+        		newOption.setDepartment(newDepartment);
+        		newOption.setMessage(option.getMessage());
+        		newOption.setRoomType(option.getRoomType());
+        		newOption.setStatus(RoomTypeOption.getDefaultStatus());
+        		hibSession.save(newOption);
+        	}
+        }
+        
+        hibSession.flush(); hibSession.clear();
+        
+        ApplicationProperties.clearSessionProperties(toSession.getUniqueId());
 	}
 
 

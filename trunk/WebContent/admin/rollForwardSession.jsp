@@ -92,6 +92,20 @@
 			</td>			
 		</tr>
 		<tr>
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardSessionConfig" onclick="document.getElementById('configNote').style.display = (this.checked ? 'table-row' : 'none');"/> Roll Session Configuration Forward From Session: 
+			<html:select style="width:200px;" property="sessionToRollSessionConfigForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+		</tr>
+		<tr style="display:none;" id="configNote">
+			<td valign="middle" style="white-space: wrap; max-width: 600px; padding-left: 20px;">
+				<i>Session configuration contains application configuration, standard notes, event room notes, and break times that are applied directly to the session and/or its department(s).
+				Individual room notes and break times are rolled forward with the rooms.</i>
+			</td>
+		</tr>
+		<logic:equal name="<%=frmName%>" property="rollForwardSessionConfig" value="true">
+			<script>document.getElementById('configNote').style.display = 'table-row';</script>
+		</logic:equal>
+		<tr>
 			<td valign="middle" nowrap ><html:checkbox name="<%=frmName%>" property="rollForwardManagers"/> Roll Manager Data Forward From Session: 
 			<html:select style="width:200px;" property="sessionToRollManagersForwardFrom">
 			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
@@ -187,7 +201,7 @@
 			<table style="margin-left: 50px;"><tr>
 			    <tr><td rowspan="3" valign="top">Preferences:</td>
 			    <td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ALL_PREF %>">Roll forward all midterm examination preferences</html:radio></td></tr>
-			    <tr><td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual preferences)</html:radio></td></tr>
+			    <tr><td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual room preferences)</html:radio></td></tr>
 			    <tr><td><html:radio property="midtermExamsPrefsAction" value="<%= SessionRollForward.EXAMS_NO_PREF %>">Do not roll forward any midterm examination preferences</html:radio></td></tr>
 			</table>
 			</td>	
@@ -197,7 +211,7 @@
 			<table style="margin-left: 50px;"><tr>
 			    <tr><td rowspan="3" valign="top">Preferences:</td>
 			    <td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ALL_PREF %>">Roll forward all final examination preferences</html:radio></td></tr>
-			    <tr><td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual preferences)</html:radio></td></tr>
+			    <tr><td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_ROOM_PREFS %>">Roll forward building, room feature and room group preferences (exclude period and individual room preferences)</html:radio></td></tr>
 			    <tr><td><html:radio property="finalExamsPrefsAction" value="<%= SessionRollForward.EXAMS_NO_PREF %>">Do not roll forward any final examination preferences</html:radio></td></tr>
 			</table>
 			</td>		
