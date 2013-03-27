@@ -8869,4 +8869,33 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'Permissions'
 		</sql>
 	</update>
+	<update version="117" date="27-Mar-2013" comment="Session Properties">
+		<mysql>
+			create table %SCHEMA%.session_config (
+				session_id decimal(20,0) not null,
+				name varchar(255) not null,
+				value varchar(4000) null,
+				description varchar(500) null,
+				primary key (session_id, name)
+			) engine = INNODB
+		</mysql>
+		<plsql>
+			create table %SCHEMA%.session_config (
+				session_id number(20,0) constraint nn_session_config_id not null,
+				name varchar2(255 char) constraint nn_session_config_name not null,
+				value varchar2(4000 char),
+				description varchar2(500 char)
+			)
+		</plsql>
+		<plsql>alter table %SCHEMA%.session_config add constraint pk_session_config primary key (session_id, name)</plsql>
+		<mysql>
+			alter table %SCHEMA%.application_config modify description varchar(500)
+		</mysql>
+		<plsql>
+			alter table %SCHEMA%.application_config modify description varchar2(500 char)
+		</plsql>
+		<sql>
+			alter table %SCHEMA%.session_config add constraint fk_session_config foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade
+		</sql>
+	</update>
 </dbupdate>

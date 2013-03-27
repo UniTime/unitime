@@ -77,11 +77,14 @@ public abstract class QueueItem {
 	
 	public void executeItem() {
 		iStarted = new Date();
+		ApplicationProperties.setSessionId(getSessionId());
 		try {
 			execute();
 		} catch (Exception e) {
 			sLog.error(e.getMessage(), e);
 			setError(e);
+		} finally {
+			ApplicationProperties.setSessionId(null);
 		}
 		iFinished = new Date();
 		iStatus = "All done.";
