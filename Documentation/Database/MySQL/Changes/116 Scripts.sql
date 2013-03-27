@@ -35,29 +35,6 @@ create table script_parameter (
 		primary key (script_id, name)
 	) engine = INNODB;
 
-/*
-create table script (
-		uniqueid number(20,0) constraint nn_script_id not null,
-		name varchar2(128 char) constraint nn_script_name not null,
-		description varchar2(1024 char),
-		engine varchar2(32 char) constraint nn_script_engine not null,
-		permission varchar2(128 char),
-		script clob
-	);
-
-alter table script add constraint pk_script primary key (uniqueid);
-
-create table script_parameter (
-		script_id number(20,0) constraint nn_script_param_id not null,
-		name varchar2(128 char) constraint nn_script_param_name not null,
-		label varchar2(256 char),
-		type varchar2(2048 char) constraint nn_script_param_type not null,
-		default_value varchar2(2048 char)
-	);
-
-alter table script_parameter add constraint pk_script_parameter primary key (script_id, name);
-*/
-
 alter table script_parameter add constraint fk_script_parameter foreign key (script_id) references script(uniqueid) on delete cascade;
 
 insert into rights (role_id, value)

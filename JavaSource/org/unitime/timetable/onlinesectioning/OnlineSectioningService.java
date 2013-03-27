@@ -75,10 +75,13 @@ public class OnlineSectioningService {
 					Thread t = new Thread(new Runnable() {
 						public void run() {
 							try {
+								ApplicationProperties.setSessionId(sessionId);
 								OnlineSectioningService.createInstance(sessionId);
 							} catch (Exception e) {
 								sLog.fatal("Unable to upadte session " + session.getAcademicTerm() + " " + session.getAcademicYear() +
 										" (" + session.getAcademicInitiative() + "), reason: "+ e.getMessage(), e);
+							} finally {
+								ApplicationProperties.setSessionId(null);
 							}
 						}
 					});

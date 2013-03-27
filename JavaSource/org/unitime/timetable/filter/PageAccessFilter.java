@@ -45,6 +45,7 @@ import org.dom4j.Element;
 import org.dom4j.io.SAXReader;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -93,143 +94,150 @@ public class PageAccessFilter implements Filter {
 	}
 	
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain ) throws IOException, ServletException {
-		long t0 = System.currentTimeMillis();
-		
-		if (request instanceof HttpServletRequest) {
-			HttpServletRequest r = (HttpServletRequest)request;
-			if (r.getRequestURI().endsWith(".do")) {
-				HttpServletResponse x = (HttpServletResponse)response;
-				String def = r.getRequestURI().substring(r.getContextPath().length());
-				try {
-					if (iPath2Tile.containsKey(def)) {
-						String tile = iPath2Tile.get(def);
-						ComponentDefinition c = TilesUtil.getDefinition(tile, request, iContext);
-						HttpSession s = r.getSession();
-						if (c!=null && "true".equals(c.getAttribute("checkLogin"))) {
-							if (getUser() == null) {
-								sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
-								if (s.isNew()) 
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Your+timetabling+session+has+expired.+Please+log+in+again."));
-								else
-									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Login+is+required+to+use+timetabling+application."));
-								return;
-							}
-						}
-						if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
-							UserContext user = getUser();
-							if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
-								sLog.warn("Page "+r.getRequestURI()+" denined: no role");
-								x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
-								return;
-							}
-						}
-						if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
-							UserContext user = getUser();
-							if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
-								sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
-								x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
-								return;
-							}
-						}
-						/*
-						if (c!=null && "true".equals(c.getAttribute("checkAccessLevel"))) {
-							String appAccess = (String) s.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
-							if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
-								sLog.warn("Page "+r.getRequestURI()+" denied: application access disabled");
-								x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=The+application+is+temporarily+unavailable.+Please+try+again+after+some+time."));
-								return;
-							}
-						}
-						*/
-					}
-				} catch (Exception e) {
-					sLog.warn("Unable to check page access for "+r.getRequestURI()+", reason: "+e.getMessage(), e);
-				}
-			}
-		}
-		
-		// Process request
-		Throwable exception = null;
 		try {
-			chain.doFilter(request,response);
-		} catch (Throwable t) {
-			exception = t;
-		}
-		
-		long t1 = System.currentTimeMillis(); 
-		if (request instanceof HttpServletRequest && ((t1-t0)>debugTime || exception!=null)) {
-			HttpServletRequest r = (HttpServletRequest)request;
-			String message = "Page "+r.getRequestURI()+" took "+sDF.format((t1-t0)/1000.0)+" s.";
-			if (exception!=null) {
-				message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
+			long t0 = System.currentTimeMillis();
+			
+			UserContext user = getUser();
+			if (user != null)
+				ApplicationProperties.setSessionId(user.getCurrentAcademicSessionId());
+			
+			if (request instanceof HttpServletRequest) {
+				HttpServletRequest r = (HttpServletRequest)request;
+				if (r.getRequestURI().endsWith(".do")) {
+					HttpServletResponse x = (HttpServletResponse)response;
+					String def = r.getRequestURI().substring(r.getContextPath().length());
+					try {
+						if (iPath2Tile.containsKey(def)) {
+							String tile = iPath2Tile.get(def);
+							ComponentDefinition c = TilesUtil.getDefinition(tile, request, iContext);
+							HttpSession s = r.getSession();
+							if (c!=null && "true".equals(c.getAttribute("checkLogin"))) {
+								if (user == null) {
+									sLog.warn("Page "+r.getRequestURI()+" denied: user not logged in");
+									if (s.isNew()) 
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Your+timetabling+session+has+expired.+Please+log+in+again."));
+									else
+										x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Login+is+required+to+use+timetabling+application."));
+									return;
+								}
+							}
+							if (c!=null && "true".equals(c.getAttribute("checkRole"))) {
+								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.HasRole)) {
+									sLog.warn("Page "+r.getRequestURI()+" denined: no role");
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
+									return;
+								}
+							}
+							if (c!=null && "true".equals(c.getAttribute("checkAdmin"))) {
+								if (user == null || user.getCurrentAuthority() == null || !user.getCurrentAuthority().hasRight(Right.IsAdmin)) {
+									sLog.warn("Page "+r.getRequestURI()+" denied: user not admin");
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=Insufficient+user+privileges."));
+									return;
+								}
+							}
+							/*
+							if (c!=null && "true".equals(c.getAttribute("checkAccessLevel"))) {
+								String appAccess = (String) s.getAttribute(Constants.SESSION_APP_ACCESS_LEVEL);
+								if (appAccess!=null && !"true".equalsIgnoreCase(appAccess)) {
+									sLog.warn("Page "+r.getRequestURI()+" denied: application access disabled");
+									x.sendRedirect(x.encodeURL(r.getContextPath()+"/loginRequired.do?message=The+application+is+temporarily+unavailable.+Please+try+again+after+some+time."));
+									return;
+								}
+							}
+							*/
+						}
+					} catch (Exception e) {
+						sLog.warn("Unable to check page access for "+r.getRequestURI()+", reason: "+e.getMessage(), e);
+					}
+				}
 			}
-			if (exception!=null || (t1-t0)>dumpTime) {
-				UserContext u = null;
-				try {
-					u = getUser();
-				} catch (IllegalStateException e) {}
-				if (u==null) {
-					message += "\n  User: no user";
+			
+			// Process request
+			Throwable exception = null;
+			try {
+				chain.doFilter(request,response);
+			} catch (Throwable t) {
+				exception = t;
+			}
+			
+			long t1 = System.currentTimeMillis(); 
+			if (request instanceof HttpServletRequest && ((t1-t0)>debugTime || exception!=null)) {
+				HttpServletRequest r = (HttpServletRequest)request;
+				String message = "Page "+r.getRequestURI()+" took "+sDF.format((t1-t0)/1000.0)+" s.";
+				if (exception!=null) {
+					message = exception+" seen on page "+r.getRequestURI()+" (page took "+sDF.format((t1-t0)/1000.0)+" s).";
+				}
+				if (exception!=null || (t1-t0)>dumpTime) {
+					UserContext u = null;
+					try {
+						u = getUser();
+					} catch (IllegalStateException e) {}
+					if (u==null) {
+						message += "\n  User: no user";
+					} else {
+						message += "\n  User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
+					}
+					message += "\n  Request parameters:";
+					for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
+						String n = (String)e.nextElement();
+						if ("password".equals(n)) continue;
+						message+="\n    "+n+"="+r.getParameter(n);
+					}
+					try {
+						if (dumpSessionAttribues && r.getSession() != null) {
+							message += "\n  Session attributes:";
+							for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
+								String n = (String)e.nextElement();
+								message+="\n    "+n+"="+r.getSession().getAttribute(n);
+							}
+						}
+					} catch (IllegalStateException e) {
+						message += "\n    INVALID SESSION";
+					}
 				} else {
-					message += "\n  User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
+					UserContext u = getUser();
+					if (u==null) {
+						message += "  (User: no user)";
+					} else {
+						message += "  (User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
+					}
 				}
-				message += "\n  Request parameters:";
-				for (Enumeration e=r.getParameterNames(); e.hasMoreElements();) {
-					String n = (String)e.nextElement();
-					if ("password".equals(n)) continue;
-					message+="\n    "+n+"="+r.getParameter(n);
-				}
-				try {
-					if (dumpSessionAttribues && r.getSession() != null) {
-						message += "\n  Session attributes:";
-						for (Enumeration e=r.getSession().getAttributeNames(); e.hasMoreElements();) {
-							String n = (String)e.nextElement();
-							message+="\n    "+n+"="+r.getSession().getAttribute(n);
+				if (exception!=null)
+					sLog.warn(message);
+				else
+					sLog.info(message);
+			}		
+
+			if (exception!=null) {
+				if (exception instanceof PageAccessException && request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
+					HttpServletRequest r = (HttpServletRequest)request;
+					HttpServletResponse x = (HttpServletResponse)response;
+					String message = exception.getMessage();
+					if (message == null || message.isEmpty()) {
+						HttpSession s = r.getSession();
+						if (getUser() == null) {
+							if (s.isNew()) 
+								message = "Your timetabling session has expired. Please log in again.";
+							else
+								message = "Login is required to use this page.";
+						} else {
+							message = "Insufficient user privileges.";
 						}
 					}
-				} catch (IllegalStateException e) {
-					message += "\n    INVALID SESSION";
-				}
-			} else {
-				UserContext u = getUser();
-				if (u==null) {
-					message += "  (User: no user)";
+					x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.do?message=" + message));
+				} else if (exception instanceof ServletException) {
+					throw (ServletException)exception;
+				} else  if (exception instanceof IOException) {
+					throw (IOException)exception;
+				} else if (exception instanceof RuntimeException) {
+					throw (RuntimeException)exception;
 				} else {
-					message += "  (User: " + u.getUsername() + (u.getCurrentAuthority() != null ? " ("+u.getCurrentAuthority()+")" : "");
+					throw new ServletException(exception);
 				}
 			}
-			if (exception!=null)
-				sLog.warn(message);
-			else
-				sLog.info(message);
-		}		
-
-		if (exception!=null) {
-			if (exception instanceof PageAccessException && request instanceof HttpServletRequest && response instanceof HttpServletResponse) {
-				HttpServletRequest r = (HttpServletRequest)request;
-				HttpServletResponse x = (HttpServletResponse)response;
-				String message = exception.getMessage();
-				if (message == null || message.isEmpty()) {
-					HttpSession s = r.getSession();
-					if (getUser() == null) {
-						if (s.isNew()) 
-							message = "Your timetabling session has expired. Please log in again.";
-						else
-							message = "Login is required to use this page.";
-					} else {
-						message = "Insufficient user privileges.";
-					}
-				}
-				x.sendRedirect(x.encodeURL(r.getContextPath() + "/loginRequired.do?message=" + message));
-			} else if (exception instanceof ServletException) {
-				throw (ServletException)exception;
-			} else  if (exception instanceof IOException) {
-				throw (IOException)exception;
-			} else if (exception instanceof RuntimeException) {
-				throw (RuntimeException)exception;
-			} else {
-				throw new ServletException(exception);
-			}
+		
+		} finally {
+			ApplicationProperties.setSessionId(null);
 		}
 	}
 

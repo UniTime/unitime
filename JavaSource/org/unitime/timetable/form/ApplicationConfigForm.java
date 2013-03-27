@@ -19,12 +19,17 @@
 */
 package org.unitime.timetable.form;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
+import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.SessionDAO;
 
 /** 
  * MyEclipse Struts
@@ -49,6 +54,10 @@ public class ApplicationConfigForm extends ActionForm {
 
     /** description property */
     private String description;
+    
+    private boolean allSessions;
+    
+    private Long[] sessions = null;
 
     // --------------------------------------------------------- Methods
 
@@ -83,6 +92,8 @@ public class ApplicationConfigForm extends ActionForm {
         key = "";
         value = "";
         description = "";
+        allSessions = false;
+        sessions = null;
     }
 
     /** 
@@ -140,4 +151,24 @@ public class ApplicationConfigForm extends ActionForm {
     public void setOp(String op) {
         this.op = op;
     }
+    
+    public boolean isAllSessions() {
+    	return allSessions;
+    }
+    
+    public void setAllSessions(boolean allSessions) {
+    	this.allSessions = allSessions;
+    }
+    
+    public Set<Session> getListSessions() {
+    	return new TreeSet<Session>(SessionDAO.getInstance().findAll());
+    }
+    
+	public Long[] getSessions() {
+		return sessions;
+	}
+
+	public void setSessions(Long[] sessions) {
+		this.sessions = sessions;
+	}
 }
