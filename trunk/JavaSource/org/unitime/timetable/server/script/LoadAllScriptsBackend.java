@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.shared.ScriptInterface;
@@ -52,6 +53,8 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 			if (script != null)
 				list.add(script);
 		}
+		
+		Collections.sort(list);
 		
 		return list;
 	}
@@ -105,7 +108,7 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 				if (p.getType().equalsIgnoreCase("subjects")) parameter.setMultiSelect(true);
 				for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
 					if (right != null && SubjectArea.class.equals(right.type()) && !context.hasPermission(subject, right)) continue;
-					parameter.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation() + " - " + (subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle()));
+					parameter.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle()));
 				}
 			}
 			script.addParameter(parameter);
