@@ -90,6 +90,7 @@ public class ScriptExecution extends QueueItem {
 	public void debug(String message) { log("&nbsp;&nbsp;<i><font color='gray'> " + message + "</font></i>"); }
 	public void info(String message) { log("&nbsp;&nbsp;" + message); }
 	public void warn(String message) { super.warn(message); }
+	public void error(String message) { super.error(message); }
 	public void error(String message, Throwable t) { super.error(message); setError(t); }
 	
 	public File createOutput(String prefix, String ext) {
