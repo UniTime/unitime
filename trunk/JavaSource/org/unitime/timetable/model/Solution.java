@@ -42,7 +42,6 @@ import net.sf.cpsolver.ifs.util.CSVFile.CSVField;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.Restrictions;
 import org.unitime.commons.Debug;
@@ -238,78 +237,44 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			}
 		}
 		if (DEBUG) sLog.debug("commit["+getUniqueId()+","+getOwner().getName()+"] -------------------------------------------------------");
-		
-		Query q = hibSession.createQuery(
-				"select distinct r from Assignment a, Assignment as xa, Location as r "+
-				"where a.solution.uniqueId=:solutionId and r in elements(a.rooms) "+
-				"and xa.solution.commited=true and xa.solution.owner.session.uniqueId=:sessionId and xa.solution.owner.uniqueId!=:ownerId and r in elements(xa.rooms)"
-				);
-		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setLong("solutionId",getUniqueId());
-		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
-		Iterator rooms = q.iterate();
-		
-		boolean isOK = true;
-		while (rooms.hasNext()) {
-			Location room = (Location)rooms.next();
-			if (room.isIgnoreRoomCheck()!=null && room.isIgnoreRoomCheck().booleanValue()) continue;
-			q = hibSession.createQuery("select distinct a from Location r, Assignment as a "+
-			"where r.uniqueId=:roomId and a in elements(r.assignments) and a.solution.commited=true and a.solution.owner.uniqueId!=:ownerId");
-			q.setLong("roomId",room.getUniqueId());
-			q.setLong("ownerId",getOwner().getUniqueId());
-			List commitedAssignments = q.list();
-			if (commitedAssignments.isEmpty()) continue;
-			q = hibSession.createQuery("select distinct a from Location r, Assignment as a "+
-					"where r.uniqueId=:roomId and a in elements(r.assignments) and a.solution.uniqueId=:solutionId");
-			q.setLong("roomId",room.getUniqueId());
-			q.setLong("solutionId",getUniqueId());
-			Iterator assignments = q.iterate();
 			
-			while (assignments.hasNext()) {
-				Assignment a = (Assignment)assignments.next();
-				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
-					Assignment b=(Assignment)k.next();
-					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
-						isOK=false;
-					}
-				}
+		boolean isOK = true;
+		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+				"select r, a1, a2 from Location r inner join r.assignments a1 inner join r.assignments a2 "+
+				"where a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+				"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+				"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+				.setLong("ownerId",getOwner().getUniqueId())
+				.setLong("solutionId",getUniqueId())
+				.setInteger("exactType", TimePattern.sTypeExactTime)
+				.list()) {
+			Location room = (Location)o[0];
+			Assignment a = (Assignment)o[1];
+			Assignment b = (Assignment)o[2];
+			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a, b)) {
+				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (room "+room.getLabel()+")");
+				isOK=false;
 			}
 		}
 		
-		q = hibSession.createQuery(
-				"select distinct i from Assignment a, Assignment as xa, DepartmentalInstructor as i "+
-				"where a.solution.uniqueId=:solutionId and i in elements(a.instructors) "+
-				"and xa.solution.commited=true and xa.solution.owner.session.uniqueId=:sessionId and xa.solution.owner.uniqueId!=:ownerId and i in elements(xa.instructors)"
-				);
-		q.setLong("ownerId",getOwner().getUniqueId().longValue());
-		q.setLong("solutionId",getUniqueId());
-		q.setLong("sessionId",getOwner().getSession().getUniqueId().longValue());
-		Iterator instructors = q.iterate();
-		
-		while (instructors.hasNext()) {
-			DepartmentalInstructor instructor = (DepartmentalInstructor)instructors.next();
-			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i, Assignment as a "+
-			"where i.uniqueId=:instructorId and a in elements(i.assignments) and a.solution.commited=true and a.solution.owner.uniqueId!=:ownerId");
-			q.setLong("instructorId",instructor.getUniqueId());
-			q.setLong("ownerId",getOwner().getUniqueId().longValue());
-			List commitedAssignments = q.list();
-			if (commitedAssignments.isEmpty()) continue;
-			q = hibSession.createQuery("select distinct a from DepartmentalInstructor i, Assignment as a "+
-					"where i.uniqueId=:instructorId and a in elements(i.assignments) and a.solution.uniqueId=:solutionId");
-			q.setLong("instructorId",instructor.getUniqueId());
-			q.setLong("solutionId",getUniqueId());
-			Iterator assignments = q.iterate();
-			
-			while (assignments.hasNext()) {
-				Assignment a = (Assignment)assignments.next();
-				for (Iterator k=commitedAssignments.iterator();k.hasNext();) {
-					Assignment b=(Assignment)k.next();
-					if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
-						messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
-						isOK=false;
-					}
-				}
+		for (Object[] o: (List<Object[]>)hibSession.createQuery(
+				"select i1, a1, a2 from DepartmentalInstructor i1 inner join i1.assignments a1, DepartmentalInstructor i2 inner join i2.assignments a2 "+
+						"where i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
+						"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
+						"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
+						"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
+						"(a1.startSlot < a2.startSlot + a2.timePattern.slotsPerMtg and a2.startSlot < a1.startSlot + a1.timePattern.slotsPerMtg))")
+						.setLong("ownerId",getOwner().getUniqueId())
+						.setLong("solutionId",getUniqueId())
+						.setLong("sessionId",getOwner().getSession().getUniqueId())
+						.setInteger("exactType", TimePattern.sTypeExactTime)
+						.list()) {
+			DepartmentalInstructor instructor = (DepartmentalInstructor)o[0];
+			Assignment a = (Assignment)o[1];
+			Assignment b = (Assignment)o[2];
+			if (a.getTimeLocation().hasIntersection(b.getTimeLocation()) && !shareRooms(a,b)) {
+				messages.add("Class "+a.getClassName()+" "+a.getTimeLocation().getName()+" overlaps with "+b.getClassName()+" "+b.getTimeLocation().getName()+" (instructor "+instructor.nameLastNameFirst()+")");
+				isOK=false;
 			}
 		}
 		

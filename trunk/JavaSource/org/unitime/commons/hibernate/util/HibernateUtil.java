@@ -32,11 +32,15 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.Hibernate;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.dialect.Oracle8iDialect;
+import org.hibernate.dialect.function.SQLFunctionTemplate;
+import org.hibernate.dialect.function.StandardSQLFunction;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.mapping.Formula;
 import org.hibernate.mapping.PersistentClass;
@@ -258,6 +262,9 @@ public class HibernateUtil {
     	}).setSF(sSessionFactory, cfg);
         sLog.debug("  -- session factory set to _BaseRootDAO");
         
+        addBitwiseOperationsToDialect();
+        sLog.debug("  -- bitwise operation added to the dialect if needed");
+        
         DatabaseUpdate.update();
     }
     
@@ -438,5 +445,17 @@ public class HibernateUtil {
     		return "to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', 'YYYY-MM-DD')";
     	else
     		return "str_to_date('" + new SimpleDateFormat("yyyy-MM-dd").format(date) + "', '%Y-%m-%d')";
+    }
+    
+    @SuppressWarnings("deprecation")
+	public static void addBitwiseOperationsToDialect() {
+    	SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
+    	Dialect dialect = hibSessionFactory.getSettings().getDialect();
+    	if (!dialect.getFunctions().containsKey("bit_and")) {
+    		if (isOracle())
+    			dialect.getFunctions().put("bit_and", new StandardSQLFunction("bitand", Hibernate.INTEGER));  
+    		else
+    			dialect.getFunctions().put("bit_and", new SQLFunctionTemplate(Hibernate.INTEGER, "?1 & ?2"));
+    	}
     }
 }
