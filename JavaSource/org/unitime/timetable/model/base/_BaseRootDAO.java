@@ -67,6 +67,7 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
         setSessionFactory(configuration.buildSessionFactory());
         sConfiguration = configuration;
+        HibernateUtil.addBitwiseOperationsToDialect();
         DatabaseUpdate.update();
 	}
 
