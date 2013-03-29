@@ -60,85 +60,12 @@
 					<line>On a department, there is a new Event Management flag.</line>
 				</line>
 				<line>There is a new relation between rooms (including non-university locations) and event departments.
-					<line>On the Edit Room page, a room that is to have event management enabled must have an event department selected (in the ).</line>
+					<line>On the Edit Room page, a room that is to have event management enabled must have an event department selected.</line>
 				</line>
-				<line>On the update, the relations are automatically populated using the UniTime 3.3 way. That is:
+				<line>During the upgrade (first deployment of UniTime 3.4), the relations are automatically populated using the UniTime 3.3 way. That is:
 					<line>An event department is a department that has a manager with an Event Manager role.</line>
 					<line>Room is enabled for events if it is controlled by an event department.</line>
 				</line>
-			</description>
-		</item>
-		<item>
-			<name>Events Page</name>
-			<description>
-				<line>Events page now contains all the filtering and display functionality that is needed for users to be able to see, request, and approve events.</line>
-				<line>In the Timetable view, events are equally spaced (to see how much each time is used).
-					<line>For room/personal timetable (when there is no or very unlikely overlap between events), events also shift into proper week/room.</line>
-				</line>
-				<line>Selection of time: allow selection of time from a drop down (15 or 30 minute increments) as well as type in (5 minute increments).</line>
-				<line>Room filter: free text box, with a drop down with selections for features / groups / types, also allow for boolean queries.
-					<line>For each selection, number of matching rooms is also provided.</line>
-					<line>Room suggestions are also displayed.</line>
-					<line>All the filtering capabilities are reachable via suggestions by just typing in (with no mouse clicking).</line>
-				</line>
-				<line>Event filter: combines event name, type and display mode into a similar component as the Room filter.</line>
-				<line>Functionality of Events, Meetings, Add Event, and Room Availability is merged into one page.
-					<line>This allows for easy swapping between different views.</line>
-				</line>
-				<line>The Timetable, List of Events, and List of Meetings can be easily filtered by a room or a week or weeks.</line>
-				<line>Event page defaults to "My Events" (events requested by me) in "Event" rooms (rooms with event management enabled),
-					changes in the filters are remembered in browser (session) cookies.
-					<line>But it is possible to see (and query) class / examination events in all the rooms.</line>
-				</line>
-				<line>Users are able to see (and change) event meeting offsets (setup and teardown time).
-					<line>Published Time: the "official" starting and end time of a meeting.</line>
-					<line>Allocated Time: the time during which the room is blocked (start - setup, end + teardown)</line>
-					<line>Setup Time: the offset (positive number in minutes) between allocated start time and published start time</line>
-					<line>Teardown Time: the offset (positive number in minutes) between published end time and allocated end time</line>
-				</line>
-				<line>An event can now have additional contacts entered (not just a set of emails).</line>
-				<line>It is now possible for the event to get automatically approved when it is entered by an event manager or an administrator.
-					<line>Only for meetings that the user has permission to approve.</line>
-					<line>When "Event Location Approve" permission is enabled for the user.</line>
-				</line>
-				<line>It is now possible to make multiple changes (e.g., drop a couple of meetings and add some now ones) within the Edit Event page.
-					<line>Changes are only persisted (and the email notification is sent) at the end (when Save button is pressed).</line>
-				</line>
-				<line>It is now possible to approve / reject / inquire on multiple events at once, directly from the List of Events or List of Meetings.</line>
-			</description>
-		</item>
-		<item>
-			<name>Event Timetable page</name>
-			<description>
-				<line>Event Timetable page now contains much of the Events page, but it does not have the "My Events" default and it allows to see
-					<line>Room Timetable: timetable of a room</line>
-					<line>Subject Timetable: timetable of a subject area or a course</line>
-					<line>Curriculum Timetable: timetable of a curriculum or a curriculum classification</line>
-					<line>Department Timetable: timetable of a department.</line>
-					<line>Personal Timetable: timetable of a person, listing all classes, exams, and other requested events.</line>
-				</line>
-			</description>
-		</item>
-		<item>
-			<name>Room Availability</name>
-			<description>
-				<line>Not Available event type added.
-					<line>Only event manager and administrator can create (Event Add Unavailable permission), no approval process.</line>
-					<line>Not available events only show up in the timetable grid when showing a timetable of a room (or rooms), and they display differently than ordinary events (grayed out and without a shade).</line>
-					<line>Not available events only show up in the events or meetings if the Not Available type is explicitly selected in the event filter, or when they are shown on the timetable grid.</line>
-				</line>
-				<line>Event Room Availability
-					<line>Default event room availability can be edited on a room (Edit Event Availability on Room Details page).</line>
-					<line>This is a semester-wide availability table very much like the one for course timetabling (Room Availability).</line>
-					<line>It can be seen with Room Detail Event Availability permission, changed with Room Edit Event Availability permission.</line>
-				</line>
-			</description>
-		</item>
-		<item>
-			<name>Localization</name>
-			<description>
-				<line>All event management pages are fully localizable.</line>
-				<line>English and Czech translations are provided.</line>
 			</description>
 		</item>
 		<item>
@@ -162,16 +89,6 @@
 				<line>Events in a room that is not managed in UniTime (it does not have an event department defined) can be only requested by a user with permission Event Any Location.</line>
 				<line>Rooms can be overbooked only by a user with the Event Location Overbook permission (for an event manager the room also has to be from the appropriate event department).</line>
 				<line>Special events can be requested by someone with Event Add Special permission, course related events by Event Add Course Related and unavailabilities by Event Add Unavailable.</line>
-			</description>
-		</item>
-		<item>
-			<name>Event Attachments</name>
-			<description>
-				<line>A file can be attached to an event (or a list of meetings) during its approval (approve / inquire / cancel / reject) as well as on the Add / Edit Event page (during creation or update of an event).</line>
-				<line>An attached file gets included in the appropriate event email, but it is also persisted (within event notes) and can be accessed from the Event Detail page.
-					<line>Only people that can access the detail page can get to the attached file.</line>
-				</line>
-				<line>This allows the approval process to be extended with the ability to attach a filled form with the request of an event.</line>
 			</description>
 		</item>
 		<item>
@@ -211,6 +128,98 @@
 			</description>
 		</item>
 		<item>
+			<name>Event Attachments</name>
+			<description>
+				<line>A file can be attached to an event (or a list of meetings) during its approval (approve / inquire / cancel / reject) as well as on the Add / Edit Event page (during creation or update of an event).</line>
+				<line>An attached file gets included in the appropriate event email, but it is also persisted (within event notes) and can be accessed from the Event Detail page.
+					<line>Only people that can access the detail page can get to the attached file.</line>
+				</line>
+				<line>This allows the approval process to be extended with the ability to attach a filled form with the request of an event.</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Pages</name>
+			<description>
+				<line>Events page now contains all the filtering and display functionality that is needed for users to be able to see, request, and approve events.</line>
+				<line>In the Timetable view, events are equally spaced (to see how much each time is used).
+					<line>For room/personal timetable (when there is no or very unlikely overlap between events), events also shift into proper week/room.</line>
+				</line>
+				<line>Selection of time: allow selection of time from a drop down (15 or 30 minute increments) as well as type in (5 minute increments).</line>
+				<line>Room filter: free text box, with a drop down with selections for features / groups / types, also allow for boolean queries.
+					<line>For each selection, number of matching rooms is also provided.</line>
+					<line>Room suggestions are also displayed.</line>
+					<line>All the filtering capabilities are reachable via suggestions by just typing in (with no mouse clicking).</line>
+				</line>
+				<line>Event filter: combines event name, type and display mode into a similar component as the Room filter.</line>
+				<line>Functionality of Events, Meetings, Add Event, and Room Availability is merged into one page.
+					<line>This allows for easy swapping between different views.</line>
+				</line>
+				<line>The Timetable, List of Events, and List of Meetings can be easily filtered by a room or a week or weeks.</line>
+				<line>Event page defaults to "My Events" (events requested by me) in "Event" rooms (rooms with event management enabled),
+					changes in the filters are remembered in browser (session) cookies.
+					<line>But it is possible to see (and query) class / examination events in all the rooms.</line>
+				</line>
+				<line>Users are able to see (and change) event meeting offsets (setup and teardown time).
+					<line>Published Time: the "official" starting and end time of a meeting.</line>
+					<line>Allocated Time: the time during which the room is blocked (start - setup, end + teardown)</line>
+					<line>Setup Time: the offset (positive number in minutes) between allocated start time and published start time</line>
+					<line>Teardown Time: the offset (positive number in minutes) between published end time and allocated end time</line>
+				</line>
+				<line>An event can now have additional contacts entered (not just a set of emails).</line>
+				<line>It is now possible for the event to get automatically approved when it is entered by an event manager or an administrator.
+					<line>Only for meetings that the user has permission to approve.</line>
+					<line>When "Event Location Approve" permission is enabled for the user.</line>
+				</line>
+				<line>It is now possible to make multiple changes (e.g., drop a couple of meetings and add some now ones) within the Edit Event page.
+					<line>Changes are only persisted (and the email notification is sent) at the end (when Save button is pressed).</line>
+				</line>
+				<line>It is now possible to approve / reject / inquire on multiple events at once, directly from the List of Events or List of Meetings.</line>
+				<line>There is a toggle that allows an event manager or an administrator to make changes to an event (including approval) without sending a confirmation email.</line>
+				<line>Event Detail page of examination, class, and course-related events shows the list of enrolled students, and their conflicts with the event (if there are any).
+					<line>A meeting of a course-related event only shows as a student conflict when it is approved and the event requires students to attend.</line>
+				</line>
+				<line>People from additional contacts of an event can access the Event Detail page, but they cannot make any changes.
+					<line>Course coordinators and instructors can access Event Detail page of class and examination events they are assigned to.</line>
+				</line>
+				<line>Class and examination events can be edited through the event interface (only users with the Event Edit Class or Event Edit Exam permission accordingly).</line>
+				<line>Added ability to modify an existing meeting (or meetings).
+					<line>On the Edit Event page, to modify a meeting, click on a (pending or approved) meeting or select one or more meetings (with the same start and end time) and use the "Modify..." action.</line>
+					<line>The same dialog as with adding new meetings is used, but the information from the selected meeting (or meetings) is used to populate all the fields (including the room selection on the next page).</line>
+					<line>When a different start/end time, date(s), or room(s) are selected a new meeting (or meetings) is created and the old meeting is deleted or cancelled (if it cannot be deleted).
+						<line>The status of the new meeting is pending regardless the status of the old meeting.</line>
+					</line>
+					<line>Only meetings that can be deleted and/or cancelled can be modified as the operation always results in deleting / canceling the old meetings and creating new meetings.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Timetable Page</name>
+			<description>
+				<line>Event Timetable page now contains much of the Events page, but it does not have the "My Events" default and it allows to see
+					<line>Room Timetable: timetable of a room</line>
+					<line>Subject Timetable: timetable of a subject area or a course</line>
+					<line>Curriculum Timetable: timetable of a curriculum or a curriculum classification</line>
+					<line>Department Timetable: timetable of a department.</line>
+					<line>Personal Timetable: timetable of a person, listing all classes, exams, and other requested events.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Event Room Availability</name>
+			<description>
+				<line>Not Available event type added.
+					<line>Only event manager and administrator can create (Event Add Unavailable permission), no approval process.</line>
+					<line>Not available events only show up in the timetable grid when showing a timetable of a room (or rooms), and they display differently than ordinary events (grayed out and without a shade).</line>
+					<line>Not available events only show up in the events or meetings if the Not Available type is explicitly selected in the event filter, or when they are shown on the timetable grid.</line>
+				</line>
+				<line>Event Room Availability
+					<line>Default event room availability can be edited on a room (Edit Event Availability on Room Details page).</line>
+					<line>This is a semester-wide availability table very much like the one for course timetabling (Room Availability).</line>
+					<line>It can be seen with Room Detail Event Availability permission, changed with Room Edit Event Availability permission.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Instructor (Event) Roles</name>
 			<description>
 				<line>A (departmental) instructor can have an additional role assigned in UniTime, using Instructor Roles page.
@@ -226,6 +235,22 @@
 					<line>An instructor with an event role that allows him / her to approve will be able to approve (or reject) an event while the event status allows for event managers to approve events.</line>
 					<line>In both cases, department of the instructor is considered (and compared with event department of the room in question).</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Class Assignment, Solution Commit / Uncommit</name>
+			<description>
+				<line>Added ability not to change the past meetings when a class assignment is changed.
+					<line>When application property tmtbl.classAssign.changePastMeetings is set to false (defaults to true).</line>
+					<line>When an event is changed, a note (with a description, user, time stamp etc.) is added to the meeting.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Localization</name>
+			<description>
+				<line>All event management pages are fully localizable.</line>
+				<line>English and Czech translations are provided.</line>
 			</description>
 		</item>
 		<item>
@@ -502,6 +527,28 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Scheduling Assistant</name>
+			<description>
+				<line>First serious attempt to make the page accessible (and screen reader friendly).
+					<line>Using WAI-ARIA standard, see http://www.w3.org/TR/wai-aria and https://developers.google.com/web-toolkit/doc/latest/DevGuideA11y</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Wait-listing</name>
+			<description>
+				<line>Introduced ability to enable/disable wait-listing for a course request.
+					<line>This is created according to the original design (wait-list toggle is a part of course request data entry; there will likely be some changes and refinements).</line>
+					<line>It does not apply to scheduling assistant mode (no wait-list toggles there, only for collecting course requests and for full online scheduling).</line>
+					<line>There is a new toggle on a Student Scheduling Status Type enabling / disabling wait-listing that can be used to disable wait-listing for a particular student or on an academic session as default.</line>
+				</line>
+				<line>While this approach is compatible with the original design and with the inner workings of the solver, it changes how the wait-listing is done.
+					<line>Before this change, computation of a student schedule behaved as with no wait-listing enabled (any unassigned request could get an alternative request assigned instead); but every unassigned request was automatically wait-listed.</line>
+					<line>Now, if a course request is wait-listed, a student cannot get an alternative course.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Changes</title>
@@ -591,6 +638,51 @@
 			<name>Designators</name>
 			<description>
 				<line>Designators page and Designator Required toggle (on the offering) removed.</line>
+			</description>
+		</item>
+		<item>
+			<name>Application Configuration</name>
+			<description>
+				<line>Added ability to define session dependent application properties.
+					<line>This is to allow multiple campuses / colleges better co-exist in one database, or for instance to have different starting times in Summer than Spring and Fall.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Configuration Roll Forward</name>
+			<description>
+				<line>Added ability to roll session configuration forward.
+					<line>Session configuration contains application configuration, standard notes, event room notes, and break times that are applied directly to the session and/or its department(s).</line>
+					<line>Individual room notes and break times are rolled forward with the rooms.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Scripts</name>
+			<description>
+				<line>Added ability to run small programs through the interface (page Administration > Utilities > Scripts).
+					<line>E.g., to reset all examination preferences for a particular examination problem.</line>
+					<line>It is possible to plug-in additional scripting engines (e.g., python).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Logging</name>
+			<description>
+				<line>Added page Administration > Defaults > Logging that can be used to adjust logging levels while the application is running.</line>
+				<line>Logging messages can be saved in the new MessageLog table.
+					<line>Messages are kept for 14 days (can be changed by custom property unitime.message.log.cleanup.days).</line>
+					<line>Only messages of level warning and higher are saved (can be changed by custom property unitime.message.log.level).</line>
+					<line>There is a new report Message Log under Administration > Academic Session > Reports.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Localization</name>
+			<description>
+				<line>All the pages that are written in GWT can be localized.
+					<line>This includes online student scheduling, event management, curriculum, reservations, HQL reports, travel times, and all the new administration pages.</line>
+				</line>
 			</description>
 		</item>
 	</category>
