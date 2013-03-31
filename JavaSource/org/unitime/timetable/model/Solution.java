@@ -258,8 +258,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		}
 		
 		for (Object[] o: (List<Object[]>)hibSession.createQuery(
-				"select i1, a1, a2 from DepartmentalInstructor i1 inner join i1.assignments a1, DepartmentalInstructor i2 inner join i2.assignments a2 "+
-						"where i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
+				"select i1, a1, a2 from ClassInstructor c1 inner join c1.instructor i1 inner join c1.classInstructing.assignments a1, " +
+						"ClassInstructor c2 inner join c2.instructor i2 inner join c2.classInstructing.assignments a2 where c1.lead = true and c2.lead = true and " +
+						"i1.department.solverGroup.uniqueId = :ownerId and i2.department.solverGroup.uniqueId != :ownerId and i2.department.session = :sessionId and " +
 						"i1.externalUniqueId is not null and i1.externalUniqueId = i2.externalUniqueId and " + 
 						"a1.solution.uniqueId = :solutionId and a2.solution.commited = true and a2.solution.owner.uniqueId != :ownerId and " +
 						"bit_and(a1.days, a2.days) > 0 and (a1.timePattern.type = :exactType or a2.timePattern.type = :exactType or " +
