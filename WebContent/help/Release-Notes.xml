@@ -85,6 +85,15 @@
 				<line>Database Loader - Purge invalid values: Also print a warning message when a class has no placement in its domain to start with.</line>
 			</description>
 		</item>
+		<item>
+			<name>Online Student Scheduling</name>
+			<description>
+				<line>Reload Student: Do not wait for locked offerings.
+					<line>This should work fine as the enrollments (of the locked offering) will get reloaded during the offering unlock (reload offering action).</line>
+				</line>
+				<line>Class Assignment Changed: Removed the outer read-lock as it was causing a deadlock with some other operation.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
