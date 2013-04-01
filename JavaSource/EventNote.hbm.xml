@@ -76,7 +76,6 @@
             name="meetings"
             column="meetings"
             type="java.lang.String"
-            length="2000"
             not-null="false"/>
 
         <property
