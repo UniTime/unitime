@@ -8898,4 +8898,11 @@
 			alter table %SCHEMA%.session_config add constraint fk_session_config foreign key (session_id) references %SCHEMA%.sessions (uniqueid) on delete cascade
 		</sql>
 	</update>
+	<update version="118" date="1-Apr-2013" comment="Event Note More Meetings">
+		<plsql>alter table %SCHEMA%.event_note add new_meetings clob</plsql>
+		<plsql>update %SCHEMA%.event_note set new_meetings = meetings</plsql>
+		<plsql>alter table %SCHEMA%.event_note drop column meetings</plsql>
+		<plsql>alter table %SCHEMA%.event_note rename column new_meetings to meetings</plsql>
+		<mysql>alter table %SCHEMA%.event_note modify meetings longtext binary null</mysql>
+	</update>
 </dbupdate>
