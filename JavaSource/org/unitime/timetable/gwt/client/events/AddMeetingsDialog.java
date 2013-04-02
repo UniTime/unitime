@@ -613,7 +613,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						if (conflicts != null && !conflicts.isEmpty()) {
 							message += "<br>" + MESSAGES.propConflicts();
 							for (MeetingConflictInterface conflictingEvent: conflicts)
-								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() + (conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + ")");
+								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() +
+								(conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + (conflictingEvent.hasLimit() ? ", " + MESSAGES.eventGridLimit(conflictingEvent.getLimit()) : "") + ")");
 						}
 						GwtHint.showHint(p.getElement(), message);
 					}
