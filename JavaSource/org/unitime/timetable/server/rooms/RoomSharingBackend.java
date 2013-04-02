@@ -29,13 +29,13 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface;
@@ -54,7 +54,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTable;
 
-@Service("org.unitime.timetable.gwt.shared.RoomInterface$RoomSharingRequest")
+@GwtRpcImplements(RoomSharingRequest.class)
 public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingRequest, RoomSharingModel> {
 	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);

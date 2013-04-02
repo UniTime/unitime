@@ -21,11 +21,11 @@ package org.unitime.timetable.server.rooms;
 
 import java.text.DecimalFormat;
 
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintRequest;
 import org.unitime.timetable.gwt.shared.RoomInterface.RoomHintResponse;
@@ -37,7 +37,7 @@ import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.security.SessionContext;
 
-@Service("org.unitime.timetable.gwt.shared.RoomInterface$RoomHintRequest")
+@GwtRpcImplements(RoomHintRequest.class)
 public class RoomHintBackend implements GwtRpcImplementation<RoomHintRequest, RoomHintResponse> {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	public static final CourseMessages MSG = Localization.create(CourseMessages.class);

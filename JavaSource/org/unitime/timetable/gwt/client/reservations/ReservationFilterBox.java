@@ -32,7 +32,6 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
 import com.google.gwt.core.client.GWT;
@@ -46,7 +45,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.ListBox;
 
-public class ReservationFilterBox extends UniTimeFilterBox {
+public class ReservationFilterBox extends UniTimeFilterBox<ReservationInterface.ReservationFilterRpcRequest> {
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
@@ -345,7 +344,7 @@ public class ReservationFilterBox extends UniTimeFilterBox {
 	}
 	
 	@Override
-	public FilterRpcRequest createRpcRequest() {
+	public ReservationInterface.ReservationFilterRpcRequest createRpcRequest() {
 		return new ReservationInterface.ReservationFilterRpcRequest();
 	}
 }

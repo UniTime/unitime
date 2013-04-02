@@ -21,8 +21,8 @@ package org.unitime.timetable.events;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -50,7 +50,7 @@ import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$EventPropertiesRpcRequest")
+@GwtRpcImplements(EventPropertiesRpcRequest.class)
 public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
 
 	@Override

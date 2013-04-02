@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -61,7 +61,7 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$EventEnrollmentsRpcRequest")
+@GwtRpcImplements(EventEnrollmentsRpcRequest.class)
 public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 	
 	@Override

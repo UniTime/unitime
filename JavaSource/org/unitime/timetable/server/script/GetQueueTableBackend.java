@@ -22,16 +22,16 @@ package org.unitime.timetable.server.script;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetQueueTableRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
-@Service("org.unitime.timetable.gwt.shared.ScriptInterface$GetQueueTableRpcRequest")
+@GwtRpcImplements(GetQueueTableRpcRequest.class)
 public class GetQueueTableBackend implements GwtRpcImplementation<GetQueueTableRpcRequest, GwtRpcResponseList<QueueItemInterface>>{
 
 	@Override

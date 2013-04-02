@@ -31,11 +31,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.springframework.stereotype.Service;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
@@ -53,12 +54,12 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$EventFilterRpcRequest")
-public class EventFilterBackend extends FilterBoxBackend {
+@GwtRpcImplements(EventFilterRpcRequest.class)
+public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void load(EventFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		EventQuery query = getQuery(request, context);
 		
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
@@ -336,7 +337,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void suggestions(EventFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
 		EventQuery query = getQuery(request, context);
@@ -360,7 +361,7 @@ public class EventFilterBackend extends FilterBoxBackend {
 	}
 
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void enumarate(EventFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		
 		EventQuery query = getQuery(request, context);

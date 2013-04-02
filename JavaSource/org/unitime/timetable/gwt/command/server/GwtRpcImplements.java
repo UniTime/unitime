@@ -17,23 +17,19 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.gwt.command.client;
+package org.unitime.timetable.gwt.command.server;
 
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.springframework.stereotype.Component;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 
-/**
- * @deprecated Use {@link GwtRpcImplements} instead.
- */
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-@Documented
-@Deprecated
-public @interface GwtRpcImplementedBy {
-	String value();
+@Component
+public @interface GwtRpcImplements {
+	Class<? extends GwtRpcRequest> value();
 }

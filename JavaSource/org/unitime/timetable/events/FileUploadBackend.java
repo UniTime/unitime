@@ -20,14 +20,14 @@
 package org.unitime.timetable.events;
 
 import org.apache.commons.fileupload.FileItem;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcRequest;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload.FileUploadRpcResponse;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.security.SessionContext;
 
-@Service("org.unitime.timetable.gwt.client.widgets.UniTimeFileUpload$FileUploadRpcRequest")
+@GwtRpcImplements(FileUploadRpcRequest.class)
 public class FileUploadBackend implements GwtRpcImplementation<FileUploadRpcRequest, FileUploadRpcResponse> {
 
 	@Override

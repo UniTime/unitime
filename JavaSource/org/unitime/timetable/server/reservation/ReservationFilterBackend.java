@@ -36,14 +36,14 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.server.Query;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
@@ -66,13 +66,13 @@ import org.unitime.timetable.server.FilterBoxBackend;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
-@Service("org.unitime.timetable.gwt.shared.ReservationInterface$ReservationFilterRpcRequest")
-public class ReservationFilterBackend extends FilterBoxBackend {
+@GwtRpcImplements(ReservationFilterRpcRequest.class)
+public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilterRpcRequest> {
 	public static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public void load(FilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
+	public void load(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		ReservationQuery query = getQuery(request, context);
 		
 		Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
@@ -185,7 +185,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
+	public void suggestions(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
 
 		ReservationQuery query = getQuery(request, context);
@@ -237,7 +237,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
+	public void enumarate(ReservationFilterRpcRequest request, FilterRpcResponse response, SessionContext context) {
 		for (Reservation reservation: reservations(request, context)) {
 			CourseOffering course = reservation.getInstructionalOffering().getControllingCourseOffering();
 			if (reservation instanceof CourseReservation)
@@ -246,7 +246,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 		}
 	}
 	
-	public static List<Reservation> reservations(FilterRpcRequest request, SessionContext context) {
+	public static List<Reservation> reservations(ReservationFilterRpcRequest request, SessionContext context) {
 		List<Reservation> ret = new ArrayList<Reservation>();
 		
 		if (request.getSessionId() == null) request.setSessionId(context.getUser().getCurrentAcademicSessionId());
@@ -276,7 +276,7 @@ public class ReservationFilterBackend extends FilterBoxBackend {
 		return ret;
 	}
 	
-	public static ReservationQuery getQuery(FilterRpcRequest request, SessionContext context) {
+	public static ReservationQuery getQuery(ReservationFilterRpcRequest request, SessionContext context) {
 		ReservationQuery query = new ReservationQuery(request.getSessionId());
 		
 		if (request.hasOptions("type")) {

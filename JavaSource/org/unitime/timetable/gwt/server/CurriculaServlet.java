@@ -59,7 +59,6 @@ import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumCourseInte
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumStudentsInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.MajorInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
@@ -122,7 +121,7 @@ public class CurriculaServlet implements CurriculaService {
 	private SessionContext getSessionContext() { return sessionContext; }
 	
 	@PreAuthorize("checkPermission('CurriculumView')")
-	public TreeSet<CurriculumInterface> findCurricula(FilterRpcRequest filter) throws CurriculaException, PageAccessException {
+	public TreeSet<CurriculumInterface> findCurricula(CurriculumInterface.CurriculumFilterRpcRequest filter) throws CurriculaException, PageAccessException {
 		try {
 			sLog.debug("findCurricula(filter='" + filter+"')");
 			Long s0 = System.currentTimeMillis();

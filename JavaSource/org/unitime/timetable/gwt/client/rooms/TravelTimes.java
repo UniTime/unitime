@@ -31,7 +31,6 @@ import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -738,7 +737,6 @@ public class TravelTimes extends Composite {
 		}
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.TravelTimesBackend")
 	public static class TravelTimesRequest implements GwtRpcRequest<TravelTimeResponse> {
 		public static enum Command {
 			INIT,

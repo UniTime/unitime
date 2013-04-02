@@ -28,7 +28,6 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 
@@ -47,7 +46,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
-public class RoomFilterBox extends UniTimeFilterBox {
+public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private ListBox iBuildings, iDepartments;
 	
@@ -379,7 +378,7 @@ public class RoomFilterBox extends UniTimeFilterBox {
 	}
 	
 	@Override
-	public FilterRpcRequest createRpcRequest() {
+	public RoomFilterRpcRequest createRpcRequest() {
 		return new RoomFilterRpcRequest();
 	}
 }
