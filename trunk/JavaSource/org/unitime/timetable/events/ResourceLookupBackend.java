@@ -24,9 +24,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
@@ -46,7 +46,7 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$ResourceLookupRpcRequest")
+@GwtRpcImplements(ResourceLookupRpcRequest.class)
 public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest, GwtRpcResponseList<ResourceInterface>> {
 
 	@Override

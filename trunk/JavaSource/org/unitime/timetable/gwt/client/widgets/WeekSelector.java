@@ -20,7 +20,6 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -91,7 +90,6 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 		}
 	}
 
-	@GwtRpcImplementedBy("org.unitime.timetable.events.WeekSelectorBackend")
 	public static class WeekSelectorRequest implements GwtRpcRequest<GwtRpcResponseList<WeekInterface>> {
 		private Long iSessionId;
 		

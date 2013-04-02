@@ -24,8 +24,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import org.unitime.timetable.model.EventDateMapping;
@@ -35,7 +35,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.DateUtils;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$RequestSessionDetails")
+@GwtRpcImplements(RequestSessionDetails.class)
 public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtRpcResponseList<SessionMonth>> {
 
 	@Override

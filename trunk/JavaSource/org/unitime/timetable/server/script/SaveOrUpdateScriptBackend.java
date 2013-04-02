@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.SaveOrUpdateScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptParameterInterface;
@@ -35,7 +35,7 @@ import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.dao.ScriptDAO;
 import org.unitime.timetable.security.SessionContext;
 
-@Service("org.unitime.timetable.gwt.shared.ScriptInterface$SaveOrUpdateScriptRpcRequest")
+@GwtRpcImplements(SaveOrUpdateScriptRpcRequest.class)
 public class SaveOrUpdateScriptBackend implements GwtRpcImplementation<SaveOrUpdateScriptRpcRequest, ScriptInterface> {
 
 	@Override

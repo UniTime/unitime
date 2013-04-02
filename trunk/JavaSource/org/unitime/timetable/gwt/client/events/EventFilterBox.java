@@ -38,7 +38,6 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeHandler;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
@@ -60,7 +59,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.TextBox;
 
-public class EventFilterBox extends UniTimeFilterBox {
+public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private ListBox iSponsors;
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -480,7 +479,7 @@ public class EventFilterBox extends UniTimeFilterBox {
 	}
 
 	@Override
-	public FilterRpcRequest createRpcRequest() {
+	public EventFilterRpcRequest createRpcRequest() {
 		return new EventFilterRpcRequest();
 	}
 

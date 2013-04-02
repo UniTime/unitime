@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 
@@ -247,7 +246,6 @@ public class RoomInterface implements IsSerializable {
 		public void setDefaultMode(int mode) { iDefaultMode = mode; }
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.RoomSharingBackend")
 	public static class RoomSharingRequest implements GwtRpcRequest<RoomSharingModel> {
 		public static enum Operation implements IsSerializable {
 			LOAD,
@@ -381,7 +379,6 @@ public class RoomInterface implements IsSerializable {
 		public boolean hasBreakTime() { return iBreakTime != null && iBreakTime != 0; }
 	}
 	
-	@GwtRpcImplementedBy("org.unitime.timetable.server.rooms.RoomSharingBackend")
 	public static class RoomHintRequest implements GwtRpcRequest<RoomHintResponse> {
 		private Long iLocationId;
 		

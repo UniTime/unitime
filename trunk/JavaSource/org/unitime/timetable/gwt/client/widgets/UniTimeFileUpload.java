@@ -20,7 +20,6 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -114,7 +113,6 @@ public class UniTimeFileUpload extends FormPanel {
 		return iUpload.getFilename();
 	}
 
-	@GwtRpcImplementedBy("org.unitime.timetable.events.FileUploadBackend")
 	public static class FileUploadRpcRequest implements GwtRpcRequest<FileUploadRpcResponse>{
 		private boolean iReset = false;
 		

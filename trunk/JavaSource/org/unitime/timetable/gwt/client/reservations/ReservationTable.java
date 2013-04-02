@@ -40,7 +40,6 @@ import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.services.ReservationServiceAsync;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Clazz;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Config;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
@@ -50,6 +49,7 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.CurriculumReservati
 import org.unitime.timetable.gwt.shared.ReservationInterface.GroupReservation;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IndividualReservation;
+import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -88,7 +88,7 @@ public class ReservationTable extends Composite {
 	
 	private List<ReservationClickHandler> iReservationClickHandlers = new ArrayList<ReservationClickHandler>();
 	
-	private FilterRpcRequest iLastQuery = null;
+	private ReservationFilterRpcRequest iLastQuery = null;
 
 	public ReservationTable(boolean editable, boolean showHeader) {
 		iReservationPanel = new SimpleForm();
@@ -683,7 +683,7 @@ public class ReservationTable extends Composite {
 		iReservationClickHandlers.add(h);
 	}
 
-	public void query(FilterRpcRequest filter, final Command next) {
+	public void query(ReservationFilterRpcRequest filter, final Command next) {
 		iLastQuery = filter;
 		clear(true);
 		iReservationService.findReservations(filter, new AsyncCallback<List<ReservationInterface>>() {

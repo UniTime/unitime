@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.hibernate.Query;
-import org.springframework.stereotype.Service;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
@@ -46,7 +46,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$EventRoomAvailabilityRpcRequest")
+@GwtRpcImplements(EventRoomAvailabilityRpcRequest.class)
 public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabilityRpcRequest, EventRoomAvailabilityRpcResponse> {
 	
 	@Override

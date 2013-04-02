@@ -25,9 +25,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.PageName;
@@ -38,7 +38,7 @@ import org.unitime.timetable.security.SessionContext;
 public class AdminBackend {
 	private static Logger sLog = Logger.getLogger(AdminBackend.class);
 
-	@Service("org.unitime.timetable.gwt.shared.SimpleEditInterface$GetPageNameRpcRequest")
+	@GwtRpcImplements(SimpleEditInterface.GetPageNameRpcRequest.class)
 	public static class PageNameBackend implements GwtRpcImplementation<SimpleEditInterface.GetPageNameRpcRequest, SimpleEditInterface.PageName> {
 		@Autowired ApplicationContext applicationContext;
 
@@ -48,7 +48,7 @@ public class AdminBackend {
 		}
 	}
 	
-	@Service("org.unitime.timetable.gwt.shared.SimpleEditInterface$LoadDataRpcRequest")
+	@GwtRpcImplements(SimpleEditInterface.LoadDataRpcRequest.class)
 	public static class LoadDataBackend implements GwtRpcImplementation<SimpleEditInterface.LoadDataRpcRequest, SimpleEditInterface> {
 		@Autowired ApplicationContext applicationContext;
 
@@ -82,7 +82,7 @@ public class AdminBackend {
 		}
 	}
 	
-	@Service("org.unitime.timetable.gwt.shared.SimpleEditInterface$SaveDataRpcRequest")
+	@GwtRpcImplements(SimpleEditInterface.SaveDataRpcRequest.class)
 	public static class SaveDataBackend implements GwtRpcImplementation<SimpleEditInterface.SaveDataRpcRequest, SimpleEditInterface> {
 		@Autowired ApplicationContext applicationContext;
 
@@ -121,7 +121,7 @@ public class AdminBackend {
 		}
 	}
 	
-	@Service("org.unitime.timetable.gwt.shared.SimpleEditInterface$SaveRecordRpcRequest")
+	@GwtRpcImplements(SimpleEditInterface.SaveRecordRpcRequest.class)
 	public static class SaveRecordBackend implements GwtRpcImplementation<SimpleEditInterface.SaveRecordRpcRequest, SimpleEditInterface.Record> {
 		@Autowired ApplicationContext applicationContext;
 
@@ -158,7 +158,7 @@ public class AdminBackend {
 		}
 	}
 	
-	@Service("org.unitime.timetable.gwt.shared.SimpleEditInterface$DeleteRecordRpcRequest")
+	@GwtRpcImplements(SimpleEditInterface.DeleteRecordRpcRequest.class)
 	public static class DeleteRecordBackend implements GwtRpcImplementation<SimpleEditInterface.DeleteRecordRpcRequest, SimpleEditInterface.Record> {
 		@Autowired ApplicationContext applicationContext;
 

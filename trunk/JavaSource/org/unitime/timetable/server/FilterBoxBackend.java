@@ -24,10 +24,10 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.security.SessionContext;
 
-public abstract class FilterBoxBackend implements GwtRpcImplementation<FilterRpcRequest, FilterRpcResponse> {
+public abstract class FilterBoxBackend<T extends FilterRpcRequest> implements GwtRpcImplementation<T, FilterRpcResponse> {
 	
 	@Override
-	public FilterRpcResponse execute(FilterRpcRequest request, SessionContext context) {
+	public FilterRpcResponse execute(T request, SessionContext context) {
 		
 		FilterRpcResponse response = new FilterRpcResponse();
 		
@@ -52,9 +52,9 @@ public abstract class FilterBoxBackend implements GwtRpcImplementation<FilterRpc
 		return response;
 	}
 	
-	public abstract void load(FilterRpcRequest request, FilterRpcResponse response, SessionContext context);
+	public abstract void load(T request, FilterRpcResponse response, SessionContext context);
 	
-	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response, SessionContext context);
+	public abstract void suggestions(T request, FilterRpcResponse response, SessionContext context);
 	
-	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response, SessionContext context);
+	public abstract void enumarate(T request, FilterRpcResponse response, SessionContext context);
 }

@@ -24,11 +24,11 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.client.widgets.WeekSelector.WeekSelectorRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.shared.EventInterface.DateInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
@@ -36,7 +36,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 
-@Service("org.unitime.timetable.gwt.client.widgets.WeekSelector$WeekSelectorRequest")
+@GwtRpcImplements(WeekSelectorRequest.class)
 public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorRequest, GwtRpcResponseList<WeekInterface>> {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	

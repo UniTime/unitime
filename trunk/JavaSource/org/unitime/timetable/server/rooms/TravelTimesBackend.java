@@ -25,13 +25,13 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimeResponse;
 import org.unitime.timetable.gwt.client.rooms.TravelTimes.TravelTimesRequest;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Room;
@@ -42,7 +42,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.client.rooms.TravelTimes$TravelTimesRequest")
+@GwtRpcImplements(TravelTimesRequest.class)
 public class TravelTimesBackend implements GwtRpcImplementation<TravelTimesRequest, TravelTimeResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 

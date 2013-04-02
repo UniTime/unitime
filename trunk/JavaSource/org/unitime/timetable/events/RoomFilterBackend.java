@@ -34,13 +34,13 @@ import java.util.TreeSet;
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.DistanceMetric;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.Query;
 import org.unitime.timetable.gwt.server.Query.TermMatcher;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse.Entity;
+import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -57,8 +57,8 @@ import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$RoomFilterRpcRequest")
-public class RoomFilterBackend extends FilterBoxBackend {
+@GwtRpcImplements(RoomFilterRpcRequest.class)
+public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	private DistanceMetric iMetrics;
 	private static double EPSILON = 0.000001;
 	private static DecimalFormat sCDF = new DecimalFormat("0.000000");
@@ -68,7 +68,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	};
 
 	@Override
-	public void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void load(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		Map<Long, Set<String>> eventRoomTypes = new HashMap<Long, Set<String>>();
 		for (Object[] o: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
 				"select o.department.uniqueId, o.roomType.label from RoomTypeOption o where o.status != 0 and o.department.session.uniqueId = :sessionId")
@@ -215,14 +215,14 @@ public class RoomFilterBackend extends FilterBoxBackend {
 		response.add("department", new TreeSet<Entity>(depts.values()));
 	}
 	
-	private void fixRoomFeatureTypes(FilterRpcRequest request) {
+	private void fixRoomFeatureTypes(RoomFilterRpcRequest request) {
 		for (RoomFeatureType type: RoomFeatureTypeDAO.getInstance().findAll())
 			if (type.isShowInEventManagement() && request.hasOptions(type.getReference().replace(' ', '_')))
 				for (String option: request.getOptions(type.getReference().replace(' ', '_')))
 					request.addOption("feature", option);
 	}
 	
-	public List<Location> locations(Long sessionId, FilterRpcRequest filter, int limit, Map<Long, Double> room2distance) {
+	public List<Location> locations(Long sessionId, RoomFilterRpcRequest filter, int limit, Map<Long, Double> room2distance) {
 		fixRoomFeatureTypes(filter);
 		return locations(sessionId, filter.getOptions(), new Query(filter.getText()), 1000, room2distance, null);
 	}
@@ -474,7 +474,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void suggestions(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		fixRoomFeatureTypes(request);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();
@@ -487,7 +487,7 @@ public class RoomFilterBackend extends FilterBoxBackend {
 	}
 	
 	@Override
-	public void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context) {
+	public void enumarate(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
 		fixRoomFeatureTypes(request);
 
 		Map<Long, Double> distances = new HashMap<Long, Double>();

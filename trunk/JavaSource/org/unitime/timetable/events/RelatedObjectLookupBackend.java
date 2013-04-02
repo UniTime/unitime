@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectLookupRpcResponse;
@@ -40,7 +40,7 @@ import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$RelatedObjectLookupRpcRequest")
+@GwtRpcImplements(RelatedObjectLookupRpcRequest.class)
 public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupRpcRequest, GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
 
 	@Override
