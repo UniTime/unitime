@@ -2590,4 +2590,10 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("&infin;")
 	String infinity();
+	
+	@DefaultMessage("{0} enrolled")
+	String eventGridEnrolled(int enrolled);
+	
+	@DefaultMessage("{0} limit")
+	String eventGridLimit(int limit);
 }
