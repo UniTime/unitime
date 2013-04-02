@@ -84,7 +84,7 @@ public class RoomHint {
 		if (room.hasNote())
 			form.addRow(new HTML(room.getNote()));
 		
-		if (distance != null && !distance.isEmpty())
+		if (distance != null && !distance.isEmpty() && !"0".equals(distance))
 			form.addRow(MESSAGES.propRoomDistance(), new Label(MESSAGES.roomDistance(distance), false));
 		
 		SimplePanel panel = new SimplePanel(form);
