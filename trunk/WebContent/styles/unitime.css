@@ -2450,6 +2450,17 @@ div.gwt-MenuBarPopup {
 	text-align: left;
 }
 
+.unitime-MeetingSelection .conflict .type {
+	padding-left: 10px;
+	font-style: italic;
+	color: #F99;
+}
+
+.unitime-MeetingSelection .conflict .time {
+	padding-left: 10px;
+	color: #F99;
+}
+
 .unitime-MeetingSelection .date {
 	display: table-cell;
 	border-right: 1px solid black;

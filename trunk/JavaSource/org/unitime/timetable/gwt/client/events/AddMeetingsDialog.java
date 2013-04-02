@@ -571,10 +571,17 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					p.addStyleName("conflict");
 					String conf = "";
 					int count = 0;
-					for (MeetingConflictInterface event: conflicts) {
-						if (count == 3) { conf += "<br>..."; break; }
-						conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + event.getType().getAbbreviation(CONSTANTS) + ")");
-						count ++;
+					if (conflicts.size() == 1) {
+						MeetingConflictInterface event = conflicts.iterator().next();
+						conf += event.getName() +
+								(event.getType() == EventType.Unavailabile ? "" : "<br><span class='type'>" + (event.hasLimit() ? MESSAGES.addMeetingsLimitAndType(event.getLimit(), event.getType().getAbbreviation(CONSTANTS)) : event.getType().getAbbreviation(CONSTANTS)) + "</span>") +
+								"<br><span class='time'>" + TimeUtils.slot2short(event.getStartSlot()) + " - " + TimeUtils.slot2short(event.getEndSlot()) + "</span>";
+					} else {
+						for (MeetingConflictInterface event: conflicts) {
+							if (count == 3) { conf += "<br>..."; break; }
+							conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + event.getType().getAbbreviation(CONSTANTS) + ")");
+							count ++;
+						}
 					}
 					p.setHTML(conf);
 				}
@@ -614,7 +621,8 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 							message += "<br>" + MESSAGES.propConflicts();
 							for (MeetingConflictInterface conflictingEvent: conflicts)
 								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() +
-								(conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + conflictingEvent.getType().getAbbreviation(CONSTANTS) + (conflictingEvent.hasLimit() ? ", " + MESSAGES.eventGridLimit(conflictingEvent.getLimit()) : "") + ")");
+								(conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + (conflictingEvent.hasLimit() ? MESSAGES.addMeetingsLimitAndType(conflictingEvent.getLimit(), conflictingEvent.getType().getAbbreviation(CONSTANTS)) : conflictingEvent.getType().getAbbreviation(CONSTANTS)) + ")") +
+								" " + TimeUtils.slot2short(conflictingEvent.getStartSlot()) + " - " + TimeUtils.slot2short(conflictingEvent.getEndSlot());
 						}
 						GwtHint.showHint(p.getElement(), message);
 					}
