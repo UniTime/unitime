@@ -713,6 +713,8 @@ public class TimeGrid extends Composite {
 			}
 			if (!isSingleRoom() || getResourceType() != ResourceType.ROOM)
 				notes.add(roomString);
+			if (event.hasEnrollment() || event.hasMaxCapacity())
+				notes.add("<i>" + (event.hasEnrollment() ? MESSAGES.eventGridEnrolled(event.getEnrollment()) + (event.hasMaxCapacity() ? ", " : "") : "") + (event.hasMaxCapacity() ? MESSAGES.eventGridLimit(event.getMaxCapacity()) : "") + "</i>");
 			if (event.hasInstructors())
 				for (ContactInterface instructor: event.getInstructors())
 					notes.add(instructor.getName(MESSAGES));
