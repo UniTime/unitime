@@ -88,6 +88,7 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setEventId(m.getEvent().getUniqueId());
 					conflict.setName(m.getEvent().getEventName());
 					conflict.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
+					conflict.setLimit(m.getEvent().getMaxCapacity());
 					
 					conflict.setId(m.getUniqueId());
 					conflict.setMeetingDate(m.getMeetingDate());

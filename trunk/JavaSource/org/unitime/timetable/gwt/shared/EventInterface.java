@@ -664,6 +664,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Long iEventId;
 		private String iEventName;
 		private EventType iEventType;
+		private Integer iLimit;
 		
 		public MeetingConflictInterface() {}
 		
@@ -673,6 +674,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setName(String name) { iEventName = name; }
 		public EventType getType() { return iEventType; }
 		public void setType(EventType type) { iEventType = type; }
+		public boolean hasLimit() { return iLimit != null; }
+		public Integer getLimit() { return iLimit; }
+		public void setLimit(Integer limit) { iLimit = limit; }
 		
 		public int compareTo(MeetingInterface conflict) {
 			int cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
