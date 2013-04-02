@@ -2596,4 +2596,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} limit")
 	String eventGridLimit(int limit);
+	
+	@DefaultMessage("{1} of {0}")
+	String addMeetingsLimitAndType(int limit, String type);
 }
