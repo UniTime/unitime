@@ -20,14 +20,14 @@
 package org.unitime.timetable.server.script;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.QueueItemInterface;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
-@Service("org.unitime.timetable.gwt.shared.ScriptInterface$ExecuteScriptRpcRequest")
+@GwtRpcImplements(ExecuteScriptRpcRequest.class)
 public class ExecuteScriptBackend implements GwtRpcImplementation<ExecuteScriptRpcRequest, QueueItemInterface> {
 
 	@Override

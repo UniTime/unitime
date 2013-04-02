@@ -31,9 +31,9 @@ import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
@@ -66,7 +66,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$SaveEventRpcRequest")
+@GwtRpcImplements(SaveEventRpcRequest.class)
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {

@@ -28,9 +28,9 @@ import java.util.Set;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
-import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -46,7 +46,7 @@ import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$ApproveEventRpcRequest")
+@GwtRpcImplements(ApproveEventRpcRequest.class)
 public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, SaveOrApproveEventRpcResponse>{
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	

@@ -45,8 +45,8 @@ import org.unitime.timetable.gwt.services.CurriculaServiceAsync;
 import org.unitime.timetable.gwt.shared.CurriculumInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.AcademicClassificationInterface;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumClassificationInterface;
+import org.unitime.timetable.gwt.shared.CurriculumInterface.CurriculumFilterRpcRequest;
 import org.unitime.timetable.gwt.shared.CurriculumInterface.DepartmentInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
@@ -85,7 +85,7 @@ public class CurriculaTable extends Composite {
 	private Image iLoadingImage = null;
 	private Label iErrorLabel = null;
 	private UniTimeTable<CurriculumInterface> iTable = null;
-	private FilterRpcRequest iLastQuery = null;
+	private CurriculumFilterRpcRequest iLastQuery = null;
 	private AriaButton iOperations = null;
 	
 	private AsyncCallback<List<CurriculumClassificationInterface>> iLoadClassifications;
@@ -1179,7 +1179,7 @@ public class CurriculaTable extends Composite {
 			iService.loadClassifications(ids, iLoadClassifications);
 	}
 
-	public void query(FilterRpcRequest filter, final Command next) {
+	public void query(CurriculumFilterRpcRequest filter, final Command next) {
 		iLastQuery = filter;
 		iTable.clearTable(1);
 		setMessage(null);

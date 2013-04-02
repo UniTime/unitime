@@ -54,7 +54,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 
-public abstract class UniTimeFilterBox extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers {
+public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
@@ -218,10 +218,10 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		iFilter.setHint(hint);
 	}
 	
-	protected abstract FilterRpcRequest createRpcRequest();
+	protected abstract T createRpcRequest();
 	
-	protected FilterRpcRequest createRpcRequest(FilterRpcRequest.Command command, Long sessionId, List<FilterBox.Chip> chips, String text) {
-		FilterRpcRequest request = createRpcRequest();
+	protected T createRpcRequest(FilterRpcRequest.Command command, Long sessionId, List<FilterBox.Chip> chips, String text) {
+		T request = createRpcRequest();
 		request.setCommand(command);
 		request.setSessionId(sessionId);
 		if (chips != null)
@@ -246,7 +246,7 @@ public abstract class UniTimeFilterBox extends Composite implements HasValue<Str
 		});
 	}
 	
-	public FilterRpcRequest getElementsRequest() {
+	public T getElementsRequest() {
 		return createRpcRequest(FilterRpcRequest.Command.ENUMERATE, iAcademicSession == null ? null : iAcademicSession.getAcademicSessionId(), iFilter.getWidget().getChips(null), iFilter.getWidget().getText());
 	}
 	

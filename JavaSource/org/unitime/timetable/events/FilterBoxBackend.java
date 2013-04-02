@@ -22,10 +22,10 @@ package org.unitime.timetable.events;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 
-public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, FilterRpcResponse> {
+public abstract class FilterBoxBackend<T extends FilterRpcRequest> extends EventAction<T, FilterRpcResponse> {
 
 	@Override
-	public FilterRpcResponse execute(FilterRpcRequest request, EventContext context) {
+	public FilterRpcResponse execute(T request, EventContext context) {
 		
 		FilterRpcResponse response = new FilterRpcResponse();
 		
@@ -47,10 +47,10 @@ public abstract class FilterBoxBackend extends EventAction<FilterRpcRequest, Fil
 		return response;
 	}
 	
-	public abstract void load(FilterRpcRequest request, FilterRpcResponse response, EventContext context);
+	public abstract void load(T request, FilterRpcResponse response, EventContext context);
 	
-	public abstract void suggestions(FilterRpcRequest request, FilterRpcResponse response, EventContext context);
+	public abstract void suggestions(T request, FilterRpcResponse response, EventContext context);
 	
-	public abstract void enumarate(FilterRpcRequest request, FilterRpcResponse response, EventContext context);	
+	public abstract void enumarate(T request, FilterRpcResponse response, EventContext context);	
 
 }

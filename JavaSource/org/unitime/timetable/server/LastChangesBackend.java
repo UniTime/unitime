@@ -22,10 +22,10 @@ package org.unitime.timetable.server;
 import java.util.List;
 
 import org.hibernate.Query;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.LastChangesInterface.ChangeLogInterface;
 import org.unitime.timetable.gwt.shared.LastChangesInterface.LastChangesRequest;
 import org.unitime.timetable.model.ChangeLog;
@@ -35,7 +35,7 @@ import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.security.SessionContext;
 
-@Service("org.unitime.timetable.gwt.shared.LastChangesInterface$LastChangesRequest")
+@GwtRpcImplements(LastChangesRequest.class)
 public class LastChangesBackend implements GwtRpcImplementation<LastChangesRequest, GwtRpcResponseList<ChangeLogInterface>> {
 
 	@Override

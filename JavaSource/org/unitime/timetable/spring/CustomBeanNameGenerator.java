@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.StringUtils;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.security.permissions.PermissionForRight;
 import org.unitime.timetable.security.rights.Right;
 
@@ -43,6 +44,9 @@ public class CustomBeanNameGenerator extends AnnotationBeanNameGenerator {
 				if (PermissionForRight.class.getName().equals(type)) {
 					Right right = (Right)attributes.get("value");
 					value = "permission" + right.name();
+				} else if (GwtRpcImplements.class.getName().equals(type)) {
+					Class<?> requestClass = (Class<?>)attributes.get("value");
+					value = requestClass.getName();
 				} else {
 					value = (String) attributes.get("value");
 				}

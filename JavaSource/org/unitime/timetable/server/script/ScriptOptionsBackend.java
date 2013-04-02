@@ -23,8 +23,8 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface.GetScriptOptionsRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptOptionsInterface;
 import org.unitime.timetable.model.Department;
@@ -33,7 +33,7 @@ import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("org.unitime.timetable.gwt.shared.ScriptInterface$GetScriptOptionsRpcRequest")
+@GwtRpcImplements(GetScriptOptionsRpcRequest.class)
 public class ScriptOptionsBackend implements GwtRpcImplementation<GetScriptOptionsRpcRequest, ScriptOptionsInterface>{
 
 	@Override

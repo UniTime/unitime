@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
-import org.unitime.timetable.gwt.command.client.GwtRpcImplementedBy;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -246,7 +245,6 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		}
 	}
 
-	@GwtRpcImplementedBy("org.unitime.timetable.events.ListAcademicSessions")
 	public static class ListAcademicSessions implements GwtRpcRequest<GwtRpcResponseList<AcademicSession>> {
 		private String iTerm = null;
 		

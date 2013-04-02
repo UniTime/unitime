@@ -39,7 +39,7 @@ import org.unitime.timetable.gwt.services.ReservationService;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.gwt.shared.ReservationException;
 import org.unitime.timetable.gwt.shared.ReservationInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
+import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationFilterRpcRequest;
 import org.unitime.timetable.model.AcademicArea;
 import org.unitime.timetable.model.AcademicClassification;
 import org.unitime.timetable.model.Class_;
@@ -721,7 +721,7 @@ public class ReservationServlet implements ReservationService {
 
 	@Override
 	@PreAuthorize("checkPermission('Reservations')")
-	public List<ReservationInterface> findReservations(FilterRpcRequest filter) throws ReservationException, PageAccessException {
+	public List<ReservationInterface> findReservations(ReservationFilterRpcRequest filter) throws ReservationException, PageAccessException {
 		try {
 			List<ReservationInterface> results = new ArrayList<ReservationInterface>();
 			getSessionContext().setAttribute("Reservations.LastFilter", filter.toQueryString());

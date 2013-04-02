@@ -35,10 +35,10 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
@@ -62,7 +62,7 @@ import org.unitime.timetable.util.Constants;
 /**
  * @author Tomas Muller
  */
-@Service("org.unitime.timetable.gwt.shared.PersonInterface$LookupRequest")
+@GwtRpcImplements(PersonInterface.LookupRequest.class)
 public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>> {
 	private static Logger sLog = Logger.getLogger(PeopleLookupBackend.class);
 	private static ExternalUidTranslation iTranslation;

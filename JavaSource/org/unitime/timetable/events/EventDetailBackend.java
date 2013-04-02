@@ -30,7 +30,7 @@ import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
-import org.springframework.stereotype.Service;
+import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
@@ -71,7 +71,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
 
-@Service("org.unitime.timetable.gwt.shared.EventInterface$EventDetailRpcRequest")
+@GwtRpcImplements(EventDetailRpcRequest.class)
 public class EventDetailBackend extends EventAction<EventDetailRpcRequest, EventInterface> {
 	
 	@Override
