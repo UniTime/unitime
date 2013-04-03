@@ -29,6 +29,7 @@ import org.hibernate.Query;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
+import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
@@ -36,10 +37,22 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcR
 import org.unitime.timetable.gwt.shared.EventInterface.EventRoomAvailabilityRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
+import org.unitime.timetable.model.ClassEvent;
+import org.unitime.timetable.model.ClassInstructor;
+import org.unitime.timetable.model.Class_;
+import org.unitime.timetable.model.CourseEvent;
+import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.dao.ClassEventDAO;
+import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.EventDAO;
+import org.unitime.timetable.model.dao.ExamEventDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -89,6 +102,48 @@ public class EventRoomAvailabilityBackend extends EventAction<EventRoomAvailabil
 					conflict.setName(m.getEvent().getEventName());
 					conflict.setType(EventInterface.EventType.values()[m.getEvent().getEventType()]);
 					conflict.setLimit(m.getEvent().getMaxCapacity());
+					
+					if (m.getEvent().getSponsoringOrganization() != null) {
+						SponsoringOrganizationInterface sponsor = new SponsoringOrganizationInterface();
+						sponsor.setEmail(m.getEvent().getSponsoringOrganization().getEmail());
+						sponsor.setName(m.getEvent().getSponsoringOrganization().getName());
+						sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
+						conflict.setSponsor(sponsor);
+					}
+					
+					if (Event.sEventTypeClass == m.getEvent().getEventType()) {
+			    		ClassEvent ce = (m.getEvent() instanceof ClassEvent ? (ClassEvent)m.getEvent() : ClassEventDAO.getInstance().get(m.getEvent().getUniqueId()));
+			    		Class_ clazz = ce.getClazz();
+			    		conflict.setEnrollment(clazz.getEnrollment());
+			    		if (clazz.getDisplayInstructor()) {
+			    			for (ClassInstructor i: clazz.getClassInstructors()) {
+								ContactInterface instructor = new ContactInterface();
+								instructor.setFirstName(i.getInstructor().getFirstName());
+								instructor.setMiddleName(i.getInstructor().getMiddleName());
+								instructor.setLastName(i.getInstructor().getLastName());
+								instructor.setEmail(i.getInstructor().getEmail());
+								conflict.addInstructor(instructor);
+			    			}
+			    		}
+					} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
+			    		ExamEvent xe = (m.getEvent() instanceof ExamEvent ? (ExamEvent)m.getEvent() : ExamEventDAO.getInstance().get(m.getEvent().getUniqueId()));
+			    		conflict.setEnrollment(xe.getExam().countStudents());
+		    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
+							ContactInterface instructor = new ContactInterface();
+							instructor.setFirstName(i.getFirstName());
+							instructor.setMiddleName(i.getMiddleName());
+							instructor.setLastName(i.getLastName());
+							instructor.setEmail(i.getEmail());
+							conflict.addInstructor(instructor);
+		    			}
+					} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
+			    		CourseEvent ce = (m.getEvent() instanceof CourseEvent ? (CourseEvent)m.getEvent() : CourseEventDAO.getInstance().get(m.getEvent().getUniqueId()));
+			    		int enrl = 0;
+						for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
+							enrl += owner.countStudents();
+		    			}
+						conflict.setEnrollment(enrl);
+					}
 					
 					conflict.setId(m.getUniqueId());
 					conflict.setMeetingDate(m.getMeetingDate());
