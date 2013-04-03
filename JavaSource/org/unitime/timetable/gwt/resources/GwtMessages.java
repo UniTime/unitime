@@ -317,6 +317,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Show Abbreviations")
 	String opShowAbbreviations();
 	
+	@DefaultMessage("Swap Axes")
+	String opSwapAxes();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -2599,4 +2602,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{1} of {0}")
 	String addMeetingsLimitAndType(int limit, String type);
+	
+	@DefaultMessage("{2} {1} / {0}")
+	String addMeetingsLimitEnrollmentAndType(int limit, int enrollment, String type);
 }

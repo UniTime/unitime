@@ -217,7 +217,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				recenter();
 			}
 		});
-		iAvailabilityHeader.addButton("sort", MESSAGES.buttonSortBy(), 75, new ClickHandler() {
+		iAvailabilityHeader.addButton("more", MESSAGES.buttonMoreOperations(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				final PopupPanel popup = new PopupPanel(true);
@@ -236,6 +236,29 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					item.getElement().getStyle().setCursor(Cursor.POINTER);
 					menu.addItem(item);
 				}
+				menu.addSeparator();
+				MenuItem swapItem = new MenuItem(MESSAGES.opSwapAxes(), true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						EventCookie.getInstance().setRoomsHorizontal(!EventCookie.getInstance().areRoomsHorizontal());
+						populate(iResponse, 0, EventCookie.getInstance().getRoomsSortBy());
+						recenter();
+					}
+				});
+				swapItem.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(swapItem);
+				MenuItem expandOrCollapseAll = new MenuItem(EventCookie.getInstance().isExpandRoomConflicts() ? MESSAGES.opCollapseAll() : MESSAGES.opExpandAll(), true, new Command() {
+					@Override
+					public void execute() {
+						popup.hide();
+						EventCookie.getInstance().setExpandRoomConflicts(!EventCookie.getInstance().isExpandRoomConflicts());
+						populate(iResponse, iIndex, EventCookie.getInstance().getRoomsSortBy());
+						recenter();
+					}
+				});
+				expandOrCollapseAll.getElement().getStyle().setCursor(Cursor.POINTER);
+				menu.addItem(expandOrCollapseAll);
 				menu.setVisible(true);
 				menu.setFocusOnHoverEnabled(true);
 				popup.add(menu);
@@ -460,6 +483,70 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private Entity iHoverLoc = null;
 	
 	private void populate(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+		if (EventCookie.getInstance().areRoomsHorizontal())
+			populateHorizontal(response, index, sortBy);
+		else
+			populateVertical(response, index, sortBy);
+	}
+	
+	protected String conflicts2html(Set<MeetingConflictInterface> conflicts) {
+		String conf = "";
+		int count = 0;
+		for (MeetingConflictInterface event: conflicts) {
+			if (EventCookie.getInstance().isExpandRoomConflicts() || conflicts.size() == 1) {
+				conf += (conf.isEmpty() ? "" : "<br>") + event.getName() +
+						(event.getType() == EventType.Unavailabile ? "" : "<br><span class='type'>" +
+								(event.hasLimit() ?
+										event.hasEnrollment() ? MESSAGES.addMeetingsLimitEnrollmentAndType(event.getLimit(), event.getEnrollment(),  CONSTANTS.eventTypeShort()[event.getType().ordinal()])
+										: MESSAGES.addMeetingsLimitAndType(event.getLimit(), CONSTANTS.eventTypeShort()[event.getType().ordinal()])
+								: event.getType().getAbbreviation(CONSTANTS)) + "</span>") +
+						"<br><span class='time'>" + TimeUtils.slot2short(event.getStartSlot()) + " - " + TimeUtils.slot2short(event.getEndSlot()) + "</span>";							
+			} else {
+				if (count == 2 && conflicts.size() > 2) { conf += "<br>..."; break; }
+				conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + CONSTANTS.eventTypeShort()[event.getType().ordinal()] + ")");
+			}
+			count ++;
+		}
+		return conf;
+	}
+	
+	protected String conflicts2hint(Entity room, Date d, Set<MeetingConflictInterface> conflicts) {
+		String capacity = room.getProperty("capacity", null);
+		String distance = room.getProperty("distance", null);
+		String hint = room.getProperty("type", null) +
+				(capacity != null ? ", " + MESSAGES.hintRoomCapacity(capacity) : "") +
+				(distance != null && !"0".equals(distance) ? ", " + MESSAGES.hintRoomDistance(distance) : "");
+		String message = MESSAGES.dateTimeHint(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())) + 
+				"<br>" + room.getName() + " (" + hint + ")";
+		if (conflicts != null && !conflicts.isEmpty()) {
+			boolean hasSponsorOrInstructor = false, hasLimit = false, hasEnrollment = false;
+			for (MeetingConflictInterface event: conflicts) {
+				if (event.hasSponsor() || event.hasInstructors()) hasSponsorOrInstructor = true;
+				if (event.hasLimit()) hasLimit = true;
+				if (event.hasEnrollment()) hasEnrollment = true;
+			}
+			message += "<br>" + MESSAGES.propConflicts();
+			message += "<table border='0' class='table'><tr class='row'>" +
+					"<td class='header'>" + MESSAGES.colName() + "</td>" +
+					"<td class='header'>" + MESSAGES.colType() + "</td>" +
+					"<td class='header'>" + MESSAGES.colTime() + "</td>" +
+					(hasEnrollment ? "<td class='header'>" + MESSAGES.colEnrollment() + "</td>" : "") +
+					(hasLimit ? "<td class='header'>" + MESSAGES.colLimit() + "</td>" : "") +
+					(hasSponsorOrInstructor ? "<td class='header'>" + MESSAGES.colSponsorOrInstructor() + "</td>" : "") +
+					"</tr>";
+			for (MeetingConflictInterface event: conflicts)
+				message += "<tr class='row'><td>" + event.getName() + "</td><td>" + event.getType().getAbbreviation(CONSTANTS) + "</td>" +
+					"<td>" + TimeUtils.slot2short(event.getStartSlot()) + " - " + TimeUtils.slot2short(event.getEndSlot()) + "</td>" + 
+					(hasEnrollment ? "<td align='right'>" + (event.hasEnrollment() ? event.getEnrollment().toString() : "") + "</td>" : "") +
+					(hasLimit ? "<td align='right'>" + (event.hasLimit() ? event.getLimit().toString() : "") + "</td>" : "") +
+					(hasSponsorOrInstructor ? "<td>" + (event.hasSponsor() ? event.getSponsor().getName() : event.hasInstructors() ? event.getInstructorNames("<br>", MESSAGES) : "") + "</td>" : "") +
+					"</tr>";
+			message += "</table>";
+		}
+		return message;
+	}
+	
+	private void populateHorizontal(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
 		iResponse = response;
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
@@ -569,21 +656,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 					p.addStyleName("free");
 				} else {
 					p.addStyleName("conflict");
-					String conf = "";
-					int count = 0;
-					if (conflicts.size() == 1) {
-						MeetingConflictInterface event = conflicts.iterator().next();
-						conf += event.getName() +
-								(event.getType() == EventType.Unavailabile ? "" : "<br><span class='type'>" + (event.hasLimit() ? MESSAGES.addMeetingsLimitAndType(event.getLimit(), event.getType().getAbbreviation(CONSTANTS)) : event.getType().getAbbreviation(CONSTANTS)) + "</span>") +
-								"<br><span class='time'>" + TimeUtils.slot2short(event.getStartSlot()) + " - " + TimeUtils.slot2short(event.getEndSlot()) + "</span>";
-					} else {
-						for (MeetingConflictInterface event: conflicts) {
-							if (count == 3) { conf += "<br>..."; break; }
-							conf += (conf.isEmpty() ? "" : "<br>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + event.getType().getAbbreviation(CONSTANTS) + ")");
-							count ++;
-						}
-					}
-					p.setHTML(conf);
+					p.setHTML(conflicts2html(conflicts));
 				}
 				
 				iPanels.put(date + ":" + room.getUniqueId(), p);
@@ -610,21 +683,172 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 						((P)event.getSource()).addStyleName("hover");
 						iHoverDate = date;
 						iHoverLoc = room;
-						String capacity = room.getProperty("capacity", null);
-						String distance = room.getProperty("distance", null);
-						String hint = room.getProperty("type", null) +
-								(capacity != null ? ", " + MESSAGES.hintRoomCapacity(capacity) : "") +
-								(distance != null && !"0".equals(distance) ? ", " + MESSAGES.hintRoomDistance(distance) : "");
-						String message = MESSAGES.dateTimeHint(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())) + 
-								"<br>" + room.getName() + " (" + hint + ")";
-						if (conflicts != null && !conflicts.isEmpty()) {
-							message += "<br>" + MESSAGES.propConflicts();
-							for (MeetingConflictInterface conflictingEvent: conflicts)
-								message += (conflicts.size() == 1 ? "" : "<br>&nbsp;&nbsp;&nbsp;") + conflictingEvent.getName() +
-								(conflictingEvent.getType() == EventType.Unavailabile ? "" :" (" + (conflictingEvent.hasLimit() ? MESSAGES.addMeetingsLimitAndType(conflictingEvent.getLimit(), conflictingEvent.getType().getAbbreviation(CONSTANTS)) : conflictingEvent.getType().getAbbreviation(CONSTANTS)) + ")") +
-								" " + TimeUtils.slot2short(conflictingEvent.getStartSlot()) + " - " + TimeUtils.slot2short(conflictingEvent.getEndSlot());
+						GwtHint.showHint(p.getElement(), conflicts2hint(room, d, conflicts));
+					}
+				});
+				
+				p.addMouseOutHandler(new MouseOutHandler() {
+					@Override
+					public void onMouseOut(MouseOutEvent event) {
+						((P)event.getSource()).removeStyleName("hover");
+						GwtHint.hideHint();
+					}
+				});
+			}
+		}
+		Set<String> selected = new HashSet<String>();
+		for (Integer date: getDates())
+			for (Entity room: getRooms()) {
+				String selection = date + ":" + room.getUniqueId();
+				if (iSelected.contains(selection)) selected.add(selection);
+			}
+		iSelected = selected;
+		iAvailabilityHeader.setEnabled("select", !selected.isEmpty());
+		if (iHoverDate != null && iHoverLoc != null && iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()) == null) {
+			iHoverDate = null; iHoverLoc = null;
+		}
+	}
+	
+	private void populateVertical(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+		iResponse = response;
+		iIndex = index;
+		if (iIndex < 0) iIndex = 0;
+		if (iIndex >= getDates().size()) iIndex = iStep * (getDates().size() / iStep);
+		
+		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), iResponse);
+			if (comparator != null)
+				Collections.sort(iMatchingRooms, comparator);
+		}
+		
+		iAvailabilityHeader.setEnabled("prev", iIndex > 0);
+		iAvailabilityHeader.setEnabled("next", iIndex + iStep < getDates().size());
+		iRoomAvailability.clear();
+		iPanels.clear();
+		
+		P box = new P("box"); iRoomAvailability.add(box);
+		
+		P row = new P("row"); box.add(row);
+		
+		row.add(new P("corner"));
+		
+		for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
+			final Integer date = getDates().get(i);
+			final P day = new P("room");
+			final Date d = iDates.getDate(date);
+			day.setHTML(MESSAGES.dateTimeHeader(sDayOfWeek.format(d), sDateFormat.format(d), TimeUtils.slot2short(getStartSlot()), TimeUtils.slot2short(getEndSlot())));
+			row.add(day);
+			day.addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					((P)event.getSource()).addStyleName("hover");
+				}
+			});
+			day.addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					((P)event.getSource()).removeStyleName("hover");
+				}
+			});
+			day.addMouseDownHandler(new MouseDownHandler() {
+				@Override
+				public void onMouseDown(MouseDownEvent event) {
+					boolean selected = true;
+					for (Entity room: getRooms()) {
+						if (!isSelected(date, room)) {
+							selected = false;
+							setSelected(date, room, true);
 						}
-						GwtHint.showHint(p.getElement(), message);
+					}
+					if (selected) {
+						for (Entity room: getRooms()) {
+							setSelected(date, room, false);
+						}
+					}
+				}
+			});			
+		}
+		
+		for (int ri = 0; ri < getRooms().size(); ri++) {
+			row = new P("row"); box.add(row);
+			
+			final Entity room = getRooms().get(ri);
+			final P prm = new P("date");
+			prm.setHTML(MESSAGES.singleRoomSelection(room.getName(), room.getProperty("type", null), room.getProperty("capacity", null)));
+			prm.addMouseOverHandler(new MouseOverHandler() {
+				@Override
+				public void onMouseOver(MouseOverEvent event) {
+					((P)event.getSource()).addStyleName("hover");
+					RoomHint.showHint(prm.getElement(), room.getUniqueId(), "", room.getProperty("distance", ""));
+				}
+			});
+			prm.addMouseOutHandler(new MouseOutHandler() {
+				@Override
+				public void onMouseOut(MouseOutEvent event) {
+					((P)event.getSource()).removeStyleName("hover");
+					RoomHint.hideHint();
+				}
+			});
+			row.add(prm);
+			prm.addMouseDownHandler(new MouseDownHandler() {
+				@Override
+				public void onMouseDown(MouseDownEvent event) {
+					boolean selected = true;
+					for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
+						Integer date = getDates().get(i);
+						if (!isSelected(date, room)) {
+							selected = false;
+							setSelected(date, room, true);
+						}
+					}
+					if (selected) {
+						for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
+							Integer date = getDates().get(i);
+							setSelected(date, room, false);
+						}
+					}
+				}
+			});
+			
+			for (int i = iIndex; i < iIndex + iStep && i < getDates().size(); i++) {
+				final Integer date = getDates().get(i);
+				final Set<MeetingConflictInterface> conflicts = response.getOverlaps(date, Long.valueOf(room.getProperty("permId", null)));
+				final Date d = iDates.getDate(date);
+				
+				final P p = new P("cell");
+				
+				if (conflicts == null || conflicts.isEmpty()) {
+					p.addStyleName("free");
+				} else {
+					p.addStyleName("conflict");
+					p.setHTML(conflicts2html(conflicts));
+				}
+				
+				iPanels.put(date + ":" + room.getUniqueId(), p);
+				
+				p.addMouseDownHandler(new MouseDownHandler() {
+					@Override
+					public void onMouseDown(MouseDownEvent event) {
+						setSelected(date, room, !isSelected(date, room));
+					}
+				});
+				
+				if (isSelected(date, room))
+					p.addStyleName("selected");
+				
+				row.add(p);
+				
+				p.addMouseOverHandler(new MouseOverHandler() {
+					@Override
+					public void onMouseOver(MouseOverEvent event) {
+						if (iHoverDate != null && iHoverLoc != null) {
+							P p = iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId());
+							if (p != null) p.removeStyleName("hover");
+						}
+						((P)event.getSource()).addStyleName("hover");
+						iHoverDate = date;
+						iHoverLoc = room;
+						GwtHint.showHint(p.getElement(), conflicts2hint(room, d, conflicts));
 					}
 				});
 				
@@ -692,71 +916,141 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
     	super.onPreviewNativeEvent(event);
     	if (iResponse == null) return;
-    	int min = iIndex, max = Math.min(iIndex + iStep, getRooms().size()) - 1;
-    	if (event.getTypeInt() == Event.ONKEYDOWN) {
-        	switch (DOM.eventGetKeyCode((Event)event.getNativeEvent())) {
-        	case KeyCodes.KEY_DOWN:
-        		if (iHoverDate != null && iHoverLoc != null) {
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
-        			int idx = Math.min(Math.max(0, getDates().indexOf(iHoverDate) + 1), getDates().size() - 1);
-        			iHoverDate = getDates().get(idx);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		} else {
-        			iHoverDate = getDates().get(0);
-        			iHoverLoc = getRooms().get(min);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		}
-        		iScrollRooms.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
-        		break;
-        	case KeyCodes.KEY_UP:
-        		if (iHoverDate != null && iHoverLoc != null) {
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
-        			int idx = Math.min(Math.max(0, getDates().indexOf(iHoverDate) - 1), getDates().size() - 1);
-        			iHoverDate = getDates().get(idx);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		} else {
-        			iHoverDate = getDates().get(getDates().size() - 1);
-        			iHoverLoc = getRooms().get(min);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		}
-        		iScrollDates.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
-        		break;
-        	case KeyCodes.KEY_RIGHT:
-        		if (iHoverDate != null && iHoverLoc != null) {
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
-        			int idx = Math.min(Math.max(min, getRooms().indexOf(iHoverLoc) + 1), max);
-        			iHoverLoc = getRooms().get(idx);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		} else {
-        			iHoverDate = getDates().get(0);
-        			iHoverLoc = getRooms().get(min);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		}
-        		break;
-        	case KeyCodes.KEY_LEFT:
-        		if (iHoverDate != null && iHoverLoc != null) {
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
-        			int idx = Math.min(Math.max(min, getRooms().indexOf(iHoverLoc) - 1), max);
-        			iHoverLoc = getRooms().get(idx);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		} else {
-        			iHoverDate = getDates().get(0);
-        			iHoverLoc = getRooms().get(max);
-        			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
-        		}
-        		break;
-        	case KeyCodes.KEY_PAGEDOWN:
-        		if (iIndex + iStep < getRooms().size())
-        			populate(iResponse, iIndex + iStep, null);
-        		break;
-        	case KeyCodes.KEY_PAGEUP:
-        		if (iIndex > 0)
-        			populate(iResponse, iIndex - iStep, null);
-        		break;
-        	case 32:
-        		if (iHoverDate != null && iHoverLoc != null) {
-        			setSelected(iHoverDate, iHoverLoc, !isSelected(iHoverDate, iHoverLoc));
-        		}
+    	if (EventCookie.getInstance().areRoomsHorizontal()) {
+        	int min = iIndex, max = Math.min(iIndex + iStep, getRooms().size()) - 1;
+        	if (event.getTypeInt() == Event.ONKEYDOWN) {
+            	switch (DOM.eventGetKeyCode((Event)event.getNativeEvent())) {
+            	case KeyCodes.KEY_DOWN:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(0, getDates().indexOf(iHoverDate) + 1), getDates().size() - 1);
+            			iHoverDate = getDates().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(0);
+            			iHoverLoc = getRooms().get(min);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		iScrollRooms.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+            		break;
+            	case KeyCodes.KEY_UP:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(0, getDates().indexOf(iHoverDate) - 1), getDates().size() - 1);
+            			iHoverDate = getDates().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(getDates().size() - 1);
+            			iHoverLoc = getRooms().get(min);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		iScrollDates.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+            		break;
+            	case KeyCodes.KEY_RIGHT:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(min, getRooms().indexOf(iHoverLoc) + 1), max);
+            			iHoverLoc = getRooms().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(0);
+            			iHoverLoc = getRooms().get(min);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		break;
+            	case KeyCodes.KEY_LEFT:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(min, getRooms().indexOf(iHoverLoc) - 1), max);
+            			iHoverLoc = getRooms().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(0);
+            			iHoverLoc = getRooms().get(max);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		break;
+            	case KeyCodes.KEY_PAGEDOWN:
+            		if (iIndex + iStep < getRooms().size())
+            			populate(iResponse, iIndex + iStep, null);
+            		break;
+            	case KeyCodes.KEY_PAGEUP:
+            		if (iIndex > 0)
+            			populate(iResponse, iIndex - iStep, null);
+            		break;
+            	case 32:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			setSelected(iHoverDate, iHoverLoc, !isSelected(iHoverDate, iHoverLoc));
+            		}
+            	}
+        	}	
+    	} else {
+        	int min = iIndex, max = Math.min(iIndex + iStep, getDates().size()) - 1;
+        	if (event.getTypeInt() == Event.ONKEYDOWN) {
+            	switch (DOM.eventGetKeyCode((Event)event.getNativeEvent())) {
+            	case KeyCodes.KEY_RIGHT:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(min, getDates().indexOf(iHoverDate) + 1), max);
+            			iHoverDate = getDates().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(min);
+            			iHoverLoc = getRooms().get(0);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		iScrollRooms.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+            		break;
+            	case KeyCodes.KEY_LEFT:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(min, getDates().indexOf(iHoverDate) - 1), max);
+            			iHoverDate = getDates().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(max);
+            			iHoverLoc = getRooms().get(0);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		iScrollDates.ensureVisible(iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()));
+            		break;
+            	case KeyCodes.KEY_DOWN:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(0, getRooms().indexOf(iHoverLoc) + 1), getRooms().size());
+            			iHoverLoc = getRooms().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(min);
+            			iHoverLoc = getRooms().get(0);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		break;
+            	case KeyCodes.KEY_UP:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).removeStyleName("hover");
+            			int idx = Math.min(Math.max(0, getRooms().indexOf(iHoverLoc) - 1), getRooms().size());
+            			iHoverLoc = getRooms().get(idx);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		} else {
+            			iHoverDate = getDates().get(min);
+            			iHoverLoc = getRooms().get(getRooms().size() - 1);
+            			iPanels.get(iHoverDate + ":" + iHoverLoc.getUniqueId()).addStyleName("hover");
+            		}
+            		break;
+            	case KeyCodes.KEY_PAGEDOWN:
+            		if (iIndex + iStep < getDates().size())
+            			populate(iResponse, iIndex + iStep, null);
+            		break;
+            	case KeyCodes.KEY_PAGEUP:
+            		if (iIndex > 0)
+            			populate(iResponse, iIndex - iStep, null);
+            		break;
+            	case 32:
+            		if (iHoverDate != null && iHoverLoc != null) {
+            			setSelected(iHoverDate, iHoverLoc, !isSelected(iHoverDate, iHoverLoc));
+            		}
+            	}
         	}
     	}
     }

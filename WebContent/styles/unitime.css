@@ -1254,6 +1254,19 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	z-index: 1000000;
 }
 
+.unitime-PopupHint .table {
+	padding-left: 20px;
+}
+
+.unitime-PopupHint .table .row {
+	vertical-align: top;
+}
+
+.unitime-PopupHint .table .header {
+	font-style: italic;
+	border-bottom: 1px dashed #333333;
+}
+
 .unitime-PopupWarning {
 	position: absolute;
 	font-size: small;
@@ -2451,14 +2464,16 @@ div.gwt-MenuBarPopup {
 }
 
 .unitime-MeetingSelection .conflict .type {
-	padding-left: 10px;
+	padding-left: 5px;
 	font-style: italic;
 	color: #F99;
+	text-overflow: none;
 }
 
 .unitime-MeetingSelection .conflict .time {
-	padding-left: 10px;
+	padding-left: 5px;
 	color: #F99;
+	text-overflow: none; 
 }
 
 .unitime-MeetingSelection .date {

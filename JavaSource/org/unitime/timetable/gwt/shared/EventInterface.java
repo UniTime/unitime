@@ -664,7 +664,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private Long iEventId;
 		private String iEventName;
 		private EventType iEventType;
-		private Integer iLimit;
+		private Integer iLimit, iEnrollment;
+		private SponsoringOrganizationInterface iSponsor;
+		private List<ContactInterface> iInstructors;
 		
 		public MeetingConflictInterface() {}
 		
@@ -674,10 +676,42 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setName(String name) { iEventName = name; }
 		public EventType getType() { return iEventType; }
 		public void setType(EventType type) { iEventType = type; }
+		
 		public boolean hasLimit() { return iLimit != null; }
 		public Integer getLimit() { return iLimit; }
 		public void setLimit(Integer limit) { iLimit = limit; }
-		
+
+		public boolean hasEnrollment() { return iEnrollment != null; }
+		public Integer getEnrollment() { return iEnrollment; }
+		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+
+		public SponsoringOrganizationInterface getSponsor() { return iSponsor; }
+		public void setSponsor(SponsoringOrganizationInterface sponsor) { iSponsor = sponsor; }
+		public boolean hasSponsor() { return iSponsor != null; }
+
+		public List<ContactInterface> getInstructors() { return iInstructors; }
+		public void addInstructor(ContactInterface instructor) {
+			if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
+			iInstructors.add(instructor);
+		}
+		public String getInstructorNames(String separator, GwtMessages messages) { 
+			if (!hasInstructors()) return "";
+			String ret = "";
+			for (ContactInterface instructor: getInstructors()) {
+				ret += (ret.isEmpty() ? "" : separator) + instructor.getName(messages);
+			}
+			return ret;
+		}
+		public String getInstructorEmails(String separator) { 
+			if (!hasInstructors()) return "";
+			String ret = "";
+			for (ContactInterface instructor: getInstructors()) {
+				ret += (ret.isEmpty() ? "" : separator) + (instructor.getEmail() == null ? "" : instructor.getEmail());
+			}
+			return ret;
+		}
+		public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
+
 		public int compareTo(MeetingInterface conflict) {
 			int cmp = getType().compareTo(((MeetingConflictInterface)conflict).getType());
 			if (cmp != 0) return cmp;
