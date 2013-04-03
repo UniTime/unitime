@@ -31,6 +31,10 @@ import javax.naming.directory.InitialDirContext;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalUidLookup;
 
+@Deprecated
+/**
+ * @deprecated Use {@link org.unitime.timetable.spring.ldap.SpringLdapExternalUidLookup} instead.
+ */
 public class LdapExternalUidLookup implements ExternalUidLookup {
 	
     public DirContext getDirContext() throws NamingException {
