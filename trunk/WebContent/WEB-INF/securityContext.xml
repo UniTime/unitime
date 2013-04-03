@@ -77,6 +77,7 @@
 		</authentication-provider>
 		<!-- LDAP Authentication -->
 		<ldap-authentication-provider
+			server-ref="unitimeLdapContextSource"
 			user-dn-pattern="${unitime.authentication.ldap.user-dn-pattern}"
 			group-search-base="${unitime.authentication.ldap.group-search-base}"
 			group-role-attribute="${unitime.authentication.ldap.group-role-attribute}"
@@ -87,4 +88,14 @@
 		<authentication-provider ref="jaasAuthProvider"/>
 	</authentication-manager>
 	
+	<!-- LDAP People Lookup
+	<beans:bean id="ldapPeopleLookupSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<beans:property name="url" value="${tmtbl.lookup.ldap}" />
+      	<beans:property name="base" value="${tmtbl.lookup.ldap.name}" />
+	</beans:bean>
+	
+	<beans:bean id="ldapPeopleLookupTemplate" class="org.springframework.ldap.core.LdapTemplate">
+		<beans:constructor-arg ref="ldapPeopleLookupSource"/>
+	</beans:bean>
+	 -->
 </beans:beans>

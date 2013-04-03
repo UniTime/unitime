@@ -25,16 +25,18 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
-import javax.naming.Context;
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.ldap.core.AttributesMapper;
+import org.springframework.ldap.core.LdapTemplate;
+import org.springframework.ldap.core.support.LdapContextSource;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
@@ -65,7 +67,11 @@ import org.unitime.timetable.util.Constants;
 @GwtRpcImplements(PersonInterface.LookupRequest.class)
 public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface.LookupRequest, GwtRpcResponseList<PersonInterface>> {
 	private static Logger sLog = Logger.getLogger(PeopleLookupBackend.class);
-	private static ExternalUidTranslation iTranslation;
+	private ExternalUidTranslation iTranslation;
+	private LdapTemplate iLdapTemplate;
+	private SearchControls iSearchControls;
+	
+	private @Autowired ApplicationContext applicationContext;
     
 	public PeopleLookupBackend() {
         if (ApplicationProperties.getProperty("tmtbl.externalUid.translation")!=null) {
@@ -254,19 +260,47 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
         }
     }
     
-    protected void findPeopleFromLdap(Hashtable<String, PersonInterface> people, TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
-        if (ApplicationProperties.getProperty("tmtbl.lookup.ldap")==null) return;
-        InitialDirContext ctx = null;
-        try {
-            Hashtable<String,String> env = new Hashtable();
-            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-            env.put(Context.PROVIDER_URL, ApplicationProperties.getProperty("tmtbl.lookup.ldap"));
-            env.put(Context.REFERRAL, "ignore");
-            env.put("java.naming.ldap.version", "3");
-            env.put(Context.SECURITY_AUTHENTICATION, "simple");
-            ctx = new InitialDirContext(env);
-            SearchControls ctls = new SearchControls();
-            ctls.setCountLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.ldap.countLimit", "100")));
+	protected LdapTemplate getLdapTemplate() {
+		if (iLdapTemplate == null) {
+			try {
+				iLdapTemplate = applicationContext.getBean("ldapPeopleLookupTemplate", LdapTemplate.class);
+				if (iLdapTemplate != null) return iLdapTemplate;
+			} catch (BeansException e) {}
+			String url = ApplicationProperties.getProperty("tmtbl.lookup.ldap");
+			if (url == null) return null;
+			sLog.warn("Failed to located bean ldapPeopleLookupTemplate, creating the template manually.");
+			LdapContextSource source = new LdapContextSource();
+			source.setUrl(url);
+			source.setBase(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name", ""));
+			String user = ApplicationProperties.getProperty("tmtbl.lookup.ldap.user");
+			if (user != null) {
+				source.setUserDn(user);
+				String password = ApplicationProperties.getProperty("tmtbl.lookup.ldap.password");
+				if (password != null) source.setPassword(password);
+			} else {
+				source.setAnonymousReadOnly(true);
+			}
+			try {
+				source.afterPropertiesSet();
+			} catch (Exception e) {
+				sLog.error("Failed to initialze LDAP context source: " + e.getMessage(), e);
+			}
+			iLdapTemplate = new LdapTemplate(source);
+		}
+		return iLdapTemplate;
+	}
+	
+	protected SearchControls getSearchControls() {
+		if (iSearchControls == null) {
+			iSearchControls = new SearchControls();
+			iSearchControls.setCountLimit(Integer.parseInt(ApplicationProperties.getProperty("tmtbl.lookup.ldap.countLimit", "100")));
+		}
+		return iSearchControls;
+	}
+    
+    protected void findPeopleFromLdap(final Hashtable<String, PersonInterface> people, final TreeSet<PersonInterface> peopleWithoutId, String query) throws Exception {
+    	try {
+        	if (getLdapTemplate() == null) return;
             String filter = "";
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
                 String t = stk.nextToken().replace('_', '*').replace('%', '*');
@@ -275,35 +309,35 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
                 else
                     filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t)+")";
             }
-            for (NamingEnumeration<SearchResult> e=ctx.search(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name",""),filter,ctls);e.hasMore();) {
-            	Attributes a = e.next().getAttributes();
-                addPerson(people, peopleWithoutId, new PersonInterface(translate(getAttribute(a,"uid"), Source.LDAP),
-                        Constants.toInitialCase(getAttribute(a,"givenName")),
-                        Constants.toInitialCase(getAttribute(a,"cn")),
-                        Constants.toInitialCase(getAttribute(a,"sn")),
-                        getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")),
-                        getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.phone","phone,officePhone,homePhone,telephoneNumber")),
-                        Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.department","department"))),
-                        Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.position","position,title"))),
-                        "Directory"));
-            }
-        } catch (NamingException e) {
-        	sLog.warn("Unable to use lookup, error: " + e.getMessage(), e);
-        } finally {
-            try {
-                if (ctx!=null) ctx.close();
-            } catch (Exception e) {}
-        }
-    }
-    
-    protected static String getAttribute(Attributes attrs, String name) {
-        if (attrs==null) return null;
-        for (StringTokenizer stk = new StringTokenizer(name,",");stk.hasMoreTokens();) {
-            Attribute a = attrs.get(stk.nextToken());
-            try {
-                if (a!=null && a.get()!=null) return a.get().toString();
-            } catch (NamingException e) {}
-        }
-        return null;
+            getLdapTemplate().search("", filter, getSearchControls(), new AttributesMapper() {
+        		protected String getAttribute(Attributes attrs, String name) {
+        	        if (attrs==null) return null;
+        	        for (StringTokenizer stk = new StringTokenizer(name,",");stk.hasMoreTokens();) {
+        	            Attribute a = attrs.get(stk.nextToken());
+        	            try {
+        	                if (a!=null && a.get()!=null) return a.get().toString();
+        	            } catch (NamingException e) {
+        	            }
+        	        }
+        	        return null;
+        	    }
+    			@Override
+    			public Object mapFromAttributes(Attributes a) throws NamingException {
+    				PersonInterface person = new PersonInterface(translate(getAttribute(a,"uid"), Source.LDAP),
+                            Constants.toInitialCase(getAttribute(a,"givenName")),
+                            Constants.toInitialCase(getAttribute(a,"cn")),
+                            Constants.toInitialCase(getAttribute(a,"sn")),
+                            getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")),
+                            getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.phone","phone,officePhone,homePhone,telephoneNumber")),
+                            Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.department","department"))),
+                            Constants.toInitialCase(getAttribute(a,ApplicationProperties.getProperty("tmtbl.lookup.ldap.position","position,title"))),
+                            "Directory");
+    				addPerson(people, peopleWithoutId, person);
+    				return person;
+    			}
+    		});
+    	} catch (Exception e) {
+    		sLog.warn(e.getMessage());
+    	}
     }
 }
