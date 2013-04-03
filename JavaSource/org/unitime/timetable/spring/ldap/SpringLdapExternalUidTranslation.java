@@ -51,8 +51,6 @@ public class SpringLdapExternalUidTranslation implements ExternalUidTranslation 
 			SpringSecurityLdapTemplate template = new SpringSecurityLdapTemplate(source);
 			DirContextOperations user = template.retrieveEntry(query.replaceAll("\\{0\\}", uid), new String[] {externalIdAttribute});
 			
-			sLog.info(uid + " -> " + (user == null ? null : user.getStringAttribute(externalIdAttribute))); 
-			
 			return user == null ? null : user.getStringAttribute(externalIdAttribute);
 			
         } catch (Exception e) {
@@ -73,8 +71,6 @@ public class SpringLdapExternalUidTranslation implements ExternalUidTranslation 
 			
 			SpringSecurityLdapTemplate template = new SpringSecurityLdapTemplate(source);
 			DirContextOperations user = template.retrieveEntry(query.replaceAll("\\{0\\}", externalIdAttribute), new String[] {"uid"});
-			
-			sLog.info(externalUserId + " -> " + (user == null ? null : user.getStringAttribute("uid")));
 			
 			return user == null ? null : user.getStringAttribute("uid");
 
