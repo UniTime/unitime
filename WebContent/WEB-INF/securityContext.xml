@@ -56,7 +56,7 @@
 	</beans:bean>
 	
     <!-- LDAP Authentication -->
-    <ldap-server url="${unitime.authentication.ldap.url}"/>
+    <ldap-server url="${unitime.authentication.ldap.url}" id="unitimeLdapContextSource"/>
 	
 	<!-- Database Authentication -->
 	<beans:bean id="databaseAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">

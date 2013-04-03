@@ -32,6 +32,10 @@ import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
 
+@Deprecated
+/**
+ * @deprecated Use {@link org.unitime.timetable.spring.ldap.SpringLdapExternalUidTranslation} instead.
+ */
 public class LdapExternalUidTranslation implements ExternalUidTranslation {
     
     public String translate(String uid, Source source, Source target) {
