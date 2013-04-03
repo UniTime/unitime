@@ -30,6 +30,8 @@ public class EventCookie {
 	private String iHash = null;
 	private boolean iShowDeltedMeetings = true;
 	private int iSortRoomsBy = -1;
+	private boolean iRoomsHorizontal = true;
+	private boolean iExpandRoomConflicts = false;
 	private static EventCookie sInstance = null;
 	
 	private EventCookie() {
@@ -42,6 +44,8 @@ public class EventCookie {
 				iHash = params[2];
 				iShowDeltedMeetings = "T".equals(params[3]);
 				iSortRoomsBy = Integer.valueOf(params[4]);
+				iRoomsHorizontal = !"F".equals(params[5]);
+				iExpandRoomConflicts = "T".equals(params[6]);
 			}
 		} catch (Exception e) {
 		}
@@ -51,7 +55,9 @@ public class EventCookie {
 		Cookies.setCookie("UniTime:Event",
 				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash) +
 				"|" + (iShowDeltedMeetings ? "T": "F") +
-				"|" + iSortRoomsBy
+				"|" + iSortRoomsBy +
+				"|" + (iRoomsHorizontal ? "T" : "F") +
+				"|" + (iExpandRoomConflicts ? "T" : "F")
 				);
 	}
 	
@@ -96,6 +102,24 @@ public class EventCookie {
 	
 	public void setSortRoomsBy(int sortRoomsBy) {
 		iSortRoomsBy = sortRoomsBy;
+		save();
+	}
+	
+	public boolean areRoomsHorizontal() {
+		return iRoomsHorizontal;
+	}
+	
+	public void setRoomsHorizontal(boolean roomsHorizontal) {
+		iRoomsHorizontal = roomsHorizontal;
+		save();
+	}
+	
+	public boolean isExpandRoomConflicts() {
+		return iExpandRoomConflicts;
+	}
+	
+	public void setExpandRoomConflicts(boolean expandRoomConflicts) {
+		iExpandRoomConflicts = expandRoomConflicts;
 		save();
 	}
 }

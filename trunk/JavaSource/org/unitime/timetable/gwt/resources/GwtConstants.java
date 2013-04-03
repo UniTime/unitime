@@ -150,6 +150,11 @@ public interface GwtConstants extends Constants {
 	String[] eventTypeAbbv();
 	
 	@DefaultStringArrayValue({
+		"Class", "Final", "Midterm", "Course", "Special", "N/A", "Message"
+	})
+	String[] eventTypeShort();
+	
+	@DefaultStringArrayValue({
 		"Pending", "Approved", "Rejected", "Cancelled"
 	})
 	String[] eventApprovalStatus();
