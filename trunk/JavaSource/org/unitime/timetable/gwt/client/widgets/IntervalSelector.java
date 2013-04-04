@@ -273,16 +273,19 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			int idx = iPopupMenu.selectItem(parsed);
 			if (idx >= 0 && !parsed.isOne()) return true;
 			
-			idx = iPopupMenu.indexOf(new Interval(parsed.getFirst()));
-			
 			for (int i = iPopupMenu.getNumItems() - 1; i >= 0; i --) {
 				IntervalMenuItem item = (IntervalMenuItem)iPopupMenu.itemAt(i);
 				if (item.getInterval().getLast() != null)
 					iPopupMenu.removeItem(item);
 			}
-			for (int j = iValues.size() - 1; j > iValues.indexOf(parsed.getFirst()); j --) {
-				Interval multi = new Interval(parsed.getFirst(), iValues.get(j));
-				iPopupMenu.insertItem(new IntervalMenuItem(multi), idx + 1);
+
+			idx = iPopupMenu.indexOf(new Interval(parsed.getFirst()));
+			if (idx >= 0) {
+				for (int j = iValues.size() - 1; j > iValues.indexOf(parsed.getFirst()); j --) {
+					if (isFilterEnabled() && filter(iValues.get(j))) continue;
+					Interval multi = new Interval(parsed.getFirst(), iValues.get(j));
+					iPopupMenu.insertItem(new IntervalMenuItem(multi), idx + 1);
+				}
 			}
 			
 			return iPopupMenu.selectItem(parsed) >= 0;
@@ -312,10 +315,12 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		if (iValues == null) return null;
 		if (name == null || name.isEmpty()) return (iAllowMultiSelection ? new Interval() : null);
 		for (int i = 0; i < iValues.size(); i++) {
+			if (isFilterEnabled() && filter(iValues.get(i))) continue;
 			if (iValues.get(i).toString().toLowerCase().startsWith(name.toLowerCase()))
 				return new Interval(iValues.get(i));
 			if (iAllowMultiSelection)
 				for (int j = i + 1; j < iValues.size(); j++) {
+					if (isFilterEnabled() && filter(iValues.get(j))) continue;
 					if ((iValues.get(i) + " - " + iValues.get(j)).toLowerCase().startsWith(name.toLowerCase()))
 						return new Interval(iValues.get(i), iValues.get(j));
 					if ((iValues.get(i) + "-" + iValues.get(j)).toLowerCase().startsWith(name.toLowerCase()))
