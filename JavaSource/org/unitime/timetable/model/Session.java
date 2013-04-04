@@ -540,7 +540,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		cal.setTime(getSessionBeginDateTime());
 		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
 			return "'blue 2px solid'";
-		cal.setTime(getSessionEndDateTime());
+		cal.setTime(getClassesEndDateTime());
 		if (day==cal.get(Calendar.DAY_OF_MONTH) && ((12+month)%12)==cal.get(Calendar.MONTH))
 			return "'blue 2px solid'";
 		if (getExamBeginDate()!=null) {
