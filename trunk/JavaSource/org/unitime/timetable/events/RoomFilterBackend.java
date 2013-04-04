@@ -100,7 +100,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type")) {
 			Entity type = types.get(location.getRoomType().getUniqueId());
 			if (type == null) {
-				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel());
+				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", String.valueOf(location.getRoomType().getOrd()));
 				types.put(type.getUniqueId(), type);
 			}
 			type.incCount();
