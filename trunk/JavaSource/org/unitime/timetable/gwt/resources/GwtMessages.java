@@ -1271,6 +1271,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();
 	
+	@DefaultMessage("No start time is entered.")
+	String errorNoStartTime();
+	
+	@DefaultMessage("No end time is entered.")
+	String errorNoEndTime();
+	
 	@DefaultMessage("No rooms are matching the filter.")
 	String errorNoMatchingRooms();
 	
