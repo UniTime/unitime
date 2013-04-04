@@ -115,4 +115,8 @@ public class StartEndTimeSelector extends Composite implements HasValue<StartEnd
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
 	}
+	
+	public void setDiff(Integer diff) {
+		iEnd.setDiff(diff);
+	}
 }
