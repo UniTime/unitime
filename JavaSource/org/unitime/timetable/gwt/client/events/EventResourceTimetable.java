@@ -1502,6 +1502,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 
 			ResourceInterface first = null, last = null;
 			for (ResourceInterface e: getValues()) {
+				if (isFilterEnabled() && filter(e)) continue;
 				if (e.getName().equalsIgnoreCase(query)) return new Interval(e);
 				if (e.getName().toLowerCase().startsWith(query.toLowerCase())) {
 					if (first == null) first = e;
@@ -1510,6 +1511,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 					if (first != null) return new Interval(first, last);
 				}
 			}
+			if (first != null) return new Interval(first, last);
 			
 			Interval ret = super.parse(query);
 			return (ret == null ? new Interval() : ret);
