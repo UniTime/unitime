@@ -31,8 +31,10 @@ import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -224,6 +226,13 @@ public class EventDetail extends Composite {
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
 		ownersHeader.add(new UniTimeTableHeader(MESSAGES.colNote()));
 		iOwners.addRow(null, ownersHeader);
+		iOwners.addMouseClickListener(new UniTimeTable.MouseClickListener<EventInterface.RelatedObjectInterface>() {
+			@Override
+			public void onMouseClick(TableEvent<RelatedObjectInterface> event) {
+				if (event.getData() != null && event.getData().hasDetailPage())
+					UniTimeFrameDialog.openDialog(MESSAGES.dialogDetailsOf(event.getData().getName()), event.getData().getDetailPage() + "&menu=hide");
+			}
+		});
 		
 		iEnrollmentHeader = new UniTimeHeaderPanel(MESSAGES.sectEnrollments());
 		iEnrollments = new EnrollmentTable(false, true);

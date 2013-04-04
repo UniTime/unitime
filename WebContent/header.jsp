@@ -35,6 +35,7 @@
 	</div>
 	
 	<logic:equal name="showNavigation" value="true"> 
+		<% if (!"hide".equals(request.getParameter("menu"))) { %>
 		<tt:has-back>
 			<table border="0" width='100%'>
 				<tr>
@@ -46,4 +47,5 @@
 				</tr>
 			</table>
 		</tt:has-back>
+		<% } %>
 	</logic:equal>
