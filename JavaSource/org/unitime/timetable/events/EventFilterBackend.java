@@ -113,7 +113,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		all.setCount(((Number)query.select("count(distinct e)").exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue());
 		response.add("mode", all);
 		if (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null) {
-			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user").set("user", context.getUser().getExternalUserId())
+			int myCnt = ((Number)query.select("count(distinct e)").where("e.mainContact.externalUniqueId = :user and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)").set("user", context.getUser().getExternalUserId())
 					.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
 			Entity my = new Entity(1l, "My", "My Events"); my.setCount(myCnt);
 			response.add("mode", my);
@@ -294,7 +294,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		if (request.hasOption("mode")) {
 			String mode = request.getOption("mode");
 			if ("My Events".equals(mode) && context.isAuthenticated()) {
-				query.addWhere("mode", "e.mainContact.externalUniqueId = '" + context.getUser().getExternalUserId() + "'");
+				query.addWhere("mode", "e.mainContact.externalUniqueId = :Xowner and e.class not in (ClassEvent, FinalExamEvent, MidtermExamEvent)");
+				query.addParameter("mode", "Xowner", context.getUser().getExternalUserId());
 			} else if ("Approved Events".equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus = 1");
 			} else if ("Not Approved Events".equals(mode)) {
