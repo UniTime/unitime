@@ -827,7 +827,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			String[] mtgs = new String[] {"", "", "", "", "", "", ""};
 			String prevApproval = null;
 			String[] prev = null;
-			boolean prevPast = false;
+			String prevSpan = null;
 			allCancelledOrRejected = true;
 			boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
 			for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType())) {
@@ -859,8 +859,15 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						}
 					}
 				}
+				String span = "";
+				if (m.getApprovalStatus() == ApprovalStatus.Cancelled)
+					span = "cancelled-meeting";
+				else if (m.getApprovalStatus() == ApprovalStatus.Rejected)
+					span = "rejected-meeting";
+				else if (m.isPast())
+					span = "past-meeting";
 				for (int i = 0; i < mtgs.length; i++) {
-					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : ((m.isPast() ? "<span class='past-meeting'>" : "") + mtg[i] + (m.isPast() ? "</span>" : "")));
+					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
 				}
 				String thisApproval = (
 						m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
@@ -868,14 +875,14 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
 						"");
 							
-				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && prevPast == m.isPast() && prevApproval.equals(thisApproval) ? "" : 
+				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? "" : 
 						(m.getApprovalStatus() == ApprovalStatus.Approved ?
 						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 						event != null && event.getType() == EventType.Unavailabile ? "" : 
 						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
-				prev = mtg; prevPast = m.isPast(); prevApproval = thisApproval;
+				prev = mtg; prevSpan = span; prevApproval = thisApproval;
 				if (m.getApprovalStatus() != ApprovalStatus.Cancelled && m.getApprovalStatus() != ApprovalStatus.Rejected)
 					allCancelledOrRejected = false;
 			}
