@@ -80,6 +80,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 					related.setNote(course.getScheduleBookNote());
+					if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
+						related.setDetailPage("instructionalOfferingDetail.do?io=" + course.getInstructionalOffering().getUniqueId());
 				} else {
 					related.setType(RelatedObjectInterface.RelatedObjectType.Course);
 					related.setUniqueId(course.getUniqueId());
@@ -88,6 +90,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					related.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					related.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
 					related.setNote(course.getScheduleBookNote());
+					if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
+						related.setDetailPage("instructionalOfferingDetail.do?io=" + course.getInstructionalOffering().getUniqueId());
 				}
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.COURSE,
@@ -109,6 +113,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedOffering.addCourseName(course.getCourseName());
 				relatedOffering.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedOffering.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
+				if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
+					relatedOffering.setDetailPage("instructionalOfferingDetail.do?io=" + course.getInstructionalOffering().getUniqueId());
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.OFFERING,
 						course.getInstructionalOffering().getUniqueId(),
@@ -124,6 +130,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 			relatedCourse.addCourseName(course.getCourseName());
 			relatedCourse.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 			relatedCourse.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId()});
+			if (context.hasPermission(course.getInstructionalOffering(), Right.InstructionalOfferingDetail))
+				relatedCourse.setDetailPage("instructionalOfferingDetail.do?io=" + course.getInstructionalOffering().getUniqueId());
 			response.add(new RelatedObjectLookupRpcResponse(
 					RelatedObjectLookupRpcRequest.Level.COURSE,
 					course.getUniqueId(),
@@ -148,6 +156,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 					relatedConfig.addCourseName(course.getCourseName());
 					relatedConfig.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 					relatedConfig.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), config.getUniqueId()});
+					if (context.hasPermission(config.getInstructionalOffering(), Right.InstructionalOfferingDetail))
+						relatedCourse.setDetailPage("instructionalOfferingDetail.do?io=" + config.getInstructionalOffering().getUniqueId());
 					response.add(new RelatedObjectLookupRpcResponse(
 							RelatedObjectLookupRpcRequest.Level.CONFIG,
 							config.getUniqueId(),
@@ -199,6 +209,8 @@ public class RelatedObjectLookupBackend extends EventAction<RelatedObjectLookupR
 				relatedClass.addCourseName(course.getCourseName());
 				relatedClass.addCourseTitle(course.getTitle() == null ? "" : course.getTitle());
 				relatedClass.setSelection(new long[] {course.getSubjectArea().getUniqueId(), course.getUniqueId(), subpart.getUniqueId(), clazz.getUniqueId()});
+				if (context.hasPermission(clazz, Right.ClassDetail))
+					relatedClass.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 				response.add(new RelatedObjectLookupRpcResponse(
 						RelatedObjectLookupRpcRequest.Level.CLASS,
 						clazz.getUniqueId(),
