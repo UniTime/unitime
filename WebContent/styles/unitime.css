@@ -1593,6 +1593,25 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #606060;
 }
 
+.unitime-FilterBox .button-arrow {
+	color: #b0b0b0;
+	cursor: pointer;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 1px;
+	padding-right: 1px;
+	padding-top: 3px;
+	float: right;
+	vertical-align: bottom;
+	font-size: 8px;
+}
+
+.unitime-FilterBox .button-arrow:hover {
+	color: #606060;
+}
+
 .unitime-FilterBox .chip {
 	margin: 1px;
 	border-radius: 2px;
