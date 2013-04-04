@@ -598,6 +598,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 							LoadingWidget.getInstance().hide();
 							iMeetings.setMeetings(iEvent, result.getMeetings());
 							checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
+							showCreateButtonIfApplicable();
 						}
 					});
 				}
@@ -697,6 +698,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						}
 
 						iMeetings.setMeetings(iEvent, meetings);
+						showCreateButtonIfApplicable();
 						ValueChangeEvent.fire(iMeetings, iMeetings.getValue());
 						
 						if (hasSelection)
@@ -746,6 +748,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			@Override
 			public void onValueChange(ValueChangeEvent<List<EventMeetingRow>> event) {
 				checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
+				showCreateButtonIfApplicable();
 			}
 		});
 
@@ -1072,6 +1075,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 						LoadingWidget.getInstance().hide();
 						iMeetings.setMeetings(iEvent, result.getMeetings());
+						showCreateButtonIfApplicable();
 					}
 				});
 			}
@@ -1165,7 +1169,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		iHeader.setEnabled("delete", canDelete);
 		iHeader.setEnabled("cancel", canCancel);
-		iHeader.setEnabled("create", iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent());
+		showCreateButtonIfApplicable();
 		if (iEvent.getId() == null && (getProperties() == null || !getProperties().isCanAddEvent()))
 			UniTimeNotifications.warn(MESSAGES.warnCannotAddEvent(iSession.getAcademicSessionName()));
 		iHeader.setEnabled("update", iEvent.getId() != null);
@@ -1601,6 +1605,14 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		public String getRoomFilter();
 		public ContactInterface getMainContact();
 	}
+	
+	private void showCreateButtonIfApplicable() {
+		iHeader.setEnabled("create", iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent() && iMeetings.getRowCount() > 1);
+		if (iEvent.getId() == null && getProperties() != null && getProperties().isCanAddEvent() && getProperties().hasEmailConfirmation()) {
+			iEmailConfirmationHeader.setVisible(iMeetings.getRowCount() > 1);
+			iEmailConfirmationFooter.setVisible(iMeetings.getRowCount() > 1);
+		}
+	}
 
 
 	@Override
@@ -1612,6 +1624,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		case Delete:
 		case Cancel:
 			checkEnrollments(iCourses.getValue(), iMeetings.getMeetings());
+			showCreateButtonIfApplicable();
 			break;
 		case Modify:
 			iSelection = new ArrayList<MeetingInterface>();
