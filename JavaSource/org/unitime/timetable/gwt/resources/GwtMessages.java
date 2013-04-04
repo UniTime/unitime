@@ -1843,6 +1843,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Edit Script")
 	String dialogEditScript();
+	
+	@DefaultMessage("Details of {0}")
+	String dialogDetailsOf(String item);
 
 	@DefaultMessage("{0}<br>{1}<br>{2} seats")
 	String singleRoomSelection(String name, String type, String capacity);

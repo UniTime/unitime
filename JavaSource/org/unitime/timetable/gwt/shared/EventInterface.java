@@ -1047,6 +1047,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private List<String> iExternalIds;
     	private String iSectionNumber = null;
     	private long[] iSelection = null;
+    	private String iDetailPage = null;
 
     	public static enum RelatedObjectType {
     		Offering,
@@ -1067,6 +1068,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
     	public String getNote() { return iNote; }
     	public void setNote(String note) { iNote = note; }
+    	
+    	public boolean hasDetailPage() { return iDetailPage != null && !iDetailPage.isEmpty(); }
+    	public String getDetailPage() { return iDetailPage; }
+    	public void setDetailPage(String page) { iDetailPage = page; }
     	
     	public boolean hasCourseNames() { return iCourseNames != null && !iCourseNames.isEmpty(); }
     	public void addCourseName(String name) {
