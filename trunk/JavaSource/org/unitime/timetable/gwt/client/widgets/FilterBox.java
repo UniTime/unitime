@@ -200,8 +200,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		});
 		
         iAdd = new SimplePanel();
-        iAdd.getElement().setInnerHTML("+");
-        iAdd.addStyleName("button");
+        iAdd.getElement().setInnerHTML("&#9660;");
+        iAdd.addStyleName("button-arrow");
         add(iAdd);
 
 		iClear = new SimplePanel();
