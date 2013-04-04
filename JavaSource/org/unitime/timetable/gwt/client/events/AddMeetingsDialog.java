@@ -132,6 +132,12 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				if (iDates.getSelectedDaysCount() == 0) {
 					iDatesHeader.setErrorMessage(MESSAGES.errorNoDateSelected());
 					return;
+				} else if (getStartSlot() == null) {
+					iDatesHeader.setErrorMessage(MESSAGES.errorNoStartTime());
+					return;
+				} else if (getEndSlot() == null) {
+					iDatesHeader.setErrorMessage(MESSAGES.errorNoEndTime());
+					return;
 				}
 				LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 				iRooms.getElements(new AsyncCallback<List<Entity>>() {
@@ -454,7 +460,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	public void reset(String roomFilterValue, List<MeetingInterface> meetings) {
 		iMatchingRooms = null;
 		iDates.setValue(new ArrayList<Date>());
-		iTimes.setValue(new StartEndTimeSelector.StartEndTime(7*12 + 6, 17*12 + 6), true);
+		iTimes.setValue(null, true); iTimes.setDiff(12);
 		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue, true);
 		iSelected.clear();
 		if (meetings != null && !meetings.isEmpty()) {

@@ -348,6 +348,9 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			ValueChangeEvent.fire(this, value);
 	}
 	
+	public void setDiff(Integer diff) {
+		iDiff = diff;
+	}
 	
 	public static class TimeUtils {
 
