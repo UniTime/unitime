@@ -40,6 +40,7 @@ public class RoomHint {
 	private static long sLastLocationId = -1;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static boolean sShowHint = false;
 	
 	public static Widget content(RoomInterface.RoomHintResponse room, String prefix, String distance) {
 		SimpleForm form = new SimpleForm();
@@ -99,6 +100,7 @@ public class RoomHint {
 	
 	public static void showHint(final Element relativeObject, final long locationId, final String prefix, final String distance) {
 		sLastLocationId = locationId;
+		sShowHint = true;
 		RPC.execute(RoomInterface.RoomHintRequest.load(locationId), new AsyncCallback<RoomInterface.RoomHintResponse>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -106,13 +108,14 @@ public class RoomHint {
 			
 			@Override
 			public void onSuccess(RoomInterface.RoomHintResponse result) {
-				if (result != null && locationId == sLastLocationId)
+				if (result != null && locationId == sLastLocationId && sShowHint)
 					GwtHint.showHint(relativeObject, content(result, prefix, distance));
 			}
 		});
 	}
 	
 	public static void hideHint() {
+		sShowHint = false;
 		GwtHint.hideHint();
 	}
 		
