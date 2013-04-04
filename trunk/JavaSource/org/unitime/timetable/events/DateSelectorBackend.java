@@ -78,7 +78,7 @@ public class DateSelectorBackend extends EventAction<RequestSessionDetails, GwtR
 				if (compare(calendar.getTime(), session.getSessionBeginDateTime()) == 0)
 					m.setFlag(i, SessionMonth.Flag.START);
 
-				if (compare(calendar.getTime(), session.getSessionEndDateTime()) == 0)
+				if (compare(calendar.getTime(), session.getClassesEndDateTime()) == 0)
 					m.setFlag(i, SessionMonth.Flag.END);
 
 				for (Date finalDate: finals) {
