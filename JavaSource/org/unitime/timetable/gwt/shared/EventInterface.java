@@ -1399,6 +1399,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 				if (getUniqueId() < 0) {
 					return (e.getUniqueId() >= 0 ? -1 : e.getUniqueId().compareTo(getUniqueId()));
 				} else if (e.getUniqueId() < 0) return 1;
+				int cmp = getProperty("order", "").compareTo(e.getProperty("order", ""));
+				if (cmp != 0) return cmp;
 				return getName().compareToIgnoreCase(e.getName());
 			}
 			public String toString() { return getName(); }
