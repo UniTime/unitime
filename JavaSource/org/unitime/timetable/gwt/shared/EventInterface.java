@@ -48,7 +48,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private TreeSet<MeetingInterface> iMeetings = null;
 	private ContactInterface iContact;
 	private SponsoringOrganizationInterface iSponsor;
-	private List<ContactInterface> iInstructors, iAdditionalContacts;
+	private Set<ContactInterface> iInstructors;
+	private List<ContactInterface> iAdditionalContacts;
 	private String iLastChange = null;
 	private TreeSet<NoteInterface> iNotes;
 	
@@ -168,9 +169,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
 
-	public List<ContactInterface> getInstructors() { return iInstructors; }
+	public Set<ContactInterface> getInstructors() { return iInstructors; }
 	public void addInstructor(ContactInterface instructor) {
-		if (iInstructors == null) iInstructors = new ArrayList<ContactInterface>();
+		if (iInstructors == null) iInstructors = new TreeSet<ContactInterface>();
 		iInstructors.add(instructor);
 	}
 	public String getInstructorNames(String separator, GwtMessages messages) { 
@@ -876,7 +877,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
         return ret;
     }
     
-    public static class ContactInterface implements IsSerializable {
+    public static class ContactInterface implements IsSerializable, Comparable<ContactInterface> {
     	private String iFirstName, iMiddleName, iLastName;
     	private String iExternalId, iEmail, iPhone;
     	
@@ -945,6 +946,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		return (hasLastName() ? getLastName() : "") + (hasFirstName() || hasMiddleName() ?
     				", " + (hasFirstName() ? getFirstName() + (hasMiddleName() ? " " + getMiddleName() : "") : getMiddleName()) : "");
     	}
+
+		@Override
+		public int compareTo(ContactInterface c) {
+			return toString().compareToIgnoreCase(c.toString());
+		}
     }
     
     public static class SponsoringOrganizationInterface implements IsSerializable {
