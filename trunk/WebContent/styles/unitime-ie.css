@@ -49,3 +49,7 @@
 .unitime-RoomSharingWidget .box {
 	border-spacing: 0px;
 }
+
+.unitime-AriaHiddenLabel {
+	display: none;
+}

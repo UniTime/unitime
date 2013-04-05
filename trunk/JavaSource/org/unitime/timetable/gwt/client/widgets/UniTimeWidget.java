@@ -66,7 +66,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			if (iAriaLabel == null) {
 				iAriaLabel = DOM.createLabel();
 				iAriaLabel.setId(DOM.createUniqueId());
-				iAriaLabel.setClassName("unitime-AriaStatus");
+				iAriaLabel.setClassName("unitime-AriaHiddenLabel");
 				DOM.appendChild(getElement(), iAriaLabel);
 				Roles.getCheckboxRole().setAriaLabelledbyProperty(iWidget.getElement(), Id.of(iAriaLabel));
 			}
