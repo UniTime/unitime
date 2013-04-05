@@ -268,7 +268,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 
 		@Override
 		public void setValue(Boolean value, boolean fireEvents) {
-			if (iSelected == value || value == null) return;
+			if (iSelected == value || value == null || !isEnabled()) return;
 			iSelected = value;
 	    	if (iSelected)
 	    		addStyleName("selected");
