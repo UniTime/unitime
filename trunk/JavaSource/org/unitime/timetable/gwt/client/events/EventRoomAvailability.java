@@ -84,7 +84,6 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
@@ -186,7 +185,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iSessionRow = iFilter.addRow(MESSAGES.propAcademicSession(), iSession);
 		
 		iDates = new SessionDatesSelector(iSession);
-		ToolBox.setMaxWidth(iDates.getElement().getStyle(), Math.round(0.9 * Window.getClientWidth() - 120)+ "px");
+		ToolBox.setMaxWidth(iDates.getElement().getStyle(), Math.round(0.9 * ToolBox.getClientWidth() - 120)+ "px");
 		iFilter.addRow(MESSAGES.propDates(), iDates);
 		
 		iTimes = new StartEndTimeSelector(); iTimes.setDiff(12);
@@ -644,7 +643,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 			}
 
-			TimeGrid grid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / days.length), false, false, startHour, endHour);
+			TimeGrid grid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / days.length), false, false, startHour, endHour);
 			grid.setResourceType(ResourceType.ROOM);
 			grid.setSelectedWeeks(weeks);
 			List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(); rooms.add(room);
