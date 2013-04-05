@@ -24,6 +24,7 @@ import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculumProjectionRulesPage;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable;
+import org.unitime.timetable.gwt.client.events.EventRoomAvailability;
 import org.unitime.timetable.gwt.client.hql.SavedHQLPage;
 import org.unitime.timetable.gwt.client.reservations.ReservationEdit;
 import org.unitime.timetable.gwt.client.reservations.ReservationsPage;
@@ -121,6 +122,10 @@ public enum Pages {
 	scripts(new PageFactory() {
 		public Widget create() { return new ScriptPage(); }
 		public String name(GwtMessages messages) { return messages.pageScripts(); }
+		}),
+	availability(new PageFactory() {
+		public Widget create() { return new EventRoomAvailability(); }
+		public String name(GwtMessages messages) { return messages.pageEventRoomAvailability(); }
 		}),
 	;
 	

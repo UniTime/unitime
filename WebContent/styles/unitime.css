@@ -2997,3 +2997,26 @@ unitime-RoomSharingWidget .legend .blank {
 .unitime-SuggestBoxPopup .item-selected {
 	background-color: #92c1f0;
 }
+
+.unitime-RoomAvailabilityHeader {
+	width: 100%;
+	padding-top: 10px;
+	color: black;
+}
+
+.unitime-RoomAvailabilityHeader .name {
+	text-align: left;
+	font-weight: bold;
+	font-size: medium;
+}
+
+.unitime-RoomAvailabilityHeader .type {
+	text-align: center;
+	color: #6991CE;
+}
+
+.unitime-RoomAvailabilityHeader .size {
+	text-align: right;
+	font-style: italic;
+	color: #6991CE;
+}

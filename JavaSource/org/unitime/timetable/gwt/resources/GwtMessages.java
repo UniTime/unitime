@@ -1796,6 +1796,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Scripts")
 	String pageScripts();
 	
+	@DefaultMessage("Event Room Availability")
+	String pageEventRoomAvailability();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
