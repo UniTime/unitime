@@ -21,6 +21,7 @@ package org.unitime.timetable.events;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -270,6 +271,30 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 			if (last != null) {
 				query.addParameter("to", "Xto", last);
 				query.addWhere("to", "m.meetingDate <= :Xto");
+			}
+		}
+		if (request.hasOptions("dates")) {
+			List<Date> dates = new ArrayList<Date>();
+			String ids = "";
+			for (String d: request.getOptions("dates")) {
+				Date date = null;
+				try {
+					int dayOfYear = Integer.parseInt(d);
+					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
+				} catch (NumberFormatException f) {
+					try {
+						date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(d);
+					} catch (ParseException p) {}
+				}
+				if (date != null) {
+					ids += (ids.isEmpty() ? "" : ",") + ":Xdate" + dates.size();
+					dates.add(date);
+				}
+			}
+			if (!dates.isEmpty()) {
+				query.addWhere("dates", "m.meetingDate in (" + ids + ")");
+				for (int i = 0; i < dates.size(); i++)
+					query.addParameter("dates", "Xdate" + i, dates.get(i));
 			}
 		}
 		if (request.hasOptions("room")) {
