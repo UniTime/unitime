@@ -31,12 +31,16 @@ import java.util.TreeSet;
 
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
+import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -68,6 +72,8 @@ import org.unitime.timetable.util.Constants;
 
 @GwtRpcImplements(SaveEventRpcRequest.class)
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
+	private @Autowired ApplicationContext applicationContext;
+	
 	@Override
 	public SaveOrApproveEventRpcResponse execute(SaveEventRpcRequest request, EventContext context) {
 		if (request.getEvent().hasContact() && (request.getEvent().getContact().getExternalId() == null || !request.getEvent().getContact().getExternalId().equals(context.getUser().getExternalUserId()))) {
@@ -101,7 +107,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 		try {
 			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
 			Date now = new Date();
-	        String uname = EventPropertiesBackend.lookupMainContact(request.getSessionId(), context.getUser()).getShortName();
+			String uname = GwtRpcServlet.execute(new EventPropertiesRpcRequest(request.getSessionId()), applicationContext, context).getMainContact().getShortName();
 
 			Event event = null;
 			if (request.getEvent().getId() != null) {
