@@ -21,8 +21,11 @@ package org.unitime.timetable.events;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
+import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRequest;
@@ -44,15 +47,17 @@ import org.unitime.timetable.model.dao.StandardEventNoteDepartmentDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteGlobalDAO;
 import org.unitime.timetable.model.dao.StandardEventNoteSessionDAO;
 import org.unitime.timetable.security.Qualifiable;
+import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
-import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 
 @GwtRpcImplements(EventPropertiesRpcRequest.class)
 public class EventPropertiesBackend extends EventAction<EventPropertiesRpcRequest, EventPropertiesRpcResponse>{
 
+	private @Autowired ApplicationContext applicationContext;
+	
 	@Override
 	public EventPropertiesRpcResponse execute(EventPropertiesRpcRequest request, EventContext context) {
 		EventPropertiesRpcResponse response = new EventPropertiesRpcResponse();
@@ -77,7 +82,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		setupSponsoringOrganizations(session,  response);
 		
 		if (context.getUser() != null)
-			response.setMainContact(lookupMainContact(request.getSessionId(), context.getUser()));
+			response.setMainContact(lookupMainContact(request.getSessionId(), context));
 		
 		setupStandardNotes(request.getSessionId(), context.getUser(), response);
 		
@@ -94,7 +99,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		}
 	}
 	
-	public static ContactInterface lookupMainContact(Long sessionId, UserContext user) {
+	public ContactInterface lookupMainContact(Long sessionId, SessionContext context) {
+		UserContext user = context.getUser();
 		org.hibernate.Session hibSession = EventContactDAO.getInstance().getSession();
 		EventContact contact = (EventContact)hibSession.createQuery(
 				"from EventContact where externalUniqueId = :userId"
@@ -158,8 +164,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			return c;
 		}
 		if (user.getName() != null && !user.getName().isEmpty()) {
-			List<PersonInterface> people = new PeopleLookupBackend().execute(
-					new PersonInterface.LookupRequest(user.getName(), "mustHaveExternalId,session=" + sessionId), null);
+			List<PersonInterface> people = GwtRpcServlet.execute(new PersonInterface.LookupRequest(user.getName(), "mustHaveExternalId,session=" + sessionId), applicationContext, null);
 			if (people != null) {
 				for (PersonInterface person: people) {
 					if (user.getExternalUserId().equals(person.getId())) {

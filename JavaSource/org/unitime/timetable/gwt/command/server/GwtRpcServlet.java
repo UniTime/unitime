@@ -29,6 +29,8 @@ import net.sf.cpsolver.ifs.util.JProf;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.unitime.localization.impl.Localization;
@@ -76,9 +78,37 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		if (iSaver != null) iSaver.interrupt();
 	}
 	
+	public static <T extends GwtRpcResponse> GwtRpcImplementation<GwtRpcRequest<T>, T> getImplementation(Class<? extends GwtRpcRequest<T>> requestClass, ApplicationContext applicationContext) throws BeansException {
+		return (GwtRpcImplementation<GwtRpcRequest<T>, T>)applicationContext.getBean(requestClass.getName());
+	}
+	
 	protected <T extends GwtRpcResponse> GwtRpcImplementation<GwtRpcRequest<T>, T> getImplementation(GwtRpcRequest<T> request) throws Exception {
-		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-		return (GwtRpcImplementation<GwtRpcRequest<T>, T>)applicationContext.getBean(request.getClass().getName());
+		return getImplementation((Class<GwtRpcRequest<T>>)request.getClass(), WebApplicationContextUtils.getWebApplicationContext(getServletContext()));
+	}
+	
+	public static <T extends GwtRpcResponse> T execute(GwtRpcRequest<T> request, ApplicationContext applicationContext, SessionContext sessionContext) throws GwtRpcException {
+		try {
+			// retrieve implementation from given request
+			GwtRpcImplementation<GwtRpcRequest<T>, T> implementation = getImplementation((Class<GwtRpcRequest<T>>)request.getClass(), applicationContext);
+			
+			// execute request
+			T response = implementation.execute(request, sessionContext);
+			
+			// return response
+			return response;
+		} catch (Throwable t) {
+			// re-throw exception as GwtRpcException or IsSerializable runtime exception
+			if (t instanceof GwtRpcException) {
+				sLog.info("Seen server exception: " + t.getMessage(), t);
+				throw (GwtRpcException)t;
+			}
+			if (t instanceof IsSerializable) {
+				sLog.warn("Seen server exception: " + t.getMessage(), t);
+				throw new GwtRpcException(t.getMessage(), t);
+			}
+			sLog.error("Seen exception: " + t.getMessage(), t);
+			throw new GwtRpcException(t.getMessage());
+		}
 	}
 	
 	@Override
