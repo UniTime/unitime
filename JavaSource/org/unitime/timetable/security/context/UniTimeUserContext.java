@@ -221,6 +221,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 		} finally {
 			hibSession.close();
 		}
+		if (iName == null) iName = iLogin;
 	}
 	
 	public static Session defaultSession(TreeSet<Session> sessions, HasRights role) {
