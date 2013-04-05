@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.events;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 
@@ -26,8 +29,7 @@ import com.google.gwt.user.client.Cookies;
 
 public class EventCookie {
 	private int iFlags = EventInterface.sDefaultEventFlags;
-	private String iType = null;
-	private String iHash = null;
+	private Map<String, String> iHash = new HashMap<String, String>();
 	private boolean iShowDeltedMeetings = true;
 	private int iSortRoomsBy = -1;
 	private boolean iRoomsHorizontal = true;
@@ -39,26 +41,31 @@ public class EventCookie {
 			String cookie = Cookies.getCookie("UniTime:Event");
 			if (cookie != null) {
 				String[] params = cookie.split("\\|");
-				iFlags = Integer.parseInt(params[0]);
-				iType = params[1];
-				iHash = params[2];
-				iShowDeltedMeetings = "T".equals(params[3]);
-				iSortRoomsBy = Integer.valueOf(params[4]);
-				iRoomsHorizontal = !"F".equals(params[5]);
-				iExpandRoomConflicts = "T".equals(params[6]);
+				int idx = 0;
+				iFlags = Integer.parseInt(params[idx++]);
+				iShowDeltedMeetings = "T".equals(params[idx++]);
+				iSortRoomsBy = Integer.valueOf(params[idx++]);
+				iRoomsHorizontal = !"F".equals(params[idx++]);
+				iExpandRoomConflicts = "T".equals(params[idx++]);
+				while (idx < params.length) {
+					String hash = params[idx++];
+					int colon = hash.indexOf(':');
+					iHash.put(hash.substring(0, colon), hash.substring(colon + 1));
+				}
 			}
 		} catch (Exception e) {
 		}
 	}
 	
 	private void save() {
-		Cookies.setCookie("UniTime:Event",
-				String.valueOf(iFlags) + "|" + (iType == null ? "" : iType) + "|" + (iHash == null ? "" : iHash) +
+		String cookie = String.valueOf(iFlags) + 
 				"|" + (iShowDeltedMeetings ? "T": "F") +
 				"|" + iSortRoomsBy +
 				"|" + (iRoomsHorizontal ? "T" : "F") +
-				"|" + (iExpandRoomConflicts ? "T" : "F")
-				);
+				"|" + (iExpandRoomConflicts ? "T" : "F");
+		for (Map.Entry<String, String> entry: iHash.entrySet())
+			cookie += "|" + entry.getKey() + ":" + entry.getValue();
+		Cookies.setCookie("UniTime:Event", cookie);
 	}
 	
 	public static EventCookie getInstance() { 
@@ -75,15 +82,16 @@ public class EventCookie {
 	public int getFlags() { return iFlags; }
 	
 	public boolean hasHash(String type) {
-		return type.equals(iType) && iHash != null && !iHash.isEmpty();
+		String hash = getHash(type);
+		return hash != null && !hash.isEmpty();
 	}
 	
 	public String getHash(String type) {
-		return (type.equals(iType) ? iHash : null);
+		return iHash.get(type);
 	}
 	
 	public void setHash(String type, String hash) {
-		iType = type; iHash = hash;
+		iHash.put(type, hash);
 		save();
 	}
 	
