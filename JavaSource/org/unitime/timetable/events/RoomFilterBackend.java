@@ -62,6 +62,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 	private DistanceMetric iMetrics;
 	private static double EPSILON = 0.000001;
 	private static DecimalFormat sCDF = new DecimalFormat("0.000000");
+	private static DecimalFormat sNF = new DecimalFormat("0000");
 	
 	private static enum Size {
 		eq, lt, gt, le, ge
@@ -100,7 +101,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		for (Location location: locations(request.getSessionId(), request.getOptions(), null, -1, null, "type")) {
 			Entity type = types.get(location.getRoomType().getUniqueId());
 			if (type == null) {
-				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", String.valueOf(location.getRoomType().getOrd()));
+				type = new Entity(location.getRoomType().getUniqueId(), location.getRoomType().getReference(), location.getRoomType().getLabel(), "order", sNF.format(location.getRoomType().getOrd()));
 				types.put(type.getUniqueId(), type);
 			}
 			type.incCount();
