@@ -447,24 +447,13 @@
 				<hasPermission name="Rooms"/>
 			</condition>
 		</separator>
-		<item name="Events" page="events" type="gwt">
-			<!-- <parameter name="tab">1</parameter> -->
-		</item>
-		<!-- 
-		<item name="Meetings" page="events" type="gwt">
-			<parameter name="tab">2</parameter>
-		</item>
-		-->
+		<item name="Events" page="events" type="gwt"/>
 		<item name="Add Event" page="events#event=add" type="gwt">
 			<condition>
 				<hasPermission name="EventAddSpecial" authority="any"/>
 			</condition>
 		</item>
-		<!-- 
-		<item name="Room Availability" page="events" type="gwt">
-			<parameter name="tab">0</parameter>
-		</item>
-		 -->
+		<item name="Room Availability" page="availability" type="gwt"/>
 		<separator/>
 		<item name="Timetable" page="timetable" type="gwt"/>
 		<item name="Reports" page="hql" type="gwt">

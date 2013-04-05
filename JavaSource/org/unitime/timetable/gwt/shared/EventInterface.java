@@ -487,6 +487,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
 		
+		public int getLastDayOfYear() {
+			if (iDayNames.isEmpty()) return getDayOfYear() + 6;
+			return Math.max(getDayOfYear() + 6, iDayNames.get(iDayNames.size() - 1).getDay());
+		}
+		
 		public void addDayName(DateInterface name) { iDayNames.add(name); }
 		public List<DateInterface> getDayNames() { return iDayNames; }
 		
@@ -1179,6 +1184,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public Set<ResourceInterface> getLocations() { return iLocations; }
 		public void addLocation(ResourceInterface location) { iLocations.add(location); }
+		
+		public String toString() { 
+			return "Selection{days:" + getDays() + ", start:" + getStartSlot() + ", length:" + getLength() + ", rooms:" + getLocations() + "}";
+		}
 	}
 	
 	public static abstract class EventRpcRequest<T extends GwtRpcResponse> implements GwtRpcRequest<T> {
@@ -1486,9 +1495,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public static EventLookupRpcRequest findEvents(Long sessionId, ResourceInterface resource, EventFilterRpcRequest eventFilter, RoomFilterRpcRequest roomFilter, int limit) {
 			EventLookupRpcRequest request = new EventLookupRpcRequest();
 			request.setSessionId(sessionId);
-			request.setResourceType(resource.getType());
-			request.setResourceId(resource.getId());
-			request.setResourceExternalId(resource.getExternalId());
+			if (resource != null) {
+				request.setResourceType(resource.getType());
+				request.setResourceId(resource.getId());
+				request.setResourceExternalId(resource.getExternalId());
+			} else {
+				request.setResourceType(ResourceType.ROOM);
+			}
 			request.setEventFilter(eventFilter);
 			request.setRoomFilter(roomFilter);
 			request.setLimit(limit);
@@ -1740,7 +1753,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class RelatedObjectLookupRpcRequest extends EventRpcRequest<GwtRpcResponseList<RelatedObjectLookupRpcResponse>> {
-		public static enum Level {
+		public static enum Level implements IsSerializable {
 			SESSION,
 			SUBJECT,
 			OFFERING,

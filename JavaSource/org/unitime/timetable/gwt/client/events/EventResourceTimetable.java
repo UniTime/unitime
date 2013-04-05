@@ -178,20 +178,21 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private List<SessionMonth> iSessionMonths = null;
 	
 	public static enum PageType {
-		Timetable("tab", "0", "title", "Event Timetable", "rooms", ""),
-		Events("filter", "events", "rooms", "flag:Event", "events", "mode:\"My Events\"", "type", "room", "title", "Events",
+		Timetable("tab", "0", "title", MESSAGES.pageEventTimetable(), "rooms", ""),
+		Events("filter", "events", "rooms", "flag:Event", "events", "mode:\"My Events\"", "type", "room", "title", MESSAGES.pageEvents(),
 				"fixedTitle", "true", "fixedType", "true", "tab", "1"),
-		RoomTimetable("type", "room", "fixedType", "true", "title", "Room Timetable"),
+		RoomTimetable("type", "room", "fixedType", "true", "title", MESSAGES.pageRoomTimetable()),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
-				"rooms", "", "title", "Classes", "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
+				"rooms", "", "title", MESSAGES.pageClasses(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
 		Exams(
 				"type", "subject", "fixedType", "true", "events", "type:\"Final Exam\" type:\"Midterm Exam\"",
-				"tab", "1", "filter", "exams", "rooms", "", "title", "Examinations", "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
+				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
 		Personal(
-				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", "Personal Timetable",
+				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", MESSAGES.pagePersonalTimetable(),
 				"addEvent", "false", "fixedTitle", "true", "showFilter", "false"
-				);
+				),
+		Availability("title", MESSAGES.pageEventRoomAvailability(), "rooms", "flag:Event");
 		
 		
 		String[] iParams = null; 
@@ -373,7 +374,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public void onValueChange(ValueChangeEvent<WeekSelector.Interval> e) {
 				iLocDate = iWeekPanel.getSelection();
-				tabOrDataChanged();
+				tabOrDataChanged(true);
 			}
 		});
 		iWeekPanel.setFilter(new WeekSelector.Filter<WeekInterface>() {
@@ -405,7 +406,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iTabBar.addSelectionHandler(new SelectionHandler<Integer>() {
 			@Override
 			public void onSelection(SelectionEvent<Integer> event) {
-				tabOrDataChanged();
+				tabOrDataChanged(true);
 			}
 		});
 		
@@ -466,7 +467,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public void onValueChange(ValueChangeEvent<IntervalSelector<ResourceInterface>.Interval> e) {
 				iLocRoom = iRoomPanel.getSelection();
-				tabOrDataChanged();
+				tabOrDataChanged(true);
 			}
 		});
 
@@ -900,7 +901,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		return iTabBar.getSelectedTab();
 	}
 	
-	private void tabOrDataChanged() {
+	private void tabOrDataChanged(boolean keepSelection) {
 		if (iTimeGrid != null) iTimeGrid.hideSelectionPopup();
 		if (iTable != null) iTable.clearHover();
 		if (getSelectedTab() == 0) {
@@ -933,8 +934,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			int lastHour = 1 + (lastSlot - 1) / 12;
 			if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 			HashMap<Long, String> colors = new HashMap<Long, String>();
-			
-			if (iTimeGrid != null) iTimeGrid.destroy();
+			List<SelectionInterface> selections = null;
+
+			if (iTimeGrid != null) {
+				if (keepSelection) selections = iTimeGrid.getSelections();
+				iTimeGrid.destroy();
+			}
 			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 
@@ -942,6 +947,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iTimeGrid.setResourceType(getResourceType());
 			iTimeGrid.setSelectedWeeks(iWeekPanel.getSelected());
 			iTimeGrid.setRoomResources(iRoomPanel.getSelected());
+			if (selections != null) iTimeGrid.getSelections().addAll(selections);
 			iTimeGrid.setMode(gridMode());
 			int first = iWeekPanel.getFirstDayOfYear(), last = iWeekPanel.getLastDayOfYear();
 			for (EventInterface event: sortedEvents()) {
@@ -1250,8 +1256,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iHeader.setErrorMessage(MESSAGES.warnTooManyMeetings(CONSTANTS.maxMeetings()));
 		else
 			iHeader.clearMessage();
-				
-		tabOrDataChanged();
+		
+		tabOrDataChanged(false);
 							
 		showResults();
 		
