@@ -80,11 +80,13 @@ public class SavedHqlExportToCSV implements Exporter {
 			int i = 0;
 			for (SavedHQL.Option o: SavedHQL.Option.values()) {
 				if (!o.allowSingleSelection() && !o.allowMultiSelection()) continue;
-				SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
-				v.setValue(o.name());
-				v.setText(i < p.length ? p[i] : "");
-				params.add(v);
-				i++;
+				if (q.getQuery().contains("%" + o.name() + "%")) {
+					SavedHQLInterface.IdValue v = new SavedHQLInterface.IdValue();
+					v.setValue(o.name());
+					v.setText(i < p.length ? p[i] : "");
+					params.add(v);
+					i++;
+				}
 			}
 		}
 		
