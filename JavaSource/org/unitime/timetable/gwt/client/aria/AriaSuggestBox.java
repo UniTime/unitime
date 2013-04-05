@@ -29,7 +29,6 @@ import com.google.gwt.aria.client.Id;
 import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.HandlesAllKeyEvents;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -253,7 +252,6 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 			super(true);
 			setStyleName("");
 			setFocusOnHoverEnabled(false);
-			DOM.getChild(getElement(), 1).getStyle().setWidth(100, Unit.PCT);
 		}
 		
 		public int getNumItems() {

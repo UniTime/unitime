@@ -133,7 +133,7 @@ public class SuggestionsBox extends UniTimeDialogBox {
 		iFilterPanel.add(iFilter);
 		
 		HTML ariaDescription = new HTML(MESSAGES.suggestionsFilterHint(), false);
-		ariaDescription.setStyleName("unitime-AriaStatus");
+		ariaDescription.setStyleName("unitime-AriaHiddenLabel");
 		ariaDescription.getElement().setId(DOM.createUniqueId());
 		iFilterPanel.add(ariaDescription);
 		Roles.getTextboxRole().setAriaDescribedbyProperty(iFilter.getElement(), Id.of(ariaDescription.getElement()));
