@@ -940,7 +940,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (keepSelection) selections = iTimeGrid.getSelections();
 				iTimeGrid.destroy();
 			}
-			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * Window.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+			iTimeGrid = new TimeGrid(colors, days, (int)(0.9 * ToolBox.getClientWidth() / nrDays), false, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 			iTimeGrid.addMeetingClickHandler(iMeetingClickHandler);
 
 			iTimeGrid.clear();
