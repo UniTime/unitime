@@ -785,7 +785,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("E<u>x</u>port")
 	String buttonExport();
 	
-	@DefaultMessage("M<u>o</u>re&nbsp;&or;")
+	@DefaultMessage("M<u>o</u>re<span class='unitime-ButtonArrow'>&#9660;</span>")
 	String buttonMoreOperations();
 
 	@DefaultMessage("<u>U</u>pdate")
@@ -830,7 +830,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>S</u>elect")
 	String buttonSelect();
 	
-	@DefaultMessage("S<u>o</u>rt&nbsp;by&nbsp;&or;")
+	@DefaultMessage("S<u>o</u>rt&nbsp;by<span class='unitime-ButtonArrow'>&#9660;</span>")
 	String buttonSortBy();
 	
 	@DefaultMessage("<u>A</u>dd")
@@ -851,7 +851,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>C</u>lose")
 	String buttonClose();
 	
-	@DefaultMessage("Curricula&nbsp;<u>O</u>perations&nbsp;&or;")
+	@DefaultMessage("Curricula&nbsp;<u>O</u>perations<span class='unitime-ButtonArrow'>&#9660;</span>")
 	String buttonCurriculaOperations();
 	
 	@DefaultMessage("E<u>x</u>ecute")
