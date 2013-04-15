@@ -3020,3 +3020,10 @@ unitime-RoomSharingWidget .legend .blank {
 	font-style: italic;
 	color: #6991CE;
 }
+
+.unitime-ButtonArrow {
+	position: relative;
+	font-size: 8px;
+	margin-left: 5px;
+	top: -0.1em;
+}
