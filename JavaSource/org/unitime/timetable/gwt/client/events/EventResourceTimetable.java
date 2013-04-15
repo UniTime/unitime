@@ -1203,7 +1203,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						new AsyncCallback<GwtRpcResponseList<EventInterface>>() {
 					@Override
 					public void onSuccess(GwtRpcResponseList<EventInterface> result) {
-						populate(result);
+						if (result != null) populate(result);
 						iApproveDialog.reset(iProperties);
 					}
 			
