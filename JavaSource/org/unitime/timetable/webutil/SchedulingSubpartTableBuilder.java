@@ -62,12 +62,7 @@ public class SchedulingSubpartTableBuilder {
             HttpServletRequest request, SessionContext context, int limit, String uid, boolean createAsNew, boolean unlimitedEnroll) throws Exception {
         
         // Check if variable limits is selected 
-		boolean varLimits = false;
-		if (request.getParameter("varLimits")!=null)
-		    varLimits = true;
-		
-		if (CommonValues.Yes.eq(UserProperty.VariableClassLimits.get(context.getUser())))
-			varLimits = true;
+		boolean varLimits = "y".equals(request.getParameter("varLimits"));
 		
         // Read user defined config
         Vector sp = (Vector) context.getAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME);
