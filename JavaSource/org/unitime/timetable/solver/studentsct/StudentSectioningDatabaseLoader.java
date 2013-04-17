@@ -406,6 +406,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    if (!c.isEnabledForStudentScheduling()) limit = 0;
                     Section section = new Section(c.getUniqueId().longValue(), limit, (c.getExternalUniqueId() == null ? c.getClassSuffix() == null ? c.getSectionNumberString() : c.getClassSuffix() : c.getExternalUniqueId()), subpart, p,
                     		getInstructorIds(c), getInstructorNames(c), parentSection);
                     class2section.put(c.getUniqueId(), section);

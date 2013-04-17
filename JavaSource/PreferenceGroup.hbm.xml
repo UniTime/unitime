@@ -333,7 +333,7 @@
                 length="10"/>
 
             <property
-                name="displayInScheduleBook"
+                name="enabledForStudentScheduling"
                 type="java.lang.Boolean"
                 column="display_in_sched_book"
                 not-null="true"/>

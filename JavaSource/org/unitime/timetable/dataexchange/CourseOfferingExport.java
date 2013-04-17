@@ -266,7 +266,8 @@ public class CourseOfferingExport extends BaseExport {
             classElement.addAttribute("limit", String.valueOf(clazz.getClassLimit()));
         if (clazz.getSchedulePrintNote()!=null)
             classElement.addAttribute("scheduleNote", clazz.getSchedulePrintNote());
-        classElement.addAttribute("displayInScheduleBook", clazz.isDisplayInScheduleBook()?"true":"false");
+        classElement.addAttribute("studentScheduling", clazz.isEnabledForStudentScheduling()?"true":"false");
+        classElement.addAttribute("displayInScheduleBook", clazz.isEnabledForStudentScheduling()?"true":"false");
         for (Iterator i=clazz.getChildClasses().iterator();i.hasNext();) {
             Class_ childClazz = (Class_)i.next();
             exportClass(classElement.addElement("class"), childClazz, session);

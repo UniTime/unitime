@@ -294,6 +294,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
                 		limit = Math.min(Math.max(minLimit, roomLimit), maxLimit);
                 	}
                     if (ioc.isUnlimitedEnrollment() || limit >= 9999) limit = -1;
+                    if (!c.isEnabledForStudentScheduling()) limit = 0;
                     String instructorIds = "";
                     String instructorNames = "";
                     for (Iterator<ClassInstructor> k = c.getClassInstructors().iterator(); k.hasNext(); ) {

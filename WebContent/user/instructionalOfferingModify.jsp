@@ -49,7 +49,7 @@
 	
 	function updateSubpartTotal(subpartIndex) {
 	    displayInstructors = document.getElementsByName('displayDisplayInstructors')[0].value;
-	    displayInSchedule = document.getElementsByName('displayDisplayInSchedule')[0].value;
+	    displayEnabledForStudentScheduling = document.getElementsByName('displayEnabledForStudentScheduling')[0].value;
 
 		subtotalName='subtotalIndexes['+subpartIndex+']';
 		origLimitName='origMinLimit['+subpartIndex+']';
@@ -57,7 +57,7 @@
 		totalIndex=document.getElementsByName(subtotalName)[0].value;
 		subtotalValueName='subtotalValues['+totalIndex+']';
 		subtotalValueName1='subtotal1Values'+totalIndex;
-		if (displayInstructors != 'false' || displayInSchedule != 'false') {
+		if (displayInstructors != 'false' || displayEnabledForStudentScheduling != 'false') {
 			subtotalValueName2='subtotal2Values' + totalIndex;
 		}
 		origTotal=document.getElementsByName(subtotalValueName)[0].value;
@@ -68,7 +68,7 @@
 		newTotal=origTotal-origSubpartLimit+(newSubpartLimit-0);
 		document.getElementsByName(subtotalValueName)[0].value=newTotal;
 		document.getElementById(subtotalValueName1).innerHTML=newTotal;
-		if (displayInstructors != 'false' || displayInSchedule != 'false') {
+		if (displayInstructors != 'false' || displayEnabledForStudentScheduling != 'false') {
 			document.getElementById(subtotalValueName2).innerHTML=newTotal; 
 		}
 		document.getElementsByName(origLimitName)[0].value=newSubpartLimit;
@@ -128,7 +128,7 @@
 	<html:hidden property="displayEnrollment"/>
 	<html:hidden property="displayExternalId"/>
 	<html:hidden property="displayDisplayInstructors"/>
-	<html:hidden property="displayDisplayInSchedule"/>
+	<html:hidden property="displayEnabledForStudentScheduling"/>
 	<INPUT type="hidden" name="hdnOp" value = "">
 	<INPUT type="hidden" name="id" value = "">
 	<INPUT type="hidden" name="click" value = "">
@@ -227,18 +227,18 @@
 											</logic:equal>
 										</TD>
 									</logic:equal>
-									<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="true" >	
+									<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >	
 										<TD align="center" nowrap>
-											&nbsp; &nbsp; <loc:message name="propertyDisplayClassesInSchedule"/> 
+											&nbsp; &nbsp; <loc:message name="propertyEnabledForStudentScheduling"/> 
 											<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="false" >
-												<html:checkbox name="<%=frmName%>" property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>' 
-													onclick="<%= \"updateSubpartFlags(this.checked, 'displayInScheduleBooks', \"+ctr+\", 'displayAllClassesInSchedBookForSubpart');\"%>"/>
+												<html:checkbox name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' 
+													onclick="<%= \"updateSubpartFlags(this.checked, 'enabledForStudentScheduling', \"+ctr+\", 'enableAllClassesForStudentSchedulingForSubpart');\"%>"/>
 											</logic:equal>
 											<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
-												<logic:equal name="<%=frmName%>" property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>' value="true" >
-													<IMG border='0' title='<%=MSG.titleDisplayAllClassesForSubpartInSchedBook() %>' alt='true' align='middle' src='images/tick.gif'>
+												<logic:equal name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' value="true" >
+													<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
 												</logic:equal>
-												<html:hidden property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>'/>
+												<html:hidden property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>'/>
 											</logic:equal>
 										</TD>	
 									</logic:equal>	
@@ -295,8 +295,8 @@
 							</logic:equal>
 						</TD>
 						<TD align="center" valign="bottom" rowSpan="1">
-							<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="true" >
-								<I><loc:message name="columnDisplayClass"/></I>
+							<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
+								<I><loc:message name="columnStudentScheduling"/></I>
 							</logic:equal>
 						</TD>
 						<TD align="center" valign="bottom" rowSpan="1" colspan="2"><I>---&nbsp;<loc:message name="columnTimetable"/>&nbsp;---</I></TD>
@@ -316,9 +316,9 @@
 							</logic:equal>
 						</td>
 						<td align="center" valign="bottom">
-							<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="true" >
+							<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
 								(<loc:message name="propertyAll"/>
-								 <html:checkbox name="<%=frmName%>" property="displayAllClassesInSchedBook" onclick="resetAllDisplayFlags(this.checked, 'displayInScheduleBooks')"/>)
+								 <html:checkbox name="<%=frmName%>" property="enableAllClassesForStudentScheduling" onclick="resetAllDisplayFlags(this.checked, 'enabledForStudentScheduling')"/>)
 							</logic:equal>
 						</td>						
 						<TD align="center" valign="bottom" rowSpan="1"><I><loc:message name="columnAssignedTime"/></I></TD>
@@ -354,39 +354,39 @@
 							</TD>
 							<logic:equal name="<%=frmName%>" property="displayExternalId" value="true" >
 								<TD>&nbsp;</TD>
-								<TD align="left" valign="top" nowrap><%= frm.getExternalIds().get(ctr)%></TD>
+								<TD align="left" valign="top" nowrap><%=frm.getExternalIds().get(ctr)%></TD>
 							</logic:equal>
 						
 							<TD>&nbsp;</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "classCanMoveUp[" + ctr + "]" %>' value="true" >
-										<IMG border="0" src="images/arrow_u.gif" title="<%=MSG.titleMoveClassUp() %>"
+										<IMG border="0" src="images/arrow_u.gif" title="<%=MSG.titleMoveClassUp()%>"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-											onclick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+											onclick="document.forms[0].elements['hdnOp'].value='moveUp';document.forms[0].elements['moveUpClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 									</logic:equal>
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
 									<logic:equal name="<%=frmName%>" property='<%= "classCanMoveDown[" + ctr + "]" %>' value="true" >
-										<IMG border="0" src="images/arrow_d.gif" title="<%=MSG.titleMoveClassDown() %>"
+										<IMG border="0" src="images/arrow_d.gif" title="<%=MSG.titleMoveClassDown()%>"
 											onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-											onclick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+											onclick="document.forms[0].elements['hdnOp'].value='moveDown';document.forms[0].elements['moveDownClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 									</logic:equal>
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-									<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveClassFromIO() %>"
+									<IMG border="0" src="images/Delete16.gif" title="<%=MSG.titleRemoveClassFromIO()%>"
 										onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-										onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+										onclick="document.forms[0].elements['hdnOp'].value='delete';document.forms[0].elements['deletedClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
 								<IMG border="0" src="images/Add16.gif" title="<%=MSG.titleAddClassToIO()%>"
 									onmouseover="this.style.cursor='hand';this.style.cursor='pointer';"
-									onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%= c.toString() %>';document.forms[0].submit();">
+									onclick="document.forms[0].elements['hdnOp'].value='add';document.forms[0].elements['addTemplateClassId'].value='<%=c.toString()%>';document.forms[0].submit();">
 							</TD>
 							<TD>&nbsp;</TD>
 							<logic:equal name="<%=frmName%>" property="displayEnrollment" value="true" >
@@ -498,31 +498,31 @@
 								</logic:equal>
 							</TD>
 							<TD align="center" valign="top" nowrap>
-								<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="true" >
+								<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="false" >
-										<html:checkbox name="<%=frmName%>" property='<%= "displayInScheduleBooks[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/>
+										<html:checkbox name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' tabindex="<%=java.lang.Integer.toString(16000 + ctr.intValue())%>"/>
 									</logic:equal>
 									<logic:equal name="<%=frmName%>" property='<%= "readOnlyClasses[" + ctr + "]" %>' value="true" >
-										<logic:equal name="<%=frmName%>" property='<%= "displayInScheduleBooks[" + ctr + "]" %>' value="true" >
-											<IMG border='0' title='<%=MSG.titleDisplayTheseClassesInSchedBook() %>' alt='true' align='middle' src='images/tick.gif'>
-										</logic:equal><html:hidden property='<%= "displayInScheduleBooks[" + ctr + "]" %>'/>
+										<logic:equal name="<%=frmName%>" property='<%= "enabledForStudentScheduling[" + ctr + "]" %>' value="true" >
+											<IMG border='0' title='<%=MSG.titleEnableTheseClassesForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
+										</logic:equal><html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
 									</logic:equal>
 								</logic:equal>
-								<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="false" >
-									<html:hidden property='<%= "displayInScheduleBooks[" + ctr + "]" %>'/>
+								<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="false" >
+									<html:hidden property='<%= "enabledForStudentScheduling[" + ctr + "]" %>'/>
 								</logic:equal>
 							</TD>
 							<TD align="left" valign="top" nowrap>
-								<%= frm.getTimes().get(ctr)%>&nbsp;&nbsp;
+								<%=frm.getTimes().get(ctr)%>&nbsp;&nbsp;
 								<html:hidden property='<%= "times[" + ctr + "]" %>'/>
 							</TD>
 							<TD align="left" valign="top" nowrap>
-								<%= frm.getRooms().get(ctr)%>
+								<%=frm.getRooms().get(ctr)%>
 								<html:hidden property='<%= "rooms[" + ctr + "]" %>'/>
 							</TD>
 							<TD>&nbsp;</TD>
 							<TD align="left" valign="top" nowrap>
-								<%= frm.getInstructors().get(ctr)%>
+								<%=frm.getInstructors().get(ctr)%>
 								<html:hidden property='<%= "instructors[" + ctr + "]" %>'/>
 							</TD>
 							<TD>&nbsp;</TD>
@@ -531,7 +531,9 @@
 				</TABLE>
 			</TD>
 		</TR>
-		<% if (frm.getDisplayDisplayInstructors().booleanValue() || frm.getDisplayDisplayInSchedule().booleanValue()){ %>
+		<%
+			if (frm.getDisplayDisplayInstructors().booleanValue() || frm.getDisplayEnabledForStudentScheduling().booleanValue()){
+		%>
 		<TR>
 			<TD align="left" colspan="2">
 				<table align="left" border="0" cellspacing="0" cellpadding="0">
@@ -548,7 +550,7 @@
 											<b><%=((String)frm.getSubtotalLabels().get(ctr)).trim()%>:</b> &nbsp; 
 										</td> 
 										<td nowrap align="right">
-											<div id='<%= "subtotal2Values" + ctr %>'>
+											<div id='<%="subtotal2Values" + ctr%>'>
 												<bean:write name="<%=frmName%>" property='<%= "subtotalValues[" + ctr + "]" %>'/>
 											</div>
 										</td>
@@ -567,18 +569,18 @@
 												</logic:equal>
 											</TD>
 										</logic:equal>
-										<logic:equal name="<%=frmName%>" property="displayDisplayInSchedule" value="true" >	
+										<logic:equal name="<%=frmName%>" property="displayEnabledForStudentScheduling" value="true" >	
 											<TD align="center" nowrap>
-												&nbsp; &nbsp; <loc:message name="propertyDisplayClassesInSchedule"/> 
+												&nbsp; &nbsp; <loc:message name="propertyEnabledForStudentScheduling"/> 
 												<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="false" >
-													<html:checkbox name="<%=frmName%>" property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>' 
-														onclick="<%= \"updateSubpartFlags(this.checked, 'displayInScheduleBooks', \"+ctr+\", 'displayAllClassesInSchedBookForSubpart');\"%>"/>
+													<html:checkbox name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' 
+														onclick="<%= \"updateSubpartFlags(this.checked, 'enabledForStudentScheduling', \"+ctr+\", 'enableAllClassesForStudentSchedulingForSubpart');\"%>"/>
 												</logic:equal>
 												<logic:equal name="<%=frmName%>" property='<%= "readOnlySubparts[" + ctr + "]" %>' value="true" >
-													<logic:equal name="<%=frmName%>" property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>' value="true" >
-														<IMG border='0' title='<%=MSG.titleDisplayAllClassesForSubpartInSchedBook() %>' alt='true' align='middle' src='images/tick.gif'>
+													<logic:equal name="<%=frmName%>" property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>' value="true" >
+														<IMG border='0' title='<%=MSG.titleEnableAllClassesOfSubpartForStudentScheduling()%>' alt='true' align='middle' src='images/tick.gif'>
 													</logic:equal>
-													<html:hidden property='<%= "displayAllClassesInSchedBookForSubpart[" + ctr + "]" %>'/>
+													<html:hidden property='<%= "enableAllClassesForStudentSchedulingForSubpart[" + ctr + "]" %>'/>
 												</logic:equal>
 											</TD>
 										</logic:equal>	

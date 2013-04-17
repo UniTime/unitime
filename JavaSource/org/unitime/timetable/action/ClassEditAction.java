@@ -459,7 +459,7 @@ public class ClassEditAction extends PreferencesAction {
 		    frm.setClassSuffix(c.getDivSecNumber());
 		    frm.setMaxExpectedCapacity(c.getMaxExpectedCapacity());
 		    frm.setRoomRatio(c.getRoomRatio());
-		    frm.setDisplayInScheduleBook(c.isDisplayInScheduleBook());
+		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 
 		    List instructors = new ArrayList(c.getClassInstructors());
@@ -500,8 +500,8 @@ public class ClassEditAction extends PreferencesAction {
 	    c.setMaxExpectedCapacity(frm.getMaxExpectedCapacity());
 	    c.setRoomRatio(frm.getRoomRatio());
 
-	    Boolean disb = frm.getDisplayInScheduleBook();
-	    c.setDisplayInScheduleBook(disb==null ? new Boolean(false) : disb);
+	    Boolean disb = frm.getEnabledForStudentScheduling();
+	    c.setEnabledForStudentScheduling(disb==null ? new Boolean(false) : disb);
 
 	    Boolean di = frm.getDisplayInstructor();
 	    c.setDisplayInstructor(di==null ? new Boolean(false) : di);

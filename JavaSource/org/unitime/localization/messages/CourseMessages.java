@@ -96,8 +96,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Display Instructors:")
 	String propertyDisplayInstructors();
 	
-	@DefaultMessage("Display In Schedule Book:")
-	String propertyDisplayInScheduleBook();
+	@DefaultMessage("Student Scheduling:")
+	String propertyEnabledForStudentScheduling();
 	
 	@DefaultMessage("Student Schedule Note:")
 	String propertyStudentScheduleNote();
@@ -227,9 +227,6 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Scheduling Subpart Limits:")
 	String propertySchedulingSubpartLimits();
-	
-	@DefaultMessage("Display Classes in Schedule:")
-	String propertyDisplayClassesInSchedule();
 	
 	@DefaultMessage("All:") //used in Multiple Class Setup, Assign Instructors
 	String propertyAll();
@@ -588,8 +585,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Display&nbsp;<br>Instr")
 	String columnDisplayInstr();
 	
-	@DefaultMessage("Display&nbsp;<br>Class")
-	String columnDisplayClass();
+	@DefaultMessage("Student&nbsp;<br>Scheduling")
+	String columnStudentScheduling();
 	
 	@DefaultMessage("Instructors")
 	String columnInstructors();
@@ -627,8 +624,8 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Not assigned.")
 	String messageNotAssigned();
 
-	@DefaultMessage("{0} - Do Not Display In Schedule Book.")
-	String tooltipDoNotDisplayInScheduleBook(String classLabelWithTitle);
+	@DefaultMessage("{0} - Disabled For Student Scheduling.")
+	String tooltipDisabledForStudentScheduling(String classLabelWithTitle);
 	
 	@DefaultMessage("Has Schedule Print Note")
 	String altHasSchedulePrintNote();
@@ -1370,14 +1367,14 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Remove course from instructional offering & mark it as not offered.")
 	String titleRemoveCourseFromCrossList();
 	
-	@DefaultMessage("Display all instructors for this subpart in the schedule book.")
+	@DefaultMessage("Display all instructors of this subpart in the schedule book.")
 	String titleDisplayAllInstrForSubpartInSchedBook();
 	
-	@DefaultMessage("Display all classes for this subpart in the schedule book.")
-	String titleDisplayAllClassesForSubpartInSchedBook();
+	@DefaultMessage("Enable all classes of this subpart for student scheduling.")
+	String titleEnableAllClassesOfSubpartForStudentScheduling();
 	
-	@DefaultMessage("Display these classes in the schedule book.")
-	String titleDisplayTheseClassesInSchedBook();
+	@DefaultMessage("Enable these classes for student scheduling.")
+	String titleEnableTheseClassesForStudentScheduling();
 	
 	@DefaultMessage("Move Class Up")
 	String titleMoveClassUp();
@@ -1895,11 +1892,11 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Instructor Not Displayed")
 	String titleInstructorNotDisplayed();	
 	
-	@DefaultMessage("Displayed in Schedule Book")
-	String titleDisplayedInScheduleBook();
+	@DefaultMessage("Enabled for Student Scheduling")
+	String titleEnabledForStudentScheduling();
 
-	@DefaultMessage("Not Displayed in Schedule Book")
-	String titleNotDisplayedInScheduleBook();
+	@DefaultMessage("Disabled for Student Scheduling")
+	String titleNotEnabledForStudentScheduling();
 	
 	@DefaultMessage("Are you sure you want to set room size to a value different from expected capacity? Continue?")
 	String confirmRoomSizeDifferentFromCapacity();

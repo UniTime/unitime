@@ -276,7 +276,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 	
 	private Class_ rollForwardClass(Class_ fromClass,SchedulingSubpart toSubpart, Session toSession, org.hibernate.Session hibSession) throws Exception{
 		Class_ toClass = new Class_();
-		toClass.setDisplayInScheduleBook(fromClass.isDisplayInScheduleBook());
+		toClass.setEnabledForStudentScheduling(fromClass.isEnabledForStudentScheduling());
 		toClass.setDisplayInstructor(fromClass.isDisplayInstructor());
 		toClass.setExpectedCapacity(fromClass.getExpectedCapacity());
 		toClass.setMaxExpectedCapacity(fromClass.getMaxExpectedCapacity());

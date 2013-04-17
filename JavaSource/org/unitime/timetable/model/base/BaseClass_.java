@@ -42,7 +42,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	private Boolean iDisplayInstructor;
 	private String iSchedulePrintNote;
 	private String iClassSuffix;
-	private Boolean iDisplayInScheduleBook;
+	private Boolean iEnabledForStudentScheduling;
 	private Integer iMaxExpectedCapacity;
 	private Float iRoomRatio;
 	private Long iUniqueIdRolledForwardFrom;
@@ -106,9 +106,9 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public String getClassSuffix() { return iClassSuffix; }
 	public void setClassSuffix(String classSuffix) { iClassSuffix = classSuffix; }
 
-	public Boolean isDisplayInScheduleBook() { return iDisplayInScheduleBook; }
-	public Boolean getDisplayInScheduleBook() { return iDisplayInScheduleBook; }
-	public void setDisplayInScheduleBook(Boolean displayInScheduleBook) { iDisplayInScheduleBook = displayInScheduleBook; }
+	public Boolean isEnabledForStudentScheduling() { return iEnabledForStudentScheduling; }
+	public Boolean getEnabledForStudentScheduling() { return iEnabledForStudentScheduling; }
+	public void setEnabledForStudentScheduling(Boolean enabledForStudentScheduling) { iEnabledForStudentScheduling = enabledForStudentScheduling; }
 
 	public Integer getMaxExpectedCapacity() { return iMaxExpectedCapacity; }
 	public void setMaxExpectedCapacity(Integer maxExpectedCapacity) { iMaxExpectedCapacity = maxExpectedCapacity; }
@@ -190,7 +190,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		return "Class_[" +
 			"\n	ClassSuffix: " + getClassSuffix() +
 			"\n	DatePattern: " + getDatePattern() +
-			"\n	DisplayInScheduleBook: " + getDisplayInScheduleBook() +
+			"\n	DisplayInScheduleBook: " + getEnabledForStudentScheduling() +
 			"\n	DisplayInstructor: " + getDisplayInstructor() +
 			"\n	ExpectedCapacity: " + getExpectedCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +

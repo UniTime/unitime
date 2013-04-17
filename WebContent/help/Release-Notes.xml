@@ -394,6 +394,16 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Enabled for Student Scheduling</name>
+			<description>
+				<line>The "Display In Schedule Book" toggle (that can be set on a class) changed to (enabled for) "Student Scheduling" toggle.
+					<line>The display in schedule book toggle had no meaning in UniTime, the setting was only recorded.</line>
+					<line>Now, if a class is disabled for student scheduling it appears in student scheduling (both batch and online) as if it had zero limit.</line>
+					<line>This means, that the class does not show up in the Course Finder dialog, and a student can get in the class only if he/she has an individual reservation for the class.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>

@@ -285,6 +285,7 @@ public class SectioningServlet implements SectioningService {
 			}
 			Collections.sort(classes, new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
 			for (Class_ clazz: classes) {
+				if (!clazz.isEnabledForStudentScheduling()) continue;
 				ClassAssignmentInterface.ClassAssignment a = new ClassAssignmentInterface.ClassAssignment();
 				a.setClassId(clazz.getUniqueId());
 				a.setSubpart(clazz.getSchedulingSubpart().getItypeDesc());
@@ -386,6 +387,7 @@ public class SectioningServlet implements SectioningService {
 				courseAssign.setCourseNbr(c.getCourseNbr());
 				courseAssign.setSubject(c.getSubjectArea());
 				for (Section section: sections) {
+					if (section.getLimit() == 0) continue;
 					String room = null;
 					if (section.getRooms() != null) {
 						for (RoomLocation rm: section.getRooms()) {

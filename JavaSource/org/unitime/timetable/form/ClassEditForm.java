@@ -91,7 +91,7 @@ public class ClassEditForm extends PreferencesForm {
     private Boolean displayInstructor;
     private String schedulePrintNote;
     private String classSuffix;
-    private Boolean displayInScheduleBook;
+    private Boolean enabledForStudentScheduling;
     private Integer maxExpectedCapacity;
     private Float roomRatio;
     private Integer minRoomLimit;
@@ -260,7 +260,7 @@ public class ClassEditForm extends PreferencesForm {
         displayInstructor = null;
         schedulePrintNote = null;
         classSuffix = null;
-        displayInScheduleBook = null;
+        enabledForStudentScheduling = null;
         maxExpectedCapacity = null;
         roomRatio = null;
         unlimitedEnroll = null;
@@ -564,11 +564,11 @@ public class ClassEditForm extends PreferencesForm {
     public void setClassSuffix(String classSuffix) {
         this.classSuffix = classSuffix;
     }
-    public Boolean getDisplayInScheduleBook() {
-        return displayInScheduleBook;
+    public Boolean getEnabledForStudentScheduling() {
+        return enabledForStudentScheduling;
     }
-    public void setDisplayInScheduleBook(Boolean displayInScheduleBook) {
-        this.displayInScheduleBook = displayInScheduleBook;
+    public void setEnabledForStudentScheduling(Boolean enabledForStudentScheduling) {
+        this.enabledForStudentScheduling = enabledForStudentScheduling;
     }
     public Boolean getDisplayInstructor() {
         return displayInstructor;
