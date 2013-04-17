@@ -964,7 +964,7 @@ public class Class_ extends BaseClass_ {
 	public Object clone(){
 		Class_ newClass = new Class_();
 		newClass.setDatePattern(getDatePattern());
-		newClass.setDisplayInScheduleBook(isDisplayInScheduleBook());
+		newClass.setEnabledForStudentScheduling(isEnabledForStudentScheduling());
 		newClass.setDisplayInstructor(isDisplayInstructor());
 		newClass.setExpectedCapacity(getExpectedCapacity());
 		newClass.setManagingDept(getManagingDept());

@@ -293,6 +293,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
                     Class_ c = (Class_)k.next();
                     int limit = c.getClassLimit();
                     if (ioc.isUnlimitedEnrollment().booleanValue()) limit = -1;
+                    if (!c.isEnabledForStudentScheduling()) limit = 0;
                     Section parentSection = (c.getParentClass()==null?null:(Section)class2section.get(c.getParentClass()));
                     if (c.getParentClass()!=null && parentSection==null) {
                         sLog.error("    -- class "+c.getClassLabel()+" has parent "+c.getParentClass().getClassLabel()+", but the appropriate parent section is not loaded.");

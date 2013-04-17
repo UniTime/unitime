@@ -165,7 +165,7 @@ public class WebClassListTableBuilder extends
 	        if (prevLabel != null && label.equals(prevLabel)){
 	        	label = " &nbsp;";
 	        }
-			if (!aClass.isDisplayInScheduleBook().booleanValue()){
+			if (!aClass.isEnabledForStudentScheduling().booleanValue()){
 				title += " - Do Not Display In Schedule Book.";
 				label = "<i>" + label + "</i>";
 			}

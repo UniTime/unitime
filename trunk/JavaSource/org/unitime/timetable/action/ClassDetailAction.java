@@ -285,7 +285,7 @@ public class ClassDetailAction extends PreferencesAction {
 		    frm.setClassSuffix(c.getDivSecNumber());
 		    frm.setMaxExpectedCapacity(c.getMaxExpectedCapacity());
 		    frm.setRoomRatio(c.getRoomRatio());
-		    frm.setDisplayInScheduleBook(c.isDisplayInScheduleBook());
+		    frm.setEnabledForStudentScheduling(c.isEnabledForStudentScheduling());
 		    frm.setDisplayInstructor(c.isDisplayInstructor());
 	        frm.setMinRoomLimit(c.getMinRoomLimit());
 

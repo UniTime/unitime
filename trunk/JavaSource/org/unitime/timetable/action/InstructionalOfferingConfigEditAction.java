@@ -1390,8 +1390,8 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	                if (c.getDisplayInstructor() == null){
 	                	c.setDisplayInstructor(new Boolean(true));
 	                }
-	                if (c.getDisplayInScheduleBook() == null){
-	                	c.setDisplayInScheduleBook(new Boolean(true));
+	                if (c.getEnabledForStudentScheduling() == null){
+	                	c.setEnabledForStudentScheduling(new Boolean(true));
 	                }
 
 	                if (managerChanged) {
@@ -1708,7 +1708,7 @@ public class InstructionalOfferingConfigEditAction extends Action {
                     c.setRoomRatio(new Float(rr));
                     c.setNbrRooms(new Integer(nr));
                     c.setDisplayInstructor(new Boolean(true));
-                    c.setDisplayInScheduleBook(new Boolean(true));
+                    c.setEnabledForStudentScheduling(new Boolean(true));
         	        c.setPreferences(new HashSet());
         	        if (md>0)
         	            c.setManagingDept(new DepartmentDAO().get(new Long(md)));

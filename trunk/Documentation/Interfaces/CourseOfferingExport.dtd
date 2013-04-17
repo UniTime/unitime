@@ -18,7 +18,10 @@
  -->
 
 <!ELEMENT class ( class*, date*, time?, (room|location|instructor|meeting|meetsWith)* ) >
+<!-- displayInScheduleBook has been deprecated in UniTime 3.4, use studentScheduling instead -->
 <!ATTLIST class displayInScheduleBook ( false | true ) #IMPLIED >
+<!-- studentScheduling was introduced in UniTime 3.4, if false class appears like it has zero limit in (both batch and online) student scheduling -->
+<!ATTLIST class studentScheduling ( false | true ) #IMPLIED >
 <!ATTLIST class id CDATA #IMPLIED >
 <!ATTLIST class limit NMTOKEN #IMPLIED >
 <!ATTLIST class scheduleNote CDATA #IMPLIED >

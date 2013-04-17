@@ -38,7 +38,7 @@
 				</subpart>
 			</subpart>
 			<subpart type="Lab" suffix="" minPerWeek="150"/>
-			<class id="1001" type="Lec" suffix="1" limit="20" scheduleNote="" displayInScheduleBook="true">
+			<class id="1001" type="Lec" suffix="1" limit="20" scheduleNote="" studentScheduling="true">
 				<class id="1002" type="Rec" suffix="1" limit="10">
 					<class id="1003" type="Rec" suffix="1a" limit="10"/>
 				</class>

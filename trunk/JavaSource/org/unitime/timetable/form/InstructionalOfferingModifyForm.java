@@ -67,11 +67,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private Boolean displayMaxLimit;
 	private Boolean displayOptionForMaxLimit;
 	private Boolean displayEnrollment;
-	private String displayAllClassesInSchedBook;
+	private String enableAllClassesForStudentScheduling;
 	private String displayAllClassesInstructors;
 	private Boolean displayExternalId;
 	private Boolean displayDisplayInstructors;
-	private Boolean displayDisplayInSchedule;
+	private Boolean displayEnabledForStudentScheduling;
 	
 	private List classIds;
 	private List subpartIds;
@@ -89,13 +89,13 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private List departments;
 	private List datePatterns;
 	private List displayInstructors;
-	private List displayInScheduleBooks;
+	private List enabledForStudentScheduling;
 	private List classCanMoveUp;
 	private List classCanMoveDown;
 	private List subtotalIndexes;
 	private List subtotalLabels;
 	private List subtotalValues;
-	private List displayAllClassesInSchedBookForSubpart;
+	private List enableAllClassesForStudentSchedulingForSubpart;
 	private List displayAllClassesInstructorsForSubpart;
 	private List readOnlySubparts;
 	private List times;
@@ -125,7 +125,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 	private static String DEPARTMENTS_TOKEN = "departments";
 	private static String DATE_PATTERNS_TOKEN = "datePatterns";
 	private static String DISPLAY_INSTRUCTORS_TOKEN = "displayInstructors";
-	private static String DISPLAY_IN_SCHEDULE_BOOKS_TOKEN = "displayInScheduleBooks";
+	private static String ENABLED_FOR_STUDENT_SCHEDULING_TOKEN = "enabledForStudentScheduling";
 	private static String DIRECTION_UP = "up";
 	private static String DIRECTION_DOWN = "down";
 	private static String SUBTOTAL_INDEXES_TOKEN = "subtotalIndexes";
@@ -460,9 +460,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	displayOptionForMaxLimit = new Boolean(false);
     	displayEnrollment = new Boolean(false);
     	displayDisplayInstructors = new Boolean(false);
-    	displayDisplayInSchedule = new Boolean(false);
+    	displayEnabledForStudentScheduling = new Boolean(false);
     	displayExternalId = new Boolean(false);
-    	displayAllClassesInSchedBook = "";
+    	enableAllClassesForStudentScheduling = "";
     	displayAllClassesInstructors = "";
     	resetLists();
     }
@@ -485,11 +485,11 @@ public class InstructionalOfferingModifyForm extends ActionForm {
       	departments = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	datePatterns = DynamicList.getInstance(new ArrayList(), factoryClasses);
       	displayInstructors = DynamicList.getInstance(new ArrayList(), factoryClasses);
-    	displayInScheduleBooks = DynamicList.getInstance(new ArrayList(), factoryClasses);
+    	enabledForStudentScheduling = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalIndexes = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalLabels = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	subtotalValues = DynamicList.getInstance(new ArrayList(), factoryClasses);
-       	displayAllClassesInSchedBookForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
+       	enableAllClassesForStudentSchedulingForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
        	displayAllClassesInstructorsForSubpart = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveUp = DynamicList.getInstance(new ArrayList(), factoryClasses);
     	classCanMoveDown = DynamicList.getInstance(new ArrayList(), factoryClasses);
@@ -597,20 +597,20 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	this.setOrigSubparts(sb.toString());
     }
     
-    public void initializeDisplayAllClassesInSchedBook(){
-    	if (this.getClassLabels().size() > this.getDisplayInScheduleBooks().size()){
-    		setDisplayAllClassesInSchedBook("false");
+    public void initializeEnableAllClassesForStudentScheduling(){
+    	if (this.getClassLabels().size() > this.getEnabledForStudentScheduling().size()){
+    		setEnableAllClassesForStudentScheduling("false");
     		return;
     	}
     	String display = "true";
-    	for (Iterator it = this.getDisplayInScheduleBooks().iterator(); it.hasNext();){
+    	for (Iterator it = this.getEnabledForStudentScheduling().iterator(); it.hasNext();){
     		String value = (String) it.next();
 	   		if (value == null || (!value.equals("on") && !(Boolean.parseBoolean(value)))){
 	    			display = "false";
 	    			break;
 	    		}
 	    	}
-    	setDisplayAllClassesInSchedBook(display);
+    	setEnableAllClassesForStudentScheduling(display);
     }
 
     public void initializeDisplayAllClassInstructors(){
@@ -634,7 +634,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	this.setSubtotalIndexes(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalLabels(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setSubtotalValues(DynamicList.getInstance(new ArrayList(), factoryClasses));
-		this.setDisplayAllClassesInSchedBookForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
+		this.setEnableAllClassesForStudentSchedulingForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setDisplayAllClassesInstructorsForSubpart(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		this.setReadOnlySubparts(DynamicList.getInstance(new ArrayList(), factoryClasses));
 		SchedulingSubpartDAO ssDao = new SchedulingSubpartDAO();
@@ -644,13 +644,13 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     	Iterator ssIt = this.getSubpartIds().iterator();
     	Iterator limitIt = this.getMinClassLimits().iterator();
 
-    	Boolean displayInSchedBook = null;
+    	Boolean enableForScheduling = null;
     	Boolean displayInstructor = null;
     	Boolean readOnlySubpart = null;
     	while (ssIt.hasNext() && limitIt.hasNext()){
     		Long subpartId = Long.valueOf((String) ssIt.next());
     		Integer limit = new Integer((String) limitIt.next());
-     		displayInSchedBook = new Boolean(determineBooleanValueAtIndex(this.getDisplayInScheduleBooks(), cnt));    	   	
+     		enableForScheduling = new Boolean(determineBooleanValueAtIndex(this.getEnabledForStudentScheduling(), cnt));    	   	
      		displayInstructor = new Boolean(determineBooleanValueAtIndex(this.getDisplayInstructors(), cnt));
        	   	readOnlySubpart = new Boolean(determineBooleanValueAtIndex(this.getReadOnlyClasses(), cnt));
      	   	
@@ -660,7 +660,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
     		if (!subpartToIndex.containsKey(subpartId)) {
      			ss = ssDao.get(subpartId);
     			getSubtotalValues().add(addLimit);
-    			getDisplayAllClassesInSchedBookForSubpart().add(displayInSchedBook);
+    			getEnableAllClassesForStudentSchedulingForSubpart().add(enableForScheduling);
     			getDisplayAllClassesInstructorsForSubpart().add(displayInstructor);
     			getReadOnlySubparts().add(readOnlySubpart);
     			String label = ss.getItypeDesc() + ss.getSchedulingSubpartSuffix();
@@ -673,9 +673,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
         		int oldSubtotal = ((Integer) this.getSubtotalValues().get(subtotalIndex)).intValue();
         		int newSubtotal = oldSubtotal + addLimit;
         		this.getSubtotalValues().set(subtotalIndex.intValue(), newSubtotal);
-        		boolean oldDisplayInSchedBook = ((Boolean) this.getDisplayAllClassesInSchedBookForSubpart().get(subtotalIndex)).booleanValue();
-        		boolean newDisplayInSchedBook = oldDisplayInSchedBook && displayInSchedBook.booleanValue();
-        		this.getDisplayAllClassesInSchedBookForSubpart().set(subtotalIndex, new Boolean(newDisplayInSchedBook));
+        		boolean oldEnableForScheduling = ((Boolean) this.getEnableAllClassesForStudentSchedulingForSubpart().get(subtotalIndex)).booleanValue();
+        		boolean newEnableForScheduling = oldEnableForScheduling && enableForScheduling.booleanValue();
+        		this.getEnableAllClassesForStudentSchedulingForSubpart().set(subtotalIndex, new Boolean(newEnableForScheduling));
         		boolean oldDisplayInstructor = ((Boolean) this.getDisplayAllClassesInstructorsForSubpart().get(subtotalIndex)).booleanValue();
         		boolean newDisplayInstructor = oldDisplayInstructor && displayInstructor.booleanValue();
         		this.getDisplayAllClassesInstructorsForSubpart().set(subtotalIndex, newDisplayInstructor);
@@ -836,7 +836,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it11 = this.classLabels.listIterator();
 		Iterator it12 = this.classLabelIndents.listIterator();
 		Iterator it13 = this.displayInstructors.listIterator();
-		Iterator it14 = this.displayInScheduleBooks.listIterator();
+		Iterator it14 = this.enabledForStudentScheduling.listIterator();
 		Iterator it15 = this.itypes.listIterator();
 		Iterator it16 = this.mustHaveChildClasses.listIterator();
 		Iterator it17 = this.enrollments.listIterator();
@@ -845,7 +845,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		Iterator it20 = this.instructors.listIterator();
 		Iterator it21 = this.externalIds.listIterator();
 		boolean canRemoveFromDisplayInstructors;
-		boolean canRemoveFromDisplayInScheduleBooks;
+		boolean canRemoveFromEnableForStudentScheduling;
 		boolean canRemoveFromEnrollment;
 		
 		for (; it1.hasNext(); ){
@@ -869,9 +869,9 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 			}
 			if (it14.hasNext()){
 				it14.next();
-				canRemoveFromDisplayInScheduleBooks = true;
+				canRemoveFromEnableForStudentScheduling = true;
 			} else {
-				canRemoveFromDisplayInScheduleBooks = false;
+				canRemoveFromEnableForStudentScheduling = false;
 			}
 			it15.next();
 			it16.next();
@@ -900,7 +900,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 				it12.remove();
 				if (canRemoveFromDisplayInstructors)
 					it13.remove();
-				if (canRemoveFromDisplayInScheduleBooks)
+				if (canRemoveFromEnableForStudentScheduling)
 					it14.remove();
 				it15.remove();
 				it16.remove();
@@ -939,7 +939,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.minClassLimits.add(cls.getExpectedCapacity().toString());
 		this.numberOfRooms.add(cls.getNbrRooms().toString());
 		this.displayInstructors.add(cls.isDisplayInstructor().toString());
-		this.displayInScheduleBooks.add(cls.isDisplayInScheduleBook().toString());
+		this.enabledForStudentScheduling.add(cls.isEnabledForStudentScheduling().toString());
 
 		if(cls.getMaxExpectedCapacity() != null)
 			this.maxClassLimits.add(cls.getMaxExpectedCapacity().toString());
@@ -1020,7 +1020,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		hm.put(DEPARTMENTS_TOKEN, this.getDepartments());
 		hm.put(DATE_PATTERNS_TOKEN, this.getDatePatterns());
 		hm.put(DISPLAY_INSTRUCTORS_TOKEN, this.getDisplayInstructors());
-		hm.put(DISPLAY_IN_SCHEDULE_BOOKS_TOKEN, this.getDisplayInScheduleBooks());
+		hm.put(ENABLED_FOR_STUDENT_SCHEDULING_TOKEN, this.getEnabledForStudentScheduling());
 		hm.put(SUBTOTAL_INDEXES_TOKEN, this.getSubtotalIndexes());
 		hm.put(TIMES_TOKEN, this.getTimes());
 		hm.put(ROOMS_TOKEN, this.getRooms());
@@ -1063,7 +1063,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.getDepartments().add((String) getObjectFromListMapAtIndex(originalClassesMap, DEPARTMENTS_TOKEN, classIndex));
 		this.getDatePatterns().add((String) getObjectFromListMapAtIndex(originalClassesMap, DATE_PATTERNS_TOKEN, classIndex));
 		this.getDisplayInstructors().add((String) getObjectFromListMapAtIndex(originalClassesMap, DISPLAY_INSTRUCTORS_TOKEN, classIndex));
-		this.getDisplayInScheduleBooks().add((String) getObjectFromListMapAtIndex(originalClassesMap, DISPLAY_IN_SCHEDULE_BOOKS_TOKEN, classIndex));
+		this.getEnabledForStudentScheduling().add((String) getObjectFromListMapAtIndex(originalClassesMap, ENABLED_FOR_STUDENT_SCHEDULING_TOKEN, classIndex));
 		this.getSubtotalIndexes().add((String) getObjectFromListMapAtIndex(originalClassesMap, SUBTOTAL_INDEXES_TOKEN, classIndex));
 		this.getTimes().add((String) getObjectFromListMapAtIndex(originalClassesMap, TIMES_TOKEN, classIndex));
 		this.getRooms().add((String) getObjectFromListMapAtIndex(originalClassesMap, ROOMS_TOKEN, classIndex));
@@ -1217,7 +1217,7 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.maxClassLimits.add(this.getMaxClassLimits().get(index));
 		this.roomRatios.add(this.getRoomRatios().get(index));
 		this.displayInstructors.add(this.getDisplayInstructors().get(index));
-		this.displayInScheduleBooks.add(this.getDisplayInScheduleBooks().get(index));
+		this.enabledForStudentScheduling.add(this.getEnabledForStudentScheduling().get(index));
 		this.subtotalIndexes.add(this.getSubtotalIndexes().get(index));
 		this.times.add("");
 		this.rooms.add("");
@@ -1293,12 +1293,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.roomRatios = roomRatios;
 	}
 
-	public List getDisplayInScheduleBooks() {
-		return displayInScheduleBooks;
+	public List getEnabledForStudentScheduling() {
+		return enabledForStudentScheduling;
 	}
 
-	public void setDisplayInScheduleBooks(List displayInScheduleBooks) {
-		this.displayInScheduleBooks = displayInScheduleBooks;
+	public void setEnabledForStudentScheduling(List enabledForStudentScheduling) {
+		this.enabledForStudentScheduling = enabledForStudentScheduling;
 	}
 
 	public List getDisplayInstructors() {
@@ -1424,12 +1424,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.subtotalValues = subtotalValues;
 	}
 
-	public String getDisplayAllClassesInSchedBook() {
-		return displayAllClassesInSchedBook;
+	public String getEnableAllClassesForStudentScheduling() {
+		return enableAllClassesForStudentScheduling;
 	}
 
-	public void setDisplayAllClassesInSchedBook(String displayAllClassesInSchedBook) {
-		this.displayAllClassesInSchedBook = displayAllClassesInSchedBook;
+	public void setEnableAllClassesForStudentScheduling(String enableAllClassesForStudentScheduling) {
+		this.enableAllClassesForStudentScheduling = enableAllClassesForStudentScheduling;
 	}
 
 	public String getDisplayAllClassesInstructors() {
@@ -1440,13 +1440,13 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayAllClassesInstructors = displayAllClassesInstructors;
 	}
 
-	public List getDisplayAllClassesInSchedBookForSubpart() {
-		return displayAllClassesInSchedBookForSubpart;
+	public List getEnableAllClassesForStudentSchedulingForSubpart() {
+		return enableAllClassesForStudentSchedulingForSubpart;
 	}
 
-	public void setDisplayAllClassesInSchedBookForSubpart(
-			List displayAllClassesInSchedBookForSubpart) {
-		this.displayAllClassesInSchedBookForSubpart = displayAllClassesInSchedBookForSubpart;
+	public void setEnableAllClassesForStudentSchedulingForSubpart(
+			List enableAllClassesForStudentSchedulingForSubpart) {
+		this.enableAllClassesForStudentSchedulingForSubpart = enableAllClassesForStudentSchedulingForSubpart;
 	}
 
 	public List getDisplayAllClassesInstructorsForSubpart() {
@@ -1522,12 +1522,12 @@ public class InstructionalOfferingModifyForm extends ActionForm {
 		this.displayDisplayInstructors = displayDisplayInstructors;
 	}
 
-	public Boolean getDisplayDisplayInSchedule() {
-		return displayDisplayInSchedule;
+	public Boolean getDisplayEnabledForStudentScheduling() {
+		return displayEnabledForStudentScheduling;
 	}
 
-	public void setDisplayDisplayInSchedule(Boolean displayDisplayInSchedule) {
-		this.displayDisplayInSchedule = displayDisplayInSchedule;
+	public void setDisplayEnabledForStudentScheduling(Boolean displayEnabledForStudentScheduling) {
+		this.displayEnabledForStudentScheduling = displayEnabledForStudentScheduling;
 	}
 
 	public List getExternalIds() {
