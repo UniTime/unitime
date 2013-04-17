@@ -120,6 +120,15 @@ public abstract class BaseImport extends DataExchangeHelper {
 		}
 	}
 	
+	protected boolean getOptionalBooleanAttribute(Element element, String attributeName, boolean defaultValue) {
+		String attributeStr = getOptionalStringAttribute(element, attributeName);
+		if (attributeStr != null) {
+			return Boolean.parseBoolean(attributeStr);
+		} else {
+			return defaultValue;
+		}
+	}
+	
 	protected TimetableManager getManager() {
 	    if (iManager == null) iManager = findDefaultManager(); 
 	    return iManager; 

@@ -87,7 +87,8 @@ public class CourseTimetableExport extends CourseOfferingExport {
             classElement.addAttribute("limit", String.valueOf(clazz.getClassLimit()));
         if (clazz.getSchedulePrintNote()!=null)
             classElement.addAttribute("scheduleNote", clazz.getSchedulePrintNote());
-        classElement.addAttribute("displayInScheduleBook", clazz.isDisplayInScheduleBook()?"true":"false");
+        classElement.addAttribute("studentScheduling", clazz.isEnabledForStudentScheduling()?"true":"false");
+        classElement.addAttribute("displayInScheduleBook", clazz.isEnabledForStudentScheduling()?"true":"false");
         classElement.addAttribute("controlling", course.isIsControl()?"true":"false");
         if (clazz.getManagingDept().getSolverGroup() != null)
         	classElement.addAttribute("solver", clazz.getManagingDept().getSolverGroup().getAbbv());

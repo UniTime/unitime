@@ -554,8 +554,8 @@ public class WebInstructionalOfferingTableBuilder {
         String label = prefGroup.htmlLabel();
         if (prefGroup instanceof Class_) {
 			Class_ aClass = (Class_) prefGroup;
-			if (!aClass.isDisplayInScheduleBook().booleanValue()){
-				cell.setTitle(MSG.tooltipDoNotDisplayInScheduleBook(aClass.getClassLabelWithTitle(co)));
+			if (!aClass.isEnabledForStudentScheduling().booleanValue()){
+				cell.setTitle(MSG.tooltipDisabledForStudentScheduling(aClass.getClassLabelWithTitle(co)));
 				label = "<i>" + label + "</i>";
 			} else {
 				cell.setTitle(aClass.getClassLabelWithTitle(co));

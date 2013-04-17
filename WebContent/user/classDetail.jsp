@@ -251,13 +251,13 @@
 		</TR>
 
 		<TR>
-			<TD><loc:message name="propertyDisplayInScheduleBook"/> </TD>
+			<TD><loc:message name="propertyEnabledForStudentScheduling"/> </TD>
 			<TD>
-				<logic:equal name="<%=frmName%>" property="displayInScheduleBook" value="true">
-					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleDisplayedInScheduleBook() %>" title="<%=MSG.titleDisplayedInScheduleBook() %>">
+				<logic:equal name="<%=frmName%>" property="enabledForStudentScheduling" value="true">
+					<IMG src="images/tick.gif" border="0" alt="<%=MSG.titleEnabledForStudentScheduling() %>" title="<%=MSG.titleEnabledForStudentScheduling() %>">
 				</logic:equal>
-				<logic:notEqual name="<%=frmName%>" property="displayInScheduleBook" value="true">
-					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleNotDisplayedInScheduleBook() %>" title="<%=MSG.titleNotDisplayedInScheduleBook() %>">
+				<logic:notEqual name="<%=frmName%>" property="enabledForStudentScheduling" value="true">
+					<IMG src="images/delete.gif" border="0" alt="<%=MSG.titleNotEnabledForStudentScheduling() %>" title="<%=MSG.titleNotEnabledForStudentScheduling() %>">
 				</logic:notEqual>
 			</TD>
 		</TR>

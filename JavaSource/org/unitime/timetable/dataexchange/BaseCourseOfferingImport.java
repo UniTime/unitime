@@ -1587,10 +1587,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 				String suffix = getRequiredStringAttribute(classElement, "suffix", elementName);
 				String type = getRequiredStringAttribute(classElement, "type", elementName);
 				String scheduleNote = getOptionalStringAttribute(classElement, "scheduleNote");
-				Boolean displayInScheduleBook  = getOptionalBooleanAttribute(classElement, "displayInScheduleBook");
-				if (displayInScheduleBook == null){
-					displayInScheduleBook = new Boolean(true);
-				}
+				Boolean enabledForStudentScheduling = getOptionalBooleanAttribute(classElement, "studentScheduling", getOptionalBooleanAttribute(classElement, "displayInScheduleBook", true));
 				Integer itypeId = findItypeForString(type).getItype();
 				
 				Class_ clazz = null;
@@ -1663,9 +1660,8 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' managing department changed");
 						changed = true;						
 					}
-					if ((clazz.isDisplayInScheduleBook() != null && !clazz.isDisplayInScheduleBook().equals(displayInScheduleBook))
-							 || (clazz.isDisplayInScheduleBook() == null && displayInScheduleBook != null)){
-						clazz.setDisplayInScheduleBook(displayInScheduleBook);
+					if (!enabledForStudentScheduling.equals(clazz.isEnabledForStudentScheduling())) {
+						clazz.setEnabledForStudentScheduling(enabledForStudentScheduling);
 						addNote("\t" + ioc.getCourseName() + " " + type + " " + suffix + " 'class' display in schedule book changed");
 						changed = true;						
 					}
@@ -1684,7 +1680,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					clazz.setMaxExpectedCapacity(limit);
 					clazz.setRoomRatio(new Float(1.0));
 					clazz.setNbrRooms(new Integer(1));
-					clazz.setDisplayInScheduleBook(displayInScheduleBook);
+					clazz.setEnabledForStudentScheduling(enabledForStudentScheduling);
 					clazz.setSchedulePrintNote(scheduleNote);
 					clazz.setDisplayInstructor(new Boolean(true));
 					if (managingDept != null){

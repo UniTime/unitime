@@ -329,7 +329,7 @@ public class SchedulingSubpartTableBuilder {
 	                            + "\" type=\"hidden\" value=\"" 
 	                        	+ (mnlpc>=0?""+mnlpc:"") + "\"" 
 	                        	+ " >" 
-	                        	+ (( (disabled || uDisabled) && mnlpc>=0) || (!varLimits && mnlpc!=mxlpc) 
+	                        	+ (( (disabled || uDisabled) && mnlpc>=0 && varLimits) || (!varLimits && mnlpc!=mxlpc) 
 	                        	        ?""+mnlpc
 	                        	        :"" ) ) 
                             : ( "\n\t<INPUT " 

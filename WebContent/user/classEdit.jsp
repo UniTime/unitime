@@ -346,9 +346,9 @@
 		</TR>
 
 		<TR>
-			<TD><loc:message name="propertyDisplayInScheduleBook"/></TD>
+			<TD><loc:message name="propertyEnabledForStudentScheduling"/></TD>
 			<TD>
-				<html:checkbox property="displayInScheduleBook" />
+				<html:checkbox property="enabledForStudentScheduling" />
 			</TD>
 		</TR>
 

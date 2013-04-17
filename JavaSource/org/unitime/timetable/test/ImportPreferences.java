@@ -770,7 +770,7 @@ public class ImportPreferences {
 				clazz.setRoomRatio(new Float(roomRatio));
 				clazz.setNbrRooms(new Integer(numberOfRooms));
 				clazz.setDisplayInstructor(Boolean.TRUE);
-				clazz.setDisplayInScheduleBook(Boolean.TRUE);
+				clazz.setEnabledForStudentScheduling(Boolean.TRUE);
 				if (x.attributeValue("parent")!=null)
 					clazz.setParentClass((Class_)classTable.get(Long.valueOf(x.attributeValue("parent"))));
 				hibSession.save(clazz);

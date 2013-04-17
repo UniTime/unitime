@@ -228,7 +228,7 @@ public class InstructionalOfferingModifyAction extends Action {
 
         frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
         frm.initalizeSubpartSubtotalsAndDisplayFlags();
-        frm.initializeDisplayAllClassesInSchedBook();
+        frm.initializeEnableAllClassesForStudentScheduling();
         frm.initializeDisplayAllClassInstructors();
 
         return mapping.findForward("instructionalOfferingModify");
@@ -263,8 +263,8 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.setInstrOfferingId(io.getUniqueId());
         String displayInstructorFlags = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_instructor_flags", "false");
         frm.setDisplayDisplayInstructors(new Boolean(displayInstructorFlags));
-        String displayInScheduleFlags = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_in_schedule_flags", "false");
-        frm.setDisplayDisplayInSchedule(new Boolean(displayInScheduleFlags));
+        String displayEnabledForStudentScheduling = ApplicationProperties.getProperty("tmtbl.class_setup.show_enabled_for_student_scheduling", "true");
+        frm.setDisplayEnabledForStudentScheduling(new Boolean(displayEnabledForStudentScheduling));
         String displayExternalIds = ApplicationProperties.getProperty("tmtbl.class_setup.show_display_external_ids", "false");
         frm.setDisplayExternalId(new Boolean(displayExternalIds));
        
@@ -292,7 +292,7 @@ public class InstructionalOfferingModifyAction extends Action {
         frm.initializeOrigSubparts();
         frm.setDirectionsClassesCanMove(); //after all classes have been loaded into the form tell the form to determine whether each class can be moved up or down.
         frm.initalizeSubpartSubtotalsAndDisplayFlags();
-        frm.initializeDisplayAllClassesInSchedBook();
+        frm.initializeEnableAllClassesForStudentScheduling();
         frm.initializeDisplayAllClassInstructors();
     }
 
@@ -631,7 +631,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it8 = frm.getMaxClassLimits().listIterator();
 		Iterator it9 = frm.getRoomRatios().listIterator();
 		Iterator it10 = frm.getDisplayInstructors().listIterator();
-		Iterator it11 = frm.getDisplayInScheduleBooks().listIterator();
+		Iterator it11 = frm.getEnabledForStudentScheduling().listIterator();
 
 		for(;it1.hasNext();){
 			Long classId = new Long(it1.next().toString());
@@ -659,13 +659,13 @@ public class InstructionalOfferingModifyAction extends Action {
 			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
 				displayInstructor = new Boolean(true);
 			}
-			String displayInScheduleBookStr = null;
+			String enabledForStudentSchedulingStr = null;
 			if (it11.hasNext()) {
-				displayInScheduleBookStr = (String) it11.next();
+				enabledForStudentSchedulingStr = (String) it11.next();
 			}
-			Boolean displayInScheduleBook = new Boolean(false);
-			if (displayInScheduleBookStr != null && displayInScheduleBookStr.length() > 0){
-				displayInScheduleBook = new Boolean(true);
+			Boolean enabledForStudentScheduling = new Boolean(false);
+			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
+				enabledForStudentScheduling = new Boolean(true);
 			}
 
 			if (classId.longValue() < 0){
@@ -694,7 +694,7 @@ public class InstructionalOfferingModifyAction extends Action {
 				newClass.setMaxExpectedCapacity(maxClassLimit);
 				newClass.setRoomRatio(roomRatio);
 				newClass.setDisplayInstructor(displayInstructor);
-				newClass.setDisplayInScheduleBook(displayInScheduleBook);
+				newClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 
 				hibSession.save(newClass);
 				hibSession.save(ss);
@@ -719,7 +719,7 @@ public class InstructionalOfferingModifyAction extends Action {
 		Iterator it6 = frm.getMaxClassLimits().listIterator();
 		Iterator it7 = frm.getRoomRatios().listIterator();
 		Iterator it8 = frm.getDisplayInstructors().listIterator();
-		Iterator it9 = frm.getDisplayInScheduleBooks().listIterator();
+		Iterator it9 = frm.getEnabledForStudentScheduling().listIterator();
 		Iterator it10 = frm.getParentClassIds().listIterator();
 
 		for(;it1.hasNext();){
@@ -741,13 +741,13 @@ public class InstructionalOfferingModifyAction extends Action {
 			if (displayInstructorStr != null && displayInstructorStr.length() > 0){
 				displayInstructor = new Boolean(true);
 			}
-			String displayInScheduleBookStr = null;
+			String enabledForStudentSchedulingStr = null;
 			if (it9.hasNext()){
-				displayInScheduleBookStr = (String)it9.next();
+				enabledForStudentSchedulingStr = (String)it9.next();
 			}
-			Boolean displayInScheduleBook = new Boolean(false);
-			if (displayInScheduleBookStr != null && displayInScheduleBookStr.length() > 0){
-				displayInScheduleBook = new Boolean(true);
+			Boolean enabledForStudentScheduling = new Boolean(false);
+			if (enabledForStudentSchedulingStr != null && enabledForStudentSchedulingStr.length() > 0){
+				enabledForStudentScheduling = new Boolean(true);
 			}
 
 			Long parentClassId = null;
@@ -831,10 +831,10 @@ public class InstructionalOfferingModifyAction extends Action {
 					changed = true;
 					modifiedClass.setDisplayInstructor(displayInstructor);
 				}
-				Boolean displayInScheduleFlags = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_display_in_schedule_flags", "false"));
-				if (displayInScheduleFlags && !modifiedClass.isDisplayInScheduleBook().equals(displayInScheduleBook)){
+				Boolean displayEnabledForStudentScheduling = new Boolean(ApplicationProperties.getProperty("tmtbl.class_setup.show_enabled_for_student_scheduling", "true"));
+				if (displayEnabledForStudentScheduling && !modifiedClass.isEnabledForStudentScheduling().equals(enabledForStudentScheduling)){
 					changed = true;
-					modifiedClass.setDisplayInScheduleBook(displayInScheduleBook);
+					modifiedClass.setEnabledForStudentScheduling(enabledForStudentScheduling);
 				}
 				if (changed)
 					hibSession.update(modifiedClass);
