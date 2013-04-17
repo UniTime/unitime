@@ -182,7 +182,7 @@
 					<tt:notHasProperty name="tmtbl.contact.email_mailto">
 						<a href="mailto:%tmtbl.contact.email%"><tt:property name="tmtbl.contact.email"/></a>
 					</tt:notHasProperty>
-				<tt:property name="tmtbl.contact.office_hours"/></TD>
+				</TD>
 			</TR>
 		</tt:hasProperty>
 	</TABLE>
