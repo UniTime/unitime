@@ -47,8 +47,8 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
-    public ConflictsByCourseAndStudentReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "CONFLICTS BY COURSE AND STUDENT", session, examType, subjectArea, exams);
+    public ConflictsByCourseAndStudentReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "CONFLICTS BY COURSE AND STUDENT", session, examType, subjectAreas, exams);
         sLog.debug("  Loading students ...");
         for (Iterator i=new StudentDAO().getSession().createQuery("select s.uniqueId, s.externalUniqueId, s.lastName, s.firstName, s.middleName from Student s where s.session.uniqueId=:sessionId").setLong("sessionId", session.getUniqueId()).iterate();i.hasNext();) {
             Object[] o = (Object[])i.next();
@@ -67,7 +67,7 @@ public class ConflictsByCourseAndStudentReport extends PdfLegacyExamReport {
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+            	if (!hasSubjectArea(section)) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
                     sections = new TreeSet();

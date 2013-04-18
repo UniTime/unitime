@@ -38,8 +38,8 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
-    public AbbvScheduleByCourseReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
+    public AbbvScheduleByCourseReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
@@ -47,7 +47,7 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                if (!hasSubjectArea(section)) continue;
                 sections.add(section);
             }
         }

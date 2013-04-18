@@ -75,8 +75,8 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
     private boolean iSkipSuffixSubparts = "true".equals(ApplicationProperties.getProperty("tmtbl.exam.report.verification.skipSuffixSubparts", "true"));
     private boolean iHasAssignment = false;
     
-    public ExamVerificationReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectArea, exams);
+    public ExamVerificationReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "EXAMINATION VERIFICATION REPORT", session, examType, subjectAreas, exams);
         for (ExamAssignmentInfo exam : exams) {
             if (exam.getPeriod()!=null) { iHasAssignment = true; break; }
         }
@@ -418,26 +418,31 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                 return co1.getUniqueId().compareTo(co2.getUniqueId());
             }
         });
-        if (getSubjectArea()!=null)
-            allCourses.addAll(new SessionDAO().getSession().
-                createQuery("select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId").
-                setLong("subjectAreaId", getSubjectArea().getUniqueId()).list());
-        else
+        if (hasSubjectAreas()) {
+        	for (SubjectArea subject: getSubjectAreas()) {
+        		allCourses.addAll(new SessionDAO().getSession().
+        				createQuery("select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId").
+        				setLong("subjectAreaId", subject.getUniqueId()).list());
+        	}
+        } else {
             allCourses.addAll(new SessionDAO().getSession().
                     createQuery("select co from CourseOffering co where  co.subjectArea.session.uniqueId=:sessionId").
                     setLong("sessionId", getSession().getUniqueId()).list());
+        }
         if (allCourses.isEmpty()) return;
         sLog.info("  Loading class events...");
         Hashtable<Long,ClassEvent> class2event = new Hashtable();
-        if (getSubjectArea()!=null) {
-            for (Iterator i=new SessionDAO().getSession().createQuery(
-                    "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
-                    "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
-                    "co.subjectArea.uniqueId=:subjectAreaId").
-                    setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
-                Object[] o = (Object[])i.next();
-                class2event.put((Long)o[0], (ClassEvent)o[1]);
-            }
+        if (hasSubjectAreas()) {
+        	for (SubjectArea subject: getSubjectAreas()) {
+                for (Iterator i=new SessionDAO().getSession().createQuery(
+                        "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                        "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                        "co.subjectArea.uniqueId=:subjectAreaId").
+                        setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                    Object[] o = (Object[])i.next();
+                    class2event.put((Long)o[0], (ClassEvent)o[1]);
+                }        		
+        	}
         } else {
             for (Iterator i=new SessionDAO().getSession().createQuery(
                     "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
@@ -452,15 +457,17 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
         Hashtable<Long,Integer> classLimits = new Hashtable();
         if (iDispLimits) {
             sLog.info("  Loading course limits ...");
-            if (getSubjectArea()!=null)
-                for (Iterator i=new SessionDAO().getSession().createQuery(
-                        "select co.uniqueId, count(distinct s.student.uniqueId) from "+
-                        "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
-                        "group by co.uniqueId").setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
-                    courseLimits.put((Long)o[0],((Number)o[1]).intValue());
-                }
-            else
+            if (hasSubjectAreas()) {
+            	for (SubjectArea subject: getSubjectAreas()) {
+                    for (Iterator i=new SessionDAO().getSession().createQuery(
+                            "select co.uniqueId, count(distinct s.student.uniqueId) from "+
+                            "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
+                            "group by co.uniqueId").setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                        Object[] o = (Object[])i.next();
+                        courseLimits.put((Long)o[0],((Number)o[1]).intValue());
+                    }
+            	}
+            } else {
                 for (Iterator i=new SessionDAO().getSession().createQuery(
                         "select co.uniqueId, count(distinct s.student.uniqueId) from "+
                         "StudentClassEnrollment s inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
@@ -468,16 +475,19 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     Object[] o = (Object[])i.next();
                     courseLimits.put((Long)o[0],((Number)o[1]).intValue());
                 }
+            }
             sLog.info("  Loading class limits ...");
-            if (getSubjectArea()!=null)
-                for (Iterator i=new SessionDAO().getSession().createQuery(
-                        "select c.uniqueId, count(distinct s.student.uniqueId) from "+
-                        "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
-                        "group by c.uniqueId").setLong("subjectAreaId", getSubjectArea().getUniqueId()).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
-                    classLimits.put((Long)o[0],((Number)o[1]).intValue());
-                }
-            else
+            if (hasSubjectAreas()) {
+            	for (SubjectArea subject: getSubjectAreas()) {
+                    for (Iterator i=new SessionDAO().getSession().createQuery(
+                            "select c.uniqueId, count(distinct s.student.uniqueId) from "+
+                            "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.uniqueId=:subjectAreaId "+
+                            "group by c.uniqueId").setLong("subjectAreaId", subject.getUniqueId()).list().iterator();i.hasNext();) {
+                        Object[] o = (Object[])i.next();
+                        classLimits.put((Long)o[0],((Number)o[1]).intValue());
+                    }
+            	}
+            } else {
                 for (Iterator i=new SessionDAO().getSession().createQuery(
                         "select c.uniqueId, count(distinct s.student.uniqueId) from "+
                         "StudentClassEnrollment s inner join s.clazz c inner join s.courseOffering co where co.subjectArea.session.uniqueId=:sessionId "+
@@ -485,6 +495,7 @@ public class ExamVerificationReport extends PdfLegacyExamReport {
                     Object[] o = (Object[])i.next();
                     classLimits.put((Long)o[0],((Number)o[1]).intValue());
                 }
+            }
         }
         sLog.info("  Printing report ...");
         SubjectArea subject = null;

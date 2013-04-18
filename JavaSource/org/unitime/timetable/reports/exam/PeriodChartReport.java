@@ -48,8 +48,8 @@ import com.lowagie.text.DocumentException;
 public class PeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public PeriodChartReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
+    public PeriodChartReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectAreas, exams);
     }
     
     public void printReport() throws DocumentException {
@@ -66,7 +66,7 @@ public class PeriodChartReport extends PdfLegacyExamReport {
                 period2courseSections.put(exam.getPeriod(),sections);
             }
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                if (!hasSubjectArea(section)) continue;
                 sections.add(section);
             }
         }

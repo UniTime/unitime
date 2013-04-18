@@ -47,15 +47,15 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByRoomReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByRoomReport.class);
     
-    public ScheduleByRoomReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY ROOM", session, examType, subjectArea, exams);
+    public ScheduleByRoomReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY ROOM", session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
         sLog.info("  Computing room table...");
         Hashtable <ExamRoomInfo,Hashtable<ExamPeriod,List<ExamAssignmentInfo>>> table = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
-            if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+            if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
             for (ExamRoomInfo room : exam.getRooms()) {
                 Hashtable<ExamPeriod,List<ExamAssignmentInfo>> roomAssignments = table.get(room);
                 if (roomAssignments==null) {
@@ -101,7 +101,7 @@ public class ScheduleByRoomReport extends PdfLegacyExamReport {
                         ExamSectionInfo lastSection = null;
                         iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                         for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                            if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                            if (!hasSubjectArea(section)) continue;
                             if (lastSection!=null && iSubjectPrinted) {
                                 iSubjectPrinted = iCoursePrinted = iITypePrinted = false;
                                 if (section.getSubject().equals(lastSection.getSubject())) {
