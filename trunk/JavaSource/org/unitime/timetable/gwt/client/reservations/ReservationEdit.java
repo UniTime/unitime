@@ -37,6 +37,8 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
+import org.unitime.timetable.gwt.command.client.GwtRpcService;
+import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.services.ReservationService;
@@ -49,11 +51,14 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.Config;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Course;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Area;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Curriculum;
+import org.unitime.timetable.gwt.shared.ReservationInterface.DefaultExpirationDates;
 import org.unitime.timetable.gwt.shared.ReservationInterface.IdName;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Offering;
+import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationDefaultExpirationDatesRpcRequest;
 import org.unitime.timetable.gwt.shared.ReservationInterface.Subpart;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -85,6 +90,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class ReservationEdit extends Composite {
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 
 	private List<EditFinishedHandler> iEditFinishedHandlers = new ArrayList<EditFinishedHandler>();
 	
@@ -103,6 +109,7 @@ public class ReservationEdit extends Composite {
 	private ReservationInterface iReservation;
 	private CurriculaCourseSelectionBox iCourseBox;
 	private Lookup iLookup;
+	private DefaultExpirationDates iExpirations = null;
 	
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
 
@@ -213,28 +220,7 @@ public class ReservationEdit extends Composite {
 		iCourseBox = new CurriculaCourseSelectionBox("");
 		iCourseBox.setWidth("130px");
 		iPanel.addRow(MESSAGES.propInstructionalOffering(), iCourseBox);
-
-		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
-		iLimit.getWidget().addValueChangeHandler(new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				computeLimit();
-			}
-		});
-		iPanel.addRow(MESSAGES.propReservedSpace(), iLimit);
-		
-		iExpirationDate = new UniTimeWidget<SingleDateSelector>(new SingleDateSelector());
-		iExpirationDate.getWidget().addValueChangeHandler(new ValueChangeHandler<Date>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<Date> event) {
-				iExpirationDate.clearHint();
-			}
-		});
-		iPanel.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
-		
-		iStructure = new Tree(RESOURCES, true);
-		iPanel.addRow(MESSAGES.propRestrictions(), iStructure);
-		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
+		iPanel.getCellFormatter().getElement(iPanel.getRowCount() - 1, 0).getStyle().setWidth(100, Unit.PX);
 		
 		iType = new UniTimeWidget<ListBox>(new ListBox());
 		iType.getWidget().setStyleName("unitime-TextBox");
@@ -258,6 +244,28 @@ public class ReservationEdit extends Composite {
 			}
 		});
 
+		iLimit = new UniTimeWidget<UniTimeTextBox>(new UniTimeTextBox(4, ValueBoxBase.TextAlignment.RIGHT));
+		iLimit.getWidget().addValueChangeHandler(new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				computeLimit();
+			}
+		});
+		iPanel.addRow(MESSAGES.propReservedSpace(), iLimit);
+		
+		iExpirationDate = new UniTimeWidget<SingleDateSelector>(new SingleDateSelector());
+		iExpirationDate.getWidget().addValueChangeHandler(new ValueChangeHandler<Date>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Date> event) {
+				iExpirationDate.clearHint();
+			}
+		});
+		iPanel.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
+		
+		iStructure = new Tree(RESOURCES, true);
+		iPanel.addRow(MESSAGES.propRestrictions(), iStructure);
+		iPanel.getCellFormatter().setVerticalAlignment(iPanel.getRowCount() - 1, 0, HasVerticalAlignment.ALIGN_TOP);
+		
 		iStudents = new UniTimeWidget<TextArea>(new TextArea());
 		iStudents.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
@@ -403,7 +411,7 @@ public class ReservationEdit extends Composite {
 		if (standAlone) {
 			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
 			if (Window.Location.getParameter("id") == null) {
-				initStudentGroupsAndCurricula(new AsyncCallback<Boolean>() {
+				new InitializationChain(new InitStudentGroups(), new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
 					@Override
 					public void onFailure(Throwable caught) {
 						loadingFailed(caught);
@@ -422,7 +430,7 @@ public class ReservationEdit extends Composite {
 					@Override
 					public void onSuccess(final ReservationInterface reservation) {
 						if (reservation instanceof ReservationInterface.CurriculumReservation) {
-							initCurricula(new AsyncCallback<Boolean>() {
+							new InitializationChain(new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									loadingFailed(caught);
@@ -434,7 +442,7 @@ public class ReservationEdit extends Composite {
 								}
 							});
 						} else if (reservation instanceof ReservationInterface.GroupReservation) {
-							initStudentGroups(new AsyncCallback<Boolean>() {
+							new InitializationChain(new InitStudentGroups(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
 								@Override
 								public void onFailure(Throwable caught) {
 									loadingFailed(caught);
@@ -454,7 +462,7 @@ public class ReservationEdit extends Composite {
 				});
 			}
 		} else {
-			initStudentGroupsAndCurricula(new AsyncCallback<Boolean>() {
+			new InitializationChain(new InitStudentGroups(), new InitCurricula(), new InitExpirationDates()).execute(new AsyncCallback<Boolean>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					iTitleAndButtons.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
@@ -492,59 +500,6 @@ public class ReservationEdit extends Composite {
 		iTitleAndButtons.setErrorMessage(MESSAGES.failedLoadData(caught.getMessage()));
 		for (EditFinishedHandler h: iEditFinishedHandlers)
 			h.onFailure(caught);
-	}
-	
-	private void initStudentGroups(final AsyncCallback<Boolean> callback) {
-		iReservationService.getStudentGroups(new AsyncCallback<List<IdName>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				iType.getWidget().removeItem(2);
-				callback.onFailure(caught);
-			}
-			@Override
-			public void onSuccess(List<IdName> result) {
-				if (result.isEmpty()) {
-					iType.getWidget().removeItem(2);
-				} else {
-					for (IdName group: result) {
-						iGroup.getWidget().addItem(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", group.getId().toString());
-					}
-				}
-				callback.onSuccess(true);
-			}
-		});
-	}
-	
-	private void initCurricula(final AsyncCallback<Boolean> callback) {
-		iReservationService.getAreas(new AsyncCallback<List<Area>>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				callback.onFailure(caught);
-			}
-			
-			@Override
-			public void onSuccess(List<Area> result) {
-				for (Area c: result) {
-					iArea.getWidget().addItem(c.getAbbv() + " - " + c.getName(), c.getId().toString());
-					iAreas.put(c.getId(), c);
-				}
-				callback.onSuccess(true);
-			}
-		});
-	}
-	
-	private void initStudentGroupsAndCurricula(final AsyncCallback<Boolean> callback) {
-		initStudentGroups(new AsyncCallback<Boolean>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				callback.onFailure(caught);
-			}
-
-			@Override
-			public void onSuccess(Boolean result) {
-				initCurricula(callback);
-			}
-		});
 	}
 	
 	public void setReservation(ReservationInterface r) {
@@ -691,16 +646,21 @@ public class ReservationEdit extends Composite {
 		if ("course".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
 			iLimit.getWidget().setValue("", true);
-			String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
-			for (Course course: iOffering.getCourses()) {
-				if (course.getId().toString().equals(cid))
-					iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
+			if (iOffering != null) {
+				String cid = iCourse.getWidget().getValue(iCourse.getWidget().getSelectedIndex());
+				for (Course course: iOffering.getCourses()) {
+					if (course.getId().toString().equals(cid))
+						iLimit.getWidget().setValue(course.getLimit() == null ? "" : course.getLimit().toString(), true);
+				}
 			}
 		} else if ("individual".equals(val)) {
 			iLimit.getWidget().setReadOnly(true);
 			iLimit.getWidget().setValue(String.valueOf(iStudents.getWidget().getText().split("\n").length), true);
 		} else {
 			iLimit.getWidget().setReadOnly(false);
+		}
+		if (iExpirations != null) {
+			iExpirationDate.getWidget().setValue(iExpirations.getExpirationDate(val));
 		}
 	}
 	
@@ -1148,5 +1108,109 @@ public class ReservationEdit extends Composite {
 	public void addEditFinishedHandler(EditFinishedHandler h) {
 		iEditFinishedHandlers.add(h);
 	}
+	
+	public static interface Initialization {
+		public void execute(AsyncCallback<Boolean> callback);
+	}
+	
+	public class InitExpirationDates implements Initialization {
+		@Override
+		public void execute(final AsyncCallback<Boolean> callback) {
+			RPC.execute(new ReservationDefaultExpirationDatesRpcRequest(), new AsyncCallback<DefaultExpirationDates>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					callback.onFailure(caught);
+				}
 
+				@Override
+				public void onSuccess(DefaultExpirationDates result) {
+					iExpirations = result;
+					callback.onSuccess(true);
+				}
+			});
+		}
+	}
+	
+	public class InitStudentGroups implements Initialization {
+
+		@Override
+		public void execute(final AsyncCallback<Boolean> callback) {
+			iReservationService.getStudentGroups(new AsyncCallback<List<IdName>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					iType.getWidget().removeItem(2);
+					callback.onFailure(caught);
+				}
+				@Override
+				public void onSuccess(List<IdName> result) {
+					if (result.isEmpty()) {
+						iType.getWidget().removeItem(2);
+					} else {
+						for (IdName group: result) {
+							iGroup.getWidget().addItem(group.getAbbv() + " - " + group.getName() + " (" + group.getLimit() + ")", group.getId().toString());
+						}
+					}
+					callback.onSuccess(true);
+				}
+			});			
+		}
+
+	}
+	
+	public class InitCurricula implements Initialization {
+
+		@Override
+		public void execute(final AsyncCallback<Boolean> callback) {
+			iReservationService.getAreas(new AsyncCallback<List<Area>>() {
+				@Override
+				public void onFailure(Throwable caught) {
+					callback.onFailure(caught);
+				}
+				
+				@Override
+				public void onSuccess(List<Area> result) {
+					for (Area c: result) {
+						iArea.getWidget().addItem(c.getAbbv() + " - " + c.getName(), c.getId().toString());
+						iAreas.put(c.getId(), c);
+					}
+					callback.onSuccess(true);
+				}
+			});
+		}
+	}
+	
+	public static class InitializationChain implements Initialization {
+		private Initialization[] iInitializations;
+		
+		public InitializationChain(Initialization... initializations) {
+			iInitializations = initializations;
+		}
+
+		@Override
+		public void execute(AsyncCallback<Boolean> callback) {
+			execute(0, callback);
+		}
+		
+		private void execute(final int index, final AsyncCallback<Boolean> callback) {
+			if (index >= iInitializations.length) {
+				callback.onSuccess(true);
+			} else {
+				iInitializations[index].execute(new AsyncCallback<Boolean>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						callback.onFailure(caught);
+					}
+					@Override
+					public void onSuccess(Boolean result) {
+						if (result) {
+							execute(1 + index, callback);
+						} else {
+							callback.onSuccess(false);
+						}
+					}
+				});
+			}
+		}
+	}
+	
 }
