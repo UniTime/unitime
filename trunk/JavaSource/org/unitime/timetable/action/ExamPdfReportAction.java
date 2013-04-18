@@ -39,6 +39,7 @@ import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.form.ExamPdfReportForm;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -79,6 +80,7 @@ public class ExamPdfReportAction extends Action {
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         if ("Generate".equals(op)) myForm.save(sessionContext);
         myForm.load(sessionContext);
+        myForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         if (myForm.getAddress() == null)
         	myForm.setAddress(sessionContext.getUser().getEmail());
         

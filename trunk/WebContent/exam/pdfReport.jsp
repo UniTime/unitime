@@ -22,6 +22,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <tiles:importAttribute />
 <html:form action="/examPdfReport">
 	<TABLE width="100%" border="0" cellspacing="0" cellpadding="3">
@@ -196,19 +197,27 @@
 			<html:checkbox property="email" onclick="document.getElementById('eml').style.display=(this.checked?'block':'none');"/> Email
 			<bean:define name="examPdfReportForm" property="email" id="email"/>
 			<table border='0' id='eml' style='display:<%=(Boolean)email?"block":"none"%>;'>
-				<tr>
-					<td rowspan='4' valign='top'>Address:</td>
-					<td><html:textarea property="address" rows="3" cols="70"/></td>
-				</tr>
-				<tr><td>
-					<html:checkbox property="emailDeputies" styleId="ed"/> All Involved Department Schedule Managers
-				</td></tr>
-				<tr><td>
-					<html:checkbox property="emailInstructors" styleId="ed"/> Send Individual Instructor Schedule Reports to All Involved Instructors
-				</td></tr>
-				<tr><td>
-					<html:checkbox property="emailStudents" styleId="ed"/> Send Individual Student Schedule Reports to All Involved Students
-				</td></tr>
+				<sec:authorize access="hasPermission(null, null, 'DepartmentIndependent')">
+					<tr>
+						<td rowspan='4' valign='top'>Address:</td>
+						<td><html:textarea property="address" rows="3" cols="70"/></td>
+					</tr>
+					<tr><td>
+						<html:checkbox property="emailDeputies" styleId="ed"/> All Involved Department Schedule Managers
+					</td></tr>
+					<tr><td>
+						<html:checkbox property="emailInstructors" styleId="ed"/> Send Individual Instructor Schedule Reports to All Involved Instructors
+					</td></tr>
+					<tr><td>
+						<html:checkbox property="emailStudents" styleId="ed"/> Send Individual Student Schedule Reports to All Involved Students
+					</td></tr>
+				</sec:authorize>
+				<sec:authorize access="!hasPermission(null, null, 'DepartmentIndependent')">
+					<tr>
+						<td valign='top'>Address:</td>
+						<td><html:textarea property="address" rows="3" cols="70"/></td>
+					</tr>
+				</sec:authorize>
 				<tr><td valign='top'>CC:</td><td>
 					<html:textarea property="cc" rows="2" cols="70"/>
 				</td></tr>

@@ -42,8 +42,8 @@ import com.lowagie.text.DocumentException;
 public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ExamScheduleByPeriodReport.class);
     
-    public ExamScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectArea, exams);
+    public ExamScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectAreas, exams);
     }
 
     
@@ -55,7 +55,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
         sLog.debug("  Sorting exams...");
         TreeSet<ExamAssignmentInfo> exams = new TreeSet();
         for (ExamAssignmentInfo exam : getExams()) {
-            if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+            if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
             exams.add(exam);
         }
         sLog.debug("  Printing report...");
@@ -73,7 +73,7 @@ public class ExamScheduleByPeriodReport extends PdfLegacyExamReport {
                 ExamSectionInfo lastSection = null;
                 for (Iterator<ExamSectionInfo> j = exam.getSectionsIncludeCrosslistedDummies().iterator(); j.hasNext();) {
                     ExamSectionInfo  section = j.next();
-                    if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                    if (!hasSubjectArea(section)) continue;
                     iSubjectPrinted = iCoursePrinted = iStudentPrinted = false;
                     if (lastSection!=null) {
                         if (section.getSubject().equals(lastSection.getSubject())) {

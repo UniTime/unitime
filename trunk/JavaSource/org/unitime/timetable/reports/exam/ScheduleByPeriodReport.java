@@ -44,8 +44,8 @@ import com.lowagie.text.DocumentException;
 public class ScheduleByPeriodReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByPeriodReport.class);
     
-    public ScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectArea, exams);
+    public ScheduleByPeriodReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY PERIOD", session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
@@ -53,7 +53,7 @@ public class ScheduleByPeriodReport extends PdfLegacyExamReport {
         Hashtable<String,TreeSet<ExamSectionInfo>> subject2courseSections = new Hashtable();
         for (ExamInfo exam : getExams()) {
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                if (!hasSubjectArea(section)) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
                     sections = new TreeSet();

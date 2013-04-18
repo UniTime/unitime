@@ -47,8 +47,8 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ConflictsByCourseAndStudentReport.class);
     Hashtable<Long,String> iStudentNames = new Hashtable();
     
-    public ConflictsByCourseAndInstructorReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "CONFLICTS BY COURSE AND INSTRUCTOR", session, examType, subjectArea, exams);
+    public ConflictsByCourseAndInstructorReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "CONFLICTS BY COURSE AND INSTRUCTOR", session, examType, subjectAreas, exams);
     }
     
     public void printReport() throws DocumentException {
@@ -57,7 +57,7 @@ public class ConflictsByCourseAndInstructorReport extends PdfLegacyExamReport {
         for (ExamAssignmentInfo exam : getExams()) {
             if (exam.getPeriod()==null) continue;
             for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                if (!hasSubjectArea(section)) continue;
                 TreeSet<ExamSectionInfo> sections = subject2courseSections.get(section.getSubject());
                 if (sections==null) {
                     sections = new TreeSet();
