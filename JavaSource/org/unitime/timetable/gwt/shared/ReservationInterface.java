@@ -21,8 +21,12 @@ package org.unitime.timetable.gwt.shared;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcRequest;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -267,5 +271,28 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	
 	public static class ReservationFilterRpcRequest extends FilterRpcRequest {
 		public ReservationFilterRpcRequest() {}
+	}
+	
+	public static class DefaultExpirationDates implements GwtRpcResponse {
+		private Map<String, Date> iExpirations = new HashMap<String, Date>();
+		
+		public DefaultExpirationDates() {}
+		
+		public Date getExpirationDate(String type) { return iExpirations.get(type); }
+		public boolean hasExpirationDate(String type) { return getExpirationDate(type) != null; }
+		public void setExpirationDate(String type, Date date) { 
+			if (date == null)
+				iExpirations.remove(type);
+			else
+				iExpirations.put(type, date);
+		}
+		
+		public String toString() {
+			return iExpirations.toString();
+		}
+	}
+	
+	public static class ReservationDefaultExpirationDatesRpcRequest implements GwtRpcRequest<DefaultExpirationDates> {
+		public ReservationDefaultExpirationDatesRpcRequest() {}
 	}
 }
