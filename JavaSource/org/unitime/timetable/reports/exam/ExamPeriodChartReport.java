@@ -48,8 +48,8 @@ import com.lowagie.text.DocumentException;
 public class ExamPeriodChartReport extends PdfLegacyExamReport {
     protected static Logger sLog = Logger.getLogger(ScheduleByCourseReport.class);
     
-    public ExamPeriodChartReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectArea, exams);
+    public ExamPeriodChartReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "PERIOD ASSIGNMENT", session, examType, subjectAreas, exams);
     }
     
     public void printReport() throws DocumentException {
@@ -59,7 +59,7 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
             setFooter("limit="+iLimit);
         Hashtable<ExamPeriod,TreeSet<ExamAssignmentInfo>> period2exams = new Hashtable();
         for (ExamAssignmentInfo exam : getExams()) {
-            if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+        	if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
             TreeSet<ExamAssignmentInfo> exams = period2exams.get(exam.getPeriod());
             if (exams==null) {
                 exams = new TreeSet();
@@ -142,7 +142,7 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                         for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies()) size+= section.getNrStudents();
                         if (iLimit<0 || size>=iLimit) {
                             for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies())
-                                if (getSubjectArea()==null || getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) linesThisSections++;
+                                if (hasSubjectArea(section)) linesThisSections++;
                         }
                     }
                     nextLines = Math.max(nextLines,linesThisSections);
@@ -203,7 +203,7 @@ public class ExamPeriodChartReport extends PdfLegacyExamReport {
                         int size = 0;
                         for (ExamSectionInfo section: exam.getSectionsIncludeCrosslistedDummies()) size+= section.getNrStudents();
                         for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies()) {
-                            if (getSubjectArea()!=null && !getSubjectArea().getSubjectAreaAbbreviation().equals(section.getSubject())) continue;
+                            if (!hasSubjectArea(section)) continue;
                             total += section.getNrStudents();
                             if (iLimit>=0 && size<iLimit) continue;
                             totalListed += section.getNrStudents();

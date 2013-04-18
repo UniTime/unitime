@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -32,6 +33,7 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -67,6 +69,7 @@ import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.reports.PdfLegacyReport;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.exam.ui.ExamInfo;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
@@ -82,7 +85,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
     public static String sAllRegisteredReports = "";
     private Collection<ExamAssignmentInfo> iExams = null;
     private Session iSession = null;
-    private SubjectArea iSubjectArea = null;
+    private Collection<SubjectArea> iSubjectAreas = null;
     private ExamType iExamType = null;
     
     protected boolean iDispRooms = true;
@@ -124,18 +127,18 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             sAllRegisteredReports += (sAllRegisteredReports.length()>0?",":"") + report;
     }
     
-    public PdfLegacyExamReport(int mode, File file, String title, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
-    	this(mode, (file == null ? null : new FileOutputStream(file)), title, session, examType, subjectArea, exams);
+    public PdfLegacyExamReport(int mode, File file, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
+    	this(mode, (file == null ? null : new FileOutputStream(file)), title, session, examType, subjectAreas, exams);
     }
     
-    public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
+    public PdfLegacyExamReport(int mode, OutputStream out, String title, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws DocumentException, IOException {
         super(mode, out, title, ApplicationProperties.getProperty("tmtbl.exam.report." + (examType == null ? "all" : examType.getReference()), (examType == null ? "EXAMINATIONS" : examType.getLabel().toUpperCase()) + " EXAMINATIONS"), 
                 title + " -- " + session.getLabel(), session.getLabel());
-        if (subjectArea!=null) setFooter(subjectArea.getSubjectAreaAbbreviation());
+        if (subjectAreas!=null && subjectAreas.size() == 1) setFooter(subjectAreas.iterator().next().getSubjectAreaAbbreviation());
         iExams = exams;
         iSession = session;
         iExamType = examType;
-        iSubjectArea = subjectArea;
+        iSubjectAreas = subjectAreas;
         iDispRooms = "true".equals(System.getProperty("room","true"));
         iNoRoom = System.getProperty("noroom",ApplicationProperties.getProperty("tmtbl.exam.report.noroom","INSTR OFFC"));
         iDirect = "true".equals(System.getProperty("direct","true"));
@@ -203,8 +206,33 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
         return iExamType;
     }
     
-    public SubjectArea getSubjectArea() {
-        return iSubjectArea;
+    public boolean hasSubjectArea(String abbv) {
+    	if (iSubjectAreas == null) return true;
+    	for (SubjectArea area: iSubjectAreas)
+    		if (area.getSubjectAreaAbbreviation().equals(abbv)) return true;
+    	return false;
+    }
+    
+    public boolean hasSubjectArea(SubjectArea subject) {
+    	return iSubjectAreas == null || iSubjectAreas.contains(subject);
+    }
+    
+    public boolean hasSubjectArea(ExamInfo exam) {
+    	for (ExamSectionInfo section: exam.getSections())
+    		if (hasSubjectArea(section)) return true;
+    	return false;
+    }
+    
+    public boolean hasSubjectArea(ExamSectionInfo section) {
+    	return hasSubjectArea(section.getSubject());
+    }
+    
+    public boolean hasSubjectAreas() {
+    	return iSubjectAreas != null;
+    }
+    
+    public Collection<SubjectArea> getSubjectAreas() {
+    	return iSubjectAreas;
     }
     
     public abstract void printReport() throws DocumentException; 
@@ -1025,7 +1053,8 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+"_"+subject.getSubjectAreaAbbreviation()+(mode==sModeText?".txt":".pdf"));
                         long t0 = System.currentTimeMillis();
                         sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, subject, exams);
+                        List<SubjectArea> subjectList = new ArrayList<SubjectArea>(); subjectList.add(subject);
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, subjectList, exams);
                         report.printReport();
                         report.close();
                         output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
@@ -1069,7 +1098,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+(mode==sModeText?".txt":".pdf"));
                     long t0 = System.currentTimeMillis();
                     sLog.info("Generating report "+file+" ...");
-                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
+                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
                     report.printReport();
                     report.close();
                     output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);

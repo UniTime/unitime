@@ -67,12 +67,12 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     Hashtable<Long,ClassEvent> iClass2event = null;
     Hashtable<Long,Location> iLocations = null;
     
-    public InstructorExamReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
+    public InstructorExamReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectAreas, exams);
     }
     
-    public InstructorExamReport(int mode, OutputStream out, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, out, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectArea, exams);
+    public InstructorExamReport(int mode, OutputStream out, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, out, "INSTRUCTOR EXAMINATION SCHEDULE", session, examType, subjectAreas, exams);
     }
 
     private void generateCache() {
@@ -87,15 +87,17 @@ public class InstructorExamReport extends PdfLegacyExamReport {
         if (iClass2event==null) {
             sLog.info("  Loading class events...");
             iClass2event = new Hashtable();
-            if (getSubjectArea()!=null) {
-                for (Iterator i=new SessionDAO().getSession().createQuery(
-                        "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
-                        "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
-                        "co.subjectArea.uniqueId=:subjectAreaId").
-                        setLong("subjectAreaId", getSubjectArea().getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
-                    Object[] o = (Object[])i.next();
-                    iClass2event.put((Long)o[0], (ClassEvent)o[1]);
-                }
+            if (hasSubjectAreas()) {
+            	for (SubjectArea subject: getSubjectAreas()) {
+                    for (Iterator i=new SessionDAO().getSession().createQuery(
+                            "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
+                            "inner join c.schedulingSubpart.instrOfferingConfig.instructionalOffering.courseOfferings co where "+
+                            "co.subjectArea.uniqueId=:subjectAreaId").
+                            setLong("subjectAreaId", subject.getUniqueId()).setCacheable(true).list().iterator();i.hasNext();) {
+                        Object[] o = (Object[])i.next();
+                        iClass2event.put((Long)o[0], (ClassEvent)o[1]);
+                    }
+            	}
             } else {
                 for (Iterator i=new SessionDAO().getSession().createQuery(
                         "select c.uniqueId, e from ClassEvent e inner join e.clazz c left join fetch e.meetings m "+
@@ -136,10 +138,8 @@ public class InstructorExamReport extends PdfLegacyExamReport {
     }
     
     public boolean isOfSubjectArea(TreeSet<ExamAssignmentInfo> exams) {
-        if (getSubjectArea()==null) return true;
         for (ExamAssignmentInfo exam : exams)
-            for (ExamSectionInfo section : exam.getSectionsIncludeCrosslistedDummies())
-                if (getSubjectArea().equals(section.getOwner().getCourse().getSubjectArea())) return true;
+        	if (hasSubjectArea(exam)) return true;
         return false;
     }
     
@@ -289,7 +289,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                     String itype =  getItype(ci.getClassInstructing());
                     String section = (iUseClassSuffix && ci.getClassInstructing().getClassSuffix()!=null?ci.getClassInstructing().getClassSuffix():ci.getClassInstructing().getSectionNumberString());
                     ClassEvent event = (iClass2event==null?ci.getClassInstructing().getEvent():iClass2event.get(ci.getClassInstructing().getUniqueId()));
-                    if (event==null && iClass2event!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                    if (event==null && iClass2event!=null && !hasSubjectArea(subject))
                     	event = ci.getClassInstructing().getEvent();
                     if (event==null || event.getMeetings().isEmpty()) {
                         println(
@@ -325,7 +325,7 @@ public class InstructorExamReport extends PdfLegacyExamReport {
                             }
                             Long permId = meeting.getMeetings().first().getLocationPermanentId();
                             Location location = (permId==null?null:(iLocations==null?meeting.getMeetings().first().getLocation():iLocations.get(permId)));
-                            if (location==null && iLocations!=null && getSubjectArea()!=null && !getSubjectArea().equals(subject))
+                            if (location==null && iLocations!=null && !hasSubjectArea(subject))
                             	location = meeting.getMeetings().first().getLocation();
                             String loc = (location==null?"":formatRoom(location.getLabel()));
                             if (last==null || !loc.equals(lastLoc)) {

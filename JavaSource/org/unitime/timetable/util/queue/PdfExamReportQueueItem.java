@@ -24,10 +24,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -75,6 +77,7 @@ public class PdfExamReportQueueItem extends QueueItem {
 	private ExamSolverProxy iExamSolver;
 	private String iName = null;
 	private double iProgress = 0;
+	private boolean iSubjectIndependent = false;
 	
 	public PdfExamReportQueueItem(Session session, UserContext owner, ExamPdfReportForm form, HttpServletRequest request, ExamSolverProxy examSolver) {
 		super(session, owner);
@@ -95,6 +98,8 @@ public class PdfExamReportQueueItem extends QueueItem {
             }
             iName += ")";
         }
+        iSubjectIndependent = (owner == null || owner.getCurrentAuthority() == null ? false : owner.getCurrentAuthority().hasRight(Right.DepartmentIndependent));
+        iForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(owner, false));
 	}
 
 	@Override
@@ -312,10 +317,10 @@ public class PdfExamReportQueueItem extends QueueItem {
                 String name = session.getAcademicTerm()+session.getSessionStartYear()+ExamTypeDAO.getInstance().get(iForm.getExamType()).getReference()+"_"+reportName;
                 if (iForm.getAll()) {
                     File file = ApplicationProperties.getTempFile(name, (iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf"));
-                    log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+exams.size()+" exams)");
+                    log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... " + (iSubjectIndependent ? " ("+exams.size()+" exams)" : ""));
                     PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
-                        getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).
-                        newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), null, exams);
+                        getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
+                        newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), iSubjectIndependent ? null : iForm.getSubjectAreas(), exams);
                     report.setDirect(iForm.getDirect());
                     report.setM2d(iForm.getM2d());
                     report.setBtb(iForm.getBtb());
@@ -345,9 +350,10 @@ public class PdfExamReportQueueItem extends QueueItem {
                             if (exam.isOfSubjectArea(subject)) nrExams++;
                         }
                         log("&nbsp;&nbsp;Writing <a href='temp/"+file.getName()+"'>"+subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(iForm.getModeIdx()==PdfLegacyExamReport.sModeText?"txt":"pdf")+"</a>... ("+nrExams+" exams)");
+                        List<SubjectArea> subjects = new ArrayList<SubjectArea>(); subjects.add(subject);
                         PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.
-                            getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).
-                            newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subject, exams);
+                            getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).
+                            newInstance(iForm.getModeIdx(), file, new SessionDAO().get(session.getUniqueId()), ExamTypeDAO.getInstance().get(iForm.getExamType()), subjects, exams);
                         report.setDirect(iForm.getDirect());
                         report.setM2d(iForm.getM2d());
                         report.setBtb(iForm.getBtb());

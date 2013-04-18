@@ -41,8 +41,8 @@ import com.lowagie.text.DocumentException;
  * @author Tomas Muller
  */
 public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
-    public AbbvExamScheduleByCourseReport(int mode, File file, Session session, ExamType examType, SubjectArea subjectArea, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
-        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectArea, exams);
+    public AbbvExamScheduleByCourseReport(int mode, File file, Session session, ExamType examType, Collection<SubjectArea> subjectAreas, Collection<ExamAssignmentInfo> exams) throws IOException, DocumentException {
+        super(mode, file, "SCHEDULE BY COURSE", session, examType, subjectAreas, exams);
     }
 
     public void printReport() throws DocumentException {
@@ -51,14 +51,14 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
-                if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+                if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
                 boolean firstSection = true;
                 TreeSet<ExamSectionInfo> sections = new TreeSet<ExamSectionInfo>(new Comparator<ExamSectionInfo>() {
                     public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
-                        if (getSubjectArea()==null) return s1.compareTo(s2);
-                        if (getSubjectArea().equals(s1.getOwner().getCourse().getSubjectArea())) {
-                            if (!getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return -1;
-                        } else if (getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return 1;
+                        if (!hasSubjectAreas()) return s1.compareTo(s2);
+                        if (hasSubjectArea(s1.getOwner().getCourse().getSubjectArea())) {
+                            if (!hasSubjectArea(s2.getOwner().getCourse().getSubjectArea())) return -1;
+                        } else if (hasSubjectArea(s2.getOwner().getCourse().getSubjectArea())) return 1;
                         return s1.compareTo(s2);
                     }
                  });
@@ -142,7 +142,7 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
         } else {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamAssignment exam : new TreeSet<ExamAssignment>(getExams())) {
-                if (exam.getPeriod()==null || !exam.isOfSubjectArea(getSubjectArea())) continue;
+                if (exam.getPeriod()==null || !hasSubjectArea(exam)) continue;
                 Vector<String> rooms = new Vector();
                 if (exam.getRooms()==null || exam.getRooms().isEmpty()) {
                     rooms.add(rpad(iNoRoom,11));
@@ -152,10 +152,10 @@ public class AbbvExamScheduleByCourseReport extends PdfLegacyExamReport {
                 Vector<ExamSectionInfo> sections = new Vector(exam.getSectionsIncludeCrosslistedDummies());
                 Collections.sort(sections, new Comparator<ExamSectionInfo>() {
                     public int compare(ExamSectionInfo s1, ExamSectionInfo s2) {
-                        if (getSubjectArea()==null) return s1.compareTo(s2);
-                        if (getSubjectArea().equals(s1.getOwner().getCourse().getSubjectArea())) {
-                            if (!getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return -1;
-                        } else if (getSubjectArea().equals(s2.getOwner().getCourse().getSubjectArea())) return 1;
+                        if (!hasSubjectAreas()) return s1.compareTo(s2);
+                        if (hasSubjectArea(s1.getOwner().getCourse().getSubjectArea())) {
+                            if (!hasSubjectArea(s2.getOwner().getCourse().getSubjectArea())) return -1;
+                        } else if (hasSubjectArea(s2.getOwner().getCourse().getSubjectArea())) return 1;
                         return s1.compareTo(s2);
                     }
                  });
