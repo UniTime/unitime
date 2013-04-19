@@ -21,6 +21,7 @@ package org.unitime.timetable.gwt.client.events;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.OperationType;
+import org.unitime.timetable.gwt.client.events.StartEndTimeSelector.StartEndTime;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
@@ -625,7 +627,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 					public void onSuccess(EventRoomAvailabilityRpcResponse result) {
 						LoadingWidget.getInstance().hide();
 						addMeetings(result.getMeetings());
-						iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
+						iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
 					}
 				});
 			}
@@ -1145,7 +1147,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			for (StandardEventNoteInterface note: getProperties().getStandardNotes())
 				iStandardNotes.addItem(note.toString(), note.getNote());
 		
-		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter());
+		iEventAddMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
 		
 		DomEvent.fireNativeEvent(Document.get().createChangeEvent(), iEventType.getWidget());
 		
@@ -1604,6 +1606,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		public List<SelectionInterface> getSelection(); 
 		public String getRoomFilter();
 		public ContactInterface getMainContact();
+		public List<Date> getSelectedDates();
+		public StartEndTime getSelectedTime();
 	}
 	
 	private void showCreateButtonIfApplicable() {
@@ -1630,7 +1634,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iSelection = new ArrayList<MeetingInterface>();
 			for (EventMeetingRow row: selection)
 				iSelection.add(row.getMeeting());
-			iEventModifyMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iSelection);
+			iEventModifyMeetings.reset(iProperties == null ? null : iProperties.getRoomFilter(), iSelection, iProperties == null ? null : iProperties.getSelectedDates(), iProperties == null ? null : iProperties.getSelectedTime());
 			iEventModifyMeetings.showDialog(getEventId());
 			break;
 		}
