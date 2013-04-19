@@ -120,7 +120,7 @@ public class QueueProcessor extends Thread {
 		}
 	}
 	
-	public List<QueueItem> getItems(Long ownerId, Long sessionId, String type) {
+	public List<QueueItem> getItems(String ownerId, Long sessionId, String type) {
 		synchronized (iQueue) {
 			List<QueueItem> ret = new ArrayList<QueueItem>();
 			

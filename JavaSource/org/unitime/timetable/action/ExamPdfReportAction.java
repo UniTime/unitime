@@ -115,7 +115,10 @@ public class ExamPdfReportAction extends Action {
         WebTable.setOrder(sessionContext,"examPdfReport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
 		DateFormat df = new SimpleDateFormat("h:mma");
-		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, PdfExamReportQueueItem.TYPE);
+		String ownerId = null;
+		if (!sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
+			ownerId = sessionContext.getUser().getExternalUserId();
+		List<QueueItem> queue = QueueProcessor.getInstance().getItems(ownerId, null, PdfExamReportQueueItem.TYPE);
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, "Reports in progress", "examPdfReport.do?ord=%%",
 				new String[] { "Name", "Status", "Progress", "Owner", "Session", "Created", "Started", "Finished", "Output"},
