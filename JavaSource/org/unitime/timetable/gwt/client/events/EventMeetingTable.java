@@ -117,7 +117,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private Mode iMode = null;
 	
 	private boolean iShowMainContact = false;
-	private EventMeetingSortBy iSortBy = null; 
+	private EventMeetingSortBy iSortBy = null;
+	private boolean iAsc = true;
 	private boolean iSelectable = true, iEditable = false;
 	private Map<OperationType, Implementation> iImplementations = new HashMap<OperationType, Implementation>();
 	private MeetingFilter iMeetingFilter = null;
@@ -1058,15 +1059,34 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public boolean hasSortBy() { return iSortBy != null; }
-	public Integer getSortBy() { return iSortBy == null ? null : iSortBy.ordinal(); }
-	public void setSortBy(Integer sortBy) {
-		iSortBy = (sortBy == null ? null : EventMeetingSortBy.values()[sortBy]); sort();
+	public String getSortBy() { return iSortBy == null ? null : (iAsc ? "" : "-") + iSortBy.ordinal(); }
+	public void setSortBy(String sortBy) {
+		if (sortBy == null || sortBy.isEmpty()) {
+			iSortBy = null;
+		} else if (sortBy.startsWith("+")) {
+			iAsc = true;
+			iSortBy = EventMeetingSortBy.values()[Integer.parseInt(sortBy.substring(1))];
+		} else if (sortBy.startsWith("-")) {
+			iAsc = false;
+			iSortBy = EventMeetingSortBy.values()[Integer.parseInt(sortBy.substring(1))];
+		} else {
+			iAsc = true;
+			iSortBy = (sortBy == null ? null : EventMeetingSortBy.values()[Integer.parseInt(sortBy)]);	
+		}
+		sort();
 	}
 	
 	protected void addSortByOperation(final UniTimeTableHeader header, final EventMeetingSortBy sortBy) {
 		header.addOperation(new Operation() {
 			@Override
-			public void execute() { iSortBy = sortBy; sort(); onSortByChanded(sortBy); }
+			public void execute() {
+				if (header.getOrder() != null)
+					iAsc = !header.getOrder();
+				else
+					iAsc = true;
+				iSortBy = sortBy;
+				sort(); onSortByChanded(sortBy, iAsc);
+			}
 			@Override
 			public boolean isApplicable() { return getRowCount() > 1; }
 			@Override
@@ -1076,7 +1096,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		});
 	}
 	
-	protected void onSortByChanded(EventMeetingSortBy sortBy) {};
+	protected void onSortByChanded(EventMeetingSortBy sortBy, boolean asc) {};
 	
 	protected void onColumnShownOrHid(int eventCookieFlags) {}
 
@@ -1190,9 +1210,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public void sort() {
-		if (getSortBy() != null) {
+		if (iSortBy != null) {
 			UniTimeTableHeader header = null;
-			switch (EventComparator.EventMeetingSortBy.values()[getSortBy()]) {
+			switch (iSortBy) {
 			case NAME:
 				header = getHeader(MESSAGES.colName()); 
 				break;
@@ -1252,7 +1272,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					if (cmp != 0) return cmp;
 					return compareRows(o1.hasParent() ? o1 : null, o2.hasParent() ? o2 : null);
 				}
-			});
+			}, iAsc);
 		}
 		if (getMode().hasFlag(ModeFlag.ShowMeetings) && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
 			Long eventId = null, conflictId = null;

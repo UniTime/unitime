@@ -328,8 +328,16 @@ public class UniTimeTable<T> extends FlexTable {
 	public void sort(String columnName, final Comparator<T> rowComparator) {
 		sort(getHeader(columnName), rowComparator);
 	}
-
+	
 	public void sort(UniTimeTableHeader header, final Comparator<T> rowComparator) {
+		if (header != null) {
+			sort(header, rowComparator, header.getOrder() == null ? true : !header.getOrder());
+		} else {
+			sort(header, rowComparator, true);
+		}
+	}
+
+	public void sort(UniTimeTableHeader header, final Comparator<T> rowComparator, boolean asc) {
 		if (header != null) {
 			for (int i = 0; i < getCellCount(0); i++) {
 				Widget w = getWidget(0, i);
@@ -338,7 +346,7 @@ public class UniTimeTable<T> extends FlexTable {
 					h.setOrder(null);
 				}
 			}
-			header.setOrder(true);
+			header.setOrder(asc);
 		}
 		Element body = getBodyElement();
 		ArrayList<Object[]> rows = new ArrayList<Object[]>();
@@ -348,11 +356,19 @@ public class UniTimeTable<T> extends FlexTable {
 				rows.add(new Object[] {r, getRowFormatter().getElement(row)});
 			}
 		}
-		Collections.sort(rows,new Comparator<Object[]>() {
-			public int compare(Object[] a, Object[] b) {
-				return rowComparator.compare(((SmartTableRow<T>)a[0]).getData(), ((SmartTableRow<T>)b[0]).getData());
-			}
-		});
+		if (asc) {
+			Collections.sort(rows,new Comparator<Object[]>() {
+				public int compare(Object[] a, Object[] b) {
+					return rowComparator.compare(((SmartTableRow<T>)a[0]).getData(), ((SmartTableRow<T>)b[0]).getData());
+				}
+			});
+		} else {
+			Collections.sort(rows,new Comparator<Object[]>() {
+				public int compare(Object[] a, Object[] b) {
+					return - rowComparator.compare(((SmartTableRow<T>)a[0]).getData(), ((SmartTableRow<T>)b[0]).getData());
+				}
+			});
+		}
 		int idx = 0;
 		List<DataChangedEvent<T>> changeEvents = new ArrayList<DataChangedEvent<T>>();
 		for (int row = 0; row < getRowCount(); row++) {
@@ -378,6 +394,14 @@ public class UniTimeTable<T> extends FlexTable {
 	
 	public void sortByRow(UniTimeTableHeader header, final Comparator<Integer> rowComparator) {
 		if (header != null) {
+			sortByRow(header, rowComparator, header.getOrder() == null ? true : !header.getOrder());
+		} else {
+			sortByRow(header, rowComparator, true);
+		}
+	}
+	
+	public void sortByRow(UniTimeTableHeader header, final Comparator<Integer> rowComparator, boolean asc) {
+		if (header != null) {
 			for (int i = 0; i < getCellCount(0); i++) {
 				Widget w = getWidget(0, i);
 				if (w != null && w instanceof UniTimeTableHeader) {
@@ -385,7 +409,7 @@ public class UniTimeTable<T> extends FlexTable {
 					h.setOrder(null);
 				}
 			}
-			header.setOrder(true);
+			header.setOrder(asc);
 		}
 		Element body = getBodyElement();
 		ArrayList<Object[]> rows = new ArrayList<Object[]>();
@@ -395,11 +419,19 @@ public class UniTimeTable<T> extends FlexTable {
 				rows.add(new Object[] {r, getRowFormatter().getElement(row), row});
 			}
 		}
-		Collections.sort(rows,new Comparator<Object[]>() {
-			public int compare(Object[] a, Object[] b) {
-				return rowComparator.compare((Integer)a[2], (Integer)b[2]);
-			}
-		});
+		if (asc) {
+			Collections.sort(rows,new Comparator<Object[]>() {
+				public int compare(Object[] a, Object[] b) {
+					return rowComparator.compare((Integer)a[2], (Integer)b[2]);
+				}
+			});
+		} else {
+			Collections.sort(rows,new Comparator<Object[]>() {
+				public int compare(Object[] a, Object[] b) {
+					return - rowComparator.compare((Integer)a[2], (Integer)b[2]);
+				}
+			});
+		}
 		int idx = 0;
 		List<DataChangedEvent<T>> changeEvents = new ArrayList<DataChangedEvent<T>>();
 		for (int row = 0; row < getRowCount(); row++) {
