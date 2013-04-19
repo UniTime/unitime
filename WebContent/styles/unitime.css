@@ -1579,7 +1579,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-FilterBox .button {
-	color: #b0b0b0;
+	color: #909090;
 	cursor: pointer;
 	position: relative;
 	display: -moz-inline-box;
@@ -1590,11 +1590,11 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-FilterBox .button:hover {
-	color: #606060;
+	color: #505050;
 }
 
 .unitime-FilterBox .button-arrow {
-	color: #b0b0b0;
+	color: #909090;
 	cursor: pointer;
 	position: relative;
 	display: -moz-inline-box;
@@ -1609,7 +1609,7 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 }
 
 .unitime-FilterBox .button-arrow:hover {
-	color: #606060;
+	color: #505050;
 }
 
 .unitime-FilterBox .chip {
