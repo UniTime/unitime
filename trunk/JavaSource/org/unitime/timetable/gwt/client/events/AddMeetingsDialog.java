@@ -230,12 +230,19 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 				MenuBar menu = new MenuBar(true);
 				for (final SortRoomsBy sortBy: SortRoomsBy.values()) {
 					if (sortBy == SortRoomsBy.DISTANCE && !iRooms.hasChip(new Chip("flag", "Nearby"))) continue;
-					MenuItem item = new MenuItem(MESSAGES.opSortBy(getSortRoomsByName(sortBy)), true, new Command() {
+					MenuItem item = new MenuItem(
+							(sortBy.ordinal() == EventCookie.getInstance().getRoomsSortBy() ? "&uarr; " :
+							(sortBy.ordinal() + SortRoomsBy.values().length == EventCookie.getInstance().getRoomsSortBy()) ? "&darr; " : "") +
+							MESSAGES.opSortBy(getSortRoomsByName(sortBy)), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
-							EventCookie.getInstance().setSortRoomsBy(sortBy.ordinal());
-							populate(iResponse, 0, sortBy.ordinal());
+							if (sortBy.ordinal() == EventCookie.getInstance().getRoomsSortBy()) {
+								EventCookie.getInstance().setSortRoomsBy(SortRoomsBy.values().length + sortBy.ordinal());
+							} else {
+								EventCookie.getInstance().setSortRoomsBy(sortBy.ordinal());
+							}
+							populate(iResponse, 0, EventCookie.getInstance().getRoomsSortBy());
 							recenter();
 						}
 					});
@@ -417,6 +424,15 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		}
 	}
 	
+	public static Comparator<Entity> inverse(final Comparator<Entity> cmp) {
+		return new Comparator<Entity>() {
+			@Override
+			public int compare(Entity r1, Entity r2) {
+				return - cmp.compare(r1, r2);
+			}
+		};
+	}
+	
 	public void showDialog(Long eventId) {
 		iStep = (Window.getClientWidth() - 300) / 105;
 		ToolBox.setMaxHeight(iScrollRooms.getElement().getStyle(), (Window.getClientHeight() - 200) + "px");
@@ -489,10 +505,20 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 	private Entity iHoverLoc = null;
 	
 	private void populate(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), response);
+			if (comparator != null)
+				Collections.sort(iMatchingRooms, comparator);
+		} else if (sortBy != null && sortBy >= SortRoomsBy.values().length && sortBy < 2 * SortRoomsBy.values().length) {
+			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy - SortRoomsBy.values().length], iRooms.getChip("size") != null, getDates(), response);
+			if (comparator != null)
+				Collections.sort(iMatchingRooms, inverse(comparator));
+		}
+		
 		if (EventCookie.getInstance().areRoomsHorizontal())
-			populateHorizontal(response, index, sortBy);
+			populateHorizontal(response, index);
 		else
-			populateVertical(response, index, sortBy);
+			populateVertical(response, index);
 	}
 	
 	protected String conflicts2html(Set<MeetingConflictInterface> conflicts) {
@@ -552,17 +578,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		return message;
 	}
 	
-	private void populateHorizontal(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+	private void populateHorizontal(EventRoomAvailabilityRpcResponse response, int index) {
 		iResponse = response;
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
 		if (iIndex >= getRooms().size()) iIndex = iStep * (getRooms().size() / iStep);
-		
-		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
-			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), iResponse);
-			if (comparator != null)
-				Collections.sort(iMatchingRooms, comparator);
-		}
 		
 		iAvailabilityHeader.setEnabled("prev", iIndex > 0);
 		iAvailabilityHeader.setEnabled("next", iIndex + iStep < getRooms().size());
@@ -715,17 +735,11 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		}
 	}
 	
-	private void populateVertical(EventRoomAvailabilityRpcResponse response, int index, Integer sortBy) {
+	private void populateVertical(EventRoomAvailabilityRpcResponse response, int index) {
 		iResponse = response;
 		iIndex = index;
 		if (iIndex < 0) iIndex = 0;
 		if (iIndex >= getDates().size()) iIndex = iStep * (getDates().size() / iStep);
-		
-		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
-			Comparator<Entity> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null, getDates(), iResponse);
-			if (comparator != null)
-				Collections.sort(iMatchingRooms, comparator);
-		}
 		
 		iAvailabilityHeader.setEnabled("prev", iIndex > 0);
 		iAvailabilityHeader.setEnabled("next", iIndex + iStep < getDates().size());
