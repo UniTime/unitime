@@ -844,6 +844,16 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	@Override
+	public List<Date> getSelectedDates() {
+		return iDates.getValue();
+	}
+
+	@Override
+	public StartEndTime getSelectedTime() {
+		return iTimes.getValue();
+	}
+	
+	@Override
 	public ContactInterface getMainContact() {
 		return iProperties == null ? null : iProperties.getMainContact();
 	}

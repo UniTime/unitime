@@ -32,6 +32,7 @@ import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.client.GwtHint;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.events.StartEndTimeSelector.StartEndTime;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
@@ -469,14 +470,14 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		return iSelected.contains(date + ":" + room.getUniqueId());
 	}
 	
-	public void reset(String roomFilterValue) {
-		reset(roomFilterValue, null);
+	public void reset(String roomFilterValue, List<Date> selectedDates, StartEndTime selectedTimes) {
+		reset(roomFilterValue, null, selectedDates, selectedTimes);
 	}
-
-	public void reset(String roomFilterValue, List<MeetingInterface> meetings) {
+	
+	public void reset(String roomFilterValue, List<MeetingInterface> meetings, List<Date> selectedDates, StartEndTime selectedTimes) {
 		iMatchingRooms = null;
-		iDates.setValue(new ArrayList<Date>());
-		iTimes.setValue(null, true); iTimes.setDiff(12);
+		iDates.setValue(selectedDates);
+		iTimes.setValue(selectedTimes, true); iTimes.setDiff(12);
 		iRooms.setValue(roomFilterValue == null || roomFilterValue.isEmpty() ? "flag:Event" : roomFilterValue.contains("flag:All") || roomFilterValue.contains("flag:Event") ? roomFilterValue : "flag:Event " + roomFilterValue, true);
 		iSelected.clear();
 		if (meetings != null && !meetings.isEmpty()) {

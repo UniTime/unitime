@@ -39,6 +39,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSessionFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
+import org.unitime.timetable.gwt.client.events.StartEndTimeSelector.StartEndTime;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickEvent;
 import org.unitime.timetable.gwt.client.events.TimeGrid.MeetingClickHandler;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
@@ -1642,6 +1643,16 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	public String getRoomFilter() {
 		return iRooms.getValue();
 	}
+	
+	@Override
+	public List<Date> getSelectedDates() {
+		return null;
+	}
+
+	@Override
+	public StartEndTime getSelectedTime() {
+		return null;
+	}
 
 	@Override
 	public ContactInterface getMainContact() {
@@ -1797,6 +1808,4 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		return null;
 	}
-
-
 }
