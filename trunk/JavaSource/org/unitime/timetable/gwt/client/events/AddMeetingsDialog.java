@@ -398,17 +398,19 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 			return new Comparator<Entity>() {
 				@Override
 				public int compare(Entity r1, Entity r2) {
-					Long p1 = Long.valueOf(r1.getProperty("permId", "-1"));
-					Long p2 = Long.valueOf(r2.getProperty("permId", "-1"));
-					int a1 = 0, a2 = 0;
-					for (Integer date: dates) {
-						Set<MeetingConflictInterface> c1 = availability.getOverlaps(date, p1);
-						Set<MeetingConflictInterface> c2 = availability.getOverlaps(date, p2);
-						if (c1 == null || c1.isEmpty()) a1 ++;
-						if (c2 == null || c2.isEmpty()) a2 ++;
+					if (dates != null && availability != null) {
+						Long p1 = Long.valueOf(r1.getProperty("permId", "-1"));
+						Long p2 = Long.valueOf(r2.getProperty("permId", "-1"));
+						int a1 = 0, a2 = 0;
+						for (Integer date: dates) {
+							Set<MeetingConflictInterface> c1 = availability.getOverlaps(date, p1);
+							Set<MeetingConflictInterface> c2 = availability.getOverlaps(date, p2);
+							if (c1 == null || c1.isEmpty()) a1 ++;
+							if (c2 == null || c2.isEmpty()) a2 ++;
+						}
+						if (a1 > a2) return -1;
+						if (a1 < a2) return 1;						
 					}
-					if (a1 > a2) return -1;
-					if (a1 < a2) return 1;
 					int cmp = Integer.valueOf(r1.getProperty("distance", "0")).compareTo(Integer.valueOf(r2.getProperty("distance", "0")));
 					if (cmp != 0) return cmp;
 					if (preferSize) {
