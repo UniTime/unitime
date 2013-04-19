@@ -763,7 +763,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		
 		iTable = new EventMeetingTable(EventMeetingTable.Mode.ListOfEvents, true, this) {
 			@Override
-			protected void onSortByChanded(EventComparator.EventMeetingSortBy sortBy) {
+			protected void onSortByChanded(EventComparator.EventMeetingSortBy sortBy, boolean asc) {
 				changeUrl();
 			}
 			@Override
@@ -1035,7 +1035,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		}
 		if (iHistoryToken.hasParameter("sort"))
-			iTable.setSortBy(Integer.valueOf(iHistoryToken.getParameter("sort")));
+			iTable.setSortBy(iHistoryToken.getParameter("sort"));
 		if (iHistoryToken.hasParameter("event")) {
 			if (iHistoryToken.isChanged("term", iSession.getAcademicSessionAbbreviation()) && iHistoryToken.getParameter("term") != null)
 				iSession.selectSession(iHistoryToken.getParameter("term"), null);
@@ -1492,7 +1492,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			iHistoryToken.setParameter("event", id == null ? "add" : id.toString());
 		}
 		if (iTable.hasSortBy())
-			iHistoryToken.setParameter("sort", String.valueOf(iTable.getSortBy()));
+			iHistoryToken.setParameter("sort", iTable.getSortBy());
 		iHistoryToken.mark();
 		Client.fireGwtPageChanged(new Client.GwtPageChangeEvent());
 	}
