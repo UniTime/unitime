@@ -57,13 +57,19 @@ public class ExaminationPermissions {
 	@PermissionForRight(Right.ExaminationDetail)
 	public static class ExaminationDetail implements Permission<Exam> {
 		@Autowired PermissionSession permissionSession;
+		@Autowired PermissionDepartment permissionDepartment;
 
 		@Override
 		public boolean check(UserContext user, Exam source) {
 			if (user.getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView, DepartmentStatusType.Status.ExamTimetable);
-			else
-				return permissionSession.check(user, source.getSession(), DepartmentStatusType.Status.ExamView);
+			else {
+				for (ExamOwner owner: source.getOwners()) {
+					if (permissionDepartment.check(user, owner.getCourse().getSubjectArea().getDepartment(), DepartmentStatusType.Status.ExamView))
+						return true;
+				}
+				return false;
+			}
 		}
 
 		@Override
