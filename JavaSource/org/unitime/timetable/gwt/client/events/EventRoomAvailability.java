@@ -34,6 +34,7 @@ import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSessionFilter;
+import org.unitime.timetable.gwt.client.events.AddMeetingsDialog.SortRoomsBy;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable.HistoryToken;
 import org.unitime.timetable.gwt.client.events.EventResourceTimetable.PageType;
@@ -45,6 +46,7 @@ import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
@@ -77,11 +79,13 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -90,8 +94,12 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.MenuBar;
+import com.google.gwt.user.client.ui.MenuItem;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -198,6 +206,38 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.addRow(iFilter);
 		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("sort", MESSAGES.buttonSortBy(), new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				final PopupPanel popup = new PopupPanel(true);
+				MenuBar menu = new MenuBar(true);
+				for (final SortRoomsBy sortBy: SortRoomsBy.values()) {
+					if (sortBy == SortRoomsBy.DISTANCE && !iRooms.hasChip(new Chip("flag", "Nearby"))) continue;
+					MenuItem item = new MenuItem(
+							(sortBy.ordinal() == EventCookie.getInstance().getRoomsSortBy() ? "&uarr; " :
+							(sortBy.ordinal() + SortRoomsBy.values().length == EventCookie.getInstance().getRoomsSortBy()) ? "&darr; " : "") +
+							AddMeetingsDialog.getSortRoomsByName(sortBy), true, new Command() {
+						@Override
+						public void execute() {
+							popup.hide();
+							if (sortBy.ordinal() == EventCookie.getInstance().getRoomsSortBy()) {
+								EventCookie.getInstance().setSortRoomsBy(SortRoomsBy.values().length + sortBy.ordinal());
+							} else {
+								EventCookie.getInstance().setSortRoomsBy(sortBy.ordinal());
+							}
+							populate(iData, EventCookie.getInstance().getRoomsSortBy());
+						}
+					});
+					item.getElement().getStyle().setCursor(Cursor.POINTER);
+					menu.addItem(item);
+				}
+				menu.setVisible(true);
+				menu.setFocusOnHoverEnabled(true);
+				popup.add(menu);
+				popup.showRelativeTo((UIObject)event.getSource());
+				((MenuBar)popup.getWidget()).focus();
+			}
+		});
 		iPanel.addHeaderRow(iHeader);
 
 		iTables = new VerticalPanel();
@@ -282,7 +322,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			@Override
 			protected void onApprovalOrReject(Long eventId, EventInterface event) {
 				if (iData != null)
-					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event));
+					populate(tinker(new GwtRpcResponseList<EventInterface>(iData), eventId, event), null);
 			}
 		};
 		
@@ -294,7 +334,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				final EventInterface modified = iEventAdd.getEvent(), detail = iEventDetail.getEvent(), saved = iEventAdd.getSavedEvent();
 				if (saved != null) {
 					if (iData != null)
-						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved));
+						populate(tinker(new GwtRpcResponseList<EventInterface>(iData), (saved.getId() == null ? modified.getId() : saved.getId()), saved), null);
 					if (saved.getId() != null) {
 						iEventDetail.setEvent(saved);
 						iEventDetail.show();
@@ -358,6 +398,88 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				}
 			}
 		});
+	}
+	
+	private Integer getOccupancy(ResourceInterface room) {
+		int startSlot = (iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart());
+		int endSlot = (iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+		int use = 0;
+		for (EventInterface event: iData) {
+			for (MeetingInterface meeting: event.getMeetings()) {
+				if (room.equals(meeting.getLocation())) {
+					int start = Math.max(startSlot, meeting.getStartSlot());
+					int end = Math.min(endSlot, meeting.getEndSlot());
+					use += Math.max(0, end - start);
+				}
+			}
+		}
+		return use;
+	}
+	
+	private Comparator<ResourceInterface> getSortRoomsComparator(SortRoomsBy sortBy, final boolean preferSize) {
+		switch (sortBy) {
+		case CAPACITY:
+			return new Comparator<ResourceInterface>() {
+				@Override
+				public int compare(ResourceInterface r1, ResourceInterface r2) {
+					int cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+					if (cmp != 0) return cmp;
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getId().compareTo(r2.getId()) : cmp);
+				}
+				
+			};
+		case NAME:
+			return new Comparator<ResourceInterface>() {
+				@Override
+				public int compare(ResourceInterface r1, ResourceInterface r2) {
+					int cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getId().compareTo(r2.getId()) : cmp);
+				}
+				
+			};
+		case DISTANCE:
+			return new Comparator<ResourceInterface>() {
+				@Override
+				public int compare(ResourceInterface r1, ResourceInterface r2) {
+					int cmp = (r1.getDistance() == null ? new Double(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? new Double(0.0) : r2.getDistance());
+					if (cmp != 0) return cmp;
+					if (preferSize) {
+						cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+						if (cmp != 0) return cmp;
+					}
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getId().compareTo(r2.getId()) : cmp);
+				}
+			};
+		case AVAILABILITY:
+			return new Comparator<ResourceInterface>() {
+				@Override
+				public int compare(ResourceInterface r1, ResourceInterface r2) {
+					int cmp = getOccupancy(r1).compareTo(getOccupancy(r2));
+					if (cmp != 0) return cmp;
+					cmp = (r1.getDistance() == null ? new Double(0.0) : r1.getDistance()).compareTo(r2.getDistance() == null ? new Double(0.0) : r2.getDistance());
+					if (cmp != 0) return cmp;
+					if (preferSize) {
+						cmp = (r1.getSize() == null ? new Integer(0) : r1.getSize()).compareTo(r2.getSize() == null ? new Integer(0) : r2.getSize());
+						if (cmp != 0) return cmp;
+					}
+					cmp = r1.getName().compareTo(r2.getName());
+					return (cmp == 0 ? r1.getId().compareTo(r2.getId()) : cmp);
+				}
+			};
+		default:
+			return null;
+		}
+	}
+	
+	private Comparator<ResourceInterface> inverse(final Comparator<ResourceInterface> cmp) {
+		return new Comparator<ResourceInterface>() {
+			@Override
+			public int compare(ResourceInterface r1, ResourceInterface r2) {
+				return - cmp.compare(r1, r2);
+			}
+		};
 	}
 
 	@Override
@@ -520,7 +642,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 								new AsyncCallback<GwtRpcResponseList<EventInterface>>() {
 							@Override
 							public void onSuccess(GwtRpcResponseList<EventInterface> result) {
-								populate(result);
+								populate(result, EventCookie.getInstance().getRoomsSortBy());
 							}
 					
 							@Override
@@ -590,13 +712,24 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		return data;
 	}
 	
-	private void populate(GwtRpcResponseList<EventInterface> result) {
+	private void populate(List<EventInterface> result, Integer sortBy) {
 		for (int i = 0; i < iTables.getWidgetCount(); i++) {
 			Widget w = iTables.getWidget(i);
 			if (w instanceof TimeGrid)
 				((TimeGrid)w).destroy();
 		}
 		iData = result;
+		if (sortBy != null && sortBy >= 0 && sortBy < SortRoomsBy.values().length) {
+			Comparator<ResourceInterface> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy], iRooms.getChip("size") != null);
+			if (comparator != null)
+				Collections.sort(iSelectedRooms, comparator);
+		} else {
+			if (sortBy != null && sortBy >= SortRoomsBy.values().length && sortBy < 2 * SortRoomsBy.values().length) {
+				Comparator<ResourceInterface> comparator = getSortRoomsComparator(SortRoomsBy.values()[sortBy - SortRoomsBy.values().length], iRooms.getChip("size") != null);
+				if (comparator != null)
+					Collections.sort(iSelectedRooms, inverse(comparator));
+			}
+		}
 		iTables.clear();
 		HashMap<Long, String> colors = new HashMap<Long, String>();
 		int[] days = new int[iSelectedDates.size()];
