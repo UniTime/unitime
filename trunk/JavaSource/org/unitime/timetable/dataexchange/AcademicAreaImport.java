@@ -81,8 +81,7 @@ public class AcademicAreaImport extends BaseImport {
                 }
                 area.setExternalUniqueId(externalId);
                 area.setAcademicAreaAbbreviation(abbv);
-                area.setLongTitle(element.attributeValue("longTitle"));
-                area.setShortTitle(element.attributeValue("shortTitle"));
+                area.setTitle(element.attributeValue("title", element.attributeValue("longTitle")));
 
                 getHibSession().saveOrUpdate(area);
             }

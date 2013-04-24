@@ -46,14 +46,7 @@
             length="10"/>
 
         <property
-            name="shortTitle"
-            column="short_title"
-            type="java.lang.String"
-            not-null="true"
-            length="50"/>
-
-        <property
-            name="longTitle"
+            name="title"
             column="long_title"
             type="java.lang.String"
             not-null="true"

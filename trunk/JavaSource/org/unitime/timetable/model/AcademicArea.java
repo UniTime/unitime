@@ -80,7 +80,7 @@ public class AcademicArea extends BaseAcademicArea {
      * @return
      */
     public String getLabelAbbrTitle() {
-        return this.getAcademicAreaAbbreviation() + " : " + this.getShortTitle();
+        return this.getAcademicAreaAbbreviation() + " : " + this.getTitle();
     }
 
     /**
@@ -88,7 +88,7 @@ public class AcademicArea extends BaseAcademicArea {
      * @return
      */
     public String getLabelTitleAbbr() {
-        return this.getShortTitle() + " : " + this.getAcademicAreaAbbreviation();
+        return this.getTitle() + " : " + this.getAcademicAreaAbbreviation();
     }
 	
 	public Long getSessionId(){
@@ -135,8 +135,7 @@ public class AcademicArea extends BaseAcademicArea {
     	AcademicArea area = new AcademicArea();
     	area.setExternalUniqueId(getExternalUniqueId());
     	area.setAcademicAreaAbbreviation(getAcademicAreaAbbreviation());
-    	area.setShortTitle(getShortTitle());
-    	area.setLongTitle(getLongTitle());
+    	area.setTitle(getTitle());
     	return area;
     }
         

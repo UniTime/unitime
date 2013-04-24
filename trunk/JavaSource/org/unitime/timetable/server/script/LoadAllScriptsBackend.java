@@ -108,7 +108,7 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 				if (p.getType().equalsIgnoreCase("subjects")) parameter.setMultiSelect(true);
 				for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
 					if (right != null && SubjectArea.class.equals(right.type()) && !context.hasPermission(subject, right)) continue;
-					parameter.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle()));
+					parameter.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(subject.getTitle()));
 				}
 			}
 			script.addParameter(parameter);

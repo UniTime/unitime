@@ -184,10 +184,7 @@ public class SubjectAreaEditAction extends Action {
         frm.setAbbv(sa.getSubjectAreaAbbreviation()!=null ? sa.getSubjectAreaAbbreviation() : "");        
         frm.setDepartment(sa.getDepartment()!=null ? sa.getDepartment().getUniqueId() : null);
         frm.setExternalId(sa.getExternalUniqueId() !=null ? sa.getExternalUniqueId() : "");
-        frm.setShortTitle(sa.getShortTitle() !=null ? sa.getShortTitle() : "");
-        frm.setLongTitle(sa.getLongTitle() !=null ? sa.getLongTitle() : "");
-        frm.setPseudo(sa.isPseudoSubjectArea() !=null ? sa.isPseudoSubjectArea() : null);
-        frm.setScheduleBkOnly(sa.isScheduleBookOnly() !=null ? sa.isScheduleBookOnly() : null);
+        frm.setTitle(sa.getTitle() !=null ? sa.getTitle() : "");
 	}
 	
 	/**
@@ -401,10 +398,7 @@ public class SubjectAreaEditAction extends Action {
 	            sa.setDepartment(dept);
 	        }
 	        sa.setExternalUniqueId(frm.getExternalId());
-	        sa.setShortTitle(frm.getShortTitle());
-	        sa.setLongTitle(frm.getLongTitle());
-	        sa.setPseudoSubjectArea(frm.getPseudo()==null ? Boolean.FALSE : frm.getPseudo());
-	        sa.setScheduleBookOnly(frm.getScheduleBkOnly()==null ? Boolean.FALSE : frm.getScheduleBkOnly());
+	        sa.setTitle(frm.getTitle());
 	        
 	        hibSession.saveOrUpdate(sa);			
 			

@@ -55,7 +55,7 @@ public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRp
 			Entity area = areas.get(curriculum.getAcademicArea().getUniqueId());
 			if (area == null) {
 				area = new Entity(curriculum.getAcademicArea().getUniqueId(), curriculum.getAcademicArea().getAcademicAreaAbbreviation(),
-						Constants.curriculaToInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
+						Constants.curriculaToInitialCase(curriculum.getAcademicArea().getTitle()));
 				areas.put(area.getUniqueId(), area);
 			}
 			area.incCount();
@@ -133,7 +133,7 @@ public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRp
 			if (query != null && !query.match(new CurriculumMatcher(curriculum, userDepartments))) continue;
 			
 			if (area != null && !area.isEmpty() && !area.contains(curriculum.getAcademicArea().getAcademicAreaAbbreviation()) &&
-					!area.contains(Constants.curriculaToInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()))) continue;
+					!area.contains(Constants.curriculaToInitialCase(curriculum.getAcademicArea().getTitle()))) continue;
 			if (department != null && !department.isEmpty()) {
 				if (department.contains("Managed")) {
 					if (!userDepartments.contains(curriculum.getDepartment())) continue;
@@ -195,8 +195,7 @@ public class CurriculumFilterBackend extends FilterBoxBackend<CurriculumFilterRp
 			}
 			if (attr == null || "area".equals(attr)) {
 				if (eq(iCurriculum.getAcademicArea().getAcademicAreaAbbreviation(), term) ||
-					has(iCurriculum.getAcademicArea().getShortTitle(), term) ||
-					has(iCurriculum.getAcademicArea().getLongTitle(), term)) return true;
+					has(iCurriculum.getAcademicArea().getTitle(), term)) return true;
 			}
 			if (attr == null || "major".equals(attr)) {
 				for (Iterator<PosMajor> i = iCurriculum.getMajors().iterator(); i.hasNext(); ) {

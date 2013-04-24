@@ -56,16 +56,14 @@ public class AcademicAreas implements AdminTable {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
 				new Field(MESSAGES.fieldAbbreviation(), FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field(MESSAGES.fieldShortTitle(), FieldType.text, 200, 50, Flag.UNIQUE),
-				new Field(MESSAGES.fieldLongTitle(), FieldType.text, 500, 100, Flag.NOT_EMPTY)
+				new Field(MESSAGES.fieldTitle(), FieldType.text, 500, 100, Flag.NOT_EMPTY)
 				);
 		data.setSortBy(1,2,3);
 		for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.addRecord(area.getUniqueId());
 			r.setField(0, area.getExternalUniqueId());
 			r.setField(1, area.getAcademicAreaAbbreviation());
-			r.setField(2, area.getShortTitle());
-			r.setField(3, area.getLongTitle());
+			r.setField(2, area.getTitle());
 			r.setDeletable(area.getExternalUniqueId() == null);
 		}
 		data.setEditable(context.hasPermission(Right.AcademicAreaEdit));
@@ -93,14 +91,13 @@ public class AcademicAreas implements AdminTable {
 		AcademicArea area = new AcademicArea();
 		area.setExternalUniqueId(record.getField(0));
 		area.setAcademicAreaAbbreviation(record.getField(1));
-		area.setShortTitle(record.getField(2));
-		area.setLongTitle(record.getField(3));
+		area.setTitle(record.getField(2));
 		area.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
 		record.setUniqueId((Long)hibSession.save(area));
 		ChangeLog.addChange(hibSession,
 				context,
 				area,
-				area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+				area.getAcademicAreaAbbreviation() + " " + area.getTitle(),
 				Source.SIMPLE_EDIT, 
 				Operation.CREATE,
 				null,
@@ -111,17 +108,15 @@ public class AcademicAreas implements AdminTable {
 		if (area == null) return;
 		if (ToolBox.equals(area.getExternalUniqueId(), record.getField(0)) &&
 				ToolBox.equals(area.getAcademicAreaAbbreviation(), record.getField(1)) &&
-				ToolBox.equals(area.getShortTitle(), record.getField(2)) &&
-				ToolBox.equals(area.getLongTitle(), record.getField(3))) return;
+				ToolBox.equals(area.getTitle(), record.getField(2))) return;
 		area.setExternalUniqueId(record.getField(0));
 		area.setAcademicAreaAbbreviation(record.getField(1));
-		area.setShortTitle(record.getField(2));
-		area.setLongTitle(record.getField(3));
+		area.setTitle(record.getField(2));
 		hibSession.saveOrUpdate(area);
 		ChangeLog.addChange(hibSession,
 				context,
 				area,
-				area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+				area.getAcademicAreaAbbreviation() + " " + area.getTitle(),
 				Source.SIMPLE_EDIT, 
 				Operation.UPDATE,
 				null,
@@ -139,7 +134,7 @@ public class AcademicAreas implements AdminTable {
 		ChangeLog.addChange(hibSession,
 				context,
 				area,
-				area.getAcademicAreaAbbreviation() + " " + area.getLongTitle(),
+				area.getAcademicAreaAbbreviation() + " " + area.getTitle(),
 				Source.SIMPLE_EDIT, 
 				Operation.DELETE,
 				null,

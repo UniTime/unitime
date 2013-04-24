@@ -215,18 +215,18 @@ public class MakeCurriculaFromLastlikeDemands {
         	Hashtable<String,Hashtable<String, Float>> rules = getRules(hibSession, e1.getKey().getUniqueId());
             for (Map.Entry<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>> e2 : e1.getValue().entrySet()) {
             	if (!e1.getKey().getPosMajors().contains(e2.getKey())) {
-            		sLog.warn("Academic area " + e1.getKey().getAcademicAreaAbbreviation() + " - " + Constants.curriculaToInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) +
+            		sLog.warn("Academic area " + e1.getKey().getAcademicAreaAbbreviation() + " - " + Constants.curriculaToInitialCase(e1.getKey().getTitle()) +
             				" does not contain major " + e2.getKey().getCode() + " - " + Constants.curriculaToInitialCase(e2.getKey().getName()));
             		continue;
             	}
             	
-            	sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getShortTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
+            	sLog.info("Creating curriculum "+e1.getKey().getAcademicAreaAbbreviation()+" ("+e1.getKey().getTitle()+") - " + e2.getKey().getCode() + " (" + e2.getKey().getName()+ ")");
                 Hashtable<Department,Integer> deptCounter = new Hashtable<Department, Integer>();
 
                 Curriculum curriculum = new Curriculum();
                 curriculum.setAcademicArea(e1.getKey());
                 curriculum.setAbbv(e1.getKey().getAcademicAreaAbbreviation() + "/" + e2.getKey().getCode());
-                curriculum.setName(Constants.curriculaToInitialCase(e1.getKey().getLongTitle() == null ? e1.getKey().getShortTitle() : e1.getKey().getLongTitle()) + " / " + Constants.curriculaToInitialCase(e2.getKey().getName()));
+                curriculum.setName(Constants.curriculaToInitialCase(e1.getKey().getTitle() == null ? e1.getKey().getTitle() : e1.getKey().getTitle()) + " / " + Constants.curriculaToInitialCase(e2.getKey().getName()));
 				if (curriculum.getName().length() > 60) curriculum.setName(curriculum.getName().substring(0, 60));
                 curriculum.setClassifications(new HashSet());
                 curriculum.setMajors(new HashSet());

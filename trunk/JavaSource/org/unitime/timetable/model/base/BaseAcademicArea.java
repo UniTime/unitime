@@ -34,8 +34,7 @@ public abstract class BaseAcademicArea implements Serializable {
 	private Long iUniqueId;
 	private String iExternalUniqueId;
 	private String iAcademicAreaAbbreviation;
-	private String iShortTitle;
-	private String iLongTitle;
+	private String iTitle;
 
 	private Session iSession;
 	private Set<PosMajor> iPosMajors;
@@ -44,8 +43,7 @@ public abstract class BaseAcademicArea implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_ACADEMIC_AREA_ABBREVIATION = "academicAreaAbbreviation";
-	public static String PROP_SHORT_TITLE = "shortTitle";
-	public static String PROP_LONG_TITLE = "longTitle";
+	public static String PROP_LONG_TITLE = "title";
 
 	public BaseAcademicArea() {
 		initialize();
@@ -67,11 +65,8 @@ public abstract class BaseAcademicArea implements Serializable {
 	public String getAcademicAreaAbbreviation() { return iAcademicAreaAbbreviation; }
 	public void setAcademicAreaAbbreviation(String academicAreaAbbreviation) { iAcademicAreaAbbreviation = academicAreaAbbreviation; }
 
-	public String getShortTitle() { return iShortTitle; }
-	public void setShortTitle(String shortTitle) { iShortTitle = shortTitle; }
-
-	public String getLongTitle() { return iLongTitle; }
-	public void setLongTitle(String longTitle) { iLongTitle = longTitle; }
+	public String getTitle() { return iTitle; }
+	public void setTitle(String title) { iTitle = title; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -109,9 +104,8 @@ public abstract class BaseAcademicArea implements Serializable {
 		return "AcademicArea[" +
 			"\n	AcademicAreaAbbreviation: " + getAcademicAreaAbbreviation() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
-			"\n	LongTitle: " + getLongTitle() +
 			"\n	Session: " + getSession() +
-			"\n	ShortTitle: " + getShortTitle() +
+			"\n	Title: " + getTitle() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

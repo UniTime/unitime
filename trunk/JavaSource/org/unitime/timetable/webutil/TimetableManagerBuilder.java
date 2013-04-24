@@ -151,7 +151,7 @@ public class TimetableManagerBuilder {
 			        for (Iterator si = saList.iterator(); si.hasNext(); ) {
 			            SubjectArea sa = (SubjectArea) si.next();
                         if (subjectList.length()>0) subjectList+=","+(html?"<br>":"\n");
-                        subjectList += (html?"<span title='"+sa.getLongTitle()+"'>"+sa.getSubjectAreaAbbreviation().trim()+"</span>":sa.getSubjectAreaAbbreviation().trim());
+                        subjectList += (html?"<span title='"+sa.getTitle()+"'>"+sa.getSubjectAreaAbbreviation().trim()+"</span>":sa.getSubjectAreaAbbreviation().trim());
 			        }
 			    }
 		    }
