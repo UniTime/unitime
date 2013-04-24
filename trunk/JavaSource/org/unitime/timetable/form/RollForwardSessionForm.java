@@ -107,6 +107,17 @@ public class RollForwardSessionForm extends ActionForm {
 	private Boolean rollForwardSessionConfig;
 	private Long sessionToRollSessionConfigForwardFrom;
 	
+	private Boolean rollForwardReservations;
+	private Long sessionToRollReservationsForwardFrom;
+	private String[] rollForwardReservationsSubjectIds;
+	private Boolean rollForwardCourseReservations;
+	private Boolean rollForwardCurriculumReservations;
+	private Boolean rollForwardGroupReservations;
+	private String expirationCourseReservations;
+	private String expirationCurriculumReservations;
+	private String expirationGroupReservations;
+	private Boolean createStudentGroupsIfNeeded;
+	
 	/** 
 	 * Method validate
 	 * @param mapping
@@ -277,7 +288,6 @@ public class RollForwardSessionForm extends ActionForm {
 		}
 	}
 
-	
 	public void validateSessionToRollForwardTo(ActionErrors errors){
 		Session toAcadSession = Session.getSessionById(getSessionToRollForwardTo());
 		if (toAcadSession == null){
@@ -348,6 +358,16 @@ public class RollForwardSessionForm extends ActionForm {
 		midtermExamsPrefsAction = null;
 		rollForwardSessionConfig = false;
 		sessionToRollSessionConfigForwardFrom = null;
+		rollForwardReservations = false;
+		sessionToRollReservationsForwardFrom = null;
+		rollForwardReservationsSubjectIds = new String[0];
+		rollForwardCurriculumReservations = false;
+		rollForwardCourseReservations = false;
+		rollForwardGroupReservations = false;
+		expirationCourseReservations = null;
+		expirationCurriculumReservations = null;
+		expirationGroupReservations = null;
+		createStudentGroupsIfNeeded = false;
 	}
 
 	/** 
@@ -749,6 +769,36 @@ public class RollForwardSessionForm extends ActionForm {
 
 	public String getFinalExamsPrefsAction() { return finalExamsPrefsAction; }
 	public void setFinalExamsPrefsAction(String finalExamsPrefsAction) { this.finalExamsPrefsAction = finalExamsPrefsAction; }
+	
+	public boolean getRollForwardReservations() { return rollForwardReservations; }
+	public void setRollForwardReservations(boolean rollForwardReservations) { this.rollForwardReservations = rollForwardReservations; }
+	
+	public Long getSessionToRollReservationsForwardFrom() { return sessionToRollReservationsForwardFrom; }
+	public void setSessionToRollReservationsForwardFrom(Long sessionToRollReservationsForwardFrom) { this.sessionToRollReservationsForwardFrom = sessionToRollReservationsForwardFrom; }
+	
+	public String[] getRollForwardReservationsSubjectIds() { return rollForwardReservationsSubjectIds; }
+	public void setRollForwardReservationsSubjectIds(String[] rollForwardReservationsSubjectIds) { this.rollForwardReservationsSubjectIds = rollForwardReservationsSubjectIds; }
+
+	public boolean getRollForwardCourseReservations() { return rollForwardCourseReservations; }
+	public void setRollForwardCourseReservations(boolean rollForwardCourseReservations) { this.rollForwardCourseReservations = rollForwardCourseReservations; }
+	
+	public boolean getRollForwardCurriculumReservations() { return rollForwardCurriculumReservations; }
+	public void setRollForwardCurriculumReservations(boolean rollForwardCurriculumReservations) { this.rollForwardCurriculumReservations = rollForwardCurriculumReservations; }
+	
+	public boolean getRollForwardGroupReservations() { return rollForwardGroupReservations; }
+	public void setRollForwardGroupReservations(boolean rollForwardGroupReservations) { this.rollForwardGroupReservations = rollForwardGroupReservations; }
+	
+	public String getExpirationCourseReservations() { return expirationCourseReservations; }
+	public void setExpirationCourseReservations(String expirationCourseReservations) { this.expirationCourseReservations = expirationCourseReservations; }
+	
+	public String getExpirationCurriculumReservations() { return expirationCurriculumReservations; }
+	public void setExpirationCurriculumReservations(String expirationCurriculumReservations) { this.expirationCurriculumReservations = expirationCurriculumReservations; }
+	
+	public String getExpirationGroupReservations() { return expirationGroupReservations; }
+	public void setExpirationGroupReservations(String expirationGroupReservations) { this.expirationGroupReservations = expirationGroupReservations; }
+	
+	public boolean getCreateStudentGroupsIfNeeded() { return createStudentGroupsIfNeeded; }
+	public void setCreateStudentGroupsIfNeeded(boolean createStudentGroupsIfNeeded) { this.createStudentGroupsIfNeeded = createStudentGroupsIfNeeded; }
 
 	public void copyTo(RollForwardSessionForm form) {
 		form.subjectAreas = subjectAreas;
@@ -794,6 +844,16 @@ public class RollForwardSessionForm extends ActionForm {
 		form.finalExamsPrefsAction = finalExamsPrefsAction;
 		form.rollForwardSessionConfig = rollForwardSessionConfig;
 		form.sessionToRollSessionConfigForwardFrom = sessionToRollSessionConfigForwardFrom;
+		form.rollForwardReservations = rollForwardReservations;
+		form.sessionToRollReservationsForwardFrom = sessionToRollReservationsForwardFrom;
+		form.rollForwardReservationsSubjectIds = rollForwardReservationsSubjectIds;
+		form.rollForwardCurriculumReservations = rollForwardCurriculumReservations;
+		form.rollForwardCourseReservations = rollForwardCourseReservations;
+		form.rollForwardGroupReservations = rollForwardGroupReservations;
+		form.expirationCourseReservations = expirationCourseReservations;
+		form.expirationCurriculumReservations = expirationCurriculumReservations;
+		form.expirationGroupReservations = expirationGroupReservations;
+		form.createStudentGroupsIfNeeded = createStudentGroupsIfNeeded;
 	}
 	
 	public Object clone() {

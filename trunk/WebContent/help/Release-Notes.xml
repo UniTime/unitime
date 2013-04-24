@@ -668,6 +668,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Reservations Roll Forward</name>
+			<description>
+				<line>Added ability to roll reservations from one academic session to another.
+					<line>Course, curriculum, and student group reservations can be rolled forward.</line>
+					<line>For reservations with an expiration date filled in, it is possible to reset the expiration date to a given date.</line>
+					<line>Each subject area and/or reservation type can be rolled forward separately.</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Scripts</name>
 			<description>
 				<line>Added ability to run small programs through the interface (page Administration > Utilities > Scripts).

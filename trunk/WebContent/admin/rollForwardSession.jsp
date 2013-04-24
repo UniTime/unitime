@@ -233,6 +233,55 @@
 			</td>
 		</tr>
 		<tr>
+			<td valign="middle" nowrap><html:checkbox name="<%=frmName%>" property="rollForwardReservations" onclick="document.getElementById('reservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Roll Reservations Forward From Session: 
+			<html:select style="width:200px;" property="sessionToRollReservationsForwardFrom">
+			<html:optionsCollection property="fromSessions" value="uniqueId" label="label" /></html:select>
+			</td>
+		</tr>
+		<tr style="display:none;" id="reservationDetail">
+			<td valign="middle">
+			<table style="margin-left: 50px;"><tr>
+			    <td valign="top" nowrap width="20%">For Subject Areas:</td>
+			    <td><html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" name="<%=frmName%>" styleClass="cmb" property="rollForwardReservationsSubjectIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+					<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+				</html:select>
+			    </td></tr>
+			<tr><td valign="top" colspan="2">
+				<html:checkbox name="<%=frmName%>" property="rollForwardCourseReservations" onclick="document.getElementById('courseReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Course Reservations
+			</td></tr>
+			<tr style="display:none;" id="courseReservationDetail"><td style="padding-left: 50px; vertical-align: middle;" valign="top" colspan="2">
+				New Expiration Date: <html:text property="expirationCourseReservations" maxlength="10" size="10" styleId="epxiration_courses"/><img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_epxiration_courses">
+				&nbsp;&nbsp;&nbsp;&nbsp;<i>Applies to course reservations with an expiration date filled in.</i>
+			</td></tr>
+			<tr><td valign="top" colspan="2">
+				<html:checkbox name="<%=frmName%>" property="rollForwardCurriculumReservations" onclick="document.getElementById('curriculumReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Curriculum Reservations
+			<tr style="display:none;" id="curriculumReservationDetail"><td style="padding-left: 50px; vertical-align: middle;" valign="top" colspan="2">
+				New Expiration Date: <html:text property="expirationCurriculumReservations" maxlength="10" size="10" styleId="epxiration_curricula"/><img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_epxiration_curricula">
+				&nbsp;&nbsp;&nbsp;&nbsp;<i>Applies to curriculum reservations with an expiration date filled in.</i>
+			</td></tr>
+			<tr><td valign="top" colspan="2">
+				<html:checkbox name="<%=frmName%>" property="rollForwardGroupReservations" onclick="document.getElementById('groupReservationDetail').style.display = (this.checked ? 'table-row' : 'none');"/> Include Student Group Reservations
+			<tr style="display:none;" id="groupReservationDetail"><td style="padding-left: 50px; vertical-align: middle;" valign="top" colspan="2">
+				New Expiration Date: <html:text property="expirationGroupReservations" maxlength="10" size="10" styleId="epxiration_groups"/><img style="cursor: pointer;" src="scripts/jscalendar/calendar_1.gif" border="0" id="show_epxiration_groups">
+				&nbsp;&nbsp;&nbsp;&nbsp;<i>Applies to student group reservations with an expiration date filled in.</i><br>
+				<html:checkbox name="<%=frmName%>" property="createStudentGroupsIfNeeded"/> Create student groups that do not exist (with no students). Ignore group reservations that do not match otherwise.
+			</td></tr>
+			</table>
+			</td>
+		</tr>
+		<logic:equal name="<%=frmName%>" property="rollForwardReservations" value="true">
+			<script>document.getElementById('reservationDetail').style.display = 'table-row';</script>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="rollForwardCourseReservations" value="true">
+			<script>document.getElementById('courseReservationDetail').style.display = 'table-row';</script>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="rollForwardCurriculumReservations" value="true">
+			<script>document.getElementById('curriculumReservationDetail').style.display = 'table-row';</script>
+		</logic:equal>
+		<logic:equal name="<%=frmName%>" property="rollForwardGroupReservations" value="true">
+			<script>document.getElementById('groupReservationDetail').style.display = 'table-row';</script>
+		</logic:equal>
+		<tr>
 			<td class="WelcomeRowHead">
 			&nbsp;
 			</td>
@@ -250,3 +299,36 @@
 	</body>
 </html>
 
+<script type="text/javascript" language="javascript">
+	
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "epxiration_courses",		// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    date		: <%=request.getParameter("expirationCourseReservations") != null && request.getParameter("expirationCourseReservations").length() >= 10 ? request.getParameter("expirationCourseReservations") : null%>,
+		button     : "show_epxiration_courses"	// ID of the button
+	} );
+
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "epxiration_curricula",			// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    date		: <%=request.getParameter("expirationCurriculumReservations") != null && request.getParameter("expirationCurriculumReservations").length() >= 10 ? request.getParameter("expirationCurriculumReservations") : null%>,
+		button     : "show_epxiration_curricula" 	// ID of the button
+	} );
+	
+	Calendar.setup( {
+		cache      : true, 					// Single object used for all calendars
+		electric   : false, 				// Changes date only when calendar is closed
+		inputField : "epxiration_groups",			// ID of the input field
+	    ifFormat   : "%m/%d/%Y", 			// Format of the input field
+	    showOthers : true,					// Show overlap of dates from other months	    
+	    date		: <%=request.getParameter("expirationGroupReservations") != null && request.getParameter("expirationGroupReservations").length() >= 10 ? request.getParameter("expirationGroupReservations") : null%>,
+		button     : "show_epxiration_groups" 	// ID of the button
+	} );
+
+</script>

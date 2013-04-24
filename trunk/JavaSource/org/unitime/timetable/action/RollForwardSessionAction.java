@@ -39,10 +39,13 @@ import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.web.WebTable;
 import org.unitime.commons.web.WebTable.WebTableLine;
 import org.unitime.timetable.form.RollForwardSessionForm;
+import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
+import org.unitime.timetable.gwt.shared.ReservationInterface;
 import org.unitime.timetable.model.DepartmentStatusType;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
@@ -65,6 +68,8 @@ import org.unitime.timetable.util.queue.QueueProcessor;
 public class RollForwardSessionAction extends Action {
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired ApplicationContext applicationContext;
 	
 	/*
 	 * Generated Methods
@@ -110,6 +115,8 @@ public class RollForwardSessionAction extends Action {
 	    
 		setToFromSessionsInForm(rollForwardSessionForm);
 		rollForwardSessionForm.setSubjectAreas(getSubjectAreas(rollForwardSessionForm.getSessionToRollForwardTo()));
+		if (op == null)
+			setExpirationDates(rollForwardSessionForm);
 		if (rollForwardSessionForm.getSubpartLocationPrefsAction() == null){
 			rollForwardSessionForm.setSubpartLocationPrefsAction(SessionRollForward.ROLL_PREFS_ACTION);
 		}
@@ -333,6 +340,11 @@ public class RollForwardSessionAction extends Action {
         	    sessionRollForward.rollCurriculaForward(iErrors, iForm);
         	}
 	        iProgress++;
+        	if (iErrors.isEmpty() && iForm.getRollForwardReservations()) {
+				setStatus("Reservations ...");
+        	    sessionRollForward.rollReservationsForward(iErrors, iForm);
+        	}
+	        iProgress++;
 	        if (!iErrors.isEmpty()) {
 	        	setError(new Exception(((ActionMessage)iErrors.get().next()).getValues()[0].toString()));
 	        }
@@ -357,6 +369,7 @@ public class RollForwardSessionAction extends Action {
         	if (iForm.getRollForwardFinalExams()) names.add("final exams");
         	if (iForm.getRollForwardStudents()) names.add("students");
         	if (iForm.getRollForwardCurricula()) names.add("curricula");
+        	if (iForm.getRollForwardReservations()) names.add("reservations");
         	String name = names.toString().replace("[", "").replace("]", "");
         	if (name.length() > 50) name = name.substring(0, 47) + "...";
         	return name;
@@ -421,6 +434,22 @@ public class RollForwardSessionAction extends Action {
 		
 		if (session != null) subjects = session.getSubjectAreas();
 		return(subjects);
+	}
+	
+	protected void setExpirationDates(RollForwardSessionForm form) {
+		if (form.getSessionToRollForwardTo() != null) {
+			ReservationInterface.DefaultExpirationDates dates = GwtRpcServlet.execute(new ReservationInterface.ReservationDefaultExpirationDatesRpcRequest(form.getSessionToRollForwardTo()), applicationContext, sessionContext);
+			if (dates != null) {
+				SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+				form.setExpirationCourseReservations(dates.hasExpirationDate("course") ? df.format(dates.getExpirationDate("course")) : null);
+				form.setExpirationCurriculumReservations(dates.hasExpirationDate("curriculum") ? df.format(dates.getExpirationDate("curriculum")) : null);
+				form.setExpirationGroupReservations(dates.hasExpirationDate("group") ? df.format(dates.getExpirationDate("group")) : null);
+			}
+		} else {
+			form.setExpirationCourseReservations(null);
+			form.setExpirationCurriculumReservations(null);
+			form.setExpirationGroupReservations(null);
+		}
 	}
 
 }
