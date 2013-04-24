@@ -45,12 +45,9 @@ public class SubjectAreaEditForm extends ActionForm {
 	private Long uniqueId;
 	private String op;
 	private String abbv;
-	private String shortTitle;
-	private String longTitle;
+	private String title;
 	private String externalId;
 	private Long department ;
-	private Boolean scheduleBkOnly;
-	private Boolean pseudo;
 	
 	/*
 	 * Generated Methods
@@ -83,12 +80,8 @@ public class SubjectAreaEditForm extends ActionForm {
 	        	errors.add("abbv", new ActionMessage("errors.required", "Abbreviation") );
 	        }
 
-			if(shortTitle==null || shortTitle.trim().length()==0) {
-	        	errors.add("shortTitle", new ActionMessage("errors.required", "Short Title") );
-	        }
-
-			if(longTitle==null || longTitle.trim().length()==0) {
-	        	errors.add("longTitle", new ActionMessage("errors.required", "Long Title") );
+			if(title==null || title.trim().length()==0) {
+	        	errors.add("title", new ActionMessage("errors.required", "Title") );
 	        }
 
 			if(department==null || department.longValue()<=0) {
@@ -117,12 +110,9 @@ public class SubjectAreaEditForm extends ActionForm {
 		uniqueId=null;
 		op=null;
 		abbv=null;
-		shortTitle=null;
-		longTitle=null;
+		title=null;
 		externalId=null;
 		department=null;
-		scheduleBkOnly=null;
-		pseudo=null;
 	}
 
 	/** 
@@ -168,42 +158,12 @@ public class SubjectAreaEditForm extends ActionForm {
 		this.externalId = externalId;
 	}
 
-	public String getLongTitle() {
-		return longTitle;
+	public String getTitle() {
+		return title;
 	}
 
-	public void setLongTitle(String longTitle) {
-		this.longTitle = longTitle;
-	}
-
-	public Boolean getPseudo() {
-		return pseudo;
-	}
-
-	public void setPseudo(Boolean pseudo) {
-		if (pseudo==null)
-			this.pseudo = Boolean.FALSE;
-		else
-			this.pseudo = pseudo;
-	}
-
-	public Boolean getScheduleBkOnly() {
-		return scheduleBkOnly;
-	}
-
-	public void setScheduleBkOnly(Boolean scheduleBkOnly) {
-		if (scheduleBkOnly==null)
-			this.scheduleBkOnly = Boolean.FALSE;
-		else
-			this.scheduleBkOnly = scheduleBkOnly;
-	}
-
-	public String getShortTitle() {
-		return shortTitle;
-	}
-
-	public void setShortTitle(String shortTitle) {
-		this.shortTitle = shortTitle;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 	public Long getUniqueId() {

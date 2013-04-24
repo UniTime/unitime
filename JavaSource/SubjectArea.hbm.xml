@@ -46,30 +46,11 @@
             length="10"/>
 
         <property
-            name="shortTitle"
-            column="short_title"
-            type="java.lang.String"
-            not-null="true"
-            length="50"/>
-
-        <property
-            name="longTitle"
+            name="title"
             column="long_title"
             type="java.lang.String"
             not-null="true"
             length="100"/>
-
-        <property
-            name="scheduleBookOnly"
-            column="schedule_book_only"
-            type="java.lang.Boolean"
-            not-null="true"/>
-
-        <property
-            name="pseudoSubjectArea"
-            column="pseudo_subject_area"
-            type="java.lang.Boolean"
-            not-null="true"/>
 
         <many-to-one
             name="session"

@@ -35,10 +35,7 @@ public abstract class BaseSubjectArea implements Serializable {
 	private Long iUniqueId;
 	private String iExternalUniqueId;
 	private String iSubjectAreaAbbreviation;
-	private String iShortTitle;
-	private String iLongTitle;
-	private Boolean iScheduleBookOnly;
-	private Boolean iPseudoSubjectArea;
+	private String iTitle;
 
 	private Session iSession;
 	private Department iDepartment;
@@ -48,10 +45,7 @@ public abstract class BaseSubjectArea implements Serializable {
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_EXTERNAL_UID = "externalUniqueId";
 	public static String PROP_SUBJECT_AREA_ABBREVIATION = "subjectAreaAbbreviation";
-	public static String PROP_SHORT_TITLE = "shortTitle";
-	public static String PROP_LONG_TITLE = "longTitle";
-	public static String PROP_SCHEDULE_BOOK_ONLY = "scheduleBookOnly";
-	public static String PROP_PSEUDO_SUBJECT_AREA = "pseudoSubjectArea";
+	public static String PROP_LONG_TITLE = "title";
 
 	public BaseSubjectArea() {
 		initialize();
@@ -73,19 +67,8 @@ public abstract class BaseSubjectArea implements Serializable {
 	public String getSubjectAreaAbbreviation() { return iSubjectAreaAbbreviation; }
 	public void setSubjectAreaAbbreviation(String subjectAreaAbbreviation) { iSubjectAreaAbbreviation = subjectAreaAbbreviation; }
 
-	public String getShortTitle() { return iShortTitle; }
-	public void setShortTitle(String shortTitle) { iShortTitle = shortTitle; }
-
-	public String getLongTitle() { return iLongTitle; }
-	public void setLongTitle(String longTitle) { iLongTitle = longTitle; }
-
-	public Boolean isScheduleBookOnly() { return iScheduleBookOnly; }
-	public Boolean getScheduleBookOnly() { return iScheduleBookOnly; }
-	public void setScheduleBookOnly(Boolean scheduleBookOnly) { iScheduleBookOnly = scheduleBookOnly; }
-
-	public Boolean isPseudoSubjectArea() { return iPseudoSubjectArea; }
-	public Boolean getPseudoSubjectArea() { return iPseudoSubjectArea; }
-	public void setPseudoSubjectArea(Boolean pseudoSubjectArea) { iPseudoSubjectArea = pseudoSubjectArea; }
+	public String getTitle() { return iTitle; }
+	public void setTitle(String title) { iTitle = title; }
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
@@ -126,12 +109,9 @@ public abstract class BaseSubjectArea implements Serializable {
 		return "SubjectArea[" +
 			"\n	Department: " + getDepartment() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
-			"\n	LongTitle: " + getLongTitle() +
-			"\n	PseudoSubjectArea: " + getPseudoSubjectArea() +
-			"\n	ScheduleBookOnly: " + getScheduleBookOnly() +
 			"\n	Session: " + getSession() +
-			"\n	ShortTitle: " + getShortTitle() +
 			"\n	SubjectAreaAbbreviation: " + getSubjectAreaAbbreviation() +
+			"\n	Title: " + getTitle() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

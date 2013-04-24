@@ -2263,6 +2263,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Long Title")
 	String fieldLongTitle();
+	
+	@DefaultMessage("Title")
+	String fieldTitle();
 
 	@DefaultMessage("Code")
 	String fieldCode();

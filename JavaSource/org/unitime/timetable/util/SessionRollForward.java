@@ -901,6 +901,7 @@ public class SessionRollForward {
 						}
 					}
 				}
+				/*
 				List pseudoSubjects = sDao.getQuery("from SubjectArea sa where sa.session=:fromSessionId and sa.pseudoSubjectArea = 1 and sa.subjectAreaAbbreviation not in (select cc.subject from CourseCatalog cc where cc.session.uniqueId=:toSessionId)")
 					.setLong("fromSessionId", fromSession.getUniqueId())
 					.setLong("toSessionId", toSession.getUniqueId())
@@ -926,6 +927,7 @@ public class SessionRollForward {
 						}
 					}
 				}
+				*/
 				List newSubjects = ccDao.getQuery("select distinct subject from CourseCatalog cc where cc.session.uniqueId=:sessionId and cc.previousSubject = null and cc.subject not in (select sa.subjectAreaAbbreviation from SubjectArea sa where sa.session.uniqueId=:sessionId)")
 					.setLong("sessionId", toSession.getUniqueId())
 					.list();
@@ -950,11 +952,8 @@ public class SessionRollForward {
 					if (toSubject != null){
 						toSubjectArea = new SubjectArea();
 						toSubjectArea.setDepartment(toDepartment);
-						toSubjectArea.setLongTitle("New Subject - Please Name Me");
-						toSubjectArea.setPseudoSubjectArea(new Boolean(false));
-						toSubjectArea.setScheduleBookOnly(new Boolean(false));
+						toSubjectArea.setTitle("New Subject");
 						toSubjectArea.setSession(toSession);
-						toSubjectArea.setShortTitle("New Subject");
 						toSubjectArea.setSubjectAreaAbbreviation(toSubject);
 						toDepartment.addTosubjectAreas(toSubjectArea);
 						toSession.addTosubjectAreas(toSubjectArea);

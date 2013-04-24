@@ -84,14 +84,14 @@ public class SubjectListAction extends Action {
 		boolean dispLastChanges = CommonValues.Yes.eq(UserProperty.DisplayLastChanges.get(sessionContext.getUser()));
         
         if ("Export PDF".equals(request.getParameter("op"))) {
-        	PdfWebTable webTable = new PdfWebTable((dispLastChanges?7:6),
+        	PdfWebTable webTable = new PdfWebTable((dispLastChanges?5:4),
                     "Subject Area List - " + sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel(),
                     "subjectList.do?ord=%%",
                     (dispLastChanges?
-                        new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book\nOnly", "Pseudo","Last Change"}:
-                        new String[] {"Abbv", "Title", "Departmnet", "Managers", "Sched Book\nOnly", "Pseudo"}),
-                    new String[] {"left", "left","left","left","left","left","right"},
-                    new boolean[] {true, true, true, true, true, true, false} );
+                        new String[] {"Abbv", "Title", "Department", "Managers", "Last Change"}:
+                        new String[] {"Abbv", "Title", "Departmnet", "Managers"}),
+                    new String[] {"left", "left","left","left", "right"},
+                    new boolean[] {true, true, true, true, false} );
             for (SubjectArea s: subjects) {
                 Department d = s.getDepartment();
                 String sdName = "";
@@ -115,19 +115,15 @@ public class SubjectListAction extends Action {
                     null,
                     new String[] { 
                         s.getSubjectAreaAbbreviation(),
-                        s.getLongTitle(),
+                        s.getTitle(),
                         (d == null) ? "" : d.getDeptCode()+(d.getAbbreviation()==null?"":": "+d.getAbbreviation().trim()),
                         (sdName == null || sdName.trim().length()==0) ? "" : sdName,
-                        s.isScheduleBookOnly().booleanValue() ? "Yes":"No",
-                        s.isPseudoSubjectArea().booleanValue() ? "Yes":"No", 
                         lastChangeStr },
                     new Comparable[] { 
                         s.getSubjectAreaAbbreviation(),
-                        s.getLongTitle(),
+                        s.getTitle(),
                         (d == null) ? "" : d.getDeptCode(),
                         sdName,
-                        s.isScheduleBookOnly().toString(),
-                        s.isPseudoSubjectArea().toString(),
                         lastChangeCmp });
             }
 
@@ -136,14 +132,14 @@ public class SubjectListAction extends Action {
         }
         
         WebTable webTable = new WebTable( 
-    	    (dispLastChanges?7:6),
+    	    (dispLastChanges?5:4),
     	    "",
     	    "subjectList.do?ord=%%",
     	    (dispLastChanges?
-    		    new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book Only", "Pseudo","Last Change"}:
-    		    new String[] {"Abbv", "Title", "Department", "Managers", "Sched Book Only", "Pseudo"}),
-    	    new String[] {"left", "left","left","left","left","left","right"},
-    	    new boolean[] {true, true, true, true, true, true, false} );
+    		    new String[] {"Abbv", "Title", "Department", "Managers", "Last Change"}:
+    		    new String[] {"Abbv", "Title", "Department", "Managers"}),
+    	    new String[] {"left", "left","left","left","right"},
+    	    new boolean[] {true, true, true, true, false} );
         webTable.enableHR("#9CB0CE");
         webTable.setRowStyle("white-space: nowrap");
         WebTable.setOrder(sessionContext,"SubjectList.ord",request.getParameter("ord"),1);
@@ -183,21 +179,17 @@ public class SubjectListAction extends Action {
         		"onClick=\"document.location.href='subjectAreaEdit.do?op=edit&id=" + s.getUniqueId() + "'\"",
         		new String[] { 
         			"<A name='" + s.getUniqueId() + "'>" + s.getSubjectAreaAbbreviation() + "</A>",
-        			s.getLongTitle(),
+        			s.getTitle(),
         			(d == null) ? "&nbsp;" : "<span title='"+d.getHtmlTitle()+"'>"+
                                     d.getDeptCode()+(d.getAbbreviation()==null?"":": "+d.getAbbreviation().trim())+
                                     "</span>",
         			(sdName == null || sdName.trim().length()==0) ? "&nbsp;" : sdName,
-        			s.isScheduleBookOnly().booleanValue() ? "<IMG src='images/tick.gif' border='0' title='Schedule Book Only' alt='Schedule Book Only'>" : "&nbsp;",
-        			s.isPseudoSubjectArea().booleanValue() ? "<IMG src='images/tick.gif' border='0' title='Pseudo' alt='Pseudo'>" : "&nbsp;", 
         			lastChangeStr },
         		new Comparable[] { 
         			s.getSubjectAreaAbbreviation(),
-        			s.getLongTitle(),
+        			s.getTitle(),
         			(d == null) ? "" : d.getDeptCode(),
         			sdName,
-        			s.isScheduleBookOnly().toString(),
-        			s.isPseudoSubjectArea().toString(),
         			lastChangeCmp });
         }
     	

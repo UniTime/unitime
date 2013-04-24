@@ -205,7 +205,7 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 	}
 
 	public String toString() {
-	    return this.getSubjectAreaAbbreviation() + " - " + this.getLongTitle();
+	    return this.getSubjectAreaAbbreviation() + " - " + this.getTitle();
 	}
 	
 	public Long getSessionId(){
@@ -220,11 +220,8 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 		SubjectArea newSubjectArea = new SubjectArea();
 		newSubjectArea.setDepartment(getDepartment());
 		newSubjectArea.setExternalUniqueId(getExternalUniqueId());
-		newSubjectArea.setLongTitle(getLongTitle());
-		newSubjectArea.setPseudoSubjectArea(isPseudoSubjectArea());
-		newSubjectArea.setScheduleBookOnly(isScheduleBookOnly());
+		newSubjectArea.setTitle(getTitle());
 		newSubjectArea.setSession(getSession());
-		newSubjectArea.setShortTitle(getShortTitle());
 		newSubjectArea.setSubjectAreaAbbreviation(getSubjectAreaAbbreviation());
 		return(newSubjectArea);
 	}

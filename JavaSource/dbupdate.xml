@@ -8905,4 +8905,10 @@
 		<plsql>alter table %SCHEMA%.event_note rename column new_meetings to meetings</plsql>
 		<mysql>alter table %SCHEMA%.event_note modify meetings longtext binary null</mysql>
 	</update>
+	<update version="119" date="24-Apr-2013" comment="Delete Unused Columns">
+		<sql>alter table %SCHEMA%.subject_area drop column short_title</sql>
+		<sql>alter table %SCHEMA%.subject_area drop column schedule_book_only</sql>
+		<sql>alter table %SCHEMA%.subject_area drop column pseudo_subject_area</sql>
+		<sql>alter table %SCHEMA%.academic_area drop column short_title</sql>
+	</update>
 </dbupdate>

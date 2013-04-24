@@ -67,7 +67,7 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 	public static String PROP_DISPLAY_INSTRUCTOR = "displayInstructor";
 	public static String PROP_SCHED_PRINT_NOTE = "schedulePrintNote";
 	public static String PROP_CLASS_SUFFIX = "classSuffix";
-	public static String PROP_DISPLAY_IN_SCHED_BOOK = "displayInScheduleBook";
+	public static String PROP_DISPLAY_IN_SCHED_BOOK = "enabledForStudentScheduling";
 	public static String PROP_MAX_EXPECTED_CAPACITY = "maxExpectedCapacity";
 	public static String PROP_ROOM_RATIO = "roomRatio";
 	public static String PROP_UID_ROLLED_FWD_FROM = "uniqueIdRolledForwardFrom";
@@ -190,8 +190,8 @@ public abstract class BaseClass_ extends PreferenceGroup implements Serializable
 		return "Class_[" +
 			"\n	ClassSuffix: " + getClassSuffix() +
 			"\n	DatePattern: " + getDatePattern() +
-			"\n	DisplayInScheduleBook: " + getEnabledForStudentScheduling() +
 			"\n	DisplayInstructor: " + getDisplayInstructor() +
+			"\n	EnabledForStudentScheduling: " + getEnabledForStudentScheduling() +
 			"\n	ExpectedCapacity: " + getExpectedCapacity() +
 			"\n	ExternalUniqueId: " + getExternalUniqueId() +
 			"\n	ManagingDept: " + getManagingDept() +
