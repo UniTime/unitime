@@ -42,8 +42,13 @@ public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplement
 	@Override
 	public DefaultExpirationDates execute(ReservationDefaultExpirationDatesRpcRequest request, SessionContext context) {
 		DefaultExpirationDates expirations = new DefaultExpirationDates();
-		
-		if (context.getUser() != null && context.getUser().getCurrentAcademicSessionId() != null) {
+
+		if (request.getSessionId() != null) {
+			Session session = SessionDAO.getInstance().get(request.getSessionId());
+			for (String type: sTypes) {
+				expirations.setExpirationDate(type, getDefaultExpirationDate(session, type));
+			}
+		} else if (context.getUser() != null && context.getUser().getCurrentAcademicSessionId() != null) {
 			Session session = SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId());
 			for (String type: sTypes) {
 				expirations.setExpirationDate(type, getDefaultExpirationDate(session, type));

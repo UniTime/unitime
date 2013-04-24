@@ -16,13 +16,18 @@
 */
 package org.unitime.timetable.util;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -40,11 +45,13 @@ import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
+import org.unitime.timetable.model.CourseReservation;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
 import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.CurriculumProjectionRule;
+import org.unitime.timetable.model.CurriculumReservation;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentRoomFeature;
@@ -72,6 +79,7 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PosMinor;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
+import org.unitime.timetable.model.Reservation;
 import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
@@ -87,6 +95,8 @@ import org.unitime.timetable.model.SolverGroup;
 import org.unitime.timetable.model.StandardEventNoteDepartment;
 import org.unitime.timetable.model.StandardEventNoteSession;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentGroupReservation;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
@@ -113,6 +123,7 @@ import org.unitime.timetable.model.dao.LastLikeCourseDemandDAO;
 import org.unitime.timetable.model.dao.NonUniversityLocationDAO;
 import org.unitime.timetable.model.dao.PosMajorDAO;
 import org.unitime.timetable.model.dao.PosMinorDAO;
+import org.unitime.timetable.model.dao.ReservationDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomDeptDAO;
 import org.unitime.timetable.model.dao.RoomFeatureDAO;
@@ -120,6 +131,7 @@ import org.unitime.timetable.model.dao.RoomGroupDAO;
 import org.unitime.timetable.model.dao.SessionConfigDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
+import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
 import org.unitime.timetable.model.dao.TimetableManagerDAO;
@@ -2541,6 +2553,265 @@ public class SessionRollForward {
         ApplicationProperties.clearSessionProperties(toSession.getUniqueId());
 	}
 
+	public void rollReservationsForward(ActionMessages errors, RollForwardSessionForm rollForwardSessionForm) {
+		SimpleDateFormat df = new SimpleDateFormat("MM/dd/yyyy");
+		List<SubjectArea> subjects = new ArrayList<SubjectArea>();
+		for (String subjectId: rollForwardSessionForm.getRollForwardReservationsSubjectIds()) {
+			subjects.add(SubjectAreaDAO.getInstance().get(Long.valueOf(subjectId)));
+		}
+		if (subjects.isEmpty()) return;
+		org.hibernate.Session hibSession = ReservationDAO.getInstance().getSession();
+		
+		if (rollForwardSessionForm.getRollForwardCourseReservations()) {
+			Date expiration = null;
+			if (rollForwardSessionForm.getExpirationCourseReservations() != null && !rollForwardSessionForm.getExpirationCourseReservations().isEmpty()) {
+				try {
+					expiration = df.parse(rollForwardSessionForm.getExpirationCourseReservations());
+				} catch (ParseException e) {}
+			}
+			for (SubjectArea subject: subjects) {
+				hibSession.createQuery("delete CourseReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+						).setLong("subjectId", subject.getUniqueId()).executeUpdate();
+				
+				for (CourseReservation reservation: (List<CourseReservation>)hibSession.createQuery(
+						"select distinct r from CourseReservation r inner join r.instructionalOffering.courseOfferings c where " +
+						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
+						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
+					CourseReservation toReservation = rollCourseReservationForward(reservation, subject.getSession(), expiration);
+					if (toReservation != null)
+						hibSession.saveOrUpdate(toReservation);
+				}
+			}
+		}
+		
+		if (rollForwardSessionForm.getRollForwardCurriculumReservations()) {
+			Date expiration = null;
+			if (rollForwardSessionForm.getExpirationCurriculumReservations() != null && !rollForwardSessionForm.getExpirationCurriculumReservations().isEmpty()) {
+				try {
+					expiration = df.parse(rollForwardSessionForm.getExpirationCurriculumReservations());
+				} catch (ParseException e) {}
+			}
+
+			Map<String, AcademicArea> areas = new Hashtable<String, AcademicArea>();
+	        for (AcademicArea area: AcademicAreaDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo()))
+	        	areas.put(area.getAcademicAreaAbbreviation(), area);
+
+	        Map<String, AcademicClassification> classifications = new Hashtable<String, AcademicClassification>();
+	        for (AcademicClassification clasf: AcademicClassificationDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo()))
+	        	classifications.put(clasf.getCode(), clasf);
+
+	        Map<String, Map<String, PosMajor>> majors = new Hashtable<String, Map<String,PosMajor>>();
+	        for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo())) {
+	        	for (AcademicArea area: major.getAcademicAreas()) {
+	        		Map<String, PosMajor> code2major = majors.get(area.getAcademicAreaAbbreviation());
+	        		if (code2major == null) {
+	        			code2major = new Hashtable<String, PosMajor>();
+	        			majors.put(area.getAcademicAreaAbbreviation(), code2major);
+	        		}
+	        		code2major.put(major.getCode(), major);
+	        	}
+	        }
+	        
+			for (SubjectArea subject: subjects) {
+				hibSession.createQuery("delete CurriculumReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+						).setLong("subjectId", subject.getUniqueId()).executeUpdate();
+				
+				for (CurriculumReservation reservation: (List<CurriculumReservation>)hibSession.createQuery(
+						"select distinct r from CurriculumReservation r inner join r.instructionalOffering.courseOfferings c where " +
+						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
+						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
+					CurriculumReservation toReservation = rollCurriculumReservationForward(reservation, subject.getSession(), expiration, areas, classifications, majors);
+					if (toReservation != null)
+						hibSession.saveOrUpdate(toReservation);
+				}
+			}
+		}
+		
+		if (rollForwardSessionForm.getRollForwardGroupReservations()) {
+			Date expiration = null;
+			if (rollForwardSessionForm.getExpirationGroupReservations() != null && !rollForwardSessionForm.getExpirationGroupReservations().isEmpty()) {
+				try {
+					expiration = df.parse(rollForwardSessionForm.getExpirationGroupReservations());
+				} catch (ParseException e) {}
+			}
+
+			Hashtable<String, StudentGroup> groups = new Hashtable<String, StudentGroup>();
+	        for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, rollForwardSessionForm.getSessionToRollForwardTo()))
+	        	groups.put(group.getGroupAbbreviation(), group);
+
+			for (SubjectArea subject: subjects) {
+				hibSession.createQuery("delete StudentGroupReservation r where r.instructionalOffering.uniqueId in (select c.instructionalOffering.uniqueId from CourseOffering c where c.subjectArea.uniqueId = :subjectId and c.isControl = true)"
+						).setLong("subjectId", subject.getUniqueId()).executeUpdate();
+				
+				for (StudentGroupReservation reservation: (List<StudentGroupReservation>)hibSession.createQuery(
+						"select distinct r from StudentGroupReservation r inner join r.instructionalOffering.courseOfferings c where " +
+						"c.isControl = true and c.subjectArea.subjectAreaAbbreviation = :subject and c.subjectArea.department.session.uniqueId = :sessionId")
+						.setString("subject", subject.getSubjectAreaAbbreviation()).setLong("sessionId", rollForwardSessionForm.getSessionToRollReservationsForwardFrom()).list()) {
+					StudentGroupReservation toReservation = rollGroupReservationForward(reservation, subject.getSession(), expiration, groups, rollForwardSessionForm.getCreateStudentGroupsIfNeeded());
+					if (toReservation != null)
+						hibSession.saveOrUpdate(toReservation);
+				}
+			}
+		}
+		
+		hibSession.flush(); hibSession.clear();
+	}
+	
+	protected boolean rollReservationForward(Reservation fromReservation, Reservation toReservation, Session toSession, Date expiration) {
+		InstructionalOffering toOffering = InstructionalOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getInstructionalOffering().getUniqueId());
+		if (toOffering == null) {
+			CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getInstructionalOffering().getControllingCourseOffering().getUniqueId());
+			if (toCourse == null){
+		    	if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true"))) {
+		    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(
+		    				toSession.getUniqueId(),
+		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(),
+		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getCourseNbr());
+		    	} else {
+		    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(
+		    				toSession.getUniqueId(),
+		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getSubjectArea().getSubjectAreaAbbreviation(),
+		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getCourseNbr(),
+		    				fromReservation.getInstructionalOffering().getControllingCourseOffering().getTitle());
+		    	}
+			}
+			if (toCourse != null) toOffering = toCourse.getInstructionalOffering();
+		}
+		if (toOffering == null) return false;
+		toReservation.setInstructionalOffering(toOffering);
+		
+		if (fromReservation.getExpirationDate() != null) {
+			if (expiration != null) {
+				toReservation.setExpirationDate(expiration);
+			} else {
+				int nrDays = (int)Math.round((fromReservation.getExpirationDate().getTime() - fromReservation.getInstructionalOffering().getSession().getSessionBeginDateTime().getTime()) / (1000.0 * 60 * 60 * 24));
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(toSession.getSessionBeginDateTime());
+				cal.add(Calendar.DAY_OF_YEAR, nrDays);
+				toReservation.setExpirationDate(cal.getTime());
+			}
+		}
+		
+		toReservation.setConfigurations(new HashSet<InstrOfferingConfig>());
+		toReservation.setClasses(new HashSet<Class_>());
+		for (InstrOfferingConfig fromConfig: fromReservation.getConfigurations()) {
+			InstrOfferingConfig toConfig = InstrOfferingConfig.findByIdRolledForwardFrom(toSession.getUniqueId(), fromConfig.getUniqueId());
+			if (toConfig == null) {
+				for (InstrOfferingConfig c: toOffering.getInstrOfferingConfigs()) {
+					if (c.getName().equals(fromConfig.getName())) {
+						toConfig = c; break;
+					}
+				}
+			}
+			if (toConfig != null)
+				toReservation.getConfigurations().add(toConfig);
+		}
+		for (Class_ fromClass: fromReservation.getClasses()) {
+			Class_ toClass = Class_.findByIdRolledForwardFrom(toSession.getUniqueId(), fromClass.getUniqueId());
+			if (toClass == null && fromClass.getExternalUniqueId() != null) {
+				Class_ c = Class_.findByExternalId(toSession.getUniqueId(), fromClass.getExternalUniqueId());
+				if (c != null && c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().equals(toOffering)) {
+					toClass = c;
+				}
+			}
+			if (toClass == null) {
+				configs: for (InstrOfferingConfig toConfig: toOffering.getInstrOfferingConfigs()) {
+					for (SchedulingSubpart toSubpart: toConfig.getSchedulingSubparts()) {
+						if (toSubpart.getSchedulingSubpartSuffix().equals(fromClass.getSchedulingSubpart().getSchedulingSubpartSuffix())) {
+							for (Class_ c: toSubpart.getClasses()) {
+								if (c.getSectionNumber().equals(fromClass.getSectionNumber())) {
+									toClass = c; break configs;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (toClass != null)
+				toReservation.getClasses().add(toClass);
+		}
+		
+		toReservation.setLimit(fromReservation.getLimit());
+		return true;
+	}
+	
+	protected CourseReservation rollCourseReservationForward(CourseReservation fromReservation, Session toSession, Date expiration) {
+		CourseReservation toReservation = new CourseReservation();
+		
+		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		
+		CourseOffering toCourse = CourseOffering.findByIdRolledForwardFrom(toSession.getUniqueId(), fromReservation.getCourse().getUniqueId());
+		if (toCourse == null){
+	    	if ("true".equalsIgnoreCase(ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true"))) {
+	    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(
+	    				toSession.getUniqueId(),
+	    				fromReservation.getCourse().getSubjectArea().getSubjectAreaAbbreviation(),
+	    				fromReservation.getCourse().getCourseNbr());
+	    	} else {
+	    		toCourse = CourseOffering.findBySessionSubjAreaAbbvCourseNbrTitle(
+	    				toSession.getUniqueId(),
+	    				fromReservation.getCourse().getSubjectArea().getSubjectAreaAbbreviation(),
+	    				fromReservation.getCourse().getCourseNbr(),
+	    				fromReservation.getCourse().getTitle());
+	    	}
+		}
+		
+		if (toCourse == null || !toCourse.getInstructionalOffering().equals(toReservation.getInstructionalOffering())) return null;
+		toReservation.setCourse(toCourse);
+		
+		return toReservation;
+	}
+	
+	protected CurriculumReservation rollCurriculumReservationForward(CurriculumReservation fromReservation, Session toSession, Date expiration, Map<String, AcademicArea> areas, Map<String, AcademicClassification> classifications, Map<String, Map<String, PosMajor>> majors) {
+		CurriculumReservation toReservation = new CurriculumReservation();
+	
+		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		
+		AcademicArea area = areas.get(fromReservation.getArea().getAcademicAreaAbbreviation());
+		if (area == null) return null;
+		toReservation.setArea(area);
+		
+		toReservation.setClassifications(new HashSet<AcademicClassification>());
+		for (AcademicClassification fromClasf: fromReservation.getClassifications()) {
+			AcademicClassification toClasf = classifications.get(fromClasf.getCode());
+			if (toClasf != null) toReservation.getClassifications().add(toClasf);
+		}
+		
+		toReservation.setMajors(new HashSet<PosMajor>());
+		Map<String, PosMajor> mj = majors.get(area.getAcademicAreaAbbreviation());
+		if (mj != null)
+			for (PosMajor fromMajor: fromReservation.getMajors()) {
+				PosMajor toMajor = mj.get(fromMajor.getCode());
+				if (toMajor != null) toReservation.getMajors().add(toMajor);
+			}
+		
+		return toReservation;
+	}
+	
+	protected StudentGroupReservation rollGroupReservationForward(StudentGroupReservation fromReservation, Session toSession, Date expiration, Map<String, StudentGroup> groups, boolean createStudentGroupIfNeeded) {
+		StudentGroupReservation toReservation = new StudentGroupReservation();
+		
+		if (!rollReservationForward(fromReservation, toReservation, toSession, expiration)) return null;
+		
+		StudentGroup group = groups.get(fromReservation.getGroup().getGroupAbbreviation());
+		if (group == null) {
+			if (createStudentGroupIfNeeded) {
+				group = new StudentGroup();
+				group.setSession(toSession);
+				group.setExternalUniqueId(fromReservation.getGroup().getExternalUniqueId());
+				group.setGroupAbbreviation(fromReservation.getGroup().getGroupAbbreviation());
+				group.setGroupName(fromReservation.getGroup().getGroupName());
+				StudentGroupDAO.getInstance().getSession().save(group);
+				groups.put(group.getGroupAbbreviation(), group);
+			} else {
+				return null;
+			}
+		}
+		toReservation.setGroup(group);
+		
+		return toReservation;
+	}
+	
 
 	/**
 	 * @return the subpartTimeRollForward
