@@ -189,7 +189,7 @@ public class CurriculaImport extends BaseImport {
                 curriculum.setAbbv(abbv);
                 
                 if (name == null) {
-                	name = Constants.curriculaToInitialCase(area.getShortTitle() == null ? area.getLongTitle() : area.getShortTitle()) + ( majors.isEmpty() ? "" : " / " );
+                	name = Constants.curriculaToInitialCase(area.getTitle()) + ( majors.isEmpty() ? "" : " / " );
                 	for (PosMajor major: majors) {
                 		if (!name.endsWith(" / ")) name += ", ";
                 		name += Constants.curriculaToInitialCase(major.getName());

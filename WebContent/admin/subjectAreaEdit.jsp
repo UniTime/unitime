@@ -59,7 +59,7 @@
 						<logic:notEmpty name="subjectAreaEditForm" property="uniqueId">
 							<bean:write name="subjectAreaEditForm" property="abbv"/> 
 							- 
-							<bean:write name="subjectAreaEditForm" property="longTitle"/>
+							<bean:write name="subjectAreaEditForm" property="title"/>
 						</logic:notEmpty>
 					</tt:section-title>
 						
@@ -118,16 +118,9 @@
 		</TR>
 		
 		<TR>
-			<TD>Short Title:</TD>
+			<TD>Title:</TD>
 			<TD>
-				<html:text property="shortTitle" size="30" maxlength="50"/>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD>Long Title:</TD>
-			<TD>
-				<html:text property="longTitle" size="40" maxlength="100"/>
+				<html:text property="title" size="40" maxlength="100"/>
 			</TD>
 		</TR>
 		
@@ -171,20 +164,6 @@
 			</TD>
 		</TR>
 
-		<TR>
-			<TD>Schedule Book Only:</TD>
-			<TD>
-				<html:checkbox property="scheduleBkOnly"/>
-			</TD>
-		</TR>
-		
-		<TR>
-			<TD>Pseudo:</TD>
-			<TD>
-				<html:checkbox property="pseudo"/>
-			</TD>
-		</TR>
-		
 		<TR>
 			<TD colspan="2">
 			<DIV class="WelcomeRowHeadBlank">&nbsp;</DIV>

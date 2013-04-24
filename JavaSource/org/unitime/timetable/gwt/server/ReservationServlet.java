@@ -111,12 +111,12 @@ public class ReservationServlet implements ReservationService {
 					classifications.add(clasf);
 				}
 				for (AcademicArea area: (List<AcademicArea>)hibSession.createQuery(
-						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.longTitle, a.shortTitle")
+						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title")
 						.setLong("sessionId", getAcademicSessionId()).setCacheable(true).list()) {
 					ReservationInterface.Area curriculum = new ReservationInterface.Area();
 					curriculum.setAbbv(area.getAcademicAreaAbbreviation());
 					curriculum.setId(area.getUniqueId());
-					curriculum.setName(Constants.curriculaToInitialCase(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
+					curriculum.setName(Constants.curriculaToInitialCase(area.getTitle()));
 					for (PosMajor major: area.getPosMajors()) {
 						ReservationInterface.IdName mj = new ReservationInterface.IdName();
 						mj.setId(major.getUniqueId());
@@ -330,7 +330,7 @@ public class ReservationServlet implements ReservationService {
 			ReservationInterface.Area curriculum = new ReservationInterface.Area();
 			curriculum.setId(cr.getArea().getUniqueId());
 			curriculum.setAbbv(cr.getArea().getAcademicAreaAbbreviation());
-			curriculum.setName(Constants.curriculaToInitialCase(cr.getArea().getLongTitle() == null ? cr.getArea().getShortTitle() : cr.getArea().getLongTitle()));
+			curriculum.setName(Constants.curriculaToInitialCase(cr.getArea().getTitle()));
 			String cfCodes = "";
 			String cfIds = "";
 			for (AcademicClassification classification: cr.getClassifications()) {
@@ -773,7 +773,7 @@ public class ReservationServlet implements ReservationService {
 					ReservationInterface.IdName area = new ReservationInterface.IdName();
 					area.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
 					area.setId(c.getAcademicArea().getUniqueId());
-					area.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+					area.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getTitle()));
 					curriculum.setArea(area);
 					
 					int limit = 0;

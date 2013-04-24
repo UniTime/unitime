@@ -147,7 +147,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setType(ResourceType.SUBJECT);
 						ret.setId(subject.getUniqueId());
 						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
-						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
+						ret.setName(subject.getTitle());
 						return ret;
 					}
 				case COURSE:
@@ -372,7 +372,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					break;
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
-							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.shortTitle) like :title or lower(' ' || s.longTitle) like :title) " +
+							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title " +
 							"order by s.subjectAreaAbbreviation")
 							.setString("name", query.toLowerCase() + "%").setString("title", "% " + query.toLowerCase() + "%")
 							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
@@ -381,7 +381,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setType(ResourceType.SUBJECT);
 						ret.setId(subject.getUniqueId());
 						ret.setAbbreviation(subject.getSubjectAreaAbbreviation());
-						ret.setName(subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle());
+						ret.setName(subject.getTitle());
 						resources.add(ret);
 					}
 					if (subjects.size() == 1) {

@@ -142,7 +142,7 @@ public class CurriculaServlet implements CurriculaService {
 				AcademicAreaInterface ai = new AcademicAreaInterface();
 				ai.setId(c.getAcademicArea().getUniqueId());
 				ai.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
-				ai.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+				ai.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getTitle()));
 				ci.setAcademicArea(ai);
 				for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 					PosMajor major = i.next();
@@ -290,7 +290,7 @@ public class CurriculaServlet implements CurriculaService {
 				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 				areaIfc.setId(c.getAcademicArea().getUniqueId());
 				areaIfc.setAbbv(c.getAcademicArea().getAcademicAreaAbbreviation());
-				areaIfc.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getLongTitle() == null ? c.getAcademicArea().getShortTitle() : c.getAcademicArea().getLongTitle()));
+				areaIfc.setName(Constants.curriculaToInitialCase(c.getAcademicArea().getTitle()));
 				curriculumIfc.setAcademicArea(areaIfc);
 				for (Iterator<PosMajor> i = c.getMajors().iterator(); i.hasNext(); ) {
 					PosMajor major = i.next();
@@ -975,7 +975,7 @@ public class CurriculaServlet implements CurriculaService {
 				
 				if (mergedCurriculum.getAcademicArea() != null) {
 					String abbv = mergedCurriculum.getAcademicArea().getAcademicAreaAbbreviation();
-					String name = Constants.curriculaToInitialCase(mergedCurriculum.getAcademicArea().getLongTitle() == null ? mergedCurriculum.getAcademicArea().getShortTitle() : mergedCurriculum.getAcademicArea().getLongTitle());
+					String name = Constants.curriculaToInitialCase(mergedCurriculum.getAcademicArea().getTitle());
 					
 					TreeSet<PosMajor> majors = new TreeSet<PosMajor>(new Comparator<PosMajor>() {
 						public int compare(PosMajor m1, PosMajor m2) {
@@ -1202,7 +1202,7 @@ public class CurriculaServlet implements CurriculaService {
 				AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 				areaIfc.setId(curriculum.getAcademicArea().getUniqueId());
 				areaIfc.setAbbv(curriculum.getAcademicArea().getAcademicAreaAbbreviation());
-				areaIfc.setName(Constants.curriculaToInitialCase(curriculum.getAcademicArea().getLongTitle() == null ? curriculum.getAcademicArea().getShortTitle() : curriculum.getAcademicArea().getLongTitle()));
+				areaIfc.setName(Constants.curriculaToInitialCase(curriculum.getAcademicArea().getTitle()));
 				curriculumIfc.setAcademicArea(areaIfc);
 				DepartmentInterface deptIfc = new DepartmentInterface();
 				deptIfc.setId(curriculum.getDepartment().getUniqueId());
@@ -1465,7 +1465,7 @@ public class CurriculaServlet implements CurriculaService {
 			AcademicAreaInterface areaIfc = new AcademicAreaInterface();
 			areaIfc.setId(a.getUniqueId());
 			areaIfc.setAbbv(a.getAcademicAreaAbbreviation());
-			areaIfc.setName(Constants.curriculaToInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
+			areaIfc.setName(Constants.curriculaToInitialCase(a.getTitle()));
 			otherCurriculumIfc.setAcademicArea(areaIfc);
 			otherCurriculumIfc.setAbbv(areaIfc.getAbbv());
 			otherCurriculumIfc.setName(areaIfc.getName());
@@ -1565,13 +1565,13 @@ public class CurriculaServlet implements CurriculaService {
 			Long sessionId = getAcademicSessionId();
 			try {
 				List<AcademicArea> areas = hibSession.createQuery(
-						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.longTitle, a.shortTitle")
+						"select a from AcademicArea a where a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation, a.title")
 						.setLong("sessionId", sessionId).setCacheable(true).list();
 				for (AcademicArea a: areas) {
 					AcademicAreaInterface ai = new AcademicAreaInterface();
 					ai.setId(a.getUniqueId());
 					ai.setAbbv(a.getAcademicAreaAbbreviation());
-					ai.setName(Constants.curriculaToInitialCase(a.getLongTitle() == null ? a.getShortTitle() : a.getLongTitle()));
+					ai.setName(Constants.curriculaToInitialCase(a.getTitle()));
 					results.add(ai);
 				}
 			} finally {

@@ -137,7 +137,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		for (SubjectArea area: SubjectArea.getUserSubjectAreas(context.getUser())) {
 			Integer count = subject2count.get(area.getUniqueId());
 			if (count == null) continue;
-			Entity subject = new Entity(area.getUniqueId(), area.getSubjectAreaAbbreviation(), area.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle()));
+			Entity subject = new Entity(area.getUniqueId(), area.getSubjectAreaAbbreviation(), area.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(area.getTitle()));
 			subject.setCount(count);
 			subjects.add(subject);
 		}
@@ -160,7 +160,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 				Entity area = areas.get(acedmicArea.getUniqueId());
 				if (area == null) {
 					area = new Entity(acedmicArea.getUniqueId(), acedmicArea.getAcademicAreaAbbreviation(),
-							Constants.curriculaToInitialCase(acedmicArea.getLongTitle() == null ? acedmicArea.getShortTitle() : acedmicArea.getLongTitle()));
+							Constants.curriculaToInitialCase(acedmicArea.getTitle()));
 					areas.put(area.getUniqueId(), area);
 				}
 				area.incCount();
@@ -609,7 +609,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			}
 			if ("subject".equals(attr) || "subj".equals(attr)) {
 				for (CourseOffering co: iReservation.getInstructionalOffering().getCourseOfferings()) {
-					if (eq(co.getSubjectAreaAbbv(), term) || has(co.getSubjectArea().getShortTitle(), term) || has(co.getSubjectArea().getLongTitle(), term)) return true;
+					if (eq(co.getSubjectAreaAbbv(), term) || has(co.getSubjectArea().getTitle(), term)) return true;
 				}
 			}
 			if ("type".equals(attr)) {
@@ -635,7 +635,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 			if ("area".equals(attr)) {
 				if (iReservation instanceof CurriculumReservation) {
 					CurriculumReservation cr = (CurriculumReservation)iReservation;
-					if (eq(cr.getArea().getAcademicAreaAbbreviation(), term) || has(cr.getArea().getShortTitle(), term) || has(cr.getArea().getLongTitle(), term))
+					if (eq(cr.getArea().getAcademicAreaAbbreviation(), term) || has(cr.getArea().getTitle(), term))
 						return true;
 				}
 			}

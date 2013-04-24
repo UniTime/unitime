@@ -1,6 +1,6 @@
-<!-- 
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC
+/*
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2013, UniTime LLC
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,20 +15,17 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- -->
+*/
 
-<!ELEMENT academicArea EMPTY >
-<!ATTLIST academicArea abbreviation CDATA #REQUIRED >
-<!ATTLIST academicArea externalId CDATA #IMPLIED >
-<!ATTLIST academicArea title CDATA #REQUIRED >
-<!-- deprecated in UniTime 3.4 -->
-<!ATTLIST academicArea longTitle CDATA #REQUIRED >
-<!-- deprecated in UniTime 3.4 -->
-<!ATTLIST academicArea shortTitle CDATA #REQUIRED >
+alter table subject_area drop column short_title;
+alter table subject_area drop column schedule_book_only;
+alter table subject_area drop column pseudo_subject_area;
+alter table academic_area drop column short_title;
 
-<!ELEMENT academicAreas ( academicArea+ ) >
-<!ATTLIST academicAreas campus CDATA #REQUIRED >
-<!ATTLIST academicAreas term CDATA #REQUIRED >
-<!ATTLIST academicAreas year CDATA #REQUIRED >
+/*
+ * Update database version
+ */
 
+update application_config set value='119' where name='tmtbl.db.version';
 
+commit;

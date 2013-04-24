@@ -97,12 +97,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (m.matches()) {
 				for (SubjectArea subject: (List<SubjectArea>)SubjectAreaDAO.getInstance().getSession().createQuery(
 						"select a from SubjectArea a where" +
-						" (lower(a.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.shortTitle) like '%' || :q || '%' or lower(a.longTitle) like '%' || :q || '%'") + ")" +
+						" (lower(a.subjectAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.title) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.subjectAreaAbbreviation"
 						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", server.getAcademicSession().getUniqueId()).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (subject.getSubjectAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + subject.getSubjectAreaAbbreviation() + "\"" : subject.getSubjectAreaAbbreviation()),
-							subject.getSubjectAreaAbbreviation() + " - " + (subject.getLongTitle() == null ? subject.getShortTitle() : subject.getLongTitle())
+							subject.getSubjectAreaAbbreviation() + " - " + (subject.getTitle())
 					});
 				}
 			}
@@ -123,12 +123,12 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			if (m.matches()) {
 				for (AcademicArea area: (List<AcademicArea>)AcademicAreaDAO.getInstance().getSession().createQuery(
 						"select a from AcademicArea a where " +
-						" (lower(a.academicAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.shortTitle) like '%' || :q || '%' or lower(a.longTitle) like '%' || :q || '%'") + ")" +
+						" (lower(a.academicAreaAbbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.title) like '%' || :q || '%'") + ")" +
 						" and a.session.uniqueId = :sessionId order by a.academicAreaAbbreviation"
 						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
 					ret.add(new String[] {
 							m.group(1) + (area.getAcademicAreaAbbreviation().indexOf(' ') >= 0 ? "\"" + area.getAcademicAreaAbbreviation() + "\"" : area.getAcademicAreaAbbreviation()),
-							area.getAcademicAreaAbbreviation() + " - " + (area.getLongTitle() == null ? area.getShortTitle() : area.getLongTitle())
+							area.getAcademicAreaAbbreviation() + " - " + area.getTitle()
 					});
 				}
 			}
