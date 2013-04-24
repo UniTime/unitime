@@ -293,6 +293,17 @@ public abstract class ReservationInterface implements IsSerializable, Comparable
 	}
 	
 	public static class ReservationDefaultExpirationDatesRpcRequest implements GwtRpcRequest<DefaultExpirationDates> {
+		private Long iSessionId = null;
+		
 		public ReservationDefaultExpirationDatesRpcRequest() {}
+		
+		public ReservationDefaultExpirationDatesRpcRequest(Long sessionId) { iSessionId = sessionId; }
+		
+		public Long getSessionId() { return iSessionId; }
+		public void setSessionId(Long sessionId) { iSessionId = sessionId; }
+		
+		public String toString() {
+			return (iSessionId == null ? "null" : iSessionId.toString());
+		}
 	}
 }
