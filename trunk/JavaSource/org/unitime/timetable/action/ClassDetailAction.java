@@ -41,7 +41,6 @@ import org.unitime.commons.Debug;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.CourseMessages;
 import org.unitime.timetable.defaults.CommonValues;
-import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.ClassEditForm;
 import org.unitime.timetable.model.ClassInstructor;
@@ -243,9 +242,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        CourseOffering cco = c.getSchedulingSubpart().getControllingCourseOffering();
 
 		    // Set Session Variables
-	        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, cco.getSubjectArea().getUniqueId().toString());
-	        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber)!=null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
-	            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, cco.getCourseNbr());
+	        InstructionalOfferingSearchAction.setLastInstructionalOffering(sessionContext, c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering());
 
 	        // populate form
 	        frm.setClassId(c.getUniqueId());

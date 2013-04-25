@@ -107,11 +107,13 @@ public class AssignedClassesAction extends Action {
         		sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, myForm.getSubjectArea().toString());
         } else {
         	try {
-        		Object sa = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+        		String sa = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
         		if (Constants.ALL_OPTION_VALUE.equals(sa))
         			myForm.setSubjectArea(-1l);
-        		else if (sa != null)
-        			myForm.setSubjectArea(Long.valueOf(sa.toString()));
+        		else if (sa != null) {
+        			if (sa.indexOf(',') >= 0) sa = sa.substring(0, sa.indexOf(','));
+        			myForm.setSubjectArea(Long.valueOf(sa));
+        		}
         	} catch (Exception e) {}
         }
         if (myForm.getSubjectArea() == null && myForm.getSubjectAreas().size() == 1) {

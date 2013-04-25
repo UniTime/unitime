@@ -57,6 +57,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
@@ -64,6 +65,7 @@ import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -82,6 +84,7 @@ import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
 import com.lowagie.text.Image;
+import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
@@ -1497,9 +1500,15 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 	        WebInstructionalOfferingTableBuilder iotbl = new WebInstructionalOfferingTableBuilder();
 	        iotbl.setDisplayDistributionPrefs(false);
 	        setVisibleColumns(COLUMNS);
+	        
+	    	iDocument = new Document(PageSize.A4, 30f, 30f, 30f, 30f); 
+			iWriter = PdfEventHandler.initFooter(iDocument, out);
+
 		    pdfTableForInstructionalOfferings(out,
 				        classAssignment, examAssignment,
 				        ts, subjectAreaId, context, false, false, classComparator);
+		    
+		    iDocument.close();
     	}
     }
     
@@ -1508,19 +1517,26 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             ClassAssignmentProxy classAssignment,
             ExamAssignmentProxy examAssignment,
             InstructionalOfferingListForm form, 
-            Long subjectAreaId, 
+            String[] subjectAreaIds, 
             SessionContext context,
             boolean displayHeader,
             boolean allCoursesAreGiven) throws Exception{
     	
     	setVisibleColumns(form);
-    	pdfTableForInstructionalOfferings(out, classAssignment, examAssignment,
-    			(TreeSet) form.getInstructionalOfferings(), 
-     			subjectAreaId,
-    			context,
-    			displayHeader, allCoursesAreGiven,
-    			new ClassCourseComparator(form.getSortBy(), classAssignment, false));
+    	
+    	iDocument = new Document(PageSize.A4, 30f, 30f, 30f, 30f); 
+		iWriter = PdfEventHandler.initFooter(iDocument, out);
+
+    	for (String subjectAreaId: subjectAreaIds) {
+        	pdfTableForInstructionalOfferings(out, classAssignment, examAssignment,
+        			form.getInstructionalOfferings(Long.valueOf(subjectAreaId)), 
+        			Long.valueOf(subjectAreaId),
+        			context,
+        			displayHeader, allCoursesAreGiven,
+        			new ClassCourseComparator(form.getSortBy(), classAssignment, false));
+    	}
    	
+		iDocument.close();
     }
     
     protected void pdfTableForInstructionalOfferings(
@@ -1532,6 +1548,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             SessionContext context,
             boolean displayHeader, boolean allCoursesAreGiven,
             Comparator classComparator) throws Exception {
+    	
+    	SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(subjectAreaId);
     	
     	if (classComparator!=null)
     		setClassComparator(classComparator);
@@ -1607,11 +1625,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     		totalWidth += widths[i];
     	
     	
-    	iDocument = new Document(new Rectangle(60f+totalWidth,60f+0.77f*totalWidth), 30f, 30f, 30f, 30f); 
-
-		iWriter = PdfEventHandler.initFooter(iDocument, out);
-		iDocument.open();
-         
+		iDocument.setPageSize(new Rectangle(60f+totalWidth,60f+0.77f*totalWidth));
          
         if (hasOfferedCourses || allCoursesAreGiven) {
         	iPdfTable = new PdfPTable(getWidths());
@@ -1621,7 +1635,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
         	iPdfTable.setSplitRows(false);
 
         	if(displayHeader) {
-   		    	iDocument.add(new Paragraph("Offered Courses", PdfFont.getBigFont(true)));
+        		if (!iDocument.isOpen())
+        			iDocument.open();
+        		else
+        			iDocument.newPage();
+   		    	iDocument.add(new Paragraph(MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
     		}
     		pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
                   
@@ -1634,7 +1652,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("There are no courses currently offered for this subject.", PdfFont.getFont(true, false, Color.RED))); 
+                	iDocument.add(new Paragraph(MSG.errorNoCoursesOffered(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getFont(true, false, Color.RED))); 
             }
             
             iDocument.add(iPdfTable);
@@ -1649,7 +1667,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
 
         	if(displayHeader) {
    	        	iDocument.newPage();
-   				iDocument.add(new Paragraph("Not Offered Courses", PdfFont.getBigFont(true)));
+   				iDocument.add(new Paragraph(MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getBigFont(true)));
             }
             pdfBuildTableHeader(context.getUser().getCurrentAcademicSessionId());
             
@@ -1662,15 +1680,11 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
                 }
             } else {
                 if(displayHeader)
-                	iDocument.add(new Paragraph("All courses are currently being offered for this subject.", PdfFont.getFont()));
+                	iDocument.add(new Paragraph(MSG.errorAllCoursesOffered(subjectArea.getSubjectAreaAbbreviation()), PdfFont.getFont()));
             }
             
     		iDocument.add(iPdfTable);
         }
-        
-		
-		iDocument.close();
-
     }
 
 }

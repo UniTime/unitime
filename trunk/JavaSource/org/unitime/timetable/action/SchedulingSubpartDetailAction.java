@@ -34,7 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.defaults.CommonValues;
-import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.defaults.UserProperty;
 import org.unitime.timetable.form.DistributionPrefsForm;
 import org.unitime.timetable.form.SchedulingSubpartEditForm;
@@ -246,9 +245,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        CourseOffering co = ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
 
 		    // Set Session Variables
-	        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, co.getSubjectArea().getUniqueId().toString());
-	        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber)!=null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
-	            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, co.getCourseNbr());
+	        InstructionalOfferingSearchAction.setLastInstructionalOffering(sessionContext, ss.getInstrOfferingConfig().getInstructionalOffering());
 
 	        // populate form
 	        InstrOfferingConfig ioc = ss.getInstrOfferingConfig();

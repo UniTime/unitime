@@ -409,23 +409,6 @@
         	path="instructionalOfferingSearchTile" />
       </action>
 
-	  <action
-         path="/instructionalOfferingChange"
-         attribute="instructionalOfferingListForm"
-         input="instructionalOfferingListTile"
-         name="instructionalOfferingListForm"
-         parameter="doit"
-         scope="request"
-         type="org.springframework.web.struts.DelegatingActionProxy"
-         validate="false">
-        <forward 
-        	name="showInstructionalOfferingList" 
-        	path="instructionalOfferingListTile" />
-        <forward 
-        	name="showInstructionalOfferingSearch" 
-        	path="instructionalOfferingSearchTile" />
-      </action>
-
      <action
          path="/instructionalOfferingList"
          attribute="instructionalOfferingListForm"

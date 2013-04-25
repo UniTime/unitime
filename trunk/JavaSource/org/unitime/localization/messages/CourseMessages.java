@@ -663,17 +663,17 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Configuration {0}")
 	String labelConfiguration(String name);
 	
-	@DefaultMessage("Not Offered Courses")
-	String labelNotOfferedCourses();
+	@DefaultMessage("{0} Not Offered Courses")
+	String labelNotOfferedCourses(String subjectAreaAbbv);
 	
-	@DefaultMessage("Offered Courses")
-	String labelOfferedCourses();
+	@DefaultMessage("{0} Offered Courses")
+	String labelOfferedCourses(String subjectAreaAbbv);
 	
-	@DefaultMessage("There are no courses currently offered for this subject.")
-	String errorNoCoursesOffered();
+	@DefaultMessage("There are no courses currently offered for {0} subject.")
+	String errorNoCoursesOffered(String subjectAreaAbbv);
 
-	@DefaultMessage("All courses are currently being offered for this subject.")
-	String errorAllCoursesOffered();
+	@DefaultMessage("All courses are currently being offered for {0} subject.")
+	String errorAllCoursesOffered(String subjectAreaAbbv);
 	
 	@DefaultMessage("Sort By:")
 	String filterSortBy();
