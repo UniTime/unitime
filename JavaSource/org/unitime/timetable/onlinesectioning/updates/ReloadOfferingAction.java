@@ -453,8 +453,10 @@ public class ReloadOfferingAction extends WaitlistedOnlineSectioningAction<Boole
 						enrl.setApprovedBy(approvedBy);
 						enrl.setApprovedDate(approvedDate);
 						student.getClassEnrollments().add(enrl);
-						if (cr.getClassEnrollments() == null) cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
-						cr.getClassEnrollments().add(enrl);
+						if (cr != null) {
+							if (cr.getClassEnrollments() == null) cr.setClassEnrollments(new HashSet<StudentClassEnrollment>());
+							cr.getClassEnrollments().add(enrl);
+						}
 						helper.info("Adding " + enrl.getClazz().getClassLabel());
 					}
 				} else if (!r.getRequest().isAlternative()) { // wait-list
