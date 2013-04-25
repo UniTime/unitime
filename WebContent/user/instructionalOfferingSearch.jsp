@@ -255,7 +255,7 @@
 			<TD valign="top" nowrap>
 				<!-- html:text property="courseNbr" size="10" maxlength="10" / -->
 				<layout:suggest 
-					suggestAction="/getCourseNumbers" property="courseNbr" styleId="courseNbrText" 
+					suggestAction="/getCourseNumbers?notOffered=include" property="courseNbr" styleId="courseNbrText" 
 					suggestCount="15" size="10" maxlength="10" layout="false" all="true"
 					minWordLength="2" 
 					tooltip="<%=MSG.tooltipCourseNumber()%>"

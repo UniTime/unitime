@@ -161,7 +161,8 @@ public class CourseNumSuggestAction extends MultipleSuggestAction {
 	        query.append(" where co.subjectArea.session.uniqueId = :acadSessionId ");
 	        query.append(" 		 and co.subjectArea.uniqueId = :subjectAreaId");
 	        query.append(" 		 and co.courseNbr like :courseNbr ");
-	        query.append(" 		 and co.instructionalOffering.notOffered = false ");
+	        if (!"include".equals(map.get("notOffered")))
+	        	query.append(" 		 and co.instructionalOffering.notOffered = false ");
 	        //query.append(" 		 and co.isControl = true ");
 	        query.append(" order by co.courseNbr ");
 	
