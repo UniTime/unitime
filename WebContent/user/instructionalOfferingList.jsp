@@ -31,10 +31,10 @@
 <%
 		
 
-	String subjectAreaId = (request.getParameter("subjectAreaId")!=null)
-							? request.getParameter("subjectAreaId")
-							: (String) request.getAttribute("subjectAreaId");
-	session.setAttribute("subjArea", subjectAreaId);
+	String subjectAreaIds = (request.getParameter("subjectAreaIds")!=null)
+							? request.getParameter("subjectAreaIds")
+							: (String) request.getAttribute("subjectAreaIds");
+	session.setAttribute("subjArea", subjectAreaIds);
 	session.setAttribute("callingPage", "instructionalOfferingSearch");
 
 	// Get Form 
@@ -47,7 +47,7 @@
 				    		        WebSolver.getClassAssignmentProxy(session),
 				    		        WebSolver.getExamSolver(session),
 				    		        frm, 
-				    		        frm.getSubjectAreaId(), 
+				    		        frm.getSubjectAreaIds(), 
 				    		        true, 
 				    		        frm.getCourseNbr() == null || frm.getCourseNbr().isEmpty(),
 				    		        out,

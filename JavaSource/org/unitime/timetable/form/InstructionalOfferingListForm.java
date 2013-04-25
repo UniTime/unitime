@@ -21,7 +21,8 @@ package org.unitime.timetable.form;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -48,11 +49,11 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	 */
 	private static final long serialVersionUID = -6985831814265952068L;
 
-	private Collection instructionalOfferings;
+	private Map<Long, TreeSet<InstructionalOffering>> instructionalOfferings;
 
 	private Collection subjectAreas;
 
-	private Long subjectAreaId;
+	private String[] subjectAreaIds;
 
 	private String courseNbr;
 
@@ -187,16 +188,16 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	/**
 	 * @return Returns the subjectAreaId.
 	 */
-	public Long getSubjectAreaId() {
-		return subjectAreaId;
+	public String[] getSubjectAreaIds() {
+		return subjectAreaIds;
 	}
 
 	/**
 	 * @param subjectAreaId
 	 *            The subjectAreaId to set.
 	 */
-	public void setSubjectAreaId(Long subjectAreaId) {
-		this.subjectAreaId = subjectAreaId;
+	public void setSubjectAreaIds(String[] subjectAreaIds) {
+		this.subjectAreaIds = subjectAreaIds;
 	}
 
 	// --------------------------------------------------------- Methods
@@ -209,7 +210,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public void reset(ActionMapping mapping, HttpServletRequest request) {
 
 		courseNbr = "";
-		instructionalOfferings = new ArrayList();
+		instructionalOfferings = null;
 		subjectAreas = new ArrayList();
 		divSec = new Boolean(false);
 		demand = new Boolean(false);
@@ -236,15 +237,19 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	/**
 	 * @return Returns the instructionalOfferings.
 	 */
-	public Collection getInstructionalOfferings() {
+	public Map<Long, TreeSet<InstructionalOffering>> getInstructionalOfferings() {
 		return instructionalOfferings;
+	}
+	
+	public TreeSet<InstructionalOffering> getInstructionalOfferings(Long subjectAreaId) {
+		return instructionalOfferings == null ? null : instructionalOfferings.get(subjectAreaId);
 	}
 
 	/**
 	 * @param instructionalOfferings
 	 *            The instructionalOfferings to set.
 	 */
-	public void setInstructionalOfferings(Collection instructionalOfferings) {
+	public void setInstructionalOfferings(Map<Long, TreeSet<InstructionalOffering>> instructionalOfferings) {
 		this.instructionalOfferings = instructionalOfferings;
 	}
 
@@ -287,30 +292,12 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
 
-		if (subjectAreaId == null)
-			errors.add("subjectAreaId", new ActionMessage("errors.required", MSG.labelSubjectArea()));
+		if (subjectAreaIds == null || subjectAreaIds.length == 0)
+			errors.add("subjectAreaIds", new ActionMessage("errors.required", MSG.labelSubjectArea()));
 
 		return errors;
 	}
-
-	public InstructionalOffering getInstructionalOffering(String uid) {
-		Iterator it = this.getInstructionalOfferings().iterator();
-		InstructionalOffering io = null;
-		while (it.hasNext() && (io == null || !io.getUniqueId().equals(Integer.valueOf(uid)))) {
-			io = (InstructionalOffering) it.next();
-		}
-		return (io);
-	}
-
-	public InstructionalOffering getInstructionalOffering(int uid) {
-		Iterator it = this.getInstructionalOfferings().iterator();
-		InstructionalOffering io = null;
-		while (it.hasNext() && (io == null || !(io.getUniqueId().intValue() == uid))) {
-			io = (InstructionalOffering) it.next();
-		}
-		return (io);
-	}
-
+	
 	public Boolean getDatePattern() {
 		return datePattern;
 	}
@@ -466,7 +453,7 @@ public class InstructionalOfferingListForm extends ActionForm implements Instruc
         Debug.debug("!!! Finalizing InstructionalOfferingListForm ... ");
         instructionalOfferings=null;
         subjectAreas=null;
-        subjectAreaId=null;
+        subjectAreaIds = new String[0];
         courseNbr=null;
         showNotOffered=null;
         buttonAction=null;

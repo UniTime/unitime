@@ -174,7 +174,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	 * @param courseNbr Course Number
 	 * @return TreeSet of results
 	 */
-	public static TreeSet search(
+	public static TreeSet<InstructionalOffering> search(
 	        Long acadSessionId,
 	        Long subjectAreaId,
 	        String courseNbr,
@@ -186,7 +186,6 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 	        boolean fetchReservations) {
 
 		org.hibernate.Session hibSession = (new InstructionalOfferingDAO()).getSession();
-		hibSession.clear();
 
 		StringBuffer query = new StringBuffer();
 		query.append("select distinct io ");
@@ -253,7 +252,7 @@ public class InstructionalOffering extends BaseInstructionalOffering {
 		q.setCacheable(true);
 
 
-        TreeSet ts = new TreeSet(new InstructionalOfferingComparator(Long.valueOf(subjectAreaId)));
+        TreeSet<InstructionalOffering> ts = new TreeSet<InstructionalOffering>(new InstructionalOfferingComparator(Long.valueOf(subjectAreaId)));
 
         long sTime = new java.util.Date().getTime();
 		ts.addAll(q.list());

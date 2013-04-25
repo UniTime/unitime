@@ -313,9 +313,7 @@ public class InstructionalOfferingDetailAction extends Action {
     	sessionContext.checkPermission(io, Right.InstructionalOfferingDetail);
         
 	    // Set Session Variables
-        sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjectAreaId.toString());
-        if (sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber) != null && !sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber).toString().isEmpty())
-            sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, io.getControllingCourseOffering().getCourseNbr());
+    	InstructionalOfferingSearchAction.setLastInstructionalOffering(sessionContext, io);
         
         // Sort Offerings
         ArrayList offerings = new ArrayList(io.getCourseOfferings());

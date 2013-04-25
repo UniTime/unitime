@@ -30,7 +30,7 @@ public enum SessionAttribute {
 	StudentSectioningSolver("StudentSolverProxy", "Last used student sectioning solver."),
 	StudentSectioningUser("ManageSolver.sectionPuid", "User id of the solver I am looking at (if different from user id, admin only)"),
 
-	OfferingsSubjectArea("subjectAreaId", "Last used subject area (String containing subject area id)"),
+	OfferingsSubjectArea("subjectAreaId", "Last used subject area or areas (String containing a comma separated list of ids)"),
 	OfferingsCourseNumber("courseNbr", "Last used course number (String containing course number)"),
 	ClassesSubjectAreas("crsLstSubjectAreaIds", "Last used subject areas (String containing a comma separated list of ids)"),
 	ClassesCourseNumber("crsLstCrsNbr", "Last used course number (String containing course number)"),

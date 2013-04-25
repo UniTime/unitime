@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Hashtable;
@@ -81,16 +83,23 @@ public class PdfWorksheet {
     private static int sNrLines = 50;
     private OutputStream iOut = null;
     private Document iDoc = null;
-    private SubjectArea iSubjectArea = null;
+    private TreeSet<SubjectArea> iSubjectAreas;
     private String iCourseNumber = null;
     private int iPageNo = 0;
     private int iLineNo = 0;
     private StringBuffer iBuffer = new StringBuffer();
     private CourseOffering iCourseOffering = null;
+    private SubjectArea iCurrentSubjectArea = null;
     
-    private PdfWorksheet(OutputStream out, SubjectArea sa, String courseNumber) throws IOException, DocumentException  {
+    private PdfWorksheet(OutputStream out, Collection<SubjectArea> subjectAreas, String courseNumber) throws IOException, DocumentException  {
         iUseCommitedAssignments = "true".equals(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.useCommitedAssignments","true"));
-        iSubjectArea = sa;
+        iSubjectAreas = new TreeSet<SubjectArea>(new Comparator<SubjectArea>() {
+    		@Override
+    		public int compare(SubjectArea s1, SubjectArea s2) {
+    			return s1.getSubjectAreaAbbreviation().compareTo(s2.getSubjectAreaAbbreviation());
+    		}
+    	});
+        iSubjectAreas.addAll(subjectAreas);
         iCourseNumber = courseNumber;
         if (iCourseNumber!=null && (iCourseNumber.trim().length()==0 || "*".equals(iCourseNumber.trim().length())))
             iCourseNumber = null;
@@ -99,31 +108,42 @@ public class PdfWorksheet {
         iOut = out;
         PdfWriter.getInstance(iDoc, iOut);
 
-        iDoc.addTitle(sa.getSubjectAreaAbbreviation()+(iCourseNumber==null?"":" "+iCourseNumber)+" Worksheet");
+        String session = null;
+        String subjects = "";
+        for (SubjectArea sa: iSubjectAreas) {
+        	if (subjects.isEmpty()) subjects += ", ";
+        	subjects += sa.getSubjectAreaAbbreviation();
+        	if (session == null) session += sa.getSession().getLabel();
+        }
+        iDoc.addTitle(subjects + (iCourseNumber==null?"":" "+iCourseNumber) + " Worksheet");
         iDoc.addAuthor(ApplicationProperties.getProperty("tmtbl.pdf.worksheet.author","UniTime "+Constants.getVersion()+", www.unitime.org"));
-        iDoc.addSubject(sa.getSubjectAreaAbbreviation()+" -- "+sa.getSession());
+        iDoc.addSubject(subjects + (session == null ? "" : " -- " + session));
         iDoc.addCreator("UniTime "+Constants.getVersion()+", www.unitime.org");
+        if (!iSubjectAreas.isEmpty())
+        	iCurrentSubjectArea = iSubjectAreas.first();
 
         iDoc.open();
         
         printHeader();
     }
     
-    public static boolean print(OutputStream out, SubjectArea sa) throws IOException, DocumentException {
+    public static boolean print(OutputStream out, Collection<SubjectArea> subjectAreas) throws IOException, DocumentException {
         TreeSet courses = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 CourseOffering co1 = (CourseOffering)o1;
                 CourseOffering co2 = (CourseOffering)o2;
-                int cmp = co1.getCourseNbr().compareTo(co2.getCourseNbr());
-                if (cmp!=0) return cmp;
+                int cmp = co1.getCourseName().compareTo(co2.getCourseName());
+                if (cmp != 0) return cmp;
                 return co1.getUniqueId().compareTo(co2.getUniqueId());
             }
         });
-        courses.addAll(new SessionDAO().getSession().
-                createQuery("select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId").
-                setLong("subjectAreaId", sa.getUniqueId()).list());
+        String subjectIds = "";
+        for (SubjectArea sa: subjectAreas)
+        	subjectIds += (subjectIds.isEmpty() ? "" : ",") + sa.getUniqueId();
+        courses.addAll(SessionDAO.getInstance().getSession().createQuery(
+        		"select co from CourseOffering co where  co.subjectArea.uniqueId in (" + subjectIds + ")").list());
         if (courses.isEmpty()) return false;
-        PdfWorksheet w = new PdfWorksheet(out,sa,null);
+        PdfWorksheet w = new PdfWorksheet(out, subjectAreas, null);
         for (Iterator i=courses.iterator();i.hasNext();) {
             w.print((CourseOffering)i.next());
         }
@@ -132,27 +152,30 @@ public class PdfWorksheet {
         return true;
     }
     
-    public static boolean print(OutputStream out, SubjectArea sa, String courseNumber) throws IOException, DocumentException {
+    public static boolean print(OutputStream out, Collection<SubjectArea> subjectAreas, String courseNumber) throws IOException, DocumentException {
         TreeSet courses = new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 CourseOffering co1 = (CourseOffering)o1;
                 CourseOffering co2 = (CourseOffering)o2;
-                int cmp = co1.getCourseNbr().compareTo(co2.getCourseNbr());
+                int cmp = co1.getCourseName().compareTo(co2.getCourseName());
                 if (cmp!=0) return cmp;
                 return co1.getUniqueId().compareTo(co2.getUniqueId());
             }
         });
-        String query = "select co from CourseOffering co where  co.subjectArea.uniqueId=:subjectAreaId";
-        if (courseNumber!=null && courseNumber.trim().length()>0) {
+        String subjectIds = "";
+        for (SubjectArea sa: subjectAreas)
+        	subjectIds += (subjectIds.isEmpty() ? "" : ",") + sa.getUniqueId();
+        String query = "select co from CourseOffering co where  co.subjectArea.uniqueId in (" + subjectIds + ")";
+        if (courseNumber!=null && !courseNumber.trim().isEmpty()) {
             query += " and co.courseNbr ";
             if (courseNumber.indexOf('*')>=0)
                 query += " like '"+courseNumber.trim().replace('*', '%').toUpperCase()+"'";
             else 
                 query += " = '"+courseNumber.trim().toUpperCase()+"'";
         }
-        courses.addAll(new SessionDAO().getSession().createQuery(query).setLong("subjectAreaId", sa.getUniqueId()).list());
+        courses.addAll(new SessionDAO().getSession().createQuery(query).list());
         if (courses.isEmpty()) return false;
-        PdfWorksheet w = new PdfWorksheet(out,sa,courseNumber);
+        PdfWorksheet w = new PdfWorksheet(out, subjectAreas, courseNumber);
         for (Iterator i=courses.iterator();i.hasNext();) {
             w.print((CourseOffering)i.next());
         }
@@ -298,7 +321,14 @@ public class PdfWorksheet {
     }
     
     protected void print(CourseOffering co) throws DocumentException {
-        if (iLineNo+5>=sNrLines) newPage();
+    	if (!iCurrentSubjectArea.equals(co.getSubjectArea())) {
+    		lastPage();
+    		iCurrentSubjectArea = co.getSubjectArea();
+    		iDoc.newPage();
+    		printHeader();
+    	} else {
+    		if (iLineNo+5>=sNrLines) newPage();
+    	}
         iCourseOffering = co;
         int courseLimit = -1;
         InstructionalOffering offering = co.getInstructionalOffering();
@@ -541,9 +571,9 @@ public class PdfWorksheet {
                 ));
         out(mpad(
                 new SimpleDateFormat("EEE MMM dd, yyyy").format(new Date()),
-                iSubjectArea.getSession().getAcademicInitiative()+" "+
-                iSubjectArea.getSession().getAcademicTerm()+" "+
-                iSubjectArea.getSession().getAcademicYear(),' ',sNrChars));
+                iCurrentSubjectArea.getSession().getAcademicInitiative()+" "+
+                iCurrentSubjectArea.getSession().getAcademicTerm()+" "+
+                iCurrentSubjectArea.getSession().getAcademicYear(),' ',sNrChars));
         outln('=');
         iLineNo=0;
         if (iCourseOffering!=null)
@@ -552,7 +582,7 @@ public class PdfWorksheet {
     
     protected void printFooter() throws DocumentException {
         out("");
-        out(renderEnd(renderMiddle("","Page "+(iPageNo+1)),"<"+iSubjectArea.getSubjectAreaAbbreviation()+(iCourseNumber!=null?" "+iCourseNumber:"")+">  "));
+        out(renderEnd(renderMiddle("","Page "+(iPageNo+1)),"<"+iCurrentSubjectArea.getSubjectAreaAbbreviation()+(iCourseNumber!=null?" "+iCourseNumber:"")+">  "));
     	//FIXME: For some reason when a line starts with space, the line is shifted by one space in the resulting PDF (when using iText 5.0.2)
         Paragraph p = new Paragraph(iBuffer.toString().replace("\n ", "\n  "), PdfFont.getFixedFont());
         p.setLeading(9.5f); //was 13.5f
@@ -616,7 +646,8 @@ public class PdfWorksheet {
                 SubjectArea sa = (SubjectArea)i.next();
                 System.out.println("Printing subject area "+sa.getSubjectAreaAbbreviation()+" ...");
                 FileOutputStream out = new FileOutputStream(sa.getSubjectAreaAbbreviation()+".pdf");
-                PdfWorksheet.print(out,sa);
+                List<SubjectArea> sas = new ArrayList<SubjectArea>(); sas.add(sa);
+                PdfWorksheet.print(out, sas);
                 out.flush(); out.close();
             }
             

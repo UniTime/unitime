@@ -49,6 +49,7 @@ import org.unitime.timetable.model.DistributionObject;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.Exam;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceGroup;
 import org.unitime.timetable.model.PreferenceLevel;
@@ -256,6 +257,11 @@ public class ExamDistributionPrefsAction extends Action {
         
         if (sessionContext.getAttribute(SessionAttribute.ExamType) != null)
         	frm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));
+        if (frm.getExamType() == null) {
+			TreeSet<ExamType> types = ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
+			if (!types.isEmpty())
+				frm.setExamType(types.first().getUniqueId());
+        }
         
         frm.setFilterSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser(), false));
         if (frm.getFilterSubjectAreas().size()==1) {
@@ -264,7 +270,9 @@ public class ExamDistributionPrefsAction extends Action {
         }
         
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
-            frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+        	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+        	if (subject != null && subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
+        	frm.setFilterSubjectAreaId(subject);
             frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
 
             ExamDistributionPrefsTableBuilder tbl = new ExamDistributionPrefsTableBuilder();

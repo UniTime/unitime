@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
@@ -68,12 +69,14 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.StudentClassEnrollment;
+import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassCourseComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
+import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
@@ -1692,7 +1695,8 @@ public class WebInstructionalOfferingTableBuilder {
 		    			context,
 				        classAssignment,
 				        examAssignment,
-				        ts, subjectAreaId, false, false, outputStream, classComparator);
+				        ts, subjectAreaId, false, false, outputStream, classComparator,
+				        null);
     	}
     }
     
@@ -1701,7 +1705,7 @@ public class WebInstructionalOfferingTableBuilder {
             ClassAssignmentProxy classAssignment, 
             ExamAssignmentProxy examAssignment,
             InstructionalOfferingListForm form, 
-            Long subjectAreaId, 
+            String[] subjectAreaIds, 
             boolean displayHeader,
             boolean allCoursesAreGiven,
             JspWriter outputStream,
@@ -1711,13 +1715,19 @@ public class WebInstructionalOfferingTableBuilder {
     	setBackType(backType); setBackId(backId);
     	
     	this.setVisibleColumns(form);
-    	htmlTableForInstructionalOfferings(context, classAssignment, examAssignment,
-    			(TreeSet) form.getInstructionalOfferings(), 
-     			subjectAreaId,
-    			displayHeader, allCoursesAreGiven,
-    			outputStream,
-    			new ClassCourseComparator(form.getSortBy(), classAssignment, false)
-    	);
+    	
+    	List<Long> navigationOfferingIds = new ArrayList<Long>();
+    	
+    	for (String subjectAreaId: subjectAreaIds) {
+        	htmlTableForInstructionalOfferings(context, classAssignment, examAssignment,
+        			form.getInstructionalOfferings(Long.valueOf(subjectAreaId)), 
+         			Long.valueOf(subjectAreaId),
+         			displayHeader, allCoursesAreGiven,
+        			outputStream,
+        			new ClassCourseComparator(form.getSortBy(), classAssignment, false),
+        			navigationOfferingIds
+        	);
+    	}
    	
     }
     
@@ -1729,10 +1739,13 @@ public class WebInstructionalOfferingTableBuilder {
             Long subjectAreaId, 
             boolean displayHeader, boolean allCoursesAreGiven,
             JspWriter outputStream,
-            Comparator classComparator){
+            Comparator classComparator,
+            List<Long> navigationOfferingIds){
     	
     	if (classComparator!=null)
     		setClassComparator(classComparator);
+    	
+    	SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(Long.valueOf(subjectAreaId));
         
     	if (isShowTimetable()) {
             boolean hasTimetable = false;
@@ -1782,7 +1795,6 @@ public class WebInstructionalOfferingTableBuilder {
     	
         ArrayList notOfferedOfferings = new ArrayList();
         ArrayList offeredOfferings = new ArrayList();
-        ArrayList offeringIds = new ArrayList();
         
         Iterator it = insructionalOfferings.iterator();
         InstructionalOffering io = null;
@@ -1805,8 +1817,8 @@ public class WebInstructionalOfferingTableBuilder {
     		if(displayHeader) {
     		    try {
     		    	if (allCoursesAreGiven)
-    		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered\">" + MSG.labelNotOfferedCourses() + "</A></DIV>");
-    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered\"></A>" + MSG.labelOfferedCourses() + "</DIV>");
+    		    		outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#notOffered" + subjectAreaId + "\">" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
+    			    outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"offered" + subjectAreaId + "\"></A>" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -1818,14 +1830,15 @@ public class WebInstructionalOfferingTableBuilder {
                 
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
-                    offeringIds.add(io.getUniqueId());
-                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, offeredTable, io, subjectAreaId, context);            	
+                    if (navigationOfferingIds != null)
+                    	navigationOfferingIds.add(io.getUniqueId());
+                    this.addInstrOffrRowsToTable(classAssignment, examAssignment, offeredTable, io, subjectAreaId, context);            	
                 }
                 offeredTable.tableComplete();
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"error\">" + MSG.errorNoCoursesOffered() + "</font>");
+    					outputStream.print("<font class=\"error\">" + MSG.errorNoCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}
@@ -1837,8 +1850,8 @@ public class WebInstructionalOfferingTableBuilder {
     	        try {
     				outputStream.print("<br>");
     				if (allCoursesAreGiven)
-    					outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#offered\">" + MSG.labelOfferedCourses() + "</A></DIV>");
-    		        outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered\"></A>" + MSG.labelNotOfferedCourses() + "</DIV>");
+    					outputStream.print("<DIV align=\"right\"><A class=\"l7\" href=\"#offered" + subjectAreaId + "\">" + MSG.labelOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</A></DIV>");
+    		        outputStream.print("<DIV class=\"WelcomeRowHead\"><A name=\"notOffered" + subjectAreaId + "\"></A>" + MSG.labelNotOfferedCourses(subjectArea.getSubjectAreaAbbreviation()) + "</DIV>");
     			} catch (IOException e) {
     				e.printStackTrace();
     			}
@@ -1849,21 +1862,23 @@ public class WebInstructionalOfferingTableBuilder {
                 TableStream notOfferedTable = this.initTable(outputStream, context.getUser().getCurrentAcademicSessionId());
                 while (it.hasNext()){
                     io = (InstructionalOffering) it.next();
-                    offeringIds.add(io.getUniqueId());
-                    	this.addInstrOffrRowsToTable(classAssignment, examAssignment, notOfferedTable, io, subjectAreaId, context);            	
+                    if (navigationOfferingIds != null)
+                    	navigationOfferingIds.add(io.getUniqueId());
+                    this.addInstrOffrRowsToTable(classAssignment, examAssignment, notOfferedTable, io, subjectAreaId, context);            	
                 }
                 notOfferedTable.tableComplete();
             } else {
                 if(displayHeader)
     				try {
-    					outputStream.print("<font class=\"normal\">&nbsp;<br>" + MSG.errorAllCoursesOffered() + "</font>");
+    					outputStream.print("<font class=\"normal\">&nbsp;" + MSG.errorAllCoursesOffered(subjectArea.getSubjectAreaAbbreviation()) + "</font>");
     				} catch (IOException e) {
     					e.printStackTrace();
     				}
             }
         }
         
-        Navigation.set(context, Navigation.sInstructionalOfferingLevel, offeringIds);
+        if (navigationOfferingIds != null)
+        	Navigation.set(context, Navigation.sInstructionalOfferingLevel, navigationOfferingIds);
     }
 
 
