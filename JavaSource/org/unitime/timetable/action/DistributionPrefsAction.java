@@ -308,7 +308,9 @@ public class DistributionPrefsAction extends Action {
         request.setAttribute(DistributionPrefsForm.LIST_SIZE_ATTR, ""+(frm.getSubjectArea().size()-1));
 
         if ("view".equals(op) && (frm.getDistPrefId()==null || frm.getDistPrefId().length()==0)) {
-        	frm.setFilterSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
+        	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+        	if (subject != null && subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
+        	frm.setFilterSubjectAreaId(subject);
         	frm.setFilterCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
         	
         	DistributionPrefsTableBuilder tbl = new DistributionPrefsTableBuilder();

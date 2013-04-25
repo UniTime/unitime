@@ -89,8 +89,10 @@ public class ExamListAction extends Action {
         String op = (myForm.getOp()!=null?myForm.getOp():request.getParameter("op"));
         
         if (op==null && sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea)!=null) {
-            myForm.setSubjectAreaId((String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea));
-            myForm.setCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
+        	String subject = (String)sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
+        	if (subject.indexOf(',') >= 0) subject = subject.substring(0, subject.indexOf(','));
+        	myForm.setSubjectAreaId(subject);
+        	myForm.setCourseNbr((String)sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber));
         }
         if (op==null && sessionContext.getAttribute(SessionAttribute.ExamType)!=null) {
         	myForm.setExamType((Long)sessionContext.getAttribute(SessionAttribute.ExamType));

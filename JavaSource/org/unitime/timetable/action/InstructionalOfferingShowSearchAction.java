@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.util.Collection;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -82,8 +81,6 @@ public class InstructionalOfferingShowSearchAction extends Action {
         // Check if subject area / course number saved to session
 	    Object sa = sessionContext.getAttribute(SessionAttribute.OfferingsSubjectArea);
 	    Object cn = sessionContext.getAttribute(SessionAttribute.OfferingsCourseNumber);
-	    String subjectAreaId = "";
-	    String courseNbr = "";
 	    
 	    if (Constants.ALL_OPTION_VALUE.equals(sa))
 	    	sa = null;
@@ -108,27 +105,37 @@ public class InstructionalOfferingShowSearchAction extends Action {
 
 	    // Subject Area is saved to the session - Perform automatic search
 	    if (sa != null) {
-	        subjectAreaId = sa.toString();
-	        
 	        try {
 	            
-		        if (cn != null && !cn.toString().isEmpty())
+			    StringBuffer ids = new StringBuffer();
+				StringBuffer names = new StringBuffer();
+				StringBuffer subjIds = new StringBuffer();
+				for (String id: sa.toString().split(",")) {
+					if (names.length() > 0) {
+						names.append(","); 
+						subjIds.append(",");
+					}
+					ids.append("&subjectAreaIds="+id);
+					subjIds.append(id);
+					names.append(((new SubjectAreaDAO()).get(new Long(id))).getSubjectAreaAbbreviation());
+				}
+				
+
+				String courseNbr = "";
+				if (cn != null && !cn.toString().isEmpty())
 		            courseNbr = cn.toString();
 		        
-		        Debug.debug("Subject Area: " + subjectAreaId);
+		        Debug.debug("Subject Areas: " + subjIds);
 		        Debug.debug("Course Number: " + courseNbr);
 		        
-		        frm.setSubjectAreaId(Long.valueOf(subjectAreaId));
+		        frm.setSubjectAreaIds(sa.toString().split(","));
 		        frm.setCourseNbr(courseNbr);
 		        
 		        if(doSearch(request, frm)) {
 					BackTracker.markForBack(
 							request, 
-							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaId()+"&courseNbr="+frm.getCourseNbr(), 
-							"Instructional Offerings ("+
-								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaId()))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
-								(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
-								")", 
+							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1" + ids + "&courseNbr="+frm.getCourseNbr(), 
+							"Instructional Offerings (" + names + (frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr()) + ")", 
 							true, true);
 		            return mapping.findForward("showInstructionalOfferingList");
 		        	
@@ -150,13 +157,13 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	        Set s = (Set) frm.getSubjectAreas();
 	        if (s.size() == 1) {
 	            Debug.debug("Exactly 1 subject area found ... ");
-	            frm.setSubjectAreaId(((SubjectArea) s.iterator().next()).getUniqueId());
+	            frm.setSubjectAreaIds(new String[] {((SubjectArea) s.iterator().next()).getUniqueId().toString()});
 		        if(doSearch(request, frm)) {
 					BackTracker.markForBack(
 							request, 
-							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaId()+"&courseNbr="+frm.getCourseNbr(), 
+							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaIds()[0]+"&courseNbr="+frm.getCourseNbr(), 
 							"Instructional Offerings ("+
-								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaId()))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
+								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
 								(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
 								")", 
 							true, true);
@@ -181,13 +188,11 @@ public class InstructionalOfferingShowSearchAction extends Action {
 	        InstructionalOfferingListForm frm) throws Exception {
 	    
 	    
-		Collection instrOfferings = InstructionalOfferingSearchAction.getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm);
-		
 	    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
-	    frm.setInstructionalOfferings(instrOfferings);
+	    frm.setInstructionalOfferings(InstructionalOfferingSearchAction.getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm));
         
 		// Search return results - Generate html
-		return !instrOfferings.isEmpty();
+		return !frm.getInstructionalOfferings().isEmpty();
 	}
 	
 }

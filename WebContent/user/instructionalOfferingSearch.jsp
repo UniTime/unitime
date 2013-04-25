@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 --%>
+<%@page import="org.unitime.timetable.form.InstructionalOfferingListForm"%>
 <%@ page language="java" autoFlush="true" errorPage="../error.jsp" %>
 <%@ page import="org.unitime.timetable.util.Constants" %>
 <%@ page import="org.unitime.timetable.webutil.WebInstructionalOfferingTableBuilder" %>
@@ -28,6 +29,10 @@
 <%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
 <%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 <script language="JavaScript" type="text/javascript" src="scripts/block.js"></script>
+<%
+	String frmName = "instructionalOfferingListForm";	
+	InstructionalOfferingListForm frm = (InstructionalOfferingListForm) request.getAttribute(frmName);
+%>	
 <tiles:importAttribute />
 <html:form action="/instructionalOfferingSearch">
 <loc:bundle name="CourseMessages">
@@ -236,13 +241,15 @@
 		<TR>
 			<TH valign="top" nowrap><loc:message name="filterSubject"/></TH>
 			<TD valign="top" nowrap>
-				<html:select name="instructionalOfferingListForm" property="subjectAreaId"
-					onfocus="setUp();" 
-					onkeypress="return selectSearch(event, this);" 
-					onkeydown="return checkKey(event, this);" >
-					<html:option value=""><%=Constants.BLANK_OPTION_LABEL%></html:option>
-					<html:optionsCollection property="subjectAreas"	label="subjectAreaAbbreviation" value="uniqueId" />
-				</html:select>
+				<% if (frm.getSubjectAreas().size()==1) { %>
+					<html:select property="subjectAreaIds" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+					</html:select>
+				<% } else { %>
+					<html:select size="<%=String.valueOf(Math.min(7,frm.getSubjectAreas().size()))%>" property="subjectAreaIds" multiple="true" onfocus="setUp();" onkeypress="return selectSearch(event, this);" onkeydown="return checkKey(event, this);">
+						<html:optionsCollection property="subjectAreas" label="subjectAreaAbbreviation" value="uniqueId" />
+					</html:select>
+				<% } %>
 			</TD>
 			<TH valign="top" nowrap><loc:message name="filterCourseNumber"/></TH>
 			<TD valign="top" nowrap>
