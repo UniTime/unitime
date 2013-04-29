@@ -797,7 +797,7 @@ public class ExamPeriodEditForm extends ActionForm {
 				iSession.getEndMonth()+","+
 				pattern+","+
 				"['1','0'],"+
-				"['Midterm exams offered','Midterm exams not offered'],"+
+				"['Examinations offered','Examinations not offered'],"+
 				"['rgb(240,240,50)','rgb(240,240,240)'],"+
 				"'1',"+
 				border+","+true+","+true+");");
