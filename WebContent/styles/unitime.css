@@ -682,6 +682,18 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	z-index: 100;
 }
 
+.unitime-TimeGrid .selection-disabled {
+	position: absolute;
+	display: block;
+	background: #ddd;
+	filter: alpha(opacity = 25);
+	height: 100%;
+	width: 100%;
+	opacity: .25;
+    -moz-opacity: .25;
+	z-index: 101;
+}
+
 .unitime-TimeGrid .active-selection {
 	position: absolute;
 	background-color: #6991CE;
