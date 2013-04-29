@@ -75,6 +75,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth.Flag;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
@@ -193,6 +194,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iSessionRow = iFilter.addRow(MESSAGES.propAcademicSession(), iSession);
 		
 		iDates = new SessionDatesSelector(iSession);
+		iDates.setCanSelectPast(true);
 		ToolBox.setMaxWidth(iDates.getElement().getStyle(), Math.round(0.9 * ToolBox.getClientWidth() - 120)+ "px");
 		iFilter.addRow(MESSAGES.propDates(), iDates);
 		
@@ -746,6 +748,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		WeekInterface week = new WeekInterface();
 		week.setDayOfYear(iSelectedDates.get(0));
 		List<String> dows = new ArrayList<String>();
+		int lastPast = -1;
 		for (int i = 0; i < iSelectedDates.size(); i++) {
 			Date date = iDates.getDate(iSelectedDates.get(i));
 			int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
@@ -754,6 +757,8 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			days[i] = i;
 			week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
 			dows.add(CONSTANTS.days()[dow]);
+			if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
+				lastPast = i;
 		}
 		List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
 		for (ResourceInterface room: iSelectedRooms) {
@@ -792,7 +797,6 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(); rooms.add(room);
 			grid.setRoomResources(rooms);
 			grid.setMode(TimeGrid.Mode.OVERLAP);
-			
 			for (EventInterface event: sortedEvents()) {
 				List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
 				for (MeetingInterface meeting: event.getMeetings()) {
@@ -811,6 +815,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			grid.labelDays(dows, week);
 			grid.setCalendarUrl(null);
 			grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+			if (lastPast >= 0) grid.gray(0, lastPast);
 			grid.addMeetingClickHandler(iMeetingClickHandler);
 			iTables.add(grid);
 		}
