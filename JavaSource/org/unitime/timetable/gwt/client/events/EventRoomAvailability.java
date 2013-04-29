@@ -206,6 +206,14 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iPanel.removeStyleName("unitime-NotPrintableBottomLine");
 		iPanel.addRow(iFilter);
 		iHeader = new UniTimeHeaderPanel();
+		iHeader.addButton("add", MESSAGES.buttonAddEvent(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEventAdd.setEvent(null);
+				iEventAdd.show();
+			}
+		});
+		iHeader.setEnabled("add", false);
 		iHeader.addButton("sort", MESSAGES.buttonSortBy(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -665,6 +673,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iProperties = null;
 		iSessionMonths = null;
 		iFilterHeader.setEnabled("add", false);
+		iFooter.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
 			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
 				@Override
@@ -688,6 +697,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							iProperties = result;
 							iSessionMonths = months;
 							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
+							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							if (callback != null)
 								callback.onSuccess(result);
 						}

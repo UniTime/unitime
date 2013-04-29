@@ -475,6 +475,14 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		for (int i = 1; i < iPanel.getRowCount(); i++)
 			iPanel.getRowFormatter().setVisible(i, false);
 					
+		iHeader.addButton("add", MESSAGES.buttonAddEvent(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iEventAdd.setEvent(null);
+				iEventAdd.show();
+			}
+		});
+		iHeader.setEnabled("add", false);
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
@@ -1583,6 +1591,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iTable.setShowMainContact(false);
 		iFilterHeader.setEnabled("lookup", false);
 		iFilterHeader.setEnabled("add", false);
+		iFooter.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
 			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
 				@Override
@@ -1608,6 +1617,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 							iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
 							iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
+							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iEventAdd.setup(result);
 							iTable.setShowMainContact(result.isCanLookupContacts());
 							iApproveDialog.reset(result);
