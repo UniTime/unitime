@@ -421,7 +421,7 @@
 				<html:submit property="op" value="Add Period" title="Create a new examination period"/>
 				<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
 					<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
-						<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for midterm exams"/>
+						<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for exams"/>
 					</logic:equal>
 				</logic:iterate>
 			</tt:section-header>
@@ -438,7 +438,7 @@
 			<html:submit property="op" value="Add Period" title="Create a new examination period"/>
 			<logic:iterate scope="request" name="examTypes" id="type" type="org.unitime.timetable.model.ExamType">
 				<logic:equal name="examPeriodEditForm" property='<%="canAutoSetup("+type.getUniqueId()+")"%>' value="true">
-					<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for midterm exams"/>
+					<html:submit property="op" value='<%=type.getLabel() + " Periods"%>' title="Setup periods for exams"/>
 				</logic:equal>
 			</logic:iterate>
 		</TD>
