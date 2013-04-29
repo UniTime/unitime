@@ -733,7 +733,7 @@
   	</definition>
 
   	<definition name="midtermExamPeriodTile" extends="examPeriodsTile">
-		<put name="title" type="string" value="Midterm Examination Periods"/>
+		<put name="title" type="string" value="Setup Examination Periods"/>
   	</definition>
 
   	<definition name="examListTile" extends="pageLayoutDef">
