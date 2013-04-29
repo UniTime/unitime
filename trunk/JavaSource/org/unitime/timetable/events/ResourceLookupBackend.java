@@ -372,7 +372,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					break;
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and (" +
-							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title " +
+							"lower(s.subjectAreaAbbreviation) like :name or lower(' ' || s.title) like :title) " +
 							"order by s.subjectAreaAbbreviation")
 							.setString("name", query.toLowerCase() + "%").setString("title", "% " + query.toLowerCase() + "%")
 							.setLong("sessionId", academicSession.getUniqueId()).setMaxResults(limit).list();
