@@ -125,7 +125,7 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				today = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date()));
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
-		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, firstPast, today, firstClassDate, firstEventDate));
+		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate));
 	}
 	
 	public static class P extends AbsolutePanel {
@@ -567,5 +567,35 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	public void clearMessage() { iPanel.clearHint(); }
 	public void setMessage(String message) { iPanel.setHint(message); }
 	public void setError(String message) { iPanel.setErrorHint(message); }
+	
+	public boolean isEnabled(Date date) {
+		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
+		int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
+		int day = Integer.parseInt(DateTimeFormat.getFormat("dd").format(date));
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				if (s.getYear() == year && s.getMonth() + 1 == month)
+					return s.get(day - 1).isEnabled();
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasFlag(Date date, SessionMonth.Flag flag) {
+		int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
+		int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
+		int day = Integer.parseInt(DateTimeFormat.getFormat("dd").format(date));
+		for (int i = 0; i < iPanel.getWidget().getWidgetCount(); i ++) {
+			Widget w = iPanel.getWidget().getWidget(i);
+			if (w instanceof SingleMonth) {
+				SingleMonth s = (SingleMonth)w;
+				if (s.getYear() == year && s.getMonth() + 1 == month)
+					return s.get(day - 1).hasFlag(flag);
+			}
+		}
+		return false;
+	}
 
 }

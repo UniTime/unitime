@@ -349,6 +349,14 @@ public class TimeGrid extends Composite {
 		iWorkingHours.setHeight(iCellHeight * (stop - start) / 12);
 	}
 	
+	public void gray(int firstDay, int lastDay) {
+		P selectionDisabled = new P("selection-disabled");
+		if (lastDay - firstDay + 1 < iDays.length)
+			selectionDisabled.setWidth(3 + iCellWidth * (lastDay - firstDay + 1));
+		iPanel.add(selectionDisabled, iCellWidth * firstDay, 0);
+
+	}
+	
 	public void setDays(int[] days) {
 		iDays = days;
 		iCellWidth = (int)(0.9 * ToolBox.getClientWidth() / iDays.length);
