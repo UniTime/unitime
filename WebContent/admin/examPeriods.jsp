@@ -37,7 +37,7 @@
 			<TD colspan="2">
 				<tt:section-header>
 					<tt:section-title>
-						Setup Midterm Examination Periods
+						Setup Examination Periods
 					</tt:section-title>
 					<html:submit property="op">
 						<bean:write name="examPeriodEditForm" property="op" />
