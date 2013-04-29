@@ -104,6 +104,7 @@ public abstract class BaseRoom extends Location implements Serializable {
 			"\n	RoomNumber: " + getRoomNumber() +
 			"\n	RoomType: " + getRoomType() +
 			"\n	Session: " + getSession() +
+			"\n	ShareNote: " + getShareNote() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

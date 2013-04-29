@@ -122,6 +122,8 @@ public class RoomInterface implements IsSerializable {
 		private Map<Integer, Map<Integer, Boolean>> iEditable;
 		private int iDefaultMode = 0;
 		private boolean iDefaultEditable = true;
+		private String iNote = null;
+		private boolean iNoteEditable = false;
 		
 		public RoomSharingModel() {}
 		
@@ -244,6 +246,13 @@ public class RoomInterface implements IsSerializable {
 		
 		public int getDefaultMode() { return iDefaultMode; }
 		public void setDefaultMode(int mode) { iDefaultMode = mode; }
+		
+		public boolean hasNote() { return iNote != null && !iNote.isEmpty(); }
+		public String getNote() { return iNote; }
+		public void setNote(String note) { iNote = note; }
+		
+		public boolean isNoteEditable() { return iNoteEditable; }
+		public void setNoteEditable(boolean noteEditable) { iNoteEditable = noteEditable; }
 	}
 	
 	public static class RoomSharingRequest implements GwtRpcRequest<RoomSharingModel> {

@@ -2802,6 +2802,23 @@ div.gwt-MenuBarPopup {
 	padding-top: 10px;
 }
 
+.unitime-RoomSharingWidget .legend .note {
+	display: block;
+	padding-top: 5px;
+	vertical-align: middle;
+}
+
+.unitime-RoomSharingWidget .legend .note .label {
+	font-weight: bold;
+}
+
+
+.unitime-RoomSharingWidget .legend .note .value {
+	padding-left: 20px;
+}
+
+
+
 .unitime-RoomSharingWidget .legend .editable-title {
 	cursor: pointer;
 }

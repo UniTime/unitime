@@ -88,6 +88,7 @@ public abstract class BaseNonUniversityLocation extends Location implements Seri
 			"\n	PermanentId: " + getPermanentId() +
 			"\n	RoomType: " + getRoomType() +
 			"\n	Session: " + getSession() +
+			"\n	ShareNote: " + getShareNote() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}

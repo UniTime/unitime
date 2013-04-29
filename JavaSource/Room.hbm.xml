@@ -116,6 +116,13 @@
             type="java.lang.String"
             not-null="false"
             length="2016"/>
+            
+        <property
+            name="shareNote"
+            column="share_note"
+            type="java.lang.String"
+            length="2048"
+            not-null="false"/>
 
         <property
             name="eventAvailability"

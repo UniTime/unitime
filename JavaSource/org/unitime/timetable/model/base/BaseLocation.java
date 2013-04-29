@@ -49,6 +49,7 @@ public abstract class BaseLocation implements Serializable {
 	private Integer iBreakTime;
 	private String iManagerIds;
 	private String iPattern;
+	private String iShareNote;
 	private String iEventAvailability;
 	private Integer iExamCapacity;
 	private String iDisplayName;
@@ -76,6 +77,7 @@ public abstract class BaseLocation implements Serializable {
 	public static String PROP_BREAK_TIME = "breakTime";
 	public static String PROP_MANAGER_IDS = "managerIds";
 	public static String PROP_PATTERN = "pattern";
+	public static String PROP_SHARE_NOTE = "shareNote";
 	public static String PROP_AVAILABILITY = "eventAvailability";
 	public static String PROP_EXAM_CAPACITY = "examCapacity";
 	public static String PROP_DISPLAY_NAME = "displayName";
@@ -132,6 +134,9 @@ public abstract class BaseLocation implements Serializable {
 
 	public String getPattern() { return iPattern; }
 	public void setPattern(String pattern) { iPattern = pattern; }
+
+	public String getShareNote() { return iShareNote; }
+	public void setShareNote(String shareNote) { iShareNote = shareNote; }
 
 	public String getEventAvailability() { return iEventAvailability; }
 	public void setEventAvailability(String eventAvailability) { iEventAvailability = eventAvailability; }
@@ -228,6 +233,7 @@ public abstract class BaseLocation implements Serializable {
 			"\n	Pattern: " + getPattern() +
 			"\n	PermanentId: " + getPermanentId() +
 			"\n	Session: " + getSession() +
+			"\n	ShareNote: " + getShareNote() +
 			"\n	UniqueId: " + getUniqueId() +
 			"]";
 	}
