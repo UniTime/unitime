@@ -8911,4 +8911,10 @@
 		<sql>alter table %SCHEMA%.subject_area drop column pseudo_subject_area</sql>
 		<sql>alter table %SCHEMA%.academic_area drop column short_title</sql>
 	</update>
+	<update version="120" date="29-Apr-2013" comment="Room Sharing Note">
+		<plsql>alter table %SCHEMA%.room add share_note varchar2(2048 char)</plsql>
+		<plsql>alter table %SCHEMA%.non_university_location add share_note varchar2(2048 char)</plsql>
+		<mysql>alter table %SCHEMA%.room add share_note varchar(2048) binary null</mysql>
+		<mysql>alter table %SCHEMA%.non_university_location add share_note varchar(2048) binary null</mysql>
+	</update>
 </dbupdate>

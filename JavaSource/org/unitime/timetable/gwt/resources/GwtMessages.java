@@ -752,6 +752,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Filter:")
 	String propFilter();
 	
+	@DefaultMessage("Note:")
+	String propRoomAvailabilityNote();
+	
 	@DefaultMessage("Abbreviation:")
 	String propAbbreviation();
 	
