@@ -448,6 +448,8 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     	newExamPeriod.setPrefLevel(getPrefLevel());
     	newExamPeriod.setStartSlot(getStartSlot());
     	newExamPeriod.setSession(getSession());
+    	newExamPeriod.setEventStartOffset(getEventStartOffset());
+    	newExamPeriod.setEventStopOffset(getEventStopOffset());
     	return(newExamPeriod);
     }
     
