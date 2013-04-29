@@ -62,6 +62,7 @@ import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class RoomSharingWidget extends Composite {
@@ -77,6 +78,7 @@ public class RoomSharingWidget extends Composite {
 	private P iSelectedIcon = null, iSelectedTitle = null;
 	private RoomSharingModel iModel;
 	private boolean iEditable = true;
+	private TextArea iNote = null;
 	
 	public RoomSharingWidget(boolean editable) {
 		iEditable = editable;
@@ -114,6 +116,20 @@ public class RoomSharingWidget extends Composite {
 		iPanel.setStyleName("unitime-RoomSharingWidget");
 		container.add(iPanel);
 		
+		if (iEditable) {
+			iNote = new TextArea();
+			iNote.setStyleName("unitime-TextArea");
+			iNote.setVisibleLines(10);
+			iNote.setCharacterWidth(50);
+			iNote.addValueChangeHandler(new ValueChangeHandler<String>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<String> event) {
+					if (iModel != null)
+						iModel.setNote(event.getValue());
+				}
+			});
+		}
+		
 		initWidget(container);
 	}
 	
@@ -137,6 +153,9 @@ public class RoomSharingWidget extends Composite {
 	
 	public void setModel(RoomSharingModel model) {
 		iModel = model;
+		
+		if (iEditable && iModel.isNoteEditable())
+			iNote.setValue(iModel.hasNote() ? iModel.getNote() : "");
 		
 		iModeSelection.clear();
 		for (RoomSharingDisplayMode mode: iModel.getModes())
@@ -426,6 +445,22 @@ public class RoomSharingWidget extends Composite {
 			}
 			
 			box.add(line);
+		}
+		
+		if (iEditable && iModel.isNoteEditable()) {
+			P note = new P("note");
+			legend.add(note);
+			P label = new P("label"); label.setText(MESSAGES.propRoomAvailabilityNote());
+			note.add(label);
+			P value = new P("value"); value.add(iNote);
+			note.add(value);
+		} else if (iModel.hasNote()) {
+			P note = new P("note");
+			legend.add(note);
+			P label = new P("label"); label.setText(MESSAGES.propRoomAvailabilityNote());
+			note.add(label);
+			P value = new P("value"); value.setHTML(iModel.getNote());
+			note.add(value);
 		}
 		
 		final List<RoomSharingOption> other = iModel.getAdditionalOptions();

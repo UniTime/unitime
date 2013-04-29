@@ -97,7 +97,10 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			}
 		model.setDefaultHorizontal(CommonValues.HorizontalGrid.eq(context.getUser().getProperty(UserProperty.GridOrientation)));
 		model.setDefaultOption(model.getOptions().get(0));
-		
+
+		model.setNote(location.getShareNote());
+		model.setNoteEditable(editable);
+
 		Set<Department> current = new TreeSet<Department>();
 		for (RoomDept rd: location.getRoomDepts())
 			current.add(rd.getDepartment());
@@ -152,6 +155,7 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 					allDept = false;
 			}
 			model.setDefaultEditable(control || allDept);
+			model.setNoteEditable(control || allDept);
 			if (!control && !allDept) {
 				for (int d = 0; d < 7; d++)
 					for (int s = 0; s < 288; s ++) {
@@ -214,6 +218,9 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			}
 			
 			hibSession.saveOrUpdate(location);
+			
+			if (request.getModel().isNoteEditable())
+				location.setShareNote(request.getModel().getNote().length() > 2048 ? request.getModel().getNote().substring(0, 2048) : request.getModel().getNote());
 			
 			ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, location.getControllingDepartment());
 			
