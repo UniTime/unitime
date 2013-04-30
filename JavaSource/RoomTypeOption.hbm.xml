@@ -47,7 +47,7 @@
             name="message"
             column="message"
             type="java.lang.String"
-            not-null="true"
+            not-null="false"
             length="2048"/>
             
         <property
