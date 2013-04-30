@@ -55,6 +55,9 @@
 	<style type="text/css">@import url(scripts/jscalendar/calendar-blue.css);</style>
 	<link type="text/css" rel="stylesheet" href="unitime/gwt/standard/standard.css">
     <link type="text/css" rel="stylesheet" href="styles/unitime.css">
+    <!--[if IE]>
+	    <link type="text/css" rel="stylesheet" href="styles/unitime-ie.css">
+    <![endif]-->
 	<link rel="stylesheet" type="text/css" href="styles/timetabling.css">
     <tt:hasProperty name="tmtbl.custom.css">
     	<link rel="stylesheet" type="text/css" href="%tmtbl.custom.css%" />
