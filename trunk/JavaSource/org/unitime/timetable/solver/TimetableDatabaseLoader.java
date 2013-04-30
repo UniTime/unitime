@@ -113,6 +113,7 @@ import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.SchedulingSubpartDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
@@ -1767,7 +1768,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     }
     
     private String getClassLimitConstraitName(Lecture lecture) {
-    	return getClassLimitConstraitName((SchedulingSubpart)iSubparts.get(lecture.getSchedulingSubpartId()));
+    	SchedulingSubpart subpart = iSubparts.get(lecture.getSchedulingSubpartId());
+    	if (subpart == null) subpart = SchedulingSubpartDAO.getInstance().get(lecture.getSchedulingSubpartId());
+    	return getClassLimitConstraitName(subpart);
     }
     
     
@@ -1797,7 +1800,9 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         	
         	if (clc.variables().isEmpty()) continue;
 
-    		for (Class_ clazz: iSubparts.get(subpartId).getClasses()) {
+        	SchedulingSubpart subpart = iSubparts.get(subpartId);
+        	if (subpart == null) subpart = SchedulingSubpartDAO.getInstance().get(subpartId);
+    		for (Class_ clazz: subpart.getClasses()) {
     			if (iLectures.get(clazz.getUniqueId()) == null)
     				clc.setClassLimitDelta(clc.getClassLimitDelta() - clazz.getClassLimit());
     		}
