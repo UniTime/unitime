@@ -115,7 +115,9 @@
 							accesskey="I"
 							class="l8" 
 							href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<%=subjArea%>&courseNbr=<%=crsNbr%>#A<bean:write name="instructionalOfferingConfigEditForm" property="courseOfferingId" />">
-						<B><bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingName" /></B></A>											
+						<B><bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingName" /></B></A>
+						<html:hidden property="instrOfferingName"/>											
+						<html:hidden property="courseOfferingId"/>
 					</tt:section-title>						
 
 					<logic:equal name="instructionalOfferingConfigEditForm" property="configId" value="0">
