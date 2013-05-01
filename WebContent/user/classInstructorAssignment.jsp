@@ -76,6 +76,8 @@
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="<%=frmName%>" 
 										property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="<%=frmName%>" property="instrOfferingId" />"
 							><bean:write name="<%=frmName%>" property="instrOfferingName" /></A>
+							<html:hidden property="instrOfferingId"/>
+							<html:hidden property="instrOfferingName"/>
 					</tt:section-title>						
 
 				<html:submit property="op"
