@@ -27,7 +27,7 @@
 <tiles:importAttribute />
 
 <tt:confirm name="confirmDelete">The solver group will be deleted. Continue?</tt:confirm>
-<tt:confirm name="confirmDeleteAll">All solver groups will be deleted. Continue?</tt:confirm>
+<tt:confirm name="confirmDeleteAll">All solver groups that have no solutions saved will be deleted. Continue?</tt:confirm>
 <tt:confirm name="confirmAutoSetup">New solver groups may be created. Continue?</tt:confirm>
 <tt:session-context/>
 <html:form action="/solverGroupEdit">
@@ -178,9 +178,9 @@
 					<tt:section-title>
 						Solver Groups - <%= sessionContext.getUser().getCurrentAuthority().getQualifiers("Session").get(0).getQualifierLabel() %>
 					</tt:section-title>
-				<html:submit property="op" value="Add Solver Group" title="Create New Solver Group (Alt+A)" accesskey="A"/> 
-				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete All Solver Groups"/> 
-				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically Setup Solver Groups"/> 
+				<html:submit property="op" value="Add Solver Group" title="Create a new solver group (Alt+A)." accesskey="A"/> 
+				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete all solver groups that have no solutions saved."/> 
+				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically setup solver groups."/> 
 				<html:submit property="op" value="Export PDF" title="Export PDF (Alt+P)" accesskey="P"/> 
 				</tt:section-header>
 			</TD>
@@ -191,9 +191,9 @@
 		</TR>
 		<TR>
 			<TD align="right" colspan="5">
-				<html:submit property="op" value="Add Solver Group" title="Create New Solver Group (Alt+A)" accesskey="A"/> 
-				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete All Solver Groups"/> 
-				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically Setup Solver Groups"/> 
+				<html:submit property="op" value="Add Solver Group" title="Create a new solver group (Alt+A)." accesskey="A"/> 
+				<html:submit property="op" onclick="return confirmDeleteAll();" value="Delete All" title="Delete all solver groups that have no solutions saved."/> 
+				<html:submit property="op" onclick="return confirmAutoSetup();" value="Auto Setup" title="Automatically setup solver groups."/> 
 				<html:submit property="op" value="Export PDF" title="Export PDF (Alt+P)" accesskey="P"/> 
 			</TD>
 		</TR>
