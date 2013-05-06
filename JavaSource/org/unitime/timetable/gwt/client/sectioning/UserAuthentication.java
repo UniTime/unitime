@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaPasswordTextBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
@@ -105,7 +106,7 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 		iHint.setAriaLabel(ARIA.userNotAuthenticated());
 		vertical.add(iHint);
 		
-		iDialog = new DialogBox();
+		iDialog = new AriaDialogBox();
 		iDialog.setText(MESSAGES.dialogAuthenticate());
 		iDialog.setAnimationEnabled(true);
 		iDialog.setAutoHideEnabled(false);
@@ -426,6 +427,5 @@ public class UserAuthentication extends Composite implements UserAuthenticationP
 			@org.unitime.timetable.gwt.client.sectioning.UserAuthentication::personFound(Ljava/lang/String;)(person[0]);
 	    };
 	 }-*/;
-
 	
 }

@@ -19,8 +19,11 @@
 */
 package org.unitime.timetable.gwt.client.aria;
 
+
 import com.google.gwt.aria.client.LiveValue;
 import com.google.gwt.aria.client.Roles;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
@@ -41,7 +44,7 @@ public class AriaStatus extends Widget implements HasHTML, HasText {
 		setStyleName("unitime-AriaStatus");
 		Roles.getStatusRole().set(getElement());
 		Roles.getStatusRole().setAriaLiveProperty(getElement(), assertive ? LiveValue.ASSERTIVE : LiveValue.POLITE);
-		Roles.getStatusRole().setAriaAtomicProperty(getElement(), false);
+		Roles.getStatusRole().setAriaAtomicProperty(getElement(), true);
 	}
 	
 	public AriaStatus() {
@@ -58,6 +61,15 @@ public class AriaStatus extends Widget implements HasHTML, HasText {
 				sStatus  = new AriaStatus(false);
 				RootPanel.get().add(sStatus);
 			}
+			
+			RootPanel.get().addDomHandler(new KeyUpHandler() {
+				@Override
+				public void onKeyUp(KeyUpEvent event) {
+    				if (event.getNativeEvent().getKeyCode() == 191 && (event.isControlKeyDown() || event.isAltKeyDown())) {
+    					sStatus.setHTML(sStatus.getHTML());
+    				}
+    			}
+    		}, KeyUpEvent.getType());
 		}
 		return sStatus;
 	}
