@@ -1727,7 +1727,7 @@ public class SessionRollForward {
 		
 	}
 	
-	private void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
+	protected void rollInstructorDistributionPrefs(DepartmentalInstructor fromInstructor, DepartmentalInstructor toInstructor){
 		if (fromInstructor.getDistributionPreferences() != null && fromInstructor.getDistributionPreferences().size() > 0){
 			DistributionPref fromDistributionPref = null;
 			DistributionPref toDistributionPref = null;
