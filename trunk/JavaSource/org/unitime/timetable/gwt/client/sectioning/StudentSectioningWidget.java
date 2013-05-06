@@ -265,6 +265,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 				if (event.getSelectedItem() == 1)
 					iAssignmentGrid.scrollDown();
 				addHistory();
+				if (iAssignmentTab == 0) {
+					AriaStatus.getInstance().setHTML(ARIA.listOfClasses());
+				} else {
+					AriaStatus.getInstance().setHTML(ARIA.timetable());
+				}
 				ResizeEvent.fire(StudentSectioningWidget.this, StudentSectioningWidget.this.getOffsetWidth(), StudentSectioningWidget.this.getOffsetHeight());
 			}
 		});
@@ -910,6 +915,11 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 			iAssignmentGrid.setCalendarUrl(calendarUrl);
 			iCalendar.setUrl(calendarUrl);
 			ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
+			if (iAssignmentTab == 0) {
+				AriaStatus.getInstance().setHTML(ARIA.listOfClasses());
+			} else {
+				AriaStatus.getInstance().setHTML(ARIA.timetable());
+			}
 		} else {
 			iErrorMessage.setHTML(MESSAGES.noSchedule());
 			if (LoadingWidget.getInstance().isShowing())
@@ -929,6 +939,7 @@ public class StudentSectioningWidget extends Composite implements HasResizeHandl
 		iSchedule.setVisible(true);
 		iErrorMessage.setVisible(false);
 		ResizeEvent.fire(this, getOffsetWidth(), getOffsetHeight());
+		AriaStatus.getInstance().setHTML(ARIA.courseRequests());
 	}
 	
 	public void clear() {

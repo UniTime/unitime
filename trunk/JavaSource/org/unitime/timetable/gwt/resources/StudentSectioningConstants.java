@@ -28,7 +28,7 @@ public interface StudentSectioningConstants extends Constants {
 	@DefaultStringArrayValue({
 		"Tip: Use Ctrl+1 (or Ctrl+Alt+1) to navigate to the first course, Ctrl+2 to the second, Ctrl+A to the first alternative, Ctr+B to the second alternative, etc.",
 		"Tip: Use Ctrl+Arrow to navigate, Ctrl+Shift+Up and Ctrl+Shith+Down to move a line around.",
-		"Tip: Use Ctrl+F to open the Course Finder dialog.",
+		"Tip: Use Ctrl+F (or Ctrl+Alt+F in some browsers) to open the Course Finder dialog.",
 		"Tip: Use Ctrl+N (or Ctrl+Alt+N in some browsers) to validate the screen and go next.",
 		"Tip: Start entering the name (e.g., ENGL 10600) of the course or a part of its title (e.g., History) to see suggestions.",
 		"Tip: The Alternate Course Requests below can be used to ensure that the desired number of courses are scheduled even when a Course Request (and its alternatives) are not available.",
@@ -38,7 +38,7 @@ public interface StudentSectioningConstants extends Constants {
 		"Tip: Click this tip to see another tip.",
 		"Tip: There are no alternative free times.",
 		"Tip: Try not to break too many standard time patterns with a free time (see the numbers in the Course Finder dialog).",
-		"Tip: Use Esc to hide suggestions, Ctrl+S to show suggestions."
+		"Tip: Use Esc to hide suggestions, Ctrl+L (or Ctrl+Alt+L in some browsers) to show suggestions."
 	})
 	String[] tips();
 	

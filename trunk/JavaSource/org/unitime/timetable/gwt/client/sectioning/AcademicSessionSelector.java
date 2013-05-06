@@ -22,6 +22,7 @@ package org.unitime.timetable.gwt.client.sectioning;
 import java.util.Collection;
 import java.util.Vector;
 
+import org.unitime.timetable.gwt.client.aria.AriaDialogBox;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.ClickableHint;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -248,8 +249,9 @@ public class AcademicSessionSelector extends Composite implements AcademicSessio
 		iAcademicSessionChangeHandlers.add(handler);
 	}
 	
-	private class MyDialogBox extends DialogBox {
-		private MyDialogBox() { super(); }
+	private class MyDialogBox extends AriaDialogBox {
+		private MyDialogBox() {
+		}
 		protected void onPreviewNativeEvent(NativePreviewEvent event) {
 			super.onPreviewNativeEvent(event);
 			if (DOM.eventGetType((Event) event.getNativeEvent()) == Event.ONKEYUP) {
