@@ -185,22 +185,24 @@ public class SuggestionsBox extends UniTimeDialogBox {
 				iSuggestions.setEmptyMessage("<font color='red'>" + caught.getMessage() + "</font>");
 				iMessages.setHTML("");
 				LoadingWidget.getInstance().hide();
-				iFilter.setAriaLabel(caught.getMessage());
 				center();
+				AriaStatus.getInstance().setHTML(caught.getMessage());
 			}
 
 			public void onSuccess(Collection<ClassAssignmentInterface> result) {
 				iResult = (ArrayList<ClassAssignmentInterface>)result;
 				iMessages.setHTML("");
+				String ariaStatus = null;
  
 				if (result.isEmpty()) {
 					iSuggestions.clearData(true);
 					if (iFilter.getText().isEmpty()) {
 						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
-						iFilter.setAriaLabel(ARIA.suggestionsNoAlternative(iSource));
+						ariaStatus = ARIA.suggestionsNoAlternative(iSource);
+						
 					} else {
 						iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
-						iFilter.setAriaLabel(ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+						ariaStatus = ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText());
 					}
 					LoadingWidget.getInstance().hide();
 					center();
@@ -410,16 +412,18 @@ public class SuggestionsBox extends UniTimeDialogBox {
 					if (rows.isEmpty()) {
 						if (iFilter.getText().isEmpty()) {
 							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternative(iSource));
-							iFilter.setAriaLabel(ARIA.suggestionsNoAlternative(iSource));
+							ariaStatus = ARIA.suggestionsNoAlternative(iSource);
 						} else {
 							iSuggestions.setEmptyMessage(MESSAGES.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
-							iFilter.setAriaLabel(ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText()));
+							ariaStatus = ARIA.suggestionsNoAlternativeWithFilter(iSource, iFilter.getText());
 						}
 					} else {
-						iFilter.setAriaLabel(ARIA.showingAlternatives(Integer.valueOf(rows.get(rows.size() - 1).getId()), iSource));
+						ariaStatus = ARIA.showingAlternatives(Integer.valueOf(rows.get(rows.size() - 1).getId()), iSource);
 					}
 					LoadingWidget.getInstance().hide();
 					center();
+					if (ariaStatus != null)
+						AriaStatus.getInstance().setHTML(ariaStatus);
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 						public void execute() {
 							iFilter.setFocus(true);

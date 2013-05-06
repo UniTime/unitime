@@ -34,14 +34,14 @@ public class AriaDialogBox extends DialogBox {
 	}
 	
 	public AriaDialogBox(boolean autoHide, boolean modal) {
-		super(autoHide, modal, new CaptionImpl());
+		this(autoHide, modal, new CaptionImpl());
 	}
 	
 	public AriaDialogBox(boolean autoHide) {
-		super(autoHide, true, new CaptionImpl());
+		this(autoHide, true, new CaptionImpl());
 	}
 	
 	public AriaDialogBox() {
-		super(false, true, new CaptionImpl());
+		this(false, true, new CaptionImpl());
 	}
 }
