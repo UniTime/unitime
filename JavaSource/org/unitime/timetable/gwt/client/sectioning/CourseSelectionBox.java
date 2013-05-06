@@ -217,14 +217,14 @@ public class CourseSelectionBox extends Composite {
 		iSuggest.getValueBox().addKeyDownHandler(new KeyDownHandler() {
 			public void onKeyDown(KeyDownEvent event) {
 				if (!iSuggest.isEnabled()) return;
-				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && event.isControlKeyDown()) {
+				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 					hideSuggestionList();
 					openDialogAsync();
 				}
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ESCAPE) {
 					hideSuggestionList();
 				}
-				if ((event.getNativeEvent().getKeyCode()=='S' || event.getNativeEvent().getKeyCode()=='s') && event.isControlKeyDown()) {
+				if ((event.getNativeEvent().getKeyCode()=='L' || event.getNativeEvent().getKeyCode()=='l') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 					iSuggest.showSuggestionList();
 				}
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_DOWN && event.isControlKeyDown() && iNext!=null) {
@@ -551,17 +551,17 @@ public class CourseSelectionBox extends Composite {
 						updateCourseDetails();
 						courseSelectionChanged();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C') && !isFreeTime()) {
+					if ((event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C') && !isFreeTime() && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iTabPanel.selectTab(0);
 						event.preventDefault();
 						AriaStatus.getInstance().setText(ARIA.courseFinderCoursesTab());
 					}
-					if (iAllowFreeTime && event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T')) {
+					if (iAllowFreeTime && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iTabPanel.selectTab(iCourseDetailsTabPanel != null ? 1 : 3);
 						event.preventDefault();
 						AriaStatus.getInstance().setText(ARIA.courseFinderFreeTimeTab());
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
+					if ((event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						if (iCourseDetailsTabPanel == null)
 							iTabPanel.selectTab(1);
 						else
@@ -572,7 +572,7 @@ public class CourseSelectionBox extends Composite {
 						else
 							AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
+					if ((event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						if (iCourseDetailsTabPanel == null)
 							iTabPanel.selectTab(2);
 						else
@@ -888,6 +888,19 @@ public class CourseSelectionBox extends Composite {
 						records[idx].setId(record.hasUniqueName() ? "true" : "false");
 						if (iFilter.getText().equalsIgnoreCase(record.getSubject() + " " + record.getCourseNbr()))
 							selectRow = idx;
+						if (record.getTitle() == null || record.getTitle().isEmpty()) {
+							if (record.getNote() == null || record.getNote().isEmpty()) {
+								records[idx].setAriaLabel(ARIA.courseFinderCourse(record.getSubject(), record.getCourseNbr()));
+							} else {
+								records[idx].setAriaLabel(ARIA.courseFinderCourseWithNote(record.getSubject(), record.getCourseNbr(), record.getNote()));
+							}
+						} else {
+							if (record.getNote() == null || record.getNote().isEmpty()) {
+								records[idx].setAriaLabel(ARIA.courseFinderCourseWithTitle(record.getSubject(), record.getCourseNbr(), record.getTitle()));
+							} else {
+								records[idx].setAriaLabel(ARIA.courseFinderCourseWithTitleAndNote(record.getSubject(), record.getCourseNbr(), record.getTitle(), record.getNote()));
+							}
+						}
 						idx++;
 					}
 					iCourses.setData(records);
@@ -973,6 +986,15 @@ public class CourseSelectionBox extends Composite {
 								cell.setStyleName(styleName.trim());
 							rows[idx++] = row;
 							lastSubpartId = clazz.getSubpartId();
+							if (!clazz.isSaved() && !clazz.isAvailable())
+								row.setAriaLabel(ARIA.courseFinderClassNotAvailable(
+										MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
+										clazz.isAssigned() ? clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + clazz.getRooms(",") : ARIA.arrangeHours()));
+							else
+								row.setAriaLabel(ARIA.courseFinderClassAvailable(
+										MESSAGES.clazz(clazz.getSubject(), clazz.getCourseNbr(), clazz.getSubpart(), clazz.getSection()),
+										clazz.isAssigned() ? clazz.getTimeStringAria(CONSTANTS.longDays(), CONSTANTS.useAmPm(), ARIA.arrangeHours()) + " " + clazz.getRooms(",") : ARIA.arrangeHours(),
+										clazz.getLimitString()));
 						}
 						iClasses.setData(rows);
 					} else {

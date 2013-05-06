@@ -65,10 +65,10 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Log in as guest, no user name or password needed.")
 	String buttonLogInAsGuest();
 	
-	@DefaultMessage("Academic session selection dialog opened, please select an academic session. Use up and down arrows to navigate, enter to confirm the selection.")
+	@DefaultMessage("Academic session selection dialog opened, please select an academic session. Use Alt + Up and Alt + Down to navigate, Alt + Enter to confirm the selection.")
 	String sessionSelectorDialogOpened();
 
-	@DefaultMessage("Academic session selection dialog opened, please select an academic session. Use up and down arrows to navigate, enter to confirm the selection. Academic session {0} of {1}: {3} {2} campus {4}.")
+	@DefaultMessage("Academic session selection dialog opened, please select an academic session. Use Alt + Up and Alt + Down to navigate, Alt + Enter to confirm the selection. Academic session {0} of {1}: {3} {2} campus {4}.")
 	String sessionSelectorDialogOpenedWithSelection(@PluralCount int index, @PluralCount int nbrSuggestions, String year, String term, String campus);
 	
 	@DefaultMessage("Academic session {0} of {1}: {3} {2} campus {4}.")
@@ -128,13 +128,13 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Course Finder dialog opened.")
 	String courseFinderDialogOpened();
 	
-	@DefaultMessage("Course Finder Filter. Enter a text to look for a course or a free time. Press Ctrl + c for course selection, Ctrl + t for free time selection.")
+	@DefaultMessage("Course Finder Filter. Enter a text to look for a course or a free time. Press Ctrl + Alt + C for course selection, Ctrl + Alt + T for free time selection.")
 	String courseFinderFilterAllowsFreeTime();
 	
 	@DefaultMessage("Course Finder Filter. Enter a text to look for a course.")
 	String courseFinderFilter();
 	
-	@DefaultMessage("Looking for a course. On a selected course press Ctrl + d for details, Ctrl + l for a list of classes.")
+	@DefaultMessage("Looking for a course. On a selected course press Ctrl + Alt + D for details, Ctrl + Alt + L for a list of classes.")
 	String courseFinderCoursesTab();
 	
 	@DefaultMessage("Looking for a free time.")
@@ -226,4 +226,31 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Arrange Hours")
 	String arrangeHours();
+	
+	@DefaultMessage("{0} {1}")
+	String courseFinderCourse(String subject, String course);
+
+	@DefaultMessage("{0} {1} entitled {2}")
+	String courseFinderCourseWithTitle(String subject, String course, String title);
+
+	@DefaultMessage("{0} {1} entitled {2} with note {3}")
+	String courseFinderCourseWithTitleAndNote(String subject, String course, String title, String note);
+
+	@DefaultMessage("{0} {1} with note {2}")
+	String courseFinderCourseWithNote(String subject, String course, String note);
+	
+	@DefaultMessage("{0} {1} available {2}")
+	String courseFinderClassAvailable(String clazz, String assignment, String availability);
+	
+	@DefaultMessage("{0} {1} not available")
+	String courseFinderClassNotAvailable(String clazz, String assignment);
+	
+	@DefaultMessage("Showing List of Classes. Use Alt + Up and Alt + Down to navigate, Alt + Enter to open Suggestions for the selected class.")
+	String listOfClasses();
+	
+	@DefaultMessage("Showing Timetable grid.")
+	String timetable();
+	
+	@DefaultMessage("Showing Course Requests.")
+	String courseRequests();
 }
