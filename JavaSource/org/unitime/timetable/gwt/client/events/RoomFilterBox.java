@@ -26,6 +26,7 @@ import java.util.List;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Suggestion;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
@@ -35,6 +36,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -48,6 +51,7 @@ import com.google.gwt.user.client.ui.TextBox;
 
 public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private ListBox iBuildings, iDepartments;
 	
 	public RoomFilterBox(AcademicSessionProvider session) {
@@ -71,6 +75,14 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 							suggestions.add(new Suggestion(name, chip, oldChip));
 						} else if (text.length() > 2 && (name.toLowerCase().contains(" " + text.toLowerCase()) || name.toLowerCase().contains(" (" + text.toLowerCase()))) {
 							suggestions.add(new Suggestion(name, chip, oldChip));
+						}
+					}
+					if ("department".startsWith(text.toLowerCase()) && text.toLowerCase().length() >= 5) {
+						for (int i = 0; i < iDepartments.getItemCount(); i++) {
+							Chip chip = new Chip("department", iDepartments.getValue(i));
+							String name = iDepartments.getItemText(i);
+							if (!chip.equals(oldChip))
+								suggestions.add(new Suggestion(name, chip, oldChip));
 						}
 					}
 					callback.onSuccess(suggestions);
@@ -120,6 +132,13 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 						if (iBuildings.getValue(i).toLowerCase().startsWith(text.toLowerCase())) {
 							suggestions.add(new Suggestion(name, chip));
 						} else if (text.length() > 2 && name.toLowerCase().contains(" " + text.toLowerCase())) {
+							suggestions.add(new Suggestion(name, chip));
+						}
+					}
+					if ("building".startsWith(text.toLowerCase()) && text.toLowerCase().length() >= 5) {
+						for (int i = 0; i < iBuildings.getItemCount(); i++) {
+							Chip chip = new Chip("building", iBuildings.getValue(i));
+							String name = iBuildings.getItemText(i);
 							suggestions.add(new Suggestion(name, chip));
 						}
 					}
@@ -327,6 +346,14 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 								showFilterPopup();
 						}
 					});
+				setAriaLabel(ARIA.roomFilter(toAriaString()));
+			}
+		});
+		
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				setAriaLabel(ARIA.roomFilter(toAriaString()));
 			}
 		});
 	}

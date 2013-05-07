@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
@@ -41,6 +42,9 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasAllKeyHandlers;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyPressHandler;
@@ -54,7 +58,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 
-public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers {
+public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Composite implements HasValue<String>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private AcademicSessionProvider iAcademicSession;
@@ -129,22 +133,22 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 
 	protected void init(final boolean init, Long academicSessionId, final Command onSuccess) {
 		if (academicSessionId == null && iAcademicSession != null) {
-			iFilter.setHint(MESSAGES.hintNoSession());
+			setHint(MESSAGES.hintNoSession());
 		} else {
 			if (init) {
-				iFilter.setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
+				setHint(MESSAGES.waitLoadingDataForSession(iAcademicSession == null ? "" : iAcademicSession.getAcademicSessionName()));
 				iInitialized = false;
 			}
 			final String value = iFilter.getWidget().getValue();
 			RPC.execute(createRpcRequest(FilterRpcRequest.Command.LOAD, academicSessionId, iFilter.getWidget().getChips(null), iFilter.getWidget().getText()), new AsyncCallback<FilterRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
-					iFilter.setErrorHint(caught.getMessage());
+					setErrorHint(caught.getMessage());
 					ToolBox.checkAccess(caught);
 				}
 				@Override
 				public void onSuccess(FilterRpcResponse result) {
-					iFilter.clearHint();
+					clearHint();
 					if (!value.equals(iFilter.getWidget().getValue())) return;
 					onLoad(result);
 					for (FilterBox.Filter filter: iFilter.getWidget().getFilters())
@@ -208,6 +212,7 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	
 	public void clearHint() {
 		iFilter.clearHint();
+		iFilter.getWidget().setAriaLabel(toAriaString());
 	}
 	
 	public void setErrorHint(String error) {
@@ -322,6 +327,16 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 		return iFilter.getWidget().addKeyPressHandler(handler);
 	}
 	
+	@Override
+	public HandlerRegistration addFocusHandler(FocusHandler handler) {
+		return iFilter.getWidget().addFocusHandler(handler);
+	}
+	
+	@Override
+	public HandlerRegistration addBlurHandler(BlurHandler handler) {
+		return iFilter.getWidget().addBlurHandler(handler);
+	}
+	
 	public boolean isShowSuggestionsOnFocus() {
 		return iFilter.getWidget().isShowSuggestionsOnFocus();
 	}
@@ -329,5 +344,18 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	public void setShowSuggestionsOnFocus(boolean showSuggestionsOnFocus) {
 		iFilter.getWidget().setShowSuggestionsOnFocus(showSuggestionsOnFocus);
 	}
-
+	
+	public String toAriaString() {
+		return iFilter.getWidget().toAriaString();
+	}
+	
+	@Override
+	public String getAriaLabel() {
+		return iFilter.getWidget().getAriaLabel();
+	}
+	
+	@Override
+	public void setAriaLabel(String text) {
+		iFilter.getWidget().setAriaLabel(text);
+	}
 }

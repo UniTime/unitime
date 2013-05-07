@@ -132,7 +132,7 @@ public class AriaSuggestBox extends Composite implements HasText, HasValue<Strin
 		Roles.getTextboxRole().setAriaAutocompleteProperty(iText.getElement(), AutocompleteValue.NONE);
 		
 		DOM.setElementAttribute(iSuggestionPopup.getElement(), "id", DOM.createUniqueId());
-		Roles.getTextboxRole().setAriaOwnsProperty(iSuggestionPopup.getElement(), Id.of(iSuggestionPopup.getElement()));
+		Roles.getTextboxRole().setAriaOwnsProperty(iText.getElement(), Id.of(iSuggestionPopup.getElement()));
 	}
 	
 	private String status(Suggestion suggestion) {

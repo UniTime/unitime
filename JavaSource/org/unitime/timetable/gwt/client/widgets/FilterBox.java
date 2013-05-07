@@ -24,8 +24,17 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+
+import com.google.gwt.aria.client.AutocompleteValue;
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -35,6 +44,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasAllKeyHandlers;
 import com.google.gwt.event.dom.client.HasBlurHandlers;
 import com.google.gwt.event.dom.client.HasClickHandlers;
@@ -72,10 +82,10 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 
-public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText, Focusable, HasAllKeyHandlers {
+public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static String[] sColors = new String[] {
 		"blue", "green", "orange", "yellow", "pink",
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
@@ -83,7 +93,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		"grey", "bluegrey", "lightteal", "yellowgrey", "brown"
 	};
 	
-	private TextBox iFilter;
+	private AriaTextBox iFilter;
 	private SimplePanel iAdd, iClear;
 	private PopupPanel iFilterPopup, iSuggestionsPopup;
 	private boolean iFocus = false;
@@ -126,7 +136,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			}
 		};
 		
-		iFilter = new TextBox();
+		iFilter = new AriaTextBox();
 		iFilter.setStyleName("filter");
 
 		
@@ -140,13 +150,16 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					if (getWidgetCount() > 3) {
 						remove(getWidgetCount()-4);
 						resizeFilterIfNeeded();
+						setAriaLabel(toAriaString());
 						ValueChangeEvent.fire(FilterBox.this, getValue());
+						setStatus(getAriaLabel());
 					}
 				}
 				if (isSuggestionsShowing()) {
 					switch (event.getNativeEvent().getKeyCode()) {
 					case KeyCodes.KEY_DOWN:
 						iSuggestionMenu.selectItem(iSuggestionMenu.getSelectedItemIndex() + 1);
+						setStatus(ARIA.onSuggestion(iSuggestionMenu.getSelectedItemIndex() + 1, iSuggestionMenu.getNumItems(), iSuggestionMenu.getSelectedSuggestion().toAriaString(FilterBox.this)));
 						break;
 					case KeyCodes.KEY_UP:
 						if (iSuggestionMenu.getSelectedItemIndex() == -1) {
@@ -154,6 +167,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 						} else {
 							iSuggestionMenu.selectItem(iSuggestionMenu.getSelectedItemIndex() - 1);
 						}
+						setStatus(ARIA.onSuggestion(iSuggestionMenu.getSelectedItemIndex() + 1, iSuggestionMenu.getNumItems(), iSuggestionMenu.getSelectedSuggestion().toAriaString(FilterBox.this)));
 						break;
 					case KeyCodes.KEY_ENTER:
 						iSuggestionMenu.executeSelected();
@@ -195,6 +209,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		iFilter.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
+				setAriaLabel(toAriaString());
 				ValueChangeEvent.fire(FilterBox.this, getValue());
 			}
 		});
@@ -203,12 +218,14 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
         iAdd.getElement().setInnerHTML("&#9660;");
         iAdd.addStyleName("button-arrow");
         add(iAdd);
+        Roles.getDocumentRole().setAriaHiddenState(iAdd.getElement(), true);
 
 		iClear = new SimplePanel();
 		iClear.getElement().setInnerHTML("&times;");
 		iClear.addStyleName("button");
         add(iClear);
         iClear.setVisible(false);
+        Roles.getDocumentRole().setAriaHiddenState(iClear.getElement(), true);
         iFilter.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
@@ -228,6 +245,11 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
         iSuggestionsPopup.setStyleName("unitime-FilterBoxPopup");
         
         sinkEvents(Event.ONMOUSEDOWN);
+        
+		DOM.setElementAttribute(iSuggestionsPopup.getElement(), "id", DOM.createUniqueId());
+		Roles.getTextboxRole().setAriaOwnsProperty(iFilter.getElement(), Id.of(iSuggestionsPopup.getElement()));
+		
+		Roles.getTextboxRole().setAriaAutocompleteProperty(iFilter.getElement(), AutocompleteValue.NONE);
 	}
 	
 	public void setSuggestionsProvider(SuggestionsProvider suggestionsProvider) { iSuggestionsProvider = new DefaultSuggestionsProvider(suggestionsProvider); }
@@ -345,32 +367,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		iSuggestionMenu.clearItems();
 		int selected = -1;
 		for (final Suggestion suggestion: suggestions) {
-			MenuItem item = null;
-			Command command = new Command() {
-				@Override
-				public void execute() {
-					hideSuggestions();
-					iFilter.setText(suggestion.getReplacementString());
-					if (suggestion.getChipToAdd() != null) {
-						if (hasChip(suggestion.getChipToAdd()))
-							removeChip(suggestion.getChipToAdd(), false);
-						else
-							addChip(suggestion.getChipToAdd(), false);
-					}
-					if (suggestion.getChipToRemove() != null)
-						removeChip(suggestion.getChipToRemove(), false);
-					iLastValue = getValue();
-					ValueChangeEvent.fire(FilterBox.this, getValue());
-				}
-			};
-			if (suggestion.getDisplayString() == null ) {
-				Chip chip = (suggestion.getChipToAdd() == null ? suggestion.getChipToRemove() : suggestion.getChipToAdd()); 
-				item = new MenuItem(chip.getName() + " <span class='item-command'>" + chip.getCommand().replace('_', ' ') + "</span>", true, command);
-			} else {
-				item = new MenuItem(SafeHtmlUtils.htmlEscape(suggestion.getDisplayString()) + (suggestion.getHint() == null ? "" : " " + suggestion.getHint()), true, command);
-			}
-			item.setStyleName("item");
-			DOM.setStyleAttribute(item.getElement(), "whiteSpace", "nowrap");
+			SuggestionMenuItem item = new SuggestionMenuItem(suggestion);
 			if (selected < 0 && suggestion.isSelected())
 				selected = iSuggestionMenu.getNumItems();
 			iSuggestionMenu.addItem(item);
@@ -380,6 +377,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iSuggestionMenu.selectItem(selected);
 		else
 			iSuggestionMenu.selectItem(0);
+		if (iSuggestionMenu.getNumItems() == 1) {
+			setStatus(ARIA.showingOneSuggestion(iSuggestionMenu.getSelectedSuggestion().toAriaString(this)));
+		} else if (iSuggestionMenu.getSelectedItemIndex() == 0) {
+			setStatus(ARIA.showingMultipleSuggestions(iSuggestionMenu.getNumItems(), toAriaString(), iSuggestionMenu.getSelectedSuggestion().toAriaString(this)));
+		} else {
+			setStatus(ARIA.onSuggestion(iSuggestionMenu.getSelectedItemIndex() + 1, iSuggestionMenu.getNumItems(), iSuggestionMenu.getSelectedSuggestion().toAriaString(this)));
+		}
 	}
 	
 	@Override
@@ -400,6 +404,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	    	if (clear) {
 				iFilter.setText("");
 				removeAllChips();
+				setAriaLabel(toAriaString());
 				ValueChangeEvent.fire(FilterBox.this, getValue());
 	    	}
 	    	if (!filter) {
@@ -449,11 +454,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			public void onClick(ClickEvent event) {
 				remove(panel);
 				resizeFilterIfNeeded();
+				setAriaLabel(toAriaString());
 				ValueChangeEvent.fire(FilterBox.this, getValue());
 			}
 		});
 		insert(panel, getWidgetCount() - 3);
 		resizeFilterIfNeeded();
+		setAriaLabel(toAriaString());
 		if (fireEvents)
 			ValueChangeEvent.fire(this, getValue());
 	}
@@ -464,6 +471,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (panel.getChip().equals(chip)) {
 				remove(i);
 				resizeFilterIfNeeded();
+				setAriaLabel(toAriaString());
 				if (fireEvents)
 					ValueChangeEvent.fire(FilterBox.this, getValue());
 				return true;
@@ -521,6 +529,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			iButton.setStyleName("button");
 			add(iButton);
 			setTitle(toString());
+			Roles.getDocumentRole().setAriaHiddenState(getElement(), true);
 		}
 		
 		@Override
@@ -545,6 +554,10 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public String toString() {
 			return getChip().toString();
 		}
+		
+		public String toAriaString() {
+			return getChip().toAriaString();
+		}
 	}
 
 	@Override
@@ -555,6 +568,20 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			ret += chip.toString() + " ";
 		}
 		return ret + iFilter.getText();
+	}
+	
+	public String toAriaString() {
+		String ret = "";
+		for (int i = 0; i < getWidgetCount() - 3; i++) {
+			ChipPanel chip = (ChipPanel)getWidget(i);
+			if (!ret.isEmpty()) ret += ", ";
+			ret += chip.toAriaString();
+		}
+		if (!iFilter.getText().isEmpty()) {
+			if (!ret.isEmpty()) ret += ", ";
+			ret += iFilter.getText();
+		}
+		return ret.isEmpty() ? ARIA.emptyFilter() : ret;
 	}
 	
 	@Override
@@ -575,6 +602,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					addChip(chip, false);
 				iFilter.setText(result.getFilter());
 				resizeFilterIfNeeded();
+				setAriaLabel(toAriaString());
 				if (fireEvents)
 					ValueChangeEvent.fire(FilterBox.this, getValue());
 			}
@@ -622,6 +650,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		@Override
 		public String toString() {
 			return getCommand() + ":" + (getValue().contains(" ") ? "\"" + getValue() + "\"" : getValue());
+		}
+		public String toAriaString() {
+			return getCommand().replace('_', ' ') + " " + getValue();
 		}
 	}
 	
@@ -1054,6 +1085,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		public void setChipToRemove(Chip chip) { iRemove = chip; }
 		public Chip getChipToRemove() { return iRemove; }
 		
+		public Chip getChip() { return getChipToAdd() == null ? getChipToRemove() : getChipToAdd(); }
+		
 		public boolean isSelected() { return iSelected; }
 		public void setSelected(boolean selected) { iSelected = selected; }
 		
@@ -1062,6 +1095,22 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			return ((getDisplayString() == null ? "" : getDisplayString()) +
 				(getChipToAdd() == null ? "" : " +" + getChipToAdd()) +
 				(getChipToRemove() == null ? "" : " -" + getChipToRemove())).trim();
+		}
+
+		public String toAriaString(FilterBox box) {
+			if (getChipToAdd() != null) {
+				if (getChipToRemove() != null)
+					return ARIA.chipReplace(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+				else {
+					if (box.hasChip(getChipToAdd()))
+						return ARIA.chipDelete(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+					else
+						return ARIA.chipAdd(getChipToAdd().getCommand().replace('_', ' '), getChipToAdd().getName());
+				}
+			} else if (getChipToRemove() != null) {
+				return ARIA.chipDelete(getChipToRemove().getCommand().replace('_', ' '), getChipToRemove().getName());
+			}
+			return SafeHtmlUtils.htmlEscape(getDisplayString()) + (getHint() == null ? "" : " " + getHint());
 		}
 	}
 	
@@ -1112,6 +1161,48 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (selected != null)
 				selected.getScheduledCommand().execute();
 		}
+		
+		public Suggestion getSelectedSuggestion() {
+			MenuItem selectedItem = getSelectedItem();
+			return selectedItem == null ? null : ((SuggestionMenuItem)selectedItem).getSuggestion();
+		}
+	}
+	
+	private class SuggestionMenuItem extends MenuItem {
+		private Suggestion iSuggestion = null;
+		
+		private SuggestionMenuItem(final Suggestion suggestion) {
+			super(suggestion.getDisplayString() == null
+					? suggestion.getChip().getName() + " <span class='item-command'>" + suggestion.getChip().getCommand().replace('_', ' ') + "</span>"
+					: SafeHtmlUtils.htmlEscape(suggestion.getDisplayString()) + (suggestion.getHint() == null ? "" : " " + suggestion.getHint()),
+				true,
+				new Command() {
+					@Override
+					public void execute() {
+						hideSuggestions();
+						setStatus(ARIA.suggestionSelected(suggestion.toAriaString(FilterBox.this)));
+						iFilter.setText(suggestion.getReplacementString());
+						if (suggestion.getChipToAdd() != null) {
+							if (hasChip(suggestion.getChipToAdd()))
+								removeChip(suggestion.getChipToAdd(), false);
+							else
+								addChip(suggestion.getChipToAdd(), false);
+						}
+						if (suggestion.getChipToRemove() != null)
+							removeChip(suggestion.getChipToRemove(), false);
+						iLastValue = getValue();
+						setAriaLabel(toAriaString());
+						ValueChangeEvent.fire(FilterBox.this, getValue());
+					}
+				});
+			setStyleName("item");
+			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			iSuggestion = suggestion;
+		}
+		
+		public Suggestion getSuggestion() {
+			return iSuggestion;
+		}
 	}
 
 	@Override
@@ -1150,6 +1241,30 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		return iFilter.addKeyPressHandler(handler);
 	}
 	
+	@Override
+	public HandlerRegistration addFocusHandler(FocusHandler handler) {
+		return iFilter.addFocusHandler(handler);
+	}
+	
+	@Override
+	public HandlerRegistration addBlurHandler(BlurHandler handler) {
+		return iFilter.addBlurHandler(handler);
+	}
+	
 	public boolean isShowSuggestionsOnFocus() { return iShowSuggestionsOnFocus; }
 	public void setShowSuggestionsOnFocus(boolean showSuggestionsOnFocus) { iShowSuggestionsOnFocus = showSuggestionsOnFocus; }
+
+	@Override
+	public String getAriaLabel() {
+		return iFilter.getAriaLabel();
+	}
+
+	@Override
+	public void setAriaLabel(String text) {
+		iFilter.setAriaLabel(text);
+	}
+	
+	public void setStatus(String text) {
+		AriaStatus.getInstance().setHTML(text);
+	}
 }
