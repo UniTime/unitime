@@ -121,6 +121,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 	public void clearHint() {
 		iHint.setText("");
 		iHint.setVisible(false);
+		setAriaLabel("");
 	}
 	
 	public void setErrorHint(String error) {
@@ -130,6 +131,7 @@ public class UniTimeWidget<T extends Widget> extends Composite implements HasAri
 			iHint.setStyleName("unitime-ErrorHint");
 			iHint.setText(error);
 			iHint.setVisible(true);
+			setAriaLabel(error);
 		}
 	}
 
