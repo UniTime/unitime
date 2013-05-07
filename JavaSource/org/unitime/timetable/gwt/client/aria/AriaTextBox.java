@@ -27,7 +27,7 @@ public class AriaTextBox extends TextBox implements HasAriaLabel {
 	@Override
 	public void setAriaLabel(String text) {
 		if (text == null || text.isEmpty())
-			Roles.getTextboxRole().removeAriaLabelledbyProperty(getElement());
+			Roles.getTextboxRole().removeAriaLabelProperty(getElement());
 		else
 			Roles.getTextboxRole().setAriaLabelProperty(getElement(), text);
 	}

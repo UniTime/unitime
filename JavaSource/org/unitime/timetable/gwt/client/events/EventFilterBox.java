@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -46,6 +47,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -63,6 +66,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private ListBox iSponsors;
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private FilterBox.CustomFilter iOther = null;
@@ -448,6 +452,14 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 								showFilterPopup();
 						}
 					});
+				setAriaLabel(ARIA.eventFilter(toAriaString()));
+			}
+		});
+		
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				setAriaLabel(ARIA.eventFilter(toAriaString()));
 			}
 		});
 	}

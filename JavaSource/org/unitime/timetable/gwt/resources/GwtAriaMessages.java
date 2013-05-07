@@ -253,4 +253,22 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Showing Course Requests.")
 	String courseRequests();
+	
+	@DefaultMessage("add {0} {1}")
+	String chipAdd(String command, String value);
+	
+	@DefaultMessage("change {0} to {1}")
+	String chipReplace(String command, String value);
+	
+	@DefaultMessage("remove {0} {1}")
+	String chipDelete(String command, String value);
+	
+	@DefaultMessage("blank")
+	String emptyFilter();
+	
+	@DefaultMessage("Room filter: {0}")
+	String roomFilter(String value);
+	
+	@DefaultMessage("Event filter: {0}")
+	String eventFilter(String value);
 }
