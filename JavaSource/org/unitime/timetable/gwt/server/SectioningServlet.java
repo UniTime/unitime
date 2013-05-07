@@ -460,21 +460,12 @@ public class SectioningServlet implements SectioningService {
 		ArrayList<AcademicSessionProvider.AcademicSessionInfo> ret = new ArrayList<AcademicSessionProvider.AcademicSessionInfo>();
 		if (sectioning) {
 			for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
-				if (getStudentId(s.getUniqueId()) != null) continue;
 				ret.add(new AcademicSessionProvider.AcademicSessionInfo(
 						s.getUniqueId(),
 						s.getYear(), s.getTerm(), s.getCampus(),
 						MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
 						s.isSectioningEnabled()));
 			}
-			if (ret.isEmpty())
-				for (AcademicSessionInfo s: OnlineSectioningService.getAcademicSessions()) {
-					ret.add(new AcademicSessionProvider.AcademicSessionInfo(
-							s.getUniqueId(),
-							s.getYear(), s.getTerm(), s.getCampus(),
-							MSG.sessionName(s.getYear(), s.getTerm(), s.getCampus()),
-							s.isSectioningEnabled()));
-				}
 		} else {
 			for (Session session: SessionDAO.getInstance().findAll()) {
 				if (session.getStatusType().isTestSession()) continue;
