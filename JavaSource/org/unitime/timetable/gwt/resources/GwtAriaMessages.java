@@ -35,6 +35,12 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("There are {0, number} suggestions to {1}. Use up and down arrows to navigate. First suggestion is {2}.")
 	String showingMultipleSuggestions(@PluralCount int nbrSuggestions, String query, String suggestion);
 	
+	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.  First suggestion is {1}.")
+	String showingMultipleSuggestionsNoQuery(@PluralCount int nbrSuggestion, String suggestion);
+	
+	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.")
+	String showingMultipleSuggestionsNoQueryNoneSelected(@PluralCount int nbrSuggestion);
+
 	@DefaultMessage("Suggestion {0, number} of {1, number}. {2}")
 	String onSuggestion(@PluralCount int index, @PluralCount int nbrSuggestions, String suggestion);
 	
@@ -271,4 +277,28 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Event filter: {0}")
 	String eventFilter(String value);
+	
+	@DefaultMessage("Academic session: {0}")
+	String academicSession(String value);
+	
+	@DefaultMessage("Weeks: {0}")
+	String weekSelection(String value);
+
+	@DefaultMessage("Rooms: {0}")
+	String roomSelection(String value);
+	
+	@DefaultMessage("Tab {0} of {1}: {2}, press enter to select")
+	String tabNotSelected(@PluralCount int index, @PluralCount int nbrTabs, String name);
+	
+	@DefaultMessage("Tab {0} of {1}: {2} selected")
+	String tabSelected(@PluralCount int index, @PluralCount int nbrTabs, String name);
+	
+	@DefaultMessage("Selected tab {0}")
+	String onTabSelected(String name);
+	
+	@DefaultMessage("Show column {0}")
+	String opShow(String column);
+
+	@DefaultMessage("Hide column {0}")
+	String opHide(String column);
 }

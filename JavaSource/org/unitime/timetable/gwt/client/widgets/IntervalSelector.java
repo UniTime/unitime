@@ -22,11 +22,20 @@ package org.unitime.timetable.gwt.client.widgets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
+import com.google.gwt.aria.client.AutocompleteValue;
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
 import com.google.gwt.event.dom.client.HasMouseDownHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
@@ -48,9 +57,9 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
 
-public class IntervalSelector<T> extends Composite implements HasValue<IntervalSelector<T>.Interval> {
+public class IntervalSelector<T> extends Composite implements HasValue<IntervalSelector<T>.Interval>, HasAriaLabel, HasAllFocusHandlers {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private boolean iAllowMultiSelection;
 	private Interval iValue;
@@ -60,7 +69,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	private boolean iFilterEnabled = false;
 	private Filter<T> iItemFilter = null;
 	
-	private TextBox iFilter;
+	private AriaTextBox iFilter;
 	private PopupPanel iPopup;
 	private Menu iPopupMenu;
 	private ScrollPanel iPopupScroll;
@@ -98,7 +107,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			}
 		});
 		
-		iFilter = new TextBox();
+		iFilter = new AriaTextBox();
 		iFilter.addStyleName("selection");
 		
 		iFilter.addKeyDownHandler(new KeyDownHandler() {
@@ -108,6 +117,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 					switch (event.getNativeEvent().getKeyCode()) {
 					case KeyCodes.KEY_DOWN:
 						iPopupMenu.selectItem(iPopupMenu.getSelectedItemIndex() + 1);
+						setStatus(ARIA.onSuggestion(iPopupMenu.getSelectedItemIndex() + 1, iPopupMenu.getNumItems(), iPopupMenu.getSelectedInterval().toAriaString()));
 						break;
 					case KeyCodes.KEY_UP:
 						if (iPopupMenu.getSelectedItemIndex() == -1) {
@@ -115,6 +125,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 						} else {
 							iPopupMenu.selectItem(iPopupMenu.getSelectedItemIndex() - 1);
 						}
+						setStatus(ARIA.onSuggestion(iPopupMenu.getSelectedItemIndex() + 1, iPopupMenu.getNumItems(), iPopupMenu.getSelectedInterval().toAriaString()));
 						break;
 					case KeyCodes.KEY_TAB:
 					case KeyCodes.KEY_ENTER:
@@ -146,8 +157,12 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		iFilter.addKeyUpHandler(new KeyUpHandler() {
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
-				if (selectASuggestion() && !isSuggestionsShowing())
-					showSuggestions();
+				if (selectASuggestion()) {
+					if (!isSuggestionsShowing())
+						showSuggestions();
+					else
+						setStatus(ARIA.onSuggestion(iPopupMenu.getSelectedItemIndex() + 1, iPopupMenu.getNumItems(), iPopupMenu.getSelectedInterval().toAriaString()));
+				}
 			}
 		});
         
@@ -155,18 +170,18 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (iValues != null) {
-					if (isAllowMultiSelection() && event.getValue().equals(getDisplayString(new Interval()))) {
+					if (isAllowMultiSelection() && event.getValue().equals(getReplaceString(new Interval()))) {
 						setValue(new Interval());
 					} else {
 						Interval value = null;
 						iterator: for (int i = 0; i < iValues.size(); i++) {
-							if (event.getValue().equals(getDisplayString(new Interval(iValues.get(i))))) {
+							if (event.getValue().equals(getReplaceString(new Interval(iValues.get(i))))) {
 								value = new Interval(iValues.get(i));
 								break iterator;
 							}
 							if (isAllowMultiSelection()) {
 								for (int j = i + 1; j < iValues.size(); j++) {
-									if (event.getValue().equals(getDisplayString(new Interval(iValues.get(i), iValues.get(j))))) {
+									if (event.getValue().equals(getReplaceString(new Interval(iValues.get(i), iValues.get(j))))) {
 										value = new Interval(iValues.get(i), iValues.get(j));
 										break iterator;
 									}
@@ -204,6 +219,10 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		
 		initWidget(iWidget);
 		
+		Roles.getTextboxRole().setAriaAutocompleteProperty(iFilter.getElement(), AutocompleteValue.NONE);
+		
+		DOM.setElementAttribute(iPopup.getElement(), "id", DOM.createUniqueId());
+		Roles.getTextboxRole().setAriaOwnsProperty(iFilter.getElement(), Id.of(iPopup.getElement()));
 	}
 	
 	protected void hideSuggestions() {
@@ -212,6 +231,15 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	
 	protected void showSuggestions() {
 		if (iValues == null || iValues.isEmpty()) return;
+		if (iPopupMenu.getNumItems() == 1) {
+			setStatus(ARIA.showingOneSuggestion(iPopupMenu.getSelectedInterval().toAriaString()));
+		} else if (iPopupMenu.getSelectedItemIndex() == 0) {
+			setStatus(ARIA.showingMultipleSuggestionsNoQuery(iPopupMenu.getNumItems(), (iFilter.getValue() == null ? ARIA.emptyFilter() : iFilter.getValue())));
+		} if (iPopupMenu.getSelectedItemIndex() > 0) {
+			setStatus(ARIA.onSuggestion(iPopupMenu.getSelectedItemIndex() + 1, iPopupMenu.getNumItems(), iPopupMenu.getSelectedInterval().toAriaString()));
+		} else {
+			setStatus(ARIA.showingMultipleSuggestionsNoQueryNoneSelected(iPopupMenu.getNumItems()));
+		}
 		iPopup.showRelativeTo(iFilter);
 		iPopupMenu.scrollToView();
 	}
@@ -228,12 +256,12 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 				iPopupMenu.addItem(new IntervalMenuItem(all));
 				Interval allCurrent = new Interval(); allCurrent.setEnableFilter(isFilterEnabled());
 				iPopupMenu.addItem(new IntervalMenuItem(allCurrent));
-				if (allCurrent.equals(iDefaultValue) || getDisplayString(allCurrent).equals(iFilter.getText()))
+				if (allCurrent.equals(iDefaultValue) || getReplaceString(allCurrent).equals(iFilter.getText()))
 						iPopupMenu.selectItem(1);
 			} else {
 				Interval all = new Interval();
 				iPopupMenu.addItem(new IntervalMenuItem(all));
-				if (all.equals(iDefaultValue) || getDisplayString(all).equals(iFilter.getText()))
+				if (all.equals(iDefaultValue) || getReplaceString(all).equals(iFilter.getText()))
 					iPopupMenu.selectItem(0);
 			}
 		}
@@ -254,6 +282,8 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		}
 		if (select >= 0) iPopupMenu.selectItem(select);
 		iLastSelected = iFilter.getText();
+		if (iPopup.isShowing() && iPopupMenu.getSelectedItemIndex() >= 0)
+			setStatus(ARIA.onSuggestion(iPopupMenu.getSelectedItemIndex() + 1, iPopupMenu.getNumItems(), iPopupMenu.getSelectedInterval().toAriaString()));
 	}
 	
 	private String iLastSelected = null;
@@ -290,11 +320,10 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 			
 			return iPopupMenu.selectItem(parsed) >= 0;
 		} else {
-			
 			suggestions: for (int i = 0; i < iPopupMenu.getNumItems(); i ++) {
 				
 				IntervalMenuItem item = (IntervalMenuItem)iPopupMenu.itemAt(i);
-				String text = getDisplayString(item.getInterval()).toLowerCase();
+				String text = getReplaceString(item.getInterval()).toLowerCase();
 				
 				for (String c: iLastSelected.split("[ \\(\\),]"))
 					if (!text.contains(c.trim().toLowerCase())) continue suggestions;
@@ -305,8 +334,9 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		
 		}
 
-		if (iDefaultValue != null)
+		if (iDefaultValue != null) {
 			return iPopupMenu.selectItem(iDefaultValue) >= 0;
+		}
 			
 		return false;
 	}
@@ -419,7 +449,10 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		
 		public boolean isEnableFilter() { return iEnableFilter; }
 		public void setEnableFilter(boolean enable) { iEnableFilter = enable; }
-
+		
+		public String toAriaString() {
+			return getDisplayString(this);
+		}
 	}
 	
 	protected Interval previous(Interval interval) {
@@ -595,6 +628,10 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 				return items.get(index);
 			return null;
 		}
+		
+		public IntervalMenuItem getSelectedInterval() {
+			return (IntervalMenuItem)getSelectedItem();
+		}
 	}
 	
 	public static class Button extends AbsolutePanel implements HasMouseDownHandlers {
@@ -649,8 +686,10 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		@Override
 		public void execute() {
 			hideSuggestions();
-			setValue(getInterval(), true);
+			setValue(getInterval(), !getInterval().equals(getValue()));
 			iLastSelected = getReplaceString(getInterval());
+			if (getValue() != null)
+				setStatus(ARIA.suggestionSelected(toAriaString()));
 		}
 	}
 	
@@ -667,6 +706,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		
 		public Interval getInterval() { return iInterval; }
 		
+		public String toAriaString() { return (getInterval() == null ? ARIA.emptyFilter() : getInterval().toAriaString()); }
 		
 	}
 	
@@ -702,5 +742,33 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 	public interface Filter<T> {
 		public boolean filter(T t);
 		public boolean isEmpty();
+	}
+	
+	@Override
+	public HandlerRegistration addFocusHandler(FocusHandler handler) {
+		return iFilter.addFocusHandler(handler);
+	}
+	
+	@Override
+	public HandlerRegistration addBlurHandler(BlurHandler handler) {
+		return iFilter.addBlurHandler(handler);
+	}
+	
+	@Override
+	public String getAriaLabel() {
+		return iFilter.getAriaLabel();
+	}
+
+	@Override
+	public void setAriaLabel(String text) {
+		iFilter.setAriaLabel(text);
+	}
+	
+	public void setStatus(String text) {
+		AriaStatus.getInstance().setHTML(text);
+	}
+	
+	public String toAriaString() {
+		return (getValue() == null ? ARIA.emptyFilter() : getValue().toAriaString());
 	}
 }

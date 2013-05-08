@@ -24,6 +24,7 @@ import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionChangeEvent;
@@ -34,11 +35,16 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class WeekSelector extends IntervalSelector<WeekInterface>{
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private RegExp[] iRegExp = new RegExp[] {
@@ -67,6 +73,19 @@ public class WeekSelector extends IntervalSelector<WeekInterface>{
 			}
 		});
 		
+		addValueChangeHandler(new ValueChangeHandler<Interval>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<Interval> event) {
+				setAriaLabel(ARIA.weekSelection(toAriaString()));
+			}
+		});
+		
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				setAriaLabel(ARIA.weekSelection(toAriaString()));
+			}
+		});
 	}
 	
 	public void init(Long sessionId) {

@@ -73,6 +73,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SponsoringOrganizationInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.StandardEventNoteInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -565,7 +567,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		notesPanel.add(iStandardNotesButton);
 		notesPanel.setCellHorizontalAlignment(iStandardNotesButton, HasHorizontalAlignment.ALIGN_RIGHT);
 		 
-		iForm.addRow(MESSAGES.propAdditionalInformation(), notesPanel);
+		int row = iForm.addRow(MESSAGES.propAdditionalInformation(), notesPanel);
+		Roles.getTextboxRole().setAriaLabelledbyProperty(iNotes.getElement(), Id.of(iForm.getWidget(row, 0).getElement()));
 		
 		iFileUpload = new UniTimeFileUpload();
 		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
