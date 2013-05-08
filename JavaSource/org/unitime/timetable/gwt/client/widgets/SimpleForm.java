@@ -19,6 +19,9 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.Label;
@@ -85,16 +88,19 @@ public class SimpleForm extends FlexTable {
 	}
 
 	public int addRow(String text, Widget widget) {
-		int row = getRowCount();
-		setWidget(row, 0, new Label(text, false));
-		setWidget(row, 1, widget);
-		return row;
+		return addRow(new Label(text, false), widget);
 	}
 	
 	public int addRow(Widget header, Widget widget) {
 		int row = getRowCount();
 		setWidget(row, 0, header);
 		setWidget(row, 1, widget);
+		if (header.getElement().getId() == null || header.getElement().getId().isEmpty())
+			header.getElement().setId(DOM.createUniqueId());
+		if (widget instanceof UniTimeWidget)
+			Roles.getTextboxRole().setAriaLabelledbyProperty(((UniTimeWidget)widget).getWidget().getElement(), Id.of(header.getElement()));
+		else
+			Roles.getTextboxRole().setAriaLabelledbyProperty(widget.getElement(), Id.of(header.getElement()));
 		return row;
 	}
 	

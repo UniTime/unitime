@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -73,6 +74,7 @@ public class UniTimeTable<T> extends FlexTable {
 		setStylePrimaryName("unitime-MainTable");
 		iHintPanel = new PopupPanel();
 		iHintPanel.setStyleName("unitime-PopupHint");
+		Roles.getGridRole().set(getElement());
 	}
 	
 	public void setAllowSelection(boolean allow) { iAllowSelection = allow; }
@@ -131,6 +133,11 @@ public class UniTimeTable<T> extends FlexTable {
 			if (widget instanceof HasColumn)
 				((HasColumn)widget).setColumn(col);
 			setWidget(row, col, cell);
+			if (widget instanceof UniTimeTableHeader) {
+				Roles.getColumnheaderRole().set(getCellFormatter().getElement(row, col));
+			} else {
+				Roles.getGridcellRole().set(getCellFormatter().getElement(row, col));
+			}
 			x += colspan;
 			if (row > 0) {
 				if (colspan == 1) {
@@ -145,6 +152,7 @@ public class UniTimeTable<T> extends FlexTable {
 			}
 			col++;
 		}
+		Roles.getRowRole().set(getRowFormatter().getElement(row));
 		if (data != null) {
 			DataChangedEvent<T> event = new DataChangedEvent<T>(data, row);
 			for (DataChangedListener<T> listener: iDataChangedListeners)

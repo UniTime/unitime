@@ -28,16 +28,20 @@ import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessionSelectionBox.AcademicSession> implements AcademicSessionProvider {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private List<AcademicSession> iAllSessions = null;
@@ -71,6 +75,14 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 			@Override
 			public void onValueChange(ValueChangeEvent<Interval> event) {
 				fireAcademicSessionChanged();
+				setAriaLabel(ARIA.academicSession(toAriaString()));
+			}
+		});
+		
+		addFocusHandler(new FocusHandler() {
+			@Override
+			public void onFocus(FocusEvent event) {
+				setAriaLabel(ARIA.academicSession(toAriaString()));
 			}
 		});
 	}
