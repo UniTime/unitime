@@ -459,6 +459,7 @@ public class InstructionalOfferingRollForward extends SessionRollForward {
 			toCourseOffering.setInstructionalOffering(toInstructionalOffering);
 			toCourseOffering.setReservation(fromCourseOffering.getReservation());
 			toCourseOffering.setConsentType(fromCourseOffering.getConsentType());
+			toCourseOffering.setCourseType(fromCourseOffering.getCourseType());
 			toInstructionalOffering.addTocourseOfferings(toCourseOffering);
 		}
 		if (toInstructionalOffering.getInstrOfferingPermId() == null){
