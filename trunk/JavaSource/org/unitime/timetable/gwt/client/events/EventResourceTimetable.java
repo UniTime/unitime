@@ -36,6 +36,7 @@ import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.Lookup;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaTabBar;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSessionFilter;
 import org.unitime.timetable.gwt.client.events.EventMeetingTable.EventMeetingRow;
@@ -60,6 +61,7 @@ import org.unitime.timetable.gwt.client.widgets.WeekSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.EventInterface;
@@ -89,6 +91,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventPropertiesRpcRespons
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -130,12 +134,12 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
-import com.google.gwt.user.client.ui.TabBar;
 
 /**
  * @author Tomas Muller
  */
 public class EventResourceTimetable extends Composite implements EventMeetingTable.MeetingFilter, EventAdd.EventPropertiesProvider, AcademicSessionFilter {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -165,7 +169,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private String iLocDate = null, iLocRoom = null;
 	private MeetingClickHandler iMeetingClickHandler;
 	private Lookup iLookup;
-	private TabBar iTabBar;
+	private AriaTabBar iTabBar;
 	private ApproveDialog iApproveDialog;
 	private int iSessionRow = -1;
 	private Set<Integer> iMatchingWeeks = new HashSet<Integer>();
@@ -400,7 +404,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 		});
 		
-		iTabBar = new TabBar();
+		iTabBar = new AriaTabBar();
 		iTabBar.addTab(MESSAGES.tabGrid(), true);
 		iTabBar.addTab(MESSAGES.tabEventTable(), true);
 		iTabBar.addTab(MESSAGES.tabMeetingTable(), true);
@@ -454,6 +458,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iDockPanel.setCellHorizontalAlignment(iTabBar, HasHorizontalAlignment.ALIGN_CENTER);
 		iDockPanel.add(iWeekPanel, DockPanel.EAST);
 		iDockPanel.setCellHorizontalAlignment(iWeekPanel, HasHorizontalAlignment.ALIGN_RIGHT);
+		Roles.getTabpanelRole().set(iDockPanel.getElement());
+		Roles.getTabpanelRole().setAriaOwnsProperty(iDockPanel.getElement(), Id.of(iTabBar.getElement()));
 
 		iPanel.addRow(iDockPanel);
 		
@@ -1194,6 +1200,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 
 			@Override
 			public void onSuccess(FilterRpcResponse result) {
+				if (result == null) return;
 				List<ResourceInterface> rooms = new ArrayList<ResourceInterface>();
 				if (result.hasResults())
 					for (FilterRpcResponse.Entity room: result.getResults()) {
@@ -1509,6 +1516,19 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private class RoomSelector extends IntervalSelector<ResourceInterface> {
 		public RoomSelector() {
 			super(true);
+			addValueChangeHandler(new ValueChangeHandler<Interval>() {
+				@Override
+				public void onValueChange(ValueChangeEvent<Interval> event) {
+					setAriaLabel(ARIA.roomSelection(toAriaString()));
+				}
+			});
+			
+			addFocusHandler(new FocusHandler() {
+				@Override
+				public void onFocus(FocusEvent event) {
+					setAriaLabel(ARIA.roomSelection(toAriaString()));
+				}
+			});
 		}
 		
 		@Override

@@ -28,6 +28,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColSpan;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasColumn;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasStyleName;
 
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -96,6 +97,8 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 				}
 			});
 			item.getElement().getStyle().setCursor(Cursor.POINTER);
+			if (op instanceof AriaOperation)
+				Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
 			menu.addItem(item);
 		}
 		if (first) return false;
@@ -159,6 +162,10 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 		public String getName();
 		public boolean isApplicable();
 		public boolean hasSeparator();
+	}
+	
+	public static interface AriaOperation extends Operation {
+		public String getAriaLabel();
 	}
 	
 	public String getHint() {

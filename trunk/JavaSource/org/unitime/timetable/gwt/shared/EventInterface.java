@@ -410,7 +410,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasSize() { return iSize != null; }
 		public Integer getSize() { return iSize; }
 		public void setDistance(Double distance) { iDistance = distance; }
-		public boolean hasDistance() { return iDistance != null; }
+		public boolean hasDistance() { return iDistance != null && Math.round(iDistance) > 0; }
 		public Double getDistance() { return iDistance; }
 		public void setRoomType(String type) { iRoomType = type; }
 		public boolean hasRoomType() { return iRoomType != null; }
