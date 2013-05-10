@@ -219,8 +219,12 @@ public class RoomSharingBackend implements GwtRpcImplementation<RoomSharingReque
 			
 			hibSession.saveOrUpdate(location);
 			
-			if (request.getModel().isNoteEditable())
-				location.setShareNote(request.getModel().getNote().length() > 2048 ? request.getModel().getNote().substring(0, 2048) : request.getModel().getNote());
+			if (request.getModel().isNoteEditable()) {
+				if (request.getModel().hasNote())
+					location.setShareNote(request.getModel().getNote().length() > 2048 ? request.getModel().getNote().substring(0, 2048) : request.getModel().getNote());
+				else
+					location.setShareNote(null);
+			}
 			
 			ChangeLog.addChange(hibSession, context, location, ChangeLog.Source.ROOM_DEPT_EDIT, ChangeLog.Operation.UPDATE, null, location.getControllingDepartment());
 			
