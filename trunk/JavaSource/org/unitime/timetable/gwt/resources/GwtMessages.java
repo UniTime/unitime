@@ -1874,6 +1874,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Classes Start/End")
 	String legendClassesStartOrEnd();
 	
+	@DefaultMessage("Classes Start")
+	String legendClassesStart();
+
+	@DefaultMessage("Classes End")
+	String legendClassesEnd();
+
 	@DefaultMessage("Finals")
 	String legendFinals();
 	
