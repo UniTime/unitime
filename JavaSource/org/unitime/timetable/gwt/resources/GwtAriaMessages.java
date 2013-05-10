@@ -301,4 +301,28 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Hide column {0}")
 	String opHide(String column);
+	
+	@DefaultMessage("Every {0} of {1}")
+	String datesDayOfWeekSelection(String dayOfWeek, String month);
+	
+	@DefaultMessage("Week {0} starting {1}")
+	String datesWeekSelection(@PluralCount int weekNumber, String firstDate);
+	
+	@DefaultMessage("No dates are selected.")
+	String datesNothingSelected();
+	
+	@DefaultMessage("Selected {0}")
+	String datesSelected(String date);
+	
+	@DefaultMessage("Unselected {0}")
+	String datesUnselected(String date);
+	
+	@DefaultMessage("Selected work days for {0}")
+	String datesSelectedWorkDays(String date);
+
+	@DefaultMessage("Selected all but holidays for {0}")
+	String datesSelectedAllButVacations(String date);
+
+	@DefaultMessage("Selected all days for {0}")
+	String datesSelectedAll(String date);
 }

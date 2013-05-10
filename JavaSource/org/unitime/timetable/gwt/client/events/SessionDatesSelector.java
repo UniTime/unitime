@@ -23,10 +23,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.AcademicSessionProvider;
@@ -35,9 +39,23 @@ import org.unitime.timetable.gwt.shared.AcademicSessionProvider.AcademicSessionC
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
+import com.google.gwt.aria.client.Id;
+import com.google.gwt.aria.client.Roles;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.FocusEvent;
+import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
@@ -47,23 +65,24 @@ import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Widget;
 
 public class SessionDatesSelector extends Composite implements HasValue<List<Date>> {
+	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	AcademicSessionProvider iAcademicSession;
-	UniTimeWidget<AbsolutePanel> iPanel;
+	UniTimeWidget<DatesPanel> iPanel;
 	private int iSessionYear = 1900;
 	private boolean iCanSelectPast = false;
 	
 	public SessionDatesSelector(AcademicSessionProvider session) {
 		iAcademicSession = session;
 		
-		iPanel = new UniTimeWidget<AbsolutePanel>(new AbsolutePanel());
-		iPanel.getWidget().setStyleName("unitime-DateSelector");
+		iPanel = new UniTimeWidget<DatesPanel>(new DatesPanel());
 		
 		initWidget(iPanel);
 		
@@ -108,9 +127,14 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	
 	public void init(List<SessionMonth> months) {
 		iPanel.getWidget().clear();
-		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1; 
+		int firstOutside = -1, start = -1, end = -1, exam = -1, firstHoliday = - 1, firstBreak = -1, today = -1, firstPast = -1, firstEventDate = -1, firstClassDate = -1;
+		int idx = 0;
+		P lastWeek = null;
 		for (SessionMonth month: months) {
-			iPanel.getWidget().add(new SingleMonth(month, isCanSelectPast()));
+			SingleMonth m = new SingleMonth(month, isCanSelectPast(), idx++, lastWeek);
+			lastWeek = m.getWeeks().get(m.getWeeks().size() - 1);
+			if (lastWeek.getDays().size() == 7) lastWeek = null;
+			iPanel.getWidget().add(m);
 			if (start < 0) start = month.getFirst(SessionMonth.Flag.START);
 			if (end < 0) end = month.getFirst(SessionMonth.Flag.END);
 			if (exam < 0) exam = month.getFirst(SessionMonth.Flag.FINALS);
@@ -126,20 +150,27 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			if (month.getFirst(SessionMonth.Flag.START) >= 0) iSessionYear = month.getYear();
 		}
 		iPanel.getWidget().add(new Legend(firstOutside, start, exam, firstHoliday, firstBreak, iCanSelectPast ? -1 : firstPast, today, firstClassDate, firstEventDate));
+		iPanel.getWidget().setCursor(new Date());
 	}
 	
-	public static class P extends AbsolutePanel {
+	public class P extends AbsolutePanel implements HasAriaLabel {
 		private String iCaption;
+		private int[] iCursor = null;
 		private List<D> iDays = new ArrayList<D>();
 		
-		private P(String caption, String... styles) {
+		private P(String caption, int[] cursor, String... styles) {
 			iCaption = caption;
+			iCursor = cursor;
 			if (caption != null)
 				getElement().setInnerHTML(caption);
 			for (String style: styles)
 				if (style != null && !style.isEmpty())
 					addStyleName(style);
 			sinkEvents(Event.ONMOUSEDOWN);
+		}
+		
+		private P(String caption, String... styles) {
+			this(caption, null, styles);			
 		}
 		
 		public void addDay(D d) { iDays.add(d); }
@@ -175,10 +206,11 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		    		setAllSelected(true, true, true);
 		    	else
 		    		setAllSelected(false, true, true);
-		    	event.stopPropagation();
+		    	if (iCursor != null) iPanel.getWidget().setCursor(iCursor);
 		    	event.preventDefault();
 		    	break;
 			}
+			super.onBrowserEvent(event);
 		}
 		
 		public String getCaption() { return iCaption; }
@@ -188,17 +220,32 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public String toString() {
 			return getCaption() + " " + iDays;
 		}
+
+		@Override
+		public String getAriaLabel() {
+			return Roles.getTextboxRole().getAriaLabelProperty(getElement());
+		}
+
+		@Override
+		public void setAriaLabel(String text) {
+			if (text == null || text.isEmpty())
+				Roles.getTextboxRole().removeAriaLabelProperty(getElement());
+			else
+				Roles.getTextboxRole().setAriaLabelProperty(getElement(), text);
+			
+		}
 	}
 	
-	public static class D extends AbsolutePanel implements HasValue<Boolean> {
+	public class D extends AbsolutePanel implements HasValue<Boolean>, HasAriaLabel {
 		private boolean iSelected = false, iEnabled = true;
-		private int iFlag, iDow;
+		private int iFlag;
 		private int iNumber;
+		private int[] iCursor;
 		
-		private D(int number, int flag, int dow, boolean selected, String... styles) {
+		private D(int number, int flag, int[] cursor, boolean selected, String... styles) {
 			iNumber = number;
 			iFlag = flag;
-			iDow = dow;
+			iCursor = cursor;
 			iSelected = selected;
 			getElement().setInnerHTML(String.valueOf(1 + number));
 			for (String style: styles)
@@ -230,22 +277,30 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		}
 		
 		public boolean isWeekend() {
-			return iDow >= 5;
+			return getDow() >= 5;
 		}
 		
 		@Override
 		public void onBrowserEvent(Event event) {
 			switch (DOM.eventGetType(event)) {
 		    case Event.ONMOUSEDOWN:
-		    	if (isEnabled())
+		    	if (isEnabled()) {
 		    		setValue(!getValue(), true);
-		    	event.stopPropagation();
+		    		iPanel.getWidget().setCursor(iCursor);
+		    	}
 		    	event.preventDefault();
 		    	break;
 			}
+			super.onBrowserEvent(event);
 		}
 		
 		public int getNumber() { return iNumber; }
+		
+		public int getDow() { return iCursor[1]; }
+		
+		public int getWeek() { return iCursor[2]; }
+		
+		public int getMonth() { return iCursor[0]; }
 		
 		public String toString() {
 			return String.valueOf(1 + getNumber());
@@ -278,25 +333,45 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				ValueChangeEvent.fire(this, getValue());
 		}
 
+		@Override
+		public String getAriaLabel() {
+			return Roles.getTextboxRole().getAriaLabelProperty(getElement());
+		}
+
+		@Override
+		public void setAriaLabel(String text) {
+			if (text == null || text.isEmpty())
+				Roles.getTextboxRole().removeAriaLabelProperty(getElement());
+			else
+				Roles.getTextboxRole().setAriaLabelProperty(getElement(), text);
+			
+		}
 	}
 	
-	public static class SingleMonth extends AbsolutePanel {
+	public class SingleMonth extends AbsolutePanel {
 		private SessionMonth iSessionMonth;
 		private List<D> iDays = new ArrayList<D>();
 		private P[] iWeekDays = new P[7];
 		private List<P> iWeeks = new ArrayList<P>();
+		private P iCorner = null;
 		
-		public SingleMonth(SessionMonth month, boolean canSelectPast) {
+		public SingleMonth(SessionMonth month, boolean canSelectPast, int index, P previousWeek) {
 			iSessionMonth = month;
 			addStyleName("month");
-			add(new P(SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1), "label"));
+			P name = new P(SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1), "label");
+			add(name);
+			name.getElement().setId(DOM.createUniqueId());
+			Roles.getGridRole().set(getElement());
+			Roles.getGridRole().setAriaLabelledbyProperty(getElement(), Id.of(name.getElement()));
 			
 			P box = new P(null, "box");
 			add(box);
 			P header = new P(null, "row");
 			box.add(header);
-			P corner = new P(null, "cell", "corner", "clickable");
-			header.add(corner);
+			iCorner = new P(null, new int[] {index, -1, -1}, "cell", "corner", "clickable");
+			iCorner.setAriaLabel(SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1));
+			header.add(iCorner);
+			Roles.getRowheaderRole().set(iCorner.getElement());
 			
 			int firstDayOfWeek = SingleDateSelector.firstDayOfWeek(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1);
 			int weekNumber = SingleDateSelector.weekNumber(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1);
@@ -304,15 +379,25 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			
 			int startDayOfWeek = SingleDateSelector.startingDayOfWeek();
 			for (int i = 0; i < 7; i++) {
-				iWeekDays[i] = new P(CONSTANTS.days()[(i + startDayOfWeek) % 7], "cell", "dow", "clickable");
+				iWeekDays[i] = new P(CONSTANTS.days()[(i + startDayOfWeek) % 7], new int[] {index, (i + startDayOfWeek) % 7, -1}, "cell", "dow", "clickable");
+				iWeekDays[i].setAriaLabel(ARIA.datesDayOfWeekSelection(CONSTANTS.longDays()[(i + startDayOfWeek) % 7], SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1)));
+				Roles.getColumnheaderRole().set(iWeekDays[i].getElement());
 				header.add(iWeekDays[i]);
 			}
 
 			P line = new P(null, "row");
 			box.add(line);
-			P week = new P(String.valueOf(weekNumber ++), "cell", "week", "clickable");
+			P week = new P(String.valueOf(weekNumber++), new int[] {index, -1, iWeeks.size()}, "cell", "week", "clickable");
+			Roles.getRowheaderRole().set(week.getElement());
+			boolean weekAria = false;
 			line.add(week);
 			iWeeks.add(week);
+			if (previousWeek != null) {
+				for (D d: previousWeek.getDays())
+					week.addDay(d);
+				week.setAriaLabel(previousWeek.getAriaLabel());
+				weekAria = true;
+			}
 			
 			int idx = 0;
 			int blanks = (firstDayOfWeek + 7 - startDayOfWeek) % 7;
@@ -333,35 +418,53 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				}
 			};
 			
+			DateTimeFormat df = DateTimeFormat.getFormat("yyyy/MM/dd");
 			for (int i = 0; i < nrDays; i++) {
 				if (i > 0 && idx % 7 == 0) {
 					if (idx == 7 && iSessionMonth.getMonth() == 0 && weekNumber > 50) weekNumber = 1;
 					line = new P(null, "row");
 					box.add(line);
-					week = new P(String.valueOf(weekNumber ++), "cell", "week", "clickable");
+					week = new P(String.valueOf(weekNumber ++), new int[] {index, -1, iWeeks.size()}, "cell", "week", "clickable");
+					Roles.getRowheaderRole().set(week.getElement());
+					weekAria = false;
 					line.add(week);
 					iWeeks.add(week);
+					previousWeek = null;
 				}
-				D d = new D(i, iSessionMonth.getFlags(i), (idx + startDayOfWeek) % 7, false, "cell", (((idx + startDayOfWeek) % 7) < 5 ? "day" : "weekend"), "clickable");
+				Date date = df.parse(getYear() + "/" + (1 + getMonth()) + "/" + (1 + i));
+				D d = new D(i, iSessionMonth.getFlags(i), new int[] {index, (idx + startDayOfWeek) % 7, iWeeks.size() - 1}, false, "cell", (((idx + startDayOfWeek) % 7) < 5 ? "day" : "weekend"), "clickable");
+				Roles.getGridcellRole().set(d.getElement());
 				line.add(d);
 				d.addValueChangeHandler(onChange);
-				corner.addDay(d);
+				iCorner.addDay(d);
 				iWeekDays[idx % 7].addDay(d);
+				if (!weekAria) {
+					week.setAriaLabel(ARIA.datesWeekSelection(weekNumber - 1, DateTimeFormat.getFormat(CONSTANTS.weekSelectionDateFormat()).format(date)));
+					weekAria = true;
+				}
+				d.setAriaLabel(DateTimeFormat.getFormat(CONSTANTS.dateSelectionDateFormat()).format(date));
 				week.addDay(d);
+				if (previousWeek != null) previousWeek.addDay(d);
 				iDays.add(d);
 				idx++;
 				if (today == i)
 					d.addStyleName("today");
-				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.START))
+				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.START)) {
 					d.addStyleName("start");
-				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.END))
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendClassesStart());
+				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.END)) {
 					d.addStyleName("start");
-				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.FINALS))
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendClassesEnd());
+				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.FINALS)) {
 					d.addStyleName("exam");
-				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.HOLIDAY))
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendFinals());
+				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.HOLIDAY)) {
 					d.addStyleName("holiday");
-				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.BREAK))
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendHoliday());
+				} else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.BREAK)) {
 					d.addStyleName("break");
+					d.setAriaLabel(d.getAriaLabel() + " " + MESSAGES.legendBreak());
+				}
 				if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DATE_MAPPING_CLASS))
 					d.addStyleName("classDate");
 				else if (iSessionMonth.hasFlag(i, SessionMonth.Flag.DATE_MAPPING_EVENT))
@@ -387,12 +490,14 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public List<P> getWeeks() { return iWeeks; }
 		public P getDays(int dayOfWeek) { return iWeekDays[dayOfWeek]; }
 		public List<D> getDays() { return iDays; }
+		public P getCorner() { return iCorner; }
 		
 		public int getYear() { return iSessionMonth.getYear(); }
 		public int getMonth() { return iSessionMonth.getMonth(); }
+		public String getName() { return SingleDateSelector.monthName(iSessionMonth.getYear(), iSessionMonth.getMonth() + 1); }
 	}
 	
-	public static class Legend extends AbsolutePanel {
+	public class Legend extends AbsolutePanel {
 		public Legend(int firstOutside, int start, int exam, int firstHoliday, int firstBreak, int firstPast, int today, int firstClassDate, int firstEventDate) {
 			addStyleName("legend");
 			P box = new P(null, "box");
@@ -596,6 +701,654 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			}
 		}
 		return false;
+	}
+	
+	public static class DatesPanel extends AbsolutePanel implements Focusable, HasAllFocusHandlers {
+		private int iMonth = -1, iDow = -1, iWeek = -1;
+		private AriaTextBox iText = null;
+		private boolean iHasFocus = false;
+		
+		public DatesPanel() {
+			super();
+			
+			setStyleName("unitime-DateSelector");
+			
+			iText = new AriaTextBox();
+			iText.addStyleName("text");
+			iText.addKeyUpHandler(new KeyUpHandler() {
+				@Override
+				public void onKeyUp(KeyUpEvent event) {
+					switch (event.getNativeKeyCode()) {
+					case KeyCodes.KEY_RIGHT:
+	            		moveLeftOrRight(false);
+	            		break;
+	            	case KeyCodes.KEY_LEFT:
+	            		moveLeftOrRight(true);
+	            		break;
+	            	case KeyCodes.KEY_UP:
+	            		moveUpOrDown(true);
+	            		break;
+	            	case KeyCodes.KEY_DOWN:
+	            		moveUpOrDown(false);
+	            		break;
+	            	case 32:
+	            		if (iText.getValue().isEmpty()) select();
+            			break;
+	            	case KeyCodes.KEY_ENTER:
+	            		if (iText.getValue().isEmpty() || !parseText(iText.getValue(), true))
+	            			select();
+	            		break;
+					}
+				}
+			});
+			iText.addKeyDownHandler(new KeyDownHandler() {
+				@Override
+				public void onKeyDown(KeyDownEvent event) {
+					switch (event.getNativeEvent().getKeyCode()) {
+					case KeyCodes.KEY_RIGHT:
+					case KeyCodes.KEY_LEFT:
+					case KeyCodes.KEY_UP:
+					case KeyCodes.KEY_DOWN:
+						event.preventDefault();
+					}
+				}
+			});
+			iText.addKeyPressHandler(new KeyPressHandler() {
+				@Override
+				public void onKeyPress(KeyPressEvent event) {
+					switch (event.getNativeEvent().getKeyCode()) {
+	            	case 32:
+	            		if (iText.getValue().isEmpty())
+	            			event.preventDefault();
+	            		return;
+					case KeyCodes.KEY_ENTER:
+	            		event.preventDefault();
+	            		return;
+					}
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							parseText(iText.getValue(), false);
+						}
+					});
+				}
+			});
+			iText.addFocusHandler(new FocusHandler() {
+				@Override
+				public void onFocus(FocusEvent event) {
+					// addStyleName("unitime-DateSelectorFocus");
+					iHasFocus = true;
+					if (iMonth >= 0)
+						addCursorStyleName(iMonth, iDow, iWeek);
+				}
+			});
+			iText.addBlurHandler(new BlurHandler() {
+				@Override
+				public void onBlur(BlurEvent event) {
+					// removeStyleName("unitime-DateSelectorFocus");
+					if (iMonth >= 0)
+						removeCursorStyleName(iMonth, iDow, iWeek);
+					iHasFocus = false;
+				}
+			});
+			
+			add(iText);
+			
+			sinkEvents(Event.ONMOUSEDOWN);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+		    case Event.ONMOUSEDOWN:
+		    	if (!iHasFocus) iText.setFocus(true);
+		    	break;
+			}
+		}
+		
+		@Override
+		public void clear() {
+			super.clear();
+			iMonth = -1; iDow = -1; iWeek = -1;
+			add(iText);
+		}
+		
+		private void setCursor(Date date) {
+			int dateYear = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
+			int dateMonth = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date)) - 1;
+			int dateDay = Integer.parseInt(DateTimeFormat.getFormat("dd").format(new Date())) - 1;
+			
+			SingleMonth lastMonth = null;
+			for (int i = 0; i < getWidgetCount() - 2; i++) {
+				if (getWidget(1 + i) instanceof SingleMonth) {
+					SingleMonth m = (SingleMonth)getWidget(1 + i);
+					// before
+					if (i == 0 && dateYear < m.getYear() || (dateYear == m.getYear() && dateMonth < m.getMonth())) {
+						D last = null;
+						for (D d: m.getDays())
+							if (d.isEnabled()) last = d;
+						if (last != null) {
+							iMonth = i; iDow = last.getDow(); iWeek = last.getWeek();
+							last.addStyleName("cursor");
+							return;
+						}
+					}
+					// match
+					if (m.getYear() == dateYear && m.getMonth() == dateMonth) {
+						D d = m.getDays().get(dateDay);
+						if (d.isEnabled()) {
+							iMonth = i; iDow = d.getDow(); iWeek = d.getWeek();
+							d.addStyleName("cursor");
+							return;
+						} else {
+							D first = null, last = null;
+							for (D x: m.getDays())
+								if (x.isEnabled()) {
+									if (first == null) first = x;
+									last = x;
+								}
+							if (dateDay < first.getNumber()) {
+								iMonth = i; iDow = first.getDow(); iWeek = first.getWeek();
+								first.addStyleName("cursor");
+								return;
+							} else {
+								iMonth = i; iDow = last.getDow(); iWeek = last.getWeek();
+								last.addStyleName("cursor");
+								return;
+							}
+						}
+					}
+					lastMonth = m;
+				}
+			}
+			
+			D last = null;
+			for (D d: lastMonth.getDays())
+				if (d.isEnabled()) last = d;
+			if (last != null) {
+				iMonth = getWidgetIndex(lastMonth) - 1; iDow = last.getDow(); iWeek = last.getWeek();
+				last.addStyleName("cursor");
+				return;
+			}
+		}
+		
+		public void setCursor(int... cursor) {
+			if (iMonth >= 0)
+				removeCursorStyleName(iMonth, iDow, iWeek);
+			if (cursor == null) {
+				iMonth = -1; iDow = -1; iWeek = -1;
+			} else {
+				iMonth = cursor[0]; iDow = cursor[1]; iWeek = cursor[2];
+				if (iMonth >= 0)
+					addCursorStyleName(iMonth, iDow, iWeek);
+			}
+		}
+		
+		private void addCursorStyleName(int month, int dow, int week) {
+			if (!iHasFocus) return;
+			SingleMonth m = (SingleMonth)getWidget(1 + month);
+			if (dow >= 0) {
+				if (week >= 0) {
+					for (D d: m.getDays())
+						if (d.getWeek() == week && d.getDow() == dow) {
+							d.addStyleName("cursor");
+							iText.setAriaLabel(d.getValue() ? ARIA.datesSelected(d.getAriaLabel()) : d.getAriaLabel());
+						}
+				} else {
+					P p = m.getDays((7 - SingleDateSelector.startingDayOfWeek() + dow) % 7);
+					p.addStyleName("cursor");
+					iText.setAriaLabel(p.getAriaLabel()); 
+				}
+			} else {
+				if (week >= 0) {
+					P p = m.getWeeks().get(week);
+					p.addStyleName("cursor");
+					iText.setAriaLabel(p.getAriaLabel());
+				} else {
+					P p = m.getCorner();
+					p.addStyleName("cursor");
+					iText.setAriaLabel(p.getAriaLabel());
+				}
+			}
+		}
+		
+		private String getAriaString(int month, int dow, int week) {
+			SingleMonth m = (SingleMonth)getWidget(1 + month);
+			if (dow >= 0) {
+				if (week >= 0) {
+					for (D d: m.getDays())
+						if (d.getWeek() == week && d.getDow() == dow)
+							return d.getAriaLabel();
+				} else {
+					P p = m.getDays((7 - SingleDateSelector.startingDayOfWeek() + dow) % 7);
+					return p.getAriaLabel(); 
+				}
+			} else {
+				if (week >= 0) {
+					P p = m.getWeeks().get(week);
+					return p.getAriaLabel(); 
+				} else {
+					P p = m.getCorner();
+					return p.getAriaLabel(); 
+				}
+			}
+			return "";
+		}
+		
+		private void removeCursorStyleName(int month, int dow, int week) {
+			SingleMonth m = (SingleMonth)getWidget(1 + month);
+			if (dow >= 0) {
+				if (week >= 0) {
+					for (D d: m.getDays())
+						if (d.getWeek() == week && d.getDow() == dow) {
+							d.removeStyleName("cursor");
+						}
+				} else {
+					m.getDays((7 - SingleDateSelector.startingDayOfWeek() + dow) % 7).removeStyleName("cursor");					
+				}
+			} else {
+				if (week >= 0) {
+					m.getWeeks().get(week).removeStyleName("cursor");					
+				} else {
+					m.getCorner().removeStyleName("cursor");
+				}
+			}
+		}
+		
+		private void moveUpOrDown(boolean up) {
+			if (iMonth >= 0)
+				removeCursorStyleName(iMonth, iDow, iWeek);
+			else {
+				months: for (int i = 0; i < getWidgetCount() - 2; i++)
+					if (getWidget(1 + i) instanceof SingleMonth) {
+						SingleMonth m = (SingleMonth)getWidget(1 + i);
+						for (D d: m.getDays())
+							if (d.isEnabled()) {
+								iDow = d.getDow();
+								if (!up) break months;
+							}
+					}
+			}
+			
+			int[] first = null, last = null, current = null, previous = null, next = null;
+			int startingDayOfWeek = SingleDateSelector.startingDayOfWeek();
+			for (int x = -1; x < 7; x++) {
+				int k = (x < 0 ? x : (x + startingDayOfWeek) % 7);
+				for (int i = 0; i < getWidgetCount() - 2; i++) {
+					if (getWidget(1 + i) instanceof SingleMonth) {
+						SingleMonth m = (SingleMonth)getWidget(1 + i);
+						
+						for (int j = -1; j < m.getWeeks().size(); j++) {
+							boolean enabled = false;
+							for (D d: m.getDays()) {
+								if ((j == -1 || j == d.getWeek()) && (k == -1 || k == d.getDow()) && d.isEnabled()) {
+									enabled = true;
+									break;
+								}
+							}
+							if (enabled && first == null) first = new int[] {i, j, k};
+							if (enabled) last = new int[] {i, j, k};
+							if (i== iMonth && j == iWeek && k == iDow )
+								current = new int[] {i, j, k};
+							else if (current == null) {
+								if (enabled) previous = new int[] {i, j, k};
+							} else if (next == null) {
+								if (enabled) next = new int[] {i, j, k};
+							}
+						}
+					}
+				}
+			}
+			if (up) {
+				if (previous != null) {
+					iMonth = previous[0]; iWeek = previous[1]; iDow = previous[2];
+				} else {
+					iMonth = last[0]; iWeek = last[1]; iDow = last[2];
+				}
+			} else {
+				if (next != null) {
+					iMonth = next[0]; iWeek = next[1]; iDow = next[2];
+				} else {
+					iMonth = first[0]; iWeek = first[1]; iDow = first[2];
+				}
+			}
+			addCursorStyleName(iMonth, iDow, iWeek);
+		}
+		
+		private void moveLeftOrRight(boolean left) {
+			if (iMonth >= 0)
+				removeCursorStyleName(iMonth, iDow, iWeek);
+			else {
+				months: for (int i = 0; i < getWidgetCount() - 2; i++)
+					if (getWidget(i) instanceof SingleMonth) {
+						SingleMonth m = (SingleMonth)getWidget(1 + i);
+						boolean enabled = false;
+						for (D d: m.getDays())
+							if (d.isEnabled()) { enabled = true; break; }
+						if (enabled) {
+							iMonth = i;
+							if (!left) break months;
+						}
+					}
+			}
+			
+			int[] first = null, last = null, current = null, previous = null, next = null;
+			int startingDayOfWeek = SingleDateSelector.startingDayOfWeek();
+			for (int i = 0; i < getWidgetCount() - 2; i++) {
+				if (getWidget(1 + i) instanceof SingleMonth) {
+					SingleMonth m = (SingleMonth)getWidget(1 + i);
+					for (int j = -1; j < m.getWeeks().size(); j++) {
+						for (int x = -1; x < 7; x++) {
+						int k = (x < 0 ? x : (x + startingDayOfWeek) % 7);
+							boolean enabled = false;
+							for (D d: m.getDays()) {
+								if ((j == -1 || j == d.getWeek()) && (k == -1 || k == d.getDow()) && d.isEnabled()) {
+									enabled = true;
+									break;
+								}
+							}
+							if (enabled && first == null) first = new int[] {i, j, k};
+							if (enabled) last = new int[] {i, j, k};
+							if (i== iMonth && j == iWeek && k == iDow )
+								current = new int[] {i, j, k};
+							else if (current == null) {
+								if (enabled) previous = new int[] {i, j, k};
+							} else if (next == null) {
+								if (enabled) next = new int[] {i, j, k};
+							}
+						}
+					}
+				}
+			}
+			if (left) {
+				if (previous != null) {
+					iMonth = previous[0]; iWeek = previous[1]; iDow = previous[2];
+				} else {
+					iMonth = last[0]; iWeek = last[1]; iDow = last[2];
+				}
+			} else {
+				if (next != null) {
+					iMonth = next[0]; iWeek = next[1]; iDow = next[2];
+				} else {
+					iMonth = first[0]; iWeek = first[1]; iDow = first[2];
+				}
+			}
+			addCursorStyleName(iMonth, iDow, iWeek);
+		}
+		
+		private boolean hasUnselectedDays(boolean includeVacations, boolean includeWeekend) {
+			if (iMonth < 0) return false;
+			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
+			for (D d: m.getDays())
+				if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+					if (!includeVacations && d.isVacation()) continue;
+					if (!includeWeekend && d.isWeekend()) continue;
+					if (!d.getValue()) return true;
+				}
+			return false;
+		}
+		
+		public void setAllSelected(boolean selected, boolean includeVacations, boolean includeWeekend) {
+			if (iMonth < 0) return;
+			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
+			boolean skipVacation = false;
+			boolean skipWeekend = false;
+			if (iWeek < 0) {
+				for (D d: m.getDays())
+					if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+						if (!includeVacations && d.isVacation()) {skipVacation = true; continue; }
+						if (!includeWeekend && d.isWeekend()) {skipWeekend = true; continue; }
+						d.setValue(selected, true);
+					}
+			} else {
+				for (D d: m.getWeeks().get(iWeek).getDays()) {
+					if ((iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
+						if (!includeVacations && d.isVacation()) {skipVacation = true; continue; }
+						if (!includeWeekend && d.isWeekend()) {skipWeekend = true; continue; }
+						d.setValue(selected, true);
+					}
+				}
+			}
+			String aria = getAriaString(iMonth, iDow, iWeek);
+			if (selected) {
+				if (iDow < 0 || iWeek < 0) {
+					if (includeWeekend || !skipWeekend) {
+						if (includeVacations || !skipVacation)
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAll(aria));
+						else
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAllButVacations(aria));
+					} else {
+						AriaStatus.getInstance().setHTML(ARIA.datesSelectedWorkDays(aria));
+					}
+				} else 
+					AriaStatus.getInstance().setHTML(ARIA.datesSelected(aria));
+			} else {
+				AriaStatus.getInstance().setHTML(ARIA.datesUnselected(aria));
+			}
+		}
+		
+		private void select() {
+	    	iText.setValue("");
+	    	if (hasUnselectedDays(false, false))
+	    		setAllSelected(true, false, false);
+	    	else if (hasUnselectedDays(false, true))
+	    		setAllSelected(true, false, true);
+	    	else if (hasUnselectedDays(true, true))
+	    		setAllSelected(true, true, true);
+	    	else
+	    		setAllSelected(false, true, true);
+		}
+		
+		private void select(List<D> days) {
+	    	iText.setValue("");
+	    	String aria = "";
+	    	boolean unselected = false;
+	    	for (D d: days)
+	    		if (!d.getValue()) { unselected = true; break; }
+	    	for (D d: days) {
+	    		d.setValue(unselected, true);
+	    		if (!aria.isEmpty()) aria += ", ";
+	    		aria += d.getAriaLabel();
+	    	}
+	    	if (unselected)
+	    		AriaStatus.getInstance().setHTML(ARIA.datesSelected(aria));
+	    	else
+	    		AriaStatus.getInstance().setHTML(ARIA.datesUnselected(aria));
+		}
+		
+		private boolean parseText(String text, boolean select) {
+			if (text == null || text.isEmpty()) return false;
+			
+			if (text.endsWith("?")) {
+				String aria = "";
+				for (int i = 0; i < getWidgetCount() - 2; i++) {
+					if (getWidget(1 + i) instanceof SingleMonth) {
+						SingleMonth m = (SingleMonth)getWidget(1 + i);
+						for (D d: m.getDays()) {
+							if (d.getValue()) {
+					    		if (!aria.isEmpty()) aria += ", ";
+					    		aria += d.getAriaLabel();
+							}
+						}
+					}
+				}
+				if (aria.isEmpty()) {
+					AriaStatus.getInstance().setHTML(ARIA.datesNothingSelected());
+				} else {
+					AriaStatus.getInstance().setHTML(ARIA.datesSelected(aria));
+				}				
+				iText.setValue("");
+				return false;
+			}
+			
+			int pMonth = -1, pDow = -1, pWeek = -1, dCnt = -1;
+			boolean wk = false;
+			boolean dayFirst = CONSTANTS.firstDayThenMonth();
+			if (text.contains(".")) dayFirst = true;
+			if (text.contains("/")) dayFirst = false;
+			Integer day = null;
+			
+			String[] tokens = text.split("[\\./\\- ]");
+			tokens: for (String token: tokens) {
+				if (token.isEmpty()) continue;
+				
+				// Is it a day of week
+				if (pDow < 0)
+					for (int d = 0; d < 7; d++) {
+						if (CONSTANTS.longDays()[d].toLowerCase().startsWith(token.toLowerCase())) {
+							pDow = d;
+							continue tokens;
+						}
+					}
+
+				// Is it a number?
+				Integer number = null;
+				try {
+					number = Integer.parseInt(token);
+				} catch (NumberFormatException e) {}
+				
+				// Is it a day of month?
+				if (day == null && number != null && tokens.length > 1 && dayFirst && pMonth < 0 && number >= 1 && number <= 31) {
+					day = number;
+					continue tokens;
+				}
+				
+				// Is it a month?
+				if (pMonth < 0) {
+					for (int i = 0; i < getWidgetCount() - 2; i++) {
+						if (getWidget(1 + i) instanceof SingleMonth) {
+							SingleMonth m = (SingleMonth)getWidget(1 + i);
+							if ((number != null && m.getMonth() + 1 == number) || m.getName().toLowerCase().startsWith(token.toLowerCase())) {
+								pMonth = i;
+								if (day != null && (pWeek < 0 || pDow < 0)) {
+									int[] first = null, last = null;
+									for (D d: m.getDays()) {
+										if (!d.isEnabled()) continue;
+										if (first == null) first = new int[] {d.getNumber(), d.getDow(), d.getWeek()};
+										last = new int[] {d.getNumber(), d.getDow(), d.getWeek()};
+										if (d.getNumber() + 1 == day) { pWeek = d.getWeek(); pDow = d.getDow(); day = null; continue tokens; }
+									}
+									if (first != null) {
+										if (day < first[0]) { pDow = first[2]; pWeek = first[3]; } else { pDow = last[2]; pWeek = last[3]; }
+									}
+								}
+								continue tokens;
+							}
+						}
+					}
+				}
+				
+				// Is it a week?
+				if (pMonth < 0 && number != null && day == null) {
+					for (int i = 0; i < getWidgetCount() - 2; i++) {
+						if (getWidget(1 + i) instanceof SingleMonth) {
+							SingleMonth m = (SingleMonth)getWidget(1 + i);
+							for (P p: m.getWeeks())
+								if (p.getCaption().equals(token)) { pMonth = i; pWeek = m.getWeeks().indexOf(p); wk = true; continue tokens; }
+						}
+					}
+				}
+				
+				// Is it a day?
+				if (pMonth >= 0 && (pWeek < 0 || pDow < 0) && number != null) {
+					SingleMonth m = (SingleMonth)getWidget(1 + pMonth);
+					int[] first = null, last = null;
+					for (D d: m.getDays()) {
+						if (!d.isEnabled()) continue;
+						if (first == null) first = new int[] {d.getNumber(), d.getDow(), d.getWeek()};
+						last = new int[] {d.getNumber(), d.getDow(), d.getWeek()};
+						if (d.getNumber() + 1 == number) { pWeek = d.getWeek(); pDow = d.getDow(); continue tokens; }
+					}
+					if (first != null) {
+						if (number < first[0]) { pDow = first[2]; pWeek = first[3]; } else { pDow = last[2]; pWeek = last[3]; }
+						continue tokens;
+					}
+				}
+				
+				// Is it a count?
+				if (number != null && number >= 1) {
+					dCnt = number;
+					continue tokens;
+				} else if (token.length() >= 2) {
+					try {
+						char last = token.charAt(token.length() - 1);
+						number = Integer.parseInt(token.substring(0, token.length() - 1));
+						if (number >= 1) {
+							switch (last) {
+							case 'x':
+								dCnt = number; continue tokens;
+							case 'w':
+								dCnt = number; wk = true; continue tokens;
+							case 'd':
+								dCnt = number; wk = false; continue tokens;
+							}
+						}
+					} catch (NumberFormatException e) {}
+				}
+			}
+			
+			boolean cursor = false;
+			if (pMonth >= 0) {
+				setCursor(pMonth, pDow, pWeek);
+				cursor = true;
+			} else if (pDow >= 0 && iMonth >= 0) {
+				setCursor(iMonth, pDow, pWeek);
+				cursor = true;
+			} 
+			
+			if (select && cursor) {
+				if (dCnt < 0) select();
+				else if (dCnt > 0) {
+					List<D> days = new ArrayList<D>();
+					boolean match = false;
+					for (int i = iMonth; i < getWidgetCount() - 2; i++) {
+						if (getWidget(1 + i) instanceof SingleMonth) {
+							SingleMonth m = (SingleMonth)getWidget(1 + i);
+							for (D d: m.getDays()) {
+								if (!match && (iDow < 0 || d.getDow() == iDow) && (iWeek < 0 || d.getWeek() == iWeek)) { match = true; }
+								if (match && d.isEnabled() && dCnt > 0) {
+									if (wk && d.getDow() != iDow) continue;
+									days.add(d); dCnt --;
+								}
+							}
+						}
+					}
+					select(days);
+				}
+			}
+			
+			return cursor;
+		}
+		
+		@Override
+		public HandlerRegistration addFocusHandler(FocusHandler handler) {
+			return iText.addFocusHandler(handler);
+		}
+
+		@Override
+		public HandlerRegistration addBlurHandler(BlurHandler handler) {
+			return iText.addBlurHandler(handler);
+		}
+
+		@Override
+		public int getTabIndex() {
+			return iText.getTabIndex();
+		}
+
+		@Override
+		public void setAccessKey(char key) {
+			iText.setAccessKey(key);
+		}
+
+		@Override
+		public void setFocus(boolean focused) {
+			iText.setFocus(focused);
+		}
+
+		@Override
+		public void setTabIndex(int index) {
+			iText.setTabIndex(index);
+		}
 	}
 
 }
