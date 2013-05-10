@@ -67,7 +67,7 @@
 		<dependency>
 			<groupId>org.unitime</groupId>
 			<artifactId>cpsolver</artifactId>
-			<version>1.2.118</version>
+			<version>1.2.120</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
