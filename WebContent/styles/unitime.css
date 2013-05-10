@@ -1798,6 +1798,25 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	color: #333333;
 }
 
+.unitime-DateSelectorFocus {
+	-moz-box-shadow: 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: 0 0 3px 2px #7ba7d4;
+	box-shadow: 0 0 3px 2px #7ba7d4;
+}
+
+.unitime-DateSelector .text {
+	opacity: 0;
+	height: 1px;
+	width: 1px;
+	z-index: -1;
+	overflow: hidden;
+	position: absolute;
+}
+
+.unitime-DateSelector .text:focus {
+	outline: none;
+}
+
 .unitime-DateSelector .box .command {
 	display: table-cell;
 	color: #909090;
@@ -2006,6 +2025,12 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 
 .unitime-DateSelector .legend .row {
 	display: table-row;
+}
+
+.unitime-DateSelector .cursor {
+	-moz-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	box-shadow: inset 0 0 3px 2px #7ba7d4;
 }
 
 @media print {

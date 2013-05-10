@@ -168,4 +168,10 @@ public interface GwtConstants extends Constants {
 			"All Week \u00d7 All Times|0|6|0|288|6"
 	})
 	String[] roomSharingModes();
+	
+	@DefaultStringValue("MMMM d")
+	String weekSelectionDateFormat();
+	
+	@DefaultStringValue("EEEE MMMM d")
+	String dateSelectionDateFormat();
 }
