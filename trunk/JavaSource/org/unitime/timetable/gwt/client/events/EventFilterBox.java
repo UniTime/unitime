@@ -44,11 +44,20 @@ import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -70,6 +79,8 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private FilterBox.CustomFilter iOther = null;
+	private TextBox iRequested;
+	private Chip iLastRequested = null;
 	
 	public EventFilterBox(AcademicSessionProvider session) {
 		super(session);
@@ -130,9 +141,9 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		
 		Label reqLab = new Label(MESSAGES.propRequestedBy());
 
-		final TextBox requested = new TextBox();
-		requested.setStyleName("unitime-TextArea");
-		requested.setMaxLength(100); requested.setWidth("200px");
+		iRequested = new TextBox();
+		iRequested.setStyleName("unitime-TextArea");
+		iRequested.setMaxLength(100); iRequested.setWidth("200px");
 		
 		final CheckBox conflicts = new CheckBox(MESSAGES.checkDisplayConflicts());
 		conflicts.getElement().getStyle().setMarginLeft(10, Unit.PX);
@@ -140,7 +151,7 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		final CheckBox sessions = new CheckBox(MESSAGES.checkSpanMultipleSessions());
 		sessions.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		iOther = new FilterBox.CustomFilter("other", reqLab, requested, conflicts, sessions) {
+		iOther = new FilterBox.CustomFilter("other", reqLab, iRequested, conflicts, sessions) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -162,16 +173,39 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		addFilter(new FilterBox.StaticSimpleFilter("requested"));
 		addFilter(new FilterBox.StaticSimpleFilter("flag"));
 
-		requested.addChangeHandler(new ChangeHandler() {
+		iRequested.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				boolean removed = removeChip(new Chip("requested", null), false);
-				if (requested.getText().isEmpty()) {
-					if (removed)
-						fireValueChangeEvent();
-				} else {
-					addChip(new Chip("requested", requested.getText()), true);
-				}
+				requestedChanged(true);
+			}
+		});
+		iRequested.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						requestedChanged(false);
+					}
+				});
+			}
+		});
+		iRequested.addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE)
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							requestedChanged(false);
+						}
+					});
+			}
+		});
+		iRequested.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				requestedChanged(true);
 			}
 		});
 		
@@ -411,14 +445,15 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
+				iLastRequested = getChip("requested");
 				if (!isFilterPopupShowing()) {
 					conflicts.setValue(hasChip(new Chip("flag", "Conflicts")));
 					sessions.setValue(hasChip(new Chip("flag", "All Sessions")));
 					Chip req = getChip("requested");
 					if (req == null)
-						requested.setText("");
+						iRequested.setText("");
 					else
-						requested.setText(req.getValue());
+						iRequested.setText(req.getValue());
 					for (int i = 0; i < iSponsors.getItemCount(); i++) {
 						String value = iSponsors.getValue(i);
 						iSponsors.setItemSelected(i, hasChip(new Chip("sponsor", value)));
@@ -487,6 +522,24 @@ public class EventFilterBox extends UniTimeFilterBox<EventFilterRpcRequest> {
 			suggestions.add(new FilterBox.Suggestion(entity.getName(), new FilterBox.Chip("requested", entity.getAbbreviation()), getChip("requested")));
 		} else {
 			super.addSuggestion(suggestions, entity);
+		}
+	}
+	
+	private void requestedChanged(boolean fireChange) {
+		Chip oldChip = getChip("requested");
+		if (iRequested.getText().isEmpty()) {
+			if (oldChip != null)
+				removeChip(oldChip, fireChange);
+		} else {
+			Chip newChip = new Chip("requested", iRequested.getText());
+			if (oldChip != null) {
+				if (newChip.equals(oldChip)) {
+					if (fireChange && !newChip.equals(iLastRequested)) fireValueChangeEvent();
+					return;
+				}
+				removeChip(oldChip, false);
+			}
+			addChip(newChip, fireChange);
 		}
 	}
 

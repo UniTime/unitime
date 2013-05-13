@@ -70,6 +70,7 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -82,6 +83,7 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel {
@@ -95,7 +97,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	private AriaTextBox iFilter;
 	private SimplePanel iAdd, iClear;
-	private PopupPanel iFilterPopup, iSuggestionsPopup;
+	private PopupPanelKeepFocus iFilterPopup, iSuggestionsPopup;
 	private boolean iFocus = false;
 	private BlurHandler iBlurHandler;
 	private FocusHandler iFocusHandler;
@@ -105,8 +107,9 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	private Parser iParser = new DefaultParser();
 	private Chip2Color iChip2Color = new DefaultChip2Color();
 	private List<Filter> iFilters = new ArrayList<Filter>();
+	private Focusable iLastFocusedWidget = null;
 	
-	private boolean iShowSuggestionsOnFocus = true;
+	private boolean iShowSuggestionsOnFocus = false;
 	
 	public FilterBox() {
 		setStyleName("unitime-FilterBox");
@@ -114,14 +117,18 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		final Timer blur = new Timer() {
 			@Override
 			public void run() {
-				if (!iFocus)
+				if (!iFocus) {
 					removeStyleName("unitime-FilterBoxFocus");
+					if (isFilterPopupShowing()) hideFilterPopup();
+				}
 			}
 		};
 
 		iFocusHandler = new FocusHandler() {
 			@Override
 			public void onFocus(FocusEvent event) {
+				if (event.getSource() != null && event.getSource() instanceof Focusable)
+					iLastFocusedWidget = (Focusable)event.getSource();
 				iFocus = true;
 				addStyleName("unitime-FilterBoxFocus");
 				if (iShowSuggestionsOnFocus) refreshSuggestions();
@@ -132,6 +139,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			@Override
 			public void onBlur(BlurEvent event) {
 				iFocus = false;
+				iLastFocusedWidget = null;
 				blur.schedule(100);
 			}
 		};
@@ -239,6 +247,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
         
         iFilterPopup = new PopupPanelKeepFocus();
         iFilterPopup.setStyleName("unitime-FilterBoxPopup");
+        iFilterPopup.setAutoHideEnabled(false);
         iSuggestionMenu = new SuggestionMenu();
         iSuggestionsPopup = new PopupPanelKeepFocus();
         iSuggestionsPopup.setWidget(iSuggestionMenu);
@@ -278,6 +287,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public void hideFilterPopup() {
 		iFilterPopup.hide();
+		if (iLastFocusedWidget != null && !iLastFocusedWidget.equals(iFilter)) iFilter.setFocus(true);
 	}
 	
 	public void addFilter(Filter filter) {
@@ -294,7 +304,12 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public void showFilterPopup() {
 		iFilterPopup.setWidget(createFilterPopup());
-		iFilterPopup.showRelativeTo(this);
+		if (iFilterPopup.isShowing()) {
+			iFilterPopup.moveRelativeTo(this);
+			if (iLastFocusedWidget != null) iLastFocusedWidget.setFocus(true);
+		} else {
+			iFilterPopup.showRelativeTo(this);
+		}
 	}
 	
 	protected Widget createFilterPopup() {
@@ -329,7 +344,6 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		}
 		return popupPanel;
 	}
-	
 	
 	private String iLastValue = null;
 	public void showSuggestions() {
@@ -417,7 +431,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					}
 				});
 	    	}
-			break;
+	    	break;
 	    }
 	}
 	
@@ -433,18 +447,18 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		if (getWidgetCount() > 3) {
 			ChipPanel last = (ChipPanel)getWidget(getWidgetCount()-4);
 			int width = getAbsoluteLeft() + getOffsetWidth() - last.getAbsoluteLeft() - last.getOffsetWidth()
-					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4;
+					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6;
 			if (width < 100)
 				width = getElement().getClientWidth()
-					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4;
+					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6;
 			iFilter.getElement().getStyle().setWidth(width, Unit.PX);
 		} else {
-			iFilter.getElement().getStyle().setWidth(getElement().getClientWidth() - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 4, Unit.PX);
+			iFilter.getElement().getStyle().setWidth(getElement().getClientWidth() - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6, Unit.PX);
 		}
 		if (isSuggestionsShowing())
-			iSuggestionsPopup.showRelativeTo(this);
+			iSuggestionsPopup.moveRelativeTo(this);
 		if (isFilterPopupShowing())
-			iFilterPopup.showRelativeTo(this);
+			iFilterPopup.moveRelativeTo(this);
 	}
 	
 	public void addChip(Chip chip, boolean fireEvents) {
@@ -1128,6 +1142,36 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 		    	iFocus = true;
 		    	break;
 			}
+		}
+		
+		public final void moveRelativeTo(final UIObject target) {
+			position(target, getOffsetWidth(), getOffsetHeight());
+		}
+		
+		private void position(final UIObject relativeObject, int offsetWidth, int offsetHeight) {
+			int textBoxOffsetWidth = relativeObject.getOffsetWidth();
+			int offsetWidthDiff = offsetWidth - textBoxOffsetWidth;
+			int left = relativeObject.getAbsoluteLeft();
+			if (offsetWidthDiff > 0) {
+				int windowRight = Window.getClientWidth() + Window.getScrollLeft();
+				int windowLeft = Window.getScrollLeft();
+				int distanceToWindowRight = windowRight - left;
+				int distanceFromWindowLeft = left - windowLeft;
+				if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
+					left -= offsetWidthDiff;
+				}
+			}
+			int top = relativeObject.getAbsoluteTop();
+			int windowTop = Window.getScrollTop();
+			int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+			int distanceFromWindowTop = top - windowTop;
+			int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
+			if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
+				top -= offsetHeight;
+			} else {
+				top += relativeObject.getOffsetHeight();
+			}
+			setPopupPosition(left, top);
 		}
 	}
 	

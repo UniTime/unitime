@@ -28,11 +28,15 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.HasAllFocusHandlers;
+import com.google.gwt.event.dom.client.HasAllKeyHandlers;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
+import com.google.gwt.event.dom.client.KeyPressHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -40,13 +44,14 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 
-public class TimeSelector extends Composite implements HasValue<Integer>{
+public class TimeSelector extends Composite implements HasValue<Integer>, Focusable, HasAllKeyHandlers, HasAllFocusHandlers {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
@@ -507,6 +512,51 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 			}
 			setStatus(ARIA.onSuggestion(index + 1, count, text));
 		}
+	}
+
+	@Override
+	public int getTabIndex() {
+		return iText.getTabIndex();
+	}
+
+	@Override
+	public void setAccessKey(char key) {
+		iText.setAccessKey(key);
+	}
+
+	@Override
+	public void setFocus(boolean focused) {
+		iText.setFocus(focused);
+	}
+
+	@Override
+	public void setTabIndex(int index) {
+		iText.setTabIndex(index);
+	}
+
+	@Override
+	public HandlerRegistration addKeyUpHandler(KeyUpHandler handler) {
+		return iText.addKeyUpHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyDownHandler(KeyDownHandler handler) {
+		return iText.addKeyDownHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addKeyPressHandler(KeyPressHandler handler) {
+		return iText.addKeyPressHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addFocusHandler(FocusHandler handler) {
+		return iText.addFocusHandler(handler);
+	}
+
+	@Override
+	public HandlerRegistration addBlurHandler(BlurHandler handler) {
+		return iText.addBlurHandler(handler);
 	}
 
 }
