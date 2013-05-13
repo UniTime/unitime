@@ -625,6 +625,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 
 					@Override
 					public void onSuccess(FilterRpcResponse result) {
+						if (result == null) return;
 						iSelectedRooms = new ArrayList<ResourceInterface>();
 						if (result.hasResults())
 							for (FilterRpcResponse.Entity room: result.getResults()) {
