@@ -35,7 +35,7 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("There are {0, number} suggestions to {1}. Use up and down arrows to navigate. First suggestion is {2}.")
 	String showingMultipleSuggestions(@PluralCount int nbrSuggestions, String query, String suggestion);
 	
-	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.  First suggestion is {1}.")
+	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate. First suggestion is {1}.")
 	String showingMultipleSuggestionsNoQuery(@PluralCount int nbrSuggestion, String suggestion);
 	
 	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.")
@@ -43,6 +43,9 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Suggestion {0, number} of {1, number}. {2}")
 	String onSuggestion(@PluralCount int index, @PluralCount int nbrSuggestions, String suggestion);
+	
+	@DefaultMessage("Suggestion: {0}")
+	String onSuggestionNoCount(String suggestion);
 	
 	@DefaultMessage("Logged in as {0}, click here to log out.")
 	String userAuthenticated(String user);
@@ -325,4 +328,10 @@ public interface GwtAriaMessages extends Messages {
 
 	@DefaultMessage("Selected all days for {0}")
 	String datesSelectedAll(String date);
+	
+	@DefaultMessage("Start Time")
+	String startTime();
+	
+	@DefaultMessage("End Time")
+	String endTime();
 }
