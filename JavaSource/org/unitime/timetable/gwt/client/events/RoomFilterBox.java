@@ -33,11 +33,20 @@ import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RoomFilterRpcRequest;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.BlurHandler;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -53,6 +62,8 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private ListBox iBuildings, iDepartments;
+	private TextBox iMin, iMax;
+	private Chip iLastSize = null;
 	
 	public RoomFilterBox(AcademicSessionProvider session) {
 		super(session);
@@ -173,16 +184,16 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		
 		Label l1 = new Label(MESSAGES.propMin());
 
-		final TextBox min = new TextBox();
-		min.setStyleName("unitime-TextArea");
-		min.setMaxLength(10); min.getElement().getStyle().setWidth(50, Unit.PX);
+		iMin = new TextBox();
+		iMin.setStyleName("unitime-TextArea");
+		iMin.setMaxLength(10); iMin.getElement().getStyle().setWidth(50, Unit.PX);
 		
 		Label l2 = new Label(MESSAGES.propMax());
 		l2.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
-		final TextBox max = new TextBox();
-		max.setMaxLength(10); max.getElement().getStyle().setWidth(50, Unit.PX);
-		max.setStyleName("unitime-TextArea");
+		iMax = new TextBox();
+		iMax.setMaxLength(10); iMax.getElement().getStyle().setWidth(50, Unit.PX);
+		iMax.setStyleName("unitime-TextArea");
 		
 		final CheckBox events = new CheckBox(MESSAGES.checkOnlyEventLocations());
 		events.getElement().getStyle().setMarginLeft(10, Unit.PX);
@@ -190,7 +201,7 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		final CheckBox nearby = new CheckBox(MESSAGES.checkIncludeNearby());
 		nearby.getElement().getStyle().setMarginLeft(10, Unit.PX);
 		
-		addFilter(new FilterBox.CustomFilter("other", l1, min, l2, max, events, nearby) {
+		addFilter(new FilterBox.CustomFilter("other", l1, iMin, l2, iMax, events, nearby) {
 			@Override
 			public void getSuggestions(final List<Chip> chips, final String text, AsyncCallback<Collection<FilterBox.Suggestion>> callback) {
 				if (text.isEmpty()) {
@@ -233,30 +244,78 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 
 		}); 
 
-		ChangeHandler ch = new ChangeHandler() {
+		iMin.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				boolean removed = removeChip(new Chip("size", null), false);
-				if (min.getText().isEmpty()) {
-					if (max.getText().isEmpty()) {
-						if (removed)
-							fireValueChangeEvent();
-					} else {
-						addChip(new Chip("size", "<=" + max.getText()), true);
-					}
-				} else {
-					if (max.getText().isEmpty()) {
-						addChip(new Chip("size", ">=" + min.getText()), true);
-					} else if (max.getText().equals(min.getText())) {
-						addChip(new Chip("size", max.getText()), true);
-					} else {
-						addChip(new Chip("size", min.getText() + ".." + max.getText()), true);
-					}
-				}
+				sizeChanged(true);
 			}
-		};
-		min.addChangeHandler(ch);
-		max.addChangeHandler(ch);
+		});
+		iMax.addChangeHandler(new ChangeHandler() {
+			@Override
+			public void onChange(ChangeEvent event) {
+				sizeChanged(true);
+			}
+		});
+		
+		iMin.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						sizeChanged(false);
+					}
+				});
+			}
+		});
+		iMax.addKeyPressHandler(new KeyPressHandler() {
+			@Override
+			public void onKeyPress(KeyPressEvent event) {
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						sizeChanged(false);
+					}
+				});
+			}
+		});
+		
+		iMin.addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE)
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							sizeChanged(false);
+						}
+					});
+			}
+		});
+		iMax.addKeyUpHandler(new KeyUpHandler() {
+			@Override
+			public void onKeyUp(KeyUpEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_BACKSPACE)
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						@Override
+						public void execute() {
+							sizeChanged(false);
+						}
+					});
+			}
+		});
+		iMin.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				sizeChanged(true);
+			}
+		});
+		iMax.addBlurHandler(new BlurHandler() {
+			@Override
+			public void onBlur(BlurEvent event) {
+				sizeChanged(true);
+			}
+		});
 		
 		nearby.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
 			@Override
@@ -302,28 +361,31 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 		addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
+				iLastSize = getChip("size");
 				if (!isFilterPopupShowing()) {
 					nearby.setValue(hasChip(new Chip("flag", "Nearby")));
 					events.setValue(hasChip(new Chip("flag", "Event")));
 					Chip size = getChip("size");
 					if (size != null) {
 						if (size.getValue().startsWith("<=")) {
-							min.setText(""); max.setText(size.getValue().substring(2));
+							iMin.setText(""); iMax.setText(size.getValue().substring(2));
 						} else if (size.getValue().startsWith("<")) {
 							try {
-								max.setText(String.valueOf(Integer.parseInt(size.getValue().substring(1)) - 1)); min.setText("");							
+								iMax.setText(String.valueOf(Integer.parseInt(size.getValue().substring(1)) - 1)); iMin.setText("");							
 							} catch (Exception e) {}
 						} else if (size.getValue().startsWith(">=")) {
-							min.setText(size.getValue().substring(2)); max.setText("");
+							iMin.setText(size.getValue().substring(2)); iMax.setText("");
 						} else if (size.getValue().startsWith(">")) {
 							try {
-								min.setText(String.valueOf(Integer.parseInt(size.getValue().substring(1)) + 1)); max.setText("");							
+								iMin.setText(String.valueOf(Integer.parseInt(size.getValue().substring(1)) + 1)); iMax.setText("");							
 							} catch (Exception e) {}
 						} else if (size.getValue().contains("..")) {
-							min.setText(size.getValue().substring(0, size.getValue().indexOf(".."))); max.setText(size.getValue().substring(size.getValue().indexOf("..") + 2));
+							iMin.setText(size.getValue().substring(0, size.getValue().indexOf(".."))); iMax.setText(size.getValue().substring(size.getValue().indexOf("..") + 2));
 						} else {
-							min.setText(size.getValue()); max.setText(size.getValue());
+							iMin.setText(size.getValue()); iMax.setText(size.getValue());
 						}
+					} else {
+						iMin.setText(""); iMax.setText("");
 					}
 					for (int i = 0; i < iBuildings.getItemCount(); i++) {
 						String value = iBuildings.getValue(i);
@@ -402,6 +464,25 @@ public class RoomFilterBox extends UniTimeFilterBox<RoomFilterRpcRequest> {
 			return true;
 		} else 
 			return super.populateFilter(filter, entities);
+	}
+	
+	private void sizeChanged(boolean fireChange) {
+		Chip oldChip = getChip("size");
+		if (iMin.getText().isEmpty() && iMax.getText().isEmpty()) {
+			if (oldChip != null) {
+				removeChip(oldChip, fireChange);
+			}
+		} else {
+			Chip newChip = new Chip("size", iMin.getText().isEmpty() ? "<=" + iMax.getText() : iMax.getText().isEmpty() ? ">=" + iMin.getText() : iMin.getText() + ".." + iMax.getText());
+			if (newChip.equals(oldChip)) {
+				if (fireChange && !newChip.equals(iLastSize)) fireValueChangeEvent();
+				return;
+			} else {
+				if (oldChip != null)
+					removeChip(oldChip, false);
+				addChip(newChip, fireChange);
+			}
+		}
 	}
 	
 	@Override
