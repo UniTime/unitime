@@ -19,12 +19,15 @@
 */
 package org.unitime.timetable.gwt.client.widgets;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -35,7 +38,6 @@ import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasValue;
@@ -43,9 +45,9 @@ import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
 
 public class TimeSelector extends Composite implements HasValue<Integer>{
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private TimeSelector iStart;
 	
@@ -53,9 +55,8 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	private ScrollPanel iTimeScroll;
 	
 	private PopupPanel iPopup;
-	private TextBox iText;
+	private AriaTextBox iText;
 	private Integer iDiff = null;
-	private List<Integer> iSuggestions = new ArrayList<Integer>();
 	
 	public TimeSelector() {
 		this(null);
@@ -63,9 +64,10 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	
 	public TimeSelector(TimeSelector start) {
 		iStart = start;
-		iText = new TextBox();
+		iText = new AriaTextBox();
 		iText.setStyleName("gwt-SuggestBox");
 		iText.addStyleName("unitime-TimeSelector");
+		iText.setAriaLabel(start == null ? ARIA.startTime() : ARIA.endTime());
 		
 		iTimes = new TimeMenu();
 		
@@ -88,6 +90,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 					switch (event.getNativeEvent().getKeyCode()) {
 					case KeyCodes.KEY_DOWN:
 						iTimes.selectItem(iTimes.getSelectedItemIndex() + 1);
+						updateSuggestionStatus();
 						break;
 					case KeyCodes.KEY_UP:
 						if (iTimes.getSelectedItemIndex() == -1) {
@@ -95,6 +98,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 						} else {
 							iTimes.selectItem(iTimes.getSelectedItemIndex() - 1);
 						}
+						updateSuggestionStatus();
 						break;
 					case KeyCodes.KEY_ENTER:
 						iTimes.executeSelected();
@@ -118,6 +122,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 				} else {
 					if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_DOWN && (event.getNativeEvent().getAltKey() || iText.getCursorPos() == iText.getText().length())) {
 						showSuggestions();
+						updateSuggestionStatus();
 						event.preventDefault();
 						event.stopPropagation();
 					}
@@ -128,8 +133,10 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
         iText.addKeyUpHandler(new KeyUpHandler() {
 			@Override
 			public void onKeyUp(KeyUpEvent event) {
-				if (selectASuggestion() && !isSuggestionsShowing())
-					showSuggestions();
+				if (selectASuggestion()) {
+					if (!isSuggestionsShowing()) showSuggestions();
+					updateSuggestionStatus();
+				}
 			}
 		});
         
@@ -159,7 +166,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	}
 	
 	private String iLastSelected = null;
-	MenuItem iInsertedSuggestion = null;
+	TimeMenuItem iInsertedSuggestion = null;
 	private boolean selectASuggestion() {
 		if (iText.getText().equals(iLastSelected)) return false;
 		if (iInsertedSuggestion != null) {
@@ -177,25 +184,15 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 				slot = iStart.getValue() + CONSTANTS.eventLengthDefault(); // 1 hour
 		}
 		int select = -1, diff = 0;
-		for (int i = 0; i < iSuggestions.size(); i++) {
-			int suggestion = iSuggestions.get(i);
+		for (int i = 0; i < iTimes.getNumItems(); i++) {
+			int suggestion = iTimes.getSlot(i);
 			if (select < 0 || Math.abs(slot - suggestion) < diff && slot >= suggestion) {
 				diff = Math.abs(slot - suggestion); select = i;
 			}
 		}
 		if (getValue() != null && diff != 0) {
-			Command command = new Command() {
-				@Override
-				public void execute() {
-					hideSuggestions();
-					setValue(getValue(), true);
-					iLastSelected = iText.getText(); 
-				}
-			};
-			iInsertedSuggestion = new MenuItem(slot2time(slot, iStart == null || iStart.getValue() == null ? 0 : slot - iStart.getValue()), true, command);
-			iInsertedSuggestion.setStyleName("item");
-			DOM.setStyleAttribute(iInsertedSuggestion.getElement(), "whiteSpace", "nowrap");
-			if (select == 0 && iStart != null && slot < iSuggestions.get(0)) select --;
+			iInsertedSuggestion = new TimeMenuItem(slot);
+			if (select == 0 && iStart != null && slot < iTimes.getSlot(0)) select --;
 			iTimes.insertItem(iInsertedSuggestion, select + 1);
 			iTimes.selectItem(select + 1);
 		} else {
@@ -207,44 +204,16 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	private void createSuggestions() {
 		iLastSelected = null;
 		iTimes.clearItems();
-		iSuggestions.clear();
 		if (iStart == null) {
 			for (int t = 0; t < 288; t += CONSTANTS.eventSlotIncrement()) {
-				final int slot = t;
-				Command command = new Command() {
-					@Override
-					public void execute() {
-						hideSuggestions();
-						setValue(slot, true);
-						iLastSelected = iText.getText(); 
-					}
-				};
-				MenuItem item = new MenuItem(TimeUtils.slot2time(t), true, command);
-				item.setStyleName("item");
-				DOM.setStyleAttribute(item.getElement(), "whiteSpace", "nowrap");
-				iTimes.addItem(item);
-				iSuggestions.add(t);
+				iTimes.addItem(new TimeMenuItem(t));
 			}
 			iTimeScroll.setWidth("77px");
 		} else {
 			Integer prev = iStart.getValue();
 			for (int t = CONSTANTS.eventSlotIncrement() + (prev == null ? 0 : prev); t <= 288; t += CONSTANTS.eventSlotIncrement()) {
-				final int slot = t;
-				Command command = new Command() {
-					@Override
-					public void execute() {
-						hideSuggestions();
-						setValue(slot, true);
-						iLastSelected = iText.getText();
-					}
-				};
-				MenuItem item = new MenuItem(slot2time(t, prev == null ? 0 : t - prev), true, command);
-				item.setStyleName("item");
-				DOM.setStyleAttribute(item.getElement(), "whiteSpace", "nowrap");
-				iTimes.addItem(item);
-				iSuggestions.add(t);
+				iTimes.addItem(new TimeMenuItem(t));
 			}
-			
 			iTimeScroll.setWidth(prev == null ? "77px" : "137px");
 		}
 		selectASuggestion();
@@ -314,8 +283,57 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 		
 		public void executeSelected() {
 			MenuItem selected = getSelectedItem();
-			if (selected != null)
+			if (selected != null) {
 				selected.getScheduledCommand().execute();
+				setStatus(ARIA.suggestionSelected(((TimeMenuItem)selected).toAriaString()));
+			}
+		}
+		
+		public int getSlot(int index) {
+			List<MenuItem> items = getItems();
+			if (index > -1 && index < items.size()) {
+				return ((TimeMenuItem)items.get(index)).getSlot();
+			} else {
+				return -1;
+			}
+		}
+		
+		public TimeMenuItem getItem(int index) {
+			List<MenuItem> items = getItems();
+			if (index > -1 && index < items.size()) {
+				return (TimeMenuItem)items.get(index);
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	private class TimeMenuItem extends MenuItem {
+		private int iSlot;
+		
+		private TimeMenuItem(final int slot) {
+			super(slot2time(slot, iStart == null || iStart.getValue() == null ? 0 : slot - iStart.getValue()),
+				true,
+				new ScheduledCommand() {
+					@Override
+					public void execute() {
+						hideSuggestions();
+						setValue(slot, true);
+						iLastSelected = iText.getText();
+					}
+				}
+			);
+			setStyleName("item");
+			DOM.setStyleAttribute(getElement(), "whiteSpace", "nowrap");
+			iSlot = slot;
+		}
+		
+		public int getSlot() {
+			return iSlot;
+		}
+		
+		public String toAriaString() {
+			return getText();
 		}
 	}
 
@@ -460,6 +478,34 @@ public class TimeSelector extends Composite implements HasValue<Integer>{
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? CONSTANTS.timeShortAm() : h >= 12 ? CONSTANTS.timeShortPm() : CONSTANTS.timeShortAm());
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
+	}
+	
+	public void setStatus(String text) {
+		AriaStatus.getInstance().setText(text);
+	}
+	
+	public void updateSuggestionStatus() {
+		if (iPopup.isShowing()) {
+			int index = iTimes.getSelectedItemIndex();
+			if (index < 0) {
+				setStatus(ARIA.showingMultipleSuggestionsNoQueryNoneSelected(iTimes.getNumItems()));
+				return;
+			}
+			int slot = iTimes.getSlot(index);
+			int count = iTimes.getNumItems();
+			String text = iTimes.getItem(index).toAriaString();
+			if (iInsertedSuggestion != null) {
+				if (iInsertedSuggestion.getSlot() == slot) {
+					setStatus(ARIA.onSuggestionNoCount(text));
+					return;
+				}
+				if (iInsertedSuggestion.getSlot() < slot) {
+					index --;
+				}
+				count--;
+			}
+			setStatus(ARIA.onSuggestion(index + 1, count, text));
 		}
 	}
 
