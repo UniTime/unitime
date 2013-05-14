@@ -248,6 +248,17 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 		return TimeUtils.slot2time(slot) + " (" + diff / 12 + ":" + (diff % 12 == 1 ? "0" : "") + (5 * (diff % 12)) + ")";
 	}
 	
+	public static String slot2aria(int slot, int diff) {
+		if (diff <= 0) return TimeUtils.slot2aria(slot);
+		if (diff < 24 && diff != 12) return TimeUtils.slot2aria(slot) + " (" + (5 * diff) + " minutes)";
+		else if (diff == 12) return TimeUtils.slot2aria(slot) + " (1 hour)";
+		else if (diff % 12 == 0) return TimeUtils.slot2aria(slot) + " (" + (diff/12) + " hours)";
+		else if (diff % 12 == 3) return TimeUtils.slot2aria(slot) + " (" + (diff/12) + "&frac14; hours)";
+		else if (diff % 12 == 6) return TimeUtils.slot2aria(slot) + " (" + (diff/12) + "&frac12; hours)";
+		else if (diff % 12 == 9) return TimeUtils.slot2aria(slot) + " (" + (diff/12) + "&frac34; hours)";
+		return TimeUtils.slot2aria(slot) + " (" + diff / 12 + ":" + (diff % 12 == 1 ? "0" : "") + (5 * (diff % 12)) + ")";
+	}
+	
 	public Integer parseTime(String text) {
 		return TimeUtils.parseTime(CONSTANTS, text, (iStart == null ? null : iStart.getValue()));
 	}
@@ -338,7 +349,7 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 		}
 		
 		public String toAriaString() {
-			return getText();
+			return slot2aria(iSlot, iStart == null || iStart.getValue() == null ? 0 : iSlot - iStart.getValue());
 		}
 	}
 
@@ -483,6 +494,19 @@ public class TimeSelector extends Composite implements HasValue<Integer>, Focusa
 	        	return (h > 12 ? h - 12 : h) + ":" + (m < 10 ? "0" : "") + m + (h == 24 ? CONSTANTS.timeShortAm() : h >= 12 ? CONSTANTS.timeShortPm() : CONSTANTS.timeShortAm());
 	        else
 				return h + ":" + (m < 10 ? "0" : "") + m;
+		}
+		
+		public static String slot2aria(int slot) {
+			if (CONSTANTS.useAmPm()) {
+				if (slot == 0 || slot == 288) return CONSTANTS.timeMidnight();
+				if (slot == 144) return CONSTANTS.timeNoon();
+			}
+			int h = slot / 12;
+	        int m = 5 * (slot % 12);
+	        if (CONSTANTS.useAmPm())
+	        	return (h > 12 ? h - 12 : h) + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m) + (h == 24 ? " " + CONSTANTS.timeAm() : h >= 12 ? " " + CONSTANTS.timePm() : " " + CONSTANTS.timeAm());
+	        else
+	        	return h + (m == 0 ? "" : (m < 10 ? " 0" : " ") + m);
 		}
 	}
 	
