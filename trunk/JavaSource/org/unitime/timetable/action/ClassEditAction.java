@@ -164,8 +164,6 @@ public class ClassEditAction extends PreferencesAction {
         if(op==null || op.trim()=="")
             throw new Exception (MSG.errorNullOperationNotSupported());
         
-        sessionContext.checkPermission(classId, "Class_", Right.ClassEdit);
-
         boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 
         Debug.debug("op: " + op);
@@ -173,8 +171,14 @@ public class ClassEditAction extends PreferencesAction {
         Debug.debug("reload cause: " + reloadCause);
 
         // Check class exists
-        if(classId==null || classId.trim().length()==0)
-            throw new Exception (MSG.errorClassInfoNotSupplied());
+        if (classId==null || classId.trim().length()==0) {
+           if (BackTracker.doBack(request, response))
+        	   return null;
+           else
+        	   throw new Exception (MSG.errorClassInfoNotSupplied());
+        }
+
+        sessionContext.checkPermission(classId, "Class_", Right.ClassEdit);
 
         // Change Owner - Go back to Change Owner Screen
         if(op.equals(rsc.getMessage("button.changeOwner"))
