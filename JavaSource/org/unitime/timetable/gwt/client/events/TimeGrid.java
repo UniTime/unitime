@@ -47,6 +47,8 @@ import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.EventTarget;
 import com.google.gwt.dom.client.Style.Cursor;
@@ -527,7 +529,7 @@ public class TimeGrid extends Composite {
 		return color;
 	}
 	
-	protected Meeting addMeeting(EventInterface event, int day, int startSlot, int length, int startOffset, int endOffset, String name, ArrayList<String> note, SimpleForm hint, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings) {
+	protected Meeting addMeeting(EventInterface event, MeetingInterface firstMeeting, int day, int startSlot, int length, int startOffset, int endOffset, String name, ArrayList<String> note, String color, int firstWeekIndex, int nrMeetings, ArrayList<Meeting> meetings, String dates, String rooms) {
 		switch (iMode) {
 		case PROPORTIONAL: {
 			boolean used[] = new boolean[iTotalNrColumns + nrMeetings];
@@ -555,9 +557,8 @@ public class TimeGrid extends Composite {
 					if (w instanceof Meeting) ((Meeting)w).move();
 				}
 			}
-			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, 1, nrMeetings, meetings, startOffset, endOffset);
+			Meeting meeting = new Meeting(event, firstMeeting, name, note, day, startSlot, length, col, 1, nrMeetings, meetings, startOffset, endOffset, dates, rooms);
 	        meeting.setColor(color);
-	        meeting.setHint(hint);
 	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
@@ -592,9 +593,8 @@ public class TimeGrid extends Composite {
 				for (int i = 0; i < cols - 1; i++)
 					if (!used[i]) {col = i; cols--; break; }
 			}
-	        Meeting meeting = new Meeting(event, name, note, day, startSlot, length, col, cols, 1, meetings, startOffset, endOffset);
+	        Meeting meeting = new Meeting(event, firstMeeting, name, note, day, startSlot, length, col, cols, 1, meetings, startOffset, endOffset, dates, rooms);
 	        meeting.setColor(color);
-	        meeting.setHint(hint);
 	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
@@ -635,9 +635,8 @@ public class TimeGrid extends Composite {
 					if (!used[i]) {overlap = i; overlaps--; break; }
 			}
 			
-			Meeting meeting = new Meeting(event, name, note, day, startSlot, length, firstWeekIndex, overlap, nrMeetings, meetings, startOffset, endOffset);
+			Meeting meeting = new Meeting(event, firstMeeting, name, note, day, startSlot, length, firstWeekIndex, overlap, nrMeetings, meetings, startOffset, endOffset, dates, rooms);
 			meeting.setColor(color);
-	        meeting.setHint(hint);
 	        if (meeting.hasShadow()) iPanel.add(meeting.getShadow());
 	        iPanel.add(meeting);
 			for (int i = 0; i < length; i++) {
@@ -752,103 +751,13 @@ public class TimeGrid extends Composite {
 			if (event.hasSponsor())
 				notes.add(event.getSponsor().getName());
 			
-			SimpleForm hint = new SimpleForm();
-			hint.addStyleName("unitime-EventMeetings");
-			hint.removeStyleName("unitime-NotPrintableBottomLine");
-			if (event.hasCourseNames()) {
-				List<String> name = new ArrayList<String>();
-				List<String> section = new ArrayList<String>();
-				List<String> title = new ArrayList<String>();
-				if (event.getType() == EventType.Course) { name.add(event.getName()); section.add(""); }
-				for (String cn: event.getCourseNames())
-					if (name.isEmpty()) {
-						name.add(cn);
-					} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-						name.add("<span class='no-control'>" + cn + "</span>");
-					} else {
-						name.add(cn);
-					}
-				if (event.hasExternalIds())
-					for (String ex: event.getExternalIds()) {
-						if (section.isEmpty()) {
-							section.add(ex);
-						} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-							section.add("<span class='no-control'>" + ex + "</span>");
-						} else {
-							section.add(ex);
-						}
-					}
-				else if (event.hasSectionNumber()) {
-					section.clear(); section.add(event.getSectionNumber());
-				}
-				if (event.hasCourseTitles()) {
-					String last = null;
-					for (String ct: event.getCourseTitles()) {
-						if (last != null && !last.isEmpty() && last.equals(ct))
-							ct = "";
-						else
-							last = ct;
-						if (title.isEmpty()) {
-							title.add(ct);
-						} else if (event.getInstruction() != null || event.getType() == EventType.Course) {
-							title.add("<span class='no-control'>" + ct + "</span>");
-						} else {
-							title.add(ct);
-						}
-					}
-				}
-				hint.addRow(MESSAGES.propName(), new HTML(list2string(name), false));
-				if (!list2string(section).isEmpty())
-					hint.addRow(MESSAGES.propSection(), new HTML(list2string(section), false));
-				hint.addRow(MESSAGES.propType(), new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
-				if (!list2string(title).isEmpty())
-					hint.addRow(MESSAGES.propTitle(), new HTML(list2string(title), false));
-
-			} else {
-				hint.addRow(MESSAGES.propName(), new Label(event.getName(), false));
-				if (event.hasSectionNumber())
-					hint.addRow(MESSAGES.propSection(), new Label(event.getSectionNumber(), false));
-				hint.addRow(MESSAGES.propType(), new Label(event.getType().getAbbreviation(CONSTANTS), false));
-			}
-			if (event.hasEventNote())
-				hint.addRow(MESSAGES.propNote(), new HTML(event.getEventNote().replace("\n", "<br>"), false));
-			ToolBox.setMaxWidth(hint.getElement().getStyle(), "400px");
-			hint.addRow(MESSAGES.propDate(), new HTML(dateString, true));
-			hint.addRow(MESSAGES.propPublishedTime(), new Label(meeting.getMeetingTime(CONSTANTS), false));
-			if (meeting.getStartOffset() != 0 || meeting.getEndOffset() != 0)
-				hint.addRow(MESSAGES.propAllocatedTime(), new Label(meeting.getAllocatedTime(CONSTANTS), false));
-			hint.addRow(MESSAGES.propLocation(), new Label(roomString, true));
-			if (event.hasEnrollment()) {
-				if (event.hasMaxCapacity()) {
-					hint.addRow(MESSAGES.propEnrollment(), new Label(MESSAGES.enrollmentOfLimit(event.getEnrollment(), event.getMaxCapacity()), false));
-				} else {
-					hint.addRow(MESSAGES.propEnrollment(), new Label(event.getEnrollment().toString(), false));
-				}
-			} else if (event.hasMaxCapacity()) {
-				hint.addRow(MESSAGES.propLimit(), new Label(event.getMaxCapacity().toString(), false));
-			}
-			if (event.hasInstructors())
-				hint.addRow(MESSAGES.propInstructor(), new HTML(event.getInstructorNames("<br>", MESSAGES), false));
-			if (event.hasSponsor())
-				hint.addRow(MESSAGES.propSponsor(), new Label(event.getSponsor().getName(), false));
-			hint.addRow(MESSAGES.propApproved(), new HTML(
-					meeting.getApprovalStatus() == ApprovalStatus.Deleted ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
-					meeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
-					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
-					meeting.getMeetingDate() == null ? "" :
-					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? event.getId() != null && event.getId() < 0l ? "" : "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
-					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
-					meeting.isApproved() ? 
-								meeting.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
-								meeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>", false));
-
 			Meeting m = addMeeting(
-					event,
+					event, meeting,
 					meeting.getDayOfWeek(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>")), 
-					notes, hint, color, weekIndex(meeting), days.size(), done);
+					notes, color, weekIndex(meeting), days.size(), done, dateString, roomString);
 			if (m != null) done.add(m);
 		}
 		iMeetings.add(done);
@@ -886,6 +795,7 @@ public class TimeGrid extends Composite {
 	
 	public class Meeting extends AbsolutePanel {
 		private EventInterface iEvent;
+		private MeetingInterface iMeeting;
 		private int iColumn, iDayOfWeek, iNrColumns;
 		private double iLeft, iWidth;
 		private ArrayList<Meeting> iMeetings;
@@ -893,10 +803,13 @@ public class TimeGrid extends Composite {
 		private int iNrMeetings;
 		private P iShadow;
 		private SimpleForm iHint = null;
+		private String iDates = null, iRooms = null;;
 		
-		private Meeting(EventInterface event, String name, ArrayList<String> note, int dayOfWeek, int start, int length, int column, int nrColumns, int nrMeetings, ArrayList<Meeting> meetings, int startOffset, int endOffset) {
+		private Meeting(EventInterface event, MeetingInterface meeting, String name, ArrayList<String> note, int dayOfWeek, int start, int length, int column, int nrColumns, int nrMeetings, ArrayList<Meeting> meetings, int startOffset, int endOffset, String dates, String rooms) {
 			super();
 			iEvent = event;
+			iMeeting = meeting;
+			iDates = dates; iRooms = rooms;
 			iMeetings = meetings;
 			iDayOfWeek = dayOfWeek;
 			iColumn = column;
@@ -999,6 +912,12 @@ public class TimeGrid extends Composite {
 					meeting.addStyleName(meeting.getEvent().getType() == EventType.Unavailabile ? "unavailability-selected" : "meeting-selected");
 					meeting.getElement().getStyle().setCursor(iEvent.isCanView() ? Cursor.POINTER : Cursor.AUTO);
 				}
+	        	Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						GwtHint.showHint(Meeting.this.getElement(), getHint(), false);
+					}
+	        	});
 			} else {
 				getElement().getStyle().setWidth(iWidth, Unit.PX);
 				getElement().getStyle().setLeft(iLeft, Unit.PX);
@@ -1012,6 +931,12 @@ public class TimeGrid extends Composite {
 					meeting.removeStyleName(meeting.getEvent().getType() == EventType.Unavailabile ? "unavailability-selected" : "meeting-selected");
 					meeting.getElement().getStyle().clearCursor();
 				}
+	        	Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						GwtHint.hideHint();
+					}
+	        	});
 			}
 		}
 		
@@ -1042,13 +967,11 @@ public class TimeGrid extends Composite {
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
 					select(true);
 		        }
-		        if (iHint != null) GwtHint.showHint(null, iHint);
 				break;
 			case Event.ONMOUSEOUT:
 		        if (related == null || !getElement().isOrHasChild((Element)related.cast())) {
 		        	select(false);
 		        }
-		        if (iHint != null) GwtHint.hideHint();
 				break;
 			case Event.ONMOUSEMOVE:
 				int relativeX = event.getClientX() - getElement().getAbsoluteLeft() + getElement().getScrollLeft() + getElement().getOwnerDocument().getScrollLeft();
@@ -1089,8 +1012,99 @@ public class TimeGrid extends Composite {
 			}
 		}
 		
-		public void setHint(SimpleForm hint) {
-			iHint = hint;
+		public SimpleForm getHint() {
+			if (iHint == null) {
+				iHint = new SimpleForm();
+				iHint.addStyleName("unitime-EventMeetings");
+				iHint.removeStyleName("unitime-NotPrintableBottomLine");
+				if (iEvent.hasCourseNames()) {
+					List<String> name = new ArrayList<String>();
+					List<String> section = new ArrayList<String>();
+					List<String> title = new ArrayList<String>();
+					if (iEvent.getType() == EventType.Course) { name.add(iEvent.getName()); section.add(""); }
+					for (String cn: iEvent.getCourseNames())
+						if (name.isEmpty()) {
+							name.add(cn);
+						} else if (iEvent.getInstruction() != null || iEvent.getType() == EventType.Course) {
+							name.add("<span class='no-control'>" + cn + "</span>");
+						} else {
+							name.add(cn);
+						}
+					if (iEvent.hasExternalIds())
+						for (String ex: iEvent.getExternalIds()) {
+							if (section.isEmpty()) {
+								section.add(ex);
+							} else if (iEvent.getInstruction() != null || iEvent.getType() == EventType.Course) {
+								section.add("<span class='no-control'>" + ex + "</span>");
+							} else {
+								section.add(ex);
+							}
+						}
+					else if (iEvent.hasSectionNumber()) {
+						section.clear(); section.add(iEvent.getSectionNumber());
+					}
+					if (iEvent.hasCourseTitles()) {
+						String last = null;
+						for (String ct: iEvent.getCourseTitles()) {
+							if (last != null && !last.isEmpty() && last.equals(ct))
+								ct = "";
+							else
+								last = ct;
+							if (title.isEmpty()) {
+								title.add(ct);
+							} else if (iEvent.getInstruction() != null || iEvent.getType() == EventType.Course) {
+								title.add("<span class='no-control'>" + ct + "</span>");
+							} else {
+								title.add(ct);
+							}
+						}
+					}
+					iHint.addRow(MESSAGES.propName(), new HTML(list2string(name), false));
+					if (!list2string(section).isEmpty())
+						iHint.addRow(MESSAGES.propSection(), new HTML(list2string(section), false));
+					iHint.addRow(MESSAGES.propType(), new Label(iEvent.getInstruction() == null ? iEvent.getType().getAbbreviation(CONSTANTS) : iEvent.getInstruction(), false));
+					if (!list2string(title).isEmpty())
+						iHint.addRow(MESSAGES.propTitle(), new HTML(list2string(title), false));
+
+				} else {
+					iHint.addRow(MESSAGES.propName(), new Label(iEvent.getName(), false));
+					if (iEvent.hasSectionNumber())
+						iHint.addRow(MESSAGES.propSection(), new Label(iEvent.getSectionNumber(), false));
+					iHint.addRow(MESSAGES.propType(), new Label(iEvent.getType().getAbbreviation(CONSTANTS), false));
+				}
+				if (iEvent.hasEventNote())
+					iHint.addRow(MESSAGES.propNote(), new HTML(iEvent.getEventNote().replace("\n", "<br>"), false));
+				ToolBox.setMaxWidth(iHint.getElement().getStyle(), "400px");
+				iHint.addRow(MESSAGES.propDate(), new HTML(iDates, true));
+				iHint.addRow(MESSAGES.propPublishedTime(), new Label(iMeeting.getMeetingTime(CONSTANTS), false));
+				if (iMeeting.getStartOffset() != 0 || iMeeting.getEndOffset() != 0)
+					iHint.addRow(MESSAGES.propAllocatedTime(), new Label(iMeeting.getAllocatedTime(CONSTANTS), false));
+				iHint.addRow(MESSAGES.propLocation(), new Label(iRooms, true));
+				if (iEvent.hasEnrollment()) {
+					if (iEvent.hasMaxCapacity()) {
+						iHint.addRow(MESSAGES.propEnrollment(), new Label(MESSAGES.enrollmentOfLimit(iEvent.getEnrollment(), iEvent.getMaxCapacity()), false));
+					} else {
+						iHint.addRow(MESSAGES.propEnrollment(), new Label(iEvent.getEnrollment().toString(), false));
+					}
+				} else if (iEvent.hasMaxCapacity()) {
+					iHint.addRow(MESSAGES.propLimit(), new Label(iEvent.getMaxCapacity().toString(), false));
+				}
+				if (iEvent.hasInstructors())
+					iHint.addRow(MESSAGES.propInstructor(), new HTML(iEvent.getInstructorNames("<br>", MESSAGES), false));
+				if (iEvent.hasSponsor())
+					iHint.addRow(MESSAGES.propSponsor(), new Label(iEvent.getSponsor().getName(), false));
+				iHint.addRow(MESSAGES.propApproved(), new HTML(
+						iMeeting.getApprovalStatus() == ApprovalStatus.Deleted ? "<span class='deleted-meeting'>" + MESSAGES.approvalDeleted() + "</span>":
+						iMeeting.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
+						iMeeting.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
+						iMeeting.getMeetingDate() == null ? "" :
+						iMeeting.getId() == null ? iEvent != null && iEvent.getType() == EventType.Unavailabile ? iEvent.getId() != null && iEvent.getId() < 0l ? "" : "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
+						iMeeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
+						iMeeting.isApproved() ? 
+									iMeeting.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(iMeeting.getApprovalDate()) + "</span>" : sDateFormat.format(iMeeting.getApprovalDate()) :
+									iMeeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>", false));				
+			}
+			return iHint;
 		}
 		
 		public int getColumn() {
