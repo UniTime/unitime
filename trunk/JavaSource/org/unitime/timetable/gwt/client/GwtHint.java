@@ -74,45 +74,52 @@ public class GwtHint extends PopupPanel {
 		getInstance().setPopupPositionAndShow(new PositionCallback() {
 			@Override
 			public void setPosition(int offsetWidth, int offsetHeight) {
-			    int textBoxOffsetWidth = relativeObject.getOffsetWidth();
-			    int offsetWidthDiff = offsetWidth - textBoxOffsetWidth;
-			    int left;
-			    if (LocaleInfo.getCurrentLocale().isRTL()) {
-				      int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
-				      left = textBoxAbsoluteLeft - offsetWidthDiff;
-				      if (offsetWidthDiff > 0) {
-					        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
-					        int windowLeft = Window.getScrollLeft();
-					        int textBoxLeftValForRightEdge = textBoxAbsoluteLeft + textBoxOffsetWidth;
-					        int distanceToWindowRight = windowRight - textBoxLeftValForRightEdge;
-					        int distanceFromWindowLeft = textBoxLeftValForRightEdge - windowLeft;
-					        if (distanceFromWindowLeft < offsetWidth && distanceToWindowRight >= offsetWidthDiff) {
-						          left = textBoxAbsoluteLeft;
-					        }
-				      }
-			    } else {
-				      left = relativeObject.getAbsoluteLeft();
-				      if (offsetWidthDiff > 0) {
-					        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
-					        int windowLeft = Window.getScrollLeft();
-					        int distanceToWindowRight = windowRight - left;
-					        int distanceFromWindowLeft = left - windowLeft;
-					        if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
-						          left -= offsetWidthDiff;
-					        }
-				      }
-			    }
-			    int top = relativeObject.getAbsoluteTop();
-			    int windowTop = Window.getScrollTop();
-			    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
-			    int distanceFromWindowTop = top - windowTop;
-			    int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
-			    if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
-				      top -= offsetHeight;
-			    } else {
-				      top += relativeObject.getOffsetHeight();
-			    }
-			    getInstance().setPopupPosition(left, top);
+				if (relativeObject != null) {
+				    int textBoxOffsetWidth = relativeObject.getOffsetWidth();
+				    int offsetWidthDiff = offsetWidth - textBoxOffsetWidth;
+				    int left;
+				    if (LocaleInfo.getCurrentLocale().isRTL()) {
+					      int textBoxAbsoluteLeft = relativeObject.getAbsoluteLeft();
+					      left = textBoxAbsoluteLeft - offsetWidthDiff;
+					      if (offsetWidthDiff > 0) {
+						        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
+						        int windowLeft = Window.getScrollLeft();
+						        int textBoxLeftValForRightEdge = textBoxAbsoluteLeft + textBoxOffsetWidth;
+						        int distanceToWindowRight = windowRight - textBoxLeftValForRightEdge;
+						        int distanceFromWindowLeft = textBoxLeftValForRightEdge - windowLeft;
+						        if (distanceFromWindowLeft < offsetWidth && distanceToWindowRight >= offsetWidthDiff) {
+							          left = textBoxAbsoluteLeft;
+						        }
+					      }
+				    } else {
+					      left = relativeObject.getAbsoluteLeft();
+					      if (offsetWidthDiff > 0) {
+						        int windowRight = Window.getClientWidth() + Window.getScrollLeft();
+						        int windowLeft = Window.getScrollLeft();
+						        int distanceToWindowRight = windowRight - left;
+						        int distanceFromWindowLeft = left - windowLeft;
+						        if (distanceToWindowRight < offsetWidth && distanceFromWindowLeft >= offsetWidthDiff) {
+							          left -= offsetWidthDiff;
+						        }
+					      }
+				    }
+				    int top = relativeObject.getAbsoluteTop();
+				    int windowTop = Window.getScrollTop();
+				    int windowBottom = Window.getScrollTop() + Window.getClientHeight();
+				    int distanceFromWindowTop = top - windowTop;
+				    int distanceToWindowBottom = windowBottom - (top + relativeObject.getOffsetHeight());
+				    if (distanceToWindowBottom < offsetHeight && distanceFromWindowTop >= offsetHeight) {
+					      top -= offsetHeight;
+				    } else {
+					      top += relativeObject.getOffsetHeight();
+				    }
+				    getInstance().setPopupPosition(left, top);					
+				} else {
+					int left = Window.getScrollLeft() + 10;
+					int top = Window.getScrollTop() + Window.getClientHeight() - offsetHeight - 10;
+					getInstance().setPopupPosition(left, top);
+				}
+
 			}
 		});
 	}

@@ -620,6 +620,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Enrollment:")
 	String propEnrollment();
 	
+	@DefaultMessage("Limit:")
+	String propLimit();
+	
 	@DefaultMessage("Student Conflicts:")
 	String propStudentConflicts();
 	
@@ -668,11 +671,23 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Dates:")
 	String propDates();
 	
+	@DefaultMessage("Date:")
+	String propDate();
+	
 	@DefaultMessage("Times:")
 	String propTimes();
 	
+	@DefaultMessage("Published Time:")
+	String propPublishedTime();
+	
+	@DefaultMessage("Allocated Time:")
+	String propAllocatedTime();
+	
 	@DefaultMessage("Locations:")
 	String propLocations();
+	
+	@DefaultMessage("Location:")
+	String propLocation();
 	
 	@DefaultMessage("Requested By:")
 	String propRequestedBy();
@@ -697,6 +712,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Notes:")
 	String propNotes();
+	
+	@DefaultMessage("Note:")
+	String propNote();
 
 	@DefaultMessage("Standard Notes:")
 	String propStandardNotes();
@@ -760,6 +778,18 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Department:")
 	String propDepartment();
+	
+	@DefaultMessage("Section:")
+	String propSection();
+	
+	@DefaultMessage("Approved:")
+	String propApproved();
+	
+	@DefaultMessage("Title:")
+	String propTitle();
+	
+	@DefaultMessage("Instructor:")
+	String propInstructor();
 
 	@DefaultMessage("<u>O</u>k")
 	String buttonOk();
@@ -2629,4 +2659,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{2} {1} / {0}")
 	String addMeetingsLimitEnrollmentAndType(int limit, int enrollment, String type);
+	
+	@DefaultMessage("{0} of {1}")
+	String enrollmentOfLimit(int enrollment, int limit);
 }
