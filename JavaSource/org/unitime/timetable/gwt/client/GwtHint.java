@@ -70,11 +70,15 @@ public class GwtHint extends PopupPanel {
 	}
 	
 	public static void showHint(final Element relativeObject, Widget content) {
+		showHint(relativeObject, content, true);
+	}
+	
+	public static void showHint(final Element relativeObject, Widget content, final boolean showRelativeToTheObject) {
 		getInstance().setWidget(content);
 		getInstance().setPopupPositionAndShow(new PositionCallback() {
 			@Override
 			public void setPosition(int offsetWidth, int offsetHeight) {
-				if (relativeObject != null) {
+				if (relativeObject != null && showRelativeToTheObject) {
 				    int textBoxOffsetWidth = relativeObject.getOffsetWidth();
 				    int offsetWidthDiff = offsetWidth - textBoxOffsetWidth;
 				    int left;
@@ -117,6 +121,8 @@ public class GwtHint extends PopupPanel {
 				} else {
 					int left = Window.getScrollLeft() + 10;
 					int top = Window.getScrollTop() + Window.getClientHeight() - offsetHeight - 10;
+					if (relativeObject != null && left + offsetWidth >= relativeObject.getAbsoluteLeft() && top <= relativeObject.getAbsoluteBottom())
+						left = Window.getScrollLeft() + Window.getClientWidth() - offsetWidth - 10;
 					getInstance().setPopupPosition(left, top);
 				}
 
