@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaCheckBox;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 
 import com.google.gwt.aria.client.Roles;
@@ -35,7 +36,6 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.Focusable;
@@ -852,7 +852,7 @@ public class UniTimeTable<T> extends FlexTable {
 		}
 	}
 	
-	public static class CheckBoxCell extends CheckBox implements HasCellAlignment {
+	public static class CheckBoxCell extends AriaCheckBox implements HasCellAlignment {
 		
 		public CheckBoxCell() {
 			super();

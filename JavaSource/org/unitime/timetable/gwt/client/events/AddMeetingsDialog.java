@@ -790,7 +790,7 @@ public class AddMeetingsDialog extends UniTimeDialogBox {
 		if (conflicts != null && !conflicts.isEmpty()) {
 			message += ". " + MESSAGES.propConflicts();
 			for (MeetingConflictInterface event: conflicts)
-				message += " " + event.getType().getAbbreviation(CONSTANTS) + " " + event.getName() + " " + ARIA.timeSelection(TimeUtils.slot2aria(event.getStartSlot()), TimeUtils.slot2aria(event.getEndSlot()));
+				message += " " + (event.getType() == EventType.Unavailabile ? "" : event.getType().getAbbreviation(CONSTANTS)) + " " + event.getName() + " " + ARIA.timeSelection(TimeUtils.slot2aria(event.getStartSlot()), TimeUtils.slot2aria(event.getEndSlot()));
 		} else {
 			message += ARIA.selectionAvailable();
 		}

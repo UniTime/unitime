@@ -1913,13 +1913,13 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Weekend")
 	String hintWeekend();
 	
-	@DefaultMessage("<span title='Conflicting event' style='font-style:normal;'>&#9785;</span>")
+	@DefaultMessage("<span title='Conflicting event' style='font-style:normal;' aria-label='Conflicting event'>&#9785;</span>")
 	String signConflict();
 	
-	@DefaultMessage("<span title='Selected event' style='font-style:normal;'>&#9745;</span>")
+	@DefaultMessage("<span title='Selected event' style='font-style:normal;' aria-label='Selected event'>&#9745;</span>")
 	String signSelected();
 
-	@DefaultMessage("<span title='Warning' style='font-style:normal;'>&#9888;</span>")
+	@DefaultMessage("<span title='Warning' style='font-style:normal;' aria-label='Warning'>&#9888;</span>")
 	String signMessage();
 
 	@DefaultMessage("Event name is required.")
