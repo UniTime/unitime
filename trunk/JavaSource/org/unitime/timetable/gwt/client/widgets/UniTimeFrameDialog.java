@@ -21,8 +21,11 @@ package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.Date;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.BodyElement;
 import com.google.gwt.dom.client.FrameElement;
 import com.google.gwt.dom.client.Style.Overflow;
@@ -39,6 +42,7 @@ import com.google.gwt.user.client.ui.RootPanel;
  * @author Tomas Muller
  */
 public class UniTimeFrameDialog extends UniTimeDialogBox {
+	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private Frame iFrame = null;
 	private Timer iCheckLoadingWidgetIsShowing = null;
 	private static UniTimeFrameDialog sDialog = null;
@@ -93,6 +97,7 @@ public class UniTimeFrameDialog extends UniTimeDialogBox {
 		super.center();
 		iCheckLoadingWidgetIsShowing.schedule(30000);
 		RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+    	AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()));
 	}
 	
 	public class MyFrame extends Frame {

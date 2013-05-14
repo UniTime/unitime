@@ -28,13 +28,19 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyDownEvent;
+import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.regexp.shared.MatchResult;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.ComplexPanel;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
@@ -51,12 +57,15 @@ public class UniTimeHeaderPanel extends Composite {
 	private static RegExp sStripAcessKeyRegExp = RegExp.compile("(.*)<u>(\\w)</u>(.*)", "i");
 
 	private HashMap<String, Integer> iOperations = new HashMap<String, Integer>();
+	private HashMap<String, ClickHandler> iClickHandlers = new HashMap<String, ClickHandler>();
 	private HTML iMessage;
 	private HTML iTitle;
 	private HorizontalPanel iButtons;
 	private HorizontalPanel iPanel;
 	private Image iLoadingImage;
 	private OpenCloseSectionImage iOpenCloseImage;
+	private boolean iRotateFocus = false;
+	private KeyDownHandler iKeyDownHandler = null;
 		
 	private List<UniTimeHeaderPanel> iClones = new ArrayList<UniTimeHeaderPanel>();
 	
@@ -100,7 +109,55 @@ public class UniTimeHeaderPanel extends Composite {
 		iPanel.setWidth("100%");
 		// iPanel.getElement().getStyle().setMarginTop(2, Unit.PX);
 		
+		iKeyDownHandler = new KeyDownHandler() {
+			private void focus(KeyDownEvent event, final Button buttonToFocus) {
+				event.preventDefault();
+				event.stopPropagation();
+				Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+					@Override
+					public void execute() {
+						buttonToFocus.setFocus(true);
+					}
+				});
+			}
+			
+			@Override
+			public void onKeyDown(KeyDownEvent event) {
+				if (iRotateFocus && event.getNativeKeyCode() == KeyCodes.KEY_TAB && event.getSource() != null && event.getSource() instanceof Button) {
+					// first button
+					ComplexPanel panel = iButtons;
+					Button firstButton = null;
+					for (int i = 0; i < panel.getWidgetCount(); i++) {
+						Button button = (Button)panel.getWidget(i);
+						if (button.isEnabled()) { firstButton = button; break; }	
+					}
+					if (firstButton == null) return;
+
+					// last button
+					if (!iClones.isEmpty()) panel = iClones.get(iClones.size() - 1).iButtons;
+					Button lastButton = null;
+					for (int i = panel.getWidgetCount() - 1; i >= 0; i--) {
+						Button button = (Button)panel.getWidget(i);
+						if (button.isEnabled()) { lastButton = button; break; }
+					}
+					if (lastButton == null) return;
+					
+					// last to first
+					if (lastButton.equals(event.getSource()) && !event.isShiftKeyDown())
+						focus(event, firstButton);
+					
+					// first to last
+					if (firstButton.equals(event.getSource()) && event.isShiftKeyDown())
+						focus(event, lastButton);
+				}
+			}
+		};
+		
 		initWidget(iPanel);
+	}
+	
+	public void setRotateFocus(boolean rotateFocus) {
+		iRotateFocus = rotateFocus;
 	}
 	
 	public void setTitleStyleName(String styleName) {
@@ -209,7 +266,7 @@ public class UniTimeHeaderPanel extends Composite {
 		return (result == null ? name : result.getGroup(1) + result.getGroup(2) + result.getGroup(3));
 	}
 
-	private void addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
+	private Button addButton(String operation, String name, Character accessKey, String width, ClickHandler clickHandler) {
 		Button button = new Button(name, clickHandler);
 		ToolBox.setWhiteSpace(button.getElement().getStyle(), "nowrap");
 		if (accessKey != null)
@@ -217,10 +274,15 @@ public class UniTimeHeaderPanel extends Composite {
 		if (width != null)
 			ToolBox.setMinWidth(button.getElement().getStyle(), width);
 		iOperations.put(operation, iButtons.getWidgetCount());
+		iClickHandlers.put(operation, clickHandler);
 		iButtons.add(button);
 		button.getElement().getStyle().setMarginLeft(4, Unit.PX);
-		for (UniTimeHeaderPanel clone: iClones)
-			clone.addButton(operation, name, null, width, clickHandler);
+		for (UniTimeHeaderPanel clone: iClones) {
+			Button clonedButton = clone.addButton(operation, name, null, width, clickHandler);
+			clonedButton.addKeyDownHandler(iKeyDownHandler);
+		}
+		button.addKeyDownHandler(iKeyDownHandler);
+		return button;
 	}
 	
 	public void setEnabled(int button, boolean enabled) {
@@ -257,13 +319,17 @@ public class UniTimeHeaderPanel extends Composite {
 				if (entry.getValue() == i) op = entry.getKey();
 			if (op == null) continue;
 			final Button button = (Button)iButtons.getWidget(i);
+			ClickHandler clickHandler = iClickHandlers.get(op);
+			if (clickHandler == null)
+				clickHandler = new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						button.click();
+					}
+				};
 			String width = ToolBox.getMinWidth(button.getElement().getStyle());
-			clone.addButton(op, button.getHTML(), null, width, new ClickHandler() {
-				@Override
-				public void onClick(ClickEvent event) {
-					button.click();
-				}
-			});
+			Button clonedButton = clone.addButton(op, button.getHTML(), null, width, clickHandler);
+			clonedButton.addKeyDownHandler(iKeyDownHandler);
 			if (!button.isVisible())
 				clone.setEnabled(op, false);
 			

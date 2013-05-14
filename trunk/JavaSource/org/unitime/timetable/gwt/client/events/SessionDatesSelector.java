@@ -69,7 +69,7 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.Widget;
 
-public class SessionDatesSelector extends Composite implements HasValue<List<Date>> {
+public class SessionDatesSelector extends Composite implements HasValue<List<Date>>, Focusable {
 	private static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -778,8 +778,19 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 				public void onFocus(FocusEvent event) {
 					// addStyleName("unitime-DateSelectorFocus");
 					iHasFocus = true;
-					if (iMonth >= 0)
+					String selection = toAriaString();
+					if (iMonth >= 0) {
 						addCursorStyleName(iMonth, iDow, iWeek);
+						if (selection.isEmpty())
+							iText.setAriaLabel(ARIA.datesSelectionNoSelection(iText.getAriaLabel()));
+						else
+							iText.setAriaLabel(ARIA.datesSelectionWithSelection(selection, iText.getAriaLabel()));
+					} else {
+						if (selection.isEmpty())
+							iText.setAriaLabel(ARIA.datesSelection());
+						else
+							iText.setAriaLabel(ARIA.datesSelectionWithSelectionNoCursor(selection));
+					}
 				}
 			});
 			iText.addBlurHandler(new BlurHandler() {
@@ -1156,22 +1167,27 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 	    		AriaStatus.getInstance().setHTML(ARIA.datesUnselected(aria));
 		}
 		
+		private String toAriaString() {
+			String aria = "";
+			for (int i = 0; i < getWidgetCount() - 2; i++) {
+				if (getWidget(1 + i) instanceof SingleMonth) {
+					SingleMonth m = (SingleMonth)getWidget(1 + i);
+					for (D d: m.getDays()) {
+						if (d.getValue()) {
+				    		if (!aria.isEmpty()) aria += ", ";
+				    		aria += d.getAriaLabel();
+						}
+					}
+				}
+			}
+			return aria;
+		}
+		
 		private boolean parseText(String text, boolean select) {
 			if (text == null || text.isEmpty()) return false;
 			
 			if (text.endsWith("?")) {
-				String aria = "";
-				for (int i = 0; i < getWidgetCount() - 2; i++) {
-					if (getWidget(1 + i) instanceof SingleMonth) {
-						SingleMonth m = (SingleMonth)getWidget(1 + i);
-						for (D d: m.getDays()) {
-							if (d.getValue()) {
-					    		if (!aria.isEmpty()) aria += ", ";
-					    		aria += d.getAriaLabel();
-							}
-						}
-					}
-				}
+				String aria = toAriaString();
 				if (aria.isEmpty()) {
 					AriaStatus.getInstance().setHTML(ARIA.datesNothingSelected());
 				} else {
@@ -1349,6 +1365,26 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public void setTabIndex(int index) {
 			iText.setTabIndex(index);
 		}
+	}
+
+	@Override
+	public int getTabIndex() {
+		return iPanel.getWidget().getTabIndex();
+	}
+
+	@Override
+	public void setAccessKey(char key) {
+		iPanel.getWidget().setAccessKey(key);
+	}
+
+	@Override
+	public void setFocus(boolean focused) {
+		iPanel.getWidget().setFocus(focused);
+	}
+
+	@Override
+	public void setTabIndex(int index) {
+		iPanel.getWidget().setTabIndex(index);
 	}
 
 }

@@ -2470,6 +2470,15 @@ div.gwt-MenuBarPopup {
 	border-spacing: 0px;
 }
 
+.unitime-MeetingSelection .text {
+	opacity: 0;
+	height: 1px;
+	width: 1px;
+	z-index: -1;
+	overflow: hidden;
+	position: absolute;
+}
+
 .unitime-MeetingSelection .box {
 	display: table;
 }
