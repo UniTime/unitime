@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.AriaOperation;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader.Operation;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
@@ -74,6 +75,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private static DateTimeFormat sDateFormatShort = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
 	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
 	private static DateTimeFormat sDateFormatMeeting = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
+	private static DateTimeFormat sDateFormatAria = DateTimeFormat.getFormat(CONSTANTS.dateSelectionDateFormat());
 	
 	public static enum ModeFlag {
 		ShowEventDetails,
@@ -681,7 +683,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		} else if (!isSelectable()) {
 			row.add(new HTML(MESSAGES.signSelected()));
 		} else if (isSelectable(data)) {
-			row.add(new CheckBoxCell());
+			CheckBoxCell check = new CheckBoxCell();
+			check.setAriaLabel(data.toAriaString(getMode().hasFlag(ModeFlag.ShowEventDetails)));
+			row.add(check);
 			if (!isColumnVisible(0)) setColumnVisible(0, true);
 		} else {
 			row.add(new HTML("&nbsp;"));
@@ -1740,6 +1744,25 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					if (filter == null || !filter.filter(iParent == null ? iEvent : iParent.iEvent, meeting)) meetings.add(meeting);
 			}
 			return meetings;
+		}
+		
+		public String toAriaString(boolean includeEventInfo) {
+			String label = "";
+			if (includeEventInfo && hasEvent()) {
+				label += (getEvent().getType() == null || getEvent().getType() == EventType.Unavailabile ? "" : getEvent().getType().getAbbreviation(CONSTANTS));
+				if (getEvent().getName() != null)
+					label += " " + getEvent().getName();
+			}
+			if (hasMeeting() && getMeeting().getMeetingDate() != null) {
+				String room = "", hint = "";
+				if (getMeeting().getLocation() != null) {
+					room = getMeeting().getLocation().getName();
+					if (getMeeting().getLocation().hasRoomType())
+						hint = getMeeting().getLocation().getRoomType();
+				}
+				label += ARIA.dateTimeRoomSelection(sDateFormatAria.format(getMeeting().getMeetingDate()), TimeUtils.slot2aria(getMeeting().getStartSlot()), TimeUtils.slot2aria(getMeeting().getEndSlot()), room, hint);
+			}
+			return label;
 		}
 	}
 	
