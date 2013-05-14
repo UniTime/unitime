@@ -78,8 +78,8 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
     
     @Override
     public void center() {
-    	AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()));
     	super.center();
+    	AriaStatus.getInstance().setText(ARIA.dialogOpened(getText()));
     }
     
     public void setAutoHideEnabled(boolean autoHide) {

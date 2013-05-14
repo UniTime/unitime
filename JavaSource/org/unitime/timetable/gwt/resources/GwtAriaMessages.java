@@ -329,9 +329,57 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Selected all days for {0}")
 	String datesSelectedAll(String date);
 	
+	@DefaultMessage("Dates selection")
+	String datesSelection();
+	
+	@DefaultMessage("Dates selection, selected {0}, cursor at {1}.")
+	String datesSelectionWithSelection(String selection, String cursor);
+
+	@DefaultMessage("Dates selection, no dates are selected, cursor at {0}.")
+	String datesSelectionNoSelection(String cursor);
+	
+	@DefaultMessage("Dates selection, selected {0}")
+	String datesSelectionWithSelectionNoCursor(String selection);
+		
 	@DefaultMessage("Start Time")
 	String startTime();
 	
 	@DefaultMessage("End Time")
 	String endTime();
+	
+	@DefaultMessage("{0} from {1} to {2} in {3} ({4})")
+	String dateTimeRoomSelection(String date, String start, String end, String room, String hint);
+	
+	@DefaultMessage("Selected {0}")
+	String selectedSelection(String selection);
+	
+	@DefaultMessage("{0} in {1}")
+	String dateRoomSelection(String date, String room);
+	
+	@DefaultMessage("from {0} to {1}")
+	String timeSelection(String start, String end);
+	
+	@DefaultMessage("available")
+	String selectionAvailable();
+	
+	@DefaultMessage("Select meetings. Showing rooms {1} to {2} and {0} days. Use arrows to navigate, enter to select.")
+	String meetingSelectionDescriptionRoomsHorizontal(@PluralCount int nrDays, @PluralCount int firstRoom, @PluralCount int lastRoom);
+	
+	@DefaultMessage("Select meetings. Showing days {1} to {2} and {0} rooms. Use arrows to navigate, enter to select.")
+	String meetingSelectionDescriptionDatesHorizontal(@PluralCount int nrRooms, @PluralCount int firstDay, @PluralCount int lastDay);
+	
+	@DefaultMessage("Selected {0} in {1}")
+	String dateRoomSelected(String date, String room);
+	
+	@DefaultMessage("Unselected {0} in {1}")
+	String dateRoomUnselected(String date, String room);
+	
+	@DefaultMessage("Can not select {0} in {1}, room is not available.")
+	String dateRoomCanNotSelect(String date, String room);
+	
+	@DefaultMessage("No meetings are selected.")
+	String meetingSelectionNothingSelected();
+	
+	@DefaultMessage("Selected meetings: {0}.")
+	String meetingSelectionSelected(String meetings);
 }
