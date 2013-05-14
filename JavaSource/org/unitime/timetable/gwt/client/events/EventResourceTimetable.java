@@ -1044,8 +1044,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		if (iHistoryToken.isChanged("room", iLocRoom)) {
 			iLocRoom = iHistoryToken.getParameter("room");
 			if (iRoomPanel.hasValues()) {
-				iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
 				iRoomPanel.setFilterEnabled(!iMatchingRooms.isEmpty());
+				iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
 				fireRoomPanel = isShowingResults();
 			}
 		}
@@ -1249,8 +1249,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			nrMeetings += event.getMeetings().size();
 		}
-		iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
 		iRoomPanel.setFilterEnabled(!iMatchingRooms.isEmpty());
+		iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
 
 		iMatchingWeeks.clear();
 		for (WeekInterface week: iWeekPanel.getValues()) {
@@ -1533,7 +1533,30 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		
 		@Override
 		public Interval parse(String query) {
-			if (query == null || getValues() == null) return new Interval();
+			if (query == null || query.isEmpty() || getValues() == null) return new Interval();
+			
+			Interval ret = null;
+			for (int i = 0; i < getValues().size(); i++) {
+				ResourceInterface first = getValues().get(i); 
+				if (query.equalsIgnoreCase(first.getName()))
+					return new Interval(first);
+				for (int j = i + 1; j < getValues().size(); j++) {
+					ResourceInterface last = getValues().get(j);
+					if (query.equalsIgnoreCase(first.getName() + "-" + last.getName()) || query.equalsIgnoreCase(first.getName() + " - " + last.getName()))
+						return new Interval(first, last);
+					if (filter(first) || filter(last)) continue;
+					if (query.toLowerCase().startsWith(first.getName().toLowerCase()) && (
+						(first.getName() + "-" + last.getName()).toLowerCase().startsWith(query.toLowerCase()) || (first.getName() + " - " + last.getName()).toLowerCase().startsWith(query.toLowerCase())))
+						ret = new Interval(first, last);
+					if (query.toLowerCase().startsWith(first.getName().toLowerCase()) && last.getName().indexOf(' ') >= 0) {
+						String building = last.getName().substring(0, last.getName().lastIndexOf(' '));
+						String room = last.getName().substring(last.getName().lastIndexOf(' ') + 1);
+						if (first.getName().startsWith(building + " ") && ((first.getName() + "-" + room).toLowerCase().startsWith(query.toLowerCase()) || (first.getName() + " - " + room).toLowerCase().startsWith(query.toLowerCase())))
+							ret = new Interval(first, last);
+					}
+				}
+			}
+			if (ret != null) return ret;
 
 			ResourceInterface first = null, last = null;
 			for (ResourceInterface e: getValues()) {
@@ -1548,8 +1571,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			if (first != null) return new Interval(first, last);
 			
-			Interval ret = super.parse(query);
-			return (ret == null ? new Interval() : ret);
+			return new Interval();
 		}
 		
 		@Override
@@ -1578,6 +1600,13 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		public String getSelection() {
 			if (getValue() == null || getValue().isAll()) return "";
 			return getValue().isOne() ? getValue().getFirst().getName() : getValue().getFirst().getName() + "-" + getValue().getLast().getName();			
+		}
+		
+		@Override
+		public void setValue(Interval value, boolean fireEvents) {
+			if (value != null && ((value.getFirst() != null && filter(value.getFirst())) || (value.getLast() != null && filter(value.getLast()))))
+				setFilterEnabled(false);
+			super.setValue(value, fireEvents);
 		}
 	}
 	
