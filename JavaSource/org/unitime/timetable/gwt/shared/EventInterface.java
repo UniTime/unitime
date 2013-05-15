@@ -439,6 +439,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">" + iResourceName + "</span>";
 		}
 		
+		public String getNameWithSizeAndHint() {
+			if (iResourceName == null || iResourceName.isEmpty()) return "";
+			return "<span onmouseover=\"showGwtRoomHint(this, '" + iResourceId + "', '', '" + (iDistance != null ? Math.round(iDistance) : "") + "');\" onmouseout=\"hideGwtRoomHint();\">" + iResourceName + (iSize != null && iSize > 0 ? " (" + iSize + ")" : "")+ "</span>";
+		}
+		
 		public String toString() {
 			return getType().getLabel() + " " + getName();
 		}

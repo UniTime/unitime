@@ -765,11 +765,12 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		for (ResourceInterface room: iSelectedRooms) {
 			HorizontalPanel hp = new HorizontalPanel();
 			hp.setStyleName("unitime-RoomAvailabilityHeader");
-			HTML name = new HTML(room.getNameWithHint(), false); name.setStyleName("name");
+			HTML name = new HTML(room.getNameWithSizeAndHint(), false); name.setStyleName("name");
 			hp.add(name);
 			HTML type = new HTML(room.getRoomType(), false); type.setStyleName("type");
 			hp.add(type);
-			HTML size = new HTML(room.getSize() == null ? "" : MESSAGES.hintRoomCapacity(room.getSize().toString()), false); size.setStyleName("size");
+			HTML size = new HTML(""); //room.getSize() == null ? "" : MESSAGES.hintRoomCapacity(room.getSize().toString()), false)
+			size.setStyleName("size");
 			hp.add(size);
 			hp.setCellHorizontalAlignment(name, HasHorizontalAlignment.ALIGN_LEFT);
 			hp.setCellHorizontalAlignment(type, HasHorizontalAlignment.ALIGN_CENTER);
