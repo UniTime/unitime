@@ -80,6 +80,7 @@ public class EventDetail extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
+	private static DateTimeFormat sEventDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private EventInterface iEvent = null;
 	
 	private SimpleForm iForm;
@@ -345,6 +346,10 @@ public class EventDetail extends Composite {
 		
 		if (iEvent.hasMaxCapacity()) {
 			iForm.addRow(MESSAGES.propAttendance(), new Label(iEvent.getMaxCapacity().toString()));
+		}
+		
+		if (iEvent.hasExpirationDate() && iEvent.hasPendingMeetings()) {
+			iForm.addRow(MESSAGES.propExpirationDate(), new Label(sEventDateFormat.format(iEvent.getExpirationDate())));
 		}
 		
 		if (iEvent.hasLastChange()) {

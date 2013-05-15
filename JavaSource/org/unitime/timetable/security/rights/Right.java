@@ -341,6 +341,7 @@ public enum Right {
     EventApprovePast,
     EventAnyLocation,
     EventEditPast,
+    EventSetExpiration,
     
     /** Administration: Academic Sessions */
     

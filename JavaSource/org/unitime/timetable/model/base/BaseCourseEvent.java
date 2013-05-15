@@ -77,6 +77,7 @@ public abstract class BaseCourseEvent extends Event implements Serializable {
 		return "CourseEvent[" +
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

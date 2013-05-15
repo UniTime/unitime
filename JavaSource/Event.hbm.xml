@@ -110,6 +110,12 @@
             column="sponsor_org_id"
             foreign-key="fk_event_sponsor_org"
             not-null="false"/>
+        
+        <property
+            name="expirationDate"
+            column="expiration_date"
+            type="java.util.Date"
+            not-null="false"/>
 
         <subclass
             name="ClassEvent"

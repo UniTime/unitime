@@ -1445,6 +1445,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Parameter {0} has no type.")
 	String errorParameterTypeRequired(String name);
 	
+	@DefaultMessage("Expiration date is in the past.")
+	String errorExpirationDateInPast();
+
 	@DefaultMessage("Success (no row returned)")
 	String infoTestSucceededNoResults();
 	
@@ -1966,7 +1969,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("One or more meetings is overlapping with an existing event.")
 	String reqNoOverlaps();
-	
+		
 	@DefaultMessage("an event")
 	String anEvent();
 	
@@ -2008,6 +2011,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Event {0} inquiry.")
 	String emailSubjectInquire(String eventName);
+	
+	@DefaultMessage("Event {0} expired.")
+	String emailSubjectExpired(String eventName);
 	
 	@DefaultMessage("Confirmation email sent to {0}.")
 	String infoConfirmationEmailSent(String name);
@@ -2662,4 +2668,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} of {1}")
 	String enrollmentOfLimit(int enrollment, int limit);
+	
+	@DefaultMessage("Event expired, all pending meetings have been cancelled.")
+	String noteEventExpired();
 }

@@ -778,4 +778,8 @@ public class SingleDateSelector extends Composite implements HasValue<Date>, Has
 	public String getText() {
 		return iPicker.getWidget().getText();
 	}
+	
+	public Date today() {
+		return iFormat.parse(iFormat.format(new Date()));
+	}
 }
