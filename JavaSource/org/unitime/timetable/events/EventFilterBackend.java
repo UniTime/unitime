@@ -143,10 +143,10 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					response.add("mode", awaiting);
 
 					if (context.getUser().getCurrentAuthority().hasRight(Right.EventMeetingApprove)) {
-						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.roomDepts rd inner join rd.department.timetableManagers g")
-								.where("m.approvalStatus = 0 and rd.control=true and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
+						int myApprovalCnt = ((Number)query.select("count(distinct e)").joinWithLocation().from("inner join l.eventDepartment.timetableManagers g")
+								.where("m.approvalStatus = 0 and g.externalUniqueId = :user and m.meetingDate >= :today").set("user", context.getUser().getExternalUserId())
 								.set("today", today).exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
-						Entity myAwaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); awaiting.setCount(myApprovalCnt);
+						Entity myAwaiting = new Entity(6l, "My Awaiting", "Awaiting My Approval"); myAwaiting.setCount(myApprovalCnt);
 						response.add("mode", myAwaiting);
 					}
 					
@@ -329,8 +329,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				query.addWhere("mode", "m.approvalStatus = 0 and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Awaiting My Approval".equals(mode) && context.isAuthenticated()) {
-				query.addFrom("mode", "Location Xl inner join Xl.roomDepts Xrd inner join Xrd.department.timetableManagers Xg");
-				query.addWhere("mode", "m.approvalStatus = 0 and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xrd.control=true and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
+				query.addFrom("mode", "Location Xl inner join Xl.eventDepartment.timetableManagers Xg");
+				query.addWhere("mode", "m.approvalStatus = 0 and Xl.session.uniqueId = :sessionId and Xl.permanentId = m.locationPermanentId and Xg.externalUniqueId = :Xuser and m.meetingDate >= :Xtoday");
 				query.addParameter("mode", "Xuser", context.getUser().getExternalUserId());
 				query.addParameter("mode", "Xtoday", today);
 			} else if ("Conflicting Events".equals(mode)) {
