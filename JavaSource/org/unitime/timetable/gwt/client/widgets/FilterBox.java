@@ -28,6 +28,8 @@ import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.HasAriaLabel;
 import org.unitime.timetable.gwt.resources.GwtAriaMessages;
+import org.unitime.timetable.gwt.resources.GwtMessages;
+import org.unitime.timetable.gwt.resources.GwtResources;
 
 import com.google.gwt.aria.client.AutocompleteValue;
 import com.google.gwt.aria.client.Id;
@@ -78,16 +80,18 @@ import com.google.gwt.user.client.ui.Focusable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasText;
 import com.google.gwt.user.client.ui.HasValue;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MenuBar;
 import com.google.gwt.user.client.ui.MenuItem;
 import com.google.gwt.user.client.ui.PopupPanel;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
 
 public class FilterBox extends AbsolutePanel implements HasValue<String>, HasValueChangeHandlers<String>, HasText, Focusable, HasAllKeyHandlers, HasAllFocusHandlers, HasAriaLabel {
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	private static GwtResources RESOURCES = GWT.create(GwtResources.class);
+	private static GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static String[] sColors = new String[] {
 		"blue", "green", "orange", "yellow", "pink",
 		"purple", "teal", "darkpurple", "steelblue", "lightblue",
@@ -96,7 +100,6 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	};
 	
 	private AriaTextBox iFilter;
-	private SimplePanel iAdd, iClear;
 	private PopupPanelKeepFocus iFilterPopup, iSuggestionsPopup;
 	private boolean iFocus = false;
 	private BlurHandler iBlurHandler;
@@ -108,6 +111,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	private Chip2Color iChip2Color = new DefaultChip2Color();
 	private List<Filter> iFilters = new ArrayList<Filter>();
 	private Focusable iLastFocusedWidget = null;
+	private Image iFilterOpen, iFilterClose, iFilterClear;
 	
 	private boolean iShowSuggestionsOnFocus = false;
 	
@@ -155,8 +159,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 					hideFilterPopup();
 				}
 				if (event.getNativeEvent().getKeyCode() == KeyCodes.KEY_BACKSPACE && iFilter.getText().isEmpty()) {
-					if (getWidgetCount() > 3) {
-						remove(getWidgetCount()-4);
+					if (getWidgetCount() > 4) {
+						remove(getWidgetCount()-5);
 						resizeFilterIfNeeded();
 						setAriaLabel(toAriaString());
 						ValueChangeEvent.fire(FilterBox.this, getValue());
@@ -222,28 +226,38 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			}
 		});
 		
-        iAdd = new SimplePanel();
-        iAdd.getElement().setInnerHTML("&#9660;");
-        iAdd.addStyleName("button-arrow");
-        add(iAdd);
-        Roles.getDocumentRole().setAriaHiddenState(iAdd.getElement(), true);
-
-		iClear = new SimplePanel();
-		iClear.getElement().setInnerHTML("&times;");
-		iClear.addStyleName("button");
-        add(iClear);
-        iClear.setVisible(false);
-        Roles.getDocumentRole().setAriaHiddenState(iClear.getElement(), true);
+		iFilterClear = new Image(RESOURCES.filter_clear());
+		iFilterClear.setAltText(MESSAGES.altClearFilter());
+		iFilterClear.setTitle(MESSAGES.altClearFilter());
+		iFilterClear.setStyleName("button-image");
+        add(iFilterClear);
+        iFilterClear.setVisible(false);
+        Roles.getDocumentRole().setAriaHiddenState(iFilterClear.getElement(), true);
         iFilter.addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				if (iClear.isVisible() && getValue().isEmpty()) {
+				if (iFilterClear.isVisible() && getValue().isEmpty()) {
 					resizeFilterIfNeeded();
-				} else if (!iClear.isVisible() && !getValue().isEmpty()) {
+				} else if (!iFilterClear.isVisible() && !getValue().isEmpty()) {
 					resizeFilterIfNeeded();
 				}
 			}
 		});
+		
+        iFilterOpen = new Image(RESOURCES.filter_open());
+        iFilterOpen.setAltText(MESSAGES.altOpenFilter());
+        iFilterOpen.setTitle(MESSAGES.altOpenFilter());
+        iFilterOpen.addStyleName("button-image");
+        add(iFilterOpen);
+        Roles.getDocumentRole().setAriaHiddenState(iFilterOpen.getElement(), true);
+        
+        iFilterClose = new Image(RESOURCES.filter_close());
+        iFilterClose.setAltText(MESSAGES.altCloseFilter());
+        iFilterClose.setTitle(MESSAGES.altCloseFilter());
+        iFilterClose.addStyleName("button-image");
+        add(iFilterClose);
+        iFilterClose.setVisible(false);
+        Roles.getDocumentRole().setAriaHiddenState(iFilterClose.getElement(), true);
         
         iFilterPopup = new PopupPanelKeepFocus();
         iFilterPopup.setStyleName("unitime-FilterBoxPopup");
@@ -287,6 +301,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public void hideFilterPopup() {
 		iFilterPopup.hide();
+		iFilterOpen.setVisible(true);
+		iFilterClose.setVisible(false);
 		if (iLastFocusedWidget != null && !iLastFocusedWidget.equals(iFilter)) iFilter.setFocus(true);
 	}
 	
@@ -309,6 +325,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 			if (iLastFocusedWidget != null) iLastFocusedWidget.setFocus(true);
 		} else {
 			iFilterPopup.showRelativeTo(this);
+			iFilterOpen.setVisible(false);
+			iFilterClose.setVisible(true);
 		}
 	}
 	
@@ -406,12 +424,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 
 	    switch (DOM.eventGetType(event)) {
 	    case Event.ONMOUSEDOWN:
-	    	boolean add = iAdd.getElement().equals(target);
-	    	boolean clear = iClear.getElement().equals(target);
+	    	boolean open = iFilterOpen.getElement().equals(target);
+	    	boolean close = iFilterClose.getElement().equals(target);
+	    	boolean clear = iFilterClear.getElement().equals(target);
 	    	boolean filter = iFilter.getElement().equals(target);
-	    	if (isFilterPopupShowing()) {
+	    	if (isFilterPopupShowing() || close) {
 	    		hideFilterPopup();
-	    	} else if (add) {
+	    	} else if (open) {
 	    		hideSuggestions();
 	    		showFilterPopup();
 	    	}
@@ -443,17 +462,16 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	private void resizeFilterIfNeeded() {
 		if (!isAttached()) return;
-		iClear.setVisible(!iFilter.getText().isEmpty() || getWidgetCount() > 3);
-		if (getWidgetCount() > 3) {
-			ChipPanel last = (ChipPanel)getWidget(getWidgetCount()-4);
-			int width = getAbsoluteLeft() + getOffsetWidth() - last.getAbsoluteLeft() - last.getOffsetWidth()
-					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6;
+		iFilterClear.setVisible(!iFilter.getText().isEmpty() || getWidgetCount() > 4);
+		int buttonWidth = (isFilterPopupShowing() ? iFilterClose : iFilterOpen).getElement().getOffsetWidth() + iFilterClear.getElement().getOffsetWidth() + 8;
+		if (getWidgetCount() > 4) {
+			ChipPanel last = (ChipPanel)getWidget(getWidgetCount() - 5);
+			int width = getAbsoluteLeft() + getOffsetWidth() - last.getAbsoluteLeft() - last.getOffsetWidth() - buttonWidth;
 			if (width < 100)
-				width = getElement().getClientWidth()
-					  - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6;
+				width = getElement().getClientWidth() - buttonWidth;
 			iFilter.getElement().getStyle().setWidth(width, Unit.PX);
 		} else {
-			iFilter.getElement().getStyle().setWidth(getElement().getClientWidth() - iAdd.getElement().getOffsetWidth() - iClear.getElement().getOffsetWidth() - 6, Unit.PX);
+			iFilter.getElement().getStyle().setWidth(getElement().getClientWidth() - buttonWidth, Unit.PX);
 		}
 		if (isSuggestionsShowing())
 			iSuggestionsPopup.moveRelativeTo(this);
@@ -472,7 +490,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				ValueChangeEvent.fire(FilterBox.this, getValue());
 			}
 		});
-		insert(panel, getWidgetCount() - 3);
+		insert(panel, getWidgetCount() - 4);
 		resizeFilterIfNeeded();
 		setAriaLabel(toAriaString());
 		if (fireEvents)
@@ -480,7 +498,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public boolean removeChip(Chip chip, boolean fireEvents) {
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel panel = (ChipPanel)getWidget(i);
 			if (panel.getChip().equals(chip)) {
 				remove(i);
@@ -495,7 +513,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public boolean hasChip(Chip chip) {
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel panel = (ChipPanel)getWidget(i);
 			if (panel.getChip().equals(chip)) return true;
 		}
@@ -503,7 +521,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public Chip getChip(String command) {
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel panel = (ChipPanel)getWidget(i);
 			if (panel.getChip().getCommand().equalsIgnoreCase(command))
 				return panel.getChip();
@@ -513,7 +531,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public List<Chip> getChips(String command) {
 		List<Chip> chips = new ArrayList<Chip>();
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel panel = (ChipPanel)getWidget(i);
 			if (command == null || panel.getChip().getCommand().equalsIgnoreCase(command)) {
 				chips.add(panel.getChip());
@@ -523,7 +541,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	}
 	
 	public void removeAllChips() {
-		while (getWidgetCount() > 3) remove(0);
+		while (getWidgetCount() > 4) remove(0);
 		resizeFilterIfNeeded();
 	}
 	
@@ -577,7 +595,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	@Override
 	public String getValue() {
 		String ret = "";
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel chip = (ChipPanel)getWidget(i);
 			ret += chip.toString() + " ";
 		}
@@ -586,7 +604,7 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public String toAriaString() {
 		String ret = "";
-		for (int i = 0; i < getWidgetCount() - 3; i++) {
+		for (int i = 0; i < getWidgetCount() - 4; i++) {
 			ChipPanel chip = (ChipPanel)getWidget(i);
 			if (!ret.isEmpty()) ret += ", ";
 			ret += chip.toAriaString();

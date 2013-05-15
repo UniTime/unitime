@@ -77,4 +77,13 @@ public interface GwtResources extends ClientBundle, com.google.gwt.user.client.u
 
 	@Source("org/unitime/timetable/gwt/resources/icons/download.png")
 	ImageResource download();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/times.png")
+	ImageResource filter_clear();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/dropdown_close.png")
+	ImageResource filter_close();
+	
+	@Source("org/unitime/timetable/gwt/resources/icons/dropdown_open.png")
+	ImageResource filter_open();
 }
