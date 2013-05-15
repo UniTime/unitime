@@ -2674,4 +2674,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Event expired, all pending meetings have been cancelled.")
 	String noteEventExpired();
+	
+	@DefaultMessage("Clear filter")
+	String altClearFilter();
+	
+	@DefaultMessage("Open filter")
+	String altOpenFilter();
+	
+	@DefaultMessage("Close filter")
+	String altCloseFilter();
 }
