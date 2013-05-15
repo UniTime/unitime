@@ -698,6 +698,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							sponsor.setUniqueId(m.getEvent().getSponsoringOrganization().getUniqueId());
 							event.setSponsor(sponsor);
 						}
+						event.setExpirationDate(m.getEvent().getExpirationDate());
 						
 						String note = null;
 						for (EventNote n: m.getEvent().getNotes()) {

@@ -60,6 +60,7 @@ public abstract class BaseFinalExamEvent extends ExamEvent implements Serializab
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
 			"\n	Exam: " + getExam() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

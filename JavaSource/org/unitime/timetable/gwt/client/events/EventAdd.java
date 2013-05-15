@@ -129,6 +129,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	private UniTimeWidget<TextBox> iMainLName, iMainEmail;
 	private CheckBox iReqAttendance;
 	private ListBox iStandardNotes;
+	private SingleDateSelector iExpirationDate;
 	
 	private SimpleForm iCoursesForm;
 	
@@ -573,6 +574,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iFileUpload = new UniTimeFileUpload();
 		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
 		
+		iExpirationDate = new SingleDateSelector();
+		iForm.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
+		
 		iCoursesForm = new SimpleForm();
 		iCoursesForm.addHeaderRow(MESSAGES.sectRelatedCourses());
 		iCoursesForm.removeStyleName("unitime-NotPrintableBottomLine");
@@ -589,6 +593,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iCoursesForm.setVisible(type == EventType.Course);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propAttendance()), type == EventType.Special);
 				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
+				iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), (getProperties().isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
 				if (iMeetings.getRowCount() > 1) {
 					LoadingWidget.getInstance().show(MESSAGES.waitCheckingRoomAvailability());
 					RPC.execute(EventRoomAvailabilityRpcRequest.checkAvailability(iMeetings.getMeetings(), getEventId(), getEventType(), iSession.getAcademicSessionId()), new AsyncCallback<EventRoomAvailabilityRpcResponse>() {
@@ -881,6 +886,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEvent.addAdditionalContact(contact);
 		
 		iEvent.setEmail(iEmails.getText());
+		iEvent.setExpirationDate(iExpirationDate.getValue());
 
 		/*
 		if (iEvent.hasNotes() && iEvent.getNotes().last().getDate() == null)
@@ -988,6 +994,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		EventType type = getEventType();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), (getProperties().isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
 		if (isAttached() && isVisible() && (iEvent != null && iEvent.getId() == null))
 			setEvent(null);
 	}
@@ -1036,6 +1043,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iLimit.setValue(iEvent.hasMaxCapacity() ? iEvent.getMaxCapacity() : null);
 		iNotes.setText("");
 		iEmails.setText(iEvent.hasEmail() ? iEvent.getEmail() : "");
+		iExpirationDate.setValue(iEvent.getExpirationDate());
 		if (iEvent.getType() == EventType.Course) {
 			iCourses.setValue(iEvent.getRelatedObjects());
 			iReqAttendance.setValue(iEvent.hasRequiredAttendance());
@@ -1595,6 +1603,17 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			if (valid)
 				iHeader.setErrorMessage(MESSAGES.reqMeetings());
 			valid = false;
+		}
+		if (iExpirationDate.getValue() != null && iExpirationDate.getValue().before(iExpirationDate.today())) {
+			for (EventMeetingRow row: iMeetings.getValue()) {
+				if (row.getMeeting().getId() == null && !row.getMeeting().isCanApprove()) { // there is a new meeting that should be expired
+					UniTimeNotifications.error(MESSAGES.errorExpirationDateInPast());
+					if (valid)
+						iHeader.setErrorMessage(MESSAGES.errorExpirationDateInPast());
+					valid = false;
+					break;
+				}
+			}
 		}
 		callback.onSuccess(valid);
 	}

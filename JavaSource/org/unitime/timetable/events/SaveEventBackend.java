@@ -131,6 +131,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			if (event.getEventName() == null || event.getEventName().isEmpty() && request.getEvent().getType() == EventType.Unavailabile)
 				event.setEventName(MESSAGES.unavailableEventDefaultName());
 			event.setEmail(request.getEvent().getEmail());
+			if (context.hasPermission(Right.EventSetExpiration) || event.getExpirationDate() != null)
+				event.setExpirationDate(request.getEvent().getExpirationDate());
 			event.setSponsoringOrganization(request.getEvent().hasSponsor() ? SponsoringOrganizationDAO.getInstance().get(request.getEvent().getSponsor().getUniqueId()) : null);
 			if (event instanceof UnavailableEvent) {
 			} else if (event instanceof SpecialEvent) {

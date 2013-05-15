@@ -52,6 +52,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private List<ContactInterface> iAdditionalContacts;
 	private String iLastChange = null;
 	private TreeSet<NoteInterface> iNotes;
+	private Date iExpirationDate = null;
 	
 	private List<String> iCourseNames = null;
 	private List<String> iCourseTitles = null;
@@ -168,6 +169,18 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	public boolean hasEnrollment() { return iEnrollment != null; }
 	public Integer getEnrollment() { return iEnrollment; }
 	public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+	
+	public Date getExpirationDate() { return iExpirationDate; }
+	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
+	public boolean hasExpirationDate() { return iExpirationDate != null; }
+	public boolean hasPendingMeetings() {
+		if (iMeetings == null) return false;
+		for (MeetingInterface meeting: iMeetings) {
+			if (meeting.getApprovalStatus() == ApprovalStatus.Pending)
+				return true;
+		}
+		return false;
+	}
 
 	public Set<ContactInterface> getInstructors() { return iInstructors; }
 	public void addInstructor(ContactInterface instructor) {
@@ -1584,7 +1597,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV;
+		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV = false, iCanSetExpirationDate = false;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 		private Set<StandardEventNoteInterface> iStandardNotes = null;
@@ -1609,6 +1622,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public boolean isCanAddUnavailableEvent() { return iCanAddUnavailableEvent; }
 		public void setCanAddUnavailableEvent(boolean canAddEvent) { iCanAddUnavailableEvent = canAddEvent; }
+		
+		public boolean isCanSetExpirationDate() { return iCanSetExpirationDate; }
+		public void setCanSetExpirationDate(boolean canSetExpirationDate) { iCanSetExpirationDate = canSetExpirationDate; }
 
 		public boolean hasSponsoringOrganizations() { return iSponsoringOrganizations != null && !iSponsoringOrganizations.isEmpty(); }
 		public List<SponsoringOrganizationInterface> getSponsoringOrganizations() { return iSponsoringOrganizations; }

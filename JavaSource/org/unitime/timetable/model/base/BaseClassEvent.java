@@ -65,6 +65,7 @@ public abstract class BaseClassEvent extends Event implements Serializable {
 			"\n	Clazz: " + getClazz() +
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

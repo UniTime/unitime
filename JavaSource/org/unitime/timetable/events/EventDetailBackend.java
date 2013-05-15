@@ -96,6 +96,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		event.setCanView(context.hasPermission(e, Right.EventDetail));
 		event.setCanEdit(context.hasPermission(e, Right.EventEdit)); 
 		event.setEmail(e.getEmail());
+		event.setExpirationDate(e.getExpirationDate());
 		event.setMaxCapacity(e.getMaxCapacity());
 				
 		if (e.getMainContact() != null) {

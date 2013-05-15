@@ -65,6 +65,7 @@ public abstract class BaseExamEvent extends Event implements Serializable {
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
 			"\n	Exam: " + getExam() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +
