@@ -20,6 +20,7 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ public abstract class BaseEvent implements Serializable {
 	private Integer iMinCapacity;
 	private Integer iMaxCapacity;
 	private String iEmail;
+	private Date iExpirationDate;
 
 	private EventContact iMainContact;
 	private SponsoringOrganization iSponsoringOrganization;
@@ -49,6 +51,7 @@ public abstract class BaseEvent implements Serializable {
 	public static String PROP_MIN_CAPACITY = "minCapacity";
 	public static String PROP_MAX_CAPACITY = "maxCapacity";
 	public static String PROP_EMAIL = "email";
+	public static String PROP_EXPIRATION_DATE = "expirationDate";
 
 	public BaseEvent() {
 		initialize();
@@ -75,6 +78,9 @@ public abstract class BaseEvent implements Serializable {
 
 	public String getEmail() { return iEmail; }
 	public void setEmail(String email) { iEmail = email; }
+
+	public Date getExpirationDate() { return iExpirationDate; }
+	public void setExpirationDate(Date expirationDate) { iExpirationDate = expirationDate; }
 
 	public EventContact getMainContact() { return iMainContact; }
 	public void setMainContact(EventContact mainContact) { iMainContact = mainContact; }
@@ -122,6 +128,7 @@ public abstract class BaseEvent implements Serializable {
 		return "Event[" +
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

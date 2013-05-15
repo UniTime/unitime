@@ -59,6 +59,7 @@ public abstract class BaseSpecialEvent extends Event implements Serializable {
 		return "SpecialEvent[" +
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

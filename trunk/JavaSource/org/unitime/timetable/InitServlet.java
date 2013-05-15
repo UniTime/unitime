@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.unitime.commons.Debug;
+import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningService;
@@ -85,6 +86,9 @@ public class InitServlet extends HttpServlet implements Servlet {
 			Debug.info(" - Starting Online Sectioning Service ...");
 			OnlineSectioningService.startService();
 			
+			Debug.info(" - Starting Event Expiration Service ...");
+			EventExpirationService.getInstance().start();
+			
 			Debug.info("******* UniTime " + Constants.getVersion() +
 					" build on " + Constants.getReleaseDate() + " initialized successfully *******");
 
@@ -104,6 +108,9 @@ public class InitServlet extends HttpServlet implements Servlet {
 					" build on " + Constants.getReleaseDate() + " is going down *******");
 		
 			super.destroy();
+			
+			Debug.info(" - Stopping Event Expiration Service ...");
+			EventExpirationService.getInstance().interrupt();
 			
 			Debug.info(" - Stopping Online Sectioning Service ...");
 			OnlineSectioningService.stopService();

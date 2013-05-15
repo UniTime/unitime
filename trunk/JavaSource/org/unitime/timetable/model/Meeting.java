@@ -218,6 +218,14 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return(periodToTime(getStopPeriod(), getStopOffset()));
 	}
 	
+	public String startTimeNoOffset(){
+		return(periodToTime(getStartPeriod(), 0));
+	}
+
+	public String stopTimeNoOffset(){
+		return(periodToTime(getStopPeriod(), 0));
+	}
+	
 	public String dateStr() {
 	    return new SimpleDateFormat("EEE MM/dd").format(getMeetingDate());
 	}

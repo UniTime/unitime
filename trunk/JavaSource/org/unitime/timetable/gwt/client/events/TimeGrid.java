@@ -1073,7 +1073,7 @@ public class TimeGrid extends Composite {
 					iHint.addRow(MESSAGES.propType(), new Label(iEvent.getType().getAbbreviation(CONSTANTS), false));
 				}
 				if (iEvent.hasEventNote())
-					iHint.addRow(MESSAGES.propNote(), new HTML(iEvent.getEventNote().replace("\n", "<br>"), false));
+					iHint.addRow(MESSAGES.propNote(), new HTML(iEvent.getEventNote().replace("\n", "<br>"), true));
 				ToolBox.setMaxWidth(iHint.getElement().getStyle(), "400px");
 				iHint.addRow(MESSAGES.propDate(), new HTML(iDates, true));
 				iHint.addRow(MESSAGES.propPublishedTime(), new Label(iMeeting.getMeetingTime(CONSTANTS), false));

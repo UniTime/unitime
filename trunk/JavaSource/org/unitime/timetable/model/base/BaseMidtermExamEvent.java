@@ -60,6 +60,7 @@ public abstract class BaseMidtermExamEvent extends ExamEvent implements Serializ
 			"\n	Email: " + getEmail() +
 			"\n	EventName: " + getEventName() +
 			"\n	Exam: " + getExam() +
+			"\n	ExpirationDate: " + getExpirationDate() +
 			"\n	MainContact: " + getMainContact() +
 			"\n	MaxCapacity: " + getMaxCapacity() +
 			"\n	MinCapacity: " + getMinCapacity() +

@@ -8917,4 +8917,8 @@
 		<mysql>alter table %SCHEMA%.room add share_note varchar(2048) binary null</mysql>
 		<mysql>alter table %SCHEMA%.non_university_location add share_note varchar(2048) binary null</mysql>
 	</update>
+	<update version="121" date="15-May-2013" comment="Event Expiration Date">
+		<plsql>alter table %SCHEMA%.event add expiration_date date</plsql>
+		<mysql>alter table %SCHEMA%.event add expiration_date date null</mysql>
+	</update>
 </dbupdate>

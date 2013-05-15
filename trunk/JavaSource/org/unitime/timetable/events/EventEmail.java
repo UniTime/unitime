@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import javax.activation.DataSource;
@@ -52,6 +53,9 @@ import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
+import org.unitime.timetable.model.Event;
+import org.unitime.timetable.model.EventContact;
+import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
 
@@ -60,16 +64,17 @@ public class EventEmail {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static Map<Long, String> sMessageId = new Hashtable<Long, String>();
 	
-	private SaveOrApproveEventRpcRequest iRequest;
-	private SaveOrApproveEventRpcResponse iResponse; 
+	private SaveOrApproveEventRpcRequest iRequest = null;
+	private SaveOrApproveEventRpcResponse iResponse = null; 
 	
 	public EventEmail(SaveOrApproveEventRpcRequest request, SaveOrApproveEventRpcResponse response) {
 		iRequest = request; iResponse = response;
 	}
 	
+	public EventEmail() {}
+	
 	public SaveOrApproveEventRpcRequest request() { return iRequest; }
 	public SaveOrApproveEventRpcResponse response() { return iResponse; }
-	
 	
 	public void send(SessionContext context) throws UnsupportedEncodingException, MessagingException {
 		try {
@@ -324,6 +329,9 @@ public class EventEmail {
 		if (event().hasMaxCapacity()) {
 			out.println("	<tr><td>" + MESSAGES.propAttendance() + "</td><td>" + event().getMaxCapacity() + "</td></tr>");
 		}
+		if (event().hasExpirationDate() && event().hasPendingMeetings()) {
+			out.println("	<tr><td>" + MESSAGES.propExpirationDate() + "</td><td>" + new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()).format(event().getExpirationDate()) + "</td></tr>");
+		}
 		out.println("</table>");
 	}
 	
@@ -458,5 +466,144 @@ public class EventEmail {
 		out.flush(); out.close();
 		return (exp ? buffer.getBuffer().toString() : null);		
 	}
+	
+	public static void eventExpired(Event event, Set<Meeting> meetings) throws Exception {
+		if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))))
+			return;
 
+		Email email = Email.createEmail();
+		if (event.getMainContact() != null && event.getMainContact().getEmailAddress() != null) {
+			email.addRecipient(event.getMainContact().getEmailAddress(), event.getMainContact().getName());
+			email.setReplyTo(event.getMainContact().getEmailAddress(), event.getMainContact().getName());
+		}
+		if (event.getAdditionalContacts() != null) {
+			for (EventContact contact: event.getAdditionalContacts()) {
+				if (contact.getEmailAddress() != null)
+					email.addRecipient(contact.getEmailAddress(), contact.getName());
+			}
+		}
+		if (event.getSponsoringOrganization() != null && event.getSponsoringOrganization().getEmail() != null)
+			email.addRecipientCC(event.getSponsoringOrganization().getEmail(), event.getSponsoringOrganization().getName());
+		if (event.getEmail() != null) {
+			for (String address: event.getEmail().split("\n")) {
+				if (!address.trim().isEmpty())
+					email.addRecipientCC(address, null);
+			}
+		}
+		
+		email.setSubject(event.getEventName() + " (" + event.getEventTypeLabel() + ")");
+
+		StringWriter buffer = new StringWriter();
+		PrintWriter out = new PrintWriter(buffer);
+		
+		out.println("<html>");
+		out.println("<head>");
+		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
+		out.println("	<title>" + MESSAGES.emailSubjectExpired(event.getEventName()) + "</title>");
+		out.println("</head>");
+		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
+		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; width: 800px;\" align=\"center\">");
+		out.println("		<tr><td><table width=\"100%\">");
+		out.println("			<tr>");
+		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
+		out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + MESSAGES.emailSubjectExpired(event.getEventName()) + "</td>");
+		out.println("			</tr>");
+		out.println("		</table></td></tr>");
+		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + event.getEventName() + "</td></tr>");
+		out.println("		<tr><td>");
+		out.println("<table>");
+		out.println("	<tr><td>" + MESSAGES.propEventType() + "</td><td>" + event.getEventTypeLabel() + "</td></tr>");
+		out.println("	<tr><td>" + MESSAGES.propContacts() + "</td><td>");
+		out.println("<table width=\"100%\">");
+		out.println("<tr>");
+		String style = "white-space: nowrap; font-weight: bold;";
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colName() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colEmail() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPhone() + "</td>");
+		out.println("</tr>");
+		if (event.getMainContact() != null) {
+			out.println("<tr><td>" + event.getMainContact().getName() + "</td><td>" + (event.getMainContact().getEmailAddress() != null ? event.getMainContact().getEmailAddress() : "") + "</td><td>" + (event.getMainContact().getPhone() != null ? event.getMainContact().getPhone() : "") + "</td></tr>");
+		}
+		if (event.getAdditionalContacts() != null) {
+			for (EventContact contact: event.getAdditionalContacts())
+				out.println("<tr><td>" + contact.getName() + "</td><td>" + (contact.getEmailAddress() != null ? contact.getEmailAddress() : "") + "</td><td>" + (contact.getPhone() != null ? contact.getPhone() : "") + "</td></tr>");
+		}
+		out.println("</table>");
+		
+		out.println("	</td></tr>");
+		if (event.getEmail() != null && !event.getEmail().trim().isEmpty()) {
+			out.println("	<tr><td>" + MESSAGES.propAdditionalEmails() + "</td><td>" +event.getEmail().replace("\n", "<br>") + "</td></tr>");
+		}
+		if (event.getSponsoringOrganization() != null) {
+			out.println("	<tr><td>" + MESSAGES.propSponsor() + "</td><td>" + event.getSponsoringOrganization().getName() + "</td></tr>");
+		}
+		if (event.getMaxCapacity() != null && event.getMaxCapacity() > 0) {
+			out.println("	<tr><td>" + MESSAGES.propAttendance() + "</td><td>" + event.getMaxCapacity() + "</td></tr>");
+		}
+		if (event.getExpirationDate() != null) {
+			out.println("	<tr><td>" + MESSAGES.propExpirationDate() + "</td><td>" + new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()).format(event.getExpirationDate()) + "</td></tr>");
+		}
+		out.println("</table>");
+		
+		out.println("       </td></tr>");
+		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCancelledMeetings() + "</td></tr>");
+		out.println("		<tr><td>");
+		
+		out.println("<table width=\"100%\">");
+		out.println("<tr>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colDate() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPublishedTime() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colAllocatedTime() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colLocation() + "</td>");
+		out.println("	<td style=\"" + style + "\">" + MESSAGES.colStatus() + "</td>");
+		out.println("</tr>");
+		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+		for (Meeting meeting: meetings) {
+			out.println("<tr>");
+			out.println("  <td>" + dfLong.format(meeting.getMeetingDate()) + "</td>");
+			out.println("  <td>" + meeting.startTime() + " - " + meeting.stopTime() + "</td>");
+			out.println("  <td>" + meeting.startTimeNoOffset() + " - " + meeting.stopTimeNoOffset() + "</td>");
+			out.println("  <td>" + (meeting.getLocation() == null ? "" : meeting.getLocation().getLabel()) + "</td>");
+			out.println("  <td><i>" + MESSAGES.approvalCancelled() + "</i></td>");
+			out.println("</tr>");
+		}
+		out.println("</table>");
+		
+		out.println("       </td></tr>");
+
+		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">");
+		out.println(MESSAGES.emailMessageCancel());
+		out.println("       </td></tr>");
+		out.println("		<tr><td>");
+		out.println(MESSAGES.noteEventExpired());
+		out.println("       </td></tr>");
+		
+		out.println("	</table>");
+		out.println("	<table style=\"width: 800px; margin-top: -3px;\" align=\"center\">");
+		out.println("		<tr>");
+		out.println("			<td width=\"33%\" align=\"left\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
+				MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()) + "</td>");
+		out.println("			<td width=\"34%\" align=\"center\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
+				MESSAGES.pageCopyright() + "</td>");
+		out.println("			<td width=\"33%\" align=\"right\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
+				new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale()).format(new Date()) + "</td>");
+		out.println("		</tr>");
+		out.println("	</table>");
+		out.println("</body>");
+		out.println("</html>");
+		
+		out.flush(); out.close();
+		email.setHTML(buffer.getBuffer().toString());
+		
+		System.out.println(buffer.getBuffer().toString());
+		
+		String messageId = sMessageId.get(event.getUniqueId());
+		if (messageId != null)
+			email.setInReplyTo(messageId);
+		
+		email.send();
+		
+		if (email.getMessageId() != null)
+			sMessageId.put(event.getUniqueId(), email.getMessageId());
+	}
 }

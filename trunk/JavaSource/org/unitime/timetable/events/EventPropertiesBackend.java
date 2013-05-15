@@ -70,6 +70,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		response.setCanAddEvent(context.hasPermission(Right.EventAddSpecial));
 		response.setCanAddCourseEvent(context.hasPermission(Right.EventAddCourseRelated));
 		response.setCanAddUnavailableEvent(context.hasPermission(Right.EventAddUnavailable));
+		response.setCanSetExpirationDate(context.hasPermission(Right.EventSetExpiration));
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		
