@@ -97,9 +97,14 @@ public class EventEmail {
 			if (event().hasSponsor() && event().getSponsor().hasEmail())
 				email.addRecipientCC(event().getSponsor().getEmail(), event().getSponsor().getName());
 			if (event().hasEmail()) {
+				String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
 				for (String address: event().getEmail().split("\n")) {
-					if (!address.trim().isEmpty())
-						email.addRecipientCC(address, null);
+					if (!address.trim().isEmpty()) {
+						if (suffix != null && address.indexOf('@') < 0)
+							email.addRecipientCC(address.trim() + suffix, null);
+						else
+							email.addRecipientCC(address.trim(), null);
+					}
 				}
 			}
 			
@@ -498,9 +503,14 @@ public class EventEmail {
 		if (event.getSponsoringOrganization() != null && event.getSponsoringOrganization().getEmail() != null)
 			email.addRecipientCC(event.getSponsoringOrganization().getEmail(), event.getSponsoringOrganization().getName());
 		if (event.getEmail() != null) {
+			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
 			for (String address: event.getEmail().split("\n")) {
-				if (!address.trim().isEmpty())
-					email.addRecipientCC(address, null);
+				if (!address.trim().isEmpty()) {
+					if (suffix != null && address.indexOf('@') < 0)
+						email.addRecipientCC(address.trim() + suffix, null);
+					else
+						email.addRecipientCC(address.trim(), null);
+				}
 			}
 		}
 		
