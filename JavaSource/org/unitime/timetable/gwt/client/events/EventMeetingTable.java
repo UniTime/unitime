@@ -926,7 +926,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		
 		if (event != null && iShowMainContact) {
 			row.add(new HTML(event.hasContact() ? event.getContact().getName(MESSAGES) : "&nbsp;"));
-			if (isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
+			if (!isColumnVisible(getHeader(MESSAGES.colMainContact()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_MAIN_CONTACT) && getMode().hasFlag(ModeFlag.ShowOptionalColumns)) {
 				switch (event.getType()) {
 				case Course:
 				case Special:
