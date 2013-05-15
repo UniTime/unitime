@@ -562,6 +562,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("pending")
 	String approvalNotApproved();
+	
+	@DefaultMessage("expire {0}")
+	String approvalExpire(String date);
 
 	@DefaultMessage("not approved")
 	String approvalNotApprovedPast();
@@ -586,7 +589,7 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("new unavailability")
 	String approvalNewUnavailabiliyMeeting();
-
+	
 	@DefaultMessage("Setup / Teardown Times")
 	String dlgChangeOffsets();
 	
