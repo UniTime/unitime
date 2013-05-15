@@ -889,7 +889,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 						event != null && event.getType() == EventType.Unavailabile ? "" : 
-						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
+						event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" : 
+						"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 				prev = mtg; prevSpan = span; prevApproval = thisApproval;
 				if (m.getApprovalStatus() != ApprovalStatus.Cancelled && m.getApprovalStatus() != ApprovalStatus.Rejected)
 					allCancelledOrRejected = false;
@@ -948,7 +950,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
 							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
-							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : 
+							event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" :
+							"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 		} else {
 			row.add(new HTML(approval == null ? "" : approval, false));
 		}

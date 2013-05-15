@@ -1102,7 +1102,9 @@ public class TimeGrid extends Composite {
 						iMeeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 						iMeeting.isApproved() ? 
 									iMeeting.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(iMeeting.getApprovalDate()) + "</span>" : sDateFormat.format(iMeeting.getApprovalDate()) :
-									iMeeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : "<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>", false));				
+									iMeeting.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
+									iEvent.hasExpirationDate() ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(iEvent.getExpirationDate())) + "</span>" :
+									"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>", false));
 			}
 			return iHint;
 		}
