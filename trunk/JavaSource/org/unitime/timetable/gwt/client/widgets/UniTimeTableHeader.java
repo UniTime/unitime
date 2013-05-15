@@ -20,7 +20,9 @@
 package org.unitime.timetable.gwt.client.widgets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasAdditionalStyleNames;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.HasCellAlignment;
@@ -33,6 +35,8 @@ import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.MenuBar;
@@ -65,6 +69,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 				popup.addStyleName("unitime-Menu");
 				if (!setMenu(popup)) return;
 				popup.showRelativeTo((Widget)event.getSource());
+				((MenuBar)popup.getWidget()).focus();
 			}
 		});
 	}
@@ -83,7 +88,7 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 		List<Operation> operations = getOperations();
 		if (operations.isEmpty()) return false;
 		boolean first = true;
-		MenuBar menu = new MenuBar(true);
+		MenuBar menu = new MenuBarWithAccessKeys();
 		for (final Operation op: operations) {
 			if (!op.isApplicable()) continue;
 			if (op.hasSeparator() && !first)
@@ -96,14 +101,14 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 					op.execute();
 				}
 			});
-			item.getElement().getStyle().setCursor(Cursor.POINTER);
 			if (op instanceof AriaOperation)
 				Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), ((AriaOperation)op).getAriaLabel());
+			else
+				Roles.getMenuitemRole().setAriaLabelProperty(item.getElement(), UniTimeHeaderPanel.stripAccessKey(op.getName()));
 			menu.addItem(item);
 		}
 		if (first) return false;
 		menu.setVisible(true);
-		menu.setFocusOnHoverEnabled(true);
 		popup.add(menu);
 		return true;
 	}
@@ -208,5 +213,36 @@ public class UniTimeTableHeader extends HTML implements HasStyleName, HasCellAli
 	
 	public Boolean getOrder() {
 		return iOrder;
+	}
+	
+	public static class MenuBarWithAccessKeys extends MenuBar {
+		private Map<Character, MenuItem> iAccessKeys = new HashMap<Character, MenuItem>();
+		
+		public MenuBarWithAccessKeys() {
+			super(true);
+			setFocusOnHoverEnabled(true);
+			sinkEvents(Event.ONKEYPRESS);
+		}
+		
+		@Override
+		public MenuItem addItem(MenuItem item) {
+			Character ch = UniTimeHeaderPanel.guessAccessKey(item.getHTML());
+			if (ch != null)
+				iAccessKeys.put(Character.toLowerCase(ch), item);
+			item.getElement().getStyle().setCursor(Cursor.POINTER);
+			return super.addItem(item);
+		}
+		
+		@Override
+		public void onBrowserEvent(Event event) {
+			switch (DOM.eventGetType(event)) {
+			case Event.ONKEYPRESS:
+				MenuItem item = iAccessKeys.get(Character.toLowerCase((char)event.getCharCode()));
+				if (item != null)
+					item.getScheduledCommand().execute();
+			}
+			super.onBrowserEvent(event);
+			
+		}
 	}
 }
