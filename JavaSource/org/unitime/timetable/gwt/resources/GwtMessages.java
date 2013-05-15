@@ -92,7 +92,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&#10003; <u>A</u>pprove ...")
 	String opApproveSelectedMeetings();
 
-	@DefaultMessage("&#10004; <u>A/u>pprove All ...")
+	@DefaultMessage("&#10004; <u>A</u>pprove All ...")
 	String opApproveAllMeetings();
 
 	@DefaultMessage("&#10007; <u>R</u>eject ...")
