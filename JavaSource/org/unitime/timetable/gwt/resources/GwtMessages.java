@@ -65,19 +65,19 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Clear Selection")
 	String opClearSelection();
 	
-	@DefaultMessage("&#10007; Remove")
+	@DefaultMessage("&#10007; R<u>e</u>move")
 	String opDeleteSelectedMeetings();
 	
-	@DefaultMessage("&#10008 Remove All")
+	@DefaultMessage("&#10008 R<u>e</u>move All")
 	String opDeleteNewMeetings();
 	
-	@DefaultMessage("Setup Times ...")
+	@DefaultMessage("Setup <u>T</u>imes ...")
 	String opChangeOffsets();
 	
-	@DefaultMessage("Modify ...")
+	@DefaultMessage("<u>M</u>odify ...")
 	String opModifyMeetings();
 
-	@DefaultMessage("<b><i>+</i></b> Add Meetings ...")
+	@DefaultMessage("<b><i>+</i></b> Add Meeti<u>n</u>gs ...")
 	String opAddMeetings();
 
 	@DefaultMessage("Sort by {0}")
@@ -89,28 +89,28 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&#9746; {0}")
 	String opHide(String column);
 	
-	@DefaultMessage("&#10003; Approve ...")
+	@DefaultMessage("&#10003; <u>A</u>pprove ...")
 	String opApproveSelectedMeetings();
 
-	@DefaultMessage("&#10004; Approve All ...")
+	@DefaultMessage("&#10004; <u>A/u>pprove All ...")
 	String opApproveAllMeetings();
 
-	@DefaultMessage("&#10007; Reject ...")
+	@DefaultMessage("&#10007; <u>R</u>eject ...")
 	String opRejectSelectedMeetings();
 
-	@DefaultMessage("&#10008; Reject All ...")
+	@DefaultMessage("&#10008; <u>R</u>eject All ...")
 	String opRejectAllMeetings();
 
-	@DefaultMessage("&#10007; Cancel ...")
+	@DefaultMessage("&#10007; <u>C</u>ancel ...")
 	String opCancelSelectedMeetings();
 
-	@DefaultMessage("&#10008; Cancel All ...")
+	@DefaultMessage("&#10008; <u>C</u>ancel All ...")
 	String opCancelAllMeetings();
 
-	@DefaultMessage("<i>?</i> Inquire ...")
+	@DefaultMessage("<i>?</i> <u>I</u>nquire ...")
 	String opInquireSelectedMeetings();
 
-	@DefaultMessage("<b><i>?</i></b> Inquire ...")
+	@DefaultMessage("<b><i>?</i></b> <u>I</u>nquire ...")
 	String opInquireAllMeetings();
 	
 	@DefaultMessage("<u>A</u>pprove Meetings")
