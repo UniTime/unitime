@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortB
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
 
@@ -96,14 +97,8 @@ public class EventsExportEventsToPDF extends EventsExporter {
 		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
 		
 		for (EventInterface event: events) {
-			meetings: for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false)) {
+			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false)) {
 				MeetingInterface meeting = multi.getMeetings().first();
-				switch (multi.getApprovalStatus()) {
-				case Deleted:
-				case Rejected:
-				case Cancelled:
-					continue meetings;
-				}
 				out.printLine(
 					getName(event),
 					getSection(event),
@@ -122,7 +117,14 @@ public class EventsExportEventsToPDF extends EventsExporter {
 					event.hasMaxCapacity() ? event.getMaxCapacity().toString() : null,
 					event.hasInstructors() ? event.getInstructorNames("\n", MESSAGES) : event.hasSponsor() ? event.getSponsor().getName() : null,
 					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
-					multi.isArrangeHours() ? "" : multi.getApprovalStatus() == ApprovalStatus.Approved ? df.format(multi.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					event.getType() == EventType.Unavailabile ? "" :
+					multi.getApprovalStatus() == ApprovalStatus.Approved ? df.format(multi.getApprovalDate()) :
+					multi.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
+					multi.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
+					multi.getApprovalStatus() == ApprovalStatus.Deleted ? MESSAGES.approvalDeleted() :
+					multi.isPast() ? MESSAGES.approvalNotApprovedPast() :
+					event.getExpirationDate() != null ? MESSAGES.approvalExpire(df.format(event.getExpirationDate())) :
+					MESSAGES.approvalNotApproved()
 					);
 			}
 			out.flush();

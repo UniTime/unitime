@@ -31,7 +31,9 @@ import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
+import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 
 @Service("org.unitime.timetable.export.Exporter:meetings.csv")
@@ -127,7 +129,14 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					event.hasInstructors() ? event.getInstructorEmails("\n") : event.hasSponsor() ? event.getSponsor().getEmail() : null,
 					event.hasContact() ? event.getContact().getName(MESSAGES) : null,
 					event.hasContact() ? event.getContact().getEmail() : null,
-					meeting.isArrangeHours() ? "" : meeting.isApproved() ? df.format(meeting.getApprovalDate()) : MESSAGES.approvalNotApproved()
+					event.getType() == EventType.Unavailabile ? "" :
+					meeting.getApprovalStatus() == ApprovalStatus.Approved ? df.format(meeting.getApprovalDate()) :
+					meeting.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
+					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
+					meeting.getApprovalStatus() == ApprovalStatus.Deleted ? MESSAGES.approvalDeleted() :
+					meeting.isPast() ? MESSAGES.approvalNotApprovedPast() :
+					event.getExpirationDate() != null ? MESSAGES.approvalExpire(df.format(event.getExpirationDate())) :
+					MESSAGES.approvalNotApproved()
 					);
 		}
 		

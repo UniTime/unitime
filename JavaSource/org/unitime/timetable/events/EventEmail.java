@@ -390,7 +390,8 @@ public class EventEmail {
 			if (approval) {
 				switch (meeting.getApprovalStatus()) {
 				case Pending :
-					out.println("  <td><i>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() : MESSAGES.approvalNotApproved()) + "</i></td>");
+					out.println("  <td><i>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() :
+						event().getExpirationDate() != null ? MESSAGES.approvalExpire(dfApproval.format(event().getExpirationDate())) : MESSAGES.approvalNotApproved()) + "</i></td>");
 					break;
 				case Approved:
 					if (skipDeleted)
