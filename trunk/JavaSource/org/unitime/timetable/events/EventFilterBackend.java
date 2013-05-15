@@ -155,6 +155,13 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					Entity rejected = new Entity(7l, "Cancelled", "Cancelled / Rejected"); rejected.setCount(rejectedCnt);
 					response.add("mode", rejected);
 				}
+				
+				if (context.getUser().getCurrentAuthority().hasRight(Right.EventSetExpiration)) {
+					int expiringCnt = ((Number)query.select("count(distinct e)").where("m.approvalStatus = 0 and e.expirationDate is not null")
+							.exclude("query").exclude("mode").query(hibSession).uniqueResult()).intValue();
+					Entity expiring = new Entity(8l, "Expiring", "Expiring Events"); expiring.setCount(expiringCnt);
+					response.add("mode", expiring);
+				}
 			}
 		}
 
@@ -338,6 +345,8 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				query.addWhere("mode", "Xm.uniqueId != m.uniqueId and m.meetingDate = Xm.meetingDate and m.startPeriod < Xm.stopPeriod and m.stopPeriod > Xm.startPeriod and m.locationPermanentId = Xm.locationPermanentId and m.approvalStatus <= 1 and Xm.approvalStatus <= 1");
 			} else if ("Cancelled / Rejected".equals(mode)) {
 				query.addWhere("mode", "m.approvalStatus >= 2");
+			} else if ("Expiring Events".equals(mode)) {
+				query.addWhere("mode", "m.approvalStatus = 0 and e.expirationDate is not null");
 			} else {
 				query.addWhere("mode", "m.approvalStatus <= 1");
 			}
