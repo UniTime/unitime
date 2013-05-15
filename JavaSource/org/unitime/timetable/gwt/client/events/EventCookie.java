@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client.events;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,8 @@ public class EventCookie {
 				"|" + (iExpandRoomConflicts ? "T" : "F");
 		for (Map.Entry<String, String> entry: iHash.entrySet())
 			cookie += "|" + entry.getKey() + ":" + entry.getValue();
-		Cookies.setCookie("UniTime:Event", cookie);
+		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
+		Cookies.setCookie("UniTime:Event", cookie, expires);
 	}
 	
 	public static EventCookie getInstance() { 
