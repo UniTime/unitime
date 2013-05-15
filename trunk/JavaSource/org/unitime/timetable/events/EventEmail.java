@@ -154,7 +154,7 @@ public class EventEmail {
 					}
 				});
 			}
-			
+
 			email.setHTML(message());
 			
 			Long eventId = (response().hasEventWithId() ? response().getEvent().getId() : request().getEvent().getId());
@@ -382,7 +382,19 @@ public class EventEmail {
 					continue meetings;
 				}
 			empty = false;
-			out.println("<tr>");
+			if (approval) {
+				switch (meeting.getApprovalStatus()) {
+				case Rejected:
+				case Cancelled:
+				case Deleted:
+					out.println("<tr style='color:gray; font-style: italic;'>");
+					break;
+				default:
+					out.println("<tr>");
+				}
+			} else {
+				out.println("<tr>");
+			}
 			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + (meeting.getNrMeetings() <= 1 ? dfLong.format(meeting.getFirstMeetingDate()) : dfShort.format(meeting.getFirstMeetingDate()) + " - " + dfLong.format(meeting.getLastMeetingDate())) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getMeetingTime(CONSTANTS) + "</td>");
 			out.println("  <td>" + meeting.getMeetings().first().getAllocatedTime(CONSTANTS) + "</td>");
@@ -390,23 +402,23 @@ public class EventEmail {
 			if (approval) {
 				switch (meeting.getApprovalStatus()) {
 				case Pending :
-					out.println("  <td><i>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() :
-						event().getExpirationDate() != null ? MESSAGES.approvalExpire(dfApproval.format(event().getExpirationDate())) : MESSAGES.approvalNotApproved()) + "</i></td>");
+					out.println("  <td style='" + (meeting.isPast() ? "color: orange; " : "color: red; ") + "font-style: italic;'>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() :
+						event().getExpirationDate() != null ? MESSAGES.approvalExpire(dfApproval.format(event().getExpirationDate())) : MESSAGES.approvalNotApproved()) + "</td>");
 					break;
 				case Approved:
 					if (skipDeleted)
 						out.println("  <td>" + dfApproval.format(meeting.getMeetings().first().getApprovalDate()) + "</td>");
 					else
-						out.println("  <td><i>" + MESSAGES.approvalApproved() + "<i></td>");
+						out.println("  <td style='" + (meeting.isPast() ? "color: gray; " : "") + "font-style: italic;'>" + MESSAGES.approvalApproved() + "</td>");
 					break;
 				case Rejected:
-					out.println("  <td><i>" + MESSAGES.approvalRejected() + "</i></td>");
+					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalRejected() + "</td>");
 					break;
 				case Cancelled:
-					out.println("  <td><i>" + MESSAGES.approvalCancelled() + "</i></td>");
+					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalCancelled() + "</td>");
 					break;
 				case Deleted:
-					out.println("  <td><i>" + MESSAGES.approvalDeleted() + "</i></td>");
+					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalDeleted() + "</td>");
 					break;
 				}
 			}
@@ -595,8 +607,6 @@ public class EventEmail {
 		
 		out.flush(); out.close();
 		email.setHTML(buffer.getBuffer().toString());
-		
-		System.out.println(buffer.getBuffer().toString());
 		
 		String messageId = sMessageId.get(event.getUniqueId());
 		if (messageId != null)
