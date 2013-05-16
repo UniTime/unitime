@@ -1599,29 +1599,29 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	vertical-align: top;
 	padding-left: 1px;
 	float: right;
+	font-weight: bold;
 }
 
 .unitime-FilterBox .button:hover {
 	color: #505050;
 }
 
-.unitime-FilterBox .button-arrow {
-	color: #909090;
+.unitime-FilterBox .button-image {
 	cursor: pointer;
 	position: relative;
 	display: -moz-inline-box;
 	display: inline-block;
-	vertical-align: top;
-	padding-left: 1px;
-	padding-right: 1px;
-	padding-top: 3px;
+	border-top: 3px solid transparent;
 	float: right;
-	vertical-align: bottom;
-	font-size: 8px;
+	filter: alpha(opacity = 40);
+	opacity: .40;
+    -moz-opacity: .40;
 }
 
-.unitime-FilterBox .button-arrow:hover {
-	color: #505050;
+.unitime-FilterBox .button-image:hover {
+	filter: alpha(opacity = 80);
+	opacity: .80;
+    -moz-opacity: .80;
 }
 
 .unitime-FilterBox .chip {
