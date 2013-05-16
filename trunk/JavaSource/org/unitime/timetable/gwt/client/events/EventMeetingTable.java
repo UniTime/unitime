@@ -904,13 +904,13 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}		
 		}
 		
-		if (event != null && event.hasEnrollment() && iShowMainContact) {
+		if (event != null && event.hasEnrollment()) {
 			row.add(new NumberCell(event.getEnrollment().toString()));
 		} else {
 			row.add(new HTML("&nbsp;"));
 		}
 		
-		if (event != null && event.hasMaxCapacity() && iShowMainContact) {
+		if (event != null && event.hasMaxCapacity()) {
 			row.add(new NumberCell(event.getMaxCapacity().toString()));
 		} else {
 			row.add(new HTML("&nbsp;"));
@@ -1049,8 +1049,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			setColumnVisible(getHeader(MESSAGES.colAllocatedTime()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_ALLOCATED_TIME));
 			setColumnVisible(getHeader(MESSAGES.colSetupTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_SETUP_TIME));
 			setColumnVisible(getHeader(MESSAGES.colTeardownTimeShort()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_TEARDOWN_TIME));
-			setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
-			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && iShowMainContact && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
+			setColumnVisible(getHeader(MESSAGES.colLimit()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && EventCookie.getInstance().get(EventFlag.SHOW_LIMIT));
+			setColumnVisible(getHeader(MESSAGES.colEnrollment()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && EventCookie.getInstance().get(EventFlag.SHOW_ENROLLMENT));
 			setColumnVisible(getHeader(MESSAGES.colCapacity()).getColumn(), EventCookie.getInstance().get(EventFlag.SHOW_CAPACITY));
 			setColumnVisible(getHeader(MESSAGES.colSponsorOrInstructor()).getColumn(), getMode().hasFlag(ModeFlag.ShowEventDetails) && EventCookie.getInstance().get(EventFlag.SHOW_SPONSOR));
 		} else {
@@ -1140,10 +1140,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			@Override
 			public boolean isApplicable() {
 				switch (flag) {
-				case SHOW_LIMIT:
-				case SHOW_ENROLLMENT:
 				case SHOW_MAIN_CONTACT:
 					return iShowMainContact && getMode().hasFlag(ModeFlag.ShowEventDetails);
+				case SHOW_LIMIT:
+				case SHOW_ENROLLMENT:
 				case SHOW_SPONSOR:
 				case SHOW_NOTE:
 					return getMode().hasFlag(ModeFlag.ShowEventDetails);
