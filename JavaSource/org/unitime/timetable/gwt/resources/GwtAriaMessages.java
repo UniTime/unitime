@@ -26,6 +26,9 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("{0} dialog opened.")
 	String dialogOpened(String name);
 	
+	@DefaultMessage("{0} dialog closed.")
+	String dialogClosed(String name);
+	
 	@DefaultMessage("Selected {0}")
 	String suggestionSelected(String suggestion);
 
@@ -40,6 +43,9 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("There are {0, number} suggestions. Use up and down arrows to navigate.")
 	String showingMultipleSuggestionsNoQueryNoneSelected(@PluralCount int nbrSuggestion);
+	
+	@DefaultMessage("There are {0, number} suggestions to {1}. Use up and down arrows to navigate.")
+	String showingMultipleSuggestionsNoneSelected(@PluralCount int nbrSuggestions, String query);
 
 	@DefaultMessage("Suggestion {0, number} of {1, number}. {2}")
 	String onSuggestion(@PluralCount int index, @PluralCount int nbrSuggestions, String suggestion);
@@ -394,4 +400,7 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Calendar opened, user arrows to navigate, enter to select the suggested date. Or type in a particular date. Suggestion: {0}")
 	String singleDatePopupOpenedDateSelected(String date);
+
+	@DefaultMessage("People lookup. Enter name, use arrows to navigate through suggested people, enter to select.")
+	String peopleLookupName();
 }
