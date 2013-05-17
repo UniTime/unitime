@@ -738,7 +738,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote("<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
 				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle))
@@ -752,7 +752,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new HTML("&nbsp;"));
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote().replace("\n", "<br>") : "&nbsp;");
+				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote("<br>") : "&nbsp;");
 				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
 				row.add(note);
 				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
