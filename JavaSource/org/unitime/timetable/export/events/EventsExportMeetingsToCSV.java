@@ -113,7 +113,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
-					event.hasNotes() ? event.getNotes().first().getNote() : "",
+					event.hasEventNote() ? event.getEventNote("\n").replace("<br>", "\n") : "",
 					meeting.isArrangeHours() ? "" : df.format(meeting.getMeetingDate()),
 					meeting.isArrangeHours() ? "" : meeting.getStartTime(CONSTANTS, true),
 					meeting.isArrangeHours() ? "" : meeting.getEndTime(CONSTANTS, true),
