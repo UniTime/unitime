@@ -791,13 +791,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    			if (correctedOffering.getScheduleBookNote() != null && !correctedOffering.getScheduleBookNote().isEmpty()) {
 			    				NoteInterface note = new NoteInterface();
 			    				note.setId(-2l);
-			    				note.setNote(correctedOffering.getScheduleBookNote().replace("\n", "<br>"));
+			    				note.setNote(correctedOffering.getScheduleBookNote());
 			    				event.addNote(note);
 			    			}
 				    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty()) {
 				    			NoteInterface note = new NoteInterface();
 			    				note.setId(-1l);
-			    				note.setNote(clazz.getSchedulePrintNote().replace("\n", "<br>"));
+			    				note.setNote(clazz.getSchedulePrintNote());
 			    				event.addNote(note);
 				    		}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
@@ -932,7 +932,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				        		note.setDate(n.getTimeStamp());
 				        		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
 				        		note.setMeetings(n.getMeetingsHtml());
-				        		note.setNote(n.getTextNote() == null ? null : n.getTextNote().replace("\n", "<br>"));
+				        		note.setNote(n.getTextNote());
 				        		note.setUser(n.getUser());
 				        		note.setAttachment(n.getAttachedName());
 				    			event.addNote(note);
@@ -1605,13 +1605,13 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    			if (correctedOffering.getScheduleBookNote() != null && !correctedOffering.getScheduleBookNote().isEmpty()) {
 				    				NoteInterface note = new NoteInterface();
 				    				note.setId(-2l);
-				    				note.setNote(correctedOffering.getScheduleBookNote().replace("\n", "<br>"));
+				    				note.setNote(correctedOffering.getScheduleBookNote());
 				    				event.addNote(note);
 				    			}
 					    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty()) {
 					    			NoteInterface note = new NoteInterface();
 				    				note.setId(-1l);
-				    				note.setNote(clazz.getSchedulePrintNote().replace("\n", "<br>"));
+				    				note.setNote(clazz.getSchedulePrintNote());
 				    				event.addNote(note);
 					    		}
 				    			if (request.getEventFilter().hasText() && !event.getName().toLowerCase().startsWith(request.getEventFilter().getText().toLowerCase()) &&

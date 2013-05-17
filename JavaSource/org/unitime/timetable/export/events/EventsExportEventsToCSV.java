@@ -107,7 +107,7 @@ public class EventsExportEventsToCSV extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
-					event.hasNotes() ? event.getNotes().first().getNote() : "",
+					event.hasEventNote() ? event.getEventNote("\n").replace("<br>", "\n") : "",
 					multi.getDays(CONSTANTS.shortDays(), CONSTANTS.shortDays(), CONSTANTS.daily()),
 					multi.getFirstMeetingDate() == null ? "" : df.format(multi.getFirstMeetingDate()),
 					multi.getLastMeetingDate() == null ? "" : multi.getNrMeetings() == 1 ? null : df.format(multi.getLastMeetingDate()),

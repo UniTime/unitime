@@ -109,7 +109,7 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 					getSection(event),
 					event.hasInstruction() ? event.getInstruction() : event.getType().getAbbreviation(CONSTANTS),
 					getTitle(event),
-					event.hasNotes() ? event.getNotes().first().getNote() : "",
+					event.hasEventNote() ? event.getEventNote("\n").replace("<br>", "\n") : "",
 					meeting.isArrangeHours() ? CONSTANTS.arrangeHours() : dfMeeting.format(meeting.getMeetingDate()),
 					meeting.getMeetingTime(CONSTANTS),
 					meeting.getAllocatedTime(CONSTANTS),
