@@ -32,7 +32,6 @@ import java.util.Set;
 import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
-import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -738,24 +737,34 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				row.add(new MultiLineNumberCell(section));
 				row.add(new Label(event.getInstruction() == null ? event.getType().getAbbreviation(CONSTANTS) : event.getInstruction(), false));
 				row.add(new MultiLineCell(title));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote("<br>") : "&nbsp;");
-				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
-				row.add(note);
+				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
+					MultiLineCell note = new MultiLineCell(event.getEventNote("\n").split("\\n"));
+					note.setTitle(event.getEventNote("\n"));
+					note.addStyleName("note");
+					row.add(note);
+				} else {
+					row.add(new HTML("&nbsp;"));	
+				}
 				if (!section.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colSection()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle))
 					setColumnVisible(getHeader(MESSAGES.colSection()).getColumn(), true);
 				if (!title.isEmpty() && !isColumnVisible(getHeader(MESSAGES.colTitle()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_TITLE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colTitle()).getColumn(), true);
-				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
+				if (event.hasEventNote() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			} else {
 				row.add(new HTML(event.getName()));
 				row.add(new HTML("&nbsp;"));
 				row.add(new Label(event.getType().getAbbreviation(CONSTANTS), false));
 				row.add(new HTML("&nbsp;"));
-				P note = new P("note"); note.setHTML(event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails) ? event.getEventNote("<br>") : "&nbsp;");
-				if (event.hasNotes()) note.setTitle(event.getNotes().first().getNote());
-				row.add(note);
-				if (event.hasNotes() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
+				if (event.hasEventNote() && getMode().hasFlag(ModeFlag.ShowEventDetails)) {
+					MultiLineCell note = new MultiLineCell(event.getEventNote("\n").split("\\n"));
+					note.setTitle(event.getEventNote("\n"));
+					note.addStyleName("note");
+					row.add(note);
+				} else {
+					row.add(new HTML("&nbsp;"));	
+				}
+				if (event.hasEventNote() && !isColumnVisible(getHeader(MESSAGES.colNote()).getColumn()) && EventCookie.getInstance().get(EventFlag.SHOW_NOTE) && getMode().hasFlag(ModeFlag.ShowOptionalColumns) && !getMode().hasFlag(ModeFlag.HideTitle)) 
 					setColumnVisible(getHeader(MESSAGES.colNote()).getColumn(), true);
 			}
 		} else if (conflict != null) {
@@ -1777,6 +1786,15 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			super();
 			setWordWrap(false);
 			iValue = value;
+			showLine(null);
+		}
+		
+		public MultiLineCell(String... values) {
+			super();
+			setWordWrap(false);
+			iValue = new ArrayList<String>();
+			for (String value: values)
+				iValue.add(value);
 			showLine(null);
 		}
 		
