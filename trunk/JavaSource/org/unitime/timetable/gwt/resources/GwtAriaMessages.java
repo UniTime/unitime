@@ -382,4 +382,16 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Selected meetings: {0}.")
 	String meetingSelectionSelected(String meetings);
+	
+	@DefaultMessage("Suggestion: {0}")
+	String singleDateCursor(String date);
+	
+	@DefaultMessage("Selected: {0}")
+	String singleDateSelected(String date);
+	
+	@DefaultMessage("Calendar opened, user arrows to navigate, enter to select the suggested date. Or type in a particular date. Showing {0}")
+	String singleDatePopupOpenedNoDateSelected(String month);
+	
+	@DefaultMessage("Calendar opened, user arrows to navigate, enter to select the suggested date. Or type in a particular date. Suggestion: {0}")
+	String singleDatePopupOpenedDateSelected(String date);
 }
