@@ -700,12 +700,6 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						}
 						event.setExpirationDate(m.getEvent().getExpirationDate());
 						
-						String note = null;
-						for (EventNote n: m.getEvent().getNotes()) {
-							if (n.getTextNote() != null && !n.getTextNote().isEmpty())
-								note = (note == null ? "" : note + "n") + n.getTextNote();
-						}
-						
 				    	if (Event.sEventTypeClass == m.getEvent().getEventType()) {
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
@@ -794,9 +788,18 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    		if (clazz.getClassSuffix(co) != null)
 					    			event.addExternalId(clazz.getClassSuffix(co));
 			    			}
-				    		note = correctedOffering.getScheduleBookNote();
-				    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
-				    			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
+			    			if (correctedOffering.getScheduleBookNote() != null && !correctedOffering.getScheduleBookNote().isEmpty()) {
+			    				NoteInterface note = new NoteInterface();
+			    				note.setId(-2l);
+			    				note.setNote(correctedOffering.getScheduleBookNote().replace("\n", "<br>"));
+			    				event.addNote(note);
+			    			}
+				    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty()) {
+				    			NoteInterface note = new NoteInterface();
+			    				note.setId(-1l);
+			    				note.setNote(clazz.getSchedulePrintNote().replace("\n", "<br>"));
+			    				event.addNote(note);
+				    		}
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setEnrollment(xe.getExam().countStudents());
@@ -922,12 +925,20 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							event.setEnrollment(enrl);
 				    	}
 				    	
-			    		if (note != null && !note.isEmpty()) {
-			    			NoteInterface n = new NoteInterface();
-			    			n.setNote(note);
-			    			event.addNote(n);
-			    		}
-			    		
+				    	if (event.isCanView()) {
+							for (EventNote n: m.getEvent().getNotes()) {
+				    			NoteInterface note = new NoteInterface();
+				    			note.setId(n.getUniqueId());
+				        		note.setDate(n.getTimeStamp());
+				        		note.setType(NoteInterface.NoteType.values()[n.getNoteType()]);
+				        		note.setMeetings(n.getMeetingsHtml());
+				        		note.setNote(n.getTextNote() == null ? null : n.getTextNote().replace("\n", "<br>"));
+				        		note.setUser(n.getUser());
+				        		note.setAttachment(n.getAttachedName());
+				    			event.addNote(note);
+							}
+				    	}
+				    	
 						ret.add(event);
 					}
 					MeetingInterface meeting = new MeetingInterface();
@@ -1591,7 +1602,20 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 									meeting.setPast(true);
 									event.addMeeting(meeting);
 				    			}
-				    			if (request.getEventFilter().hasText() && !event.getName().startsWith(request.getEventFilter().getText())) continue;
+				    			if (correctedOffering.getScheduleBookNote() != null && !correctedOffering.getScheduleBookNote().isEmpty()) {
+				    				NoteInterface note = new NoteInterface();
+				    				note.setId(-2l);
+				    				note.setNote(correctedOffering.getScheduleBookNote().replace("\n", "<br>"));
+				    				event.addNote(note);
+				    			}
+					    		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty()) {
+					    			NoteInterface note = new NoteInterface();
+				    				note.setId(-1l);
+				    				note.setNote(clazz.getSchedulePrintNote().replace("\n", "<br>"));
+				    				event.addNote(note);
+					    		}
+				    			if (request.getEventFilter().hasText() && !event.getName().toLowerCase().startsWith(request.getEventFilter().getText().toLowerCase()) &&
+				    				(request.getEventFilter().getText().length() < 2 || !event.getName().toLowerCase().contains(" " + request.getEventFilter().getText().toLowerCase()))) continue;
 								ret.add(event);
 						 }
 					}					

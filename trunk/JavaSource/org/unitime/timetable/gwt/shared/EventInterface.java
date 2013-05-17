@@ -141,14 +141,17 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		iNotes.add(note);
 	}
 	public boolean hasEventNote() {
-		return hasNotes() && !getEventNote().isEmpty();
+		if (iNotes == null) return false;
+		for (NoteInterface n: getNotes())
+			if (n.getNote() != null && !n.getNote().isEmpty()) return true;
+		return false;
 	}
-	public String getEventNote() {
+	public String getEventNote(String linebreak) {
 		String note = "";
 		if (hasNotes())
 			for (NoteInterface n: getNotes()) {
 				if (n.getNote() != null && !n.getNote().isEmpty()) {
-					if (!note.isEmpty()) note += "\n";
+					if (!note.isEmpty()) note += linebreak;
 					note += n.getNote();
 				}
 			}
@@ -1049,9 +1052,21 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	
 		@Override
 		public int compareTo(NoteInterface note) {
-			int cmp = getDate() == null ? 1 : note.getDate() == null ? -1 : getDate().compareTo(note.getDate());
-			if (cmp != 0) return cmp;
-			return getType().compareTo(note.getType());
+			if (getDate() == null) {
+				if (getDate() != null) return -1;
+			} else if (note.getDate() == null) {
+				return 1;
+			} else if (!getDate().equals(note.getDate())) {
+				return getDate().compareTo(note.getDate());
+			}
+			if (getType() == null) {
+				if (note.getType() != null) return -1;
+			} else if (note.getType() == null) {
+				return 1;
+			} else if (!getType().equals(note.getType())) {
+				return getType().compareTo(note.getType());
+			}
+			return getId().compareTo(note.getId());
 		}
     }
     
