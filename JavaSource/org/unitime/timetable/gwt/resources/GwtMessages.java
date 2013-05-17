@@ -1277,6 +1277,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to load the page: page {0} not registered.")
 	String failedToLoadPageNotRegistered(String page);
 	
+	@DefaultMessage("Failed to lookup a person: {0}")
+	String failedLookup(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -1430,8 +1433,8 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("There is only one room matching the filter.")
 	String errorOnlyOneRoomIsMatchingFilter();
 	
-	@DefaultMessage("No person matching the query found.")
-	String errorNoPersonMatchingQuery();
+	@DefaultMessage("No person matching the query {0} was found.")
+	String errorNoPersonMatchingQuery(String query);
 	
 	@DefaultMessage("Engine is required.")
 	String errorEngineIsRequired();

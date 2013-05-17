@@ -22,6 +22,8 @@ package org.unitime.timetable.gwt.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -33,6 +35,7 @@ import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -61,7 +64,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentConstant;
@@ -70,13 +72,14 @@ import com.google.gwt.user.client.ui.HasHorizontalAlignment.HorizontalAlignmentC
  * @author Tomas Muller
  */
 public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface> {
-	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
+	protected static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
+	protected static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	protected static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 
 	private VerticalPanel iPanel;
 	private UniTimeTable<PersonInterface> iTable;
 	private ScrollPanel iScroll;
-	private TextBox iQuery;
+	private AriaTextBox iQuery;
 	private String iOptions;
 	private Timer iTimer;
 	private String iLastQuery = null;
@@ -90,8 +93,9 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 		setEscapeToHide(true);
 		iPanel = new VerticalPanel();
 		iPanel.setSpacing(2);
-		iQuery = new TextBox();
+		iQuery = new AriaTextBox();
 		iQuery.setWidth("400px");
+		iQuery.setAriaLabel(ARIA.peopleLookupName());
 		HorizontalPanel queryPanel = new HorizontalPanel();
 		Label filterText = new Label(MESSAGES.propName(), false);
 		filterText.getElement().getStyle().setMarginRight(5, Unit.PX);
@@ -174,6 +178,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 				else { row ++; }
 				if (row >= iTable.getRowCount()) row = 1;
 				iTable.setSelected(row, true);
+				setAriaStatus();
 				scrollToSelectedRow();
 				event.preventDefault();
 				event.stopPropagation();
@@ -185,6 +190,7 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 				else { row --; }
 				if (row <= 0) row = iTable.getRowCount() - 1;;
 				iTable.setSelected(row, true);
+				setAriaStatus();
 				scrollToSelectedRow();
 				event.preventDefault();
 				event.stopPropagation();
@@ -197,10 +203,33 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 						iTimer.cancel();
 						Lookup.this.hide();
 						setValue(person, true);
+						AriaStatus.getInstance().setText(ARIA.suggestionSelected(toAriaString(person)));
 					}
 				}
 			}
 			break;
+		}
+	}
+	
+	protected String toAriaString(PersonInterface person) {
+		String aria = person.getName();
+		if (person.getEmail() != null && !person.getEmail().isEmpty())
+			aria += ", " + MESSAGES.colEmail() + " " + person.getEmail();
+		if (person.getPhone() != null && !person.getPhone().isEmpty())
+			aria += ", " + MESSAGES.colPhone() + " " + person.getPhone();
+		if (person.getDepartment() != null && !person.getDepartment().isEmpty())
+			aria += ", " + MESSAGES.colDepartment() + " " + person.getDepartment();
+		if (person.getSource() != null && !person.getSource().isEmpty())
+			aria += ", " + MESSAGES.colSource() + " " + person.getSource();
+		return aria;
+	}
+	
+	protected void setAriaStatus() {
+		int row = iTable.getSelectedRow(); 
+		if (row >= 1)  {
+			PersonInterface person = iTable.getData(row);
+			if (person != null)
+				AriaStatus.getInstance().setText(ARIA.onSuggestion(row, iTable.getRowCount() - 1, toAriaString(person)));
 		}
 	}
 
@@ -249,16 +278,28 @@ public class Lookup extends UniTimeDialogBox implements HasValue<PersonInterface
 				}
 				if (result.isEmpty()) {
 					List<Widget> line = new ArrayList<Widget>();
-					line.add(new ErrorLine(MESSAGES.errorNoPersonMatchingQuery(), false));
+					line.add(new ErrorLine(MESSAGES.errorNoPersonMatchingQuery(q), false));
 					iTable.addRow(null, line);
+					AriaStatus.getInstance().setText(MESSAGES.errorNoPersonMatchingQuery(q));
+				} else {
+					if (iTable.getSelectedRow() < 1)
+						iTable.setSelected(1, true);
+					if (result.size() == 1) {
+						AriaStatus.getInstance().setText(ARIA.showingOneSuggestion(toAriaString(result.get(0))));
+					} else if (iTable.getSelectedRow() == 1) {
+						AriaStatus.getInstance().setText(ARIA.showingMultipleSuggestions(result.size(), q, toAriaString(result.get(0))));
+					} else {
+						AriaStatus.getInstance().setText(ARIA.showingMultipleSuggestionsNoneSelected(result.size(), q));				
+					}
 				}
 			}
 			@Override
 			public void onFailure(Throwable caught) {
 				iTable.clearTable(1);
 				List<Widget> line = new ArrayList<Widget>();
-				line.add(new ErrorLine(caught.getMessage(), true));
+				line.add(new ErrorLine(MESSAGES.failedLookup(caught.getMessage()), true));
 				iTable.addRow(null, line);
+				AriaStatus.getInstance().setText(MESSAGES.failedLookup(caught.getMessage()));
 			}
 		});
 	}

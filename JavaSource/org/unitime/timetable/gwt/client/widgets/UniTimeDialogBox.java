@@ -125,9 +125,10 @@ public class UniTimeDialogBox extends AriaDialogBox implements HasOpenHandlers<U
     @Override
 	protected void onPreviewNativeEvent(NativePreviewEvent event) {
 		super.onPreviewNativeEvent(event);
-		if (isEscapeToHide() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ESCAPE)
+		if (isEscapeToHide() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ESCAPE) {
+			AriaStatus.getInstance().setText(ARIA.dialogClosed(getText()));
 			hide();
-		if (isEnterToSubmit() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ENTER)
+		} if (isEnterToSubmit() && DOM.eventGetKeyCode((Event)event.getNativeEvent()) == KeyCodes.KEY_ENTER)
 	    	iSubmitHandler.execute();
 	}
 }
