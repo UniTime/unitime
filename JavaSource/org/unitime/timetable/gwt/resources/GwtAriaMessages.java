@@ -311,6 +311,12 @@ public interface GwtAriaMessages extends Messages {
 	@DefaultMessage("Hide column {0}")
 	String opHide(String column);
 	
+	@DefaultMessage("Enable {0}")
+	String opCheck(String column);
+
+	@DefaultMessage("Disable {0}")
+	String opUncheck(String column);
+
 	@DefaultMessage("Every {0} of {1}")
 	String datesDayOfWeekSelection(String dayOfWeek, String month);
 	

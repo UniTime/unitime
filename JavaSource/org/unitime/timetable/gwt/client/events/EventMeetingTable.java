@@ -627,6 +627,53 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		addSortByOperation(hContact, EventMeetingSortBy.MAIN_CONTACT);
 		addSortByOperation(hApproval, EventMeetingSortBy.APPROVAL);
 		
+		hTimes.addOperation(new AriaOperation() {
+			@Override
+			public void execute() {
+				EventCookie.getInstance().setAutomaticallyApproveNewMeetings(!EventCookie.getInstance().isAutomaticallyApproveNewMeetings());
+				for (int row = 1; row < getRowCount(); row++) {
+					EventMeetingRow data = getData(row);
+					if (data.hasMeeting() && data.getMeeting().getId() == null && data.getMeeting().isCanApprove() && data.hasEvent() && (data.getEvent().getType() == EventType.Special || data.getEvent().getType() == EventType.Course)) {
+						HTML approval = (HTML)getWidget(row, getHeader(MESSAGES.colApproval()).getColumn());
+						if (EventCookie.getInstance().isAutomaticallyApproveNewMeetings()) {
+							approval.setStyleName("new-approved-meeting");
+							approval.setText(MESSAGES.approvelNewApprovedMeeting());
+						} else {
+							approval.setStyleName("new-meeting");
+							approval.setText(MESSAGES.approvalNewMeeting());
+						}
+					}
+				}
+				ValueChangeEvent.fire(EventMeetingTable.this, getValue());
+			}
+			@Override
+			public boolean isApplicable() {
+				for (int row = 1; row < getRowCount(); row++) {
+					EventMeetingRow data = getData(row);
+					if (data.hasMeeting() && data.getMeeting().getId() == null && data.getMeeting().isCanApprove() && data.hasEvent() && (data.getEvent().getType() == EventType.Special || data.getEvent().getType() == EventType.Course))
+						return true;
+				}
+				return false;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+			@Override
+			public String getName() {
+				return EventCookie.getInstance().isAutomaticallyApproveNewMeetings()
+						? MESSAGES.opUncheck(MESSAGES.opAutomaticApproval())
+						: MESSAGES.opCheck(MESSAGES.opAutomaticApproval());
+			}
+			@Override
+			public String getAriaLabel() {
+				return EventCookie.getInstance().isAutomaticallyApproveNewMeetings()
+						? ARIA.opUncheck(MESSAGES.opAutomaticApproval())
+						: ARIA.opCheck(MESSAGES.opAutomaticApproval());
+			}
+			
+		});
+		
 		for (int i = 0; i < getCellCount(0); i++)
 			getCellFormatter().setStyleName(0, i, "unitime-ClickableTableHeaderNoBorderLine");
 
@@ -956,7 +1003,8 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					meeting.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 					meeting.getMeetingDate() == null ? "" :
 					meeting.getId() == null ? event != null && event.getType() == EventType.Unavailabile ? event.getId() != null && event.getId() < 0l ? "" : "<span class='new-meeting'>" + MESSAGES.approvalNewUnavailabiliyMeeting() + "</span>" :
-					meeting.isCanApprove() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
+					event != null && (event.getType() == EventType.Class || event.getType() == EventType.FinalExam || event.getType() == EventType.MidtermExam) ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" :
+					meeting.isCanApprove() && EventCookie.getInstance().isAutomaticallyApproveNewMeetings() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
 							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
 							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : 
@@ -1695,7 +1743,15 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		}
 		
 		public boolean hasMeeting() { return iMeeting != null; }
-		public MeetingInterface getMeeting() { return iMeeting; }
+		public MeetingInterface getMeeting() {
+			if (iMeeting != null && iMeeting.getId() == null) {
+				if (EventCookie.getInstance().isAutomaticallyApproveNewMeetings() && iMeeting.isCanApprove())
+					iMeeting.setApprovalStatus(ApprovalStatus.Approved);
+				else
+					iMeeting.setApprovalStatus(ApprovalStatus.Pending);
+			}
+			return iMeeting;
+		}
 		
 		public boolean hasParent() { return iParent != null; }
 		public EventMeetingRow getParent() { return iParent; }
