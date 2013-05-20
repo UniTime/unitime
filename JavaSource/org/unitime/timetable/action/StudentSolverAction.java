@@ -94,7 +94,7 @@ public class StudentSolverAction extends Action {
         StudentSolverProxy solver = studentSectioningSolverService.getSolver();
 
         if (op==null) {
-        	myForm.init();
+        	myForm.init("y".equals(request.getParameter("reload")));
         	return mapping.findForward("showSolver");
         }
 
@@ -127,7 +127,7 @@ public class StudentSolverAction extends Action {
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	studentSectioningSolverService.removeSolver();
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
         if ("Clear".equals(op)) {
@@ -170,12 +170,12 @@ public class StudentSolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isRunning()) solver.stopSolver();
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
         if ("Refresh".equals(op)) {
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
 		return mapping.findForward("showSolver");

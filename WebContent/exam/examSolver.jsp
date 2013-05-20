@@ -99,6 +99,7 @@ try {
 			&nbsp;<html:errors property="examType"/>
 		</TD>
 	</TR>
+	<input type="hidden" name="reload" value="y">
    	<TR><TD>Solver configuration:</TD>
 		<TD>
 			<html:select property="setting" onchange="submit();" disabled="<%=disabled%>">

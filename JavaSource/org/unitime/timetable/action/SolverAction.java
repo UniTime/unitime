@@ -107,7 +107,7 @@ public class SolverAction extends Action {
         	op = null;
         
         if (op==null) {
-        	myForm.init();
+        	myForm.init("y".equals(request.getParameter("confirm")));
         	return mapping.findForward("showSolver");
         }
         
@@ -156,7 +156,7 @@ public class SolverAction extends Action {
         	if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
         	courseTimetablingSolverService.removeSolver();
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
         // Reload
@@ -202,12 +202,12 @@ public class SolverAction extends Action {
         	if (solver==null) throw new Exception("Solver is not started.");
         	if (solver.isRunning()) solver.stopSolver();
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
         if ("Refresh".equals(op)) {
         	myForm.reset(mapping, request);
-        	myForm.init();
+        	myForm.init(false);
         }
         
         if ("Student Sectioning".equals(op)) {
