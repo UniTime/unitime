@@ -122,18 +122,13 @@ public class ExamSolverForm extends ActionForm {
 			for (Iterator i=settingsList.iterator();i.hasNext();) {
 				SolverPredefinedSetting setting = (SolverPredefinedSetting)i.next();
 				Hashtable settings = new Hashtable();
-				boolean skip = false;
 				for (Iterator j=setting.getParameters().iterator();j.hasNext();) {
 					SolverParameter param = (SolverParameter)j.next();
-					if (!"ExamBasic".equals(param.getDefinition().getGroup().getName())) continue;
-					if (param.getDefinition().getName().equals("ExamBasic.WhenFinished"))
-						skip |= !"No Action".equals(param.getValue()==null?param.getDefinition().getDefault():param.getValue());
-					settings.put(param.getDefinition().getUniqueId(),param.getValue());
+					if ("ExamBasic".equals(param.getDefinition().getGroup().getName()))
+						settings.put(param.getDefinition().getUniqueId(),param.getValue());
 				}
-				if (!skip) {
-					iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
-					iDefaults.put(setting.getUniqueId(),settings);
-				}
+				iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
+				iDefaults.put(setting.getUniqueId(),settings);
 			}
 
 			if (solver!=null) {
@@ -181,7 +176,7 @@ public class ExamSolverForm extends ActionForm {
 		iHost = (solver==null?"auto":solver.getHost());
 	}
 	
-	public void init() {
+	public void init(boolean change) {
 		if (iDefaults.containsKey(sSolver))
 			iParamValues.putAll((Hashtable)iDefaults.get(sSolver));
 		
@@ -193,6 +188,8 @@ public class ExamSolverForm extends ActionForm {
 					change();
 				}
 			}
+		} else if (change) {
+			change();
 		}
 
 		if (iSetting==null || iSetting.equals(sEmpty)) {

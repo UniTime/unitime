@@ -87,6 +87,7 @@ try {
 <%  
 	boolean disabled = (solver!=null && solver.isWorking());
 %>
+	<input type="hidden" name="reload" value="y">
    	<TR><TD>Solver configuration:</TD>
 		<TD>
 			<html:select property="setting" onchange="submit();" disabled="<%=disabled%>">

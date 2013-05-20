@@ -126,20 +126,13 @@ public class SolverForm extends ActionForm {
 			for (Iterator i=settingsList.iterator();i.hasNext();) {
 				SolverPredefinedSetting setting = (SolverPredefinedSetting)i.next();
 				Hashtable settings = new Hashtable();
-				boolean skip = false;
 				for (Iterator j=setting.getParameters().iterator();j.hasNext();) {
 					SolverParameter param = (SolverParameter)j.next();
-					if (!"Basic".equals(param.getDefinition().getGroup().getName())) continue;
-					if (param.getDefinition().getName().equals("Basic.WhenFinished"))
-						skip |= !"No Action".equals(param.getValue()==null?param.getDefinition().getDefault():param.getValue());
-					if (param.getDefinition().getName().equals("Basic.DisobeyHard"))
-						skip |= "true".equals(param.getValue()==null?param.getDefinition().getDefault():param.getValue());
-					settings.put(param.getDefinition().getUniqueId(),param.getValue());
+					if ("Basic".equals(param.getDefinition().getGroup().getName()))
+						settings.put(param.getDefinition().getUniqueId(),param.getValue());
 				}
-				if (!skip) {
-					iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
-					iDefaults.put(setting.getUniqueId(),settings);
-				}
+				iSettings.add(new SolverPredefinedSetting.IdValue(setting.getUniqueId(),setting.getDescription()));
+				iDefaults.put(setting.getUniqueId(),settings);
 			}
 
 			if (solver!=null) {
@@ -206,10 +199,10 @@ public class SolverForm extends ActionForm {
 		iHost = (solver==null?"auto":solver.getHost());
 	}
 	
-	public void init() {
+	public void init(boolean change) {
 		if (iDefaults.containsKey(sSolver))
 			iParamValues.putAll((Hashtable)iDefaults.get(sSolver));
-		
+
 		if (iSetting==null || iSetting.equals(sEmpty)) {
 			for (Enumeration e=iSettings.elements();e.hasMoreElements();) {
 				SolverPredefinedSetting.IdValue x = (SolverPredefinedSetting.IdValue)e.nextElement();
@@ -218,6 +211,8 @@ public class SolverForm extends ActionForm {
 					change();
 				}
 			}
+		} else if (change) {
+			change();
 		}
 
 		if (iSetting==null || iSetting.equals(sEmpty)) {
