@@ -37,6 +37,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -191,10 +192,10 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 						if (offerings != null && offerings.size() == 1) {
 					    	InstructionalOffering io = offerings.first();
 					    	if (sessionContext.hasPermission(io, Right.InstructionalOfferingDetail)) {
-						        request.setAttribute("op", "view");
-						        request.setAttribute("io", io.getUniqueId().toString());
-						        
-						        return mapping.findForward("showInstructionalOfferingDetail");
+					            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
+					            redirect.addParameter("op", "view");
+					            redirect.addParameter("io", io.getUniqueId().toString());
+					            return redirect;
 					    	}
 						}
 				    }
@@ -466,9 +467,10 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
     	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")) {
     		CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(sessionContext.getUser().getCurrentAcademicSessionId(), subjAreaId, courseNbr);
     		if (course != null) {
-		        request.setAttribute("op", "view");
-		        request.setAttribute("io", course.getInstructionalOffering().getUniqueId().toString());
-		        return mapping.findForward("showInstructionalOfferingDetail");
+	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
+	            redirect.addParameter("op", "view");
+	            redirect.addParameter("io", course.getInstructionalOffering().getUniqueId().toString());
+	            return redirect;
 		    }
     	}
 
@@ -481,9 +483,10 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		    if (sessionContext.hasPermission(newCourseOffering.getInstructionalOffering(), Right.OfferingCanLock))
 		    	newCourseOffering.getInstructionalOffering().getSession().lockOffering(newCourseOffering.getInstructionalOffering().getUniqueId());
 	    	
-	        request.setAttribute("op", MSG.actionEditCourseOffering());
-	        request.setAttribute("courseOfferingId", newCourseOffering.getUniqueId().toString());
-	        return mapping.findForward("showCourseOfferingEdit");
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showCourseOfferingEdit"));
+            redirect.addParameter("op", MSG.actionEditCourseOffering());
+            redirect.addParameter("courseOfferingId", newCourseOffering.getUniqueId().toString());
+            return redirect;
 	    }
 		
 	    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));

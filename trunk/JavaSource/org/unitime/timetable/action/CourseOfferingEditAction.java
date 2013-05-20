@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.hibernate.Transaction;
 import org.hibernate.impl.SessionImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,9 +156,10 @@ public class CourseOfferingEditAction extends Action {
 					sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, frm.getCourseNbr());
 
 			    // Redirect to instr offering detail on success
-	            request.setAttribute("io", frm.getInstrOfferingId());
-	            request.setAttribute("op", "view");
-	            return mapping.findForward("instructionalOfferingDetail");
+                ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
+                redirect.addParameter("io", frm.getInstrOfferingId());
+                redirect.addParameter("op", "view");
+                return redirect;
 			}
 			else {
 				saveErrors(request, errors);

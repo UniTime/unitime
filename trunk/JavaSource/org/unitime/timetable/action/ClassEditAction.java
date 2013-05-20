@@ -34,6 +34,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -189,10 +190,10 @@ public class ClassEditAction extends PreferencesAction {
         }
 
         // Cancel - Go back to Class Detail Screen
-        if(op.equals(MSG.actionBackToDetail())
-                && classId!=null && classId.trim().length()!=0 ) {
-            request.setAttribute("cid", classId);
-            return mapping.findForward("displayClassDetail");
+        if(op.equals(MSG.actionBackToDetail()) && classId!=null && classId.trim().length()!=0 ) {
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displayClassDetail"));
+            redirect.addParameter("cid", classId);
+            return redirect;
         }
 
         // If class id is not null - load class info
@@ -241,8 +242,9 @@ public class ClassEditAction extends PreferencesAction {
                     c.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                     c.getManagingDept());
 
-            request.setAttribute("cid", classId);
-            return mapping.findForward("displayClassDetail");
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displayClassDetail"));
+            redirect.addParameter("cid", classId);
+            return redirect;
         }
 
         // Reset form for initial load
@@ -285,16 +287,15 @@ public class ClassEditAction extends PreferencesAction {
                    		editAction.performExternalClassEditAction(c, hibSession);
                 	}
 
-    	            request.setAttribute("cid", classId);
-
     	            if (op.equals(MSG.actionNextClass()))
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getNextId()));
 
     	            if (op.equals(MSG.actionPreviousClass()))
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getPreviousId()));
 
-    	            return mapping.findForward("displayClassDetail");
-
+    	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displayClassDetail"));
+    	            redirect.addParameter("cid", classId);
+    	            return redirect;
             	} catch (Exception e) {
             		tx.rollback(); throw e;
             	}
