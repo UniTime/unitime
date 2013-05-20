@@ -89,6 +89,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("&#9746; {0}")
 	String opHide(String column);
 	
+	@DefaultMessage("&#9744; {0}")
+	String opCheck(String column);
+
+	@DefaultMessage("&#9746; {0}")
+	String opUncheck(String column);
+
 	@DefaultMessage("&#10003; <u>A</u>pprove ...")
 	String opApproveSelectedMeetings();
 
@@ -319,6 +325,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Swap Axes")
 	String opSwapAxes();
+	
+	@DefaultMessage("Approve New Meetings")
+	String opAutomaticApproval();
 	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
