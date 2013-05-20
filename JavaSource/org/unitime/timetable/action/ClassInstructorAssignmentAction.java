@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -175,8 +176,6 @@ public class ClassInstructorAssignmentAction extends Action {
         	       		assignAction.performExternalInstrOfferingConfigAssignInstructorsAction(ioc, InstrOfferingConfigDAO.getInstance().getSession());
                 	}
 
-                    request.setAttribute("io", frm.getInstrOfferingId());
-
     	            if (op.equals(MSG.actionNextIO())) {
     	            	response.sendRedirect(response.encodeURL("classInstructorAssignment.do?uid="+frm.getNextId()+"&op="+URLEncoder.encode(MSG.actionAssignInstructors(), "UTF-8")));
     	            	return null;
@@ -187,8 +186,10 @@ public class ClassInstructorAssignmentAction extends Action {
     	            	return null;
     	            }
 
-    	            request.setAttribute("op", "view");
-    	            return mapping.findForward("instructionalOfferingDetail");
+                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
+                    redirect.addParameter("io", frm.getInstrOfferingId());
+                    redirect.addParameter("op", "view");
+                    return redirect;
             	} catch (Exception e) {
             		throw e;
             	}

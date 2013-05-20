@@ -89,12 +89,6 @@ public class ExamDetailAction extends PreferencesAction {
             if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
                 op = request.getParameter("op2");
             
-            if (request.getAttribute("fromChildScreen")!=null
-                    && request.getAttribute("fromChildScreen").toString().equals("true") ) {
-                op = "";
-                frm.setOp(op);
-            }
-            
             //Check op exists
             if (op==null) throw new Exception ("Null Operation not supported.");
             

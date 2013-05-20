@@ -30,6 +30,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,9 +149,9 @@ public class InstructorPrefEditAction extends PreferencesAction {
             // Cancel - Go back to Instructors Detail Screen
             if(op.equals(MSG.actionBackToDetail()) 
                     && instructorId!=null && instructorId.trim()!="") {
-                request.setAttribute("instructorId", instructorId);
-                request.setAttribute("fromChildScreen", "true");
-                return mapping.findForward("showDetail");
+	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+	            redirect.addParameter("instructorId", frm.getInstructorId());
+	            return redirect;
             }
             
             // Clear all preferences
@@ -160,8 +161,6 @@ public class InstructorPrefEditAction extends PreferencesAction {
                 inst.setPreferences(s);            
                 idao.update(inst);
                 op = "init";            	
-                request.setAttribute("instructorId", instructorId);
-                request.setAttribute("fromChildScreen", "true");
                 
                 ChangeLog.addChange(
                         null, 
@@ -172,7 +171,9 @@ public class InstructorPrefEditAction extends PreferencesAction {
                         null, 
                         inst.getDepartment());
                 
-                return mapping.findForward("showDetail");
+	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+	            redirect.addParameter("instructorId", instructorId);
+	            return redirect;
             }
             
             // Reset form for initial load
@@ -210,9 +211,6 @@ public class InstructorPrefEditAction extends PreferencesAction {
                             inst.getDepartment());
 
             		idao.saveOrUpdate(inst);
-                    request.setAttribute("instructorId", instructorId);
-                    request.setAttribute("fromChildScreen", "true");
-                    request.setAttribute("showPrefs", "true");
                     
     	        	if (op.equals(MSG.actionNextInstructor()))
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getNextId()));
@@ -220,7 +218,10 @@ public class InstructorPrefEditAction extends PreferencesAction {
     	            if (op.equals(MSG.actionPreviousInstructor()))
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getPreviousId()));
                     
-                    return mapping.findForward("showDetail");
+    	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+    	            redirect.addParameter("instructorId", frm.getInstructorId());
+    	            redirect.addParameter("showPrefs", "true");
+    	            return redirect;
                 }
                 else {
                     saveErrors(request, errors);

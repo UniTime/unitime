@@ -33,6 +33,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -148,9 +149,9 @@ public class ExamEditAction extends PreferencesAction {
                     return null;
                 }
                 if (examId!=null && examId.trim()!="") {
-                    request.setAttribute("examId", examId);
-                    request.setAttribute("fromChildScreen", "true");
-                    return mapping.findForward("showDetail");
+                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+                    redirect.addParameter("examId", examId);
+                    return redirect;
                 } else {
                     return mapping.findForward("showList");
                 }
@@ -164,7 +165,6 @@ public class ExamEditAction extends PreferencesAction {
                 exam.setPreferences(s);            
                 new ExamDAO().update(exam);
                 op = "init";                
-                request.setAttribute("examId", examId);
                 
                 ChangeLog.addChange(
                         null, 
@@ -175,7 +175,9 @@ public class ExamEditAction extends PreferencesAction {
                         exam.firstSubjectArea(),
                         exam.firstDepartment());
                 
-                return mapping.findForward("showDetail");
+                ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+                redirect.addParameter("examId", examId);
+                return redirect;
             }
             
             // Reset form for initial load
@@ -234,9 +236,6 @@ public class ExamEditAction extends PreferencesAction {
                 if(errors.size()==0) {
                     doUpdate(request, frm, exam);
                     
-                    request.setAttribute("examId", frm.getExamId());
-                    request.setAttribute("fromChildScreen", "true");
-                    
                     if (op.equals(rsc.getMessage("button.nextExam")))
                         response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getNextId()));
                     
@@ -251,7 +250,9 @@ public class ExamEditAction extends PreferencesAction {
                         return null;
                     }
                     
-                    return mapping.findForward("showDetail");
+                    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+                    redirect.addParameter("examId", frm.getExamId());
+                    return redirect;
                 }
                 else {
                     saveErrors(request, errors);

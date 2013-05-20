@@ -120,12 +120,6 @@ public class InstructorDetailAction extends PreferencesAction {
 	        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 	        	op = request.getParameter("op2");
 
-	        if (request.getAttribute("fromChildScreen")!=null
-	                && request.getAttribute("fromChildScreen").toString().equals("true") ) {
-	            op = "";
-	            frm.setOp(op);
-	        }
-
 	        //Check op exists
 	        if(op==null) 
 	            throw new Exception ("Null Operation not supported.");
@@ -334,16 +328,12 @@ public class InstructorDetailAction extends PreferencesAction {
 
 			frm.setDisplayPrefs(CommonValues.Yes.eq(sessionContext.getUser().getProperty(UserProperty.DispInstructorPrefs)));
 			
-			if (op.equals(rsc.getMessage("button.displayPrefs"))
-			        || ( request.getAttribute("showPrefs")!=null 
-			                && request.getAttribute("showPrefs").equals("true")) ) {
+			if (op.equals(rsc.getMessage("button.displayPrefs")) || "true".equals(request.getParameter("showPrefs"))) { 
 				frm.setDisplayPrefs(true);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.Yes.value());
 			}
 			
-			if (op.equals(rsc.getMessage("button.hidePrefs"))
-			        || ( request.getAttribute("showPrefs")!=null 
-			                && request.getAttribute("showPrefs").equals("false")) ) {
+			if (op.equals(rsc.getMessage("button.hidePrefs")) || "false".equals(request.getParameter("showPrefs"))) {
 				frm.setDisplayPrefs(false);
 				sessionContext.getUser().setProperty(UserProperty.DispInstructorPrefs, CommonValues.No.value());
 			}
