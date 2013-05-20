@@ -30,6 +30,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -133,7 +134,6 @@ public class InstructorInfoEditAction extends InstructorAction {
             errors = frm.validate(mapping, request);
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
-	        	request.setAttribute("instructorId", frm.getInstructorId());
 	            
 	        	if (op.equals(MSG.actionNextInstructor()))
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getNextId()));
@@ -141,7 +141,9 @@ public class InstructorInfoEditAction extends InstructorAction {
 	            if (op.equals(MSG.actionPreviousInstructor()))
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getPreviousId()));
 
-	            return mapping.findForward("showDetail");
+	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
+	            redirect.addParameter("instructorId", frm.getInstructorId());
+	            return redirect;
             } else {
                 if (errors.size()==0) {
                     errors.add( "uniqueId", 

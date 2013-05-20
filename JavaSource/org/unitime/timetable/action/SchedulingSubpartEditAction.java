@@ -29,6 +29,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -167,8 +168,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
         if(op.equals(MSG.actionBackToDetail())
                 && subpartId!=null && subpartId.trim()!="") {
 
-            request.setAttribute("ssuid", subpartId);
-            return mapping.findForward("displaySubpartDetail");
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
+            redirect.addParameter("ssuid", subpartId);
+            return redirect;
         }
 
         // Clear all preferences
@@ -190,8 +192,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
                     ss.getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering().getSubjectArea(),
                     ss.getManagingDept());
 
-            request.setAttribute("ssuid", subpartId);
-            return mapping.findForward("displaySubpartDetail");
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
+            redirect.addParameter("ssuid", subpartId);
+            return redirect;
         }
 
         // Reset form for initial load
@@ -216,7 +219,6 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             // No errors - Add to subpart and update
             if(errors.size()==0) {
                 this.doUpdate(request, frm, ss, sdao, timeVertical);
-	            request.setAttribute("ssuid", subpartId);
 
 	            if (op.equals(MSG.actionNextSubpart()))
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getNextId()));
@@ -224,7 +226,9 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
 	            if (op.equals(MSG.actionPreviousSubpart()))
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getPreviousId()));
 
-	            return mapping.findForward("displaySubpartDetail");
+	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
+	            redirect.addParameter("ssuid", subpartId);
+	            return redirect;
             }
             else {
                 saveErrors(request, errors);

@@ -38,6 +38,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -313,9 +314,10 @@ public class InstructionalOfferingConfigEditAction extends Action {
 	            request.setAttribute(SimpleItypeConfig.CONFIGS_ATTR_NAME, html);
 
 	            // Redirect to instr offering detail on success
-	            request.setAttribute("io", frm.getInstrOfferingId());
-	            request.setAttribute("op", "view");
-	            return mapping.findForward("instructionalOfferingDetail");
+                ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
+                redirect.addParameter("io", frm.getInstrOfferingId());
+                redirect.addParameter("op", "view");
+                return redirect;
             }
             catch (Exception e) {
                 html = SchedulingSubpartTableBuilder.buildSubpartsTable(request, sessionContext, frm.getLimit(), frm.getCourseOfferingId(), false, frm.getUnlimited().booleanValue());
@@ -339,10 +341,11 @@ public class InstructionalOfferingConfigEditAction extends Action {
             deleteConfig(request, frm);
 
             // Redirect to instr offering detail on success
-            request.setAttribute("io", frm.getInstrOfferingId());
-            request.setAttribute("cfgDelete", "1");
-            request.setAttribute("op", "view");
-            return mapping.findForward("instructionalOfferingDetail");
+            ActionRedirect redirect = new ActionRedirect(mapping.findForward("instructionalOfferingDetail"));
+            redirect.addParameter("io", frm.getInstrOfferingId());
+            redirect.addParameter("op", "view");
+            redirect.addParameter("cfgDelete", "1");
+            return redirect;
 		}
 
         // User clicks Unlimited Enrollment
