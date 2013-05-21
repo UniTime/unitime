@@ -1604,9 +1604,9 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				iHeader.setErrorMessage(MESSAGES.reqMeetings());
 			valid = false;
 		}
-		if (iExpirationDate.getValue() != null && iExpirationDate.getValue().before(iExpirationDate.today())) {
+		if (iExpirationDate.getValue() != null && iExpirationDate.getValue().before(iExpirationDate.today()) && iForm.getRowFormatter().isVisible(iForm.getRow(MESSAGES.propExpirationDate()))) {
 			for (EventMeetingRow row: iMeetings.getValue()) {
-				if (row.getMeeting().getId() == null && !row.getMeeting().isCanApprove()) { // there is a new meeting that should be expired
+				if (row.getMeeting().getId() == null && row.getMeeting().getApprovalStatus() == ApprovalStatus.Pending) { // there is a new meeting that could get expired
 					UniTimeNotifications.error(MESSAGES.errorExpirationDateInPast());
 					if (valid)
 						iHeader.setErrorMessage(MESSAGES.errorExpirationDateInPast());
