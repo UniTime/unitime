@@ -285,6 +285,14 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		}
 	}
 	
+	public void setFirstDate(Date firstDate) {
+		iMonth.setFirstDate(firstDate == null ? null : iFormat.parse(iFormat.format(firstDate)));
+	}
+	
+	public void setLastDate(Date lastDate) {
+		iMonth.setLastDate(lastDate == null ? null : iFormat.parse(iFormat.format(lastDate)));
+	}
+
 	public void init(Long sessionId) {
 		if (sessionId == null) {
 			if (iHint) setHint(MESSAGES.hintNoSession());
@@ -428,6 +436,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		String iTitle = null;
 		List<SessionMonth> iMonths = null;
 		private boolean iAllowDeselect;
+		private Date iFirstDate = null, iLastDate = null;
 		
 		public SingleMonth() {
 			this(null, Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(new Date())),
@@ -465,6 +474,16 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		
 		public List<SessionMonth> getMonths() {
 			return iMonths;
+		}
+		
+		public void setFirstDate(Date firstDate) {
+			iFirstDate = firstDate;
+			init();
+		}
+		
+		public void setLastDate(Date lastDate) {
+			iLastDate = lastDate;
+			init();
 		}
 		
 		protected void init() {
@@ -683,6 +702,16 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 						d.addStyleName("disabled");
 						enabled = false;
 					}
+				}
+				if (enabled && iFirstDate != null && DateTimeFormat.getFormat("yyyy/MM/dd").parse(iYear + "/" + iMonth + "/" + i).before(iFirstDate)) {
+					d.removeStyleName("clickable");
+					d.addStyleName("disabled");
+					enabled = false;
+				}
+				if (enabled && iLastDate != null && DateTimeFormat.getFormat("yyyy/MM/dd").parse(iYear + "/" + iMonth + "/" + i).after(iLastDate)) {
+					d.removeStyleName("clickable");
+					d.addStyleName("disabled");
+					enabled = false;
 				}
 				if (enabled)
 					d.addMouseDownHandler(onClick);

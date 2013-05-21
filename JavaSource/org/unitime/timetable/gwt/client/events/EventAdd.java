@@ -575,6 +575,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iForm.addRow(MESSAGES.propAttachment(), iFileUpload);
 		
 		iExpirationDate = new SingleDateSelector();
+		iExpirationDate.setFirstDate(iExpirationDate.today());
 		iForm.addRow(MESSAGES.propExpirationDate(), iExpirationDate);
 		
 		iCoursesForm = new SimpleForm();
