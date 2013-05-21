@@ -28,6 +28,26 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Data Exchange</title>
+		<item>
+			<name>Student Course Request XML Import</name>
+			<description>
+				<line>Import rewritten to work incrementally.
+					<line>All the course requests were deleted and created again. This was causing the relation between course request and class enrollments to disappear.</line>
+					<line>Now it tries to keep as much as possible.</line>
+				</line>
+				<line>This also fixes the occasional "Could not execute JDBC batch update" exception.</line>
+				<line>Online student scheduling server is notified about students that have been changed.</line>
+				<line>Merged from UniTime 3.4, revision 3359.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.213</version>
+	<release-date>Tue, 2 Apr 2013</release-date>
+	<category>
 		<title>Online Student Scheduling</title>
 		<item>
 			<name>Student Scheduling Assistant</name>
