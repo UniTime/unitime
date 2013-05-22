@@ -41,6 +41,7 @@ import net.sf.cpsolver.coursett.TimetableLoader;
 import net.sf.cpsolver.coursett.constraint.ClassLimitConstraint;
 import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
+import net.sf.cpsolver.coursett.constraint.FlexibleConstraint.FlexibleConstraintType;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
@@ -1415,7 +1416,21 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     
     private Constraint createGroupConstraint(DistributionPref pref) {
     	Constraint gc = null;
-    	if ("SAME_INSTR".equals(pref.getDistributionType().getReference())) {
+    	if (pref.getDistributionType().getReference().matches("_(.+)_")){
+    		for (FlexibleConstraintType fcType: FlexibleConstraintType.values()) {
+    			if (pref.getDistributionType().getReference().matches(fcType.getPattern())) {
+    				try {
+    					gc = fcType.create(pref.getUniqueId(), pref.getOwner().toString(), pref.getPrefLevel().getPrefProlog(), pref.getDistributionType().getReference());
+    				} catch (IllegalArgumentException e) {
+    					iProgress.warn("Constraint " + pref.getDistributionType().getReference() + " was not loaded. Inconsistent values.", e);
+    				}
+    			}
+    		}
+    		if (gc == null) {
+    			iProgress.warn("Constraint " + pref.getDistributionType().getReference() + " was not recognized.");
+	        	return null;
+    		}
+    	} else if ("SAME_INSTR".equals(pref.getDistributionType().getReference())) {
     		if (PreferenceLevel.sRequired.equals(pref.getPrefLevel().getPrefProlog()))
     			gc = new InstructorConstraint(new Long(-(int)pref.getUniqueId().longValue()),null, pref.getDistributionType().getLabel(),false);
     	} else if ("SPREAD".equals(pref.getDistributionType().getReference())) {
