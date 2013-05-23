@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Logger;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.aria.AriaButton;
@@ -33,6 +32,7 @@ import org.unitime.timetable.gwt.client.aria.AriaTextBox;
 import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -98,7 +98,6 @@ public class CourseSelectionBox extends Composite {
 	public static final StudentSectioningResources RESOURCES =  GWT.create(StudentSectioningResources.class);
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
-	public static Logger sLogger = Logger.getLogger(CourseSelectionBox.class.getName());
 	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	
 	private AcademicSessionProvider iAcademicSessionProvider;
@@ -448,7 +447,9 @@ public class CourseSelectionBox extends Composite {
 			iCourseDetailsTabPanel = new UniTimeTabPanel();
 			iCourseDetailsTabPanel.setDeckStyleName("unitime-TabPanel");
 			iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
+			final Character chDetails = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionDetails());
 			iCourseDetailsTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
+			final Character chClasses = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionClasses());
 			iCourseDetailsTabPanel.addSelectionHandler(new SelectionHandler<Integer>() {
 				public void onSelection(SelectionEvent<Integer> event) {
 					sLastSelectedCourseDetailsTab = event.getSelectedItem();
@@ -460,6 +461,7 @@ public class CourseSelectionBox extends Composite {
 			iCoursesTab.add(iCourseDetailsTabPanel);
 			iCoursesTab.add(iCoursesTip);
 			iTabPanel.add(iCoursesTab, MESSAGES.courseSelectionCourses(), true);
+			final Character chCourses = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionCourses());
 			
 			iFreeTimeTab = new VerticalPanel();
 			iFreeTimeTab.setSpacing(10);
@@ -499,6 +501,7 @@ public class CourseSelectionBox extends Composite {
 				iDialogPanel.add(iCourseDetailsTabPanel);
 				iDialogPanel.add(iCoursesTip);
 			}
+			final Character chFreeTime = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionFreeTime());
 			
 			iDialog.setWidget(iDialogPanel);
 			
@@ -551,17 +554,17 @@ public class CourseSelectionBox extends Composite {
 						updateCourseDetails();
 						courseSelectionChanged();
 					}
-					if ((event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C') && !isFreeTime() && (event.isControlKeyDown() || event.isAltKeyDown())) {
+					if (chCourses != null && (event.getNativeKeyCode()==Character.toLowerCase(chCourses) || event.getNativeKeyCode()==Character.toUpperCase(chCourses)) && !isFreeTime() && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iTabPanel.selectTab(0);
 						event.preventDefault();
 						AriaStatus.getInstance().setText(ARIA.courseFinderCoursesTab());
 					}
-					if (iAllowFreeTime && (event.getNativeKeyCode()=='t' || event.getNativeKeyCode()=='T') && (event.isControlKeyDown() || event.isAltKeyDown())) {
+					if (iAllowFreeTime && chFreeTime != null && (event.getNativeKeyCode()==Character.toLowerCase(chFreeTime) || event.getNativeKeyCode()==Character.toUpperCase(chFreeTime)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iTabPanel.selectTab(iCourseDetailsTabPanel != null ? 1 : 3);
 						event.preventDefault();
 						AriaStatus.getInstance().setText(ARIA.courseFinderFreeTimeTab());
 					}
-					if ((event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D') && (event.isControlKeyDown() || event.isAltKeyDown())) {
+					if (chDetails != null && (event.getNativeKeyCode()==Character.toLowerCase(chDetails) || event.getNativeKeyCode()==Character.toUpperCase(chDetails)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						if (iCourseDetailsTabPanel == null)
 							iTabPanel.selectTab(1);
 						else
@@ -572,7 +575,7 @@ public class CourseSelectionBox extends Composite {
 						else
 							AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 					}
-					if ((event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L') && (event.isControlKeyDown() || event.isAltKeyDown())) {
+					if (chClasses != null && (event.getNativeKeyCode()==Character.toLowerCase(chClasses) || event.getNativeKeyCode()==Character.toUpperCase(chClasses)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						if (iCourseDetailsTabPanel == null)
 							iTabPanel.selectTab(2);
 						else
