@@ -858,11 +858,11 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 									if (first == null) first = x;
 									last = x;
 								}
-							if (dateDay < first.getNumber()) {
+							if (first != null && dateDay < first.getNumber()) {
 								iMonth = i; iDow = first.getDow(); iWeek = first.getWeek();
 								first.addStyleName("cursor");
 								return;
-							} else {
+							} else if (last != null) {
 								iMonth = i; iDow = last.getDow(); iWeek = last.getWeek();
 								last.addStyleName("cursor");
 								return;
