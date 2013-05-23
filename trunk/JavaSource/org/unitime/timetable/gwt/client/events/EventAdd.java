@@ -987,27 +987,64 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 	}
 	
 	public void setup(EventPropertiesRpcResponse properties) {
+		EventInterface event = (isAttached() && isVisible() && iEvent != null && iEvent.getId() == null ? getEvent() : null);
+		String notes = getMessage();
 		iSponsors.clear();
 		if (properties.hasSponsoringOrganizations()) {
 			iSponsors.addItem(MESSAGES.itemSelect(), "");
 			for (SponsoringOrganizationInterface sponsor: properties.getSponsoringOrganizations())
 				iSponsors.addItem(sponsor.getName(), sponsor.getUniqueId().toString());
 		}
+		if (event != null) {
+			// Fix event type
+			if (event.getType() == EventType.Unavailabile && !properties.isCanAddUnavailableEvent())
+				event.setType(EventType.Special);
+			if (event.getType() == EventType.Course && !properties.isCanAddCourseEvent())
+				event.setType(EventType.Special);
+			// Remove all meetings and related objects
+			if (event.hasMeetings()) event.getMeetings().clear();
+			if (event.hasRelatedObjects()) event.getRelatedObjects().clear();
+			if (!properties.isCanLookupContacts()) { // Can not lookup
+				// Clear additional contacts
+				if (event.hasAdditionalContacts()) event.getAdditionalContacts().clear();
+				// Clear main contact if different from the user
+				if (event.hasContact() && event.getContact().hasExternalId()) {
+					if (!event.getContact().getExternalId().equals(properties.hasMainContact() ? properties.getMainContact().getExternalId() : null))
+						event.setContact(null);
+				} else if (event.hasContact() && !event.getContact().hasExternalId()) {
+					event.setContact(null);
+				}
+			}
+			// Clear expiration date, if cannot set
+			if (!properties.isCanSetExpirationDate())
+				event.setExpirationDate(null);
+			
+			iEnrollments.clear();
+			iForm.getRowFormatter().setVisible(iEnrollmentRow, false);
+			iForm.getRowFormatter().setVisible(iEnrollmentRow + 1, false);
+			
+			setEvent(event, false);
+			
+			if (notes != null && !notes.isEmpty())
+				iNotes.setText(notes);
+		}
 		EventType type = getEventType();
 		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propSponsor()), type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam && iSponsors.getItemCount() > 0);
-		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), (getProperties().isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
-		if (isAttached() && isVisible() && (iEvent != null && iEvent.getId() == null))
-			setEvent(null);
+		iForm.getRowFormatter().setVisible(iForm.getRow(MESSAGES.propExpirationDate()), (properties.isCanSetExpirationDate() || iExpirationDate.getValue() != null) && type != EventType.Unavailabile && type != EventType.Class && type != EventType.MidtermExam && type != EventType.FinalExam);
 	}
 	
 	public void setEvent(EventInterface event) {
+		setEvent(event, true);
+	}
+	
+	public void setEvent(EventInterface event, boolean resetUpload) {
 		iEmailConfirmationHeader.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
 		iEmailConfirmationHeader.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
 		iEmailConfirmationFooter.setValue(getProperties() == null ||  getProperties().isEmailConfirmation());
 		iEmailConfirmationFooter.setVisible(getProperties() == null || getProperties().hasEmailConfirmation());
-		iFileUpload.reset();
+		if (resetUpload) iFileUpload.reset();
 		iShowDeleted.setValue(EventCookie.getInstance().isShowDeletedMeetings(), true);
-		iForm.getRowFormatter().setVisible(iSessionRow, event == null);
+		iForm.getRowFormatter().setVisible(iSessionRow, event == null || event.getId() == null);
 		iEvent = (event == null ? new EventInterface() : event);
 		iSavedEvent = null;
 		iHeader.clearMessage();
@@ -1035,6 +1072,14 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		
 		if (iEvent.getType() == null) {
 			iEventType.getWidget().setSelectedIndex(0);
+			iEventType.setReadOnly(false);
+		} else if (iEvent.getId() == null) {
+			iEventType.getWidget().setSelectedIndex(0);
+			for (int i = 1; i < iEventType.getWidget().getItemCount(); i++) {
+				if (iEventType.getWidget().getValue(i).equals(iEvent.getType().name())) {
+					iEventType.getWidget().setSelectedIndex(i); break;
+				}
+			}
 			iEventType.setReadOnly(false);
 		} else {
 			iEventType.setText(iEvent.getType().getName(CONSTANTS));
