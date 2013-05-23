@@ -115,7 +115,8 @@ public class CurriculumEdit extends Composite {
 			@Override
 			public void onClick(ClickEvent event) {
 				if (iMode == Mode.EDIT) { // back to detail screen
-					loadCurriculum(Mode.DETAILS);
+					// loadCurriculum(Mode.DETAILS);
+					reload(Mode.DETAILS);
 				} else {
 					EditFinishedEvent e = new EditFinishedEvent();
 					for (EditFinishedHandler h: iEditFinishedHandlers) {

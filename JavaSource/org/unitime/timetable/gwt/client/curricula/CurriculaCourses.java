@@ -530,7 +530,7 @@ public class CurriculaCourses extends Composite {
 		hCourse.addOperation(new Operation() {
 			@Override
 			public String getName() {
-				return "Sort by Course";
+				return MESSAGES.opSortBy(MESSAGES.colCourse());
 			}
 			@Override
 			public boolean hasSeparator() {

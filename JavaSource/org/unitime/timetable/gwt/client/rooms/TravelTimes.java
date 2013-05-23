@@ -738,7 +738,7 @@ public class TravelTimes extends Composite {
 	}
 	
 	public static class TravelTimesRequest implements GwtRpcRequest<TravelTimeResponse> {
-		public static enum Command {
+		public static enum Command implements IsSerializable {
 			INIT,
 			LOAD,
 			SAVE
