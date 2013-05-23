@@ -196,17 +196,17 @@ public class SavedHQLServlet implements SavedHQLService {
 	private String getLocalizedDescription(SavedHQL.Flag flag) {
 		switch (flag) {
 		case APPEARANCE_COURSES:
-			MESSAGES.flagAppearanceCourses();
+			return MESSAGES.flagAppearanceCourses();
 		case APPEARANCE_EXAMS:
-			MESSAGES.flagAppearanceExaminations();
+			return MESSAGES.flagAppearanceExaminations();
 		case APPEARANCE_EVENTS:
-			MESSAGES.flagAppearanceEvents();
+			return MESSAGES.flagAppearanceEvents();
 		case APPEARANCE_SECTIONING:
-			MESSAGES.flagAppearanceStudentSectioning();
+			return MESSAGES.flagAppearanceStudentSectioning();
 		case APPEARANCE_ADMINISTRATION:
-			MESSAGES.flagAppearanceAdministration();
+			return MESSAGES.flagAppearanceAdministration();
 		case ADMIN_ONLY:
-			MESSAGES.flagRestrictionsAdministratorOnly();
+			return MESSAGES.flagRestrictionsAdministratorOnly();
 		default:
 			return flag.description();
 		}
