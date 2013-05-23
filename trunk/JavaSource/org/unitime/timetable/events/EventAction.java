@@ -36,7 +36,6 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingConflictInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Meeting;
-import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.Qualifiable;
@@ -99,15 +98,13 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 		
 		public EventContext(SessionContext context, UserContext user, Long sessionId) {
 			iContext = context;
+			iUser = user;
 			
 			if (sessionId == null)
 				sessionId = context.getUser().getCurrentAcademicSessionId();
 			
-			iFilter = new Qualifiable[] {
-					new SimpleQualifier("Session", sessionId),
-					new SimpleQualifier("Role", context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAuthority().getRole() : Roles.ROLE_ANONYMOUS)
-			};
-			
+			iFilter = new Qualifiable[] { new SimpleQualifier("Session", sessionId) };
+				
 			Calendar cal = Calendar.getInstance(Localization.getJavaLocale());
 			cal.set(Calendar.HOUR_OF_DAY, 0);
 			cal.set(Calendar.MINUTE, 0);
@@ -127,7 +124,9 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 				String role = (user.getCurrentAuthority() == null ? null : user.getCurrentAuthority().getRole()); 
 				for (UserAuthority authority: user.getAuthorities()) {
 					if (authority.getAcademicSession() != null && authority.getAcademicSession().getQualifierId().equals(sessionId) && (role == null || role.equals(authority.getRole()))) {
-						iUser = new UniTimePermissionCheck.UserContextWrapper(user, authority); break;
+						iUser = new UniTimePermissionCheck.UserContextWrapper(user, authority);
+						if (role != null) iFilter = new Qualifiable[] { new SimpleQualifier("Session", sessionId), new SimpleQualifier("Role", role) };
+						break;
 					}
 				}
 			}
