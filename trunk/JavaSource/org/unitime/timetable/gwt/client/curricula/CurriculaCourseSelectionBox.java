@@ -21,14 +21,22 @@ package org.unitime.timetable.gwt.client.curricula;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.aria.AriaButton;
+import org.unitime.timetable.gwt.client.aria.AriaStatus;
+import org.unitime.timetable.gwt.client.aria.AriaSuggestBox;
+import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.aria.ImageButton;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
+import org.unitime.timetable.gwt.resources.GwtAriaMessages;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
@@ -42,6 +50,7 @@ import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
@@ -56,10 +65,6 @@ import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.dom.client.KeyDownHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-import com.google.gwt.event.dom.client.MouseOutEvent;
-import com.google.gwt.event.dom.client.MouseOutHandler;
-import com.google.gwt.event.dom.client.MouseOverEvent;
-import com.google.gwt.event.dom.client.MouseOverHandler;
 import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
@@ -73,15 +78,11 @@ import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
-import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.SuggestBox.DefaultSuggestionDisplay;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.SuggestOracle.Callback;
 import com.google.gwt.user.client.ui.SuggestOracle.Request;
@@ -96,15 +97,18 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	public static final StudentSectioningMessages MESSAGES = GWT.create(StudentSectioningMessages.class);
 	public static final GwtMessages MESSAGESGWT = GWT.create(GwtMessages.class);
 	public static final StudentSectioningConstants CONSTANTS = GWT.create(StudentSectioningConstants.class);
+	public static final GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 
-	private TextBox iTextField;
-	private SuggestBox iSuggest;
-	private Image iImage;
+	private AriaSuggestBox iSuggest;
+	private String iLastSuggestion;
+	private ImageButton iFinderButton;
 	private HorizontalPanel iHPanel;
 	private VerticalPanel iVPanel;
 	private Label iError;
+	private Set<String> iValidCourseNames = new HashSet<String>();
 	
-	private TextBox iFilter;
+	private AriaTextBox iFilter;
+	private AriaButton iFilterSelect;
 	private DialogBox iDialog;
 	private ScrollPanel iCoursesPanel;
 	private VerticalPanel iDialogPanel;
@@ -147,32 +151,17 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			public boolean isDisplayStringHTML() { return true; }			
 		};
 		
-		iTextField = new TextBox();
-		iTextField.setStyleName("gwt-SuggestBox");
-		iTextField.setName(name);
-		iSuggest = new SuggestBox(courseOfferingOracle, iTextField);
-		
-		iTextField.setStyleName("unitime-TextBoxHint");
+		iSuggest = new AriaSuggestBox(courseOfferingOracle);
+		iSuggest.setStyleName("unitime-TextBoxHint");
 
-		iImage = new Image(RESOURCES.search_picker());
-		iImage.addMouseOverHandler(new MouseOverHandler() {
-			public void onMouseOver(MouseOverEvent event) {
-				if (iTextField.isEnabled())
-					iImage.setResource(RESOURCES.search_picker_Over());
-			}
-		});
-		iImage.addMouseOutHandler(new MouseOutHandler() {
-			public void onMouseOut(MouseOutEvent event) {
-				if (iTextField.isEnabled())
-					iImage.setResource(RESOURCES.search_picker());
-			}
-		});
-		
+		iFinderButton = new ImageButton(RESOURCES.search_picker(), RESOURCES.search_picker_Down(), RESOURCES.search_picker_Over(), RESOURCES.search_picker_Disabled());
+		iFinderButton.setTabIndex(-1);
+				
 		iVPanel = new VerticalPanel();
 		
 		iHPanel = new HorizontalPanel();
 		iHPanel.add(iSuggest);
-		iHPanel.add(iImage);
+		iHPanel.add(iFinderButton);
 		iVPanel.add(iHPanel);
 		
 		iError = new Label();
@@ -180,9 +169,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		iError.setVisible(false);
 		iVPanel.add(iError);
 				
-		iImage.addClickHandler(new ClickHandler() {
+		iFinderButton.addClickHandler(new ClickHandler() {
 			public void onClick(ClickEvent event) {
-				if (iTextField.isEnabled()) {
+				if (iSuggest.isEnabled()) {
 					openDialogAsync();
 				}
 			}
@@ -190,54 +179,68 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		
 		iSuggest.addSelectionHandler(new SelectionHandler<Suggestion>() {
 			public void onSelection(SelectionEvent<Suggestion> event) {
-				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), !iTextField.getText().isEmpty());
+				String text = event.getSelectedItem().getReplacementString();
+				iLastSuggestion = text;
+				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(text, !text.isEmpty());
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 					h.onChange(e);
 			}
 		});
-		iTextField.addChangeHandler(new ChangeHandler() {
+		iSuggest.getValueBox().addChangeHandler(new ChangeHandler() {
 			public void onChange(ChangeEvent event) {
-				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), false);
+				boolean valid = false;
+				String text = iSuggest.getText();
+				if (text.equalsIgnoreCase(iLastSuggestion))
+					valid = true;
+				else for (String course: iValidCourseNames) {
+					if (course.equalsIgnoreCase(text)) {
+						valid = true; break;
+					}
+				}
+				CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iSuggest.getText(), valid);
 				for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 					h.onChange(e);
 			}
 		});
-		iTextField.addKeyDownHandler(new KeyDownHandler() {
+		iSuggest.getValueBox().addKeyDownHandler(new KeyDownHandler() {
 			public void onKeyDown(KeyDownEvent event) {
-				if (!iTextField.isEnabled()) return;
-				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && event.isControlKeyDown()) {
+				if (!iSuggest.isEnabled()) return;
+				if ((event.getNativeEvent().getKeyCode()=='F' || event.getNativeEvent().getKeyCode()=='f') && (event.isControlKeyDown() || event.isAltKeyDown())) {
 					hideSuggestionList();
 					openDialogAsync();
 				}
 				if (event.getNativeEvent().getKeyCode()==KeyCodes.KEY_ESCAPE) {
 					hideSuggestionList();
 				}
-				if ((event.getNativeEvent().getKeyCode()=='S' || event.getNativeEvent().getKeyCode()=='s') && event.isControlKeyDown()) {
-					showSuggestionList();
+				if ((event.getNativeEvent().getKeyCode()=='L' || event.getNativeEvent().getKeyCode()=='l') && (event.isControlKeyDown() || event.isAltKeyDown())) {
+					iSuggest.showSuggestionList();
 				}
 			}
 		});
-		iTextField.addBlurHandler(new BlurHandler() {
+		iSuggest.getValueBox().addBlurHandler(new BlurHandler() {
 			public void onBlur(BlurEvent event) {
-				if (iTextField.getText().isEmpty()) {
+				if (iSuggest.getText().isEmpty()) {
 					if (iError.isVisible()) iError.setVisible(false);
-					if (iHint!=null) iTextField.setText(iHint);
-					iTextField.setStyleName("unitime-TextBoxHint");
-				}
-				if (iSuggest.getSuggestionDisplay() != null && iSuggest.getSuggestionDisplay() instanceof DefaultSuggestionDisplay) {
-					DefaultSuggestionDisplay disp = (DefaultSuggestionDisplay)iSuggest.getSuggestionDisplay();
-					if (disp.isSuggestionListShowing()) disp.hideSuggestions();
+					if (iHint!=null) iSuggest.setText(iHint);
+					iSuggest.setStyleName("unitime-TextBoxHint");
 				}
 			}
 		});
-		iTextField.addFocusHandler(new FocusHandler() {
+		iSuggest.getValueBox().addFocusHandler(new FocusHandler() {
 			public void onFocus(FocusEvent event) {
-				iTextField.setStyleName("gwt-SuggestBox");
-				if (iTextField.getText().equals(iHint)) iTextField.setText("");
+				iSuggest.setStyleName("gwt-SuggestBox");
+				if (iSuggest.getText().equals(iHint)) iSuggest.setText("");
+				if (!iError.getText().isEmpty())
+					AriaStatus.getInstance().setText(iError.getText());
 			}
 		});
 		
 		initWidget(iVPanel);
+	}
+	
+	public void setLabel(String title, String finderTitle) {
+		iSuggest.setAriaLabel(title);
+		iFinderButton.setAltText(finderTitle);
 	}
 	
 	private void openDialogAsync() {
@@ -254,15 +257,66 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		});
 	}
 	
+	private void courseSelectionChanged() {
+		if (iCourses.getSelectedRow() >= 0 && iCourses.getRows() != null && iCourses.getSelectedRow() < iCourses.getRows().length) {
+			WebTable.Row row = iCourses.getRows()[iCourses.getSelectedRow()];
+			if (row != null) {
+				String title = row.getCell(3).getValue();
+				String note = row.getCell(4).getValue();
+				if (title.isEmpty()) {
+					if (note.isEmpty()) {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelected(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue()));
+					} else {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), note));
+					}
+				} else {
+					if (note.isEmpty()) {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitle(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title));
+					} else {
+						AriaStatus.getInstance().setHTML(ARIA.courseFinderSelectedWithTitleAndNote(1 + iCourses.getSelectedRow(), iCourses.getRowsCount(), row.getCell(0).getValue(), row.getCell(1).getValue(), title, note));
+					}
+				}
+			}
+		} else {
+			AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
+		}
+	}
+	
 	private void openDialog() {
 		if (iDialog == null) {
 
 			iDialog = new UniTimeDialogBox(true, false);
 			iDialog.setText(MESSAGES.courseSelectionDialog());
 			
-			iFilter = new TextBox();
+			iFilter = new AriaTextBox();
 			iFilter.setStyleName("gwt-SuggestBox");
 			iFilter.getElement().getStyle().setWidth(600, Unit.PX);
+			iFilter.setAriaLabel(ARIA.courseFinderFilter());
+			
+			iFilterSelect = new AriaButton(MESSAGES.buttonSelect());
+			iFilterSelect.addClickHandler(new ClickHandler() {
+				@Override
+				public void onClick(ClickEvent event) {
+					if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length) {
+						WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
+						if ("true".equals(r.getId()))
+							iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+						else
+							iSuggest.setText(MESSAGES.courseNameWithTitle(r.getCell(0).getValue(), r.getCell(1).getValue(), r.getCell(2).getValue()));
+						CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iSuggest.getText(), true);
+						for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
+							h.onChange(e);
+					} else {
+						iSuggest.setText(iFilter.getText());
+					}
+					iDialog.hide();
+					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+						public void execute() {
+							setFocus(true);
+						}
+					});
+				}
+			});
 			
 			iCourses = new WebTable();
 			iCourses.setHeader(
@@ -276,27 +330,22 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 							new WebTable.Cell(MESSAGESGWT.colEnrolled(), 1, "60px")
 							));
 			
+			HorizontalPanel filterWithSelect = new HorizontalPanel();
+			filterWithSelect.add(iFilter);
+			filterWithSelect.add(iFilterSelect);
+			filterWithSelect.setCellVerticalAlignment(iFilter, HasVerticalAlignment.ALIGN_MIDDLE);
+			filterWithSelect.setCellVerticalAlignment(iFilterSelect, HasVerticalAlignment.ALIGN_MIDDLE);
+			iFilterSelect.getElement().getStyle().setMarginLeft(5, Unit.PX);
+			
 			iDialogPanel = new VerticalPanel();
 			iDialogPanel.setSpacing(5);
-			HorizontalPanel filterPanel = new HorizontalPanel();
-			Label filterText = new Label("Filter:", false);
-			filterText.getElement().getStyle().setMarginRight(5, Unit.PX);
-			filterPanel.setWidth("75px");
-			filterPanel.add(filterText);
-			filterPanel.setCellHorizontalAlignment(filterText, HasHorizontalAlignment.ALIGN_RIGHT);
-			filterPanel.setCellVerticalAlignment(filterText, HasVerticalAlignment.ALIGN_MIDDLE);
-			filterPanel.add(iFilter);
-			HTML blank = new HTML("&nbsp;");
-			blank.setWidth("75px");
-			filterPanel.add(blank);
-			iDialogPanel.add(filterPanel);
-			iDialogPanel.setCellHorizontalAlignment(filterPanel, HasHorizontalAlignment.ALIGN_CENTER);
+			iDialogPanel.add(filterWithSelect);
+			iDialogPanel.setCellHorizontalAlignment(filterWithSelect, HasHorizontalAlignment.ALIGN_CENTER);
 			
 			iDialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 				public void onClose(CloseEvent<PopupPanel> event) {
-					iImage.setResource(RESOURCES.search_picker());
+					RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-						@Override
 						public void execute() {
 							setFocus(true);
 						}
@@ -379,22 +428,21 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			
 			iFilter.addKeyUpHandler(new KeyUpHandler() {
 				public void onKeyUp(KeyUpEvent event) {
-					finderTimer.schedule(500);
+					finderTimer.schedule(250);
 					if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER || event.getNativeKeyCode() == KeyCodes.KEY_ESCAPE) {
 						if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-							if (iCourses.getSelectedRow()>=0) {
+							if (iCourses.getSelectedRow()>=0 && iCourses.getRows()!=null && iCourses.getSelectedRow() < iCourses.getRows().length) {
 								WebTable.Row r = iCourses.getRows()[iCourses.getSelectedRow()];
-								iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
-								CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), true);
+								iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+								CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iSuggest.getText(), true);
 								for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 									h.onChange(e);
-								iTextField.setText(iFilter.getText());
+							} else {
+								iSuggest.setText(iFilter.getText());
 							}
 						}					
 						iDialog.hide();
-						iImage.setResource(RESOURCES.search_picker());
 						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-							@Override
 							public void execute() {
 								setFocus(true);
 							}
@@ -404,23 +452,31 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 						iCourses.setSelectedRow(iCourses.getSelectedRow()+1);
 						scrollToSelectedRow();
 						updateCourseDetails();
+						courseSelectionChanged();
 					}
 					if (event.getNativeKeyCode()==KeyCodes.KEY_UP) {
 						iCourses.setSelectedRow(iCourses.getSelectedRow()==0?iCourses.getRowsCount()-1:iCourses.getSelectedRow()-1);
 						scrollToSelectedRow();
 						updateCourseDetails();
+						courseSelectionChanged();
 					}
-					if (event.getNativeEvent().getCtrlKey() && chCurricula != null && (event.getNativeKeyCode()==Character.toLowerCase(chCurricula) || event.getNativeKeyCode()==Character.toUpperCase(chCurricula))) {
-						iCourseDetailsTabPanel.selectTab(2);
-						event.preventDefault();
-					}
-					if (event.getNativeEvent().getCtrlKey() && chDetails != null && (event.getNativeKeyCode()==Character.toLowerCase(chDetails) || event.getNativeKeyCode()==Character.toUpperCase(chDetails))) {
+					if (chDetails != null && (event.getNativeKeyCode()==Character.toLowerCase(chDetails) || event.getNativeKeyCode()==Character.toUpperCase(chDetails)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iCourseDetailsTabPanel.selectTab(0);
 						event.preventDefault();
+						if (iCourses.getSelectedRow() >= 0 && iCourses.getRows() != null && iCourses.getSelectedRow() < iCourses.getRows().length)
+							AriaStatus.getInstance().setHTML(iCourseDetails.getHTML());
+						else
+							AriaStatus.getInstance().setHTML(ARIA.courseFinderNoCourse());
 					}
-					if (event.getNativeEvent().getCtrlKey() && chClasses != null && (event.getNativeKeyCode()==Character.toLowerCase(chClasses) || event.getNativeKeyCode()==Character.toUpperCase(chClasses))) {
+					if (chClasses != null && (event.getNativeKeyCode()==Character.toLowerCase(chClasses) || event.getNativeKeyCode()==Character.toUpperCase(chClasses)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
 						iCourseDetailsTabPanel.selectTab(1);
 						event.preventDefault();
+						courseSelectionChanged();
+					}
+					if (chCurricula != null && (event.getNativeKeyCode()==Character.toLowerCase(chCurricula) || event.getNativeKeyCode()==Character.toUpperCase(chCurricula)) && (event.isControlKeyDown() || event.isAltKeyDown())) {
+						iCourseDetailsTabPanel.selectTab(2);
+						event.preventDefault();
+						courseSelectionChanged();
 					}
 				}
 			});
@@ -438,14 +494,12 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCourses.addRowDoubleClickHandler(new WebTable.RowDoubleClickHandler() {
 				public void onRowDoubleClick(RowDoubleClickEvent event) {
 					WebTable.Row r = event.getRow();
-					iTextField.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
+					iSuggest.setText(MESSAGES.courseName(r.getCell(0).getValue(), r.getCell(1).getValue()));
 					iDialog.hide();
-					iImage.setResource(RESOURCES.search_picker());
-					CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), true);
+					CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iSuggest.getText(), true);
 					for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 						h.onChange(e);
 					Scheduler.get().scheduleDeferred(new ScheduledCommand() {
-						@Override
 						public void execute() {
 							setFocus(true);
 						}
@@ -456,6 +510,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 				public void onRowClick(WebTable.RowClickEvent event) {
 					iCourses.setSelectedRow(event.getRowIdx());
 					updateCourseDetails();
+					courseSelectionChanged();
 				}
 			});
 			
@@ -477,22 +532,22 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		for (CourseFinderDialogHandler h: iCourseFinderDialogHandlers)
 			h.onOpen(e);
 		
-		iImage.setResource(RESOURCES.search_picker_Down());
-		iFilter.setText(iTextField.getText().equals(iHint)?"":iTextField.getText());
+		iFilter.setText(iSuggest.getText().equals(iHint)?"":iSuggest.getText());
 		iCoursesTip.setText(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 		iCourseDetailsTabPanel.selectTab(sLastSelectedCourseDetailsTab);
+		AriaStatus.getInstance().setText(ARIA.courseFinderDialogOpened());
 		iDialog.center();
 		Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			@Override
 			public void execute() {
 				iFilter.setFocus(true);
+				updateCourses();
 			}
 		});
 
 		updateCourses();
 	}
 	
-	@SuppressWarnings("deprecation")
 	public void hideSuggestionList() {
 		iSuggest.hideSuggestionList();
 	}
@@ -501,9 +556,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		iSuggest.showSuggestionList();
 	}
 
-	@Override
 	public void setAccessKey(char a) {
-		iTextField.setAccessKey(a);
+		iSuggest.setAccessKey(a);
 	}
 	
 	public void setWidth(String width) {
@@ -511,9 +565,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	}
 	
 	public void clear() {
-		iTextField.setText(iHint);
+		iSuggest.setText(iHint);
 		if (!iHint.isEmpty())
-			iTextField.setStyleName("unitime-TextBoxHint");
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		iError.setText(""); iError.setVisible(false);
 	}
 	
@@ -521,10 +575,16 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		iError.setText(error);
 		iError.setTitle(null);
 		iError.setVisible(!iError.getText().isEmpty());
+		iSuggest.setStatus(error);
+		AriaStatus.getInstance().setText(error);
 	}
 	
 	public boolean hasError() {
 		return iError.isVisible();
+	}
+	
+	public String getError() {
+		return iError.getText();
 	}
 	
 	private void scrollToSelectedRow() {
@@ -550,19 +610,19 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	}
 	
 	public String getCourse() {
-		return (iTextField.getText().equals(iHint) ? "" : iTextField.getText());
+		return (iSuggest.getText().equals(iHint) ? "" : iSuggest.getText());
 	}
 	
 	public void setCourse(String course, boolean fireChangeEvent) {
-		iTextField.setText(course);
-		if (iTextField.getText().isEmpty()) {
-			if (iHint!=null) iTextField.setText(iHint);
-			iTextField.setStyleName("unitime-TextBoxHint");
+		iSuggest.setText(course);
+		if (iSuggest.getText().isEmpty()) {
+			if (iHint!=null) iSuggest.setText(iHint);
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		} else {
-			iTextField.setStyleName("gwt-SuggestBox");
+			iSuggest.setStyleName("gwt-SuggestBox");
 		}
 		if (fireChangeEvent) {
-			CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iTextField.getText(), course != null && !course.isEmpty());
+			CourseSelectionChangeEvent e = new CourseSelectionChangeEvent(iSuggest.getText(), course != null && !course.isEmpty());
 			for (CourseSelectionChangeHandler h : iCourseSelectionChangeHandlers)
 				h.onChange(e);
 		}
@@ -570,22 +630,22 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	
 	public void setEnabled(boolean enabled) {
 		if (enabled) {
-			iTextField.setReadOnly(false);
-			iImage.setVisible(true);
-			iImage.setResource(RESOURCES.search_picker());
-			iTextField.getElement().getStyle().clearBorderColor();
-			iTextField.getElement().getStyle().clearBackgroundColor();
+			iSuggest.setEnabled(true);
+			iFinderButton.setEnabled(true);
+			iFinderButton.setTabIndex(0);
+			iFinderButton.setVisible(true);
 		} else {
-			iTextField.setReadOnly(true);
-			iImage.setVisible(false);
-			iImage.setResource(RESOURCES.search_picker_Disabled());
-			iTextField.getElement().getStyle().setBorderColor("transparent");
-			iTextField.getElement().getStyle().setBackgroundColor("transparent");
+			iSuggest.setEnabled(false);
+			iFinderButton.setEnabled(false);
+			iFinderButton.setTabIndex(-1);
+			iFinderButton.setVisible(false);
+			iSuggest.getElement().getStyle().setBorderColor("transparent");
+			iSuggest.getElement().getStyle().setBackgroundColor("transparent");
 		}
 	}
 	
 	public boolean isEnabled() {
-		return !iTextField.isReadOnly();
+		return iSuggest.isEnabled();
 	}
 	
 	private void updateCourses() {
@@ -718,10 +778,9 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		}
 	}
 	
-	@Override
 	public void setFocus(boolean focus) {
-		iTextField.setFocus(focus);
-		if (focus) iTextField.selectAll();
+		iSuggest.setFocus(focus);
+		if (focus) iSuggest.getValueBox().selectAll();
 
 	}
 	
@@ -753,6 +812,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		}
 		
 		public void onFailure(Throwable caught) {
+			iValidCourseNames.clear();
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
 			suggestions.add(new SimpleSuggestion("<font color='red'>"+caught.getMessage()+"</font>", ""));
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
@@ -760,42 +820,61 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 
 		public void onSuccess(Collection<ClassAssignmentInterface.CourseAssignment> result) {
 			ArrayList<Suggestion> suggestions = new ArrayList<Suggestion>();
+			iValidCourseNames.clear();
 			for (ClassAssignmentInterface.CourseAssignment suggestion: result) {
 				String courseName = MESSAGES.courseName(suggestion.getSubject(), suggestion.getCourseNbr());
 				String courseNameWithTitle = (suggestion.getTitle() == null ? courseName :
 					MESSAGES.courseNameWithTitle(suggestion.getSubject(), suggestion.getCourseNbr(), suggestion.getTitle()));
-				suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName));
+				if (suggestion.hasUniqueName()) {
+					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseName, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
+					iValidCourseNames.add(courseName);
+				} else {
+					suggestions.add(new SimpleSuggestion(courseNameWithTitle, courseNameWithTitle, suggestion.getTitle() == null ? courseName : courseName + " " + suggestion.getTitle()));
+					iValidCourseNames.add(courseNameWithTitle);
+				}
 			}
 			iCallback.onSuggestionsReady(iRequest, new Response(suggestions));
 		}
 		
 	}
 	
-	public static class SimpleSuggestion implements Suggestion {
-		private String iDisplay, iReplace;
+	public static class SimpleSuggestion implements Suggestion, AriaSuggestBox.HasStatus {
+		private String iDisplay, iReplace, iStatus;
 
-		public SimpleSuggestion(String display, String replace) {
+		public SimpleSuggestion(String display, String replace, String status) {
 			iDisplay = display;
 			iReplace = replace;
+			iStatus = status;
+		}
+		
+		public SimpleSuggestion(String display, String replace) {
+			this(display, replace, display);
 		}
 		
 		public SimpleSuggestion(String replace) {
-			this(replace, replace);
+			this(replace, replace, replace);
 		}
 
+		@Override
 		public String getDisplayString() {
 			return iDisplay;
 		}
 
+		@Override
 		public String getReplacementString() {
 			return iReplace;
+		}
+
+		@Override
+		public String getStatusString() {
+			return iStatus;
 		}
 	}
 	
 	public void setHint(String hint) {
-		if (iTextField.getText().equals(iHint)) {
-			iTextField.setText(hint);
-			iTextField.setStyleName("unitime-TextBoxHint");
+		if (iSuggest.getText().equals(iHint)) {
+			iSuggest.setText(hint);
+			iSuggest.setStyleName("unitime-TextBoxHint");
 		}
 		iHint = hint;
 	}
@@ -817,7 +896,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 	}
 	
 	public void validate(final AsyncCallback<String> callback) {
-		if (iTextField.getText().isEmpty() || iTextField.getText().equals(iHint)) {
+		if (iSuggest.getText().isEmpty() || iSuggest.getText().equals(iHint)) {
 			iError.setVisible(false);
 			callback.onSuccess(null);
 			return;
@@ -836,22 +915,14 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 		callback.onSuccess(null);
 	}
 	
-	public void addFocusHandler(FocusHandler h) {
-		iTextField.addFocusHandler(h);
-	}
-
-	public void addBlurHandler(BlurHandler h) {
-		iTextField.addBlurHandler(h);
-	}
-
 	@Override
 	public int getTabIndex() {
-		return iTextField.getTabIndex();
+		return iSuggest.getTabIndex();
 	}
 
 	@Override
 	public void setTabIndex(int index) {
-		iTextField.setTabIndex(index);
+		iSuggest.setTabIndex(index);
 	}
 	
 	public class CourseFinderDialogEvent {
