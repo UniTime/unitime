@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTabPanel;
 import org.unitime.timetable.gwt.client.widgets.WebTable;
 import org.unitime.timetable.gwt.client.widgets.WebTable.RowDoubleClickEvent;
@@ -316,6 +317,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCourseDetailsPanel.getElement().getStyle().setWidth(780, Unit.PX);
 			iCourseDetailsPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCourseDetailsTabPanel.add(iCourseDetailsPanel, MESSAGES.courseSelectionDetails(), true);
+			final Character chDetails = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionDetails());
 			
 			iClasses = new WebTable();
 			iClasses.setHeader(new WebTable.Row(
@@ -337,7 +339,8 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iClassesPanel.setStyleName("unitime-ScrollPanel-inner");
 			iClassesPanel.getElement().getStyle().setWidth(780, Unit.PX);
 			iClassesPanel.getElement().getStyle().setHeight(200, Unit.PX);
-			iCourseDetailsTabPanel.add(iClassesPanel, "C<u>l</u>asses", true);
+			iCourseDetailsTabPanel.add(iClassesPanel, MESSAGES.courseSelectionClasses(), true);
+			final Character chClasses = UniTimeHeaderPanel.guessAccessKey(MESSAGES.courseSelectionClasses());
 			
 			iCurricula = new CourseCurriculaTable(false, false);
 			iCurricula.setMessage(MESSAGES.courseSelectionNoCourseSelected());
@@ -346,6 +349,7 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 			iCurriculaPanel.getElement().getStyle().setWidth(780, Unit.PX);
 			iCurriculaPanel.getElement().getStyle().setHeight(200, Unit.PX);
 			iCourseDetailsTabPanel.add(iCurriculaPanel, MESSAGESGWT.tabCurricula(), true);
+			final Character chCurricula = UniTimeHeaderPanel.guessAccessKey(MESSAGESGWT.tabCurricula());
 						
 			iCoursesTip = new Label(CONSTANTS.courseTips()[(int)(Math.random() * CONSTANTS.courseTips().length)]);
 			iCoursesTip.setStyleName("unitime-Hint");
@@ -406,15 +410,15 @@ public class CurriculaCourseSelectionBox extends Composite implements Focusable 
 						scrollToSelectedRow();
 						updateCourseDetails();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='c' || event.getNativeKeyCode()=='C')) {
+					if (event.getNativeEvent().getCtrlKey() && chCurricula != null && (event.getNativeKeyCode()==Character.toLowerCase(chCurricula) || event.getNativeKeyCode()==Character.toUpperCase(chCurricula))) {
 						iCourseDetailsTabPanel.selectTab(2);
 						event.preventDefault();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='d' || event.getNativeKeyCode()=='D')) {
+					if (event.getNativeEvent().getCtrlKey() && chDetails != null && (event.getNativeKeyCode()==Character.toLowerCase(chDetails) || event.getNativeKeyCode()==Character.toUpperCase(chDetails))) {
 						iCourseDetailsTabPanel.selectTab(0);
 						event.preventDefault();
 					}
-					if (event.getNativeEvent().getCtrlKey() && (event.getNativeKeyCode()=='l' || event.getNativeKeyCode()=='L')) {
+					if (event.getNativeEvent().getCtrlKey() && chClasses != null && (event.getNativeKeyCode()==Character.toLowerCase(chClasses) || event.getNativeKeyCode()==Character.toUpperCase(chClasses))) {
 						iCourseDetailsTabPanel.selectTab(1);
 						event.preventDefault();
 					}

@@ -106,10 +106,10 @@ public class CourseCurriculaTable extends Composite {
 	private UniTimeHeaderPanel iHeader;
 	
 	public static enum Type {
-		EXP (MESSAGES.fieldRequestedEnrollment()),
-		ENRL (MESSAGES.fieldCurrentEnrollment()),
-		LAST (MESSAGES.fieldLastLikeEnrollment()),
-		PROJ (MESSAGES.fieldProjectedByRule()),
+		EXP (MESSAGES.shortRequestedEnrollment()),
+		ENRL (MESSAGES.shortCurrentEnrollment()),
+		LAST (MESSAGES.shortLastLikeEnrollment()),
+		PROJ (MESSAGES.shortProjectedByRule()),
 		EXP2ENRL (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortCurrentEnrollment()),
 		EXP2LAST (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortLastLikeEnrollment()),
 		EXP2PROJ (MESSAGES.shortRequestedEnrollment() + " / " + MESSAGES.shortProjectedByRule()),
