@@ -559,14 +559,14 @@ public class CurriculumProjectionRulesPage extends Composite {
 		label.addClickHandler(menu);
 		iTable.getFlexCellFormatter().setStyleName(0, 0, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, 0, label);
-		HTML totals = new HTML("Total", false);
+		HTML totals = new HTML(MESSAGES.colTotal(), false);
 		totals.addClickHandler(menu);
 		iTable.getFlexCellFormatter().setStyleName(0, col2clasf.size() + 1, "unitime-ClickableTableHeader");
 		iTable.setWidget(0, col2clasf.size() + 1, totals);
 		if (row == 1)
 			throw new CurriculaException(MESSAGES.errorNoLastLikeEnrollemnts());
 		
-		iTable.setText(row, 0, "Total");
+		iTable.setText(row, 0, MESSAGES.colTotal());
 		iTable.getCellFormatter().getElement(row, 0).getStyle().setBackgroundColor("#EEEEEE");
 		List<MyCell> cells = new ArrayList<MyCell>();
 		for (int c = 0; c < col2clasf.size(); c++) {
