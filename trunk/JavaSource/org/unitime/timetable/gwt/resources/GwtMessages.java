@@ -1910,6 +1910,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("{0}, {1} {2} - {3}")
 	String dateTimeHint(String dow, String date, String start, String end);
 	
+	@DefaultMessage("New Group")
+	String dialogNewGroup();
+	
+	@DefaultMessage("Edit Group")
+	String dialogEditGroup();
+	
 	@DefaultMessage("Selected")
 	String legendSelected();
 	
