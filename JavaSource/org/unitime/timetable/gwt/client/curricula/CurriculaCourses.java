@@ -1772,10 +1772,10 @@ public class CurriculaCourses extends Composite {
 			super(true, true);
 			FlexTable groupTable = new FlexTable();
 			groupTable.setCellSpacing(2);
-			groupTable.setText(0, 0, "Name:");
+			groupTable.setText(0, 0, MESSAGES.propName());
 			iGrName = new UniTimeTextBox();
 			groupTable.setWidget(0, 1, iGrName);
-			groupTable.setText(1, 0, "Type:");
+			groupTable.setText(1, 0, MESSAGES.propType());
 			iGrType = new ListBox();
 			iGrType.addItem(MESSAGES.groupDifferentStudents());
 			iGrType.addItem(MESSAGES.groupSameStudents());
@@ -1843,7 +1843,7 @@ public class CurriculaCourses extends Composite {
 			iGrHandler = new ClickHandler() {
 				@Override
 				public void onClick(ClickEvent event) {
-					setText("Edit group");
+					setText(MESSAGES.dialogEditGroup());
 					iGrOldName = ((Group)event.getSource()).getName();
 					iGrName.setText(((Group)event.getSource()).getText());
 					iGrType.setSelectedIndex(((Group)event.getSource()).getType());
@@ -1869,7 +1869,7 @@ public class CurriculaCourses extends Composite {
 		}
 		
 		public void openNew() {
-			setText("New group");
+			setText(MESSAGES.dialogNewGroup());
 			iGrOldName = null;
 			iGrName.setText(String.valueOf((char)('A' + getGroups().size())));
 			iGrType.setSelectedIndex(0);
