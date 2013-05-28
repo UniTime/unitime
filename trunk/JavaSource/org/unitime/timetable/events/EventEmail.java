@@ -26,14 +26,13 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeSet;
 
 import javax.activation.DataSource;
 import javax.mail.MessagingException;
@@ -50,14 +49,17 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
-import org.unitime.timetable.gwt.shared.EventInterface.NoteInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.model.Event;
-import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.Meeting;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.util.Constants;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 public class EventEmail {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
@@ -209,257 +211,42 @@ public class EventEmail {
 		}
 	}
 	
-	private String message() {
-		StringWriter buffer = new StringWriter();
-		PrintWriter out = new PrintWriter(buffer);
-		
-		out.println("<html>");
-		out.println("<head>");
-		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
-		out.println("	<title>" + subject() + "</title>");
-		out.println("</head>");
-		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
-		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; width: 800px;\" align=\"center\">");
-		out.println("		<tr><td><table width=\"100%\">");
-		out.println("			<tr>");
-		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
-		out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + subject() + "</td>");
-		out.println("			</tr>");
-		out.println("		</table></td></tr>");
-		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + event().getName() + "</td></tr>");
-		out.println("		<tr><td>");
-		generateEventDetails(out);
-		out.println("       </td></tr>");
-		if (response().hasCreatedMeetings()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCreatedMeetings() + "</td></tr>");
-			out.println("		<tr><td>");
-			generateMeetings(out, response().getCreatedMeetings(), true, false);
-			out.println("       </td></tr>");
-		}
-		if (response().hasDeletedMeetings()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailDeletedMeetings() + "</td></tr>");
-			out.println("		<tr><td>");
-			generateMeetings(out, response().getDeletedMeetings(), true, false);
-			out.println("       </td></tr>");
-		}
-		if (response().hasCancelledMeetings()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCancelledMeetingsInEdit() + "</td></tr>");
-			out.println("		<tr><td>");
-			generateMeetings(out, response().getCancelledMeetings(), true, false);
-			out.println("       </td></tr>");
-		}
-		if (response().hasUpdatedMeetings()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">");
-			switch (request().getOperation()) {
-			case APPROVE: out.println(MESSAGES.emailApprovedMeetings()); break;
-			case REJECT: out.println(MESSAGES.emailRejectedMeetings()); break;
-			case INQUIRE: out.println(MESSAGES.emailInquiredMeetings()); break;
-			case CANCEL: out.println(MESSAGES.emailCancelledMeetings()); break;
-			default: out.println(MESSAGES.emailUpdatedMeetings()); break;
-			}
-			out.println("       </td></tr>");
-			out.println("		<tr><td>");
-			generateMeetings(out, response().getUpdatedMeetings(), true, false);
-			out.println("       </td></tr>");
-		}
-		if (request().hasMessage()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">");
-			switch (request().getOperation()) {
-			case APPROVE: out.println(MESSAGES.emailMessageApproval()); break;
-			case REJECT: out.println(MESSAGES.emailMessageReject()); break;
-			case INQUIRE: out.println(MESSAGES.emailMessageInquiry()); break;
-			case CREATE: out.println(MESSAGES.emailMessageCreate()); break;
-			case UPDATE: out.println(MESSAGES.emailMessageUpdate()); break;
-			case DELETE: out.println(MESSAGES.emailMessageDelete()); break;
-			case CANCEL: out.println(MESSAGES.emailMessageCancel()); break;
-			default: out.println(MESSAGES.emailMessageUpdate()); break;
-			}
-			out.println("       </td></tr>");
-			out.println("		<tr><td>");
-			out.println(request().getMessage().replace("\n", "<br>"));
-			out.println("       </td></tr>");
-		}
+	private String message() throws IOException, TemplateException {
+		Configuration cfg = new Configuration();
+		cfg.setClassForTemplateLoading(EventEmail.class, "");
+		cfg.setLocale(Localization.getJavaLocale());
+		cfg.setOutputEncoding("utf-8");
+		Template template = cfg.getTemplate("confirmation.ftl");
+		Map<String, Object> input = new HashMap<String, Object>();
+		input.put("msg", MESSAGES);
+		input.put("const", CONSTANTS);
+		input.put("subject", subject());
+		input.put("event", event());
+		input.put("operation", request().getOperation() == null ? "NONE" : request().getOperation().name());
+		if (response().hasCreatedMeetings())
+			input.put("created", EventInterface.getMultiMeetings(response().getCreatedMeetings(), true));
+		if (response().hasDeletedMeetings())
+			input.put("deleted", EventInterface.getMultiMeetings(response().getDeletedMeetings(), true));
+		if (response().hasCancelledMeetings())
+			input.put("cancelled", EventInterface.getMultiMeetings(response().getCancelledMeetings(), true));
+		if (response().hasUpdatedMeetings())
+			input.put("updated", EventInterface.getMultiMeetings(response().getUpdatedMeetings(), true));
+		if (request().hasMessage())
+			input.put("message", request().getMessage());
 		if (request().getEvent().getId() != null) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-					MESSAGES.emailAllMeetings(event().getName()) + "</td></tr>");
-			out.println("		<tr><td>");
-			if (event().hasMeetings()) {
-				generateMeetings(out, event().getMeetings(), true, true);
-			} else {
-				out.println(MESSAGES.emailEventDeleted(event().getName()));
-			}
-			out.println("       </td></tr>");
-		}
-		if (event().hasNotes()) {
-			out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" +
-					MESSAGES.emailNotes(event().getName()) + "</td></tr>");
-			out.println("		<tr><td>");
-			generateNotes(out, event().getNotes());
-			out.println("       </td></tr>");
-		}
-		out.println("		</td></tr>");
-		out.println("	</table>");
-		out.println("	<table style=\"width: 800px; margin-top: -3px;\" align=\"center\">");
-		out.println("		<tr>");
-		out.println("			<td width=\"33%\" align=\"left\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()) + "</td>");
-		out.println("			<td width=\"34%\" align=\"center\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				MESSAGES.pageCopyright() + "</td>");
-		out.println("			<td width=\"33%\" align=\"right\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale()).format(new Date()) + "</td>");
-		out.println("		</tr>");
-		out.println("	</table>");
-		out.println("</body>");
-		out.println("</html>");
-		
-		out.flush(); out.close();
-		return buffer.getBuffer().toString();
-	}
-	
-	private void generateEventDetails(PrintWriter out) {
-		out.println("<table>");
-		out.println("	<tr><td>" + MESSAGES.propEventType() + "</td><td>" + event().getType().getName(CONSTANTS) + "</td></tr>");
-		out.println("	<tr><td>" + MESSAGES.propContacts() + "</td><td>");
-		generateContacts(out);
-		out.println("	</td></tr>");
-		if (event().hasEmail()) {
-			out.println("	<tr><td>" + MESSAGES.propAdditionalEmails() + "</td><td>" + event().getEmail().replace("\n", "<br>") + "</td></tr>");
-		}
-		if (event().hasSponsor()) {
-			out.println("	<tr><td>" + MESSAGES.propSponsor() + "</td><td>" + event().getSponsor().getName() + "</td></tr>");
-		}
-		if (event().hasEnrollment()) {
-			out.println("	<tr><td>" + MESSAGES.propEnrollment() + "</td><td>" + event().getEnrollment() + "</td></tr>");
-		}
-		if (event().hasMaxCapacity()) {
-			out.println("	<tr><td>" + MESSAGES.propAttendance() + "</td><td>" + event().getMaxCapacity() + "</td></tr>");
-		}
-		if (event().hasExpirationDate() && event().hasPendingMeetings()) {
-			out.println("	<tr><td>" + MESSAGES.propExpirationDate() + "</td><td>" + new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()).format(event().getExpirationDate()) + "</td></tr>");
-		}
-		out.println("</table>");
-	}
-	
-	private void generateContacts(PrintWriter out) {
-		out.println("<table width=\"100%\">");
-		out.println("<tr>");
-		String style = "white-space: nowrap; font-weight: bold;";
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colName() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colEmail() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPhone() + "</td>");
-		out.println("</tr>");
-		if (event().hasContact()) {
-			ContactInterface contact = event().getContact();
-			out.println("<tr><td>" + contact.getName(MESSAGES) + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
-		}
-		if (event().hasAdditionalContacts()) {
-			for (ContactInterface contact: event().getAdditionalContacts())
-				out.println("<tr><td>" + contact.getName(MESSAGES) + "</td><td>" + (contact.hasEmail() ? contact.getEmail() : "") + "</td><td>" + (contact.hasPhone() ? contact.getPhone() : "") + "</td></tr>");
-		}
-		out.println("</table>");
-	}
-	
-	private void generateMeetings(PrintWriter out, Collection<MeetingInterface> meetings, boolean approval, boolean skipDeleted) {
-		out.println("<table width=\"100%\">");
-		out.println("<tr>");
-		String style = "white-space: nowrap; font-weight: bold;";
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colDate() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPublishedTime() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colAllocatedTime() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colLocation() + "</td>");
-		if (approval) {
-			if (skipDeleted)
-				out.println("	<td style=\"" + style + "\">" + MESSAGES.colApproval() + "</td>");
+			if (event().hasMeetings())
+				input.put("meetings", EventInterface.getMultiMeetings(event().getMeetings(), true));
 			else
-				out.println("	<td style=\"" + style + "\">" + MESSAGES.colStatus() + "</td>");
+				input.put("meetings", new TreeSet<MultiMeetingInterface>());
 		}
-		out.println("</tr>");
-		DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
-		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
-		DateFormat dfApproval = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-		boolean empty = true;
-		meetings: for (MultiMeetingInterface meeting: EventInterface.getMultiMeetings(meetings, approval)) {
-			if (skipDeleted)
-				switch (meeting.getApprovalStatus()) {
-				case Rejected:
-				case Cancelled:
-				case Deleted:
-					continue meetings;
-				}
-			empty = false;
-			if (approval) {
-				switch (meeting.getApprovalStatus()) {
-				case Rejected:
-				case Cancelled:
-				case Deleted:
-					out.println("<tr style='color:gray; font-style: italic;'>");
-					break;
-				default:
-					out.println("<tr>");
-				}
-			} else {
-				out.println("<tr>");
-			}
-			out.println("  <td>" + meeting.getDays(CONSTANTS) + " " + (meeting.getNrMeetings() <= 1 ? dfLong.format(meeting.getFirstMeetingDate()) : dfShort.format(meeting.getFirstMeetingDate()) + " - " + dfLong.format(meeting.getLastMeetingDate())) + "</td>");
-			out.println("  <td>" + meeting.getMeetings().first().getMeetingTime(CONSTANTS) + "</td>");
-			out.println("  <td>" + meeting.getMeetings().first().getAllocatedTime(CONSTANTS) + "</td>");
-			out.println("  <td>" + meeting.getMeetings().first().getLocationName() + "</td>");
-			if (approval) {
-				switch (meeting.getApprovalStatus()) {
-				case Pending :
-					out.println("  <td style='" + (meeting.isPast() ? "color: orange; " : "color: red; ") + "font-style: italic;'>" + (meeting.getMeetings().first().isPast() ? MESSAGES.approvalNotApprovedPast() :
-						event().getExpirationDate() != null ? MESSAGES.approvalExpire(dfApproval.format(event().getExpirationDate())) : MESSAGES.approvalNotApproved()) + "</td>");
-					break;
-				case Approved:
-					if (skipDeleted)
-						out.println("  <td>" + dfApproval.format(meeting.getMeetings().first().getApprovalDate()) + "</td>");
-					else
-						out.println("  <td style='" + (meeting.isPast() ? "color: gray; " : "") + "font-style: italic;'>" + MESSAGES.approvalApproved() + "</td>");
-					break;
-				case Rejected:
-					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalRejected() + "</td>");
-					break;
-				case Cancelled:
-					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalCancelled() + "</td>");
-					break;
-				case Deleted:
-					out.println("  <td style='color: gray; font-style: italic;'>" + MESSAGES.approvalDeleted() + "</td>");
-					break;
-				}
-			}
-			out.println("</tr>");
-		}
-		if (empty && skipDeleted)
-			out.println("<tr><td colspan='" + (approval ? 5 : 4) + "'><i>" + MESSAGES.emailEventNoMeetings() + "</i></td></tr>");
-		out.println("</table>");
-	}
-	
-	private void generateNotes(PrintWriter out, Collection<NoteInterface> notes) {
-		out.println("<table width=\"100%\" cellspacing='0' cellpadding='3'>");
-		out.println("<tr>");
-		String style = "white-space: nowrap; font-weight: bold;";
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colDate() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colUser() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colAction() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colMeetings() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colNote() + "</td>");
-		out.println("</tr>");
-		DateFormat df = new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale());
-		for (NoteInterface note: notes) {
-			style = "";
-			switch (note.getType()) {
-			case Approve: style = "background-color: #D7FFD7;"; break;
-			case Reject: style = "background-color: #FFD7D7;"; break;
-			}
-			out.println("<tr style='" + style + "'>");
-			out.println("  <td style='white-space: nowrap;'>" + df.format(note.getDate()) + "</td>");
-			out.println("  <td style='white-space: nowrap;'>" + note.getUser() + "</td>");
-			out.println("  <td style='white-space: nowrap;'>" + note.getType().getName() + "</td>");
-			out.println("  <td style='white-space: nowrap;'>" + (note.getMeetings() == null ? "" : note.getMeetings()) + "</td>");
-			out.println("  <td>" + (note.getNote() == null ? "" : note.getNote()).replace("\n", "<br>") + "</td>");
-			out.println("</tr>");
-		}
-		out.println("</table>");
+		input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
+		input.put("ts", new Date());
+		
+		StringWriter s = new StringWriter();
+		template.process(input, new PrintWriter(s));
+		s.flush(); s.close();
+
+		return s.toString();
 	}
 
 	public String icalendar() throws IOException {
@@ -485,24 +272,32 @@ public class EventEmail {
 		return (exp ? buffer.getBuffer().toString() : null);		
 	}
 	
-	public static void eventExpired(Event event, Set<Meeting> meetings) throws Exception {
+	public static void eventExpired(Event cancelledEvent, Set<Meeting> cancelledMeetings) throws Exception {
 		if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))))
 			return;
 
+		Session session = cancelledEvent.getSession();
+		if (session == null)
+			for (Meeting m: cancelledEvent.getMeetings())
+				if (m.getLocation() != null) { session = m.getLocation().getSession(); break; }
+		EventInterface event = EventDetailBackend.getEventDetail(session, cancelledEvent, null);
+		TreeSet<MeetingInterface> meetings = new TreeSet<EventInterface.MeetingInterface>();
+		for (Meeting metting: cancelledMeetings)
+			for (MeetingInterface m: event.getMeetings())
+				if (m.getId().equals(metting.getUniqueId())) meetings.add(m);
+		
 		Email email = Email.createEmail();
-		if (event.getMainContact() != null && event.getMainContact().getEmailAddress() != null) {
-			email.addRecipient(event.getMainContact().getEmailAddress(), event.getMainContact().getName());
-			email.setReplyTo(event.getMainContact().getEmailAddress(), event.getMainContact().getName());
-		}
-		if (event.getAdditionalContacts() != null) {
-			for (EventContact contact: event.getAdditionalContacts()) {
-				if (contact.getEmailAddress() != null)
-					email.addRecipient(contact.getEmailAddress(), contact.getName());
+		if (event.hasContact() && event.getContact().getEmail() != null)
+			email.addRecipient(event.getContact().getEmail(), event.getContact().getName(MESSAGES));
+		if (event.hasAdditionalContacts()) {
+			for (ContactInterface contact: event.getAdditionalContacts()) {
+				if (contact.getEmail() != null)
+					email.addRecipient(contact.getEmail(), contact.getName(MESSAGES));
 			}
 		}
-		if (event.getSponsoringOrganization() != null && event.getSponsoringOrganization().getEmail() != null)
-			email.addRecipientCC(event.getSponsoringOrganization().getEmail(), event.getSponsoringOrganization().getName());
-		if (event.getEmail() != null) {
+		if (event.hasSponsor() && event.getSponsor().hasEmail())
+			email.addRecipientCC(event.getSponsor().getEmail(), event.getSponsor().getName());
+		if (event.hasEmail()) {
 			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
 			for (String address: event.getEmail().split("\n")) {
 				if (!address.trim().isEmpty()) {
@@ -513,118 +308,38 @@ public class EventEmail {
 				}
 			}
 		}
+		email.setSubject(event.getName() + " (" + event.getType().getName(CONSTANTS) + ")");
 		
-		email.setSubject(event.getEventName() + " (" + event.getEventTypeLabel() + ")");
-
+		Configuration cfg = new Configuration();
+		cfg.setClassForTemplateLoading(EventEmail.class, "");
+		cfg.setLocale(Localization.getJavaLocale());
+		cfg.setOutputEncoding("utf-8");
+		Template template = cfg.getTemplate("confirmation.ftl");
+		Map<String, Object> input = new HashMap<String, Object>();
+		input.put("msg", MESSAGES);
+		input.put("const", CONSTANTS);
+		input.put("subject", MESSAGES.emailSubjectExpired(event.getName()));
+		input.put("event", event);
+		input.put("operation", SaveOrApproveEventRpcRequest.Operation.CANCEL);
+		input.put("updated", EventInterface.getMultiMeetings(meetings, true));
+		input.put("message", MESSAGES.noteEventExpired());
+		input.put("meetings", EventInterface.getMultiMeetings(event.getMeetings(), true));
+		input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
+		input.put("ts", new Date());
+		
 		StringWriter buffer = new StringWriter();
-		PrintWriter out = new PrintWriter(buffer);
-		
-		out.println("<html>");
-		out.println("<head>");
-		out.println("  <meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
-		out.println("	<title>" + MESSAGES.emailSubjectExpired(event.getEventName()) + "</title>");
-		out.println("</head>");
-		out.println("<body style=\"font-family: sans-serif, verdana, arial;\">");
-		out.println("	<table style=\"border: 1px solid #9CB0CE; padding: 5px; margin-top: 10px; width: 800px;\" align=\"center\">");
-		out.println("		<tr><td><table width=\"100%\">");
-		out.println("			<tr>");
-		out.println("				<td rowspan=\"2\"><img src=\"http://www.unitime.org/include/unitime.png\" border=\"0\" height=\"100px\"/></td>");
-		out.println("				<td colspan=\"2\" style=\"font-size: x-large; font-weight: bold; color: #333333; text-align: right; padding: 20px 30px 10px 10px;\">" + MESSAGES.emailSubjectExpired(event.getEventName()) + "</td>");
-		out.println("			</tr>");
-		out.println("		</table></td></tr>");
-		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 5px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + event.getEventName() + "</td></tr>");
-		out.println("		<tr><td>");
-		out.println("<table>");
-		out.println("	<tr><td>" + MESSAGES.propEventType() + "</td><td>" + event.getEventTypeLabel() + "</td></tr>");
-		out.println("	<tr><td>" + MESSAGES.propContacts() + "</td><td>");
-		out.println("<table width=\"100%\">");
-		out.println("<tr>");
-		String style = "white-space: nowrap; font-weight: bold;";
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colName() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colEmail() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPhone() + "</td>");
-		out.println("</tr>");
-		if (event.getMainContact() != null) {
-			out.println("<tr><td>" + event.getMainContact().getName() + "</td><td>" + (event.getMainContact().getEmailAddress() != null ? event.getMainContact().getEmailAddress() : "") + "</td><td>" + (event.getMainContact().getPhone() != null ? event.getMainContact().getPhone() : "") + "</td></tr>");
-		}
-		if (event.getAdditionalContacts() != null) {
-			for (EventContact contact: event.getAdditionalContacts())
-				out.println("<tr><td>" + contact.getName() + "</td><td>" + (contact.getEmailAddress() != null ? contact.getEmailAddress() : "") + "</td><td>" + (contact.getPhone() != null ? contact.getPhone() : "") + "</td></tr>");
-		}
-		out.println("</table>");
-		
-		out.println("	</td></tr>");
-		if (event.getEmail() != null && !event.getEmail().trim().isEmpty()) {
-			out.println("	<tr><td>" + MESSAGES.propAdditionalEmails() + "</td><td>" +event.getEmail().replace("\n", "<br>") + "</td></tr>");
-		}
-		if (event.getSponsoringOrganization() != null) {
-			out.println("	<tr><td>" + MESSAGES.propSponsor() + "</td><td>" + event.getSponsoringOrganization().getName() + "</td></tr>");
-		}
-		if (event.getMaxCapacity() != null && event.getMaxCapacity() > 0) {
-			out.println("	<tr><td>" + MESSAGES.propAttendance() + "</td><td>" + event.getMaxCapacity() + "</td></tr>");
-		}
-		if (event.getExpirationDate() != null) {
-			out.println("	<tr><td>" + MESSAGES.propExpirationDate() + "</td><td>" + new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()).format(event.getExpirationDate()) + "</td></tr>");
-		}
-		out.println("</table>");
-		
-		out.println("       </td></tr>");
-		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">" + MESSAGES.emailCancelledMeetings() + "</td></tr>");
-		out.println("		<tr><td>");
-		
-		out.println("<table width=\"100%\">");
-		out.println("<tr>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colDate() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colPublishedTime() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colAllocatedTime() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colLocation() + "</td>");
-		out.println("	<td style=\"" + style + "\">" + MESSAGES.colStatus() + "</td>");
-		out.println("</tr>");
-		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
-		for (Meeting meeting: meetings) {
-			out.println("<tr>");
-			out.println("  <td>" + dfLong.format(meeting.getMeetingDate()) + "</td>");
-			out.println("  <td>" + meeting.startTime() + " - " + meeting.stopTime() + "</td>");
-			out.println("  <td>" + meeting.startTimeNoOffset() + " - " + meeting.stopTimeNoOffset() + "</td>");
-			out.println("  <td>" + (meeting.getLocation() == null ? "" : meeting.getLocation().getLabel()) + "</td>");
-			out.println("  <td><i>" + MESSAGES.approvalCancelled() + "</i></td>");
-			out.println("</tr>");
-		}
-		out.println("</table>");
-		
-		out.println("       </td></tr>");
+		template.process(input, new PrintWriter(buffer));
+		buffer.flush(); buffer.close();
 
-		out.println("		<tr><td style=\"width: 100%; border-bottom: 1px solid #9CB0CE; padding-top: 10px; font-size: large; font-weight: bold; color: black; text-align: left;\">");
-		out.println(MESSAGES.emailMessageCancel());
-		out.println("       </td></tr>");
-		out.println("		<tr><td>");
-		out.println(MESSAGES.noteEventExpired());
-		out.println("       </td></tr>");
+		email.setHTML(buffer.toString());
 		
-		out.println("	</table>");
-		out.println("	<table style=\"width: 800px; margin-top: -3px;\" align=\"center\">");
-		out.println("		<tr>");
-		out.println("			<td width=\"33%\" align=\"left\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()) + "</td>");
-		out.println("			<td width=\"34%\" align=\"center\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				MESSAGES.pageCopyright() + "</td>");
-		out.println("			<td width=\"33%\" align=\"right\" style=\"font-size: 9pt; vertical-align: top; font-style: italic; color: #9CB0CE; white-space: nowrap;\">" +
-				new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale()).format(new Date()) + "</td>");
-		out.println("		</tr>");
-		out.println("	</table>");
-		out.println("</body>");
-		out.println("</html>");
-		
-		out.flush(); out.close();
-		email.setHTML(buffer.getBuffer().toString());
-		
-		String messageId = sMessageId.get(event.getUniqueId());
+		String messageId = sMessageId.get(event.getId());
 		if (messageId != null)
 			email.setInReplyTo(messageId);
 		
 		email.send();
 		
 		if (email.getMessageId() != null)
-			sMessageId.put(event.getUniqueId(), email.getMessageId());
+			sMessageId.put(event.getId(), email.getMessageId());
 	}
 }

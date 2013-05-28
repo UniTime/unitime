@@ -488,9 +488,9 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 				response.setEvent(EventDetailBackend.getEventDetail(SessionDAO.getInstance().get(request.getSessionId(), hibSession), event, context));
 			}
 			
-			new EventEmail(request, response).send(context);
-			
 			tx.commit();
+			
+			new EventEmail(request, response).send(context);
 			
 			return response;
 		} catch (Exception ex) {
