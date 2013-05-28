@@ -329,7 +329,7 @@
 	
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-			<param-value>/WEB-INF/applicationContext.xml /WEB-INF/securityContext.xml</param-value>
+			<param-value>/WEB-INF/applicationContext.xml /WEB-INF/securityContext.xml /WEB-INF/integration.xml</param-value>
 	</context-param>
 	
 	<listener>
