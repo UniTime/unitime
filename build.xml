@@ -108,6 +108,7 @@
 			<classpath path="${build.dir}"/>
 			<jvmarg value="-Xmx600M"/>
 			<jvmarg value="${macJvmArgs}"/>
+			<jvmarg value="-Dgwt.persistentunitcache=false"/>
 			<arg value="org.unitime.timetable.gwt.UniTime"/>
 		</java>
 	</target>
