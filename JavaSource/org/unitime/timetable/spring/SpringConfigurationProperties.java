@@ -30,6 +30,7 @@ public class SpringConfigurationProperties extends Properties {
 
 	public SpringConfigurationProperties() {
 		putAll(ApplicationProperties.getProperties());
+		setProperty("unitime.data.dir", ApplicationProperties.getDataFolder().getPath());
 	}
 	
 }
