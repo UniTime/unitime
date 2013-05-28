@@ -69,6 +69,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-core-2.2.3.RELEASE.jar" sourcepath="3rd_party/sources/spring-integration-core-2.2.3.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-integration-file-2.2.3.RELEASE.jar" sourcepath="3rd_party/sources/spring-integration-file-2.2.3.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-retry-1.0.2.RELEASE.jar" sourcepath="3rd_party/sources/spring-retry-1.0.2.RELEASE-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/freemarker-2.3.19.jar" sourcepath="3rd_party/sources/freemarker-2.3.19-sources.jar"/>
 
 	<classpathentry kind="lib" path="3rd_party/ant-1.8.4.jar" sourcepath="3rd_party/sources/ant-1.8.4-sources.jar"/>
 	<!-- 

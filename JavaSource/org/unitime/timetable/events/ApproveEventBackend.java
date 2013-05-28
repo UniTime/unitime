@@ -204,9 +204,9 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 				response.setEvent(EventDetailBackend.getEventDetail(session, event, context));
 			}
 			
-			new EventEmail(request, response).send(context);
-			
 			tx.commit(); tx = null;
+			
+			new EventEmail(request, response).send(context);
 			
 			return response;
 		} catch (Exception ex) {
