@@ -826,7 +826,15 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	    	return iMeetings.last().getMeetingDate();
 	    }
 	    
-	    public int getNrMeetings() {
+	    public String getMeetingTime(GwtConstants constants) {
+	    	return iMeetings.first().getMeetingTime(constants);
+		}
+	    
+		public String getAllocatedTime(GwtConstants constants) {
+			return iMeetings.first().getAllocatedTime(constants);
+		}
+		
+		public int getNrMeetings() {
 	    	return iMeetings.size();
 	    }
 	    

@@ -93,8 +93,8 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		event.setId(e.getUniqueId());
 		event.setName(e.getEventName());
 		event.setType(EventInterface.EventType.values()[e.getEventType()]);
-		event.setCanView(context.hasPermission(e, Right.EventDetail));
-		event.setCanEdit(context.hasPermission(e, Right.EventEdit)); 
+		event.setCanView(context != null && context.hasPermission(e, Right.EventDetail));
+		event.setCanEdit(context != null && context.hasPermission(e, Right.EventEdit)); 
 		event.setEmail(e.getEmail());
 		event.setExpirationDate(e.getExpirationDate());
 		event.setMaxCapacity(e.getMaxCapacity());
@@ -143,7 +143,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		if (clazz.getSchedulePrintNote() != null && !clazz.getSchedulePrintNote().isEmpty())
     			note = (note == null || note.isEmpty() ? "" : note + "\n") + clazz.getSchedulePrintNote();
 			related.setNote(note);
-			if (context.hasPermission(clazz, Right.ClassDetail))
+			if (context != null && context.hasPermission(clazz, Right.ClassDetail))
 				related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 
     		CourseOffering courseOffering = clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getControllingCourseOffering();
@@ -227,7 +227,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		related.setInstruction(e.getEventTypeAbbv());
     		related.setInstructionType(xe.getExam().getExamType().getType());
     		related.setSectionNumber(xe.getExam().getLength().toString());
-			if (context.hasPermission(xe.getExam(), Right.ExaminationDetail))
+			if (context != null && context.hasPermission(xe.getExam(), Right.ExaminationDetail))
 				related.setDetailPage("examDetail.do?examId=" + xe.getExam().getUniqueId());
     		if (xe.getExam().getAssignedPeriod() != null) {
     			ExamPeriod period = xe.getExam().getAssignedPeriod();
@@ -264,7 +264,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.setName(owner.getLabel());
 				related.addCourseName(owner.getCourse().getCourseName());
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
-				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
+				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
 					related.setDetailPage("instructionalOfferingDetail.do?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
@@ -300,7 +300,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				related.addLocation(location);
 		    			}
 		    		}
-					if (context.hasPermission(clazz, Right.ClassDetail))
+					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
@@ -332,7 +332,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				related.addCourseTitle(owner.getCourse().getTitle() == null ? "" : owner.getCourse().getTitle());
 				related.setName(owner.getLabel());
 				related.setSelection(new long[] { owner.getCourse().getSubjectArea().getUniqueId(), owner.getCourse().getUniqueId()});
-				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
+				if (owner.getOwnerType() != ExamOwner.sOwnerTypeClass && context != null && context.hasPermission(owner.getCourse().getInstructionalOffering(), Right.InstructionalOfferingDetail))
 					related.setDetailPage("instructionalOfferingDetail.do?io=" + owner.getCourse().getInstructionalOffering().getUniqueId());
 				if (owner.getOwnerType() == ExamOwner.sOwnerTypeClass) {
 					Class_ clazz = (Class_)owner.getOwnerObject();
@@ -369,7 +369,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    				related.addLocation(location);
 		    			}
 		    		}
-					if (context.hasPermission(clazz, Right.ClassDetail))
+					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
@@ -428,18 +428,18 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			meeting.setEndSlot(m.getStopPeriod());
 			meeting.setStartOffset(m.getStartOffset() == null ? 0 : m.getStartOffset());
 			meeting.setEndOffset(m.getStopOffset() == null ? 0 : m.getStopOffset());
-			meeting.setPast(context.isPastOrOutside(m.getStartTime()));
+			meeting.setPast(context != null && context.isPastOrOutside(m.getStartTime()));
 			meeting.setApprovalDate(m.getApprovalDate());
 			meeting.setApprovalStatus(m.getApprovalStatus());
-			meeting.setCanEdit(context.hasPermission(m, Right.EventMeetingEdit));
-			meeting.setCanInquire(context.hasPermission(m, Right.EventMeetingInquire));
-			meeting.setCanApprove(context.hasPermission(m, Right.EventMeetingApprove));
-			meeting.setCanDelete(context.hasPermission(m, Right.EventMeetingDelete));
-			meeting.setCanCancel(context.hasPermission(m, Right.EventMeetingCancel) ||
+			meeting.setCanEdit(context != null && context.hasPermission(m, Right.EventMeetingEdit));
+			meeting.setCanInquire(context != null && context.hasPermission(m, Right.EventMeetingInquire));
+			meeting.setCanApprove(context != null && context.hasPermission(m, Right.EventMeetingApprove));
+			meeting.setCanDelete(context != null && context.hasPermission(m, Right.EventMeetingDelete));
+			meeting.setCanCancel(context != null && (context.hasPermission(m, Right.EventMeetingCancel) ||
 					(m.getEvent().getEventType() == Event.sEventTypeClass && context.hasPermission(m, Right.EventMeetingCancelClass)) ||
 					(m.getEvent().getEventType() == Event.sEventTypeFinalExam && context.hasPermission(m, Right.EventMeetingCancelExam)) ||
 					(m.getEvent().getEventType() == Event.sEventTypeMidtermExam && context.hasPermission(m, Right.EventMeetingCancelExam))
-					);
+					));
 			if (m.getLocation() != null) {
 				ResourceInterface location = new ResourceInterface();
 				location.setType(ResourceType.ROOM);
@@ -506,7 +506,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 						confEvent.setName(overlap.getEvent().getEventName());
 						confEvent.setType(EventInterface.EventType.values()[overlap.getEvent().getEventType()]);
 						conflictingEvents.put(overlap.getEvent().getUniqueId(), confEvent);
-						confEvent.setCanView(context.hasPermission(overlap.getEvent(), Right.EventDetail));
+						confEvent.setCanView(context != null && context.hasPermission(overlap.getEvent(), Right.EventDetail));
 						confEvent.setMaxCapacity(overlap.getEvent().getMaxCapacity());
 						if (overlap.getEvent().getMainContact() != null) {
 							ContactInterface contact = new ContactInterface();
