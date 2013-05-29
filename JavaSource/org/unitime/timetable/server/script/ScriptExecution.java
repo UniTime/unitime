@@ -34,11 +34,17 @@ import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ExecuteScriptRpcRequest;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.SubjectArea;
+import org.unitime.timetable.model.dao.BuildingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
+import org.unitime.timetable.model.dao.LocationDAO;
+import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.ScriptDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -193,6 +199,30 @@ public class ScriptExecution extends QueueItem {
 						if (!id.isEmpty())
 							subjects.add(SubjectAreaDAO.getInstance().get(Long.valueOf(id), hibSession));
 					engine.put(parameter.getName(), subjects);
+				} else if (parameter.getType().equalsIgnoreCase("building")) {
+					engine.put(parameter.getName(), BuildingDAO.getInstance().get(Long.valueOf(value), hibSession));
+				} else if (parameter.getType().equalsIgnoreCase("buildings")) {
+					List<Building> buildings = new ArrayList<Building>();
+					for (String id: value.split(","))
+						if (!id.isEmpty())
+							buildings.add(BuildingDAO.getInstance().get(Long.valueOf(id), hibSession));
+					engine.put(parameter.getName(), buildings);
+				} else if (parameter.getType().equalsIgnoreCase("room")) {
+					engine.put(parameter.getName(), RoomDAO.getInstance().get(Long.valueOf(value), hibSession));
+				} else if (parameter.getType().equalsIgnoreCase("rooms")) {
+					List<Room> rooms = new ArrayList<Room>();
+					for (String id: value.split(","))
+						if (!id.isEmpty())
+							rooms.add(RoomDAO.getInstance().get(Long.valueOf(id), hibSession));
+					engine.put(parameter.getName(), rooms);
+				} else if (parameter.getType().equalsIgnoreCase("location")) {
+					engine.put(parameter.getName(), LocationDAO.getInstance().get(Long.valueOf(value), hibSession));
+				} else if (parameter.getType().equalsIgnoreCase("locations")) {
+					List<Location> locations = new ArrayList<Location>();
+					for (String id: value.split(","))
+						if (!id.isEmpty())
+							locations.add(LocationDAO.getInstance().get(Long.valueOf(id), hibSession));
+					engine.put(parameter.getName(), locations);
 				} else {
 					engine.put(parameter.getName(), value);
 				}
