@@ -104,6 +104,12 @@ public abstract class Location extends BaseLocation implements Comparable {
 	public RequiredTimeTable getRoomSharingTable() {
 		return new RequiredTimeTable(new RoomSharingModel(this, null, null)); //all editable
 	}
+	
+	public RequiredTimeTable getEventAvailabilityTable() {
+		RoomSharingModel model = new RoomSharingModel(this, null, null);
+		model.setEventAvailabilityPreference(getEventAvailability());
+		return new RequiredTimeTable(model);
+	}
 
 	/** Room sharing table with all fields editable (for administrator)
 	 * @param departments list of departments (or depatment ids)

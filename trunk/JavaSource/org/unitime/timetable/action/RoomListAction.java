@@ -719,18 +719,34 @@ public class RoomListAction extends Action {
 	                    idx++;
 	                }
 	    
-	                // get pattern column
-	                RequiredTimeTable rtt = location.getRoomSharingTable();
-	                rtt.getModel().setDefaultSelection(timeGridSize);
-	                if (gridAsText) {
-	                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-                        // text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
-	                	text[idx] = "<span onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
-	                } else {
-	                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-	                    // text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
-	                	text[idx] = "<img border='0' onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\" src='" +
-	                    		"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&loc=" + location.getUniqueId() + "'>&nbsp;";
+	                if (sessionContext.hasPermission(location, Right.RoomDetailAvailability)) {
+		                // get pattern column
+		                RequiredTimeTable rtt = location.getRoomSharingTable();
+		                rtt.getModel().setDefaultSelection(timeGridSize);
+		                if (gridAsText) {
+		                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                        // text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+		                	text[idx] = "<span onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+		                } else {
+		                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+		                    // text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
+		                	text[idx] = "<img border='0' onmouseover=\"showGwtRoomAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomAvailabilityHint();\" src='" +
+		                    		"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&loc=" + location.getUniqueId() + "'>&nbsp;";
+		                }
+	                } else if (sessionContext.hasPermission(location, Right.RoomDetailEventAvailability)) {
+	                	// get pattern column
+		                RequiredTimeTable rtt = location.getEventAvailabilityTable();
+		                rtt.getModel().setDefaultSelection(timeGridSize);
+		                if (gridAsText) {
+		                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+	                        // text[idx] = "<span onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+		                	text[idx] = "<span onmouseover=\"showGwtRoomEventAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomEventAvailabilityHint();\">" + rtt.getModel().toString().replaceAll(", ","<br>") + "</span>";
+		                } else {
+		                    // String hint = rtt.print(false, timeVertical).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
+		                    // text[idx] = "<img border='0' onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\" src='" +
+		                	text[idx] = "<img border='0' onmouseover=\"showGwtRoomEventAvailabilityHint(this, '" + location.getUniqueId() + "');\" onmouseout=\"hideGwtRoomEventAvailabilityHint();\" src='" +
+		                    		"pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&loc=" + location.getUniqueId() + "&e=1'>&nbsp;";
+		                }
 	                }
 	                comp[idx]=null;
 	                idx++;
