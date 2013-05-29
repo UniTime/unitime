@@ -240,11 +240,11 @@ public class InstructorInfoEditAction extends InstructorAction {
 	        if (inst.getDepartment()!=null) {
 	        	d = inst.getDepartment();
 	        }
+	        d.getInstructors().remove(inst);
 	        
             hibSession.delete(inst);
             
 	        tx.commit();
-			hibSession.refresh(d);
 			
             String className = ApplicationProperties.getProperty("tmtbl.external.class.edit_action.class");
         	if (className != null && className.trim().length() > 0){
