@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
@@ -86,7 +88,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 
 	public static class ScriptParameterInterface implements IsSerializable, Comparable<ScriptParameterInterface> {
 		private String iName, iLabel, iType, iValue, iDefault;
-		private List<ListItem> iOptions = null;
+		private Set<ListItem> iOptions = null;
 		private boolean iMultiSelect = false;
 		
 		public ScriptParameterInterface() {}
@@ -109,10 +111,10 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		public boolean hasOptions() { return iOptions != null && !iOptions.isEmpty(); }
 		public void addOption(String value, String text) {
 			if (iOptions == null)
-				iOptions = new ArrayList<ListItem>();
+				iOptions = new TreeSet<ListItem>();
 			iOptions.add(new ListItem(value, text));
 		}
-		public List<ListItem> getOptions() { return iOptions; }
+		public Set<ListItem> getOptions() { return iOptions; }
 		
 		public boolean isMultiSelect() { return iMultiSelect; }
 		public void setMultiSelect(boolean multiSelect) { iMultiSelect = multiSelect; }
@@ -251,7 +253,7 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		}
 	}
 
-	public static class ListItem implements IsSerializable {
+	public static class ListItem implements IsSerializable, Comparable<ListItem> {
 		private String iValue, iText;
 		public ListItem() {}
 		public ListItem(String value, String text) {
@@ -259,6 +261,13 @@ public class ScriptInterface implements GwtRpcResponse, Comparable<ScriptInterfa
 		}
 		public String getValue() { return iValue; }
 		public String getText() { return iText; }
+		
+		@Override
+		public int compareTo(ListItem item) {
+			int cmp = getText().compareTo(item.getText());
+			if (cmp != 0) return cmp;
+			return getValue().compareTo(item.getValue());
+		}
 	}
 	
 	public static class QueueItemInterface implements GwtRpcResponse {
