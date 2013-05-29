@@ -30,8 +30,11 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.shared.ScriptInterface;
 import org.unitime.timetable.gwt.shared.ScriptInterface.LoadAllScriptsRpcRequest;
 import org.unitime.timetable.gwt.shared.ScriptInterface.ScriptParameterInterface;
+import org.unitime.timetable.model.Building;
 import org.unitime.timetable.model.Department;
+import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.RefTableEntry;
+import org.unitime.timetable.model.Room;
 import org.unitime.timetable.model.Script;
 import org.unitime.timetable.model.ScriptParameter;
 import org.unitime.timetable.model.SubjectArea;
@@ -109,6 +112,24 @@ public class LoadAllScriptsBackend implements GwtRpcImplementation<LoadAllScript
 				for (SubjectArea subject: SubjectArea.getUserSubjectAreas(context.getUser())) {
 					if (right != null && SubjectArea.class.equals(right.type()) && !context.hasPermission(subject, right)) continue;
 					parameter.addOption(subject.getUniqueId().toString(), subject.getSubjectAreaAbbreviation() + " - " + HtmlUtils.htmlUnescape(subject.getTitle()));
+				}
+			} else if (p.getType().equalsIgnoreCase("building") || p.getType().equalsIgnoreCase("buildings")) {
+				if (p.getType().equalsIgnoreCase("buildings")) parameter.setMultiSelect(true);
+				for (Building building: Building.findAll(context.getUser().getCurrentAcademicSessionId())) {
+					if (right != null && Building.class.equals(right.type()) && !context.hasPermission(building, right)) continue;
+					parameter.addOption(building.getUniqueId().toString(), building.getAbbreviation() + " - " + HtmlUtils.htmlUnescape(building.getName()));
+				}
+			} else if (p.getType().equalsIgnoreCase("room") || p.getType().equalsIgnoreCase("rooms")) {
+				if (p.getType().equalsIgnoreCase("rooms")) parameter.setMultiSelect(true);
+				for (Room room: Room.findAllRooms(context.getUser().getCurrentAcademicSessionId())) {
+					if (right != null && Room.class.equals(right.type()) && !context.hasPermission(room, right)) continue;
+					parameter.addOption(room.getUniqueId().toString(), room.getLabel());
+				}
+			} else if (p.getType().equalsIgnoreCase("location") || p.getType().equalsIgnoreCase("locations")) {
+				if (p.getType().equalsIgnoreCase("locations")) parameter.setMultiSelect(true);
+				for (Location location: Location.findAll(context.getUser().getCurrentAcademicSessionId())) {
+					if (right != null && Location.class.equals(right.type()) && !context.hasPermission(location, right)) continue;
+					parameter.addOption(location.getUniqueId().toString(), location.getLabel());
 				}
 			}
 			script.addParameter(parameter);
