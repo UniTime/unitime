@@ -65,7 +65,10 @@ public class PatternServlet extends HttpServlet {
                     px.load(location);
                     rtt = new RequiredTimeTable(px);
 				} else {
-					rtt = location.getRoomSharingTable();
+					if ("1".equals(request.getParameter("e")))
+						rtt = location.getEventAvailabilityTable();
+					else
+						rtt = location.getRoomSharingTable();
 				}
 			}
 		} else if (request.getParameter("x") != null) {

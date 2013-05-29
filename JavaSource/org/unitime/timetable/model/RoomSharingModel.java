@@ -253,6 +253,26 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 		}
 	}
 	
+	public void setEventAvailabilityPreference(String pattern) {
+		try {
+			int idx = 0;
+			for (int d=0;d<getNrDays();d++)
+				for (int t=0;t<getNrTimes();t++) {
+					char pref = (pattern!=null && idx<pattern.length()?pattern.charAt(idx):'0');
+					idx++;
+					if (pref=='0') {
+						iPreference[d][t]=sFreeForAllPref;
+						iEditable[d][t]=true;
+					} else {
+						iPreference[d][t]=sNotAvailablePref;
+						iEditable[d][t]=true;
+					}
+				}
+		} catch (NullPointerException e) {
+		} catch (IndexOutOfBoundsException e) {
+		}
+	}
+	
 	public boolean isExactTime() { return false; }
     public int getExactDays() { return -1; }
     public int getExactStartSlot() { return -1; }
@@ -313,7 +333,7 @@ public class RoomSharingModel extends net.sf.cpsolver.coursett.model.RoomSharing
 		iDefaultSelection = 0;
 		if (selection==null) return;
 		for (int i=0;i<getNrSelections();i++) {
-			if (selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x"))) {
+			if (selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x").replaceAll("×", "x"))) {
 				iDefaultSelection = i;
 				break;
 			}
