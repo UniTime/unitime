@@ -309,6 +309,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
         		solution.setCreator(Test.getVersionString());
         		solution.setNote(getModel().getProperties().getProperty("General.Note"));
         		solution.setOwner(solverGroup);
+        		solverGroup.getSolutions().add(solution);
         		solution.setValid(Boolean.TRUE);
         		solution.setCommited(Boolean.FALSE);
         		

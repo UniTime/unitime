@@ -1342,6 +1342,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
             hibSessionFactory.getCache().evictEntity(Class_.class, classId);
             hibSessionFactory.getCache().evictCollection(Class_.class.getName()+".assignments", classId);
         }
+        hibSessionFactory.getCache().evictCollection(SolverGroup.class.getName()+".solutions", (Long)hibSession.createQuery("select owner.uniqueId from Solution s where s.uniqueId=:solutionId").setLong("solutionId", solutionId).uniqueResult());
    }
     
     public static boolean hasTimetable(Long sessionId) {
