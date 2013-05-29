@@ -236,11 +236,15 @@ public class ExamEditAction extends PreferencesAction {
                 if(errors.size()==0) {
                     doUpdate(request, frm, exam);
                     
-                    if (op.equals(rsc.getMessage("button.nextExam")))
+                    if (op.equals(rsc.getMessage("button.nextExam"))) {
                         response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getNextId()));
+                        return null;
+                    }
                     
-                    if (op.equals(rsc.getMessage("button.previousExam")))
+                    if (op.equals(rsc.getMessage("button.previousExam"))) {
                         response.sendRedirect(response.encodeURL("examEdit.do?examId="+frm.getPreviousId()));
+                        return null;
+                    }
                     
                     //response.sendRedirect(response.encodeURL("examDetail.do?examId="+examId));
                     if (op.equals(rsc.getMessage("button.saveExam")) && BackTracker.hasBack(request, 2) && !frm.getClone()) {

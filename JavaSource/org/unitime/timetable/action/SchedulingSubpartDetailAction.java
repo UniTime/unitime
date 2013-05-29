@@ -141,6 +141,7 @@ public class SchedulingSubpartDetailAction extends PreferencesAction {
 	        if(op.equals(MSG.actionEditSubpart())
 	                && subpartId!=null && subpartId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("schedulingSubpartEdit.do?ssuid="+ss.getUniqueId().toString()) );
+	        	return null;
 	        }
 
 			// Add Distribution Preference - Redirect to dist prefs screen
