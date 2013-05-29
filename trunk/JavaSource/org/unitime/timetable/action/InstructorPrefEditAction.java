@@ -212,11 +212,15 @@ public class InstructorPrefEditAction extends PreferencesAction {
 
             		idao.saveOrUpdate(inst);
                     
-    	        	if (op.equals(MSG.actionNextInstructor()))
+    	        	if (op.equals(MSG.actionNextInstructor())) {
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getNextId()));
+    	            	return null;
+    	        	}
     	            
-    	            if (op.equals(MSG.actionPreviousInstructor()))
+    	            if (op.equals(MSG.actionPreviousInstructor())) {
     	            	response.sendRedirect(response.encodeURL("instructorPrefEdit.do?instructorId="+frm.getPreviousId()));
+    	            	return null;
+    	            }
                     
     	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
     	            redirect.addParameter("instructorId", frm.getInstructorId());

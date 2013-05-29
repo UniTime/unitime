@@ -220,11 +220,15 @@ public class SchedulingSubpartEditAction extends PreferencesAction {
             if(errors.size()==0) {
                 this.doUpdate(request, frm, ss, sdao, timeVertical);
 
-	            if (op.equals(MSG.actionNextSubpart()))
+	            if (op.equals(MSG.actionNextSubpart())) {
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getNextId()));
+	            	return null;
+	            }
 
-	            if (op.equals(MSG.actionPreviousSubpart()))
+	            if (op.equals(MSG.actionPreviousSubpart())) {
 	            	response.sendRedirect(response.encodeURL("schedulingSubpartEdit.do?ssuid="+frm.getPreviousId()));
+	            	return null;
+	            }
 
 	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displaySubpartDetail"));
 	            redirect.addParameter("ssuid", subpartId);

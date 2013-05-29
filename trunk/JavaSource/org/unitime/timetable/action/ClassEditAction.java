@@ -287,11 +287,15 @@ public class ClassEditAction extends PreferencesAction {
                    		editAction.performExternalClassEditAction(c, hibSession);
                 	}
 
-    	            if (op.equals(MSG.actionNextClass()))
+    	            if (op.equals(MSG.actionNextClass())) {
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getNextId()));
+    	            	return null;
+    	            }
 
-    	            if (op.equals(MSG.actionPreviousClass()))
+    	            if (op.equals(MSG.actionPreviousClass())) {
     	            	response.sendRedirect(response.encodeURL("classEdit.do?cid="+frm.getPreviousId()));
+    	            	return null;
+    	            }
 
     	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("displayClassDetail"));
     	            redirect.addParameter("cid", classId);

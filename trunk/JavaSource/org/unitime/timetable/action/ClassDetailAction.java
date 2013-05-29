@@ -147,6 +147,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        if(op.equals(MSG.actionEditClass())
 	                && classId!=null && classId.trim()!="") {
 	        	response.sendRedirect( response.encodeURL("classEdit.do?cid=" + c.getUniqueId().toString() + "&sec=" + c.getSectionNumberString() ));
+	        	return null;
 	        }
 
             if (op.equals(MSG.actionNextClass())) {
