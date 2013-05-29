@@ -99,13 +99,12 @@ public class UniTimePageLabel extends Composite {
 	}
 	
 	public void setPageName(final String title) {
-		Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
-		iName.setText(title);
-		iHelp.setTitle(MESSAGES.pageHelp(title));
-		iHelp.setVisible(false);
 		iService.getHelpPageAndLocalizedTitle(title, new AsyncCallback<String[]>() {
 			@Override
 			public void onFailure(Throwable caught) {
+				Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
+				iName.setText(title);
+				iHelp.setTitle(MESSAGES.pageHelp(title));
 				iHelp.setVisible(false);
 				iUrl = null;
 			}
@@ -118,10 +117,14 @@ public class UniTimePageLabel extends Composite {
 					iHelp.setVisible(true);
 					iUrl = result[0];
 				}
-				if (result[1] != null && !title.equals(result[1])) {
+				if (result[1] != null) {
 					iName.setText(result[1]);
 					iHelp.setTitle(MESSAGES.pageHelp(result[1]));
 					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + result[1]);
+				} else {
+					Window.setTitle("UniTime " + CONSTANTS.version() + "| " + title);
+					iName.setText(title);
+					iHelp.setTitle(MESSAGES.pageHelp(title));
 				}
 			}
 		});

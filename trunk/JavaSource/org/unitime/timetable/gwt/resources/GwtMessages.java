@@ -1790,7 +1790,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Curriculum Requested Enrollments")
 	String pageCurriculumRequestedEnrollments();
 	
-	@DefaultMessage("Reservation")
+	@DefaultMessage("Reservations")
 	String pageReservations();
 	
 	@DefaultMessage("Add Reservation")
