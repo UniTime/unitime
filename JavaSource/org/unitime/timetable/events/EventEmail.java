@@ -100,7 +100,7 @@ public class EventEmail {
 				email.addRecipientCC(event().getSponsor().getEmail(), event().getSponsor().getName());
 			if (event().hasEmail()) {
 				String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
-				for (String address: event().getEmail().split("\n")) {
+				for (String address: event().getEmail().split("[\n,]")) {
 					if (!address.trim().isEmpty()) {
 						if (suffix != null && address.indexOf('@') < 0)
 							email.addRecipientCC(address.trim() + suffix, null);
@@ -299,7 +299,7 @@ public class EventEmail {
 			email.addRecipientCC(event.getSponsor().getEmail(), event.getSponsor().getName());
 		if (event.hasEmail()) {
 			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
-			for (String address: event.getEmail().split("\n")) {
+			for (String address: event.getEmail().split("[\n,]")) {
 				if (!address.trim().isEmpty()) {
 					if (suffix != null && address.indexOf('@') < 0)
 						email.addRecipientCC(address.trim() + suffix, null);
