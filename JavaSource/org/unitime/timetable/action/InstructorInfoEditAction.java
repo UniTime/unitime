@@ -109,6 +109,7 @@ public class InstructorInfoEditAction extends InstructorAction {
         if(op.equals(MSG.actionBackToDetail()) 
                 && instructorId!=null && instructorId.trim()!="") {
         	response.sendRedirect( response.encodeURL("instructorDetail.do?instructorId="+instructorId));
+        	return null;
         }
         
         // Check ID
@@ -135,11 +136,15 @@ public class InstructorInfoEditAction extends InstructorAction {
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
 	            
-	        	if (op.equals(MSG.actionNextInstructor()))
+	        	if (op.equals(MSG.actionNextInstructor())) {
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getNextId()));
+	            	return null;
+	        	}
 	            
-	            if (op.equals(MSG.actionPreviousInstructor()))
+	            if (op.equals(MSG.actionPreviousInstructor())) {
 	            	response.sendRedirect(response.encodeURL("instructorInfoEdit.do?instructorId="+frm.getPreviousId()));
+	            	return null;
+	            }
 
 	            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showDetail"));
 	            redirect.addParameter("instructorId", frm.getInstructorId());

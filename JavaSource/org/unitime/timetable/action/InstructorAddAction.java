@@ -81,6 +81,7 @@ public class InstructorAddAction extends InstructorAction {
         // Cancel adding an instructor - Go back to Instructors screen
         if(op.equals(MSG.actionBackToInstructors())) {
         	response.sendRedirect( response.encodeURL("instructorList.do"));
+        	return null;
         }
         
 		//get department
@@ -99,6 +100,7 @@ public class InstructorAddAction extends InstructorAction {
             if(errors.size()==0 && isDeptInstructorUnique(frm, request)) {
 	        	doUpdate(frm, request);
 	        	response.sendRedirect( response.encodeURL("instructorList.do"));
+	        	return null;
             } else {
                 if (errors.size()==0) {
                     errors.add( "uniqueId", 
