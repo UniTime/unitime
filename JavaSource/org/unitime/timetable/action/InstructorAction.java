@@ -247,6 +247,7 @@ public class InstructorAction extends Action {
 				String deptId = (String) sessionContext.getAttribute(SessionAttribute.DepartmentId);
 				d = new DepartmentDAO().get(new Long(deptId));
 				inst.setDepartment(d);
+				d.getInstructors().add(inst);
 			}
 			else
 			    throw new Exception("Department Id could not be retrieved from session");
@@ -265,10 +266,6 @@ public class InstructorAction extends Action {
                     inst.getDepartment());
 
             tx.commit();			
-			hibSession.clear();
-			hibSession.refresh(inst);
-			if (d!=null)
-				hibSession.refresh(d);
 			
 		} catch (Exception e) {
             Debug.error(e);

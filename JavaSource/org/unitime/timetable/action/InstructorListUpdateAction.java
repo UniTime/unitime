@@ -243,6 +243,7 @@ public class InstructorListUpdateAction extends Action {
 				        	a.getInstructors().remove(inst);
 				        	hibSession.saveOrUpdate(a);
 				        }
+				        inst.getDepartment().getInstructors().remove(inst);
 				        
 						hibSession.delete(inst);
 					}
@@ -266,6 +267,7 @@ public class InstructorListUpdateAction extends Action {
 						String deptId = (String) httpSession.getAttribute(Constants.DEPT_ID_ATTR_NAME);
 						Department d = new DepartmentDAO().get(new Long(deptId));
 						inst.setDepartment(d);
+						d.getInstructors().add(inst);
 						
 						if (staff.getFirstName() != null) {
 							inst.setFirstName(staff.getFirstName());
