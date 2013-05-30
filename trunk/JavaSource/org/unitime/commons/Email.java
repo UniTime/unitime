@@ -43,6 +43,8 @@ public abstract class Email {
 	
 	public abstract void setReplyTo(String email, String name) throws Exception;
 	
+	public abstract void addReplyTo(String email, String name) throws Exception;
+	
 	public abstract void addRecipient(String email, String name) throws Exception;
 	
 	public abstract void addRecipientCC(String email, String name) throws Exception;
