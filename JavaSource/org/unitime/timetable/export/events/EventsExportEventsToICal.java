@@ -37,6 +37,7 @@ import org.springframework.stereotype.Service;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.util.Constants;
@@ -87,6 +88,7 @@ public class EventsExportEventsToICal extends EventsExporter {
         if (event.hasMeetings())
             meetings: for (MeetingInterface m: event.getMeetings()) {
             	if (m.isArrangeHours()) continue;
+            	if (m.getApprovalStatus() != ApprovalStatus.Approved && m.getApprovalStatus() != ApprovalStatus.Pending) continue;
                 ICalendarMeeting x = new ICalendarMeeting(m, status != null ? status : m.isApproved() ? ICalendarStatus.CONFIRMED : ICalendarStatus.TENTATIVE);
                 
                 for (ICalendarMeeting icm: meetings)
