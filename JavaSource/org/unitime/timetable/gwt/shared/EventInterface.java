@@ -1024,7 +1024,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     		Delete("Delete"),
     		Edit("Edit"),
     		Inquire("Inquire"),
-    		Cancel("Cancel");
+    		Cancel("Cancel"),
+    		Email("Email");
     		
     		private String iName;
     		
@@ -1955,7 +1956,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			CREATE,
 			UPDATE,
 			DELETE,
-			CANCEL
+			CANCEL,
+			EMAIL
 		}
 		private EventInterface iEvent;
 		private String iMessage;

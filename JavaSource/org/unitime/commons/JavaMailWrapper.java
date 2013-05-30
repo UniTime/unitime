@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
+import javax.mail.Address;
 import javax.mail.Authenticator;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -85,6 +86,20 @@ public class JavaMailWrapper extends Email {
 	public void setReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
 		if (email != null)
 			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name, "UTF-8")});
+	}
+	
+	@Override
+	public void addReplyTo(String email, String name) throws UnsupportedEncodingException, MessagingException {
+		if (email == null || email.isEmpty()) return;
+		Address[] replyTo = iMail.getReplyTo();
+		if (replyTo == null || replyTo.length == 0) {
+			iMail.setReplyTo(new InternetAddress[] {new InternetAddress(email, name, "UTF-8")});
+		} else {
+			Address[] newReplyTo = new Address[replyTo.length + 1];
+			for (int i = 0; i < replyTo.length; i++) newReplyTo[i] = replyTo[i];
+			newReplyTo[replyTo.length] = new InternetAddress(email, name, "UTF-8");
+			iMail.setReplyTo(newReplyTo);
+		}
 	}
 	
 	protected void addRecipient(RecipientType type, String email, String name) throws UnsupportedEncodingException, MessagingException {

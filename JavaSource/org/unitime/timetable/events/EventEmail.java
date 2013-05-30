@@ -36,6 +36,7 @@ import java.util.TreeSet;
 
 import javax.activation.DataSource;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
 import org.unitime.commons.Email;
@@ -46,6 +47,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.server.UploadServlet;
 import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ApproveEventRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
@@ -67,16 +69,24 @@ public class EventEmail {
 	protected static Map<Long, String> sMessageId = new Hashtable<Long, String>();
 	
 	private SaveOrApproveEventRpcRequest iRequest = null;
-	private SaveOrApproveEventRpcResponse iResponse = null; 
+	private SaveOrApproveEventRpcResponse iResponse = null;
+	private DataSource iAttachment = null;
+	private InternetAddress iReplyTo = null;
+	
+	public EventEmail(SaveOrApproveEventRpcRequest request, SaveOrApproveEventRpcResponse response, DataSource attachment, InternetAddress replyTo) {
+		iRequest = request; iResponse = response; iAttachment = attachment; iReplyTo = replyTo;
+	}
 	
 	public EventEmail(SaveOrApproveEventRpcRequest request, SaveOrApproveEventRpcResponse response) {
-		iRequest = request; iResponse = response;
+		this(request, response, null, null);
 	}
 	
 	public EventEmail() {}
 	
 	public SaveOrApproveEventRpcRequest request() { return iRequest; }
 	public SaveOrApproveEventRpcResponse response() { return iResponse; }
+	public DataSource attachment() { return iAttachment; }
+	public InternetAddress replyTo() { return iReplyTo; }
 	
 	public void send(SessionContext context) throws UnsupportedEncodingException, MessagingException {
 		try {
@@ -110,35 +120,47 @@ public class EventEmail {
 				}
 			}
 			
-			email.setSubject(event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
-			
-			if (context.isAuthenticated() && context.getUser().getEmail() != null) {
+			if (replyTo() != null) {
+				email.setReplyTo(replyTo().getAddress(), replyTo().getPersonal());
+			} else if (context != null && context.isAuthenticated() && context.getUser().getEmail() != null) {
 				email.setReplyTo(context.getUser().getEmail(), context.getUser().getName());
 			} else {
 				email.setReplyTo(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			}
 			
-			final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
-			if (file != null) {
-				email.addAttachement(new DataSource() {
-					@Override
-					public OutputStream getOutputStream() throws IOException {
-						throw new IOException("No output stream.");
-					}
-					@Override
-					public String getName() {
-						return file.getName();
-					}
-					@Override
-					public InputStream getInputStream() throws IOException {
-						return file.getInputStream();
-					}
-					@Override
-					public String getContentType() {
-						return file.getContentType();
-					}
-				});
+			if (event().getId() != null && "true".equals(ApplicationProperties.getProperty("unitime.email.inbound.enabled")) && ApplicationProperties.getProperty("unitime.email.inbound.address") != null) {
+				email.setSubject("[EVENT-"+ Long.toHexString(event().getId()) +"] " + event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
+				email.addReplyTo(ApplicationProperties.getProperty("unitime.email.inbound.address"), ApplicationProperties.getProperty("unitime.email.inbound.name", "UniTime Events"));
+			} else {
+				email.setSubject(event().getName() + " (" + event().getType().getName(CONSTANTS) + ")");
 			}
+			
+			if (context != null) {
+				final FileItem file = (FileItem)context.getAttribute(UploadServlet.SESSION_LAST_FILE);
+				if (file != null) {
+					email.addAttachement(new DataSource() {
+						@Override
+						public OutputStream getOutputStream() throws IOException {
+							throw new IOException("No output stream.");
+						}
+						@Override
+						public String getName() {
+							return file.getName();
+						}
+						@Override
+						public InputStream getInputStream() throws IOException {
+							return file.getInputStream();
+						}
+						@Override
+						public String getContentType() {
+							return file.getContentType();
+						}
+					});
+				}
+			}
+			
+			if (attachment() != null)
+				email.addAttachement(attachment());
 			
 			final String ical = icalendar();
 			if (ical != null) {
@@ -281,65 +303,45 @@ public class EventEmail {
 			for (Meeting m: cancelledEvent.getMeetings())
 				if (m.getLocation() != null) { session = m.getLocation().getSession(); break; }
 		EventInterface event = EventDetailBackend.getEventDetail(session, cancelledEvent, null);
-		TreeSet<MeetingInterface> meetings = new TreeSet<EventInterface.MeetingInterface>();
+		
+		ApproveEventRpcRequest request = new ApproveEventRpcRequest();
+		request.setOperation(SaveOrApproveEventRpcRequest.Operation.CANCEL);
+		request.setMessage(MESSAGES.noteEventExpired());
+		request.setEmailConfirmation(true);
+		request.setSessionId(session == null ? null : session.getUniqueId());
+		request.setEvent(event);
+		
+		SaveOrApproveEventRpcResponse response = new SaveOrApproveEventRpcResponse();
+		response.setEvent(event);
 		for (Meeting metting: cancelledMeetings)
 			for (MeetingInterface m: event.getMeetings())
-				if (m.getId().equals(metting.getUniqueId())) meetings.add(m);
+				if (m.getId().equals(metting.getUniqueId()))
+					response.addUpdatedMeeting(m);
 		
-		Email email = Email.createEmail();
-		if (event.hasContact() && event.getContact().getEmail() != null)
-			email.addRecipient(event.getContact().getEmail(), event.getContact().getName(MESSAGES));
-		if (event.hasAdditionalContacts()) {
-			for (ContactInterface contact: event.getAdditionalContacts()) {
-				if (contact.getEmail() != null)
-					email.addRecipient(contact.getEmail(), contact.getName(MESSAGES));
-			}
-		}
-		if (event.hasSponsor() && event.getSponsor().hasEmail())
-			email.addRecipientCC(event.getSponsor().getEmail(), event.getSponsor().getName());
-		if (event.hasEmail()) {
-			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
-			for (String address: event.getEmail().split("[\n,]")) {
-				if (!address.trim().isEmpty()) {
-					if (suffix != null && address.indexOf('@') < 0)
-						email.addRecipientCC(address.trim() + suffix, null);
-					else
-						email.addRecipientCC(address.trim(), null);
-				}
-			}
-		}
-		email.setSubject(event.getName() + " (" + event.getType().getName(CONSTANTS) + ")");
-		
-		Configuration cfg = new Configuration();
-		cfg.setClassForTemplateLoading(EventEmail.class, "");
-		cfg.setLocale(Localization.getJavaLocale());
-		cfg.setOutputEncoding("utf-8");
-		Template template = cfg.getTemplate("confirmation.ftl");
-		Map<String, Object> input = new HashMap<String, Object>();
-		input.put("msg", MESSAGES);
-		input.put("const", CONSTANTS);
-		input.put("subject", MESSAGES.emailSubjectExpired(event.getName()));
-		input.put("event", event);
-		input.put("operation", SaveOrApproveEventRpcRequest.Operation.CANCEL);
-		input.put("updated", EventInterface.getMultiMeetings(meetings, true));
-		input.put("message", MESSAGES.noteEventExpired());
-		input.put("meetings", EventInterface.getMultiMeetings(event.getMeetings(), true));
-		input.put("version", MESSAGES.pageVersion(Constants.getVersion(), Constants.getReleaseDate()));
-		input.put("ts", new Date());
-		
-		StringWriter buffer = new StringWriter();
-		template.process(input, new PrintWriter(buffer));
-		buffer.flush(); buffer.close();
+		new EventEmail(request, response).send(null);
+	}
+	
+	public static void eventUpdated(Event updatedEvent, String message, InternetAddress replyTo, DataSource attachment) throws Exception {
+		if (!"true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail","true"))))
+			return;
 
-		email.setHTML(buffer.toString());
+		Session session = updatedEvent.getSession();
+		if (session == null)
+			for (Meeting m: updatedEvent.getMeetings())
+				if (m.getLocation() != null) { session = m.getLocation().getSession(); break; }
+		EventInterface event = EventDetailBackend.getEventDetail(session, updatedEvent, null);
 		
-		String messageId = sMessageId.get(event.getId());
-		if (messageId != null)
-			email.setInReplyTo(messageId);
+		ApproveEventRpcRequest request = new ApproveEventRpcRequest();
+		request.setOperation(SaveOrApproveEventRpcRequest.Operation.UPDATE);
+		if (message != null && !message.isEmpty())
+			request.setMessage(message);
+		request.setEmailConfirmation(true);
+		request.setSessionId(session == null ? null : session.getUniqueId());
+		request.setEvent(event);
 		
-		email.send();
+		SaveOrApproveEventRpcResponse response = new SaveOrApproveEventRpcResponse();
+		response.setEvent(event);
 		
-		if (email.getMessageId() != null)
-			sMessageId.put(event.getId(), email.getMessageId());
+		new EventEmail(request, response, attachment, replyTo).send(null);
 	}
 }
