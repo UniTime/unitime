@@ -935,6 +935,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				        		note.setNote(n.getTextNote());
 				        		note.setUser(n.getUser());
 				        		note.setAttachment(n.getAttachedName());
+				        		note.setLink(n.getAttachedName() == null ? null : QueryEncoderBackend.encode("event=" + m.getEvent().getUniqueId() + "&note=" + n.getUniqueId()));
 				    			event.addNote(note);
 							}
 				    	}
