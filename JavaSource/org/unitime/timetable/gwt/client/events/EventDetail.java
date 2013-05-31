@@ -390,7 +390,9 @@ public class EventDetail extends Composite {
 				row.add(new HTML(note.getMeetings() == null ? "<i>N/A</i>" : note.getMeetings(), false));
 				row.add(new HTML(note.getNote() == null ? "" : note.getNote().replace("\n", "<br>"), true));
 				if (note.hasAttachment()) {
-					ImageLink link = new ImageLink(new Image(RESOURCES.download()), GWT.getHostPageBaseURL() + "upload?event=" + iEvent.getId() + "&name=" + note.getAttachment() + (note.getId() == null ? "" : "&note=" + note.getId()));
+					ImageLink link = new ImageLink(new Image(RESOURCES.download()), note.hasLink() ?
+							GWT.getHostPageBaseURL() + "upload?q=" + note.getLink() :
+							GWT.getHostPageBaseURL() + "upload?event=" + iEvent.getId() + (note.getId() == null ? "&name=" + note.getAttachment() : "&note=" + note.getId()));
 					link.setTitle(note.getAttachment());
 					link.setText(note.getAttachment());
 					row.add(link);

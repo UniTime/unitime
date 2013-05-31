@@ -643,6 +643,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		note.setNote(n.getTextNote() == null ? null : n.getTextNote().replace("\n", "<br>"));
     		note.setUser(n.getUser());
     		note.setAttachment(n.getAttachedName());
+    		note.setLink(n.getAttachedName() == null ? null : QueryEncoderBackend.encode("event=" + e.getUniqueId() + "&note=" + n.getUniqueId()));
     		event.addNote(note);
     	}
     	

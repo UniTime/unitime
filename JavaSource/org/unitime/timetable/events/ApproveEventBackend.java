@@ -193,6 +193,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 			n.setType(NoteInterface.NoteType.values()[note.getNoteType()]);
 			n.setNote(request.getMessage());
 			n.setAttachment(attachment == null ? null : attachment.getName());
+			n.setLink(attachment == null ? null : QueryEncoderBackend.encode("event=" + event.getUniqueId() + "&note=" + note.getUserId()));
 			response.addNote(n);
 			
 			if (event.getMeetings().isEmpty()) {

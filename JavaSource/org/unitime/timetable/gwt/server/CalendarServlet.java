@@ -1053,7 +1053,7 @@ public class CalendarServlet extends HttpServlet {
         out.println("END:VFREEBUSY");
 	}
 
-	private static interface Params {
+	public static interface Params {
 		public String getParameter(String name);
 		public String[] getParameterValues(String name);
 		public Enumeration<String> getParameterNames();
