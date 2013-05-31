@@ -1015,6 +1015,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private String iMeetings;
     	private String iNote;
     	private String iAttachment;
+    	private String iLink;
     	
     	public static enum NoteType {
     		Create("Create"),
@@ -1058,6 +1059,10 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	public boolean hasAttachment() { return iAttachment != null && !iAttachment.isEmpty(); }
     	public String getAttachment() { return iAttachment; }
     	public void setAttachment(String attachment) { iAttachment = attachment; }
+    	
+    	public boolean hasLink() { return iLink != null && !iLink.isEmpty(); }
+    	public String getLink() { return iLink; }
+    	public void setLink(String link) { iLink = link; }
     	
 		@Override
 		public int compareTo(NoteInterface note) {
