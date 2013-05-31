@@ -2177,6 +2177,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>A</u>dd Department...")
 	String buttonAddDepartment();
 	
+	@DefaultMessage("<u>R</u>emove All")
+	String buttonRemoveAll();
+	
 	@DefaultMessage("Add Department...")
 	String dialogAddDepartment();
 	
