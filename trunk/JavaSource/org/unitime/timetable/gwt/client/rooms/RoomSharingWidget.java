@@ -38,6 +38,7 @@ import org.unitime.timetable.gwt.shared.RoomInterface.RoomSharingOption;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Style.Overflow;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -464,8 +465,9 @@ public class RoomSharingWidget extends Composite {
 		}
 		
 		final List<RoomSharingOption> other = iModel.getAdditionalOptions();
-		if (isEditable() && other != null && !other.isEmpty()) {
-			if (other.size() <= 20) {
+		final List<RoomSharingOption> removable = iModel.getRemovableOptions();
+		if (isEditable() && (!other.isEmpty() || !removable.isEmpty())) {
+			if (!other.isEmpty() && other.size() <= 20) {
 				P separator = new P("row");
 				separator.add(new P("blank"));
 				P message = new P("other"); message.setHTML(MESSAGES.separatorAddDepartment());
@@ -513,84 +515,101 @@ public class RoomSharingWidget extends Composite {
 					
 					box.add(line);
 				}
-				
-				
-			} else {
+			}
+			if (other.size() >= 20 || removable.size() >= 10) {
 				final P line = new P("row");
 				line.add(new P("blank"));
-				Button button = new Button(MESSAGES.buttonAddDepartment(), new ClickHandler() {
-					
-					@Override
-					public void onClick(ClickEvent event) {
-						final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
-						dialog.setText(MESSAGES.dialogAddDepartment());
-						dialog.setAnimationEnabled(false);
-						dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
-							@Override
-							public void onClose(CloseEvent<PopupPanel> event) {
-								RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
-							}
-						});
-						P legend = new P("legend");
-						P box = new P("box");
-						legend.add(box);
-						for (final RoomSharingOption option: other) {
-							final P line = new P("row");
-							
-							final P icon = new P("cell", "clickable");
-							if (option.getCode() != null && !option.getCode().isEmpty()) icon.setHTML(option.getCode());
-							if (box.getWidgetCount() == 0) icon.addStyleName("first");
-							icon.getElement().getStyle().setBackgroundColor(option.getColor());
-							line.add(icon);
-							
-							final P title = new P("title", "editable-title"); title.setHTML(option.getName());
-							line.add(title);
-							
-							MouseDownHandler md = new MouseDownHandler() {
+				P p = new P("button"); 
+				if (other.size() >= 20) {
+					Button button = new Button(MESSAGES.buttonAddDepartment(), new ClickHandler() {
+						
+						@Override
+						public void onClick(ClickEvent event) {
+							final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+							dialog.setText(MESSAGES.dialogAddDepartment());
+							dialog.setAnimationEnabled(false);
+							dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
 								@Override
-								public void onMouseDown(MouseDownEvent event) {
-									iModel.getOptions().add(option);
+								public void onClose(CloseEvent<PopupPanel> event) {
+									RootPanel.getBodyElement().getStyle().setOverflow(Overflow.AUTO);
+								}
+							});
+							P legend = new P("legend");
+							P box = new P("box");
+							legend.add(box);
+							for (final RoomSharingOption option: other) {
+								final P line = new P("row");
+								
+								final P icon = new P("cell", "clickable");
+								if (option.getCode() != null && !option.getCode().isEmpty()) icon.setHTML(option.getCode());
+								if (box.getWidgetCount() == 0) icon.addStyleName("first");
+								icon.getElement().getStyle().setBackgroundColor(option.getColor());
+								line.add(icon);
+								
+								final P title = new P("title", "editable-title"); title.setHTML(option.getName());
+								line.add(title);
+								
+								MouseDownHandler md = new MouseDownHandler() {
+									@Override
+									public void onMouseDown(MouseDownEvent event) {
+										iModel.getOptions().add(option);
+										dialog.hide();
+										iOption = option;
+										setMode(mode, horizontal);
+									}
+								};
+								
+								icon.addMouseDownHandler(md);
+								title.addMouseDownHandler(md);
+								
+								box.add(line);
+							}
+							
+							final P line = new P("row");
+							line.add(new P("blank"));
+							Button button = new Button(MESSAGES.buttonAddAllDepartments(), new ClickHandler() {
+								@Override
+								public void onClick(ClickEvent event) {
+									iModel.getOptions().addAll(other);
 									dialog.hide();
-									iOption = option;
 									setMode(mode, horizontal);
 								}
-							};
-							
-							icon.addMouseDownHandler(md);
-							title.addMouseDownHandler(md);
-							
+							});
+							P p = new P("button"); p.add(button);
+							line.add(p);
 							box.add(line);
+							
+							ScrollPanel w = new ScrollPanel();
+							w.addStyleName("scroll");
+							w.addStyleName("unitime-RoomSharingWidget");
+							w.add(legend);
+							if (other.size() >= 12)
+								w.setHeight("300px");
+							dialog.setWidget(w);
+							
+							RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
+							dialog.center();
 						}
-						
-						final P line = new P("row");
-						line.add(new P("blank"));
-						Button button = new Button(MESSAGES.buttonAddAllDepartments(), new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {
-								iModel.getOptions().addAll(other);
-								dialog.hide();
-								setMode(mode, horizontal);
-							}
-						});
-						P p = new P("button"); p.add(button);
-						line.add(p);
-						box.add(line);
-						
-						ScrollPanel w = new ScrollPanel();
-						w.addStyleName("scroll");
-						w.addStyleName("unitime-RoomSharingWidget");
-						w.add(legend);
-						if (other.size() >= 12)
-							w.setHeight("300px");
-						dialog.setWidget(w);
-						
-						RootPanel.getBodyElement().getStyle().setOverflow(Overflow.HIDDEN);
-						dialog.center();
-					}
-				});
-				Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonAddDepartment());
-				if (ch != null) button.setAccessKey(ch);
-				P p = new P("button"); p.add(button);
+					});
+					Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonAddDepartment());
+					if (ch != null) button.setAccessKey(ch);
+					p.add(button);
+				}
+				if (removable.size() >= 10) {
+					Button button = new Button(MESSAGES.buttonRemoveAll(), new ClickHandler() {
+						@Override
+						public void onClick(ClickEvent event) {
+							iModel.getOptions().removeAll(removable);
+							if (removable.contains(iOption))
+								iOption = iModel.getDefaultOption();
+							setMode(mode, horizontal);
+						}
+					});
+					Character ch = UniTimeHeaderPanel.guessAccessKey(MESSAGES.buttonRemoveAll());
+					if (ch != null) button.setAccessKey(ch);
+					button.getElement().getStyle().setMarginLeft(4, Unit.PX);
+					p.add(button);
+				}
 				line.add(p);
 				box.add(line);
 			}

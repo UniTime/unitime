@@ -178,6 +178,14 @@ public class RoomInterface implements IsSerializable {
 
 		public List<RoomSharingOption> getOptions() { return iOptions; }
 		
+		public List<RoomSharingOption> getRemovableOptions() {
+			List<RoomSharingOption> options = new ArrayList<RoomSharingOption>();
+			if (iOptions == null) return options;
+			for (RoomSharingOption option: iOptions)
+				if (option.isEditable() && option.getId() >= 0) options.add(option);
+			return options;
+		}
+		
 		public boolean isEditable() {
 			if (iOptions == null) return false;
 			for (RoomSharingOption option: iOptions)
