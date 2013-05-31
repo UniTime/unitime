@@ -123,6 +123,7 @@
 				<include name="*.dtd" />
 				<include name="**/*.properties" />
 				<include name="solver.key" />
+				<include name="**/*.ftl" />
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
