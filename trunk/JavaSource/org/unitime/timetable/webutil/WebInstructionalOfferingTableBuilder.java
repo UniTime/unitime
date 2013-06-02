@@ -1742,6 +1742,8 @@ public class WebInstructionalOfferingTableBuilder {
             Comparator classComparator,
             List<Long> navigationOfferingIds){
     	
+    	if (insructionalOfferings == null) return;
+    	
     	if (classComparator!=null)
     		setClassComparator(classComparator);
     	
