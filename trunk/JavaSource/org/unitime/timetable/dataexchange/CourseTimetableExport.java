@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.dataexchange;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -49,6 +50,9 @@ public class CourseTimetableExport extends CourseOfferingExport {
             root.addAttribute("year", session.getAcademicYear());
             root.addAttribute("term", session.getAcademicTerm());
             root.addAttribute("action", "update");
+            root.addAttribute("dateFormat", sDateFormat.toPattern());
+            root.addAttribute("timeFormat", sTimeFormat.toPattern());
+            root.addAttribute("created", new Date().toString());
             
             List<CourseOffering> courses = (List<CourseOffering>)getHibSession().createQuery(
                     "select c from CourseOffering as c where " +
