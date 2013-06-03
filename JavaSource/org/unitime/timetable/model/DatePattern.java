@@ -117,6 +117,21 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		return iCachedPatternBitSet;
 	}
 	
+	public void setPatternBitSet(BitSet pattern) {
+		String p = null; int offset = 0;
+		for (int i = 0; i < pattern.length(); i++) {
+			if (pattern.get(i)) {
+				if (p == null) p = "";
+				p += "1";
+			} else {
+				if (p == null) offset ++;
+				else p += "0";
+			}
+		}
+		setOffset(DateUtils.getDayOfYear(getSession().getSessionBeginDateTime()) - getSession().getDayOfYear(1, getSession().getPatternStartMonth()) - offset - 1);
+		setPattern(p);
+	}
+	
 	public boolean isOffered(int day, int month) {
 		if (getPattern()==null || getOffset()==null) return false;
 		int idx = getSession().getDayOfYear(day, month)-getPatternOffset();
