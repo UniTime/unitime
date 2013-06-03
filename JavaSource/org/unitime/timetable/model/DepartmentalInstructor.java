@@ -158,12 +158,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @return
 	 */
 	private String nameInitLast() {
-		return ((this.getFirstName() == null ? "" : this.getFirstName().trim()
-				.substring(0, 1).toUpperCase())
-				+ (this.getMiddleName() == null ? "" : " " + this.getMiddleName()
-						.trim().substring(0, 1).toUpperCase()) + " " + (Constants
-				.toInitialCase(this.getLastName() == null ? "" : this
-						.getLastName().trim())));
+		return (getFirstName() == null || getFirstName().isEmpty() ? "" : getFirstName().trim().substring(0, 1).toUpperCase()) +
+				(getMiddleName() == null || getMiddleName().isEmpty() ? "" : " " + getMiddleName().trim().substring(0, 1).toUpperCase()) + " " +
+				Constants.toInitialCase(getLastName() == null || getLastName().isEmpty() ? "" : getLastName().trim());
 	}
 	
 	/**
@@ -171,14 +168,9 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @return
 	 */
 	private String nameLastInit() {
-		return (Constants.toInitialCase(
-					this.getLastName() == null 
-										? "" 
-									    : this.getLastName().trim()) + ", " +
-				(this.getFirstName() == null ? "" : this.getFirstName().trim()
-				.substring(0, 1).toUpperCase())
-				+ (this.getMiddleName() == null ? "" : " " + this.getMiddleName()
-						.trim().substring(0, 1).toUpperCase()) );
+		return Constants.toInitialCase(getLastName() == null || getLastName().isEmpty() ? "" : getLastName().trim()) + ", " +
+				(getFirstName() == null || getFirstName().isEmpty() ? "" : getFirstName().trim().substring(0, 1).toUpperCase()) +
+				(getMiddleName() == null || getMiddleName().isEmpty() ? "" : " " + getMiddleName().trim().substring(0, 1).toUpperCase());
 	}
 
 	/**
@@ -186,14 +178,15 @@ public class DepartmentalInstructor extends BaseDepartmentalInstructor implement
 	 * @return
 	 */
 	private String nameLastFirst() {
-		return (Constants.toInitialCase((this.getLastName() == null ? "" : this.getLastName().trim())
-				+ ", " + (this.getFirstName() == null ? "" : this
-				.getFirstName().trim())));
+		return Constants.toInitialCase(
+				(getLastName() == null || getLastName().isEmpty() ? "" : getLastName().trim()) + ", " + 
+				(getFirstName() == null || getFirstName().isEmpty() ? "" : getFirstName().trim()));
 	}
 	
 	public String nameFirstLast() {
-		return (Constants.toInitialCase((this.getFirstName() == null ? "" : this.getFirstName().trim())
-				+ " " + (this.getLastName() == null ? "" : this.getLastName().trim())));
+		return Constants.toInitialCase(
+				(getFirstName() == null || getFirstName().isEmpty() ? "" : getFirstName().trim()) + " " +
+				(getLastName() == null || getLastName().isEmpty() ? "" : getLastName().trim()));
 	}
 	
 	public String getName(String instructorNameFormat) {

@@ -67,7 +67,7 @@ import org.unitime.timetable.util.DateUtils;
 
 public class CourseOfferingExport extends BaseExport {
     protected static DecimalFormat sTwoNumbersDF = new DecimalFormat("00");
-    protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/MM/dd");
+    protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/M/d");
     protected static SimpleDateFormat sTimeFormat = new SimpleDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
     protected boolean iExportAssignments = true;
@@ -340,6 +340,8 @@ public class CourseOfferingExport extends BaseExport {
             DatePattern dp = assignment.getDatePattern();
             if (dp != null && (!dp.isDefault() || "true".equals(ApplicationProperties.getProperty("tmtbl.export.defaultDatePattern", "false"))))
             	timeElement.addAttribute("datePattern", dp.getName());
+            if (assignment.getTimePattern() != null)
+            	timeElement.addAttribute("timePattern", assignment.getTimePattern().getName());
         }
     }
     
@@ -391,7 +393,7 @@ public class CourseOfferingExport extends BaseExport {
                 int daysOfMonth = DateUtils.getNrDaysOfMonth(m, startYear);
                 int d = (m==startMonth?startDate.get(Calendar.DAY_OF_MONTH):1);
                 for (;d<=daysOfMonth && charPosition<ptrn.length; d++) {
-                    if (ptrn[charPosition]=='1' || (first!=null && dayOfWeek==Calendar.SUNDAY)) {
+                    if (ptrn[charPosition]=='1') { // || (first!=null && dayOfWeek==Calendar.SUNDAY)) {
                         if (first==null) first = (m<0?startYear-1:m>=12?startYear+1:startYear)+"/"+((m<0?12+m:m%12)+1)+"/"+d;
                     } else {
                         if (first!=null) {
