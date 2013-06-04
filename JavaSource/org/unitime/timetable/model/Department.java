@@ -28,6 +28,7 @@ import java.util.TreeSet;
 
 import org.hibernate.FlushMode;
 import org.hibernate.criterion.Restrictions;
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.base.BaseDepartment;
 import org.unitime.timetable.model.base.BaseRoomDept;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -37,7 +38,7 @@ import org.unitime.timetable.security.UserQualifier;
 import org.unitime.timetable.security.rights.Right;
 
 
-public class Department extends BaseDepartment implements Comparable, Qualifiable {
+public class Department extends BaseDepartment implements Comparable<Department>, Qualifiable {
 	private static final long serialVersionUID = 1L;
 
 /*[CONSTRUCTOR MARKER BEGIN]*/
@@ -117,20 +118,19 @@ public class Department extends BaseDepartment implements Comparable, Qualifiabl
 	/* (non-Javadoc)
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
-        if (o==null || !(o instanceof Department)) return -1;
-        Department d = (Department) o;
+	public int compareTo(Department d) {
         int cmp = Double.compare(
-        		isExternalManager()==null?0:isExternalManager().booleanValue()?1:0,
-        		d.isExternalManager()==null?0:d.isExternalManager().booleanValue()?1:0);
-        if (cmp!=0)
-        	return cmp;
-        if (getDistributionPrefPriority()!=null && d.getDistributionPrefPriority()!=null) { 
-        	cmp = getDistributionPrefPriority().compareTo(d.getDistributionPrefPriority());
-        	if (cmp!=0) return cmp;
-        }
-        if (getDeptCode()!=null && !getDeptCode().equals(d.getDeptCode()))
-        	return getDeptCode().compareTo(d.getDeptCode());
+        		isExternalManager() == null ? 0 : isExternalManager() ? 1 : 0,
+        		d.isExternalManager() == null ? 0 : d.isExternalManager() ? 1 : 0);
+        if (cmp!=0) return cmp;
+        cmp = new NaturalOrderComparator().compare(
+        		getDeptCode() == null ? "" : getDeptCode(),
+        		d.getDeptCode() == null ? "" : d.getDeptCode());
+        if (cmp!=0) return cmp;
+        cmp = new NaturalOrderComparator().compare(
+        		getAbbreviation() == null ? "" : getAbbreviation(),
+        		d.getAbbreviation() == null ? "" : d.getAbbreviation());
+        if (cmp!=0) return cmp;
 		return getUniqueId().compareTo(d.getUniqueId()); 
 	}
 
