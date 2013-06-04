@@ -28,15 +28,12 @@ import java.util.TreeSet;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
+import org.unitime.commons.NaturalOrderComparator;
 import org.unitime.timetable.model.base.BaseSubjectArea;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.UserContext;
-import org.unitime.timetable.util.Constants;
 
-
-
-
-public class SubjectArea extends BaseSubjectArea implements Comparable {
+public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectArea> {
 
     /**
 	 * 
@@ -165,43 +162,12 @@ public class SubjectArea extends BaseSubjectArea implements Comparable {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	public int compareTo(Object o) {
-	       // Check if objects are of class Subject Area
-        if(o == null || ! (o instanceof SubjectArea))
-        	return(-1);
-
-        SubjectArea s = (SubjectArea) o;
-        
-        String key10 = this.getExternalUniqueId();
-        if (key10==null) key10 = getUniqueId().toString();
-        String key11;
-		try {
-			key11 = Constants.leftPad(this.getSessionId().toString(),20,"0");
-		} catch (Exception e) {
-			key11 = this.getSessionId().toString();
-		}
-        
-        String key20 = s.getExternalUniqueId();
-        if (key20==null) key20 = s.getUniqueId().toString();
-        String key21;
-		try {
-			key21 = Constants.leftPad(s.getSessionId().toString(),20,"0");
-		} catch (Exception e) {
-			key21 = s.getSessionId().toString();
-		}
-        
-        // Compare unique id's and session id's
-        if(key10.equals(key20) && key11.equals(key21))
-            return 0;
-        
-        if (!key10.equals(key20)){
-        	return(this.getSubjectAreaAbbreviation().compareTo(s.getSubjectAreaAbbreviation()));
-        }
-        // If not equal then return lexiographical comparison
-        return (key10+key11).compareTo((key10+key11));
+	public int compareTo(SubjectArea s) {
+		int cmp = new NaturalOrderComparator().compare(
+				getSubjectAreaAbbreviation() == null ? "" : getSubjectAreaAbbreviation(),
+				s.getSubjectAreaAbbreviation() == null ? "" : s.getSubjectAreaAbbreviation());
+		if (cmp != 0) return cmp;
+		return getUniqueId().compareTo(s.getUniqueId());
 	}
 
 	public String toString() {
