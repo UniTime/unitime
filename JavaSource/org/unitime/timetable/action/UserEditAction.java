@@ -73,6 +73,11 @@ public class UserEditAction extends Action {
         if ("Add User".equals(op)) {
             myForm.load(null);
         }
+        
+        if ("Request Password Change".equals(op)) {
+        	response.sendRedirect("gwt.jsp?page=password&reset=1");
+        	return null;
+        }
 
         // Add / Update
         if ("Update".equals(op) || "Save".equals(op)) {

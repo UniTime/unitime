@@ -22,6 +22,7 @@
 <%@page import="net.sf.cpsolver.ifs.util.JProf"%>
 <%@page import="java.text.NumberFormat"%>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib prefix='c' uri='http://java.sun.com/jstl/core_rt' %>
 
 <HTML>
@@ -96,7 +97,7 @@
 									</LABEL>
 								</DIV>
 								<DIV class="txtField">
-									<input type='text' name='j_username' value='<c:if test="${not empty param.login_error}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/>
+									<input type='text' name='j_username' value='<c:if test="${not empty SPRING_SECURITY_LAST_USERNAME}"><c:out value="${SPRING_SECURITY_LAST_USERNAME}"/></c:if>' aria-label='Enter user name'/>
 								</DIV>
 								<DIV class="H20px"></DIV>
 								<DIV>
@@ -116,6 +117,11 @@
 				<TR>
 					<TD><DIV align="center" id="login"><DIV class="bottom"><IMG src="images/login_bg_2.jpg"/><INPUT id="submit" name="submit" type="image" src="images/login_bg_3.jpg" border="0" align="top" value="log in" alt="Submit login information."><IMG src="images/login_bg_4.jpg"/></DIV></DIV></TD>
 				</TR>
+				<c:if test="${SUGGEST_PASSWORD_RESET}">
+						<tr><td class="unitime-Footer" align="center" colspan="3" style="padding-top: 10px; color: #9CB0CE;">
+							<a href='gwt.jsp?page=password&reset=1' class='unitime-FooterLink'>Forgot your password?</a>
+						</td></tr>
+				</c:if>
 			</TABLE>
 		</FORM>
 		

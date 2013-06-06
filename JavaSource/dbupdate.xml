@@ -8921,4 +8921,11 @@
 		<plsql>alter table %SCHEMA%.event add expiration_date date</plsql>
 		<mysql>alter table %SCHEMA%.event add expiration_date date null</mysql>
 	</update>
+	<update version="122" date="6-Jun-2013" comment="Change Password Permission">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ChangePassword'
+			from %SCHEMA%.roles r where r.reference != 'Anonymous'
+		</sql>	
+	</update>
 </dbupdate>
