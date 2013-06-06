@@ -811,9 +811,6 @@
 		</menu>
 	</menu>
 	<menu name="Preferences">
-		<condition>
-			<hasPermission name="HasRole"/>
-		</condition>	
 		<item name="Change Role" page="selectPrimaryRole.do?list=Y">
 				<condition>
 					<hasPermission name="HasRole"/>
@@ -827,6 +824,11 @@
 		<item name="Settings" page="managerSettings.do">
 				<condition>
 					<hasPermission name="SettingsUser"/>
+				</condition>
+		</item>
+		<item name="Change Password" page="password" type="gwt">
+				<condition>
+					<hasPermission name="ChangePassword" authority="any"/>
 				</condition>
 		</item>
 		<item name="Event Statuses" page="admin" type="gwt">

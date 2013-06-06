@@ -41,6 +41,7 @@ public class UniTimeAuthenticationSuccessHandler extends SimpleUrlAuthentication
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 		LoginManager.loginSuceeded(authentication.getName());
+		request.getSession().removeAttribute("SUGGEST_PASSWORD_RESET");
 		super.onAuthenticationSuccess(request, response, authentication);
 	}
 
