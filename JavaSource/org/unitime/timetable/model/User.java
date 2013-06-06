@@ -45,6 +45,8 @@ public class User extends BaseUser {
             getSession().
             createQuery("select u from User u where u.externalUniqueId=:externalId").
             setString("externalId", externalId).
+            setCacheable(true).
+            setMaxResults(1).
             uniqueResult();
     }
 
@@ -54,6 +56,8 @@ public class User extends BaseUser {
             getSession().
             createQuery("select u from User u where u.username=:userName").
             setString("userName", userName).
+            setCacheable(true).
+            setMaxResults(1).
             uniqueResult();
     }
     

@@ -111,6 +111,7 @@
 			<td colspan='3'>
 				<tt:section-header>
 					<tt:section-title>Users</tt:section-title>
+					<html:submit property="op" value="Request Password Change" accesskey="R" title="Request password change (Alt+R)"/>
 					<html:submit property="op" value="Add User" accesskey="A" title="Create New User (Alt+A)"/>
 				</tt:section-header>
 			</td>
@@ -123,6 +124,7 @@
 		</tr>
 		<tr>
 			<td colspan='3' align="right">
+				<html:submit property="op" value="Request Password Change" accesskey="R" title="Request password change (Alt+R)"/>
 				<html:submit property="op" value="Add User" accesskey="A" title="Create New User (Alt+A)"/>
 			</td>
 		</tr>

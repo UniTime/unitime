@@ -437,6 +437,7 @@ public enum Right {
     StandardEventNotesDepartmentEdit(Department.class),
 
     Users,
+    ChangePassword(Session.class),
     
     OfferingConsentTypes,
     OfferingConsentTypeEdit,

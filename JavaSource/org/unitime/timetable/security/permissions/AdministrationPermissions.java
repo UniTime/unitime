@@ -25,6 +25,7 @@ import org.unitime.timetable.model.EventDateMapping;
 import org.unitime.timetable.model.ItypeDesc;
 import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SavedHQL;
+import org.unitime.timetable.model.User;
 import org.unitime.timetable.model.SavedHQL.Flag;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SponsoringOrganization;
@@ -456,5 +457,19 @@ public class AdministrationPermissions {
 	public static class StandardEventNotesSessionEdit extends SimpleSessionPermission {} 
 
 	@PermissionForRight(Right.StandardEventNotesDepartmentEdit)
-	public static class StandardEventNotesDepartmentEdit extends SimpleDepartmentPermission {} 
+	public static class StandardEventNotesDepartmentEdit extends SimpleDepartmentPermission {}
+	
+	@PermissionForRight(Right.ChangePassword)
+	public static class ChangePassword implements Permission<Session> {
+		@Override
+		public boolean check(UserContext user, Session source) {
+			if (user instanceof UserContext.Chameleon) return false;
+			
+			return User.findByUserName(user.getUsername()) != null;
+		}
+
+		@Override
+		public Class<Session> type() { return Session.class;}
+	}
+	
 }

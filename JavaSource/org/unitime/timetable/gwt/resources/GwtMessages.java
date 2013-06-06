@@ -2704,4 +2704,73 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Close filter")
 	String altCloseFilter();
+	
+	@DefaultMessage("Password")
+	String pageChangePassword();
+	
+	@DefaultMessage("Change Password")
+	String headerChangePassword();
+	
+	@DefaultMessage("Request Password Change")
+	String headerResetPassword();
+	
+	@DefaultMessage("<u>C</u>hange")
+	String buttonChange();
+	
+	@DefaultMessage("<u>R</u>equest")
+	String buttonReset();
+	
+	@DefaultMessage("Username:")
+	String fieldUsername();
+	
+	@DefaultMessage("Email:")
+	String fieldEmail();
+	
+	@DefaultMessage("Old Password:")
+	String fieldOldPassword();
+	
+	@DefaultMessage("New Password:")
+	String fieldNewPassword();
+	
+	@DefaultMessage("Retype Password:")
+	String fieldRetypePassword();
+	
+	@DefaultMessage("The password was successfully changed.")
+	String messagePasswordChanged();
+	
+	@DefaultMessage("A password change request was generated and sent to the user.")
+	String messagePasswordReset();
+	
+	@DefaultMessage("Authentication failed: username and / or password is wrong.")
+	String errorBadCredentials();
+	
+	@DefaultMessage("The password change request has already expired.")
+	String errorPasswordResetExpired();
+	
+	@DefaultMessage("There is no user with the given email.")
+	String errorEmailNotValid();
+	
+	@DefaultMessage("No matching user was found.")
+	String errorNoMatchingUser();
+	
+	@DefaultMessage("The old password is not valid.")
+	String errorOldPasswordNotValid();
+	
+	@DefaultMessage("The password cannot be empty.")
+	String errorEnterNewPassword();
+	
+	@DefaultMessage("The two passwords do not match.")
+	String errorNewPasswordMismatch();
+	
+	@DefaultMessage("Failed to change password: {0}")
+	String failedToChangePassword(String reason);
+	
+	@DefaultMessage("Failed to request password change: {0}")
+	String failedToResetPassword(String reason);
+	
+	@DefaultMessage("UniTime password change")
+	String emailPasswordChange();
+	
+	@DefaultMessage("Generating password change request...")
+	String waitPasswordReset();
 }

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.admin.PasswordPage;
 import org.unitime.timetable.gwt.client.admin.ScriptPage;
 import org.unitime.timetable.gwt.client.admin.SimpleEditPage;
 import org.unitime.timetable.gwt.client.curricula.CurriculaPage;
@@ -126,6 +127,10 @@ public enum Pages {
 	availability(new PageFactory() {
 		public Widget create() { return new EventRoomAvailability(); }
 		public String name(GwtMessages messages) { return messages.pageEventRoomAvailability(); }
+		}),
+	password(new PageFactory() {
+		public Widget create() { return new PasswordPage(); }
+		public String name(GwtMessages messages) { return messages.pageChangePassword(); }
 		}),
 	;
 	
