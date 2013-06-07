@@ -51,6 +51,7 @@ public class PermissionsExport extends BaseExport {
     			r.addAttribute("name", role.getAbbv());
     			r.addAttribute("manager", role.isManager() ? "true" : "false");
     			r.addAttribute("enabled", role.isEnabled() ? "true" : "false");
+    			r.addAttribute("instructor", role.isInstructor() ? "true" : "false");
     			for (Right right: Right.values()) {
     				if (role.hasRight(right))
     					r.addElement("right").setText(right.name());
