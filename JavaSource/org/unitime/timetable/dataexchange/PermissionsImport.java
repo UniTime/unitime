@@ -51,6 +51,7 @@ public class PermissionsImport extends BaseImport {
                 role.setAbbv(r.attributeValue("name"));
                 role.setManager("true".equals(r.attributeValue("manager", "true")));
                 role.setEnabled("true".equals(r.attributeValue("enabled", "true")));
+                role.setInstructor("true".equals(r.attributeValue("instructor", "false")));
                 
                 role.getRights().clear();
                 
