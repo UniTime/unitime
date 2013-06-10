@@ -324,7 +324,7 @@ public class InstructorInfoEditAction extends InstructorAction {
 					if (user != null && user.getUserName() != null)
 						frm.setCareerAcct(user.getUserName());
 					else
-						frm.setCareerAcct(MSG.valueInstructorAccountNameNotFound());
+						frm.setCareerAcct("");
 				} catch (Exception e) {}
 			}
 		}
