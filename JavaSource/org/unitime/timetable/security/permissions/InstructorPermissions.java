@@ -104,7 +104,7 @@ public class InstructorPermissions {
 		
 		@Override
 		public boolean check(UserContext user, DepartmentalInstructor source) {
-			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerLimitedEdit);
 		}
 
 		@Override
@@ -125,10 +125,22 @@ public class InstructorPermissions {
 	}
 	
 	@PermissionForRight(Right.InstructorPreferences)
-	public static class InstructorPreferences extends EditInstructor {}
+	public static class InstructorPreferences implements Permission<DepartmentalInstructor> {
+		
+		@Autowired PermissionDepartment permissionDepartment;
+		
+		@Override
+		public boolean check(UserContext user, DepartmentalInstructor source) {
+			return permissionDepartment.check(user, source.getDepartment(), DepartmentStatusType.Status.OwnerEdit);
+		}
+
+		@Override
+		public Class<DepartmentalInstructor> type() { return DepartmentalInstructor.class; }
+		
+	}
 	
 	@PermissionForRight(Right.InstructorEditClearPreferences)
-	public static class InstructorEditClearPreferences extends EditInstructor {}
+	public static class InstructorEditClearPreferences extends InstructorPreferences {}
 	
 	@PermissionForRight(Right.InstructorAdd)
 	public static class InstructorAdd implements Permission<Department> {
@@ -136,7 +148,7 @@ public class InstructorPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit);
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerLimitedEdit);
 		}
 
 		@Override
@@ -165,7 +177,7 @@ public class InstructorPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerEdit);
+			return permissionDepartment.check(user, source, DepartmentStatusType.Status.OwnerLimitedEdit);
 		}
 
 		@Override
