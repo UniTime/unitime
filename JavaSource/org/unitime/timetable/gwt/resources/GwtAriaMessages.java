@@ -334,6 +334,9 @@ public interface GwtAriaMessages extends Messages {
 	
 	@DefaultMessage("Selected work days for {0}")
 	String datesSelectedWorkDays(String date);
+	
+	@DefaultMessage("Selected work days for {0} starting today")
+	String datesSelectedWorkDaysFuture(String date);
 
 	@DefaultMessage("Selected all but holidays for {0}")
 	String datesSelectedAllButVacations(String date);

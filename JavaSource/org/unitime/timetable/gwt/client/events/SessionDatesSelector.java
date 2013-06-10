@@ -153,6 +153,40 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		iPanel.getWidget().setCursor(new Date());
 	}
 	
+	public static enum SelectionFlag {
+		IncludePast,
+		IncludeWeekend,
+		IncludeVacation,
+		;
+		
+		public int flag() { return 1 << ordinal(); }
+		public boolean in(int flags) {
+			return (flags & flag()) != 0;
+		}
+		public int set(int flags) {
+			return (in(flags) ? flags : flags + flag());
+		}
+		public int clear(int flags) {
+			return (in(flags) ? flags - flag() : flags);
+		}
+	}
+	
+	public static enum SelectionMode {
+		FutureWorking(),
+		AllWorking(SelectionFlag.IncludePast),
+		AllWorkingAndWeekend(SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend),
+		All(SelectionFlag.IncludePast, SelectionFlag.IncludeWeekend, SelectionFlag.IncludeVacation),
+		;
+		
+		private int iFlags = 0;
+		SelectionMode(SelectionFlag... flags) {
+			for (SelectionFlag flag: flags)
+				iFlags = flag.set(iFlags);
+		}
+		
+		public boolean hasFlag(SelectionFlag flag) { return flag.in(iFlags); }
+	}
+	
 	public class P extends AbsolutePanel implements HasAriaLabel {
 		private String iCaption;
 		private int[] iCursor = null;
@@ -175,21 +209,23 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		
 		public void addDay(D d) { iDays.add(d); }
 		
-		public boolean hasUnselectedDays(boolean includeVacations, boolean includeWeekend) {
+		public boolean hasUnselectedDays(SelectionMode mode) {
 			for (D d: iDays) {
 				if (!d.isEnabled()) continue;
-				if (!includeVacations && d.isVacation()) continue;
-				if (!includeWeekend && d.isWeekend()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
 				if (!d.getValue()) return true;
 			}
 			return false;
 		}
 		
-		public void setAllSelected(boolean selected, boolean includeVacations, boolean includeWeekend) {
+		public void setAllSelected(boolean selected, SelectionMode mode) {
 			for (D d: iDays) {
 				if (!d.isEnabled()) continue;
-				if (!includeVacations && d.isVacation()) continue;
-				if (!includeWeekend && d.isWeekend()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
+				if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
 				d.setValue(selected, true);
 			}
 		}
@@ -198,14 +234,15 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		public void onBrowserEvent(Event event) {
 			switch (DOM.eventGetType(event)) {
 		    case Event.ONMOUSEDOWN:
-		    	if (hasUnselectedDays(false, false))
-		    		setAllSelected(true, false, false);
-		    	else if (hasUnselectedDays(false, true))
-		    		setAllSelected(true, false, true);
-		    	else if (hasUnselectedDays(true, true))
-		    		setAllSelected(true, true, true);
+		    	SelectionMode mode = null; 
+		    	for (SelectionMode m: SelectionMode.values())
+		    		if (hasUnselectedDays(m)) {
+		    			mode = m; break;
+		    		}
+		    	if (mode != null)
+		    		setAllSelected(true, mode);
 		    	else
-		    		setAllSelected(false, true, true);
+		    		setAllSelected(false, SelectionMode.All);
 		    	if (iCursor != null) iPanel.getWidget().setCursor(iCursor);
 		    	event.preventDefault();
 		    	break;
@@ -274,6 +311,10 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		
 		public boolean isVacation() {
 			return hasFlag(SessionMonth.Flag.BREAK) || hasFlag(SessionMonth.Flag.HOLIDAY);
+		}
+		
+		public boolean isPast() {
+			return hasFlag(SessionMonth.Flag.PAST);
 		}
 		
 		public boolean isWeekend() {
@@ -1087,35 +1128,39 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			addCursorStyleName(iMonth, iDow, iWeek);
 		}
 		
-		private boolean hasUnselectedDays(boolean includeVacations, boolean includeWeekend) {
+		private boolean hasUnselectedDays(SelectionMode mode) {
 			if (iMonth < 0) return false;
 			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
 			for (D d: m.getDays())
 				if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
-					if (!includeVacations && d.isVacation()) continue;
-					if (!includeWeekend && d.isWeekend()) continue;
+					if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) continue;
+					if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) continue;
+					if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) continue;
 					if (!d.getValue()) return true;
 				}
 			return false;
 		}
 		
-		public void setAllSelected(boolean selected, boolean includeVacations, boolean includeWeekend) {
+		public void setAllSelected(boolean selected, SelectionMode mode) {
 			if (iMonth < 0) return;
 			SingleMonth m = (SingleMonth)getWidget(1 + iMonth);
+			boolean skipPast = false;
 			boolean skipVacation = false;
 			boolean skipWeekend = false;
 			if (iWeek < 0) {
 				for (D d: m.getDays())
 					if ((iWeek == -1 || iWeek == d.getWeek()) && (iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
-						if (!includeVacations && d.isVacation()) {skipVacation = true; continue; }
-						if (!includeWeekend && d.isWeekend()) {skipWeekend = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) {skipPast = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) {skipWeekend = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) {skipVacation = true; continue; }
 						d.setValue(selected, true);
 					}
 			} else {
 				for (D d: m.getWeeks().get(iWeek).getDays()) {
 					if ((iDow == -1 || iDow == d.getDow()) && d.isEnabled()) {
-						if (!includeVacations && d.isVacation()) {skipVacation = true; continue; }
-						if (!includeWeekend && d.isWeekend()) {skipWeekend = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludePast) && d.isPast()) {skipPast = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludeWeekend) && d.isWeekend()) {skipWeekend = true; continue; }
+						if (!mode.hasFlag(SelectionFlag.IncludeVacation) && d.isVacation()) {skipVacation = true; continue; }
 						d.setValue(selected, true);
 					}
 				}
@@ -1123,13 +1168,16 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 			String aria = getAriaString(iMonth, iDow, iWeek);
 			if (selected) {
 				if (iDow < 0 || iWeek < 0) {
-					if (includeWeekend || !skipWeekend) {
-						if (includeVacations || !skipVacation)
+					if (mode.hasFlag(SelectionFlag.IncludeWeekend) || !skipWeekend) {
+						if (mode.hasFlag(SelectionFlag.IncludeVacation) || !skipVacation)
 							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAll(aria));
 						else
 							AriaStatus.getInstance().setHTML(ARIA.datesSelectedAllButVacations(aria));
 					} else {
-						AriaStatus.getInstance().setHTML(ARIA.datesSelectedWorkDays(aria));
+						if (mode.hasFlag(SelectionFlag.IncludePast) || !skipPast)
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedWorkDays(aria));
+						else
+							AriaStatus.getInstance().setHTML(ARIA.datesSelectedWorkDaysFuture(aria));
 					}
 				} else 
 					AriaStatus.getInstance().setHTML(ARIA.datesSelected(aria));
@@ -1140,14 +1188,15 @@ public class SessionDatesSelector extends Composite implements HasValue<List<Dat
 		
 		private void select() {
 	    	iText.setValue("");
-	    	if (hasUnselectedDays(false, false))
-	    		setAllSelected(true, false, false);
-	    	else if (hasUnselectedDays(false, true))
-	    		setAllSelected(true, false, true);
-	    	else if (hasUnselectedDays(true, true))
-	    		setAllSelected(true, true, true);
+	    	SelectionMode mode = null; 
+	    	for (SelectionMode m: SelectionMode.values())
+	    		if (hasUnselectedDays(m)) {
+	    			mode = m; break;
+	    		}
+	    	if (mode != null)
+	    		setAllSelected(true, mode);
 	    	else
-	    		setAllSelected(false, true, true);
+	    		setAllSelected(false, SelectionMode.All);
 		}
 		
 		private void select(List<D> days) {
