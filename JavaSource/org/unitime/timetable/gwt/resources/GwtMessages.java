@@ -815,6 +815,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("<u>S</u>earch")
 	String buttonSearch();
 	
+	@DefaultMessage("<u>C</u>lear")
+	String buttonClear();
+	
 	@DefaultMessage("<u>L</u>ookup")
 	String buttonLookup();
 	

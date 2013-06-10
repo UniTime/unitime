@@ -154,6 +154,16 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		});
 		iFilterHeader.setEnabled("add", false);
 		iFilter.addHeaderRow(iFilterHeader);
+		iFilterHeader.addButton("clear", MESSAGES.buttonClear(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				iDates.setValue(null);
+				iTimes.setValue(null);
+				iRooms.setValue("flag:Event");
+				hideResults();
+				changeUrl();
+			}
+		});
 		iFilterHeader.addButton("search", MESSAGES.buttonSearch(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
