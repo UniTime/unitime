@@ -2776,4 +2776,13 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Generating password change request...")
 	String waitPasswordReset();
+	
+	@DefaultMessage("Clearing hiberante cache...")
+	String waitClearHiberanteCache();
+	
+	@DefaultMessage("Hibernate cache cleared.")
+	String hibernateCacheCleared();
+	
+	@DefaultMessage("Failed to clear hibernate cache: {0}")
+	String failedToClearHiberanteCache(String reason);
 }

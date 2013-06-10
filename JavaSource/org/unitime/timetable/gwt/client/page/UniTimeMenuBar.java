@@ -210,6 +210,8 @@ public class UniTimeMenuBar extends UniTimeMenu {
 			LoadingWidget.getInstance().show();
 		if ("dialog".equals(target)) {
 			UniTimeFrameDialog.openDialog(name, url);
+		} else if ("eval".equals(target)) {
+			ToolBox.eval(url);
 		} else if ("download".equals(target)) {
 			ToolBox.open(url);
 		} else {

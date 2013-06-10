@@ -24,7 +24,7 @@
 <!ATTLIST menu title CDATA #IMPLIED >
 <!ATTLIST menu page CDATA #IMPLIED >
 <!ATTLIST menu type (gwt|property) #IMPLIED >
-<!ATTLIST menu target (download|dialog) #IMPLIED >
+<!ATTLIST menu target (download|dialog|eval) #IMPLIED >
 <!ATTLIST menu hash CDATA #IMPLIED >
  
 <!ELEMENT separator ((condition|new-condition)?) >
@@ -33,7 +33,7 @@
 <!ATTLIST item name CDATA #REQUIRED >
 <!ATTLIST item page CDATA #REQUIRED >
 <!ATTLIST item type (gwt|property|page) #IMPLIED >
-<!ATTLIST item target (download|dialog) #IMPLIED >
+<!ATTLIST item target (download|dialog|eval) #IMPLIED >
 <!ATTLIST item hash CDATA #IMPLIED >
 
 <!ELEMENT condition (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >

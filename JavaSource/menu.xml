@@ -803,6 +803,11 @@
 					<hasPermission name="TestHQL"/>
 				</condition>
 			</item>
+			<item name="Clear Cache" page="$wnd.gwtClearHibernateCache();" target="eval">
+				<condition>
+					<hasPermission name="ClearHibernateCache"/>
+				</condition>
+			</item>
 			<item name="Scripts" page="scripts" type="gwt">
 				<condition>
 					<hasPermission name="Scripts"/>
@@ -864,6 +869,14 @@
 					<hasPermission name="IsAdmin"/>
 				</not>
 				<hasPermission name="Scripts"/>
+			</condition>
+		</item>
+		<item name="Clear Cache" page="$wnd.gwtClearHibernateCache();" target="eval">
+			<condition>
+				<not>
+					<hasPermission name="IsAdmin"/>
+				</not>
+				<hasPermission name="ClearHibernateCache"/>
 			</condition>
 		</item>
 	</menu>
