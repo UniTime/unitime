@@ -494,6 +494,7 @@ public enum Right {
     HibernateStatistics,
     
     TestHQL,
+    ClearHibernateCache,
     
     /** Preferences */
 

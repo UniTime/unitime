@@ -407,6 +407,8 @@ public class UniTimeSideBar extends UniTimeMenu {
 			UniTimeFrameDialog.openDialog(name, url);
 		} else if ("download".equals(target)) {
 			ToolBox.open(url);
+		} else if ("eval".equals(target)) {
+			ToolBox.eval(url);
 		} else {
 			ToolBox.open(GWT.getHostPageBaseURL() + url);
 		}

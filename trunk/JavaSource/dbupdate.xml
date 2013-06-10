@@ -8928,4 +8928,11 @@
 			from %SCHEMA%.roles r where r.reference != 'Anonymous'
 		</sql>	
 	</update>
+	<update version="123" date="10-Jun-2013" comment="Clear Hibernate Cache Permission">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'ClearHibernateCache'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'TestHQL'
+		</sql>
+	</update>
 </dbupdate>
