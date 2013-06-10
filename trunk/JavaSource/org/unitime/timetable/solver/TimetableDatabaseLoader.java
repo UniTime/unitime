@@ -1577,6 +1577,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         			SchedulingSubpart subpart = (SchedulingSubpart)distributionObject.getPrefGroup();
         	    	List<Class_> classes = new ArrayList<Class_>(subpart.getClasses());
         	    	Collections.sort(classes,new ClassComparator(ClassComparator.COMPARE_BY_HIERARCHY));
+        	    	if (classes.isEmpty()) {
+        	    		iProgress.message(msglevel("badDistributionObj", Progress.MSGLEVEL_WARN), "Distribution preference "+pref.getDistributionType().getLabel()+pref.getGroupingSufix() + " refers to a scheduling subpart " + getSubpartLabel(subpart) + " with no classes.");
+        	    		continue;
+        	    	}
         	    	for (int j=0;j<gc.length;j++) {
         	    		Class_ clazz = null;
         	    		for (Iterator k=gcClasses[j].iterator();k.hasNext() && clazz==null;) {
