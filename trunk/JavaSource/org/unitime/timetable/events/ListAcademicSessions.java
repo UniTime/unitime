@@ -42,6 +42,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
 
@@ -70,13 +71,35 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			try {
 				selected = findSession(hibSession, "current");
 			} catch (EventException e) {}
-		GwtRpcResponseList<AcademicSession> ret = new GwtRpcResponseList<AcademicSession>();
-		TreeSet<Session> sessions = new TreeSet<Session>(hibSession.createQuery("select s from Session s").list());
-		if (selected == null) selected = sessions.last();
-		for (Session session: sessions) {
+		
+		TreeSet<Session> sessions = new TreeSet<Session>();
+		for (Session session: (List<Session>)hibSession.createQuery("select s from Session s").list()) {
 			if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
 			if (!context.hasPermissionAnyAuthority(Right.Events, new SimpleQualifier("Session", session.getUniqueId()))) continue;
-			
+			sessions.add(session);
+		}
+		
+		if (sessions.isEmpty())
+			throw new GwtRpcException(MESSAGES.noSessionAvailable());
+		
+		if (selected == null || !sessions.contains(selected))
+			selected = UniTimeUserContext.defaultSession(sessions, null);
+		if (selected == null)
+			selected = sessions.last();
+		
+		if (!command.hasTerm() && !context.hasPermissionAnyAuthority(selected, Right.EventAddSpecial)) {
+			TreeSet<Session> preferred = new TreeSet<Session>();
+			for (Session session: sessions)
+				if (context.hasPermissionAnyAuthority(session, Right.EventAddSpecial, new SimpleQualifier("Session", session.getUniqueId())))
+					preferred.add(session);
+			if (!preferred.isEmpty()) {
+				Session defaultSession = UniTimeUserContext.defaultSession(preferred, null);
+				if (defaultSession != null) selected = defaultSession;
+			}
+		}
+		
+		GwtRpcResponseList<AcademicSession> ret = new GwtRpcResponseList<AcademicSession>();
+		for (Session session: sessions) {
 			AcademicSession acadSession = new AcademicSession(
 					session.getUniqueId(),
 					session.getLabel(),
@@ -111,9 +134,6 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 			if (prev != null) acadSession.setPreviousId(prev.getUniqueId());
 			ret.add(acadSession);
 		}
-		
-		if (ret.isEmpty())
-			throw new GwtRpcException(MESSAGES.noSessionAvailable());
 
 		return ret;
 	}
