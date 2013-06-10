@@ -176,6 +176,10 @@ public class ToolBox {
 		$wnd.location = url;
 	}-*/;
 	
+	public native static void eval(String script) /*-{
+		eval(script);
+	}-*/;
+	
 	public static void checkAccess(Throwable t) {
 		if (t != null && t instanceof GwtRpcException && t.getCause() != null) t = t.getCause();
 		if (t != null && t instanceof PageAccessException) {

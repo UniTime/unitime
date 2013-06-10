@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import org.unitime.timetable.gwt.client.admin.ClearHibernateCache;
 import org.unitime.timetable.gwt.client.page.Refresh;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
@@ -71,6 +72,11 @@ public enum Triggers {
 			RoomHint.createTriggers();
 		}
 	}),
+	clearHibCache(new Command() {
+		public void execute() {
+			ClearHibernateCache.createTriggers();
+		}
+	})
 	;
 	
 	private Command iCommand;
