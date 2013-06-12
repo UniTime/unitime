@@ -757,7 +757,7 @@ public class TimeGrid extends Composite {
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>")), 
-					notes, color, weekIndex(meeting), days.size(), done, dateString, roomString);
+					notes, color, weekIndex(meeting), !isVerticalSplitByWeek() && iMode == Mode.OVERLAP ? rooms.size() : days.size(), done, dateString, roomString);
 			if (m != null) done.add(m);
 		}
 		iMeetings.add(done);
