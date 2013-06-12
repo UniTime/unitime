@@ -1249,8 +1249,8 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			nrMeetings += event.getMeetings().size();
 		}
-		iRoomPanel.setFilterEnabled(!iMatchingRooms.isEmpty());
 		iRoomPanel.setValue(iRoomPanel.parse(iLocRoom));
+		iRoomPanel.setFilterEnabled(!iMatchingRooms.isEmpty());
 
 		iMatchingWeeks.clear();
 		for (WeekInterface week: iWeekPanel.getValues()) {
