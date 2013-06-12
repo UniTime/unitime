@@ -55,7 +55,6 @@ public class AbbvScheduleByCourseReport extends PdfLegacyExamReport {
         String separator = null;
         int split = 9;
         int n = iNrLines - 2 - ((iNrLines - 2) / (split + 1));
-        sLog.debug("n="+n);
         if (!iDispRooms) {
             ExamSectionInfo last = null; int lx = 0;
             for (ExamSectionInfo section : sections) {
