@@ -816,7 +816,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 					if (meeting.getMeetingDate() != null && meeting.hasLocation() && meeting.getLocation().getId().equals(room.getId())) {
 						int idx = iSelectedDates.indexOf(meeting.getDayOfYear());
 						if (idx >= 0) {
-							meeting.setDayOfWeek(idx);
+							meeting.setGridIndex(idx);
 							meetings.add(meeting);
 						}
 					}
