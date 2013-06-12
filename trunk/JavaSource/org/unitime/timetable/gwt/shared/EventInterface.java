@@ -536,6 +536,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private int iDayOfWeek;
 		private int iDayOfYear;
 		private boolean iPast = false, iCanEdit = false, iCanDelete = false, iCanCancel = false, iCanApprove = false, iCanInquire = false;
+		private Integer iGridIndex = null;
 		private Date iApprovalDate = null;
 		private ApprovalStatus iApprovalStatus = ApprovalStatus.Pending;
 		private Long iStartTime, iStopTime;
@@ -557,6 +558,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public void setEndOffset(int offset) { iEndOffset = offset; }
 		public int getDayOfWeek() { return iDayOfWeek; }
 		public void setDayOfWeek(int dayOfWeek) { iDayOfWeek = dayOfWeek; }
+		public int getGridIndex() { return iGridIndex == null ? iDayOfWeek : iGridIndex; }
+		public void setGridIndex(Integer index) { iGridIndex = index; }
 		public int getDayOfYear() { return iDayOfYear; }
 		public void setDayOfYear(int dayOfYear) { iDayOfYear = dayOfYear; }
 		public String getStartTime(GwtConstants constants, boolean useOffsets) {
@@ -1017,7 +1020,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private String iAttachment;
     	private String iLink;
     	
-    	public static enum NoteType {
+    	public static enum NoteType implements IsSerializable {
     		Create("Create"),
     		AddMeetings("Update"),
     		Approve("Approve"),
@@ -1101,7 +1104,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private long[] iSelection = null;
     	private String iDetailPage = null;
 
-    	public static enum RelatedObjectType {
+    	public static enum RelatedObjectType implements IsSerializable {
     		Offering,
     		Course,
     		Config,

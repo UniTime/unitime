@@ -699,7 +699,7 @@ public class TimeGrid extends Composite {
 					dates.add(m);
 					i.remove();
 				} else if (meeting.getStartSlot() == m.getStartSlot() && meeting.getEndSlot() == m.getEndSlot() &&
-						meeting.getDayOfWeek() == m.getDayOfWeek() && meeting.getStartOffset() == m.getStartOffset() && meeting.getEndOffset() == m.getEndOffset()) {
+						meeting.getGridIndex() == m.getGridIndex() && meeting.getStartOffset() == m.getStartOffset() && meeting.getEndOffset() == m.getEndOffset()) {
 					if (iMode == Mode.OVERLAP && (weekIndex(prev) != weekIndex(m) && weekIndex(prev) + 1 != weekIndex(m))) continue;
 					dates.add(m);
 					prev = m;
@@ -753,7 +753,7 @@ public class TimeGrid extends Composite {
 			
 			Meeting m = addMeeting(
 					event, meeting,
-					meeting.getDayOfWeek(), meeting.getStartSlot(), 
+					meeting.getGridIndex(), meeting.getStartSlot(), 
 					meeting.getEndSlot() - meeting.getStartSlot(),
 					meeting.getStartOffset(), meeting.getEndOffset(),
 					(meeting.isApproved() ? "" : "<i>") + event.getName() + (event.getType() == EventType.Unavailabile ? "" : " (" + (event.hasInstruction() ? event.getInstruction() : event.getType()) + ")" + (meeting.isApproved() ? "" : " -- not approved</i>")), 
