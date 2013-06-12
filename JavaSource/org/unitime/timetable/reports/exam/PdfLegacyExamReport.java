@@ -994,7 +994,6 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
             TreeSet<SubjectArea> subjects = null;
             if (System.getProperty("subject")!=null) {
                 sLog.info("Loading subjects...");
-                perSubject = true;
                 subjects = new TreeSet();
                 String inSubjects = "";
                 for (StringTokenizer s=new StringTokenizer(System.getProperty("subject"),",");s.hasMoreTokens();)
@@ -1054,7 +1053,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                         long t0 = System.currentTimeMillis();
                         sLog.info("Generating report "+file+" ("+subject.getSubjectAreaAbbreviation()+") ...");
                         List<SubjectArea> subjectList = new ArrayList<SubjectArea>(); subjectList.add(subject);
-                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, SubjectArea.class, Collection.class).newInstance(mode, file, session, examType, subjectList, exams);
+                        PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, subjectList, exams);
                         report.printReport();
                         report.close();
                         output.put(subject.getSubjectAreaAbbreviation()+"_"+reportName+"."+(mode==sModeText?"txt":"pdf"),file);
@@ -1098,7 +1097,7 @@ public abstract class PdfLegacyExamReport extends PdfLegacyReport {
                             session.getAcademicTerm()+session.getSessionStartYear()+examType.getReference()+"_"+reportName+(mode==sModeText?".txt":".pdf"));
                     long t0 = System.currentTimeMillis();
                     sLog.info("Generating report "+file+" ...");
-                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, int.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, null, exams);
+                    PdfLegacyExamReport report = (PdfLegacyExamReport)reportClass.getConstructor(int.class, File.class, Session.class, ExamType.class, Collection.class, Collection.class).newInstance(mode, file, session, examType, subjects, exams);
                     report.printReport();
                     report.close();
                     output.put(reportName+"."+(mode==sModeText?"txt":"pdf"),file);
