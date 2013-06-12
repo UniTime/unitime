@@ -444,6 +444,7 @@ public class IntervalSelector<T> extends Composite implements HasValue<IntervalS
 		public boolean equals(Object o) {
 			if (o == null || !(o instanceof IntervalSelector.Interval)) return false;
 			Interval i = (Interval)o;
+			if (isEnableFilter() != i.isEnableFilter()) return false;
 			return (getFirst() == null ? i.getFirst() == null : getFirst().equals(i.getFirst())) && (getLast() == null ? i.getLast() == null : getLast().equals(i.getLast()));
 		}
 		
