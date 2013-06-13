@@ -513,6 +513,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 		if (iMetrics == null) {
 			DataProperties config = new DataProperties();
 			config.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty("unitime.distance.ellipsoid", DistanceMetric.Ellipsoid.LEGACY.name()));
+			config.setProperty("Distances.Speed", ApplicationProperties.getProperty("tmtbl.events.distanceSpeed", "67.0"));
 			iMetrics = new DistanceMetric(new DataProperties(config));
 			TravelTime.populateTravelTimes(iMetrics);
 		}
