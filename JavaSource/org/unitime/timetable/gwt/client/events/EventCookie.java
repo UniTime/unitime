@@ -37,6 +37,7 @@ public class EventCookie {
 	private boolean iExpandRoomConflicts = false;
 	private static EventCookie sInstance = null;
 	private boolean iAutomaticallyApproveNewMeetings = false;
+	private boolean iHideDuplicitiesForMeetings = false;
 	
 	private EventCookie() {
 		try {
@@ -50,6 +51,7 @@ public class EventCookie {
 				iRoomsHorizontal = !"F".equals(params[idx++]);
 				iExpandRoomConflicts = "T".equals(params[idx++]);
 				iAutomaticallyApproveNewMeetings = "T".equals(params[idx++]);
+				iHideDuplicitiesForMeetings = "T".equals(params[idx++]);
 				while (idx < params.length) {
 					String hash = params[idx++];
 					int colon = hash.indexOf(':');
@@ -66,7 +68,8 @@ public class EventCookie {
 				"|" + iSortRoomsBy +
 				"|" + (iRoomsHorizontal ? "T" : "F") +
 				"|" + (iExpandRoomConflicts ? "T" : "F") +
-				"|" + (iAutomaticallyApproveNewMeetings ? "T": "F");
+				"|" + (iAutomaticallyApproveNewMeetings ? "T": "F") +
+				"|" + (iHideDuplicitiesForMeetings ? "T" : "F");
 		for (Map.Entry<String, String> entry: iHash.entrySet())
 			cookie += "|" + entry.getKey() + ":" + entry.getValue();
 		Date expires = new Date(new Date().getTime() + 604800000l); // expires in 7 days
@@ -142,6 +145,15 @@ public class EventCookie {
 	
 	public void setAutomaticallyApproveNewMeetings(boolean autoApprove) {
 		iAutomaticallyApproveNewMeetings = autoApprove;
+		save();
+	}
+	
+	public boolean isHideDuplicitiesForMeetings() {
+		return iHideDuplicitiesForMeetings;
+	}
+	
+	public void setHideDuplicitiesForMeetings(boolean hideDuplicitiesForMeetings) {
+		iHideDuplicitiesForMeetings = hideDuplicitiesForMeetings;
 		save();
 	}
 }
