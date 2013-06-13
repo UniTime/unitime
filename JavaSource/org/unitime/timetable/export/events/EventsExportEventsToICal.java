@@ -60,7 +60,7 @@ public class EventsExportEventsToICal extends EventsExporter {
 	}
 	
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort) throws IOException {
+	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
 		helper.setup("text/calendar", reference(), false);
 		
 		PrintWriter out = helper.getWriter();

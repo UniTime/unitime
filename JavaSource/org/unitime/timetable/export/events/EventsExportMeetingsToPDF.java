@@ -45,11 +45,11 @@ public class EventsExportMeetingsToPDF extends EventsExporter {
 	}
 
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort) throws IOException {
+	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
 		Printer printer = new PDFPrinter(helper.getOutputStream(), true);
 		helper.setup(printer.getContentType(), reference(), false);
 		hideColumns(printer, events, eventCookieFlags);
-		print(printer, meetings(events, sort));
+		print(printer, meetings(events, sort, asc));
 	}
 
 	@Override
