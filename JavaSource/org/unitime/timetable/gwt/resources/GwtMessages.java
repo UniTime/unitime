@@ -329,6 +329,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Approve New Meetings")
 	String opAutomaticApproval();
 	
+	@DefaultMessage("Condense Repetitions")
+	String opHideRepeatingInformation();
+	
 	@DefaultMessage("Press Ctrl + C to copy the selected URL, and Escape to hide this dialog.")
 	String hintCtrlCToCopy();
 
@@ -2785,4 +2788,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Failed to clear hibernate cache: {0}")
 	String failedToClearHiberanteCache(String reason);
+	
+	@DefaultMessage("&nbsp;&nbsp;&nbsp;\u2307")
+	String repeatingSymbol();
 }
