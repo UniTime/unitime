@@ -112,8 +112,21 @@ public abstract class EventsExporter implements Exporter {
     	
     	List<EventInterface> events = new EventLookupBackend().findEvents(request, context);
     	
-    	EventMeetingSortBy sort = (helper.getParameter("sort") == null ? null :
-    		EventMeetingSortBy.values()[Integer.parseInt(helper.getParameter("sort"))]);
+    	String sortBy = helper.getParameter("sort");
+    	EventMeetingSortBy sort = null;
+    	boolean asc = true;
+    	if (sortBy == null || sortBy.isEmpty()) {
+    		sort = null; asc = true;
+		} else if (sortBy.startsWith("+")) {
+			asc = true;
+			sort = EventMeetingSortBy.values()[Integer.parseInt(sortBy.substring(1))];
+		} else if (sortBy.startsWith("-")) {
+			asc = false;
+			sort = EventMeetingSortBy.values()[Integer.parseInt(sortBy.substring(1))];
+		} else {
+			asc = true;
+			sort = (sortBy == null ? null : EventMeetingSortBy.values()[Integer.parseInt(sortBy)]);	
+		}
     	
     	int eventCookieFlags = (helper.getParameter("flags") == null ? EventInterface.sDefaultEventFlags : Integer.parseInt(helper.getParameter("flags")));
     	if (!context.hasPermission(Right.EventLookupContact))
@@ -127,10 +140,10 @@ public abstract class EventsExporter implements Exporter {
     		}
     	}
     	
-    	print(helper, events, eventCookieFlags, sort);
+    	print(helper, events, eventCookieFlags, sort, asc);
 	}
 	
-	protected abstract void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort) throws IOException;
+	protected abstract void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException;
 	
 	protected boolean checkRights() {
 		return true;
@@ -149,9 +162,9 @@ public abstract class EventsExporter implements Exporter {
 	
 	protected void hideColumn(Printer out, List<EventInterface> events, EventFlag flag) {}
 	
-	protected void sort(List<EventInterface> events, final EventMeetingSortBy sort) {
+	protected void sort(List<EventInterface> events, final EventMeetingSortBy sort, boolean asc) {
 		if (sort != null) {
-    		Collections.sort(events, new Comparator<EventInterface>() {
+    		Collections.sort(events, new ReverseComparator<EventInterface>(new Comparator<EventInterface>() {
 				@Override
 				public int compare(EventInterface e1, EventInterface e2) {
 					int cmp = EventComparator.compareEvents(e1, e2, sort);
@@ -172,14 +185,14 @@ public abstract class EventsExporter implements Exporter {
 					if (!i1.hasNext() && i2.hasNext()) return -1;
 					return e1.compareTo(e2);
 				}
-			});
+			}, !asc));
     	} else {
     		Collections.sort(events);
     	}
 	}
 	
-	protected Set<EventMeeting> meetings(List<EventInterface> events, final EventMeetingSortBy sort) {
-		TreeSet<EventMeeting> meetings = new TreeSet<EventMeeting>(new Comparator<EventMeeting>() {
+	protected Set<EventMeeting> meetings(List<EventInterface> events, final EventMeetingSortBy sort, boolean asc) {
+		TreeSet<EventMeeting> meetings = new TreeSet<EventMeeting>(new ReverseComparator<EventMeeting>(new Comparator<EventMeeting>() {
 			@Override
 			public int compare(EventMeeting m1, EventMeeting m2) {
 				if (sort != null) {
@@ -194,7 +207,7 @@ public abstract class EventsExporter implements Exporter {
 				}
 				return m1.compareTo(m2);
 			}
-		});
+		}, !asc));
 		for (EventInterface event: events)
 			for (MeetingInterface meeting: event.getMeetings())
 				meetings.add(new EventMeeting(event, meeting));
@@ -280,6 +293,23 @@ public abstract class EventsExporter implements Exporter {
 			return section;
 		} else {
 			return event.getSectionNumber();
+		}
+	}
+	
+	public static class ReverseComparator<T> implements Comparator<T> {
+		private Comparator<T> iComparator = null;
+		private boolean iReverse;
+		
+		public ReverseComparator(Comparator<T> comparator, boolean reverse) {
+			iComparator = comparator; iReverse = reverse;
+		}
+
+		@Override
+		public int compare(T o1, T o2) {
+			if (iReverse)
+				return iComparator.compare(o2, o1);
+			else
+				return iComparator.compare(o1, o2);
 		}
 	}
 }
