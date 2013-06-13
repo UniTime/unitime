@@ -83,6 +83,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		MustShowApproval,
 		AllowApproveAll,
 		HideTitle,
+		CanHideDuplicitiesForMeetings,
 		;
 		
 		public int flag() { return 1 << ordinal(); }
@@ -98,7 +99,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	}
 	
 	public static enum Mode {
-		ListOfEvents(ModeFlag.ShowEventDetails, ModeFlag.ShowOptionalColumns),
+		ListOfEvents(ModeFlag.ShowEventDetails, ModeFlag.ShowOptionalColumns, ModeFlag.CanHideDuplicitiesForMeetings),
 		ListOfMeetings(ModeFlag.ShowEventDetails, ModeFlag.ShowMeetings, ModeFlag.ShowOptionalColumns),
 		MeetingsOfAnEvent(ModeFlag.ShowMeetings, ModeFlag.ShowOptionalColumns, ModeFlag.MustShowApproval, ModeFlag.AllowApproveAll, ModeFlag.HideTitle),
 		ApprovalOfEvents(ModeFlag.ShowEventDetails, ModeFlag.MustShowApproval),
@@ -609,6 +610,122 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 		addHideOperation(hContact, EventFlag.SHOW_MAIN_CONTACT);
 		addHideOperation(hApproval, EventFlag.SHOW_APPROVAL);
 		
+		Operation hideDuplicitiesForMeetings = new AriaOperation() {
+			@Override
+			public boolean isApplicable() {
+				return iMode.hasFlag(ModeFlag.CanHideDuplicitiesForMeetings);
+			}
+
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+
+			@Override
+			public void execute() {
+				EventCookie.getInstance().setHideDuplicitiesForMeetings(!EventCookie.getInstance().isHideDuplicitiesForMeetings());
+				int colDate = getHeader(MESSAGES.colDate()).getColumn();
+				int colApproval = getHeader(MESSAGES.colApproval()).getColumn();
+				for (int row = 1; row < getRowCount(); row++) {
+					EventMeetingRow data = getData(row);
+					if (data == null) continue;
+					EventInterface event = data.getEvent();
+					String[] mtgs = new String[] {"", "", "", "", "", "", ""};
+					String prevApproval = null;
+					String[] prev = null;
+					String prevSpan = null;
+					String approval = "";
+					boolean globalUnavailability = event != null && event.getId() != null && event.getId() < 0 && event.getType() == EventType.Unavailabile;
+					for (MultiMeetingInterface m: EventInterface.getMultiMeetings(data.getMeetings(getMeetingFilter()), true, globalUnavailability ? null : iPropertiesProvider, event == null ? null : event.getType())) {
+						String[] mtg = new String[] {
+								m.isArrangeHours() ? CONSTANTS.arrangeHours() : (m.getDays(CONSTANTS) + " " + (m.getNrMeetings() == 1 ? sDateFormatLong.format(m.getFirstMeetingDate()) : sDateFormatShort.format(m.getFirstMeetingDate()) + " - " + sDateFormatLong.format(m.getLastMeetingDate()))),
+								m.getMeetings().first().getMeetingTime(CONSTANTS),
+								m.getMeetings().first().getAllocatedTime(CONSTANTS),
+								String.valueOf(m.getMeetings().first().getStartOffset()),
+								String.valueOf(- m.getMeetings().first().getEndOffset()),
+								m.getLocationNameWithHint(),
+								(m.getMeetings().first().getLocation() == null ? "" : m.getMeetings().first().getLocation().hasSize() ? m.getMeetings().first().getLocation().getSize().toString() : MESSAGES.notApplicable())
+								};
+						if (!m.isArrangeHours() && !m.isPast()) {
+							SessionMonth.Flag dateFlag = (globalUnavailability || iPropertiesProvider == null ? null : iPropertiesProvider.getDateFlag(event == null ? null : event.getType(), m.getFirstMeetingDate()));
+							if (dateFlag != null) {
+								switch (dateFlag) {
+								case FINALS:
+									mtg[0] = "<span class='finals' title=\"" + MESSAGES.hintFinals() + "\">" + mtg[0] + "</span>";
+									break;
+								case BREAK:
+									mtg[0] = "<span class='break' title=\"" + MESSAGES.hintBreak() + "\">" + mtg[0] + "</span>";
+									break;
+								case HOLIDAY:
+									mtg[0] = "<span class='holiday' title=\"" + MESSAGES.hintHoliday() + "\">" + mtg[0] + "</span>";
+									break;
+								case WEEKEND:
+									mtg[0] = "<span class='weekend' title=\"" + MESSAGES.hintWeekend() + "\">" + mtg[0] + "</span>";
+									break;
+								}
+							}
+						}
+						String span = "";
+						if (m.getApprovalStatus() == ApprovalStatus.Cancelled)
+							span = "cancelled-meeting";
+						else if (m.getApprovalStatus() == ApprovalStatus.Rejected)
+							span = "rejected-meeting";
+						else if (m.isPast())
+							span = "past-meeting";
+						for (int i = 0; i < mtgs.length; i++) {
+							mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
+						}
+						String thisApproval = (
+								m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
+								m.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
+								m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
+								"");
+									
+						approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? MESSAGES.repeatingSymbol() : 
+								(m.getApprovalStatus() == ApprovalStatus.Approved ?
+								m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
+								m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
+								m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
+								event != null && event.getType() == EventType.Unavailabile ? "" : 
+								m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
+								event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" : 
+								"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
+						if (EventCookie.getInstance().isHideDuplicitiesForMeetings()) {
+							prev = mtg; prevSpan = span; prevApproval = thisApproval;
+						}
+					}
+					for (int i = 0; i < mtgs.length; i++) {
+						if (i == 3 || i == 4 || i == 6)
+							setWidget(row, colDate + i, new NumberCell(mtgs[i]));
+						else
+							setWidget(row, colDate + i, new HTML(mtgs[i], false));
+					}
+					setWidget(row, colApproval, new HTML(approval == null ? "" : approval, false));
+				}
+			}
+
+			@Override
+			public String getName() {
+				return EventCookie.getInstance().isHideDuplicitiesForMeetings()
+						? MESSAGES.opUncheck(MESSAGES.opHideRepeatingInformation())
+						: MESSAGES.opCheck(MESSAGES.opHideRepeatingInformation());
+			}
+			@Override
+			public String getAriaLabel() {
+				return EventCookie.getInstance().isHideDuplicitiesForMeetings()
+						? ARIA.opUncheck(MESSAGES.opHideRepeatingInformation())
+						: ARIA.opCheck(MESSAGES.opHideRepeatingInformation());
+			}
+		};
+		hDate.addOperation(hideDuplicitiesForMeetings);
+		hTimePub.addOperation(hideDuplicitiesForMeetings);
+		hTimeAll.addOperation(hideDuplicitiesForMeetings);
+		hTimeSetup.addOperation(hideDuplicitiesForMeetings);
+		hTimeTeardown.addOperation(hideDuplicitiesForMeetings);
+		hLocation.addOperation(hideDuplicitiesForMeetings);
+		hCapacity.addOperation(hideDuplicitiesForMeetings);
+		hApproval.addOperation(hideDuplicitiesForMeetings);
+
 		addSortByOperation(hName, EventMeetingSortBy.NAME);
 		addSortByOperation(hSection, EventMeetingSortBy.SECTION);
 		addSortByOperation(hType, EventMeetingSortBy.TYPE);
@@ -931,7 +1048,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 				else if (m.isPast())
 					span = "past-meeting";
 				for (int i = 0; i < mtgs.length; i++) {
-					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? "" : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
+					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
 				}
 				String thisApproval = (
 						m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
@@ -939,7 +1056,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
 						"");
 							
-				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? "" : 
+				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? MESSAGES.repeatingSymbol() : 
 						(m.getApprovalStatus() == ApprovalStatus.Approved ?
 						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
@@ -948,7 +1065,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
 						event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" : 
 						"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
-				prev = mtg; prevSpan = span; prevApproval = thisApproval;
+				if (EventCookie.getInstance().isHideDuplicitiesForMeetings()) {
+					prev = mtg; prevSpan = span; prevApproval = thisApproval;
+				}
 				if (m.getApprovalStatus() != ApprovalStatus.Cancelled && m.getApprovalStatus() != ApprovalStatus.Rejected)
 					allCancelledOrRejected = false;
 			}
@@ -957,7 +1076,7 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					row.add(new NumberCell(mtgs[i]));
 				else
 					row.add(new HTML(mtgs[i], false));
-			}		
+			}
 		}
 		
 		if (event != null && event.hasEnrollment()) {
