@@ -44,8 +44,8 @@ public class EventsExportEventsToCSV extends EventsExporter {
 	}
 	
 	@Override
-	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort) throws IOException {
-		sort(events, sort);
+	protected void print(ExportHelper helper, List<EventInterface> events, int eventCookieFlags, EventMeetingSortBy sort, boolean asc) throws IOException {
+		sort(events, sort, asc);
 		Printer printer = new CSVPrinter(helper.getWriter(), false);
 		helper.setup(printer.getContentType(), reference(), false);
 		hideColumns(printer, events, eventCookieFlags);
