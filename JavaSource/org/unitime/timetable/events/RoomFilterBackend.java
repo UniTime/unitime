@@ -278,6 +278,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				" left outer join l.roomType t " +
 				" left outer join l.roomGroups g " +
 				" left outer join l.features f " +
+				" left outer join l.examTypes x " +
 				" ,RoomTypeOption o" +
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
@@ -290,6 +291,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				" left outer join l.roomType t " +
 				" left outer join l.roomGroups g " +
 				" left outer join l.features f " +
+				" left outer join l.examTypes x " +
 				" inner join rd.department.timetableManagers m" +
 				" left outer join m.managerRoles mr " +
 				(eventRooms ? " ,RoomTypeOption o" : "") +
@@ -305,6 +307,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				" left outer join l.roomType t " +
 				" left outer join l.roomGroups g " +
 				" left outer join l.features f " +
+				" left outer join l.examTypes x " +
 				" left outer join rd.department.timetableManagers m" +
 				" left outer join m.managerRoles mr " +
 				(eventRooms ? " ,RoomTypeOption o" : "") +
