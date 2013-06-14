@@ -450,7 +450,11 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			meeting.setApprovalDate(m.getApprovalDate());
 			meeting.setApprovalStatus(m.getApprovalStatus());
 			meeting.setCanEdit(context != null && context.hasPermission(m, Right.EventMeetingEdit));
-			meeting.setCanInquire(context != null && context.hasPermission(m, Right.EventMeetingInquire));
+			meeting.setCanInquire(context != null && (context.hasPermission(m, Right.EventMeetingInquire) ||
+					(m.getEvent().getEventType() == Event.sEventTypeClass && context.hasPermission(m, Right.EventMeetingInquireClass)) ||
+					(m.getEvent().getEventType() == Event.sEventTypeFinalExam && context.hasPermission(m, Right.EventMeetingInquireExam)) ||
+					(m.getEvent().getEventType() == Event.sEventTypeMidtermExam && context.hasPermission(m, Right.EventMeetingInquireExam))
+					));
 			meeting.setCanApprove(context != null && context.hasPermission(m, Right.EventMeetingApprove));
 			meeting.setCanDelete(context != null && context.hasPermission(m, Right.EventMeetingDelete));
 			meeting.setCanCancel(context != null && (context.hasPermission(m, Right.EventMeetingCancel) ||

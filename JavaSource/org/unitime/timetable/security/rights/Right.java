@@ -334,6 +334,8 @@ public enum Right {
     EventMeetingEdit(Meeting.class),
     EventMeetingDelete(Meeting.class),
     EventMeetingInquire(Meeting.class),
+    EventMeetingInquireClass(Meeting.class),
+    EventMeetingInquireExam(Meeting.class),
     EventMeetingApprove(Meeting.class),
     EventMeetingCancel(Meeting.class),
     EventMeetingCancelClass(Meeting.class),
