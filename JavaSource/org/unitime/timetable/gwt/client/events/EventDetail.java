@@ -327,6 +327,17 @@ public class EventDetail extends Composite {
 
 			}
 		}
+		if (iEvent.hasInstructors()) {
+			for (ContactInterface contact: iEvent.getInstructors()) {
+				List<Label> row = new ArrayList<Label>();
+				row.add(new Label(contact.getName(MESSAGES), false));
+				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
+				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
+				int rowNum = iContacts.addRow(contact, row);
+				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+					iContacts.getCellFormatter().addStyleName(rowNum, col, "instructor-contact");
+			}			
+		}
 		if (iContacts.getRowCount() > 1)
 			iForm.addRow(MESSAGES.propContacts(), iContacts);
 		
@@ -337,7 +348,7 @@ public class EventDetail extends Composite {
 		if (iEvent.hasSponsor()) {
 			iForm.addRow(MESSAGES.propSponsor(), new Label(iEvent.getSponsor().getName()));
 		}
-
+		
 		if (iEvent.hasEnrollment()) {
 			iForm.addRow(MESSAGES.propEnrollment(), new Label(String.valueOf(iEvent.getEnrollment().toString())));
 			int r = iForm.addRow(MESSAGES.propStudentConflicts(), new Label(""));
