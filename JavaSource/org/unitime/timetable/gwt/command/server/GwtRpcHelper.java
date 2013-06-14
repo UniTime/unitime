@@ -21,7 +21,6 @@ package org.unitime.timetable.gwt.command.server;
 
 import java.io.Serializable;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.unitime.timetable.defaults.SessionAttribute;
 import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
@@ -96,32 +95,17 @@ public class GwtRpcHelper implements SessionContext {
 	
 	@Override
 	public boolean hasPermission(Right right) {
-		try {
-			iCheck.checkPermission(getUser(), null, null, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermission(getUser(), null, null, right);
 	}
 
 	@Override
 	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
-		try {
-			iCheck.checkPermission(getUser(), targetId, targetType, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermission(getUser(), targetId, targetType, right);
 	}
 
 	@Override
 	public boolean hasPermission(Object targetObject, Right right) {
-		try {
-			iCheck.checkPermission(getUser(), targetObject, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermission(getUser(), targetObject, right);
 	}
 	
 	@Override
@@ -141,31 +125,16 @@ public class GwtRpcHelper implements SessionContext {
 	
 	@Override
 	public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter) {
-		try {
-			iCheck.checkPermissionAnyAuthority(getUser(), null, null, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermissionAnyAuthority(getUser(), null, null, right, filter);
 	}
 
 	@Override
 	public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
-		try {
-			iCheck.checkPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
 	}
 
 	@Override
 	public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
-		try {
-			iCheck.checkPermissionAnyAuthority(getUser(), targetObject, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return iCheck.hasPermissionAnyAuthority(getUser(), targetObject, right, filter);
 	}
 }

@@ -321,6 +321,161 @@ public class UniTimePermissionCheck implements PermissionCheck, InitializingBean
 		throw (ret != null ? ret : new AccessDeniedException(MSG.noMatchingAuthority(right.toString())));
 	}
 	
+	@Override
+    public boolean hasPermission(UserContext user, Serializable targetId, String targetType, Right right) {
+		if (user == null || user.getCurrentAuthority() == null) return false;
+		if (right == null || !user.getCurrentAuthority().hasRight(right)) return false;
+
+		if (targetType == null && right.hasType())
+			targetType = right.type().getSimpleName();
+		
+		if (targetType == null) return true;
+		
+		if (targetId != null && targetId instanceof Collection) {
+			for (Serializable id: (Collection<Serializable>) targetId)
+				if (!hasPermission(user, id, targetType, right)) return false;
+			return true;
+		}
+		
+		if (targetId != null && targetId.getClass().isArray()) {
+			for (Serializable id: (Serializable[])targetId)
+				if (!hasPermission(user, id, targetType, right)) return false;
+			return true;
+		}
+		
+		try {
+			String className = targetType;
+			if (className.indexOf('.') < 0) className = "org.unitime.timetable.model." + className;
+
+			// Special cases
+			
+			if (targetId == null && Session.class.getName().equals(className))
+				targetId = user.getCurrentAcademicSessionId();
+			
+			if (targetId == null && Department.class.getName().equals(className)) {
+				
+				for (Department d: Department.getUserDepartments(user))
+					if (hasPermission(user, d, right)) return true;
+				
+				return false;
+			}
+			
+			if (targetId == null && SubjectArea.class.getName().equals(className)) {
+				
+				for (SubjectArea sa: SubjectArea.getUserSubjectAreas(user))
+					if (hasPermission(user, sa, right)) return true;
+				
+				return false;
+			}
+			
+			if (targetId == null && SolverGroup.class.getName().equals(className)) {
+				for (SolverGroup g: SolverGroup.getUserSolverGroups(user))
+					if (hasPermission(user, g, right)) return true;
+				
+				return false;
+			}
+			
+			if (targetId == null) return false;
+			
+			if (targetId instanceof Qualifiable) {
+				Qualifiable q = (Qualifiable)targetId;
+				if (targetType == null || targetType.equals(q.getQualifierType()))
+					return hasPermission(user, q.getQualifierId(), q.getQualifierType(), right);
+				else
+					return false;
+			}
+			
+			if (targetId instanceof String && Department.class.getName().equals(className)) {
+				Department dept = Department.findByDeptCode((String)targetId, user.getCurrentAcademicSessionId());
+				if (dept != null)
+					return hasPermission(user, dept, right);
+			}
+			
+			if (targetId instanceof String) {
+				try {
+					targetId = Long.valueOf((String)targetId);
+				} catch (NumberFormatException e) {}
+			}
+			if (!(targetId instanceof Long)) {
+				try {
+					targetId = (Serializable)targetId.getClass().getMethod("getUniqueId").invoke(targetId);
+				} catch (Exception e) {}
+				try {
+					targetId = (Serializable)targetId.getClass().getMethod("getId").invoke(targetId);
+				} catch (Exception e) {}
+			}
+			
+			Object domainObject = new _RootDAO().getSession().get(Class.forName(className), targetId);
+			if (domainObject == null)
+				return false;
+
+			return hasPermission(user, domainObject, right);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+    
+	@Override
+    public boolean hasPermission(UserContext user, Object domainObject, Right right) {
+		if (user == null || user.getCurrentAuthority() == null) return false;
+		if (right == null || !user.getCurrentAuthority().hasRight(right)) return false;
+		
+		if (domainObject == null) return true;
+		
+		if (domainObject instanceof Collection) {
+			for (Object o: (Collection<?>) domainObject)
+				if (!hasPermission(user, o, right)) return false;
+			return true;
+		}
+		
+		if (domainObject.getClass().isArray()) {
+			for (Object o: (Object[]) domainObject)
+				if (!hasPermission(user, o, right)) return false;
+			return true;
+		}
+
+		if (right.hasType() && !right.type().isInstance(domainObject))
+			return false;
+		
+		try {
+			Permission<?> perm = (Permission<?>)applicationContext.getBean("permission" + right.name(), Permission.class);
+			if (perm != null && perm.type().isInstance(domainObject))
+				return (Boolean)perm.getClass().getMethod("check", UserContext.class, perm.type()).invoke(perm, user, domainObject);
+		} catch (Exception e) {
+			return false;
+		}
+		
+		if (domainObject instanceof Session)
+			return permissionSession.check(user, (Session)domainObject);
+		
+		if (domainObject instanceof Department)
+			return permissionDepartment.check(user, (Department)domainObject);
+		
+		return true;
+	}
+
+	@Override
+	public boolean hasPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) {
+		if (user == null) return false;
+		authorities: for (UserAuthority authority: user.getAuthorities()) {
+			for (Qualifiable q: filter)
+				if (!authority.hasQualifier(q)) continue authorities;
+			if (hasPermission(new UserContextWrapper(user, authority), targetId, targetType, right)) return true;
+		}
+		return false;
+	}
+
+	@Override
+	public boolean hasPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException {
+		if (user == null) return false;
+		authorities: for (UserAuthority authority: user.getAuthorities()) {
+			for (Qualifiable q: filter)
+				if (!authority.hasQualifier(q)) continue authorities;
+			if (hasPermission(new UserContextWrapper(user, authority), targetObject, right)) return true;
+		}
+		return false;
+	}
+	
 	public static class UserContextWrapper implements UserContext {
 		private static final long serialVersionUID = 1L;
 		UserAuthority iAuthority;
