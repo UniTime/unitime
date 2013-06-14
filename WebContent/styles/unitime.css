@@ -2260,6 +2260,10 @@ div.gwt-MenuBarPopup {
 	cursor: pointer;
 }
 
+.unitime-EventContacts .instructor-contact {
+	font-style: italic;
+}
+
 .unitime-EventMeetings {
 	width: 100%;
 }
