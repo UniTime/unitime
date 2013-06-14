@@ -84,6 +84,15 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 		return getUniqueId().compareTo(other.getUniqueId());
 	}
 	
+	public void setLocation(Location location) {
+		this.location = location;
+		if (location == null) {
+			setLocationPermanentId(null);
+		} else {
+			setLocationPermanentId(location.getPermanentId());
+		}
+	}
+	
 	public Location getLocation(){
 		if (location != null){
 			return(location);
