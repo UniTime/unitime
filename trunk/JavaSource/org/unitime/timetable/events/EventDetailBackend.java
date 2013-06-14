@@ -134,7 +134,17 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		
     		Class_ clazz = ce.getClazz();
     		event.setEnrollment(clazz.getEnrollment());
-
+    		if (clazz.getDisplayInstructor()) {
+    			for (ClassInstructor i: clazz.getClassInstructors()) {
+					ContactInterface instructor = new ContactInterface();
+					instructor.setFirstName(i.getInstructor().getFirstName());
+					instructor.setMiddleName(i.getInstructor().getMiddleName());
+					instructor.setLastName(i.getInstructor().getLastName());
+					instructor.setEmail(i.getInstructor().getEmail());
+					event.addInstructor(instructor);
+    			}
+    		}
+    		
     		RelatedObjectInterface related = new RelatedObjectInterface();
     		related.setType(RelatedObjectInterface.RelatedObjectType.Class);
     		related.setUniqueId(clazz.getUniqueId());
@@ -217,6 +227,14 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
     		ExamEvent xe = (e instanceof ExamEvent ? (ExamEvent)e : ExamEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		event.setEnrollment(xe.getExam().countStudents());
+    		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
+				ContactInterface instructor = new ContactInterface();
+				instructor.setFirstName(i.getFirstName());
+				instructor.setMiddleName(i.getMiddleName());
+				instructor.setLastName(i.getLastName());
+				instructor.setEmail(i.getEmail());
+				event.addInstructor(instructor);
+			}
     		
     		RelatedObjectInterface related = new RelatedObjectInterface();
     		related.setType(RelatedObjectInterface.RelatedObjectType.Examination);

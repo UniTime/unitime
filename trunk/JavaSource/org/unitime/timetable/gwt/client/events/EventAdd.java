@@ -204,9 +204,18 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 						}
 					});
 					row.add(remove);
-					int rowNum = iContacts.addRow(contact, row);
+					int nrInstructors = 0;
+					for (int r = 1; r < iContacts.getRowCount(); r ++)
+						if (iContacts.getData(r) == null) nrInstructors ++;
+					int rowNum;
+					if (nrInstructors == 0) {
+						rowNum = iContacts.addRow(contact, row);
+					} else {
+						rowNum = iContacts.insertRow(iContacts.getRowCount() - nrInstructors);
+						iContacts.setRow(rowNum, contact, row);
+					}
 					for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
-						iContacts.getCellFormatter().addStyleName(rowNum, col, "main-contact");
+						iContacts.getCellFormatter().addStyleName(rowNum, col, "additional-contact");
 				}
 				iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
 			}
@@ -1189,9 +1198,21 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				row.add(remove);
 				int rowNum = iContacts.addRow(contact, row);
 				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
-					iContacts.getCellFormatter().addStyleName(rowNum, col, "main-contact");
+					iContacts.getCellFormatter().addStyleName(rowNum, col, "additional-contact");
 			}
 		}
+		if (iEvent.hasInstructors()) {
+			for (final ContactInterface contact: iEvent.getInstructors()) {
+				List<Widget> row = new ArrayList<Widget>();
+				row.add(new Label(contact.getName(MESSAGES), false));
+				row.add(new Label(contact.hasEmail() ? contact.getEmail() : "", false));
+				row.add(new Label(contact.hasPhone() ? contact.getPhone() : "", false));
+				int rowNum = iContacts.addRow(null, row);
+				for (int col = 0; col < iContacts.getCellCount(rowNum); col++)
+					iContacts.getCellFormatter().addStyleName(rowNum, col, "instructor-contact");
+			}
+		}
+		iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
 		
 		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupContacts());
 		iLookupButton.setVisible(canLookup);

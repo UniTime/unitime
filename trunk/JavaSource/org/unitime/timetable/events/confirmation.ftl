@@ -58,6 +58,15 @@
 						</tr>
 					</#list>
 				</#if>
+				<#if event.hasInstructors()>
+					<#list event.getInstructors() as contact>
+						<tr>
+						<td style='font-style: italic;'>${contact.getName(msg)}</td>
+						<td style='font-style: italic;'><#if contact.hasEmail()>${contact.getEmail()}</#if></td>
+						<td style='font-style: italic;'><#if contact.hasPhone()>${contact.getPhone()}</#if></td>
+						</tr>
+					</#list>
+				</#if>
 				</table>
 				</td></tr>
 				<#if event.hasEmail()>
