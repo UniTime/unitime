@@ -324,8 +324,9 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
   	 * @return Formatted String
   	 */
  	public static String toInitialCase(String str, char[] delimiters) {
-  	    if(str==null || str.trim().length()==0)
-  	        return str;
+  	    if (str==null || str.trim().isEmpty()) return str;
+  	    
+  	    if (!str.toUpperCase().equals(str)) return str;
 
   	    char[] chars = str.toCharArray();
   	    boolean upper = true;
