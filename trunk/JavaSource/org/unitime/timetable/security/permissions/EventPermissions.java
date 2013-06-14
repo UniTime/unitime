@@ -654,6 +654,77 @@ public class EventPermissions {
 		public Class<Meeting> type() { return Meeting.class; }
 	}
 	
+	@PermissionForRight(Right.EventMeetingInquireClass)
+	public static class EventMeetingInquireClass extends EventPermission<Meeting> {
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired PermissionDepartment permissionDepartment;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getEvent().getEventType() != Event.sEventTypeClass) return false;
+
+			// Only pending and approved meetings can be inquired
+			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+			
+			Class_ clazz = ClassEventDAO.getInstance().get(source.getEvent().getUniqueId()).getClazz();
+			if (clazz == null) return false;
+			
+			// Course coordinators can cancel a class
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+					if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				return false;
+			}
+			
+			// Check departmental permissions
+			return permissionDepartment.check(user, clazz.getControllingDept(), DepartmentStatusType.Status.OwnerView);
+		}
+
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
+	
+	@PermissionForRight(Right.EventMeetingInquireExam)
+	public static class EventMeetingInquireExam extends EventPermission<Meeting> {
+		@Autowired Permission<Date> permissionEventDate;
+		@Autowired PermissionSession permissionSession;
+
+		@Override
+		public boolean check(UserContext user, Meeting source) {
+			if (source.getEvent().getEventType() != Event.sEventTypeFinalExam && source.getEvent().getEventType() != Event.sEventTypeMidtermExam) return false;
+
+			// Only pending and approved meetings can be inquired
+			if (source.getStatus() != Meeting.Status.PENDING && source.getStatus() != Meeting.Status.APPROVED) return false;
+
+			// Only approved meetings can be cancelled
+			if (source.getStatus() != Meeting.Status.APPROVED) return false;
+
+			// Is the date ok?
+			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
+
+			Exam exam = ExamEventDAO.getInstance().get(source.getEvent().getUniqueId()).getExam();
+			if (exam == null) return false;
+			
+			// Course coordinators can cancel an exam
+			if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
+				for (ExamOwner owner: exam.getOwners()) {
+					for (DepartmentalInstructor instructor: owner.getCourse().getInstructionalOffering().getCoordinators())
+						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
+				}
+				return false;
+			}
+			
+			// Otherwise check session permission
+			return permissionSession.check(user, exam.getSession(), DepartmentStatusType.Status.OwnerView, DepartmentStatusType.Status.ManagerView);
+		}
+
+		@Override
+		public Class<Meeting> type() { return Meeting.class; }
+	}
 	
 	@PermissionForRight(Right.EventMeetingApprove)
 	public static class EventMeetingApprove extends EventPermission<Meeting> {
