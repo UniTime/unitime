@@ -1350,6 +1350,6 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
                 createQuery("select count(s) from Solution s " +
                         "where s.owner.session.uniqueId=:sessionId and " +
                         "s.commited = true").
-                setLong("sessionId",sessionId).uniqueResult()).longValue()>0;
+                setLong("sessionId",sessionId).setCacheable(true).uniqueResult()).longValue()>0;
     }
 }
