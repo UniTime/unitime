@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -165,26 +164,32 @@ public class SavedHQL extends BaseSavedHQL {
 	}
 	
 	public static List<SavedHQL> listAll(org.hibernate.Session hibSession, Flag appearance, boolean admin) {
-		synchronized (sHasQueriesCache) {
-			List<SavedHQL> ret = new ArrayList<SavedHQL>();
-			for (SavedHQL hql: (List<SavedHQL>)(hibSession == null ? SavedHQLDAO.getInstance().getSession() : hibSession).createQuery(
-				"from SavedHQL order by name").setCacheable(true).list()) {
-				if (!appearance.isSet(hql.getType())) continue;
-				if (!admin && Flag.ADMIN_ONLY.isSet(hql.getType())) continue;
-				ret.add(hql);
-			}
-			sHasQueriesCache.put(appearance.flag() | (admin ? Flag.ADMIN_ONLY.flag() : 0), !ret.isEmpty());
-			return ret;
+		if (admin) {
+			return (List<SavedHQL>)(hibSession == null ? SavedHQLDAO.getInstance().getSession() : hibSession).createQuery(
+					"from SavedHQL q where bit_and(q.type, :flag) > 0 order by q.name")
+					.setInteger("flag", appearance.flag())
+					.setCacheable(true).list();
+		} else {
+			return (List<SavedHQL>)(hibSession == null ? SavedHQLDAO.getInstance().getSession() : hibSession).createQuery(
+					"from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0 order by q.name")
+					.setInteger("flag", appearance.flag())
+					.setInteger("admin", Flag.ADMIN_ONLY.flag())
+					.setCacheable(true).list();
 		}
 	}
 	
-	private static Hashtable<Integer, Boolean> sHasQueriesCache = new Hashtable<Integer, Boolean>();
 	public static boolean hasQueries(Flag appearance, boolean admin) {
-		synchronized (sHasQueriesCache) {
-			Boolean ret = sHasQueriesCache.get(appearance.flag() | (admin ? Flag.ADMIN_ONLY.flag() : 0));
-			if (ret == null)
-				ret = !listAll(null, appearance, admin).isEmpty();
-			return ret;
+		if (admin) {
+			return ((Number)SavedHQLDAO.getInstance().getSession().createQuery(
+					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0")
+					.setInteger("flag", appearance.flag())
+					.setCacheable(true).uniqueResult()).intValue() > 0;
+		} else {
+			return ((Number)SavedHQLDAO.getInstance().getSession().createQuery(
+					"select count(q) from SavedHQL q where bit_and(q.type, :flag) > 0 and bit_and(q.type, :admin) = 0")
+					.setInteger("flag", appearance.flag())
+					.setInteger("admin", Flag.ADMIN_ONLY.flag())
+					.setCacheable(true).uniqueResult()).intValue() > 0;
 		}
 	}
 
