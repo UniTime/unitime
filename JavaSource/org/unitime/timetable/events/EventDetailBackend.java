@@ -532,6 +532,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 									instructor.setFirstName(i.getInstructor().getFirstName());
 									instructor.setMiddleName(i.getInstructor().getMiddleName());
 									instructor.setLastName(i.getInstructor().getLastName());
+									instructor.setEmail(i.getInstructor().getEmail());
 									confEvent.addInstructor(instructor);
 				    			}
 				    		}
@@ -562,6 +563,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 								instructor.setFirstName(i.getFirstName());
 								instructor.setMiddleName(i.getMiddleName());
 								instructor.setLastName(i.getLastName());
+								instructor.setEmail(i.getEmail());
 								confEvent.addInstructor(instructor);
 			    			}
 			    			for (ExamOwner owner: new TreeSet<ExamOwner>(xe.getExam().getOwners())) {
