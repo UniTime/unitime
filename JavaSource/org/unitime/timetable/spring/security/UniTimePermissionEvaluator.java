@@ -24,7 +24,6 @@ import java.io.Serializable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,7 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 		try {
 			UserContext user = (UserContext)authentication.getPrincipal();
 			Right right = (permission instanceof Right ? (Right)permission : Right.valueOf(permission.toString()));
-			unitimePermissionCheck.checkPermission(user, domainObject, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			sLog.debug(permission + " failed for " + domainObject + ": " + e.getMessage());
-			throw e;
+			return unitimePermissionCheck.hasPermission(user, domainObject, right);
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + domainObject + ": " + e.getMessage());
 			return false;
@@ -60,11 +55,7 @@ public class UniTimePermissionEvaluator implements PermissionEvaluator {
 		try {
 			UserContext user = (UserContext)authentication.getPrincipal();
 			Right right = (permission instanceof Right ? (Right)permission : Right.valueOf(permission.toString()));
-			unitimePermissionCheck.checkPermission(user, targetId, targetType, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			sLog.debug(permission + " failed for " + targetType + "@"+ targetId + ": " + e.getMessage());
-			throw e;
+			return unitimePermissionCheck.hasPermission(user, targetId, targetType, right);
 		} catch (Exception e) {
 			sLog.warn("Failed to evaluate permission " + permission + " for " + targetType + "@"+ targetId + ": " + e.getMessage());
 			return false;

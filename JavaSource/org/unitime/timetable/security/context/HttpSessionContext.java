@@ -25,7 +25,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -120,32 +119,17 @@ public class HttpSessionContext implements SessionContext {
 	
 	@Override
 	public boolean hasPermission(Right right) {
-		try {
-			unitimePermissionCheck.checkPermission(getUser(), null, null, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermission(getUser(), null, null, right);
 	}
 
 	@Override
 	public boolean hasPermission(Serializable targetId, String targetType, Right right) {
-		try {
-			unitimePermissionCheck.checkPermission(getUser(), targetId, targetType, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermission(getUser(), targetId, targetType, right);
 	}
 
 	@Override
 	public boolean hasPermission(Object targetObject, Right right) {
-		try {
-			unitimePermissionCheck.checkPermission(getUser(), targetObject, right);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermission(getUser(), targetObject, right);
 	}
 	
 	@Override
@@ -165,32 +149,17 @@ public class HttpSessionContext implements SessionContext {
 	
 	@Override
 	public boolean hasPermissionAnyAuthority(Right right, Qualifiable... filter) {
-		try {
-			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), null, null, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermissionAnyAuthority(getUser(), null, null, right, filter);
 	}
 
 	@Override
 	public boolean hasPermissionAnyAuthority(Serializable targetId, String targetType, Right right, Qualifiable... filter) {
-		try {
-			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermissionAnyAuthority(getUser(), targetId, targetType, right, filter);
 	}
 
 	@Override
 	public boolean hasPermissionAnyAuthority(Object targetObject, Right right, Qualifiable... filter) {
-		try {
-			unitimePermissionCheck.checkPermissionAnyAuthority(getUser(), targetObject, right, filter);
-			return true;
-		} catch (AccessDeniedException e) {
-			return false;
-		}
+		return unitimePermissionCheck.hasPermissionAnyAuthority(getUser(), targetObject, right, filter);
 	}
 	
 	public static SessionContext getSessionContext(ServletContext context) {
