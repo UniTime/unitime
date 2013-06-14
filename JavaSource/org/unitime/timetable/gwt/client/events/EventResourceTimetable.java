@@ -666,7 +666,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			}
 			@Override
 			protected void edit() {
-				hide();
+				super.hide();
 				iEventAdd.setEvent(getEvent());
 				iEventAdd.show();
 			}
