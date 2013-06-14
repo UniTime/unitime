@@ -35,5 +35,13 @@ public interface PermissionCheck {
     public void checkPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter) throws AccessDeniedException;
     
     public void checkPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter) throws AccessDeniedException;
+    
+    public boolean hasPermission(UserContext user, Serializable targetId, String targetType, Right right);
+    
+    public boolean hasPermission(UserContext user, Object targetObject, Right right);
+    
+    public boolean hasPermissionAnyAuthority(UserContext user, Serializable targetId, String targetType, Right right, Qualifiable... filter);
+    
+    public boolean hasPermissionAnyAuthority(UserContext user, Object targetObject, Right right, Qualifiable... filter);
 
 }
