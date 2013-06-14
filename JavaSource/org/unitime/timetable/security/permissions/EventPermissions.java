@@ -219,10 +219,13 @@ public class EventPermissions {
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:
 				// Class event -- can see Class Detail page?
-				if (user.getCurrentAuthority().hasRight(Right.ClassDetail) && permissionClassDetail.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz())) return true;
+				if (user.getCurrentAuthority().hasRight(Right.ClassDetail)) {
+					Class_ clazz = (source instanceof ClassEvent ? (ClassEvent)source : ClassEventDAO.getInstance().get(source.getUniqueId())).getClazz();
+					if (permissionClassDetail.check(user, clazz)) return true;
+				}
 				// Instructors and course coordinators can also see details
 				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-					Class_ clazz = ClassEventDAO.getInstance().get(source.getUniqueId()).getClazz();
+					Class_ clazz = (source instanceof ClassEvent ? (ClassEvent)source : ClassEventDAO.getInstance().get(source.getUniqueId())).getClazz();
 					if (clazz == null) return false;
 					for (DepartmentalInstructor instructor: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
 						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
@@ -235,11 +238,13 @@ public class EventPermissions {
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
 				// Examination event -- can see ExaminationDetail page?
-				if (user.getCurrentAuthority().hasRight(Right.ExaminationDetail) && permissionExaminationDetail.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()).getExam()))
-					return true;
+				if (user.getCurrentAuthority().hasRight(Right.ExaminationDetail)) {
+					Exam exam = (source instanceof ExamEvent ? (ExamEvent)source : ExamEventDAO.getInstance().get(source.getUniqueId())).getExam();
+					if (permissionExaminationDetail.check(user, exam)) return true;
+				}
 				// Instructors and course coordinators can also see details
 				if (Roles.ROLE_INSTRUCTOR.equals(user.getCurrentAuthority().getRole())) {
-					Exam exam = ExamEventDAO.getInstance().get(source.getUniqueId()).getExam();
+					Exam exam = (source instanceof ExamEvent ? (ExamEvent)source : ExamEventDAO.getInstance().get(source.getUniqueId())).getExam();
 					if (exam == null) return false;
 					for (DepartmentalInstructor instructor: exam.getInstructors()) {
 						if (user.getExternalUserId().equals(instructor.getExternalUniqueId())) return true;
@@ -284,11 +289,13 @@ public class EventPermissions {
 			switch (source.getEventType()) {
 			case Event.sEventTypeClass:
 				// Class event -- can see Class Assignment page?
-				return user.getCurrentAuthority().hasRight(Right.EventEditClass) && permissionEventEditClass.check(user, ClassEventDAO.getInstance().get(source.getUniqueId()));
+				return user.getCurrentAuthority().hasRight(Right.EventEditClass) &&
+						permissionEventEditClass.check(user, (source instanceof ClassEvent ? (ClassEvent)source : ClassEventDAO.getInstance().get(source.getUniqueId())));
 			case Event.sEventTypeFinalExam:
 			case Event.sEventTypeMidtermExam:
 				// Exam event -- can see Exam Assignment page?
-				return user.getCurrentAuthority().hasRight(Right.EventEditExam) && permissionEventEditExam.check(user, ExamEventDAO.getInstance().get(source.getUniqueId()));
+				return user.getCurrentAuthority().hasRight(Right.EventEditExam) &&
+						permissionEventEditExam.check(user, (source instanceof ExamEvent ? (ExamEvent)source : ExamEventDAO.getInstance().get(source.getUniqueId())));
 			case Event.sEventTypeUnavailable:
 				if (!user.getCurrentAuthority().hasRight(Right.EventAddUnavailable)) return false;
 				break;
@@ -401,7 +408,7 @@ public class EventPermissions {
 			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
 			
 			// Can manager approve? 
-			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanApprove()) return false;
+			if (!source.getEffectiveEventStatus().isEventManagersCanApprove()) return false;
 			
 			// Has event department?
 			return permissionDepartment.check(user, source.getEventDepartment());
@@ -425,7 +432,7 @@ public class EventPermissions {
 			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
 
 			// Can manager request?
-			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
+			if (!source.getEffectiveEventStatus().isEventManagersCanRequestEvents()) return false;
 			
 			// Has event department?
 			return permissionDepartment.check(user, source.getEventDepartment());
@@ -449,7 +456,7 @@ public class EventPermissions {
 			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
 
 			// Can manager request?
-			if (!source.getRoomType().getOption(source.getEventDepartment()).getEventStatus().isEventManagersCanRequestEvents()) return false;
+			if (!source.getEffectiveEventStatus().isEventManagersCanRequestEvents()) return false;
 			
 			// Has event department?
 			return permissionDepartment.check(user, source.getEventDepartment());
@@ -600,7 +607,7 @@ public class EventPermissions {
 			// Is the date ok?
 			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
 			
-			Class_ clazz = ClassEventDAO.getInstance().get(source.getEvent().getUniqueId()).getClazz();
+			Class_ clazz = (source.getEvent() instanceof ClassEvent ? (ClassEvent)source.getEvent() : ClassEventDAO.getInstance().get(source.getEvent().getUniqueId())).getClazz();
 			if (clazz == null) return false;
 			
 			// Course coordinators can cancel a class
@@ -634,7 +641,7 @@ public class EventPermissions {
 			// Is the date ok?
 			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
 
-			Exam exam = ExamEventDAO.getInstance().get(source.getEvent().getUniqueId()).getExam();
+			Exam exam = (source.getEvent() instanceof ExamEvent ? (ExamEvent)source.getEvent() : ExamEventDAO.getInstance().get(source.getEvent().getUniqueId())).getExam();
 			if (exam == null) return false;
 			
 			// Course coordinators can cancel an exam
@@ -669,7 +676,7 @@ public class EventPermissions {
 			// Is the date ok?
 			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
 			
-			Class_ clazz = ClassEventDAO.getInstance().get(source.getEvent().getUniqueId()).getClazz();
+			Class_ clazz = (source.getEvent() instanceof ClassEvent ? (ClassEvent)source.getEvent() : ClassEventDAO.getInstance().get(source.getEvent().getUniqueId())).getClazz();
 			if (clazz == null) return false;
 			
 			// Course coordinators can cancel a class
@@ -706,7 +713,7 @@ public class EventPermissions {
 			// Is the date ok?
 			if (!permissionEventDate.check(user, source.getMeetingDate())) return false;
 
-			Exam exam = ExamEventDAO.getInstance().get(source.getEvent().getUniqueId()).getExam();
+			Exam exam = (source.getEvent() instanceof ExamEvent ? (ExamEvent)source.getEvent() : ExamEventDAO.getInstance().get(source.getEvent().getUniqueId())).getExam();
 			if (exam == null) return false;
 			
 			// Course coordinators can cancel an exam
