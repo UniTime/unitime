@@ -98,11 +98,11 @@ public class EventEmail {
 	        }
 			
 			Email email = Email.createEmail();
-			if (event().hasContact() && event().getContact().getEmail() != null)
+			if (event().hasContact() && event().getContact().getEmail() != null && !event().getContact().getEmail().isEmpty())
 				email.addRecipient(event().getContact().getEmail(), event().getContact().getName(MESSAGES));
 			if (event().hasAdditionalContacts()) {
 				for (ContactInterface contact: event().getAdditionalContacts()) {
-					if (contact.getEmail() != null)
+					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
 						email.addRecipient(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
@@ -117,6 +117,12 @@ public class EventEmail {
 						else
 							email.addRecipientCC(address.trim(), null);
 					}
+				}
+			}
+			if (event().hasInstructors() && "true".equals(ApplicationProperties.getProperty("unitime.email.event.instructor", "true"))) {
+				for (ContactInterface contact: event().getInstructors()) {
+					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
+						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
 			
