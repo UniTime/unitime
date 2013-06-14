@@ -144,9 +144,12 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
 				Map<Long, Double> distances = new HashMap<Long, Double>();
+				Map<Long, Location> locationMap = null;
 				if (request.getRoomFilter() != null && !request.getRoomFilter().isEmpty()) {
+					locationMap = new HashMap<Long, Location>();
 					for (Location location: new RoomFilterBackend().locations(request.getSessionId(), request.getRoomFilter(), 1000, distances)) {
 						request.getEventFilter().addOption("room", location.getUniqueId().toString());
+						locationMap.put(location.getPermanentId(), location);
 					}
 				}
 				if (request.getResourceType() == ResourceType.ROOM && request.getEventFilter().hasOptions("type") && !request.getEventFilter().getOptions("type").contains(Event.sEventTypesAbbv[Event.sEventTypeUnavailable])) {
@@ -664,6 +667,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				Hashtable<Long, EventInterface> events = new Hashtable<Long, EventInterface>();
 				Map<Long, Set<Location>> unavailableLocations = new Hashtable<Long, Set<Location>>();
 				for (Meeting m: meetings) {
+					if (locationMap != null && m.getLocationPermanentId() != null) {
+						Location location = locationMap.get(m.getLocationPermanentId());
+						if (location != null) m.setLocation(location);
+					}
 					EventInterface event = events.get(m.getEvent().getUniqueId());
 					if (event == null) {
 						event = new EventInterface();
@@ -1242,6 +1249,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 							EventInterface parent = events.get((Long)o[0]);
 							if (parent == null) continue;
 							Meeting m = (Meeting)o[1];
+							if (locationMap != null && m.getLocationPermanentId() != null) {
+								Location location = locationMap.get(m.getLocationPermanentId());
+								if (location != null) m.setLocation(location);
+							}
 							EventInterface event = conflictingEvents.get(m.getEvent().getUniqueId());
 							if (event == null) {
 								event = new EventInterface();
