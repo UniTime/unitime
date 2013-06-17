@@ -183,19 +183,19 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private List<SessionMonth> iSessionMonths = null;
 	
 	public static enum PageType {
-		Timetable("tab", "0", "title", MESSAGES.pageEventTimetable(), "rooms", ""),
+		Timetable("tab", "0", "title", MESSAGES.pageEventTimetable(), "rooms", "", "showClear", "true"),
 		Events("filter", "events", "rooms", "flag:Event", "events", "mode:\"My Events\"", "type", "room", "title", MESSAGES.pageEvents(),
-				"fixedTitle", "true", "fixedType", "true", "tab", "1"),
-		RoomTimetable("type", "room", "fixedType", "true", "title", MESSAGES.pageRoomTimetable()),
+				"fixedTitle", "true", "fixedType", "true", "tab", "1", "showClear", "true"),
+		RoomTimetable("type", "room", "fixedType", "true", "title", MESSAGES.pageRoomTimetable(), "showClear", "true"),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
-				"rooms", "", "title", MESSAGES.pageClasses(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
+				"rooms", "", "title", MESSAGES.pageClasses(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Exams(
 				"type", "subject", "fixedType", "true", "events", "type:\"Final Exam\" type:\"Midterm Exam\"",
-				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false"),
+				"tab", "1", "filter", "exams", "rooms", "", "title", MESSAGES.pageExaminations(), "fixedTitle", "true", "addEvent", "false", "showFilter", "false", "showClear", "false"),
 		Personal(
 				"type", "person", "fixedType", "true", "events", "", "filter", "person", "rooms", "", "title", MESSAGES.pagePersonalTimetable(),
-				"addEvent", "false", "fixedTitle", "true", "showFilter", "false"
+				"addEvent", "false", "fixedTitle", "true", "showFilter", "false", "showClear", "false"
 				),
 		Availability("title", MESSAGES.pageEventRoomAvailability(), "rooms", "flag:Event");
 		
@@ -242,6 +242,43 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		});
 		iFilterHeader.setEnabled("add", false);
 		iFilter.addHeaderRow(iFilterHeader);
+		iFilterHeader.addButton("clear", MESSAGES.buttonClear(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				UniTimeNotifications.info("Clear");
+				// Event filter
+				iEvents.setValue(iHistoryToken.getDefaultParameter("events", ""));
+				
+				// Room filter
+				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""));
+				
+				// Resource type
+				if (!"true".equals(iHistoryToken.getParameter("fixedType", "false"))) {
+					String typeString = iHistoryToken.getDefaultParameter("type", "room");
+					if (typeString != null)
+						for (int idx = 0; idx < iResourceTypes.getItemCount(); idx ++) {
+							if (iResourceTypes.getValue(idx).equalsIgnoreCase(typeString)) {
+								iResourceTypes.setSelectedIndex(idx);
+							}
+						}					
+				}
+				
+				// Subject, curriculum, department, etc.
+				iResources.setValue(iHistoryToken.getDefaultParameter("name", ""));
+
+				// Room selection
+				iLocRoom = iHistoryToken.getDefaultParameter("room", "");
+				
+				// Week selection
+				iLocDate = iHistoryToken.getDefaultParameter("date", "");
+
+				hideResults();
+				changeUrl();
+				UniTimePageLabel.getInstance().setPageName(getPageName());
+				resourceTypeChanged(false);
+			}
+		});
+		iFilterHeader.setEnabled("clear", "true".equals(iHistoryToken.getParameter("showClear", "true")));
 		iFilterHeader.addButton("search", MESSAGES.buttonSearch(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
@@ -1805,6 +1842,11 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		public String getParameter(String key) {
 			String value = iParams.get(key);
 			return (value == null ? iDefaults.get(key) : value);
+		}
+		
+		public String getDefaultParameter(String key, String defaultValue) {
+			String value = iDefaults.get(key);
+			return (value == null ? defaultValue : value);
 		}
 		
 		public boolean hasParameter(String key) {
