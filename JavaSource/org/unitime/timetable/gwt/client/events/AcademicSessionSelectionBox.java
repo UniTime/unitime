@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
@@ -96,16 +97,16 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 
 	@Override
 	public Long getAcademicSessionId() {
-		return (getValue() == null ? null : getValue().getFirst().getUniqueId());
+		return (getValue() == null ? null : getValues().isEmpty() ? null : getValue().getFirst().getUniqueId());
 	}
 
 	@Override
 	public String getAcademicSessionName() {
-		return (getValue() == null ? null : getValue().getFirst().getName());
+		return (getValue() == null ? null : getValues().isEmpty() ? null : getValue().getFirst().getName());
 	}
 
 	public String getAcademicSessionAbbreviation() {
-		return (getValue() == null ? null : getValue().getFirst().getAbbv());
+		return (getValue() == null ? null : getValues().isEmpty() ? null : getValue().getFirst().getAbbv());
 	}
 
 	@Override
@@ -336,8 +337,12 @@ public class AcademicSessionSelectionBox extends IntervalSelector<AcademicSessio
 		if (selected == null) selected = (filtered.isEmpty() ? null : filtered.get(filtered.size() - 1));
 		setDefaultValue(new Interval(selected));
 		super.setValues(filtered);
-		if (getValue() == null && getDefaultValue() != null)
+		if (filtered.isEmpty()) {
+			setErrorHint(MESSAGES.noSessionAvailable());
+			UniTimeNotifications.error(MESSAGES.noSessionAvailable());
+		} else if (getValue() == null && getDefaultValue() != null) {
 			setValue(getDefaultValue(), true);
+		}
 	}
 	
 	public static interface AcademicSessionFilter {
