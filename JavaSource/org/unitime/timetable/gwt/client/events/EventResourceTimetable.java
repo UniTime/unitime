@@ -245,7 +245,6 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iFilterHeader.addButton("clear", MESSAGES.buttonClear(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				UniTimeNotifications.info("Clear");
 				// Event filter
 				iEvents.setValue(iHistoryToken.getDefaultParameter("events", ""));
 				
