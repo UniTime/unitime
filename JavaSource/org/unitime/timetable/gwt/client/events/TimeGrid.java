@@ -32,6 +32,7 @@ import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.resources.GwtResources;
@@ -80,7 +81,7 @@ public class TimeGrid extends Composite {
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	public static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	public static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 
 	private P iContainer;
 	private ScrollPanel iScrollPanel;

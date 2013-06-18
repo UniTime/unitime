@@ -33,6 +33,7 @@ import org.unitime.timetable.gwt.client.events.EventAdd.EventPropertiesProvider;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
 import org.unitime.timetable.gwt.client.widgets.NumberBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -70,11 +71,12 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 	private static GwtAriaMessages ARIA = GWT.create(GwtAriaMessages.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
-	private static DateTimeFormat sDateFormatShort = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
-	private static DateTimeFormat sDateFormatLong = DateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
-	private static DateTimeFormat sDateFormatMeeting = DateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
-	private static DateTimeFormat sDateFormatAria = DateTimeFormat.getFormat(CONSTANTS.dateSelectionDateFormat());
+	private static DateTimeFormat sDateFormatApproval = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDateFormatExpiration = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDateFormatShort = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormatShort());
+	private static DateTimeFormat sDateFormatLong = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormatLong());
+	private static DateTimeFormat sDateFormatMeeting = ServerDateTimeFormat.getFormat(CONSTANTS.meetingDateFormat());
+	private static DateTimeFormat sDateFormatAria = ServerDateTimeFormat.getFormat(CONSTANTS.dateSelectionDateFormat());
 	
 	public static enum ModeFlag {
 		ShowEventDetails,
@@ -676,19 +678,19 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 							mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
 						}
 						String thisApproval = (
-								m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
+								m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormatApproval.format(m.getApprovalDate()) :
 								m.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
 								m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
 								"");
 									
 						approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? MESSAGES.repeatingSymbol() : 
 								(m.getApprovalStatus() == ApprovalStatus.Approved ?
-								m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
+								m.isPast() ? "<span class='past-meeting'>" + sDateFormatApproval.format(m.getApprovalDate()) + "</span>" : sDateFormatApproval.format(m.getApprovalDate()) :
 								m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 								m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 								event != null && event.getType() == EventType.Unavailabile ? "" : 
 								m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
-								event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" : 
+								event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormatExpiration.format(event.getExpirationDate())) + "</span>" : 
 								"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 						if (EventCookie.getInstance().isHideDuplicitiesForMeetings()) {
 							prev = mtg; prevSpan = span; prevApproval = thisApproval;
@@ -1051,19 +1053,19 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					mtgs[i] += (mtgs[i].isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prev[i == 6 ? i - 1 : i].equals(mtg[i == 6 ? i - 1 : i]) ? MESSAGES.repeatingSymbol() : (!span.isEmpty() ? "<span class='" + span + "'>" : "") + mtg[i] + (!span.isEmpty() ? "</span>" : ""));
 				}
 				String thisApproval = (
-						m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormat.format(m.getApprovalDate()) :
+						m.getApprovalStatus() == ApprovalStatus.Approved ? sDateFormatApproval.format(m.getApprovalDate()) :
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? MESSAGES.approvalCancelled() :
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? MESSAGES.approvalRejected() :
 						"");
 							
 				approval += (approval.isEmpty() ? "" : "<br>") + (prev != null && span.equals(prevSpan) && prevApproval.equals(thisApproval) ? MESSAGES.repeatingSymbol() : 
 						(m.getApprovalStatus() == ApprovalStatus.Approved ?
-						m.isPast() ? "<span class='past-meeting'>" + sDateFormat.format(m.getApprovalDate()) + "</span>" : sDateFormat.format(m.getApprovalDate()) :
+						m.isPast() ? "<span class='past-meeting'>" + sDateFormatApproval.format(m.getApprovalDate()) + "</span>" : sDateFormatApproval.format(m.getApprovalDate()) :
 						m.getApprovalStatus() == ApprovalStatus.Cancelled ? "<span class='cancelled-meeting'>" + MESSAGES.approvalCancelled() + "</span>":
 						m.getApprovalStatus() == ApprovalStatus.Rejected ? "<span class='rejected-meeting'>" + MESSAGES.approvalRejected() + "</span>":
 						event != null && event.getType() == EventType.Unavailabile ? "" : 
 						m.getFirstMeetingDate() == null ? "" : m.isPast() ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" :
-						event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" : 
+						event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormatExpiration.format(event.getExpirationDate())) + "</span>" : 
 						"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 				if (EventCookie.getInstance().isHideDuplicitiesForMeetings()) {
 					prev = mtg; prevSpan = span; prevApproval = thisApproval;
@@ -1125,9 +1127,9 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 					event != null && (event.getType() == EventType.Class || event.getType() == EventType.FinalExam || event.getType() == EventType.MidtermExam) ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" :
 					meeting.isCanApprove() && EventCookie.getInstance().isAutomaticallyApproveNewMeetings() ? "<span class='new-approved-meeting'>" + MESSAGES.approvelNewApprovedMeeting() + "</span>" : "<span class='new-meeting'>" + MESSAGES.approvalNewMeeting() + "</span>" :
 					meeting.isApproved() ? 
-							past ? "<span class='past-meeting'>" + sDateFormat.format(meeting.getApprovalDate()) + "</span>" : sDateFormat.format(meeting.getApprovalDate()) :
+							past ? "<span class='past-meeting'>" + sDateFormatApproval.format(meeting.getApprovalDate()) + "</span>" : sDateFormatApproval.format(meeting.getApprovalDate()) :
 							past ? "<span class='not-approved-past'>" + MESSAGES.approvalNotApprovedPast() + "</span>" : 
-							event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormat.format(event.getExpirationDate())) + "</span>" :
+							event != null && event.getExpirationDate() != null ? "<span class='not-approved'>" + MESSAGES.approvalExpire(sDateFormatExpiration.format(event.getExpirationDate())) + "</span>" :
 							"<span class='not-approved'>" + MESSAGES.approvalNotApproved() + "</span>"));
 		} else {
 			row.add(new HTML(approval == null ? "" : approval, false));
