@@ -896,7 +896,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iEvent.addAdditionalContact(contact);
 		
 		iEvent.setEmail(iEmails.getText());
-		iEvent.setExpirationDate(iExpirationDate.getValue());
+		iEvent.setExpirationDate(iExpirationDate.getValueInServerTimeZone());
 
 		/*
 		if (iEvent.hasNotes() && iEvent.getNotes().last().getDate() == null)
@@ -1098,7 +1098,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iLimit.setValue(iEvent.hasMaxCapacity() ? iEvent.getMaxCapacity() : null);
 		iNotes.setText("");
 		iEmails.setText(iEvent.hasEmail() ? iEvent.getEmail() : "");
-		iExpirationDate.setValue(iEvent.getExpirationDate());
+		iExpirationDate.setValueInServerTimeZone(iEvent.getExpirationDate());
 		if (iEvent.getType() == EventType.Course) {
 			iCourses.setValue(iEvent.getRelatedObjects());
 			iReqAttendance.setValue(iEvent.hasRequiredAttendance());
