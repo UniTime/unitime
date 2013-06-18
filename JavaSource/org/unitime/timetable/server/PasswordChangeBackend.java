@@ -106,6 +106,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					cfg.setClassForTemplateLoading(PasswordChangeBackend.class, "");
 					cfg.setLocale(Localization.getJavaLocale());
 					cfg.setOutputEncoding("utf-8");
+					cfg.setEncoding(Localization.getJavaLocale(), "utf-8");
 					Template template = cfg.getTemplate("PasswordResetEmail.ftl");
 					Map<String, Object> input = new HashMap<String, Object>();
 					input.put("msg", MESSAGES);
