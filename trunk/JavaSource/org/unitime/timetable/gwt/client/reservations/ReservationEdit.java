@@ -240,7 +240,7 @@ public class ReservationEdit extends Composite {
 		iType.getWidget().addChangeHandler(new ChangeHandler() {
 			@Override
 			public void onChange(ChangeEvent event) {
-				typeChanged();
+				typeChanged(true);
 			}
 		});
 
@@ -535,7 +535,7 @@ public class ReservationEdit extends Composite {
 			iCurriculum.getWidget().addItem(MESSAGES.itemNone(), "");
 			iCurriculum.getWidget().setSelectedIndex(0);
 			areaChanged();
-			typeChanged();
+			typeChanged(true);
 		} else {
 			iCourseBox.setEnabled(false);
 			LoadingWidget.getInstance().show(MESSAGES.waitLoadingReservation());
@@ -578,7 +578,7 @@ public class ReservationEdit extends Composite {
 			iCourse.getWidget().addItem(course.getAbbv() + (course.getName() == null || course.getName().isEmpty() ? "" : " - " + course.getName()), course.getId().toString());
 		}
 		
-		typeChanged();
+		typeChanged(true);
 		populate();
 		
 		iCurricula.clear();
@@ -634,7 +634,7 @@ public class ReservationEdit extends Composite {
 		return ret;
 	}
 	
-	private void typeChanged() {
+	private void typeChanged(boolean setExpiration) {
 		String val = iType.getWidget().getValue(iType.getWidget().getSelectedIndex());
 		iPanel.getRowFormatter().setVisible(iStudentsLine, "individual".equals(val));
 		iPanel.getRowFormatter().setVisible(iCourseLine, "course".equals(val));
@@ -659,8 +659,8 @@ public class ReservationEdit extends Composite {
 		} else {
 			iLimit.getWidget().setReadOnly(false);
 		}
-		if (iExpirations != null) {
-			iExpirationDate.getWidget().setValue(iExpirations.getExpirationDate(val));
+		if (setExpiration && iExpirations != null) {
+			iExpirationDate.getWidget().setValueInServerTimeZone(iExpirations.getExpirationDate(val));
 		}
 	}
 	
@@ -718,7 +718,7 @@ public class ReservationEdit extends Composite {
 	public void populate() {
 		if (iReservation == null) return;
 		iLimit.getWidget().setValue(iReservation.getLimit() == null ? "" : iReservation.getLimit().toString());
-		iExpirationDate.getWidget().setValue(iReservation.getExpirationDate());
+		iExpirationDate.getWidget().setValueInServerTimeZone(iReservation.getExpirationDate());
 		for (Clazz c: iReservation.getClasses()) {
 			ClassSelection s = iClasses.get(c.getId());
 			if (s != null) {
@@ -768,7 +768,7 @@ public class ReservationEdit extends Composite {
 				iClassifications.setItemSelected(i, selected);
 			}
 		}
-		typeChanged();
+		typeChanged(false);
 		iType.setReadOnly(true);
 		iType.setText(iType.getWidget().getItemText(iType.getWidget().getSelectedIndex()));
 		computeLimit();
@@ -891,7 +891,7 @@ public class ReservationEdit extends Composite {
 			iExpirationDate.setErrorHint(MESSAGES.hintExpirationDateNotValid());
 			ok = false;
 		} else {
-			r.setExpirationDate(iExpirationDate.getWidget().getValue());
+			r.setExpirationDate(iExpirationDate.getWidget().getValueInServerTimeZone());
 			iExpirationDate.clearHint();
 		}
 		if (!"individual".equals(type)) {

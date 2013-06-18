@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.ToolBox;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
@@ -77,7 +78,7 @@ public class ReservationTable extends Composite {
 	protected static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	public static final GwtResources RESOURCES =  GWT.create(GwtResources.class);
 	private final ReservationServiceAsync iReservationService = GWT.create(ReservationService.class);
-	private static DateTimeFormat sDF = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sDF = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private Long iOfferingId = null;
 	
 	private SimpleForm iReservationPanel;
