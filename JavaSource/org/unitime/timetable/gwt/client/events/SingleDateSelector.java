@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.aria.AriaTextBox;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeWidget;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
@@ -766,7 +767,7 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 			if (iDay <= 0 || iDay > iDays.size()) return null;
 			return DateTimeFormat.getFormat("yyyy/MM/dd").parse(iYear + "/" + iMonth + "/" + iDay);
 		}
-
+		
 		@Override
 		public void setValue(Date value) {
 			setValue(value, false);
@@ -819,6 +820,14 @@ public class SingleDateSelector extends UniTimeWidget<AriaTextBox> implements Ha
 		}
 		if (fireEvents)
 			ValueChangeEvent.fire(this, value);
+	}
+	
+	public void setValueInServerTimeZone(Date value) {
+		setValue(ServerDateTimeFormat.toLocalDate(value));
+	}
+	
+	public Date getValueInServerTimeZone() {
+		return ServerDateTimeFormat.toServerDate(getValue());
 	}
 	
 	@Override
