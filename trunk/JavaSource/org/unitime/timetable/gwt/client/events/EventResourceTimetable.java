@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox;
 import org.unitime.timetable.gwt.client.widgets.IntervalSelector;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
@@ -110,7 +111,6 @@ import com.google.gwt.event.logical.shared.SelectionHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
@@ -143,7 +143,6 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
-	private static DateTimeFormat sDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	
 	private SimplePanel iRootPanel;
 	
@@ -1896,10 +1895,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	public SessionMonth.Flag getDateFlag(EventType type, Date date) {
 		if (iSessionMonths == null || iSessionMonths.isEmpty()) return null;
 		if (date == null) return null;
-		int m = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
+		int m = Integer.parseInt(ServerDateTimeFormat.getFormat("MM").format(date));
 		for (SessionMonth month: iSessionMonths)
 			if (m == month.getMonth() + 1) {
-				int d = Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1;
+				int d = Integer.parseInt(ServerDateTimeFormat.getFormat("dd").format(date)) - 1;
 				if (month.hasFlag(d, SessionMonth.Flag.FINALS) && type != EventType.FinalExam) return SessionMonth.Flag.FINALS;
 				if (month.hasFlag(d, SessionMonth.Flag.BREAK)) return SessionMonth.Flag.BREAK;
 				if (month.hasFlag(d, SessionMonth.Flag.WEEKEND)) return SessionMonth.Flag.WEEKEND;

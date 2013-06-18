@@ -31,6 +31,7 @@ import org.unitime.timetable.gwt.client.widgets.ImageLink;
 import org.unitime.timetable.gwt.client.widgets.LoadingWidget;
 import org.unitime.timetable.gwt.client.widgets.P;
 import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.ServerDateTimeFormat;
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
@@ -80,7 +81,7 @@ public class EventDetail extends Composite {
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
 	private static final GwtResources RESOURCES = GWT.create(GwtResources.class);
 	private static DateTimeFormat sTimeStampFormat = DateTimeFormat.getFormat(CONSTANTS.timeStampFormat());
-	private static DateTimeFormat sEventDateFormat = DateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
+	private static DateTimeFormat sEventDateFormat = ServerDateTimeFormat.getFormat(CONSTANTS.eventDateFormat());
 	private EventInterface iEvent = null;
 	
 	private SimpleForm iForm;
