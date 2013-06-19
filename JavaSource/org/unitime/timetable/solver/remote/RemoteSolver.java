@@ -254,6 +254,11 @@ public class RemoteSolver {
     		RemoteSolverServer.query(new Object[]{"refreshSolution",solutionId});
     }
     
+    public static void refreshExamSolution(Long sessionId, Long examTypeId) throws Exception {
+    	if (sInitialized)
+    		RemoteSolverServer.query(new Object[]{"refreshExamSolution", sessionId, examTypeId});
+    }
+    
 	public static void init(Properties properties, String url) throws Exception {
 		if (sInitialized) return;
 		
