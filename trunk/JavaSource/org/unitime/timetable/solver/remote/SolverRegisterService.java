@@ -42,6 +42,7 @@ import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.base._BaseRootDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
@@ -365,6 +366,14 @@ public class SolverRegisterService extends Thread {
                 if ("refreshSolution".equals(cmd[0])) {
                     try {
                         Solution.refreshSolution((Long)cmd[1]);
+                    } finally {
+                        _BaseRootDAO.closeCurrentThreadSessions();
+                    }
+                    return null;
+                }
+                if ("refreshExamSolution".equals(cmd[0])) {
+                    try {
+                        ExamType.refreshSolution((Long)cmd[1], (Long)cmd[2]);
                     } finally {
                         _BaseRootDAO.closeCurrentThreadSessions();
                     }

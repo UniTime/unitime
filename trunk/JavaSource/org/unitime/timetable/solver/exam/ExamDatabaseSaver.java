@@ -45,6 +45,7 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.StudentDAO;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
+import org.unitime.timetable.solver.remote.RemoteSolver;
 
 import net.sf.cpsolver.exam.model.Exam;
 import net.sf.cpsolver.exam.model.ExamPlacement;
@@ -76,6 +77,14 @@ public class ExamDatabaseSaver extends ExamSaver {
             tx = hibSession.beginTransaction();
             saveSolution(hibSession);
             tx.commit();
+            
+            iProgress.setPhase("Refreshing solution ...", 1);
+            try {
+            	RemoteSolver.refreshExamSolution(iSessionId, iExamTypeId);
+            	iProgress.incProgress();
+            } catch (Exception e) {
+                iProgress.warn("Unable to refresh solution, reason:"+e.getMessage(),e);
+            }
         } catch (Exception e) {
             if (tx!=null) tx.rollback();
             iProgress.fatal("Unable to save a solution, reason: "+e.getMessage(),e);

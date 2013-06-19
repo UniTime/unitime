@@ -22,6 +22,7 @@ package org.unitime.timetable.model;
 import java.util.List;
 import java.util.TreeSet;
 
+import org.hibernate.SessionFactory;
 import org.unitime.localization.impl.Localization;
 import org.unitime.localization.messages.ExaminationMessages;
 import org.unitime.timetable.model.base.BaseExamType;
@@ -78,4 +79,27 @@ public class ExamType extends BaseExamType implements Comparable<ExamType> {
 					.setLong("typeId", getUniqueId()).setLong("sessionId", sessionId).setCacheable(true).uniqueResult()).longValue() > 0;
 		}
 	}
+	
+	public static void refreshSolution(Long sessionId, Long examTypeId) {
+        org.hibernate.Session hibSession = ExamTypeDAO.getInstance().getSession(); 
+        SessionFactory hibSessionFactory = hibSession.getSessionFactory(); 
+        for (Long examId: (List<Long>)hibSession.createQuery(
+        		"select x.uniqueId from Exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId")
+        		.setLong("sessionId", sessionId)
+        		.setLong("examTypeId", examTypeId)
+        		.setCacheable(true).list()) {
+            hibSessionFactory.getCache().evictEntity(Exam.class, examId);
+            hibSessionFactory.getCache().evictCollection(Exam.class.getName()+".assignedRooms", examId);
+            hibSessionFactory.getCache().evictCollection(Exam.class.getName()+".conflicts", examId);
+        }
+        for (Long eventId: (List<Long>)hibSession.createQuery(
+        		"select e.uniqueId from ExamEvent e inner join e.exam x where x.session.uniqueId = :sessionId and x.examType.uniqueId = :examTypeId")
+        		.setLong("sessionId", sessionId)
+        		.setLong("examTypeId", examTypeId)
+        		.setCacheable(true).list()) {
+            hibSessionFactory.getCache().evictEntity(Event.class, eventId);
+            hibSessionFactory.getCache().evictCollection(Event.class.getName()+".meetings", eventId);
+        }
+        hibSessionFactory.getCache().evictDefaultQueryRegion();
+   }
 }
