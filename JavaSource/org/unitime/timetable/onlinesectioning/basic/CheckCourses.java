@@ -75,7 +75,7 @@ public class CheckCourses implements OnlineSectioningAction<Collection<String>> 
 	
 	public CourseInfo lookup(OnlineSectioningServer server, Student student, String course) {
 		CourseInfo c = server.getCourseInfo(course);
-		if (iMatcher != null && !iMatcher.match(c)) {
+		if (c != null && iMatcher != null && !iMatcher.match(c)) {
 			if (student != null) {
 				for (Request r: student.getRequests())
 					if (r instanceof CourseRequest) {
