@@ -266,7 +266,7 @@ public class AssignedClassesAction extends Action {
             	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getPref()) + " " + ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():
             	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getPref()) + " " +	ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
             	    			rooms,
-            	    			ca.getInstructorHtml(),
+            	    			ca.getInstructorName(),
             	    			dispNumberPdf(ci.getNrStudentConflicts())+sb
             	    			},
             	             new Comparable[] {
@@ -288,7 +288,7 @@ public class AssignedClassesAction extends Action {
             	    				"@@COLOR " + PreferenceLevel.int2color(ca.getAssignedTime().getPref()) + " " + ca.getAssignedTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime():
             	    				"@@COLOR " + PreferenceLevel.int2color(ca.getTime().getPref()) + " " +	ca.getTime().getDaysName()+" "+ca.getTime().getStartTime()+" - "+ca.getTime().getEndTime()),
     	    					rooms,
-    	    					ca.getInstructorHtml(),
+    	    					ca.getInstructorName(),
     	    					dispNumberPdf(ci.getNrStudentConflicts())+sb,
     	    					dispNumberPdf(ci.getTimePreference()),
     	    					dispNumberPdf(ci.sumRoomPreference()),
@@ -381,7 +381,7 @@ public class AssignedClassesAction extends Action {
             	    			ca.getDaysHtml(),
             	    			ca.getTime().toHtml(false,false,true,true),
             	    			rooms,
-            	    			ca.getInstructorHtml(),
+            	    			ca.getInstructorName(),
             	    			ClassAssignmentDetails.dispNumber(ci.getNrStudentConflicts())+sb
             	    			},
             	             new Comparable[] {
@@ -399,7 +399,7 @@ public class AssignedClassesAction extends Action {
     	    					ca.getDaysHtml(),
     	    					ca.getTime().toHtml(false,false,true,true),
     	    					rooms,
-    	    					ca.getInstructorHtml(),
+    	    					ca.getInstructorName(),
     	    					ClassAssignmentDetails.dispNumber(ci.getNrStudentConflicts())+sb,
             	                ClassAssignmentDetails.dispNumber(ci.getTimePreference()),
             	                ClassAssignmentDetails.dispNumber(ci.sumRoomPreference()),
