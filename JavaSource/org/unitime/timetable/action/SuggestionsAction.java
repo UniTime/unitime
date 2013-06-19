@@ -291,7 +291,9 @@ public class SuggestionsAction extends Action {
 		
         if (ca!=null) {
         	String assignment = getAssignmentTable(sessionContext, solver, ca, true, newAssignment);
-        	request.setAttribute("Suggestions.assignment",ca.getClazz().getName());
+        	request.setAttribute("Suggestions.assignment",
+        			"<a href='classDetail.do?cid=" + ca.getClazz().getClassId() + "' target='_blank' class='l8' " +
+        				"title='Open Class Detail for " + ca.getClassName() + " in a new window.'>" + ca.getClassName() + "</a>");
         	if (assignment!=null)
         		request.setAttribute("Suggestions.assignmentInfo", assignment);
         }

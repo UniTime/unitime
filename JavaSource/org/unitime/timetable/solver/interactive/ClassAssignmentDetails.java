@@ -653,7 +653,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 			return getId().equals(((InstructorInfo)o).getId());
 		}
 		public String toHtml() {
-			return iName;
+			return "<a href='instructorDetail.do?instructorId=" + getId() + "' target='_blank' class='noFancyLinks' " +
+					"title='Open Instructor Detail for " + getName() + " in a new window.'>" + getName() + "</a>";
 		}
 	}
 	
