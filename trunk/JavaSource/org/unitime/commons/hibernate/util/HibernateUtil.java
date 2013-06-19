@@ -393,6 +393,8 @@ public class HibernateUtil {
                     }
                 } catch (ClassNotFoundException e) {}
             }
+            hibSessionFactory.getCache().evictEntityRegions();
+            hibSessionFactory.getCache().evictCollectionRegions();
         } else {
             ClassMetadata classMetadata = hibSessionFactory.getClassMetadata(persistentClass);
             hibSessionFactory.getCache().evictEntityRegion(persistentClass);
@@ -406,8 +408,10 @@ public class HibernateUtil {
                 }
             }
         }
-        if (evictQueries)
+        if (evictQueries) {
             hibSessionFactory.getCache().evictQueryRegions();
+            hibSessionFactory.getCache().evictDefaultQueryRegion();
+        }
     }
     
     public static Class<?> getDialect() {
