@@ -142,10 +142,11 @@ public class AssignedExamsAction extends Action {
                 String btbStr = (btb<=0 && dbtb<=0?"":html?"<font color='"+PreferenceLevel.prolog2color("1")+"'>"+btb+(dbtb>0?" (d:"+dbtb+")":"")+"</font>":(color ?"@@COLOR " + PreferenceLevel.prolog2color("1") + " " : "") +btb+(dbtb>0?" (d:"+dbtb+")":""));
                 
                 String rooms = "";
-                for (ExamRoomInfo room : exam.getRooms()) {
-                    if (rooms.length()>0) rooms += (html || !color ? ", " : "@@COLOR 000000 , ");
-                    rooms += (html ? room.toString(): (color ? "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " ": "") + room.getName());
-                }
+                if (exam.getRooms() != null)
+                    for (ExamRoomInfo room : exam.getRooms()) {
+                        if (rooms.length()>0) rooms += (html || !color ? ", " : "@@COLOR 000000 , ");
+                        rooms += (html ? room.toString(): (color ? "@@COLOR " + PreferenceLevel.prolog2color(PreferenceLevel.int2prolog(room.getPreference())) + " ": "") + room.getName());
+                    }
                 
                 String distConfs = "";
                 for (DistributionConflict dist: exam.getDistributionConflicts()) {
