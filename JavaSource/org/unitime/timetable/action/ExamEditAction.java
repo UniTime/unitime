@@ -440,6 +440,7 @@ public class ExamEditAction extends PreferencesAction {
             add = true;
             exam = new Exam();
             exam.setSession(SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId()));
+            exam.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
         }
         
         Set s = exam.getPreferences();
@@ -453,8 +454,6 @@ public class ExamEditAction extends PreferencesAction {
             } else
                 i.remove();
         }
-
-        exam.setExamType(ExamTypeDAO.getInstance().get(frm.getExamType()));
 
         super.doUpdate(request, frm, exam, s, false);
         
