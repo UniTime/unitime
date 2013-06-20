@@ -116,6 +116,7 @@
 					</html:select>
 				</logic:empty>
 				<logic:notEmpty name="<%=frmName%>" property="examId">
+					<html:hidden property="examType"/>
 					<logic:iterate name="examTypes" scope="request" id="type">
 						<bean:define name="type" property="uniqueId" id="typeId" type="Long"/>
 						<logic:equal name="<%=frmName%>" property="examType" value="<%=typeId.toString()%>">
