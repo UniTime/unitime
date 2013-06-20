@@ -51,6 +51,7 @@ import org.unitime.timetable.model.RoomDept;
 import org.unitime.timetable.model.RoomFeature;
 import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
+import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.TravelTime;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
@@ -585,12 +586,12 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 			} else if ("type".equals(attr)) {
 				return eq(getLocation().getRoomType().getReference(), term) || has(getLocation().getRoomType().getLabel(), term);
 			} else if ("room".equals(attr)) {
-				return eq(getLocation().getLabel(), term) || has(getLocation().getRoomType().getLabel(), term);
+				return has(getLocation().getLabel(), term) || has(getLocation().getDisplayName(), term);
 			} else if ("starts".equals(attr)) {
 				return getLocation().getLabel().toLowerCase().startsWith(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().startsWith(term.toLowerCase()));
 			} else if ("contains".equals(attr)) {
 				return getLocation().getLabel().toLowerCase().contains(term.toLowerCase()) || (getLocation() instanceof Room && ((Room)getLocation()).getRoomNumber().toLowerCase().contains(term.toLowerCase()));
-			} else if ("building".equals(attr)) {
+			} else if ("building".equals(attr) || "bldg".equals(attr)) {
 				if (getLocation() instanceof Room) {
 					Building building = ((Room)getLocation()).getBuilding();
 					return eq(building.getAbbreviation(), term) || has(building.getName(), term);
@@ -623,6 +624,30 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 					} catch (NumberFormatException e) {}
 				}
 				return min <= getLocation().getCapacity() && getLocation().getCapacity() <= max;
+			} else if ("flag".equals(attr) && "event".equalsIgnoreCase(term)) {
+				return getLocation().getEventDepartment() != null && getLocation().getEventDepartment().isAllowEvents() && getLocation().getEffectiveEventStatus() != RoomTypeOption.Status.NoEventManagement;
+			} else if ("department".equals(attr) || "dept".equals(attr) || "event".equals(attr) || "control".equals(attr)) {
+				if ("midterm".equalsIgnoreCase(term))
+					return getLocation().hasMidtermExamsEnabled();
+				else if ("final".equalsIgnoreCase(term))
+					return getLocation().hasFinalExamsEnabled();
+				else if ("event".equalsIgnoreCase(term))
+					return getLocation().getEventDepartment() != null && getLocation().getEventDepartment().isAllowEvents() && getLocation().getEffectiveEventStatus() != RoomTypeOption.Status.NoEventManagement;
+				else if ("managed".equals(term))
+					return false; // not supported
+				else {
+					if (!"control".equals(attr))
+						if (getLocation().getEventDepartment() != null && (eq(getLocation().getEventDepartment().getDeptCode(), term) || eq(getLocation().getEventDepartment().getAbbreviation(), term) || has(getLocation().getEventDepartment().getName(), term)))
+							return true;
+					if (!"event".equals(attr))
+						for (RoomDept rd: getLocation().getRoomDepts()) {
+							if ("control".equals(attr) && !rd.isControl()) continue;
+							if (eq(rd.getDepartment().getDeptCode(), term) || eq(rd.getDepartment().getAbbreviation(), term) || has(rd.getDepartment().getName(), term)
+									|| (rd.getDepartment().isExternalManager() && (eq(rd.getDepartment().getExternalMgrAbbv(), term) || has(rd.getDepartment().getExternalMgrLabel(), term))))
+								return true;
+						}
+					return false;
+				}
 			} else {
 				return true;
 			}
