@@ -217,7 +217,7 @@ public class Exams extends BodyTagSupport {
                             if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
                                 MidtermPeriodPreferenceModel epx = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType());
                                 epx.load(exam);
-                                perPref+=epx.toString();
+                                perPref+=epx.toString(true);
                             } else if (timeText) {
                             	perPref += exam.getEffectivePrefHtmlForPrefType(ExamPeriodPref.class);
                             } else {
