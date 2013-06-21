@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.Client.GwtPageChangeEvent;
 import org.unitime.timetable.gwt.client.Client.GwtPageChangedHandler;
 import org.unitime.timetable.gwt.client.aria.AriaStatus;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 
 import com.google.gwt.animation.client.Animation;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -132,13 +133,13 @@ public class UniTimeNotifications {
 	
 	public static void info(String text) {
 		AriaStatus.getInstance().setText(text);
-		sLogger.log(Level.FINE, text);
+		sLogger.log(Level.FINEST, text);
 		getInstance().addNotification(new Notification(text, "unitime-NotificationInfo"));
 	}
 	
 	public static void warn(String text) {
 		AriaStatus.getInstance().setText(text);
-		sLogger.log(Level.INFO, text);
+		sLogger.log(Level.FINER, text);
 		getInstance().addNotification(new Notification(text, "unitime-NotificationWarning"));
 	}
 	
@@ -150,7 +151,20 @@ public class UniTimeNotifications {
 
 	public static void error(String text, Throwable t) {
 		AriaStatus.getInstance().setText(text);
-		sLogger.log(t == null ? Level.INFO : Level.WARNING, text, ToolBox.unwrap(t));
+		if (t == null) {
+			sLogger.log(Level.FINE, text);
+		} else {
+			t = ToolBox.unwrap(t);
+			if (t instanceof GwtRpcException) {
+				GwtRpcException e = (GwtRpcException)t;
+				if (e.hasCause())
+					sLogger.log(Level.WARNING, text, e.getCause());
+				else
+					sLogger.log(Level.INFO, text);
+			} else {
+				sLogger.log(Level.SEVERE, text, t);
+			}
+		}
 		getInstance().addNotification(new Notification(text, "unitime-NotificationError"));
 	}
 	

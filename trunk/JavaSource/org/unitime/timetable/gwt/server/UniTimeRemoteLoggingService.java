@@ -51,12 +51,14 @@ public class UniTimeRemoteLoggingService extends RemoteServiceServlet implements
 			Logger logger = Logger.getLogger(record.getLoggerName());
 			if (record.getLevel().intValue() >= Level.SEVERE.intValue()) {
 				logger.error(record.getMessage(), record.getThrown());
-			} else if (record.getLevel().intValue() > Level.WARNING.intValue()) {
+			} else if (record.getLevel().intValue() >= Level.WARNING.intValue()) {
 				logger.warn(record.getMessage(), record.getThrown());
-			} else if (record.getLevel().intValue() > Level.INFO.intValue()) {
+			} else if (record.getLevel().intValue() >= Level.INFO.intValue()) {
 				logger.info(record.getMessage(), record.getThrown());
-			} else {
+			} else if (record.getLevel().intValue() >= Level.FINE.intValue()) {
 				logger.debug(record.getMessage(), record.getThrown());
+			} else {
+				logger.trace(record.getMessage(), record.getThrown());
 			}
 			return null;
 		} catch (Exception e) {
