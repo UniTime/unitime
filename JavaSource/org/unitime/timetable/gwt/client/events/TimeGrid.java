@@ -947,10 +947,10 @@ public class TimeGrid extends Composite {
 		    boolean anchor = false;
 		    for (; target != null; target = DOM.getParent(target)) {
 		    	String tag = DOM.getElementProperty(target, "tagName");
-		    	if (tag.equalsIgnoreCase("a")) {
+		    	if ("a".equalsIgnoreCase(tag)) {
 		    		anchor = true;
 		    		break;
-		    	} else if (tag.equalsIgnoreCase("div")) {
+		    	} else if ("div".equalsIgnoreCase(tag)) {
 		    		break;
 		    	}
 		    }
