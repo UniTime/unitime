@@ -877,9 +877,9 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 		} catch (Exception e) {
 			if (e instanceof SectioningException) {
 				if (e.getCause() == null) {
-					h.info("Exception failed: " + e.getMessage());
+					h.info("Execution failed: " + e.getMessage());
 				} else {
-					h.warn("Exception failed: " + e.getMessage(), e.getCause());
+					h.warn("Execution failed: " + e.getMessage(), e.getCause());
 				}
 			} else {
 				h.error("Execution failed: " + e.getMessage(), e);
