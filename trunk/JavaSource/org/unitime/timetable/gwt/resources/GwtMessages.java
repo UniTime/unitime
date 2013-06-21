@@ -2791,4 +2791,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("&nbsp;&nbsp;&nbsp;\u2307")
 	String repeatingSymbol();
+	
+	@DefaultMessage("Bad additional email address {0}: {1}.")
+	String badEmailAddress(String address, String reason); 
 }

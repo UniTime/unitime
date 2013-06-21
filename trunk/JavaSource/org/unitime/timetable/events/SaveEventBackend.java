@@ -29,11 +29,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
 import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.command.server.GwtRpcServlet;
@@ -100,6 +104,22 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			}
 		} else { // existing event
 			context.checkPermission(request.getEvent().getId(), "Event", Right.EventEdit);
+		}
+		
+		// Check additional emails
+		if (request.getEvent().hasEmail()) {
+			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
+			for (String address: request.getEvent().getEmail().split("[\n,]")) {
+				String email = address.trim();
+				if (email.isEmpty()) continue;
+				if (suffix != null && email.indexOf('@') < 0)
+					email += suffix;
+				try {
+					new InternetAddress(email, true);
+				} catch (AddressException e) {
+					throw new GwtRpcException(MESSAGES.badEmailAddress(address, e.getMessage()));
+				}
+			}
 		}
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
