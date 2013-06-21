@@ -580,7 +580,15 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			}
 			return ret;
 		} catch (Exception e) {
-			h.error("Execution failed: " + e.getMessage(), e);
+			if (e instanceof SectioningException) {
+				if (e.getCause() == null) {
+					h.info("Exception failed: " + e.getMessage());
+				} else {
+					h.warn("Exception failed: " + e.getMessage(), e.getCause());
+				}
+			} else {
+				h.error("Execution failed: " + e.getMessage(), e);
+			}
 			if (h.getAction() != null) {
 				h.getAction().setResult(OnlineSectioningLog.Action.ResultType.FAILURE);
 				if (e.getCause() != null && e instanceof SectioningException)
