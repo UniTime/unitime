@@ -475,7 +475,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				if ((e instanceof SpecialEvent || e instanceof CourseEvent) && (meeting.getApprovalStatus() == ApprovalStatus.Approved || meeting.getApprovalStatus() == ApprovalStatus.Pending)) {
 					if (m.getLocation().getEventDepartment() != null && m.getLocation().getEventDepartment().isAllowEvents()) {
 						String message = m.getLocation().getEventMessage();
-						if (message != null) {
+						if (message != null && !message.isEmpty()) {
 							MeetingConflictInterface conflict = new MeetingConflictInterface();
 							conflict.setName(message);
 							conflict.setType(EventInterface.EventType.Message);
