@@ -39,6 +39,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.fileupload.FileItem;
+import org.apache.log4j.Logger;
 import org.unitime.commons.Email;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
@@ -67,6 +68,7 @@ public class EventEmail {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static Map<Long, String> sMessageId = new Hashtable<Long, String>();
+	private static Logger sLog = Logger.getLogger(EventEmail.class);
 	
 	private SaveOrApproveEventRpcRequest iRequest = null;
 	private SaveOrApproveEventRpcResponse iResponse = null;
@@ -210,7 +212,7 @@ public class EventEmail {
 			response().info(MESSAGES.infoConfirmationEmailSent(event().hasContact() ? event().getContact().getName(MESSAGES) : "?"));
 		} catch (Exception e) {
 			response().error(MESSAGES.failedToSendConfirmationEmail(e.getMessage()));
-			e.printStackTrace();
+			sLog.warn(MESSAGES.failedToSendConfirmationEmail(e.getMessage()), e);
 		}
 	}
 	

@@ -23,7 +23,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class GwtRpcException extends RuntimeException implements IsSerializable {
 	private static final long serialVersionUID = 1L;
-	private Throwable iCause;
+	private Throwable iCause = null;
 
 	public GwtRpcException() {
 		super();
@@ -37,6 +37,10 @@ public class GwtRpcException extends RuntimeException implements IsSerializable 
 		super(message, cause);
 		if (cause instanceof IsSerializable)
 			iCause = cause;
+	}
+	
+	public boolean hasCause() {
+		return iCause != null || super.getCause() != null;
 	}
 	
 	@Override

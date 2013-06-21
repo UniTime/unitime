@@ -32,9 +32,9 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFilterRpcRequest;
@@ -139,7 +139,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 		return false;
 	}
 	
-	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request, EventContext context) throws EventException {
+	public GwtRpcResponseList<EventInterface> findEvents(EventLookupRpcRequest request, EventContext context) {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
@@ -660,7 +660,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
                     		.query(hibSession).list());
                     break;
 				default:
-					throw new EventException("Resource type " + request.getResourceType().getLabel() + " not supported.");
+					throw new GwtRpcException("Resource type " + request.getResourceType().getLabel() + " not supported.");
 				}
 				
 				GwtRpcResponseList<EventInterface> ret = new GwtRpcResponseList<EventInterface>();
@@ -1650,11 +1650,11 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			} finally {
 				hibSession.close();
 			}
-		} catch (EventException e) {
+		} catch (GwtRpcException e) {
 			throw e;
 		} catch (Exception e) {
 			sLog.error("Unable to find events for " + request.getResourceType().getLabel() + " " + request.getResourceId() + ": " + e.getMessage(), e);
-			throw new EventException("Unable to find events for " + request.getResourceType().getLabel() + " " + request.getResourceId() + ": " + e.getMessage());
+			throw new GwtRpcException("Unable to find events for " + request.getResourceType().getLabel() + " " + request.getResourceId() + ": " + e.getMessage(), e);
 		}
 	}
 	

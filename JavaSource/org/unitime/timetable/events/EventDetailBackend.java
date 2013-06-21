@@ -30,8 +30,8 @@ import java.util.TreeSet;
 
 import net.sf.cpsolver.coursett.model.TimeLocation;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
@@ -78,7 +78,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 	public EventInterface execute(EventDetailRpcRequest request, EventContext context) {
 		Event event = EventDAO.getInstance().get(request.getEventId());
 		if (event == null)
-			throw new EventException("No event with id " + request.getEventId() + " found.");
+			throw new GwtRpcException("No event with id " + request.getEventId() + " found.");
 		
 		context.checkPermission(event, Right.EventDetail);
 		
@@ -87,7 +87,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		return detail;
 	}
 	
-	public static EventInterface getEventDetail(Session session, Event e, EventContext context) throws EventException {
+	public static EventInterface getEventDetail(Session session, Event e, EventContext context) throws GwtRpcException {
 		org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 		EventInterface event = new EventInterface();
 		event.setId(e.getUniqueId());

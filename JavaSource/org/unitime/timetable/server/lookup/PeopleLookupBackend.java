@@ -38,10 +38,10 @@ import org.springframework.ldap.core.AttributesMapper;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.LookupException;
 import org.unitime.timetable.gwt.shared.PersonInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface.LookupRequest;
 import org.unitime.timetable.interfaces.ExternalUidTranslation;
@@ -86,10 +86,10 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 	private Long getAcademicSessionId(SessionContext context) {
 		if (context == null) return null;
 		UserContext user = context.getUser();
-		if (user == null) throw new LookupException("not authenticated");
-		if (user.getCurrentAuthority() == null) throw new LookupException("insufficient rights");
+		if (user == null) throw new GwtRpcException("not authenticated");
+		if (user.getCurrentAuthority() == null) throw new GwtRpcException("insufficient rights");
 		Long sessionId = user.getCurrentAcademicSessionId();
-		if (sessionId == null) throw new LookupException("academic session not selected");
+		if (sessionId == null) throw new GwtRpcException("academic session not selected");
 		return sessionId;
 	}
 
@@ -146,10 +146,11 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 	        	return new GwtRpcResponseList<PersonInterface>(ret.subList(0, maxResults));
 	        }
 			return ret;
+		} catch (GwtRpcException e) {
+			throw e;
 		} catch (Exception e) {
-			if (e instanceof LookupException) throw (LookupException)e;
 			sLog.error("Lookup failed: " + e.getMessage(), e);
-			throw new LookupException("Lookup failed: " + e.getMessage());
+			throw new GwtRpcException("Lookup failed: " + e.getMessage());
 		}
 	}
 	
