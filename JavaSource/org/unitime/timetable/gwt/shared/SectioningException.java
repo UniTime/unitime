@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
  */
-public class SectioningException extends RuntimeException implements IsSerializable {
+public class SectioningException extends GwtRpcException implements IsSerializable {
 	private static final long serialVersionUID = 1L;
 	
 	public SectioningException() {

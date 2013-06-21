@@ -19,12 +19,14 @@
 */
 package org.unitime.timetable.gwt.shared;
 
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 /**
  * @author Tomas Muller
  */
-public class PageAccessException extends RuntimeException implements IsSerializable {
+public class PageAccessException extends GwtRpcException implements IsSerializable {
 	private static final long serialVersionUID = 3443131654463685075L;
 
 	public PageAccessException() {
@@ -38,5 +40,5 @@ public class PageAccessException extends RuntimeException implements IsSerializa
 	public PageAccessException(String message, Throwable cause) {
 		super(message, cause);
 	}
-	
+
 }
