@@ -131,7 +131,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
                     .setLong("offeringId", relatedObject.getUniqueId())
                     .setCacheable(true)
                     .list();
-        default : throw new RuntimeException("Unsupported related object type " + relatedObject.getType());
+        default : throw new GwtRpcException("Unsupported related object type " + relatedObject.getType());
         }
     }
 	

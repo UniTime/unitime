@@ -134,7 +134,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 			} catch (GwtRpcException e) {
 				throw e;
 			} catch (Exception e) {
-				throw new GwtRpcException(MESSAGES.failedToResetPassword(e.getMessage()));
+				throw new GwtRpcException(MESSAGES.failedToResetPassword(e.getMessage()), e);
 			}
 		} else {
 			try {
@@ -184,7 +184,7 @@ public class PasswordChangeBackend implements GwtRpcImplementation<PasswordChang
 					
 
 			} catch (NoSuchAlgorithmException e) {
-				throw new GwtRpcException(MESSAGES.failedToChangePassword(e.getMessage()));
+				throw new GwtRpcException(MESSAGES.failedToChangePassword(e.getMessage()), e);
 			}
 		}
 		
