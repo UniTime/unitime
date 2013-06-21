@@ -44,7 +44,7 @@
 	<TR>
 		<TD>
 			<Table width='100%' cellspacing="0" cellpadding="3">
-				<bean:write name="sponsoringOrgListForm" property="table" filter="false"/>
+				<bean:write name="table" scope="request" filter="false"/>
 			</Table>
 		</TD>
 	</TR>
