@@ -34,8 +34,6 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplementation;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
-import org.unitime.timetable.gwt.shared.EventException;
-import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Session;
@@ -61,7 +59,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		if (command.hasTerm()) {
 			try {
 				selected = findSession(hibSession, command.getTerm());
-			} catch (EventException e) {}
+			} catch (GwtRpcException e) {}
 		} else {
 			Long sessionId = (context.isAuthenticated() && context.getUser().getCurrentAuthority() != null ? context.getUser().getCurrentAcademicSessionId() : null);
 			if (sessionId != null)
@@ -70,7 +68,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		if (selected == null)
 			try {
 				selected = findSession(hibSession, "current");
-			} catch (EventException e) {}
+			} catch (GwtRpcException e) {}
 		
 		TreeSet<Session> sessions = new TreeSet<Session>();
 		for (Session session: (List<Session>)hibSession.createQuery("select s from Session s").list()) {
@@ -138,7 +136,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 		return ret;
 	}
 	
-	public static Session findSession(org.hibernate.Session hibSession, String term) throws EventException, PageAccessException {
+	public static Session findSession(org.hibernate.Session hibSession, String term) {
 		try {
 			Session ret = SessionDAO.getInstance().get(Long.parseLong(term), hibSession);
 			if (ret != null) return ret;
@@ -164,7 +162,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 				}
 			}
 		}
-		throw new EventException("Academic session " + term + " not found.");
+		throw new GwtRpcException("Academic session " + term + " not found.");
 	}
 
 }

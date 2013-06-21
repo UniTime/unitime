@@ -99,11 +99,18 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 		} catch (Throwable t) {
 			// re-throw exception as GwtRpcException or IsSerializable runtime exception
 			if (t instanceof GwtRpcException) {
-				sLog.info("Seen server exception: " + t.getMessage(), t);
-				throw (GwtRpcException)t;
+				GwtRpcException e = (GwtRpcException)t;
+				if (e.hasCause())
+					sLog.warn("Seen server exception: " + e.getMessage(), e.getCause());
+				else
+					sLog.info("Seen server exception: " + e.getMessage());
+				throw e;
 			}
 			if (t instanceof IsSerializable) {
-				sLog.warn("Seen server exception: " + t.getMessage(), t);
+				if (t.getCause() != null)
+					sLog.error("Seen server exception: " + t.getMessage(), t);
+				else
+					sLog.warn("Seen server exception: " + t.getMessage(), t);
 				throw new GwtRpcException(t.getMessage(), t);
 			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
@@ -134,11 +141,18 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 			
 			// re-throw exception as GwtRpcException or IsSerializable runtime exception
 			if (t instanceof GwtRpcException) {
-				sLog.info("Seen server exception: " + t.getMessage(), t);
-				throw (GwtRpcException)t;
+				GwtRpcException e = (GwtRpcException)t;
+				if (e.hasCause())
+					sLog.warn("Seen server exception: " + e.getMessage(), e);
+				else
+					sLog.info("Seen server exception: " + e.getMessage());
+				throw e;
 			}
 			if (t instanceof IsSerializable) {
-				sLog.warn("Seen server exception: " + t.getMessage(), t);
+				if (t.getCause() != null)
+					sLog.error("Seen server exception: " + t.getMessage(), t);
+				else
+					sLog.warn("Seen server exception: " + t.getMessage(), t);
 				throw new GwtRpcException(t.getMessage(), t);
 			}
 			sLog.error("Seen exception: " + t.getMessage(), t);
@@ -285,11 +299,18 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				log(iRequest, null, t, JProf.currentTimeMillis() - t0, iContext);
 				
 				// re-throw exception as GwtRpcException or IsSerializable runtime exception
+				// re-throw exception as GwtRpcException or IsSerializable runtime exception
 				if (t instanceof GwtRpcException) {
-					sLog.info("Seen server exception: " + t.getMessage(), t);
 					iException = (GwtRpcException)t;
-				} else  if (t instanceof IsSerializable) {
-					sLog.warn("Seen server exception: " + t.getMessage(), t);
+					if (iException.hasCause())
+						sLog.warn("Seen server exception: " + t.getMessage(), t.getCause());
+					else
+						sLog.info("Seen server exception: " + t.getMessage());
+				} else if (t instanceof IsSerializable) {
+					if (t.getCause() != null)
+						sLog.error("Seen server exception: " + t.getMessage(), t);
+					else
+						sLog.warn("Seen server exception: " + t.getMessage(), t);
 					iException = new GwtRpcException(t.getMessage(), t);
 				} else {
 					sLog.error("Seen exception: " + t.getMessage(), t);

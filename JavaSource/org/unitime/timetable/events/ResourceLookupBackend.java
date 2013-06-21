@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.TreeSet;
 
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
-import org.unitime.timetable.gwt.shared.EventException;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceLookupRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
@@ -66,7 +66,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 		return response;
 	}
 
-	public ResourceInterface findResource(Long sessionId, ResourceType type, String name) throws EventException {
+	public ResourceInterface findResource(Long sessionId, ResourceType type, String name) {
 		try {
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
 			try {
@@ -136,7 +136,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 							return ret;
 						}
 					}
-					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
+					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case SUBJECT:
 					List<SubjectArea> subjects = hibSession.createQuery("select s from SubjectArea s where s.session.uniqueId = :sessionId and " +
 							"lower(s.subjectAreaAbbreviation) = :name")
@@ -163,7 +163,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setName(course.getTitle() == null ? course.getCourseName() : course.getTitle());
 						return ret;
 					}
-					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
+					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case CURRICULUM:
 					List<Curriculum> curricula = hibSession.createQuery("select c from Curriculum c where c.department.session.uniqueId = :sessionId and " +
 							"lower(c.abbv) = :name or lower(c.name) = :name")
@@ -198,7 +198,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setName(classification.getCurriculum().getName() + " " + classification.getAcademicClassification().getName());
 						return ret;
 					}
-					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
+					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case DEPARTMENT:
 					List<Department> departments = hibSession.createQuery("select d from Department d where d.session.uniqueId = :sessionId and " +
 							"(lower(d.deptCode) = :name or lower(d.abbreviation) = :name)")
@@ -212,7 +212,7 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setName(department.getName());
 						return ret;
 					}
-					throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ".");
+					throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ".");
 				case PERSON:
 					List<Student> students = hibSession.createQuery("select s from Student s where s.session.uniqueId = :sessionId and " +
 							"s.externalUniqueId = :name or lower(s.email) = lower(:name)")
@@ -253,21 +253,21 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 						ret.setExternalId(contact.getExternalUniqueId());
 						return ret;
 					}
-					throw new EventException("No events found in " + academicSession.getLabel() + ".");
+					throw new GwtRpcException("No events found in " + academicSession.getLabel() + ".");
 				default:
-					throw new EventException("Resource type " + type.getLabel() + " not supported.");
+					throw new GwtRpcException("Resource type " + type.getLabel() + " not supported.");
 				}
 			} finally {
 				hibSession.close();
 			}
-		} catch (EventException e) {
+		} catch (GwtRpcException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new EventException("Unable to find a " + type.getLabel() + " named " + name + ": " + e.getMessage());
+			throw new GwtRpcException("Unable to find a " + type.getLabel() + " named " + name + ": " + e.getMessage(), e);
 		}
 	}
 	
-	public List<ResourceInterface> findResources(Long sessionId, ResourceType type, String query, int limit) throws EventException {
+	public List<ResourceInterface> findResources(Long sessionId, ResourceType type, String query, int limit) {
 		try {
 			if (query == null) query = "";
 			org.hibernate.Session hibSession = EventDAO.getInstance().getSession();
@@ -496,18 +496,18 @@ public class ResourceLookupBackend extends EventAction<ResourceLookupRpcRequest,
 					}
 					break;
 				default:
-					throw new EventException("Resource type " + type.getLabel() + " not supported.");
+					throw new GwtRpcException("Resource type " + type.getLabel() + " not supported.");
 				}
 				if (resources.isEmpty())
-					throw new EventException("No " + type.getLabel() + " " + query + " found.");
+					throw new GwtRpcException("No " + type.getLabel() + " " + query + " found.");
 				return resources;
 			} finally {
 				hibSession.close();
 			}
-		} catch (EventException e) {
+		} catch (GwtRpcException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new EventException("Failed to find resources: " + e.getMessage());
+			throw new GwtRpcException("Failed to find resources: " + e.getMessage(), e);
 		}
 	}
 
