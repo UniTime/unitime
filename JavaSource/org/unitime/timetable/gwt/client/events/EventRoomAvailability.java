@@ -259,7 +259,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 						}
 
-						final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 58, true, false, startHour, endHour);
+						final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 55, true, false, startHour, endHour);
 						grid.setResourceType(ResourceType.ROOM);
 						grid.setSelectedWeeks(weeks);
 						List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(iSelectedRooms);
@@ -320,7 +320,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
 						}
 
-						final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 58, true, false, startHour, endHour);
+						final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 55, true, false, startHour, endHour);
 						grid.setResourceType(ResourceType.ROOM);
 						grid.setSelectedWeeks(weeks);
 						List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(); rooms.add(room);
