@@ -577,7 +577,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 				HashMap<Long, String> colors = new HashMap<Long, String>();
 				
-				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 58, true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 55, true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 				tg.setResourceType(getResourceType());
 				tg.setSelectedWeeks(iWeekPanel.getSelected());
 				tg.setRoomResources(iRoomPanel.getSelected());
