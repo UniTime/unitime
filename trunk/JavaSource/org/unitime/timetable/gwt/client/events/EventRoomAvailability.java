@@ -32,6 +32,7 @@ import java.util.TreeSet;
 import org.unitime.timetable.gwt.client.Client;
 import org.unitime.timetable.gwt.client.Components;
 import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.ToolBox.Page;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSession;
 import org.unitime.timetable.gwt.client.events.AcademicSessionSelectionBox.AcademicSessionFilter;
 import org.unitime.timetable.gwt.client.events.AddMeetingsDialog.SortRoomsBy;
@@ -87,6 +88,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -226,6 +228,90 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			}
 		});
 		iHeader.setEnabled("add", false);
+		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent clickEvent) {
+				HashMap<Long, String> colors = new HashMap<Long, String>();
+				int[] days = new int[iSelectedDates.size()];
+				WeekInterface week = new WeekInterface();
+				week.setDayOfYear(iSelectedDates.get(0));
+				List<String> dows = new ArrayList<String>();
+				int lastPast = -1;
+				for (int i = 0; i < iSelectedDates.size(); i++) {
+					Date date = iDates.getDate(iSelectedDates.get(i));
+					int year = Integer.parseInt(DateTimeFormat.getFormat("yyyy").format(date));
+					int month = Integer.parseInt(DateTimeFormat.getFormat("MM").format(date));
+					int dow = (SingleDateSelector.firstDayOfWeek(year, month) + Integer.parseInt(DateTimeFormat.getFormat("dd").format(date)) - 1) % 7;
+					days[i] = i;
+					week.addDayName(new DateInterface(sDateFormat.format(date), month, iSelectedDates.get(i)));
+					dows.add(CONSTANTS.days()[dow]);
+					if (!iDates.isEnabled(date) || iDates.hasFlag(date, Flag.PAST))
+						lastPast = i;
+				}
+				List<Page> pages = new ArrayList<Page>();
+				List<WeekInterface> weeks = new ArrayList<WeekInterface>(); weeks.add(week);
+				for (final ResourceInterface room: iSelectedRooms) {
+					int startHour = 7;
+					if (iSelectedTimes.getStart() != null) {
+						startHour = Math.max(0, (iSelectedTimes.getStart() - 6) / 12);
+					}
+					int endHour = 18;
+					if (iSelectedTimes.getEnd() != null) {
+						endHour = Math.min(24, (17 + iSelectedTimes.getEnd()) / 12);
+					}
+
+					final TimeGrid grid = new TimeGrid(colors, days, (int)(1000 / days.length), 58, true, false, startHour, endHour);
+					grid.setResourceType(ResourceType.ROOM);
+					grid.setSelectedWeeks(weeks);
+					List<ResourceInterface> rooms = new ArrayList<EventInterface.ResourceInterface>(); rooms.add(room);
+					grid.setRoomResources(rooms);
+					grid.setMode(TimeGrid.Mode.OVERLAP);
+					for (EventInterface event: sortedEvents()) {
+						List<MeetingInterface> meetings = new ArrayList<MeetingInterface>();
+						for (MeetingInterface meeting: event.getMeetings()) {
+							if (meeting.getApprovalStatus() != ApprovalStatus.Pending && meeting.getApprovalStatus() != ApprovalStatus.Approved) continue;
+							if (meeting.getMeetingDate() != null && meeting.hasLocation() && meeting.getLocation().getId().equals(room.getId())) {
+								int idx = iSelectedDates.indexOf(meeting.getDayOfYear());
+								if (idx >= 0) {
+									meeting.setGridIndex(idx);
+									meetings.add(meeting);
+								}
+							}
+						}
+						if (!meetings.isEmpty())
+							grid.addEvent(event, meetings);
+					}
+					grid.labelDays(dows, week);
+					grid.setCalendarUrl(null);
+					grid.yellow(iSelectedTimes.getStart() == null ? 90 : iSelectedTimes.getStart(), iSelectedTimes.getEnd() == null ? 210 : iSelectedTimes.getEnd());
+					if (lastPast >= 0) grid.gray(0, lastPast);
+					grid.addMeetingClickHandler(iMeetingClickHandler);
+					pages.add(new Page() {
+						@Override
+						public String getName() {
+							return room.getName();
+						}
+
+						@Override
+						public String getUser() {
+							return room.getRoomType();
+						}
+
+						@Override
+						public String getSession() {
+							return (room.hasSize() ? MESSAGES.hintRoomCapacity(room.getSize().toString()) : "");
+						}
+
+						@Override
+						public Element getBody() {
+							return grid.getElement();
+						}
+						
+					});
+				}
+				ToolBox.print(pages);
+			}
+		});
 		iHeader.addButton("sort", MESSAGES.buttonSortBy(), new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {

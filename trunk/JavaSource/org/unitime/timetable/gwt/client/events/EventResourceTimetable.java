@@ -98,6 +98,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.dom.client.Style.Cursor;
+import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -112,6 +113,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
@@ -527,11 +529,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iHeader.addButton("print", MESSAGES.buttonPrint(), 75, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
-				EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false, EventResourceTimetable.this);
+				final EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false, EventResourceTimetable.this);
 				table.setMeetingFilter(EventResourceTimetable.this);
 				table.setShowMainContact(iProperties != null && iProperties.isCanLookupContacts());
 				table.setEvents(iData);
 				table.setSortBy(iTable.getSortBy());
+				table.getElement().getStyle().setWidth(1040, Unit.PX);
 				
 				int firstSlot = 84, lastSlot = 216;
 				boolean skipDays = iEvents.hasChip(new FilterBox.Chip("day", null));
@@ -574,7 +577,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (firstHour <= 7 && firstHour > 0 && ((firstSlot % 12) <= 6)) firstHour--;
 				HashMap<Long, String> colors = new HashMap<Long, String>();
 				
-				TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
+				final TimeGrid tg = new TimeGrid(colors, days, (int)(1000 / nrDays), 58, true, false, (firstHour < 7 ? firstHour : 7), (lastHour > 18 ? lastHour : 18));
 				tg.setResourceType(getResourceType());
 				tg.setSelectedWeeks(iWeekPanel.getSelected());
 				tg.setRoomResources(iRoomPanel.getSelected());
@@ -594,10 +597,35 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				if (iWeekPanel.getValue() != null)
 					tg.labelDays(iWeekPanel.getValue().getFirst(), iWeekPanel.getValue().getLast());
 				
-				ToolBox.print(iHeader.getHeaderTitle(),
-						"", "", 
-						tg,
-						table
+				// Move header row to thead
+				Element headerRow = table.getRowFormatter().getElement(0);
+				Element tableElement = table.getElement();
+				Element thead = DOM.createTHead();
+				tableElement.insertFirst(thead);
+				headerRow.getParentElement().removeChild(headerRow);
+				thead.appendChild(headerRow);
+				
+				ToolBox.print(
+						new ToolBox.Page() {
+							@Override
+							public String getName() { return iHeader.getHeaderTitle(); }
+							@Override
+							public String getUser() { return iRoomPanel.getValue().toString(); }
+							@Override
+							public String getSession() { return iWeekPanel.getValue().toString(); }
+							@Override
+							public Element getBody() { return tg.getElement(); }
+						},
+						new ToolBox.Page() {
+							@Override
+							public String getName() { return iHeader.getHeaderTitle(); }
+							@Override
+							public String getUser() { return iRoomPanel.getValue().toString(); }
+							@Override
+							public String getSession() { return iWeekPanel.getValue().toString(); }
+							@Override
+							public Element getBody() { return table.getElement(); }
+						}
 						);
 			}
 		});

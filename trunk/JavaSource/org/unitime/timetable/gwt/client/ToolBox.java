@@ -19,7 +19,9 @@
 */
 package org.unitime.timetable.gwt.client;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.unitime.timetable.gwt.client.widgets.UniTimeFrameDialog;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
@@ -172,6 +174,41 @@ public class ToolBox {
     	printf(html);
     }
     
+    public static void print(List<Page> pages) {
+    	String html = "<html><header>" +
+        		"<meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">" +
+        		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "unitime/gwt/standard/standard.css\">" +
+        		"<link type=\"text/css\" rel=\"stylesheet\" href=\"" + GWT.getHostPageBaseURL() + "styles/unitime.css\">" +
+        	    "<link rel=\"shortcut icon\" href=\"" + GWT.getHostPageBaseURL() + "images/timetabling.ico\">" +
+        	    "<title>UniTime " + CONSTANTS.version() + "| University Timetabling Application</title>" +
+        		"</header><body class='unitime-Body'>";
+    	for (Page p: pages) {
+    		html += "<table class=\"unitime-PrintedPage\" align=\"center\"><tr><td>" +
+    				"<table class=\"unitime-Page\"><tr><td>" +
+    	    		"<table id=\"header\" class=\"unitime-MainTable\" cellpadding=\"2\" cellspacing=\"0\" width=\"100%\">" +
+    	    		"<tr><td rowspan=\"2\"><img src=\"" + GWT.getHostPageBaseURL() + "images/unitime.png\" border=\"0\"/></td>" +
+    	    		"<td nowrap=\"nowrap\" class=\"unitime-Title\" width=\"100%\" align=\"center\" colspan=\"2\">" + p.getName() + "</td></tr>" +
+    	    		"<tr><td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + p.getUser() + "</td>"+
+    	    		"<td nowrap=\"nowrap\" class=\"unitime-SubTitle\" width=\"50%\" align=\"center\">" + p.getSession() + "</td></tr></table>" +
+    	    		DOM.toString(p.getBody()) +
+    	    		"</td></tr></table>" +
+    	    		"</td></tr><tr><td>" +
+    	    		"<table class=\"unitime-Footer\"><tr>" +
+    	    		"<td width=\"33%\" align=\"left\" nowrap=\"nowrap\">Printed from UniTime " + CONSTANTS.version() + " | University Timetabling Application</td>" +
+    	    		"<td width=\"34%\" align=\"center\">" + CONSTANTS.copyright() + "</td>" +
+    	    		"<td width=\"33%\" align=\"right\">" + DateTimeFormat.getFormat(PredefinedFormat.DATE_TIME_MEDIUM).format(new Date()) + "</td>" +
+    	    		"</tr></table></td></tr></table>";
+    	}
+    	html += "</body></html>";
+    	printf(html);
+    }
+    
+    public static void print(Page... pages) {
+    	List<Page> list = new ArrayList<Page>();
+    	for (Page page: pages) list.add(page);
+    	print(list);
+    }
+    
 	public native static void open(String url) /*-{
 		$wnd.location = url;
 	}-*/;
@@ -229,5 +266,12 @@ public class ToolBox {
 			}
 		}
 		return e;
+	}
+	
+	public static interface Page {
+		public String getName();
+		public String getUser();
+		public String getSession();
+		public Element getBody();
 	}
 }

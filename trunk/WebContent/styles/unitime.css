@@ -29,12 +29,6 @@
 	vertical-align: center;
 }
 
-@media print {
-	.unitime-Body {
-		width: 100% !important;
-	}
-}
-
 .unitime-Title {
 	font-size: x-large;
 	font-weight: bold;
@@ -48,6 +42,27 @@
 	font-weight: bold;
 	color: #333333;
 	margin-bottom: 10px;
+}
+
+@media print {
+	.unitime-Body {
+		width: 100% !important;
+	}
+	.unitime-Page {
+		margin-top: 0px;
+	}
+	.unitime-Title {
+		margin-bottom: 0px;
+	}
+	.unitime-SubTitle {
+		margin-bottom: 0px;
+	}
+	thead {
+		display: table-header-group;
+	}
+	body, table td, select {
+		font-family: sans-serif, verdana, arial;		
+	}
 }
 
 .unitime-Footer {
@@ -1178,6 +1193,16 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 .unitime-PrintedComponent {
 	margin-top: 10px;
 	width: 100%;
+	page-break-inside: avoid;
+	page-break-before: auto;
+	page-break-after: auto; 
+}
+
+.unitime-PrintedPage {
+	page-break-inside: avoid;
+	page-break-after: auto;
+	page-break-before: auto;
+	margin-bottom: 20px;
 }
 
 .unitime-TotalRow {
