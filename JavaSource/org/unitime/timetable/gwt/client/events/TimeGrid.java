@@ -130,12 +130,17 @@ public class TimeGrid extends Composite {
 		this(new HashMap<Long, String>(), new int[] {0, 1, 2, 3, 4}, (int) (0.9 * ToolBox.getClientWidth() / 5), false, false, 0, 24);
 	}
 	
+	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, boolean print, boolean scroll, int start, int end) {
+		this(colors, days, cellWidth, 60, print, scroll, start, end);
+	}
+	
 	private List<P> iDayLabels = new ArrayList<P>();
 	
-	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, boolean print, boolean scroll, int start, int end) {
+	public TimeGrid(HashMap<Long, String> colors, int[] days, int cellWidth, int cellHeight, boolean print, boolean scroll, int start, int end) {
 		iColors = colors;
 		iDays = days;
 		iCellWidth = cellWidth;
+		iCellHeight = cellHeight;
 		iStart = start;
 		iEnd = end;
 		iShowShadows = !print;
