@@ -1352,11 +1352,13 @@ public class TimeGrid extends Composite {
 					switch (iCursor) {
 					case MOVE:
 						dSlot = Math.min(Math.max(dSlot, iStart * 12 - iSS), 12 * iEnd - iES);
-						dWeek = Math.min(Math.max(dWeek, -iSW), weeks - iEW - 1);
-						dDay = Math.min(Math.max(dDay, -iSD), iDays.length - 1 - iED);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.min(Math.max(dDay, -iSD), iDays.length - 1 - iED);
+						else
+							dWeek = Math.min(Math.max(dWeek, -iSW), weeks - iEW - 1);
 						iStartSlot = iSS + dSlot; iEndSlot = iES + dSlot;
 						iStartWeek = iSW + dWeek; iEndWeek = iEW + dWeek;
-						iFirstDayOfWeek = iSD + dDay; iLastDayOfWeek = iED + dDay;
+						iFirstDayOfWeek = iDays[iSD + dDay]; iLastDayOfWeek = iDays[iED + dDay];
 						break;
 					case N_RESIZE:
 						dSlot = Math.max(dSlot, iStart * 12 - iSS);
@@ -1364,33 +1366,41 @@ public class TimeGrid extends Composite {
 						break;
 					case NW_RESIZE:
 						dSlot = Math.max(dSlot, iStart * 12 - iSS);
-						dWeek = Math.max(dWeek, -iSW);
-						dDay = Math.max(dDay, -iSD);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.max(dDay, -iSD);
+						else
+							dWeek = Math.max(dWeek, -iSW);
 						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
 						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
-						if (iSD + dDay <= iED) iFirstDayOfWeek = iSD + dDay;
+						if (iSD + dDay <= iED) iFirstDayOfWeek = iDays[iSD + dDay];
 						break;
 					case NE_RESIZE:
 						dSlot = Math.max(dSlot, iStart * 12 - iSS);
-						dWeek = Math.min(dWeek, weeks - iEW - 1);
-						dDay = Math.min(dDay, iDays.length - 1 - iED);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.min(dDay, iDays.length - 1 - iED);
+						else
+							dWeek = Math.min(dWeek, weeks - iEW - 1);
 						if (iSS + dSlot < iES) iStartSlot = iSS + dSlot;
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
-						if (iSD <= iED + dDay) iLastDayOfWeek = iED + dDay;
+						if (iSD <= iED + dDay) iLastDayOfWeek = iDays[iED + dDay];
 						break;
 					case E_RESIZE:
-						dWeek = Math.min(dWeek, weeks - iEW - 1);
-						dDay = Math.min(dDay, iDays.length - 1 - iED);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.min(dDay, iDays.length - 1 - iED);
+						else
+							dWeek = Math.min(dWeek, weeks - iEW - 1);
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
-						if (iSD <= iED + dDay) iLastDayOfWeek = iED + dDay;
+						if (iSD <= iED + dDay) iLastDayOfWeek = iDays[iED + dDay];
 						break;
 					case SE_RESIZE:
 						dWeek = Math.min(dWeek, weeks - iEW - 1);
-						dSlot = Math.min(dSlot, 12 * iEnd - iES);
-						dDay = Math.min(dDay, iDays.length - 1 - iED);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.min(dDay, iDays.length - 1 - iED);
+						else
+							dSlot = Math.min(dSlot, 12 * iEnd - iES);
 						if (iSW <= iEW + dWeek) iEndWeek = iEW + dWeek;
 						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
-						if (iSD <= iED + dDay) iLastDayOfWeek = iED + dDay;
+						if (iSD <= iED + dDay) iLastDayOfWeek = iDays[iED + dDay];
 						break;
 					case S_RESIZE:
 						dSlot = Math.min(dSlot, 12 * iEnd - iES);
@@ -1398,17 +1408,21 @@ public class TimeGrid extends Composite {
 						break;
 					case SW_RESIZE:
 						dSlot = Math.min(dSlot, 12 * iEnd - iES);
-						dWeek = Math.max(dWeek, -iSW);
-						dDay = Math.max(dDay, -iSD);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.max(dDay, -iSD);
+						else
+							dWeek = Math.max(dWeek, -iSW);
 						if (iSS < iES + dSlot) iEndSlot = iES + dSlot;
 						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
-						if (iSD + dDay <= iED) iFirstDayOfWeek = iSD + dDay;
+						if (iSD + dDay <= iED) iFirstDayOfWeek = iDays[iSD + dDay];
 						break;
 					case W_RESIZE:
-						dWeek = Math.max(dWeek, -iSW);
-						dDay = Math.max(dDay, -iSD);
+						if (isSingleRoom() && isSingleWeek())
+							dDay = Math.max(dDay, -iSD);
+						else
+							dWeek = Math.max(dWeek, -iSW);
 						if (iSW + dWeek <= iEW) iStartWeek = iSW + dWeek;
-						if (iSD + dDay <= iED) iFirstDayOfWeek = iSD + dDay;
+						if (iSD + dDay <= iED) iFirstDayOfWeek = iDays[iSD + dDay];
 						break;
 					}
 					move();
@@ -1440,7 +1454,7 @@ public class TimeGrid extends Composite {
 				iSelectionLayer.iMoving = this;
 				iSS = iStartSlot; iES = iEndSlot;
 				iSW = iStartWeek; iEW = iEndWeek;
-				iSD = iFirstDayOfWeek; iED = iLastDayOfWeek;
+				iSD = getStartDay(); iED = getEndDay();
 				break;
 			case Event.ONMOUSEUP:
 				onMouseUp();
@@ -1490,8 +1504,13 @@ public class TimeGrid extends Composite {
 			for (int d: selection.getDays()) {
 				if (isSingleWeek() && isSingleRoom()) {
 					startWeek = 0; endWeek = 0;
-					startDay = Math.min(startDay, d - iSelectedWeeks.get(0).getDayOfYear());
-					endDay = Math.max(endDay, d - iSelectedWeeks.get(0).getDayOfYear());
+					int doy = getSelectedWeeks().get(0).getDayOfYear();
+					for (int f = 0; f < iDays.length; f++) {
+						if (selection.getDays().contains(doy + iDays[f])) {
+							startDay = iDays[f];
+							for (int l = f; l < iDays.length && selection.getDays().contains(doy + iDays[l]); l++) endDay = iDays[l];
+						}
+					}
 				} else {
 					for (int i = 0; i < iSelectedWeeks.size(); i++) {
 						WeekInterface w = iSelectedWeeks.get(i);
