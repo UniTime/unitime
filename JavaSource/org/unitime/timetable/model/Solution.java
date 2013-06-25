@@ -805,7 +805,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 		
 		hibSession.saveOrUpdate(this);
 
-		hibSession.flush(); hibSession.clear();
+		hibSession.flush();
 	}
 	
 	public void updateCommittedStudentEnrollmentInfos(org.hibernate.Session hibSession) throws Exception {

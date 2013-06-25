@@ -238,8 +238,6 @@ public class TimetableDatabaseSaver extends TimetableSaver {
             if (iStudentSectioning) getModel().switchStudents();
         
     		iProgress.setStatus("Saving solution ...");
-    		SolverGroupDAO dao = new SolverGroupDAO();
-    		hibSession = dao.getSession();
     		hibSession.setFlushMode(FlushMode.MANUAL);
     		
     		if (iSolverGroupId==null || iSolverGroupId.length==0) {
@@ -249,7 +247,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     		
     		Hashtable solverGroups = new Hashtable();
     		for (int i=0;i<iSolverGroupId.length;i++) {
-    			SolverGroup solverGroup = dao.get(iSolverGroupId[i], hibSession);
+    			SolverGroup solverGroup = SolverGroupDAO.getInstance().get(iSolverGroupId[i], hibSession);
     			if (solverGroup==null) {
         			iProgress.fatal("Unable to load solver group "+iSolverGroupId[i]+".");
         			return null;
@@ -290,7 +288,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			}
     		}
     		
-    		Session session = (new SessionDAO()).get(iSessionId, hibSession);
+    		Session session = SessionDAO.getInstance().get(iSessionId, hibSession);
     		if (session==null) {
     			iProgress.fatal("No session loaded.");
     			return null;
