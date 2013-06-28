@@ -1841,7 +1841,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Class Timetable")
 	String pageClasses();
 	
-	@DefaultMessage("Examination Timetable")
+	@DefaultMessage("Exam Timetable")
 	String pageExaminations();
 	
 	@DefaultMessage("Personal Timetable")
