@@ -47,6 +47,7 @@ import org.unitime.timetable.model.Event;
 import org.unitime.timetable.model.EventContact;
 import org.unitime.timetable.model.FinalExamEvent;
 import org.unitime.timetable.model.MidtermExamEvent;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.SpecialEvent;
 import org.unitime.timetable.model.UnavailableEvent;
 import org.unitime.timetable.model.dao.EventDAO;
@@ -189,6 +190,19 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		Date today = cal.getTime();
+		
+		if (!context.hasPermission(Right.HasRole)) {
+			Session session = SessionDAO.getInstance().get(request.getSessionId());
+			String prohibitedTypes = null;
+			if (!session.getStatusType().canNoRoleReportClass())
+				prohibitedTypes = "ClassEvent";
+			if (!session.getStatusType().canNoRoleReportExamFinal())
+				prohibitedTypes = (prohibitedTypes == null ? "FinalExamEvent": prohibitedTypes + ",FinalExamEvent");
+			if (!session.getStatusType().canNoRoleReportExamMidterm())
+				prohibitedTypes = (prohibitedTypes == null ? "MidtermExamEvent": prohibitedTypes + ",MidtermExamEvent");
+			if (prohibitedTypes != null)
+				query.addWhere("xtype", "e.class not in (" + prohibitedTypes + ")");						
+		}
 		
 		if (request.getText() != null && !request.getText().isEmpty()) {
 			query.addWhere("query", "lower(e.eventName) like lower(:Xquery) || '%'" + (request.getText().length() >= 2 ? " or lower(e.eventName) like '% ' || lower(:Xquery) || '%'" : ""));
