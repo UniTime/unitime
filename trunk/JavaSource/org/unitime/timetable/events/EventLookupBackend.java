@@ -64,6 +64,7 @@ import org.unitime.timetable.model.RelatedCourseInfo;
 import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.dao.ClassEventDAO;
 import org.unitime.timetable.model.dao.CourseEventDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
@@ -1507,7 +1508,8 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				// Retrieve arrange hours classes
 				if ((!request.getEventFilter().hasOptions("type") || request.getEventFilter().getOptions("type").contains("Class")) &&
 					!request.getEventFilter().hasOptions("from") && !request.getEventFilter().hasOptions("to") && !request.getEventFilter().hasOptions("requested") &&
-					!request.getEventFilter().hasOptions("day") && !request.getEventFilter().hasOptions("after") && !request.getEventFilter().hasOptions("before")) {
+					!request.getEventFilter().hasOptions("day") && !request.getEventFilter().hasOptions("after") && !request.getEventFilter().hasOptions("before") &&
+					(context.hasPermission(Right.HasRole) || session.getStatusType().canNoRoleReportClass()) && Solution.hasTimetable(session.getUniqueId())) {
 					List<Class_> arrageHourClasses = null; 
 					switch (request.getResourceType()) {
 					case SUBJECT:
