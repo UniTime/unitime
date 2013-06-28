@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.cpsolver.ifs.util.ToolBox;
-
 import org.hibernate.Hibernate;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Query;
@@ -128,14 +126,17 @@ public class DistributionPref extends BaseDistributionPref {
     			}
     			sb.append(objQuotationRight);
     		} else if (getOwner() instanceof DepartmentalInstructor) {
-    			sb.append(objQuotationLeft);
-    			for (Iterator it=((DepartmentalInstructor)getOwner()).getClasses().iterator();it.hasNext();) {
-    				ClassInstructor ci = (ClassInstructor)it.next();
-    				sb.append(ci.getClassInstructing().getClassLabel());
-    				if (it.hasNext())
-    					sb.append(objSeparator);
+    			sb.append(" (" + ((DepartmentalInstructor)getOwner()).getName(DepartmentalInstructor.sNameFormatShort) + ")");
+    			if (!abbv) {
+        			sb.append(objQuotationLeft);
+        			for (Iterator it=((DepartmentalInstructor)getOwner()).getClasses().iterator();it.hasNext();) {
+        				ClassInstructor ci = (ClassInstructor)it.next();
+        				sb.append(ci.getClassInstructing().getClassLabel());
+        				if (it.hasNext())
+        					sb.append(objSeparator);
+        			}
+        			sb.append(objQuotationRight);
     			}
-    			sb.append(objQuotationRight);
     		}
     	}
     	return(sb.toString());
@@ -236,8 +237,7 @@ public class DistributionPref extends BaseDistributionPref {
     	return pref;
     }
     public boolean isSame(Preference other) {
-    	if (other==null || !(other instanceof DistributionPref)) return false;
-    	return ToolBox.equals(getDistributionType(),((DistributionPref)other).getDistributionType()) && ToolBox.equals(getDistributionObjects(),((DistributionPref)other).getDistributionObjects());
+    	return equals(other);
     }
     /** Ordered set of distribution objects */
     public Set<DistributionObject> getOrderedSetOfDistributionObjects() {
