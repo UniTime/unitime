@@ -34,7 +34,6 @@ import org.unitime.timetable.model.dao.EventDateMappingDAO;
 
 public class EventDateMapping extends BaseEventDateMapping implements Comparable<EventDateMapping> {
 	private static final long serialVersionUID = 1L;
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyMMdd");
 
 	public EventDateMapping() {
 		super();
@@ -88,6 +87,7 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 	}
 
 	public static class Class2EventDateMap {
+		private SimpleDateFormat iDateFormat = new SimpleDateFormat("yyMMdd");
 		private Map<String, Date> iClass2EventDates = new HashMap<String, Date>();
 		private Map<String, Date> iEvent2ClassDates = new HashMap<String, Date>();
 		
@@ -100,26 +100,26 @@ public class EventDateMapping extends BaseEventDateMapping implements Comparable
 		}
 		
 		public void addMapping(Date classDate, Date eventDate) {
-			iClass2EventDates.put(sDateFormat.format(classDate), eventDate);
-			iEvent2ClassDates.put(sDateFormat.format(eventDate), classDate);
+			iClass2EventDates.put(iDateFormat.format(classDate), eventDate);
+			iEvent2ClassDates.put(iDateFormat.format(eventDate), classDate);
 		}
 		
 		public boolean hasEventDate(Date eventDate) {
-			return (eventDate == null ? false : iEvent2ClassDates.containsKey(sDateFormat.format(eventDate)));
+			return (eventDate == null ? false : iEvent2ClassDates.containsKey(iDateFormat.format(eventDate)));
 		}
 		
 		public Date getClassDate(Date eventDate) {
-			Date classDate = (eventDate == null ? null : iEvent2ClassDates.get(sDateFormat.format(eventDate)));
+			Date classDate = (eventDate == null ? null : iEvent2ClassDates.get(iDateFormat.format(eventDate)));
 			if (classDate == null && hasClassDate(eventDate)) return null;
 			return (classDate == null ? eventDate : classDate);
 		}
 		
 		public boolean hasClassDate(Date classDate) {
-			return (classDate == null ? false : iClass2EventDates.containsKey(sDateFormat.format(classDate)));
+			return (classDate == null ? false : iClass2EventDates.containsKey(iDateFormat.format(classDate)));
 		}
 		
 		public Date getEventDate(Date classDate) {
-			Date eventDate = (classDate == null ? null : iClass2EventDates.get(sDateFormat.format(classDate)));
+			Date eventDate = (classDate == null ? null : iClass2EventDates.get(iDateFormat.format(classDate)));
 			return (eventDate == null ? classDate : eventDate);
 		}
 
