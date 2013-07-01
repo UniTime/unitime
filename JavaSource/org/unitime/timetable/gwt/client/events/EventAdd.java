@@ -282,6 +282,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iHeader.addButton("delete", MESSAGES.buttonDeleteEvent(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
+				if (!Window.confirm(MESSAGES.confirmDeleteEvent())) return;
 				final EventInterface event = getEvent();
 				if (event.hasMeetings()) event.getMeetings().clear();
 				LoadingWidget.getInstance().show(MESSAGES.waitDelete(event.getName()));
@@ -315,6 +316,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iHeader.addButton("cancel", MESSAGES.buttonCancelEvent(), 100, new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent clickEvent) {
+				if (!Window.confirm(MESSAGES.confirmCancelEvent())) return;
 				final EventInterface event = getEvent();
 				if (event.hasMeetings()) {
 					for (Iterator<MeetingInterface> i = event.getMeetings().iterator(); i.hasNext(); ) {
