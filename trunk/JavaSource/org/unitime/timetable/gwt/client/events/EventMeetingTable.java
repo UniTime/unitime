@@ -353,7 +353,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 			}
 			@Override
 			public String getName() {
-				return (hasSelection() ? MESSAGES.opCancelSelectedMeetings() : MESSAGES.opCancelAllMeetings());
+				if (hasOperation(OperationType.Delete))
+					return (hasSelection() ? MESSAGES.opCancelSelectedMeetingsNoPopup() : MESSAGES.opCancelAllMeetingsNoPopup());
+				else
+					return (hasSelection() ? MESSAGES.opCancelSelectedMeetings() : MESSAGES.opCancelAllMeetings());
 			}
 			@Override
 			public boolean isApplicable(EventMeetingRow row) {
