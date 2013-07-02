@@ -18,8 +18,14 @@
  * 
  */
 package org.unitime.timetable.security.context;
+import java.util.Iterator;
+import java.util.List;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.security.qualifiers.SimpleQualifier;
+import org.unitime.timetable.security.rights.Right;
 
 public class ChameleonUserContext extends UniTimeUserContext implements UserContext.Chameleon {
 	private static final long serialVersionUID = 1L;
@@ -27,6 +33,25 @@ public class ChameleonUserContext extends UniTimeUserContext implements UserCont
 	
 	public ChameleonUserContext(String userId, UserContext originalUser) {
 		super(userId, originalUser.getUsername(), originalUser.getName(), null);
+		
+		// Original user is session dependent -> remove all session independent authorities from the new user
+		if (originalUser.getCurrentAuthority() == null || !originalUser.getCurrentAuthority().hasRight(Right.SessionIndependent)) {
+			for (Iterator<? extends UserAuthority> i = getAuthorities().iterator(); i.hasNext(); ) {
+				UserAuthority authority = i.next();
+				if (authority.hasRight(Right.SessionIndependent))
+					i.remove();
+			}
+			if (getCurrentAuthority() != null && getCurrentAuthority().hasRight(Right.SessionIndependent)) {
+				List<? extends UserAuthority> authorities = getAuthorities(null, new SimpleQualifier("Session", originalUser.getCurrentAcademicSessionId()));
+				if (!authorities.isEmpty())
+					setCurrentAuthority(authorities.get(0));
+				else
+					throw new AccessDeniedException("Access denied for " + super.getName().trim() + ": not enough permissions for role " + getCurrentAuthority().getRole() + ".");
+			}
+			if (getAuthorities().isEmpty())
+				throw new AccessDeniedException("Access denied for " + super.getName().trim() + ": no role available.");
+		}
+		
 		iOriginalUser = originalUser;
 		if (iOriginalUser instanceof UserContext.Chameleon)
 			iOriginalUser = ((UserContext.Chameleon)iOriginalUser).getOriginalUserContext();
