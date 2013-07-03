@@ -8935,4 +8935,8 @@
 			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'TestHQL'
 		</sql>
 	</update>
+	<update version="124" date="03-Jul-2013" comment="Instructor Note">
+		<mysql>alter table %SCHEMA%.departmental_instructor modify note varchar(2048)</mysql>
+		<plsql>alter table %SCHEMA%.departmental_instructor modify note varchar2(2048 char)</plsql>
+	</update>
 </dbupdate>

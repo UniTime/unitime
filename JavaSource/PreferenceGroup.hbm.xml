@@ -829,7 +829,7 @@
                 column="note"
                 type="java.lang.String"
                 not-null="false"
-                length="20"/>
+                length="2048"/>
 
             <property
                 name="email"

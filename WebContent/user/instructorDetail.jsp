@@ -104,9 +104,11 @@
 		<TR>
 			<TD>External Id:</TD><TD> <bean:write name="<%=frmName%>" property="puId" /></TD>
 		</TR>
-		<TR>
-			<TD>Account Name:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
-		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="careerAcct">
+			<TR>
+				<TD>Account Name:</TD><TD> <bean:write name="<%=frmName%>" property="careerAcct" /></TD>
+			</TR>
+		</logic:notEmpty>
 		<logic:notEmpty name="<%=frmName%>" property="email">
 			<TR>
 				<TD>Email:</TD><TD> <bean:write name="<%=frmName%>" property="email" /></TD>
@@ -115,9 +117,11 @@
 		<TR>
 			<TD>Position:</TD><TD> <bean:write name="<%=frmName%>" property="posType" /></TD>
 		</TR>
-		<TR>
-			<TD>Notes:</TD><TD> <bean:write name="<%=frmName%>" property="note" /></TD>
-		</TR>
+		<logic:notEmpty name="<%=frmName%>" property="note">
+			<TR>
+				<TD valign="top">Note:</TD><TD> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
+			</TR>
+		</logic:notEmpty>
 		<logic:equal name="<%=frmName%>" property="ignoreDist" value="true">
 			<TR>
 				<TD>Ignore Too Far:</TD>
