@@ -92,7 +92,7 @@ public class SessionListAction extends Action {
 		DateFormat df = DateFormat.getDateInstance();
 		
 		TreeSet<Session> sessions = new TreeSet<Session>(SessionDAO.getInstance().findAll());
-		Session defaultSession = UniTimeUserContext.defaultSession(sessions, null);
+		Session defaultSession = UniTimeUserContext.defaultSession(sessions, sessionContext.getUser().getCurrentAuthority());
 
 		for (Session s: SessionDAO.getInstance().findAll()) {
 			Calendar ce = Calendar.getInstance(Locale.US); ce.setTime(s.getSessionBeginDateTime());
