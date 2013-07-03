@@ -188,9 +188,9 @@
 		</TR>
 		
 		<TR>
-			<TD><loc:message name="propertyNotes"/></TD>
+			<TD valign="top"><loc:message name="propertyNotes"/></TD>
 			<TD>
-				<html:text property="note" maxlength="20" size="20" />
+				<html:textarea property="note" rows="5" cols="70"/>
 			</TD>
 		</TR>
 		

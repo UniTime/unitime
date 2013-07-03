@@ -236,8 +236,11 @@ public class InstructorAction extends Action {
 				}
 			}
 			
-			if (frm.getNote() != null && frm.getNote().trim().length()>0) {
-				inst.setNote(frm.getNote().trim());
+			if (frm.getNote() != null && !frm.getNote().isEmpty()) {
+				if (frm.getNote().length() > 2048)
+					inst.setNote(frm.getNote().substring(0, 2048));
+				else
+					inst.setNote(frm.getNote());
 			} else 
 				inst.setNote(null);
 			
