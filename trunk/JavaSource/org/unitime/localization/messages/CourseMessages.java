@@ -264,7 +264,7 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Position:")
 	String propertyInstructorPosition();
 	
-	@DefaultMessage("Notes:")
+	@DefaultMessage("Note:")
 	String propertyNotes();
 	
 	@DefaultMessage("Ignore Too Far:")

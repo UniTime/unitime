@@ -74,7 +74,7 @@ public class InstructorListBuilder {
 								MSG.columnInstructorClassAssignments(),
 								MSG.columnInstructorExamAssignments(),
 								MSG.columnInstructorIgnoreTooFar()}, 
-				new String[] { "left", "left", "left", "right", "left", "left", "left", "left", "left", "left"},
+				new String[] { "left", "left", "left", "left", "left", "left", "left", "left", "left", "left"},
 				new boolean[] { true, true, true, true, true, true, true, true, true, true});
 		webTable.setRowStyle("white-space:nowrap;");
 		webTable.enableHR("#9CB0CE");
