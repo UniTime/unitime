@@ -213,8 +213,8 @@ public class ToolBox {
 		$wnd.location = url;
 	}-*/;
 	
-	public native static void eval(String script) /*-{
-		eval(script);
+	public native static String eval(String script) /*-{
+		return eval(script);
 	}-*/;
 	
 	public static void checkAccess(Throwable t) {
