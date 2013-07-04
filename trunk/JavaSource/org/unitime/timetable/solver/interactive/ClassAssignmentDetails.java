@@ -50,9 +50,6 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.Solution;
 import org.unitime.timetable.model.TimePattern;
-import org.unitime.timetable.model.TimePatternDays;
-import org.unitime.timetable.model.TimePatternTime;
-import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.dao.AssignmentDAO;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -64,7 +61,6 @@ import org.unitime.timetable.solver.ui.BtbInstructorConstraintInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.solver.ui.JenrlInfo;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 import org.unitime.timetable.webutil.timegrid.SolutionGridModel;
 import org.unitime.timetable.webutil.timegrid.SolverGridModel;
 
@@ -459,7 +455,6 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		private int iPref;
 		private boolean iStrike = false;
 		private Long iPatternId = null, iDatePatternId;
-		private transient String iHint = null;
 		
 		public TimeInfo(int days, int startSlot, int pref, int min, String datePatternName, Long patternId, Long datePatternId, int datePatternPref) {
 			iDays = days;
@@ -503,35 +498,12 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		public String getName(boolean endTime) {
 			return getDaysName()+" "+getStartTime()+(endTime?" - "+getEndTime():"");
 		}
-		public String getHint() {
-			if (iHint == null) {
-				Class_ clazz = Class_DAO.getInstance().get(getClazz().getClassId());
-				for (TimePref p: (Set<TimePref>)clazz.effectivePreferences(TimePref.class)) {
-					if (p.getTimePattern().getType() == TimePattern.sTypeExactTime) continue;
-					boolean match = false;
-					for (TimePatternDays d: p.getTimePattern().getDays()) {
-						if (d.getDayCode() == iDays) { match = true; break; }
-					}
-					if (!match) continue;
-					match = false;
-					for (TimePatternTime t: p.getTimePattern().getTimes()) {
-						if (t.getStartSlot() == iStartSlot) { match = true; break; }
-					}
-					if (!match) continue;
-					RequiredTimeTable m = p.getRequiredTimeTable(new TimeLocation(iDays, iStartSlot, iMin, 0, 0.0, iPatternId, iDatePatternName, null, 0));
-					iHint = m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");;
-					break;
-				}
-			}
-			return iHint;
-		}
 		public String toHtml(boolean link, boolean showSelected, boolean endTime, boolean showHint) {
 			boolean uline = (showSelected && this.equals(iTime));
-			String hint = (showHint ? getHint() : null);
 			return 
 				(link?"<a id='time_"+getDays()+"_"+getStartSlot()+"_"+getPatternId()+"' onclick=\"selectTime(event, '"+getDays()+"', '"+getStartSlot()+"', '"+getPatternId()+"');\" onmouseover=\"this.style.cursor='pointer';\" class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>":"<a class='noFancyLinks' title='"+getDaysName()+" "+getStartTime()+" - "+getEndTime()+"'>")+
 				"<span style='color:"+PreferenceLevel.int2color(iPref)+";' " +
-				(hint == null ? "" : "onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\"") + ">"+
+				(showHint ? "onmouseover=\"showGwtTimeHint(this, '" + getClazz().getClassId() + "," + iDays + "," + iStartSlot + "');\" onmouseout=\"hideGwtTimeHint();\"" : "") + ">"+
 				(uline?"<u>":"")+
 				(iStrike?"<s>":"")+
 				getDaysName()+" "+getStartTime()+

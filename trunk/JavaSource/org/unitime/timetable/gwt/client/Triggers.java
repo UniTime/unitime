@@ -72,6 +72,11 @@ public enum Triggers {
 			RoomHint.createTriggers();
 		}
 	}),
+	timeHint(new Command() {
+		public void execute() {
+			TimeHint.createTriggers();
+		}
+	}),
 	clearHibCache(new Command() {
 		public void execute() {
 			ClearHibernateCache.createTriggers();
