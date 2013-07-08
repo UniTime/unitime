@@ -213,11 +213,11 @@ public class QueryLog extends BaseQueryLog {
 			switch (t) {
 			case USERS:
 				 Object[] o = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-					"select count(distinct uid), count(distinct sessionId), count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and not type = :type")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult();
+					"select count(distinct uid), count(distinct sessionId), count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and not type = :type1 and not type = :type2")
+					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
 				 double gwtCallsPerMinute = ((Number)QueryLogDAO.getInstance().getSession().createQuery(
-					"select count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and type = :type")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult()).doubleValue();
+					"select count(distinct uniqueId) from QueryLog where timeStamp > :from and timeStamp <= :to and (type = :type1 or type = :type2)")
+					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult()).doubleValue();
 				 double distinctUsers = ((Number)o[0]).doubleValue();
 				 data[0].add(distinctUsers);
 				 double distinctSessions = ((Number)o[1]).doubleValue();
@@ -244,11 +244,11 @@ public class QueryLog extends BaseQueryLog {
 				 break;
 			case TIME:
 				o = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-					"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and not type = :type")
-					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult();
+					"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and not type = :type1 and not type = :type2")
+					.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
 				Object[] p = (Object[])QueryLogDAO.getInstance().getSession().createQuery(
-				"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and type = :type")
-				.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type", Type.GWT.ordinal()).uniqueResult();
+				"select avg(q.timeSpent), max(q.timeSpent) from QueryLog q where q.timeStamp > :from and q.timeStamp <= :to and (type = :type1 or type = :type2)")
+				.setTimestamp("from", from.getTime()).setTimestamp("to", to.getTime()).setInteger("type1", Type.GWT.ordinal()).setInteger("type2", Type.RPC.ordinal()).uniqueResult();
 				double avgTime = (o[0] == null ? 0 : ((Number)o[0]).doubleValue());
 				double maxTime = (o[1] == null ? 0 : ((Number)o[1]).doubleValue()) / 1000.0;
 				double gwtAvgTime = (p[0] == null ? 0 : ((Number)p[0]).doubleValue());
