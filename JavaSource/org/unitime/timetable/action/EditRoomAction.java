@@ -303,10 +303,13 @@ public class EditRoomAction extends Action {
                 location.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
             }
 
-            location.getExamTypes().clear();
-            for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId()))
-            	if (editRoomForm.getExamEnabled(type.getUniqueId().toString()))
+            for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
+            	boolean enabled = editRoomForm.getExamEnabled(type.getUniqueId().toString());
+            	if (enabled && !location.getExamTypes().contains(type))
             		location.getExamTypes().add(type);
+            	else if (!enabled && location.getExamTypes().contains(type))
+            		location.getExamTypes().remove(type);
+            }
  				
 			if (editRoomForm.isIgnoreTooFar() == null || !editRoomForm.isIgnoreTooFar().booleanValue()) {
 				location.setIgnoreTooFar(Boolean.FALSE);
