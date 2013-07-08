@@ -143,7 +143,7 @@
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 <script type="text/javascript" language="javascript">
 	var latlng = new google.maps.LatLng(50, -58);
 	var myOptions = {
