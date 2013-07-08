@@ -70,7 +70,7 @@ public class ExaminationTypes implements AdminTable {
 			Record r = data.addRecord(xtype.getUniqueId());
 			r.setField(0, xtype.getReference(), !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 			r.setField(1, xtype.getLabel());
-			r.setField(2, xtype.getType().toString(), !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
+			r.setField(2, xtype.getType().toString(), !xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 			r.setDeletable(!xtype.isUsed(null) && !xtype.getReference().equals("final") && !xtype.getReference().equals("midterm"));
 		}
 		data.setEditable(context.hasPermission(Right.ExamTypeEdit));
