@@ -441,7 +441,7 @@
 </html:form>
 
 <tt:propertyEquals name="unitime.coordinates.googlemap" value="true">
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=false"></script>
 <sec:authorize access="#editRoomForm.id == null or hasPermission(#editRoomForm.id, 'Location', 'RoomEditChangeRoomProperties')">
 	<script type="text/javascript" language="javascript">
 		function createGoogleSeachControl(map) {
