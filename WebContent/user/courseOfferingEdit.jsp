@@ -69,14 +69,12 @@
 						<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
 					</bean:define>
 
-					<logic:equal name="courseOfferingEditForm" property="ioNotOffered" value="false">
-						<html:submit property="op"
-							styleClass="btn" 
-							accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-							title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-							<loc:message name="actionUpdateCourseOffering" />
-						</html:submit>
-					</logic:equal>
+					<html:submit property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+						<loc:message name="actionUpdateCourseOffering" />
+					</html:submit>
 					
 					<html:button property="op"
 						styleClass="btn" 
@@ -485,14 +483,12 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<logic:equal name="courseOfferingEditForm" property="ioNotOffered" value="false">
-					<html:submit property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-						<loc:message name="actionUpdateCourseOffering" />
-					</html:submit>
-				</logic:equal>
+				<html:submit property="op"
+					styleClass="btn" 
+					accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+					title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+					<loc:message name="actionUpdateCourseOffering" />
+				</html:submit>
 				
 				<html:button property="op"
 					styleClass="btn" 
