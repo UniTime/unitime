@@ -29,6 +29,7 @@
 			<or>
 				<hasPermission name="InstructionalOfferings"/>
 				<hasPermission name="Classes"/>
+				<hasPermission name="HQLReportsCourses"/>
 			</or>
 		</condition>
 		<menu name="Input Data" title="Course Timetabling Input Data">
@@ -217,7 +218,10 @@
 				<propertyEquals name="tmtbl.menu.display_student_sectioning" value="true" defaultValue="true"/>
 				<hasPermission name="IsAdmin"/>
 			</or>
-			<hasPermission name="StudentScheduling"/>
+			<or>
+				<hasPermission name="StudentScheduling"/>
+				<hasPermission name="HQLReportsStudents"/>
+			</or>
 		</condition>
 		<menu name="Batch Solver" page="studentSolver.do">
 			<condition>
@@ -276,7 +280,10 @@
 				<propertyEquals name="tmtbl.menu.display_exam_timetabling" value="true" defaultValue="true"/>
 				<hasPermission name="IsAdmin"/>
 			</or>
-			<hasPermission name="Examinations"/>
+			<or>
+				<hasPermission name="Examinations"/>
+				<hasPermission name="HQLReportsExaminations"/>
+			</or>
 		</condition>
 		<menu name="Input Data">
 			<item name="Instructors" page="instructorSearch.do">
@@ -422,7 +429,10 @@
 				<propertyEquals name="tmtbl.menu.display_event_management" value="true" defaultValue="true"/>
 				<hasPermission name="IsAdmin"/>
 			</or>
-			<hasPermission name="Events" authority="any"/>
+			<or>
+				<hasPermission name="Events" authority="any"/>
+				<hasPermission name="HQLReportsEvents"/>
+			</or>
 			<not>
 				<hasRole name="Anonymous"/>
 			</not>
