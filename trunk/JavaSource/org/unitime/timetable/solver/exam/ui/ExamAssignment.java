@@ -35,12 +35,9 @@ import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
 import org.unitime.timetable.model.ExamType;
 import org.unitime.timetable.model.Location;
-import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.PreferenceLevel;
-import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.criteria.ExamRotationPenalty;
@@ -91,8 +88,6 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     protected int iNrInstructorBackToBackConflicts = 0;
     protected int iNrInstructorDistanceBackToBackConflicts = 0;
     protected double iValue = 0;
-    
-    protected transient String iHint = null;
     
     public ExamAssignment(ExamPlacement placement) {
         this((net.sf.cpsolver.exam.model.Exam)placement.variable(), placement);
@@ -248,33 +243,18 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start);
     }
     
-    public String getGwtHint() {
-    	if (iHint == null) {
-    		Exam exam = getExam(ExamDAO.getInstance().getSession());
-        	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), this, getExamTypeId());
-            px.load(exam);
-            RequiredTimeTable rtt = new RequiredTimeTable(px);
-        	iHint = rtt.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " ");
-    	}
-    	return iHint;
-    }
-
     public String getPeriodNameWithPref() {
         if (iPeriodPref==null) return getPeriodName();
-        String hint = getGwtHint();
         return
-            "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'" +
-            (hint == null ? "" : "onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\"") + ">"+
+            "<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
             getPeriodName()+
             "</span>";
     }
     
     public String getPeriodAbbreviationWithPref() {
         if (iPeriodPref==null) return getPeriodAbbreviation();
-        String hint = getGwtHint();
         return
-        	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'" +
-        	(hint == null ? "" : "onmouseover=\"showGwtHint(this, " + hint + ");\" onmouseout=\"hideGwtHint();\"") + ">"+
+        	"<span style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";' onmouseover=\"showGwtTimeHint(this, '" + getExamId() + "," + getPeriodId() + "');\" onmouseout=\"hideGwtTimeHint();\">"+
             getPeriodAbbreviation()+
             "</span>";
     }
