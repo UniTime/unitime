@@ -237,8 +237,52 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		}
 		return cell;
 	}
-
+	
+	public static class CachedHardConflictPreference implements Serializable {
+		private static final long serialVersionUID = 1L;
+		private String iPreference = null;
+		private Long iCreated = null;
+		public CachedHardConflictPreference(String preference) {
+			iPreference = preference;
+			iCreated = System.currentTimeMillis();
+		}
+		
+		public void setPreference(String preference) { iPreference = preference; }
+		public String getPreference() { return iPreference; }
+		
+		public boolean isValid() {
+			return (System.currentTimeMillis() - iCreated) < 900000l;
+		}
+		
+		@Override
+		public String toString() { return iPreference; }
+	}
+	
 	public static String hardConflicts2pref(Lecture lecture, Placement placement) {
+		if (placement != null) {
+			if (placement.getExtra() == null || placement.getExtra() instanceof CachedHardConflictPreference) {
+				CachedHardConflictPreference cached = (placement.getExtra() == null ? null : (CachedHardConflictPreference)placement.getExtra());
+				if (cached != null && cached.isValid()) return cached.getPreference();
+				String preference = hardConflicts2prefNoCache(lecture, placement);
+				placement.setExtra(new CachedHardConflictPreference(preference));
+				return preference;
+			} else {
+				return hardConflicts2prefNoCache(lecture, placement);
+			}
+		} else {
+			if (lecture.getExtra() == null || lecture.getExtra() instanceof CachedHardConflictPreference) {
+				CachedHardConflictPreference cached = (lecture.getExtra() == null ? null : (CachedHardConflictPreference)lecture.getExtra());
+				if (cached != null && cached.isValid()) return cached.getPreference();
+				String preference = hardConflicts2prefNoCache(lecture, placement);
+				lecture.setExtra(new CachedHardConflictPreference(preference));
+				return preference;
+			} else {
+				return hardConflicts2prefNoCache(lecture, placement);
+			}
+		}
+	}
+
+	public static String hardConflicts2prefNoCache(Lecture lecture, Placement placement) {
     	if (lecture.isCommitted()) return PreferenceLevel.sRequired;
         if (placement==null) {
         	boolean hasNoConf = false;
