@@ -82,7 +82,7 @@ public class AssignmentPreferenceInfo implements TimetableInfo, Serializable {
 	}
 	
 	public AssignmentPreferenceInfo(Solver solver, Placement placement) {
-		this(solver, placement, true, false);
+		this(solver, placement, false, false);
 	}
 	
 	public AssignmentPreferenceInfo(Solver solver, Placement placement, boolean includeConflictInfo) {
