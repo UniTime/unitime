@@ -20,6 +20,7 @@
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
@@ -30,6 +31,8 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.ExamPeriodPref;
@@ -64,7 +67,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
  */
 public class ExamAssignment extends ExamInfo implements Serializable {
 	private static final long serialVersionUID = -5726339642542287195L;
-	private static SimpleDateFormat sDateFormat = new SimpleDateFormat("EEE MM/dd");
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     private static DecimalFormat s2Z = new DecimalFormat("00");
     protected Long iPeriodId = null;
     protected TreeSet<ExamRoomInfo> iRooms = null;
@@ -216,12 +219,16 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         if (iPeriodIdx>=0) return new Integer(iPeriodIdx);
         else return iPeriod;
     }
+    
+    protected DateFormat getDateFormat() {
+    	return new SimpleDateFormat(CONSTANTS.examPeriodDateFormat(), Localization.getJavaLocale());
+    }
 
     public String getPeriodName() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int end = start + getLength();
-        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
+        return getDateFormat().format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
     }
     
     public String getPeriodNameFixedLength() {
@@ -232,7 +239,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         min += getLength();
         int endHour = min / 60;
         int endMin = min % 60;
-        return sDateFormat.format(getPeriod().getStartDate())+" "+
+        return getDateFormat().format(getPeriod().getStartDate())+" "+
             s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
             s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");
     }
@@ -240,7 +247,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public String getPeriodAbbreviation() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
-        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start);
+        return getDateFormat().format(getPeriod().getStartDate())+" "+Constants.toTime(start);
     }
     
     public String getPeriodNameWithPref() {
@@ -261,10 +268,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getDate(boolean pref) {
         if (getPeriod()==null) return "";
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sDateFormat.format(getPeriod().getStartDate());
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return getDateFormat().format(getPeriod().getStartDate());
         return
         "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        sDateFormat.format(getPeriod().getStartDate())+
+        getDateFormat().format(getPeriod().getStartDate())+
         "</span>";
     }
 

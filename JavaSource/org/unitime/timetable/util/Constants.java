@@ -31,6 +31,7 @@ import org.unitime.localization.messages.ConstantsMessages;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.defaults.CommonValues;
 import org.unitime.timetable.defaults.UserProperty;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.model.BuildingPref;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.ExamType;
@@ -47,6 +48,7 @@ import org.unitime.timetable.security.UserContext;
  */
 public class Constants extends net.sf.cpsolver.coursett.Constants {
 	public static final ConstantsMessages MSG = Localization.create(ConstantsMessages.class);
+	public static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
     // --------------------------------------------------------- Class Properties
     
@@ -425,7 +427,10 @@ public class Constants extends net.sf.cpsolver.coursett.Constants {
 	public static String toTime(int minutesSinceMidnight) {
 	    int hour = minutesSinceMidnight/60;
 	    int min = minutesSinceMidnight%60;
-	    return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
+	    if (CONSTANTS.useAmPm())
+	    	return (hour==0?12:hour>12?hour-12:hour)+":"+(min<10?"0":"")+min+(hour<24 && hour>=12?"p":"a");
+	    else
+	    	return hour + ":" + (min < 10 ? "0" : "") + min;
 	}
 	
 	public static boolean showPrintNoteAsFullText(UserContext user) {
