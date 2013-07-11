@@ -184,11 +184,12 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
 	    				name = other.getExamName();
 	    				date = df.format(other.getPeriod().getStartDate());
 	    				time = other.getTime(false);
-	    				room = other.getRoomsCapacity(false, ", ");
+	    				room = other.getRoomsName(false, ", ");
 	    			} else {
 	    				name += "<br>" + other.getExamName();
+	    				date += "<br>" + df.format(other.getPeriod().getStartDate());
 	    				time += "<br>" + other.getTime(false);
-	    				room += "<br>" + other.getRoomsCapacity(false, ", ");
+	    				room += "<br>" + other.getRoomsName(false, ", ");
 	    			}
 	    		}
 	    		
