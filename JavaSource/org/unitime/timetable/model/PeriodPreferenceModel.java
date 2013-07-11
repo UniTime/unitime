@@ -31,11 +31,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
 public class PeriodPreferenceModel implements RequiredTimeTableModel {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     private TreeSet iDates = new TreeSet();
     private TreeSet iStarts = new TreeSet();
     private Hashtable iPreferences = new Hashtable();
@@ -47,7 +50,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     private ExamPeriod iPeriod = null;
     private Long iExamType = null;
     
-    public static SimpleDateFormat[] sDF = new SimpleDateFormat[]{new SimpleDateFormat("EEE"),new SimpleDateFormat("MM/dd")};
+    private SimpleDateFormat[] iDF = null;
     
     public PeriodPreferenceModel(Session session, Long examType) {
         this(session, (ExamPeriod) null, examType);
@@ -58,6 +61,10 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
     }
 
     public PeriodPreferenceModel(Session session, ExamPeriod assignedPeriod, Long examType) {
+    	iDF = new SimpleDateFormat[] {
+    			new SimpleDateFormat(CONSTANTS.examPeriodPreferenceDateFormat()[0], Localization.getJavaLocale()),
+    			new SimpleDateFormat(CONSTANTS.examPeriodPreferenceDateFormat()[1], Localization.getJavaLocale())
+    		};
         iPeriod = assignedPeriod;
         iFirstDate = session.getExamBeginDate();
         iPeriods = ExamPeriod.findAll(session.getUniqueId(), examType);
@@ -149,7 +156,7 @@ public class PeriodPreferenceModel implements RequiredTimeTableModel {
         cal.setTime(iFirstDate);
         cal.add(Calendar.DAY_OF_YEAR, dateOffset);
         Date date = new Date(cal.getTime().getTime());
-        return sDF[0].format(date)+"<br>"+sDF[1].format(date);
+        return iDF[0].format(date)+"<br>"+iDF[1].format(date);
     }
     
     public String getFileName() {
