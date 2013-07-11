@@ -1,3 +1,22 @@
+/*
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
@@ -552,7 +571,7 @@ public class EnrollmentTable extends Composite {
 		}
 	}
 	
-	private void refresh() {
+	protected void refresh() {
 		clear();
 		iHeader.showLoading();
 		iHeader.setEnabled("approve", false);
@@ -1104,52 +1123,6 @@ public class EnrollmentTable extends Composite {
 		}
 		
 		if (hasConflict) {
-			final UniTimeTableHeader hConflictName = new UniTimeTableHeader(MESSAGES.colConflictName());
-			hConflictName.addOperation(new Operation() {
-				@Override
-				public void execute() {
-					iEnrollments.sort(hConflictName, new Comparator<ClassAssignmentInterface.Enrollment>() {
-						@Override
-						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
-							if (e1.hasConflict()) {
-								if (e2.hasConflict()) {
-									Iterator<Conflict> i1 = e1.getConflicts().iterator();
-									Iterator<Conflict> i2 = e2.getConflicts().iterator();
-									while (i1.hasNext() && i2.hasNext()) {
-										Conflict c1 = i1.next();
-										Conflict c2 = i2.next();
-										int cmp = c1.getName().compareTo(c2.getName());
-										if (cmp != 0) return cmp;
-									}
-									if (i1.hasNext()) return -1;
-									if (i2.hasNext()) return 1;
-								} else {
-									return -1;
-								}
-							} else if (e2.hasConflict()) {
-								return 1;
-							}
-							int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
-							if (cmp != 0) return cmp;
-							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
-						}
-					});
-				}
-				@Override
-				public boolean isApplicable() {
-					return true;
-				}
-				@Override
-				public boolean hasSeparator() {
-					return false;
-				}
-				@Override
-				public String getName() {
-					return MESSAGES.sortBy(MESSAGES.colConflictName());
-				}
-			});
-			header.add(hConflictName);
-			
 			final UniTimeTableHeader hConflictType = new UniTimeTableHeader(MESSAGES.colConflictType());
 			hConflictType.addOperation(new Operation() {
 				@Override
@@ -1197,6 +1170,53 @@ public class EnrollmentTable extends Composite {
 				}
 			});
 			header.add(hConflictType);
+			
+			final UniTimeTableHeader hConflictName = new UniTimeTableHeader(MESSAGES.colConflictName());
+			hConflictName.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					iEnrollments.sort(hConflictName, new Comparator<ClassAssignmentInterface.Enrollment>() {
+						@Override
+						public int compare(ClassAssignmentInterface.Enrollment e1, ClassAssignmentInterface.Enrollment e2) {
+							if (e1.hasConflict()) {
+								if (e2.hasConflict()) {
+									Iterator<Conflict> i1 = e1.getConflicts().iterator();
+									Iterator<Conflict> i2 = e2.getConflicts().iterator();
+									while (i1.hasNext() && i2.hasNext()) {
+										Conflict c1 = i1.next();
+										Conflict c2 = i2.next();
+										int cmp = c1.getName().compareTo(c2.getName());
+										if (cmp != 0) return cmp;
+									}
+									if (i1.hasNext()) return -1;
+									if (i2.hasNext()) return 1;
+								} else {
+									return -1;
+								}
+							} else if (e2.hasConflict()) {
+								return 1;
+							}
+							int cmp = e1.getStudent().getName().compareTo(e2.getStudent().getName());
+							if (cmp != 0) return cmp;
+							return (e1.getStudent().getId() < e2.getStudent().getId() ? -1 : 1);
+						}
+					});
+				}
+				@Override
+				public boolean isApplicable() {
+					return true;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return MESSAGES.sortBy(MESSAGES.colConflictName());
+				}
+			});
+			header.add(hConflictName);
+
 			final UniTimeTableHeader hConflictDate = new UniTimeTableHeader(MESSAGES.colConflictDate());
 			hConflictDate.addOperation(new Operation() {
 				@Override
@@ -1575,14 +1595,28 @@ public class EnrollmentTable extends Composite {
 					String name = "", type = "", date = "", time = "", room = "";
 					for (Conflict conflict: enrollment.getConflicts()) {
 						if (!name.isEmpty()) { name += "<br>"; type += "<br>"; date += "<br>"; time += "<br>"; room += "<br>"; }
+						if (conflict.hasStyle()) {
+							name += "<span class='" + conflict.getStyle() + "'>";
+							type += "<span class='" + conflict.getStyle() + "'>";
+							date += "<span class='" + conflict.getStyle() + "'>";
+							time += "<span class='" + conflict.getStyle() + "'>";
+							room += "<span class='" + conflict.getStyle() + "'>";
+						}
 						name += conflict.getName();
 						type += conflict.getType();
 						date += conflict.getDate();
 						time += conflict.getTime();
 						room += conflict.getRoom();
+						if (conflict.hasStyle()) {
+							name += "</span>";
+							type += "</span>";
+							date += "</span>";
+							time += "</span>";
+							room += "</span>";
+						}
 					}
-					HTML html = new HTML(name, false); html.addStyleName("conflict"); line.add(html);
-					html = new HTML(type, false); html.addStyleName("conflict"); line.add(html);
+					HTML html = new HTML(type, false); html.addStyleName("conflict"); line.add(html);
+					html = new HTML(name, false); html.addStyleName("conflict"); line.add(html);
 					html = new HTML(date, false); html.addStyleName("conflict"); line.add(html);
 					html = new HTML(time, false); html.addStyleName("conflict"); line.add(html);
 					html = new HTML(room, false); html.addStyleName("conflict"); line.add(html);
@@ -1703,6 +1737,8 @@ public class EnrollmentTable extends Composite {
 	}
 	
 	public void setId(Long id) { iOfferingId = id; }
+	
+	public Long getId() { return iOfferingId; }
 
 	public void scrollIntoView(Long studentId) {
 		for (int r = 1; r < iEnrollments.getRowCount(); r++) {

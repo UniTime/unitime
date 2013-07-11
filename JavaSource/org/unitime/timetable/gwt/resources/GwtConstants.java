@@ -50,6 +50,12 @@ public interface GwtConstants extends Constants {
 	@DefaultStringValue("EEE MM/dd, yyyy")
 	String meetingDateFormat();
 	
+	@DefaultStringValue("EEE MM/dd")
+	String examPeriodDateFormat();
+	
+	@DefaultStringArrayValue({ "EEE", "MM/dd" })
+	String[] examPeriodPreferenceDateFormat();
+	
 	@DefaultStringValue("MM/dd/yyyy hh:mmaa")
 	String timeStampFormat();
 	

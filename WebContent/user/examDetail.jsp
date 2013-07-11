@@ -260,6 +260,12 @@
 			<jsp:param name="frmName" value="<%=frmName%>"/>
 			<jsp:param name="timePref" value="false"/>
 		</jsp:include>
+		
+		<TR>
+			<TD colspan="2">
+				<div id='UniTimeGWT:ExamEnrollments' style="display: none;"><bean:write name="<%=frmName%>" property="examId"/></div>
+			</TD>
+		</TR>		
 	
 		<TR>
 			<TD colspan="2" class="WelcomeRowHead">
