@@ -30,11 +30,14 @@ import java.util.TreeSet;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 
 public class MidtermPeriodPreferenceModel {
+	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
     private TreeSet<Integer> iDates = new TreeSet<Integer>();
     private TreeSet<Integer> iStarts = new TreeSet<Integer>();
     private Hashtable<Integer,Hashtable<Integer,String>> iPreferences = new Hashtable<Integer,Hashtable<Integer,String>>();
@@ -49,14 +52,16 @@ public class MidtermPeriodPreferenceModel {
     private ExamType iExamType = null;
     private String iName = "mp";
     
-    public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
-    
     public MidtermPeriodPreferenceModel(Session session, ExamType type) {
-        this(session, type, null);
+        this(session, type, (ExamPeriod)null);
+    }
+    
+    public MidtermPeriodPreferenceModel(Session session, ExamType type, ExamAssignment assignment) {
+    	this(session, type, assignment == null ? null : assignment.getPeriod());
     }
 
-    public MidtermPeriodPreferenceModel(Session session, ExamType type, ExamAssignment assignment) {
-        iPeriod = (assignment==null?null:assignment.getPeriod());
+    public MidtermPeriodPreferenceModel(Session session, ExamType type, ExamPeriod assignment) {
+        iPeriod = assignment;
         iSession = session;
         iExamType = type;
         iExamBeginDate = session.getExamBeginDate();
@@ -347,7 +352,7 @@ public class MidtermPeriodPreferenceModel {
 	}
 	
     private String getLabel(int fDate, int lDate, Hashtable<Integer,String> prefs, boolean html, boolean color) {
-        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        SimpleDateFormat df = new SimpleDateFormat(CONSTANTS.examPeriodDateFormat(), Localization.getJavaLocale());
         String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
         String lastPref = null; int fStart = -1, lStart = -1;
         String ret = "";
@@ -366,7 +371,7 @@ public class MidtermPeriodPreferenceModel {
                     String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                     if (ret.length()>0) ret+=", ";
                     if (html) {
-                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+";' "+
+                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
                             "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";
@@ -391,7 +396,7 @@ public class MidtermPeriodPreferenceModel {
                 String endTime = Constants.toTime(Constants.SLOT_LENGTH_MIN*(lStart+iLength.get(lStart))+Constants.FIRST_SLOT_TIME_MIN);
                 if (fStart==iStarts.first()) {
                     if (html) {
-                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+";' "+
+                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
                             "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+"</span>";
@@ -403,7 +408,7 @@ public class MidtermPeriodPreferenceModel {
                 } else {
                     if (ret.length()>0) ret+=", ";
                     if (html) {
-                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+";' "+
+                        ret+="<span style='color:"+PreferenceLevel.prolog2color(lastPref)+"; white-space:nowrap;' "+
                             "title='"+PreferenceLevel.prolog2string(lastPref)+" "+
                             dates+" "+startTime+" - "+endTime+
                             "'>"+dates+" "+(iStarts.size()==2?fStart==iStarts.first()?"Early":"Late":startTime)+(fStart==lStart?"":" - "+endTime)+"</span>";

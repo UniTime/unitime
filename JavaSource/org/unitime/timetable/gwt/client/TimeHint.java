@@ -38,8 +38,14 @@ public class TimeHint {
 	private static boolean sShowHint = false;
 	
 	public static Widget content(TimeHintResponse response) {
-		HTML content = new HTML(ToolBox.eval(response.getContent()), false);
-		SimplePanel panel = new SimplePanel(content);
+		SimplePanel panel = null;
+		if (response.getContent().startsWith("$")) {
+			HTML content = new HTML(ToolBox.eval(response.getContent()), false);
+			panel = new SimplePanel(content);
+		} else {
+			panel = new SimplePanel();
+			panel.getElement().setInnerHTML(response.getContent());
+		}
 		panel.setStyleName("unitime-TimeHint");
 		return panel;
 	}
