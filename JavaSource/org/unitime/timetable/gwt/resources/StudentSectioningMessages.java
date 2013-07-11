@@ -79,10 +79,10 @@ public interface StudentSectioningMessages extends Messages {
 	String colParent();
 	
 	@DefaultMessage("Conflict")
-	String colConflictName();
-
-	@DefaultMessage("Type")
 	String colConflictType();
+
+	@DefaultMessage("Name")
+	String colConflictName();
 
 	@DefaultMessage("Date")
 	String colConflictDate();
