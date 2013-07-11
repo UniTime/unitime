@@ -285,7 +285,7 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 						meeting.setApprovalDate(now);
 					}
 					if (context.isPastOrOutside(m.getMeetingDate()))
-						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(sMeetingDateFormat.format(m.getMeetingDate())));
+						throw new GwtRpcException(MESSAGES.failedSaveEventPastOrOutside(getDateFormat().format(m.getMeetingDate())));
 					if (!context.hasPermission(location, Right.EventLocationOverbook)) {
 						List<MeetingConflictInterface> conflicts = computeConflicts(hibSession, m, event.getUniqueId());
 						if (!conflicts.isEmpty())

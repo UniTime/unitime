@@ -49,7 +49,6 @@ import org.unitime.timetable.security.rights.Right;
 public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpcResponse> implements GwtRpcImplementation<T, R> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-	protected static DateFormat sMeetingDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
 
 	@Override
 	public R execute(T request, SessionContext context) {
@@ -62,14 +61,18 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 
 	public abstract R execute(T request, EventContext context);
 	
+	protected static DateFormat getDateFormat() {
+		return new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+	}
+	
 	protected static String toString(MeetingInterface meeting) {
 		return (meeting instanceof MeetingConflictInterface ? ((MeetingConflictInterface)meeting).getName() + " " : "") +
-				(meeting.getMeetingDate() == null ? "" : sMeetingDateFormat.format(meeting.getMeetingDate()) + " ") +
+				(meeting.getMeetingDate() == null ? "" : getDateFormat().format(meeting.getMeetingDate()) + " ") +
 				meeting.getAllocatedTime(CONSTANTS) + (meeting.hasLocation() ? " " + meeting.getLocationName() : "");
 	}
 	
 	protected static String toString(Meeting meeting) {
-		return (meeting.getMeetingDate() == null ? "" : sMeetingDateFormat.format(meeting.getMeetingDate()) + " ") +
+		return (meeting.getMeetingDate() == null ? "" : getDateFormat().format(meeting.getMeetingDate()) + " ") +
 				time2string(meeting.getStartPeriod(), 0) + " - " + time2string(meeting.getStopPeriod(), 0) +
 				(meeting.getLocation() == null ? " " + meeting.getLocation().getLabel() : "");
 	}
