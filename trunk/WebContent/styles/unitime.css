@@ -2496,6 +2496,18 @@ div.gwt-MenuBarPopup {
 	color: red;
 }
 
+.unitime-Enrollments .conflict .dc {
+	color: #c81e14;
+}
+
+.unitime-Enrollments .conflict .m2d {
+	color: #f06428;
+}
+
+.unitime-Enrollments .conflict .b2b {
+	color: #dcb414;
+}
+
 .unitime-MeetingSelection {
 	border-spacing: 0px;
 }
