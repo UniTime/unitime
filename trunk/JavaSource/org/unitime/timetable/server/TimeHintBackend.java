@@ -31,6 +31,8 @@ import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.ExamPeriod;
+import org.unitime.timetable.model.ExamType;
+import org.unitime.timetable.model.MidtermPeriodPreferenceModel;
 import org.unitime.timetable.model.PeriodPreferenceModel;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.TimePatternDays;
@@ -53,10 +55,16 @@ public class TimeHintBackend implements GwtRpcImplementation<TimeHintRequest, Ti
 			Long periodId = Long.valueOf(params[1]);
 			Exam exam = ExamDAO.getInstance().get(examId);
 			ExamPeriod period = ExamPeriodDAO.getInstance().get(periodId);
-        	PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), period, exam.getExamType().getUniqueId());
-            px.load(exam);
-            RequiredTimeTable m = new RequiredTimeTable(px);
-            return new TimeHintResponse("$wnd." + m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " "));
+			if (exam.getExamType().getType() == ExamType.sExamTypeMidterm) {
+				MidtermPeriodPreferenceModel mpp = new MidtermPeriodPreferenceModel(exam.getSession(), exam.getExamType(), period);
+				mpp.load(exam);
+				return new TimeHintResponse("<div style='max-width: 200px;'>" + mpp.toString(true) + "</div>");
+			} else {
+				PeriodPreferenceModel px = new PeriodPreferenceModel(exam.getSession(), period, exam.getExamType().getUniqueId());
+				px.load(exam);
+				RequiredTimeTable m = new RequiredTimeTable(px);
+				return new TimeHintResponse("$wnd." + m.print(false, false).replace(");\n</script>", "").replace("<script language=\"javascript\">\ndocument.write(", "").replace("\n", " "));
+			}
 		} else if (params.length == 3) {
 			Long classId = Long.valueOf(params[0]);
 			int days = Integer.parseInt(params[1]);
