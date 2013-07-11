@@ -652,7 +652,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 	
 	public static class Conflict implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
-		private String iName, iType, iDate, iTime, iRoom;
+		private String iName, iType, iDate, iTime, iRoom, iStyle;
 		
 		public Conflict() {}
 		
@@ -670,6 +670,10 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		
 		public String getRoom() { return iRoom; }
 		public void setRoom(String room) { iRoom = room; }
+		
+		public boolean hasStyle() { return iStyle != null && !iStyle.isEmpty(); }
+		public String getStyle() { return iStyle; }
+		public void setStyle(String style) { iStyle = style; }
 		
 		@Override
 		public String toString() {
