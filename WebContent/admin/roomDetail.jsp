@@ -137,7 +137,7 @@
 						</logic:greaterEqual>
 					</logic:notEmpty>
 					&nbsp;
-					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+					<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="Location">
 						<bean:write name="<%=frmName%>" property="id"/>
 					</tt:back>
 					<%--
@@ -516,7 +516,7 @@
 					</logic:greaterEqual>
 				</logic:notEmpty>
 				&nbsp;
-				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B">
+				<tt:back styleClass="btn" name="Back" title="Return to %% (Alt+B)" accesskey="B" type="Location">
 					<bean:write name="<%=frmName%>" property="id"/>
 				</tt:back>
 			</TD>

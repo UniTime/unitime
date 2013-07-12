@@ -913,9 +913,12 @@ public class RoomListAction extends Action {
 			}
 			Navigation.set(sessionContext, Navigation.sInstructionalOfferingLevel, ids);
 			
+			if (request.getParameter("backId")!=null)
+	            request.setAttribute("hash", "A" + request.getParameter("backId"));
+			
 			BackTracker.markForBack(
 	        		request,
-	        		"roomList.do",
+	        		"roomSearch.do",
 	        		"Rooms",
 	        		true, true);
 			
