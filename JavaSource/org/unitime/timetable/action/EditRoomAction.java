@@ -299,19 +299,7 @@ public class EditRoomAction extends Action {
 				location.setCapacity(Integer.valueOf(editRoomForm.getCapacity().trim()));
 			}
 			
-            if (editRoomForm.getExamCapacity() != null && !editRoomForm.getExamCapacity().trim().equalsIgnoreCase("")) {
-                location.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
-            }
-
-            for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
-            	boolean enabled = editRoomForm.getExamEnabled(type.getUniqueId().toString());
-            	if (enabled && !location.getExamTypes().contains(type))
-            		location.getExamTypes().add(type);
-            	else if (!enabled && location.getExamTypes().contains(type))
-            		location.getExamTypes().remove(type);
-            }
- 				
-			if (editRoomForm.isIgnoreTooFar() == null || !editRoomForm.isIgnoreTooFar().booleanValue()) {
+            if (editRoomForm.isIgnoreTooFar() == null || !editRoomForm.isIgnoreTooFar().booleanValue()) {
 				location.setIgnoreTooFar(Boolean.FALSE);
 			} else {
 				location.setIgnoreTooFar(Boolean.TRUE);
@@ -348,7 +336,28 @@ public class EditRoomAction extends Action {
         	location.setNote(editRoomForm.getNote() == null ? "" : editRoomForm.getNote().length() > 2048 ? editRoomForm.getNote().substring(0, 2048) : editRoomForm.getNote());
 			
 			if (sessionContext.hasPermission(location, Right.RoomEditChangeExaminationStatus)) {
-				
+	            if (editRoomForm.getExamCapacity() != null && !editRoomForm.getExamCapacity().trim().equalsIgnoreCase("")) {
+	                location.setExamCapacity(Integer.valueOf(editRoomForm.getExamCapacity().trim()));
+	            }
+	            
+	            boolean examTypesChanged = false;
+	            for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
+	            	if (editRoomForm.getExamEnabled(type.getUniqueId().toString()) != location.getExamTypes().contains(type)) {
+	            		examTypesChanged = true;
+	            		break;
+	            	}
+	            }
+	            if (examTypesChanged) {
+	        		// Examination types has changed -- apply brute force to avoid unique constraint (PK_ROOM_EXAM_TYPE) violation
+	            	if (!location.getExamTypes().isEmpty()) {
+	            		location.getExamTypes().clear();
+	            		hibSession.update(location); hibSession.flush();
+	            	}
+	            	for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId()))
+	            		if (editRoomForm.getExamEnabled(type.getUniqueId().toString()))
+	            			location.getExamTypes().add(type);
+	            }
+
             	for (ExamType type: ExamType.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId())) {
             		if (location.getExamTypes().contains(type)) {
                 		if (type.getType() == ExamType.sExamTypeMidterm) {
