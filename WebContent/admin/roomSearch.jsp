@@ -35,7 +35,7 @@
 		<tr><td>
 				<b>Department:</b>
 				<html:select property="deptCodeX"
-					onchange="displayLoading(); submit()"
+					onchange="if (blIsColapsed('dispRoomFilter')) {displayLoading(); submit();}"
 					onfocus="setUp();" 
 					onkeypress="return selectSearch(event, this);" 
 					onkeydown="return checkKey(event, this);" >
