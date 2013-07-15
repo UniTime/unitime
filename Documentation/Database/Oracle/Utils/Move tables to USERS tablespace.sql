@@ -167,6 +167,13 @@ alter table CHANGE_LOG move tablespace users;
 alter table EXAM_TYPE move tablespace users;
 alter table ROOM_EXAM_TYPE move tablespace users;
 
+alter table solver_info move lob(value) store as (tablespace users);
+alter table change_log move lob(detail) store as (tablespace users);
+alter table course_request_option move lob(value) store as (tablespace users);
+alter table event_note move lob(attached_file) store as (tablespace users);
+alter table event_note move lob(meetings) store as (tablespace users);
+alter table student_sect_hist move lob(data) store as (tablespace users);
+
 alter index PK_ROOM_EXAM_TYPE rebuild tablespace users;
 alter index PK_EXAM_TYPE rebuild tablespace users;
 alter index PK_ROOM_TYPE_OPTION rebuild tablespace users;
