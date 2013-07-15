@@ -292,6 +292,7 @@ public enum Right {
 	ExaminationSolverLog(Session.class),
 	ExaminationReports(Session.class),
 	ExaminationPdfReports(Session.class),
+	ExaminationSolutionExportXml(Session.class),
 	
 	/** Individual page rights: Students Scheduling */
 	
@@ -300,6 +301,7 @@ public enum Right {
     StudentSectioningSolver(Session.class),
     StudentSectioningSolverLog(Session.class),
     StudentSectioningSolverDashboard(Session.class),
+    StudentSectioningSolutionExportXml(Session.class),
     
     /** Individual page rights: Online Students Scheduling */
 

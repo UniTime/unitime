@@ -75,4 +75,6 @@ public interface StudentSolverProxy extends OnlineSectioningServer {
     public Date getLastUsed();
     
     public void interrupt();
+    
+    public byte[] exportXml() throws Exception;
 }

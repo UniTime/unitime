@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.exam;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -38,6 +39,7 @@ import java.util.Vector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
+import org.dom4j.Element;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
@@ -1214,5 +1216,50 @@ public class ExamSolver extends Solver<Exam, ExamPlacement> implements ExamSolve
     		} catch (ConcurrentModificationException e) {}
     		return info;
     	}
+    }
+    
+    public byte[] exportXml() throws Exception {
+        synchronized (currentSolution()) {
+            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
+            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+
+            if (anonymize) {
+                getProperties().setProperty("Xml.Anonymize", "true");
+                getProperties().setProperty("Xml.ShowNames", "false");
+                getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
+                getProperties().setProperty("Xml.Anonymize", "true");
+                getProperties().setProperty("Xml.SaveInitial", "false");
+                getProperties().setProperty("Xml.SaveBest", "false");
+                getProperties().setProperty("Xml.SaveSolution", "true");
+        	}
+
+            ByteArrayOutputStream ret = new ByteArrayOutputStream();
+            
+            Document document = ((ExamModel)currentSolution().getModel()).save();
+            
+            if (anonymize) {
+            	Element log = document.getRootElement().element("log");
+            	if (log != null)
+            		document.getRootElement().remove(log);
+            	Element notavailable = document.getRootElement().element("notavailable");
+            	if (notavailable != null)
+            		document.getRootElement().remove(notavailable);
+            }
+            
+            (new XMLWriter(ret, OutputFormat.createPrettyPrint())).write(document);
+            
+            ret.flush(); ret.close();
+            
+            if (anonymize) {
+                getProperties().setProperty("Xml.Anonymize", "false");
+                getProperties().setProperty("Xml.ConvertIds", "false");
+                getProperties().setProperty("Xml.ShowNames", "true");
+                getProperties().remove("Xml.SaveInitial");
+                getProperties().remove("Xml.SaveBest");
+                getProperties().remove("Xml.SaveSolution");
+            }
+
+            return ret.toByteArray();
+        }
     }
 }
