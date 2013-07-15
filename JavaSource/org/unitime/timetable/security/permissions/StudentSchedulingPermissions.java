@@ -45,6 +45,9 @@ public class StudentSchedulingPermissions {
 	@PermissionForRight(Right.StudentSectioningSolverDashboard)
 	public static class StudentSectioningSolverDashboard extends StudentScheduling {}
 
+	@PermissionForRight(Right.StudentSectioningSolutionExportXml)
+	public static class StudentSectioningSolutionExportXml extends StudentSectioningSolver {}
+	
 	@PermissionForRight(Right.EnrollmentAuditPDFReports)
 	public static class EnrollmentAuditPDFReports extends SimpleSessionPermission {}
 	

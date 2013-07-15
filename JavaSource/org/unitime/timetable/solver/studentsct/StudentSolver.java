@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.solver.studentsct;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1074,4 +1075,50 @@ public class StudentSolver extends Solver implements StudentSolverProxy {
 	public boolean needPersistExpectedSpaces(Long offeringId) {
 		return false;
 	}
+	
+	public byte[] exportXml() throws Exception {
+        synchronized (currentSolution()) {
+            File temp = File.createTempFile("student-" + getSessionId(), ".xml");
+            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
+            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+        	
+            if (anonymize) {
+                getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
+                getProperties().setProperty("Xml.SaveBest", "false");
+                getProperties().setProperty("Xml.SaveInitial", "false");
+                getProperties().setProperty("Xml.SaveCurrent", "true");
+                getProperties().setProperty("Xml.SaveOnlineSectioningInfo", "true");
+                getProperties().setProperty("Xml.SaveStudentInfo", "false");
+                getProperties().setProperty("Xml.ShowNames", "false");
+            }
+
+            StudentSectioningXMLSaver saver = new StudentSectioningXMLSaver(this);
+            ByteArrayOutputStream ret = new ByteArrayOutputStream();
+
+            try {
+                saver.save(temp);
+                FileInputStream fis = new FileInputStream(temp);
+                byte[] buf = new byte[16*1024]; int read = 0;
+                while ((read=fis.read(buf, 0, buf.length))>0)
+                    ret.write(buf,0,read);
+                ret.flush();ret.close();
+            } catch (Exception e) {
+                sLog.error(e.getMessage(),e);
+            }
+            
+            temp.delete();
+            
+            if (anonymize) {
+                getProperties().setProperty("Xml.ConvertIds", "false");
+                getProperties().remove("Xml.SaveBest");
+                getProperties().remove("Xml.SaveInitial");
+                getProperties().remove("Xml.SaveCurrent");
+                getProperties().setProperty("Xml.SaveOnlineSectioningInfo", "true");
+                getProperties().setProperty("Xml.SaveStudentInfo", "true");
+                getProperties().setProperty("Xml.ShowNames", "true");
+            }
+            
+            return ret.toByteArray();
+        }
+    }
 }
