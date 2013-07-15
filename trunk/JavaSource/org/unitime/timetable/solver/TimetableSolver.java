@@ -43,7 +43,11 @@ import java.util.Vector;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.dom4j.Document;
+import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.unitime.timetable.ApplicationProperties;
@@ -60,7 +64,6 @@ import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.DatePatternDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.LocationDAO;
-import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SolutionDAO;
 import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.model.dao.TimePatternDAO;
@@ -1497,45 +1500,49 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
     }
     
     public byte[] exportXml() throws Exception {
-        File folder = new File(ApplicationProperties.getProperty("tmtbl.solver.export.folder",System.getProperty("user.home")+File.separator+"solver"+File.separator+"export"));
-        folder.mkdirs();
-        if (currentSolution()==null) return null;
         synchronized (currentSolution()) {
-            Long sessionId = getProperties().getPropertyLong("General.SessionId",-1);
-            org.unitime.timetable.model.Session session = new SessionDAO().get(sessionId); 
-            Long[] solverGroupIds = getProperties().getPropertyLongArry("General.SolverGroupId", new Long[]{});
-            String name = "pu-"+session.getAcademicTerm()+session.getSessionStartYear();
-            for (int i=0;i<solverGroupIds.length;i++) {
-                SolverGroup sg = new SolverGroupDAO().get(solverGroupIds[i]);
-                name+="-"+sg.getAbbv();
-            }
-            if (name.length() > 100)
-            	name = name.substring(0, 97) + "...";
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.export.id-conv","true"))) {
-                getProperties().setProperty("Xml.ConvertIds", "true");
+        	File temp = File.createTempFile("course-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
+            File conv = null;
+            
+            boolean anonymize = "false".equals(ApplicationProperties.getProperty("unitime.solution.export.names", "false"));
+            boolean idconv = "true".equals(ApplicationProperties.getProperty("unitime.solution.export.id-conv", "false"));
+            if (anonymize) {
+                getProperties().setProperty("Xml.ConvertIds", idconv ? "true" : "false");
                 getProperties().setProperty("Xml.SaveBest", "false");
                 getProperties().setProperty("Xml.SaveInitial", "false");
                 getProperties().setProperty("Xml.SaveCurrent", "true");
                 getProperties().setProperty("Xml.ExportStudentSectioning", "true");
                 getProperties().setProperty("Xml.ShowNames", "false");
-                getProperties().setProperty("Xml.IdConv",folder+File.separator+"id-conv.xml");
-                //System.setProperty("IdConvertor.File",getProperties().getProperty("Xml.IdConv"));
+                
+                if (idconv) {
+                	conv = File.createTempFile("idconv-" + getProperties().getProperty("General.SolverGroupId","").replace(',', '-'), ".xml");
+                	getProperties().setProperty("Xml.IdConv", conv.getPath());
+                	Document document = DocumentHelper.createDocument();
+                	document.addElement("id-convertor");
+                	FileOutputStream cos = new FileOutputStream(conv);
+                	(new XMLWriter(cos, OutputFormat.createPrettyPrint())).write(document);
+                	cos.flush(); cos.close();
+                }
             }
+            
             TimetableXMLSaver saver = new TimetableXMLSaver(this);
-            File outXmlFile = new File(folder,name+".xml");
             ByteArrayOutputStream ret = new ByteArrayOutputStream();
             try {
-                saver.save(outXmlFile);
-                FileInputStream fis = new FileInputStream(outXmlFile);
+                saver.save(temp);
+                FileInputStream fis = new FileInputStream(temp);
                 byte[] buf = new byte[16*1024]; int read = 0;
                 while ((read=fis.read(buf, 0, buf.length))>0)
                     ret.write(buf,0,read);
                 ret.flush();ret.close();
+                fis.close();
             } catch (Exception e) {
                 sLog.error(e.getMessage(),e);
-                if (outXmlFile.exists()) outXmlFile.delete();
             }
-            if ("true".equals(ApplicationProperties.getProperty("tmtbl.solver.export.id-conv","true"))) {
+            
+            temp.delete();
+            if (conv != null) conv.delete();
+            
+            if (anonymize) {
                 getProperties().setProperty("Xml.ConvertIds", "false");
                 getProperties().remove("Xml.SaveBest");
                 getProperties().remove("Xml.SaveInitial");
@@ -1544,6 +1551,7 @@ public class TimetableSolver extends net.sf.cpsolver.coursett.TimetableSolver im
                 getProperties().setProperty("Xml.ShowNames", "true");
                 getProperties().remove("Xml.IdConv");
             }
+            
             return ret.toByteArray();
         }
     }

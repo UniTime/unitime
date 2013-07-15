@@ -37,6 +37,7 @@
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
 <%@ taglib uri="/WEB-INF/tld/struts-tiles.tld" prefix="tiles" %>
 <%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec" %>
 
 <tt:back-mark back="true" clear="true" title="Examination Solver" uri="examSolver.do"/>
 <tt:confirm name="confirmUnload">Do you really want to unload your current timetable? You may lose this timetable if you did not save it.</tt:confirm>
@@ -267,6 +268,9 @@ try {
 			}
 %>
 					<html:submit onclick="displayLoading();" property="op" value="Store To Best"/>
+					<sec:authorize access="hasPermission(null, 'Session', 'ExaminationSolutionExportXml')">
+						<html:submit property="op" value="Export XML"/>
+					</sec:authorize>
 				</TD>
 			</TR>
 <%

@@ -19,6 +19,7 @@
 */
 package org.unitime.timetable.action;
 
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
 import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.ExportUtils;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 
@@ -104,6 +106,17 @@ public class ExamSolverAction extends Action {
         if (op==null) {
         	myForm.init("y".equals(request.getParameter("reload")));
         	return mapping.findForward("showSolver");
+        }
+        
+        if ("Export XML".equals(op)) {
+            if (solver==null) throw new Exception("Solver is not started.");
+            if (solver.isWorking()) throw new Exception("Solver is working, stop it first.");
+            sessionContext.checkPermission(Right.ExaminationSolutionExportXml);
+            byte[] buf = solver.exportXml();
+            OutputStream out = ExportUtils.getXmlOutputStream(response, "solution");
+            out.write(buf);
+            out.flush(); out.close();
+            return null;
         }
 
         if ("Restore From Best".equals(op)) {

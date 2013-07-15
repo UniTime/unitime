@@ -104,4 +104,6 @@ public interface ExamSolverProxy extends ExamAssignmentProxy {
     public Date getLastUsed();
     
     public void interrupt();
+    
+    public byte[] exportXml() throws Exception;
 }

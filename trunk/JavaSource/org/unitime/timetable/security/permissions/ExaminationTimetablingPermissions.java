@@ -45,6 +45,9 @@ public class ExaminationTimetablingPermissions {
 	
 	@PermissionForRight(Right.ExaminationSolver)
 	public static class ExaminationSolver extends ExaminationTimetabling {}
+	
+	@PermissionForRight(Right.ExaminationSolutionExportXml)
+	public static class ExaminationSolutionExportXml extends ExaminationSolver {}
 
 	@PermissionForRight(Right.ExaminationTimetable)
 	public static class ExaminationTimetable extends ExaminationTimetabling {}
