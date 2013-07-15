@@ -725,7 +725,9 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 				"SolverParameter",
 				"select p.uniqueId from Solution s inner join s.parameters p where s.uniqueId=:solutionId"
 				);
-
+		
+		getOwner().getSolutions().remove(this);
+		
 		hibSession.delete(this);
 	}
 	
