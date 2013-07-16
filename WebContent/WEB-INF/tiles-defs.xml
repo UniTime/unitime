@@ -615,6 +615,12 @@
 		<put name="showNavigation" value="true" />
   	</definition>
   	
+  	<definition name="courseOfferingAddTile" extends="pageLayoutDef">
+		<put name="title" type="string" value="Add Course Offering"/>
+		<put name="body" value="/user/courseOfferingEdit.jsp" />
+		<put name="showNavigation" value="true" />
+  	</definition>
+  	
   	<definition name="applicationConfigTile" extends="pageLayoutDef">
 		<put name="title" type="string" value="Application Configuration"/>
 		<put name="body" value="/admin/applicationConfig.jsp" />

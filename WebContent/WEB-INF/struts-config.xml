@@ -1412,8 +1412,11 @@
        scope="request"
        validate="false">
        <forward 
-       		name="displayCourseOffering" 
+       		name="edit" 
        		path="courseOfferingEditTile" />
+		<forward 
+       		name="add" 
+       		path="courseOfferingAddTile" />       		
        <forward 
        		name="instructionalOfferingDetail" 
        		path="/instructionalOfferingDetail.do" />

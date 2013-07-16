@@ -48,7 +48,10 @@
 <html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">
 	<html:hidden property="instrOfferingId"/>
 	<html:hidden property="courseOfferingId"/>
-	<html:hidden property="subjectAreaId"/>
+	<html:hidden property="add"/>
+	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+		<html:hidden property="subjectAreaId"/>
+	</logic:notEqual>
 	<html:hidden property="isControl"/>
 	<html:hidden property="courseName"/>
 	<html:hidden property="ioNotOffered"/>
@@ -58,31 +61,55 @@
 			<TD valign="middle" colspan='2'>
 				<tt:section-header>
 					<tt:section-title>
+						<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
 							<A  title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
 								accesskey="<%=MSG.accessBackToIOList() %>"
 								class="l8"
 								href="instructionalOfferingShowSearch.do?doit=Search&subjectAreaId=<bean:write name="courseOfferingEditForm" property="subjectAreaId" />&courseNbr=<%=crsNbr%>#A<bean:write name="courseOfferingEditForm" property="instrOfferingId" />"
 							><bean:write name="courseOfferingEditForm" property="courseName" /></A>
+						</logic:notEqual>
 					</tt:section-title>
 
-					<bean:define id="instrOfferingId">
-						<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
-					</bean:define>
-
-					<html:submit property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-						<loc:message name="actionUpdateCourseOffering" />
-					</html:submit>
+					<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+						<html:submit property="op"
+							styleClass="btn" 
+							accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+							title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+							<loc:message name="actionUpdateCourseOffering" />
+						</html:submit>
+					</logic:notEqual>
+				
+					<logic:equal name="courseOfferingEditForm" property="add" value="true">
+						<html:submit property="op"
+							styleClass="btn" 
+							accesskey="<%=MSG.accessSaveCourseOffering() %>" 
+							title="<%=MSG.titleSaveCourseOffering(MSG.accessSaveCourseOffering()) %>">
+							<loc:message name="actionSaveCourseOffering" />
+						</html:submit>
+					</logic:equal>
+										
+					<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+						<bean:define id="instrOfferingId">
+							<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
+						</bean:define>
+						<html:button property="op"
+							styleClass="btn" 
+							accesskey="<%=MSG.accessBackToIODetail() %>" 
+							title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
+							onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
+							<loc:message name="actionBackToIODetail" />
+						</html:button>
+					</logic:notEqual>
 					
-					<html:button property="op"
-						styleClass="btn" 
-						accesskey="<%=MSG.accessBackToIODetail() %>" 
-						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
-						onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-						<loc:message name="actionBackToIODetail" />
-					</html:button>
+					<logic:equal name="courseOfferingEditForm" property="add" value="true">
+						<html:button property="op"
+							styleClass="btn" 
+							accesskey="<%=MSG.accessBackToIOList()%>" 
+							title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
+							onclick="document.location.href='instructionalOfferingShowSearch.do';">
+							<loc:message name="actionBackToIOList" />
+						</html:button>
+					</logic:equal>
 
 				</tt:section-header>
 
@@ -106,7 +133,25 @@
 		</TR>
 		</logic:messagesPresent>
 		
-	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+	<logic:equal name="courseOfferingEditForm" property="add" value="true">
+		<TR>
+			<TD><loc:message name="filterSubject"/> </TD>
+			<TD>
+				<html:select
+					name="courseOfferingEditForm"
+					property="subjectAreaId"
+					onfocus="setUp();"
+					onkeypress="return selectSearch(event, this);"
+					onkeydown="return checkKey(event, this);"
+					onchange="submit();" >
+					<html:options collection="subjects" property="uniqueId" labelProperty="subjectAreaAbbreviation" />
+				</html:select>
+			</TD>
+		</TR>
+	</logic:equal>
+		
+	<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+						(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
@@ -120,7 +165,8 @@
 			</TD>
 		</TR>
 	</sec:authorize>
-	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<html:hidden property="courseNbr"/>
 		<logic:notEmpty name="courseOfferingEditForm" property="title">
 			<TR>
@@ -134,7 +180,8 @@
 	</sec:authorize>
 	
 	<logic:notEmpty scope="request" name="courseTypes">
-		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+		<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+							(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<TR>
 				<TD><loc:message name="propertyCourseType"/></TD>
 				<TD>
@@ -150,7 +197,8 @@
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+		<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+								!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<html:hidden property="courseTypeId"/>
 			<logic:notEmpty name="courseOfferingEditForm" property="courseTypeId">
 				<logic:iterate name="courseTypes" scope="request" id="type" type="org.unitime.timetable.model.CourseType">
@@ -165,7 +213,9 @@
 		</sec:authorize>
 	</logic:notEmpty>
 
-	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')">
+	<sec:authorize access="(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
+							 hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
+						or (#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
 			<TD>
@@ -173,7 +223,9 @@
 			</TD>
 		</TR>
 	</sec:authorize>
-	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') and !hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')">
+	<sec:authorize access="!(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or
+							 hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingNote')))
+						and !(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<logic:notEmpty name="courseOfferingEditForm" property="scheduleBookNote">
 			<TR>
 				<TD valign="top"><loc:message name="propertyScheduleOfClassesNote"/> </TD>
@@ -186,7 +238,8 @@
 	</sec:authorize>
 	
 		
-	<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+	<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+						(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD valign="top"><loc:message name="propertyConsent" /></TD>
 			<TD>
@@ -256,6 +309,7 @@
 		</logic:equal>
 
 		<logic:equal name="courseOfferingEditForm" property="allowDemandCourseOfferings" value="true">
+			<logic:notEmpty name="<%=CourseOffering.CRS_OFFERING_LIST_ATTR_NAME%>" scope="request">
 			<TR>
 				<TD><loc:message name="propertyTakeCourseDemandsFromOffering"/> </TD>
 				<TD>
@@ -270,10 +324,12 @@
 					</html:select>
 				</TD>
 			</TR>
+			</logic:notEmpty>
 		</logic:equal>
 	</sec:authorize>
 	
-	<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">
+	<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and
+						!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<logic:notEqual name="courseOfferingEditForm" property="consent" value="-1">
 			<TR>
 				<TD valign="top"><loc:message name="propertyConsent" /></TD>
@@ -332,7 +388,10 @@
 	</logic:notEmpty>
 
 	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
-		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')">
+		<sec:authorize access="(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
+								or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
+								or (#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
+			<logic:notEmpty name="<%=DepartmentalInstructor.INSTR_LIST_ATTR_NAME%>" scope="request">
 			<TR>
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
@@ -365,8 +424,11 @@
 				</table>
 				</TD>
 			</TR>
+			</logic:notEmpty>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering') and !hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')">
+		<sec:authorize access="!(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
+								or hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOfferingCoordinators')))
+								and !(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<logic:notEmpty name="courseOfferingEditForm" property="instructors">
 				<TD valign="top"><loc:message name="propertyCoordinators"/> </TD>
 				<TD nowrap>
@@ -385,7 +447,8 @@
 			</logic:iterate>
 		</sec:authorize>
 
-		<sec:authorize access="hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">			
+		<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
+							(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<TR>
 				<TD valign="top"><loc:message name="propertyByReservationOnly"/> </TD>
 				<TD>
@@ -420,7 +483,8 @@
 				</TD>
 			</TR>
 		</sec:authorize>
-		<sec:authorize access="!hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')">			
+		<sec:authorize access="!(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) and 
+							!(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 			<logic:equal name="courseOfferingEditForm" property="byReservationOnly" value="true">
 				<TR>
 					<TD><loc:message name="propertyByReservationOnly"/></TD>
@@ -483,20 +547,46 @@
 
 		<TR>
 			<TD colspan="2" align="right">
-				<html:submit property="op"
-					styleClass="btn" 
-					accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
-					title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
-					<loc:message name="actionUpdateCourseOffering" />
-				</html:submit>
+				<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+					<html:submit property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessUpdateCourseOffering() %>" 
+						title="<%=MSG.titleUpdateCourseOffering(MSG.accessUpdateCourseOffering()) %>">
+						<loc:message name="actionUpdateCourseOffering" />
+					</html:submit>
+				</logic:notEqual>
 				
-				<html:button property="op"
-					styleClass="btn" 
-					accesskey="<%=MSG.accessBackToIODetail() %>" 
-					title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
-					onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
-					<loc:message name="actionBackToIODetail" />
-				</html:button>
+				<logic:equal name="courseOfferingEditForm" property="add" value="true">
+					<html:submit property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessSaveCourseOffering() %>" 
+						title="<%=MSG.titleSaveCourseOffering(MSG.accessSaveCourseOffering()) %>">
+						<loc:message name="actionSaveCourseOffering" />
+					</html:submit>
+				</logic:equal>
+
+				<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+					<bean:define id="instrOfferingId">
+						<bean:write name="courseOfferingEditForm" property="instrOfferingId" />
+					</bean:define>
+					<html:button property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToIODetail() %>" 
+						title="<%=MSG.titleBackToIODetail(MSG.accessBackToIODetail()) %>"
+						onclick="document.location.href='instructionalOfferingDetail.do?op=view&io=${instrOfferingId}';">
+						<loc:message name="actionBackToIODetail" />
+					</html:button>
+				</logic:notEqual>
+				
+				<logic:equal name="courseOfferingEditForm" property="add" value="true">
+						<html:button property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessBackToIOList()%>" 
+						title="<%=MSG.titleBackToIOList(MSG.accessBackToIOList()) %>"
+						onclick="document.location.href='instructionalOfferingShowSearch.do';">
+						<loc:message name="actionBackToIOList" />
+					</html:button>
+				</logic:equal>
 			</TD>
 		</TR>
 
