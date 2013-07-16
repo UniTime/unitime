@@ -59,6 +59,7 @@ import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.LastLikeCourseDemand;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.Preference;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.VariableFixedCreditUnitConfig;
@@ -67,6 +68,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.CourseTypeDAO;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
+import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.permissions.Permission;
@@ -164,6 +166,11 @@ public class CourseOfferingEditAction extends Action {
 			for (int i=0; i<Constants.PREF_ROWS_ADDED; i++)
                 frm.getInstructors().add(Preference.BLANK_PREF_VALUE);
 			frm.setAdd(true);
+			Session session = SessionDAO.getInstance().get(sessionContext.getUser().getCurrentAcademicSessionId());
+	        frm.setWkEnrollDefault(session.getLastWeekToEnroll());
+	        frm.setWkChangeDefault(session.getLastWeekToChange());
+	        frm.setWkDropDefault(session.getLastWeekToDrop());
+	        frm.setWeekStartDayOfWeek(Localization.getDateFormat("EEEE").format(session.getSessionBeginDateTime()));
 			doReload(request, frm);
 		}
 
