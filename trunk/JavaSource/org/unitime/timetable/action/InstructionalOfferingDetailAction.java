@@ -32,6 +32,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionRedirect;
 import org.apache.struts.util.MessageResources;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -192,7 +193,14 @@ public class InstructionalOfferingDetailAction extends Action {
 	    	sessionContext.checkPermission(frm.getInstrOfferingId(), "InstructionalOffering", Right.OfferingMakeNotOffered);
 
 	    	doMakeNotOffered(request, frm);
-	        return mapping.findForward("showInstructionalOfferings");
+	    	if ("false".equals(ApplicationProperties.getProperty("unitime.offering.makeNotOfferedStaysOnDetail", "false"))) {
+	    		ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferings"));
+                redirect.setAnchor("A" + frm.getInstrOfferingId());
+                return redirect;
+	    	} else {
+	    		response.sendRedirect(response.encodeURL("instructionalOfferingDetail.do?io="+frm.getInstrOfferingId()));
+	        	return null;
+	    	}
 		}
 		
 		// Change controlling course, add other offerings
@@ -277,6 +285,16 @@ public class InstructionalOfferingDetailAction extends Action {
 	        	ExternalInstructionalOfferingDeleteAction deleteAction = (ExternalInstructionalOfferingDeleteAction) (Class.forName(className).newInstance());
 	       		deleteAction.performExternalInstructionalOfferingDeleteAction(io, hibSession);
         	}
+        	
+	        
+            ChangeLog.addChange(
+                    hibSession, 
+                    sessionContext, 
+                    io, 
+                    ChangeLog.Source.OFFERING_DETAIL, 
+                    ChangeLog.Operation.DELETE, 
+                    io.getControllingCourseOffering().getSubjectArea(),
+                    null);
 
 	        hibSession.delete(io);
 	        
