@@ -782,6 +782,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Update")
 	String actionUpdateCourseOffering();
 	
+	@DefaultMessage("Save")
+	String actionSaveCourseOffering();
+	
 	@DefaultMessage("Update")
 	String actionUpdateCrossLists();
 	
@@ -904,6 +907,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Edit Course Offering")
 	String actionEditCourseOffering();
+	
+	@DefaultMessage("Add Course Offering")
+	String actionAddCourseOffering();
 	
 	@DefaultMessage("Lock")
 	String actionLockIO();
@@ -1033,6 +1039,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("U")
 	String accessUpdateCourseOffering();
+	
+	@DefaultMessage("S")
+	String accessSaveCourseOffering();
 	
 	@DefaultMessage("U")
 	String accessUpdateCrossLists();
@@ -1234,6 +1243,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("Update Course Offering (Alt+{0})")
 	String titleUpdateCourseOffering(String accessKey);
+	
+	@DefaultMessage("Save Course Offering (Alt+{0})")
+	String titleSaveCourseOffering(String accessKey);
 	
 	@DefaultMessage("Update Cross Lists (Alt+{0})")
 	String titleUpdateCrossLists(String accessKey);
@@ -1619,6 +1631,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Config ID is not valid: ")
 	String errorConfigIDNotValid();
 	
+	@DefaultMessage("Subject is required.")
+	String errorSubjectRequired();
+	
 	@DefaultMessage("Course Number is required.")
 	String errorCourseNumberRequired();
 	
@@ -1627,6 +1642,9 @@ public interface CourseMessages extends Messages {
 	
 	@DefaultMessage("The course cannot be renamed. A course with the same course number already exists.")
 	String errorCourseCannotBeRenamed();
+	
+	@DefaultMessage("The course cannot be created. A course with the same course number already exists.")
+	String errorCourseCannotBeCreated();
 	
 	@DefaultMessage("Reserved spaces should total to at least the limit")
 	String errorCrossListsLimitsDoNotMatch();

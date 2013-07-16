@@ -55,6 +55,7 @@ public class CourseOfferingEditForm extends ActionForm {
 	private static final long serialVersionUID = 5719027599139781262L;
 	// --------------------------------------------------------- Instance Variables
     private String op;
+    private boolean add = false;
     private Long subjectAreaId;
     private Long courseOfferingId;
     private Long instrOfferingId;
@@ -97,8 +98,10 @@ public class CourseOfferingEditForm extends ActionForm {
 
         ActionErrors errors = new ActionErrors();
 
-		if(op.equals(MSG.actionUpdateCourseOffering()) ) {
-			if (courseNbr==null || courseNbr.trim().length()==0) {
+		if (op.equals(MSG.actionUpdateCourseOffering()) || op.equals(MSG.actionSaveCourseOffering())) {
+			if (subjectAreaId == null || subjectAreaId == 0) {
+				errors.add("subjectAreaId", new ActionMessage("errors.generic", MSG.errorSubjectRequired()));
+			} else if (courseNbr==null || courseNbr.trim().length()==0) {
 				errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseNumberRequired()));
 			}
 			else {
@@ -122,7 +125,9 @@ public class CourseOfferingEditForm extends ActionForm {
 		    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")){
 					SubjectArea sa = new SubjectAreaDAO().get(subjectAreaId);
 					CourseOffering co = CourseOffering.findBySessionSubjAreaAbbvCourseNbr(sa.getSessionId(), sa.getSubjectAreaAbbreviation(), courseNbr);
-					if (co!=null && !co.getUniqueId().equals(courseOfferingId)) {
+					if (add && co != null) {
+						errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeCreated()));
+					} else if (!add && co!=null && !co.getUniqueId().equals(courseOfferingId)) {
 			            errors.add("courseNbr", new ActionMessage("errors.generic", MSG.errorCourseCannotBeRenamed()));
 					}
 		    	}
@@ -170,7 +175,11 @@ public class CourseOfferingEditForm extends ActionForm {
         wkEnrollDefault = null; wkChangeDefault = null; wkDropDefault = null;
         weekStartDayOfWeek = null;
         courseTypeId = null;
+        add = false;
     }
+    
+    public boolean isAdd() { return add; }
+    public void setAdd(boolean add) { this.add = add; }
 
     public Long getCourseOfferingId() {
         return courseOfferingId;
