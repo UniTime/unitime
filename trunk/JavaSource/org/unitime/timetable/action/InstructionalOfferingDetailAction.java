@@ -296,6 +296,10 @@ public class InstructionalOfferingDetailAction extends Action {
                     io.getControllingCourseOffering().getSubjectArea(),
                     null);
 
+            for (CourseOffering co: io.getCourseOfferings()) {
+            	co.getSubjectArea().getCourseOfferings().remove(co);
+            	hibSession.delete(co);
+            }
 	        hibSession.delete(io);
 	        
 	        tx.commit();

@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -416,11 +414,50 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 		String courseNbr = frm.getCourseNbr().trim();
 	    ActionMessages errors = new ActionMessages();
 	    
-	    // Check blank subject area
-	    if (subjAreaId == null) 
-	        errors.add("subjAreaId", new ActionMessage("errors.required", "Subject Area"));
-	    else 
-	    	sessionContext.checkPermission(subjAreaId, "SubjectArea", Right.AddCourseOffering);
+	    // Check if errors were found
+	    if (!errors.isEmpty()) {
+		    frm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		    saveErrors(request, errors);
+	        if (frm.getInstructionalOfferings() == null || frm.getInstructionalOfferings().isEmpty()) {
+	        	return mapping.findForward("showInstructionalOfferingSearch");
+			} else {
+			    return mapping.findForward("showInstructionalOfferingList");
+			}
+	    }
+	    
+	    // Set Session Variables
+	    if (subjAreaId != null) {
+	    	sessionContext.setAttribute(SessionAttribute.OfferingsSubjectArea, subjAreaId.toString());
+	    	sessionContext.setAttribute(SessionAttribute.OfferingsCourseNumber, courseNbr);
+	    }
+	    
+	    if (subjAreaId != null && !courseNbr.isEmpty()) {
+		    // Offering exists - redirect to offering detail
+	    	String courseNumbersMustBeUnique = ApplicationProperties.getProperty("tmtbl.courseNumber.unique","true");
+
+	    	if (courseNumbersMustBeUnique.equalsIgnoreCase("true")) {
+	    		CourseOffering course = CourseOffering.findBySessionSubjAreaIdCourseNbr(sessionContext.getUser().getCurrentAcademicSessionId(), subjAreaId, courseNbr);
+	    		if (course != null) {
+		            ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
+		            redirect.addParameter("op", "view");
+		            redirect.addParameter("io", course.getInstructionalOffering().getUniqueId().toString());
+		            return redirect;
+			    }
+	    	}
+	    }
+
+	    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showCourseOfferingEdit"));
+        redirect.addParameter("op", MSG.actionAddCourseOffering());
+        if (subjAreaId != null)
+        	redirect.addParameter("subjAreaId", subjAreaId.toString());
+        redirect.addParameter("courseNbr", courseNbr);
+        return redirect;
+        
+        /*
+	    ActionRedirect redirect = new ActionRedirect(mapping.findForward("showInstructionalOfferingDetail"));
+        redirect.addParameter("op", "view");
+        redirect.addParameter("io", course.getInstructionalOffering().getUniqueId().toString());
+        return redirect;
 	        
 	    // Check blank course number
 	    if (courseNbr == null || courseNbr.isEmpty()) 
@@ -493,7 +530,7 @@ public class InstructionalOfferingSearchAction extends LocalizedLookupDispatchAc
 	    frm.setInstructionalOfferings(getInstructionalOfferings(sessionContext.getUser().getCurrentAcademicSessionId(), classAssignmentService.getAssignment(), frm));
 
 	    return mapping.findForward("showInstructionalOfferingList");
-		
+		*/
 	}
 	
 	public static void setLastInstructionalOffering(SessionContext sessionContext, InstructionalOffering offering) {
