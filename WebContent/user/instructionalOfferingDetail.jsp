@@ -491,6 +491,7 @@
 		<% } %>
 		
 
+		<logic:equal name="instructionalOfferingDetailForm" property="notOffered" value="false">
 		<TR>
 			<TD colspan="2">
 				<tt:exams type='InstructionalOffering' add='true'>
@@ -498,6 +499,7 @@
 				</tt:exams>
 			</TD>
 		</TR>
+		</logic:equal>
 		
 		<tt:last-change type='InstructionalOffering'>
 			<bean:write name="<%=frmName%>" property="instrOfferingId"/>
