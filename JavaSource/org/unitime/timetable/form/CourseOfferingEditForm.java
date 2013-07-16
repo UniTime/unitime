@@ -97,6 +97,10 @@ public class CourseOfferingEditForm extends ActionForm {
         HttpServletRequest request) {
 
         ActionErrors errors = new ActionErrors();
+        
+        if (getCourseNbr() != null && "true".equals(ApplicationProperties.getProperty("tmtbl.courseNumber.upperCase", "true"))) {
+        	setCourseNbr(getCourseNbr().toUpperCase());
+        }
 
 		if (op.equals(MSG.actionUpdateCourseOffering()) || op.equals(MSG.actionSaveCourseOffering())) {
 			if (subjectAreaId == null || subjectAreaId == 0) {
