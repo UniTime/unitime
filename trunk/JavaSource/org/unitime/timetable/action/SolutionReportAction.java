@@ -593,25 +593,45 @@ public class SolutionReportAction extends Action {
 	public PdfWebTable getStudentConflictsReportTable(HttpServletRequest request, StudentConflictsReport report, boolean noHtml) {
 		WebTable.setOrder(sessionContext,"solutionReports.studConf.ord",request.getParameter("studconf_ord"),-1);
 		boolean hasImportant = false;
+		boolean hasInstructor = false;
 		for (JenrlInfo g: (Set<JenrlInfo>)report.getGroups()) {
-			if (g.isImportant()) { hasImportant = true; break; }
+			if (g.isImportant()) hasImportant = true;
+			if (g.isInstructor()) hasInstructor = true;
 		}
-		PdfWebTable webTable = new PdfWebTable(10,
-   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
-   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left"},
-   				null);
+		PdfWebTable webTable = null;
 		if (hasImportant) {
-			webTable = new PdfWebTable(11,
-	   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
-	   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Important", "Curriculum"},
-	   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left", "left"},
-	   				null);
+			if (hasInstructor) {
+				webTable = new PdfWebTable(12,
+		   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
+		   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Important", "Instructor", "Curriculum"},
+		   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left", "left", "left"},
+		   				null);
+			} else {
+				webTable = new PdfWebTable(11,
+		   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
+		   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Important", "Curriculum"},
+		   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left", "left"},
+		   				null);
+			}
+		} else {
+			if (hasInstructor) {
+				webTable = new PdfWebTable(11,
+		   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
+		   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Instructor", "Curriculum"},
+		   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left", "left"},
+		   				null);
+			} else {
+				webTable = new PdfWebTable(10,
+		   	        	"Student Conflicts", "solutionReport.do?studconf_ord=%%",
+		   				new String[] {"NrConflicts", "Class", "Date", "Time", "Room", "Hard", "Distance", "Fixed", "Commited", "Curriculum"},
+		   				new String[] {"left", "left", "left", "left", "left", "left", "left","left","left", "left"},
+		   				null);
+			}
 		}
         webTable.setRowStyle("white-space:nowrap");
         
         try {
-        	int total[] = new int [] { 0, 0, 0, 0, 0, 0};
+        	int total[] = new int [] { 0, 0, 0, 0, 0, 0, 0};
         	for (Iterator i=report.getGroups().iterator();i.hasNext();) {
         		JenrlInfo g = (JenrlInfo)i.next();
         		
@@ -624,60 +644,53 @@ public class SolutionReportAction extends Action {
         		for (int j=0;j<g.getSecond().getRoom().length;j++)
     				rSB.append((j>0?", ":"")+(noHtml?g.getSecond().getRoom()[j].getName():g.getSecond().getRoom()[j].toHtml(false,false,true)));
         		
+        		String[] line = new String[hasImportant ? hasInstructor ? 12 : 11 : hasInstructor ? 11 : 10];
+        		Comparable[] cmp = new Comparable[hasImportant ? hasInstructor ? 12 : 11 : hasInstructor ? 11 : 10];
+        		int idx = 0;
+        		
+        		line[idx] = String.valueOf(Math.round(g.getJenrl()));
+        		cmp[idx++] = new Double(g.getJenrl());
+        		
+        		line[idx] = (noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
+        			g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true));
+        		cmp[idx++] = new DuoComparable(g.getFirst(),g.getSecond());
+        		
+        		line[idx] = g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName();
+        		cmp[idx++] = null;
+        		
+        		line[idx] = (noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
+        			g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true));
+        		cmp[idx++] = null;
+        		
+        		line[idx] = rSB.toString();
+        		cmp[idx++] = null;
+        		
+        		line[idx] = (noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		cmp[idx++] = new Integer(g.isHard()?1:0);
+        		
+        		line[idx] = (g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":"");
+        		cmp[idx++] = new Double(g.getDistance());
+        		
+        		line[idx] = (noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		cmp[idx++] = new Integer(g.isFixed()?1:0);
+        		
+        		line[idx] = (noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":"");
+        		cmp[idx++] = new Integer(g.isCommited()?1:0);
+        		
         		if (hasImportant) {
-            		webTable.addLine(null,
-            	    		new String[] {
-                				String.valueOf(Math.round(g.getJenrl())),
-                				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
-                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
-                				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
-                				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
-                				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
-                				rSB.toString(),
-                				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
-                				(noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				(noHtml?(g.isImportant()?"true":""):g.isImportant()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				g.getCurriculumText()
-                			},
-                			new Comparable[] {
-                				new Double(g.getJenrl()),
-                				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null,
-                				new Integer(g.isHard()?1:0),
-                				new Double(g.getDistance()),
-                				new Integer(g.isFixed()?1:0),
-                				new Integer(g.isCommited()?1:0),
-                				new Integer(g.isImportant()?1:0),
-                				null
-                			});
-        		} else {
-            		webTable.addLine(null,
-            	    		new String[] {
-                				String.valueOf(Math.round(g.getJenrl())),
-                				(noHtml?g.getFirst().getClazz().getName()+"\n"+g.getSecond().getClazz().getName():
-                				g.getFirst().getClazz().toHtml(true,true)+"<BR>"+g.getSecond().getClazz().toHtml(true,true)),
-                				g.getFirst().getDaysName()+(noHtml?"\n":"<BR>")+g.getSecond().getDaysName(),
-                				(noHtml?g.getFirst().getTime().getName(true)+"\n"+g.getSecond().getTime().getName(true):
-                				g.getFirst().getTime().toHtml(false,false,true,true)+"<BR>"+g.getSecond().getTime().toHtml(false,false,true,true)),
-                				rSB.toString(),
-                				(noHtml?(g.isHard()?"true":""):g.isHard()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				(g.isDistance()?String.valueOf(Math.round(g.getDistance()))+"m":""),
-                				(noHtml?(g.isFixed()?"true":""):g.isFixed()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				(noHtml?(g.isCommited()?"true":""):g.isCommited()?"<img src='images/checkmark.gif' border='0'/>":""),
-                				g.getCurriculumText()
-                			},
-                			new Comparable[] {
-                				new Double(g.getJenrl()),
-                				new DuoComparable(g.getFirst(),g.getSecond()), null, null, null,
-                				new Integer(g.isHard()?1:0),
-                				new Double(g.getDistance()),
-                				new Integer(g.isFixed()?1:0),
-                				new Integer(g.isCommited()?1:0),
-                				null
-                			});
+        			line[idx] = (noHtml?(g.isImportant()?"true":""):g.isImportant()?"<img src='images/checkmark.gif' border='0'/>":"");
+        			cmp[idx++] = new Integer(g.isImportant()?1:0);
         		}
-
+        		
+        		if (hasInstructor) {
+        			line[idx] = (noHtml?(g.isInstructor()?"true":""):g.isInstructor()?"<img src='images/checkmark.gif' border='0'/>":"");
+        			cmp[idx++] = new Integer(g.isInstructor()?1:0);
+        		}
+        		
+        		line[idx] = g.getCurriculumText();
+        		cmp[idx++] = null;
+        		
+        		webTable.addLine(null, line, cmp);
         		
         		total[0] += Math.round(g.getJenrl());
         		if (g.isHard()) total[1] += Math.round(g.getJenrl());
@@ -685,58 +698,54 @@ public class SolutionReportAction extends Action {
         		if (g.isFixed()) total[3] += Math.round(g.getJenrl());
         		if (g.isCommited()) total[4] += Math.round(g.getJenrl());
         		if (g.isImportant()) total[5] += Math.round(g.getJenrl());
+        		if (g.isInstructor()) total[6] += (g.isInstructor() ? 1 : 0);
         	}
         	
-        	if (hasImportant) {
-        		webTable.addLine(null,
-        	    		new String[] {
-            				String.valueOf(total[0]),
-            				"<i>Total</i>",
-            				"",
-            				"",
-            				"",
-            				String.valueOf(total[1]),
-            				String.valueOf(total[2]),
-            				String.valueOf(total[3]),
-            				String.valueOf(total[4]),
-            				String.valueOf(total[5]),
-            				""
-            			},
-            			new Comparable[] {
-            				new Double(total[0]),
-            				new DuoComparable("",""), null, null, null,
-            				new Integer(total[1]),
-            				new Double(1000.0 * total[2]),
-            				new Integer(total[3]),
-            				new Integer(total[4]),
-            				new Integer(total[5]),
-            				null
-            			});        		
-        	} else {
-        		webTable.addLine(null,
-        	    		new String[] {
-            				String.valueOf(total[0]),
-            				"<i>Total</i>",
-            				"",
-            				"",
-            				"",
-            				String.valueOf(total[1]),
-            				String.valueOf(total[2]),
-            				String.valueOf(total[3]),
-            				String.valueOf(total[4]),
-            				""
-            			},
-            			new Comparable[] {
-            				new Double(total[0]),
-            				new DuoComparable("",""), null, null, null,
-            				new Integer(total[1]),
-            				new Double(1000.0 * total[2]),
-            				new Integer(total[3]),
-            				new Integer(total[4]),
-            				null
-            			});
-        	}
+    		String[] line = new String[hasImportant ? hasInstructor ? 12 : 11 : hasInstructor ? 11 : 10];
+    		Comparable[] cmp = new Comparable[hasImportant ? hasInstructor ? 12 : 11 : hasInstructor ? 11 : 10];
+    		int idx = 0;
+
+    		line[idx] = String.valueOf(total[0]);
+    		cmp[idx++] = new Double(total[0]);
+    		
+    		line[idx] = "<i>Total</i>";
+    		cmp[idx++] = new DuoComparable("","");
+    		
+    		line[idx] = "";
+    		cmp[idx++] = null;
+    		
+    		line[idx] = "";
+    		cmp[idx++] = null;
+    		
+    		line[idx] = "";
+    		cmp[idx++] = null;
+    		
+    		line[idx] = String.valueOf(total[1]);
+    		cmp[idx++] = new Integer(total[1]);
+    		
+    		line[idx] = String.valueOf(total[2]);
+    		cmp[idx++] = new Double(1000.0 * total[2]);
+    		
+    		line[idx] = String.valueOf(total[3]);
+    		cmp[idx++] = new Integer(total[3]);
+    		
+    		line[idx] = String.valueOf(total[4]);
+    		cmp[idx++] = new Integer(total[4]);
+    		
+    		if (hasImportant) {
+    			line[idx] = String.valueOf(total[5]);
+    			cmp[idx++] = new Integer(total[5]);
+    		}
+    		
+    		if (hasInstructor) {
+    			line[idx] = String.valueOf(total[6]);
+    			cmp[idx++] = new Integer(total[6]);
+    		}
+    		
+    		line[idx] = "";
+        	cmp[idx++] = null;
         	
+        	webTable.addLine(null, line, cmp);
         } catch (Exception e) {
         	Debug.error(e);
         	webTable.addLine(new String[] {"<font color='red'>ERROR:"+e.getMessage()+"</font>"},null);
