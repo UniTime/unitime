@@ -189,7 +189,7 @@ public class ClassificationsEdit extends Composite {
 				
 				@Override
 				public String getName() {
-					return m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName());
+					return m == Mode.NONE ? MESSAGES.opHide(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShow(m.getName());
 				}
 			});
 		}
@@ -318,6 +318,10 @@ public class ClassificationsEdit extends Composite {
 								t1 = (f.getProjection() == null ? 0 : f.getProjection());
 								t2 = (g.getProjection() == null ? 0 : g.getProjection());
 								break;
+							case REQ:
+								t1 = (f.getRequested() == null ? 0 : f.getRequested());
+								t2 = (g.getRequested() == null ? 0 : g.getRequested());
+								break;
 							}
 							if (t2 > t1) return 1;
 							if (t1 > t2) return -1;
@@ -404,11 +408,13 @@ public class ClassificationsEdit extends Composite {
 							for (CurriculumClassificationInterface clasf: b.getClassifications())
 								if (clasf.getProjection() != null) t2 += clasf.getProjection();
 							break;
+						case REQ:
+							for (CurriculumClassificationInterface clasf: a.getClassifications())
+								if (clasf.getRequested() != null) t1 += clasf.getRequested();
+							for (CurriculumClassificationInterface clasf: b.getClassifications())
+								if (clasf.getRequested() != null) t2 += clasf.getRequested();
+							break;
 						}
-						for (CurriculumClassificationInterface clasf: a.getClassifications())
-							if (clasf.getExpected() != null) t1 += clasf.getExpected();
-						for (CurriculumClassificationInterface clasf: b.getClassifications())
-							if (clasf.getExpected() != null) t2 += clasf.getExpected();
 						if (t2 > t1) return 1;
 						if (t1 > t2) return -1;
 						return a.compareTo(b);
@@ -612,6 +618,14 @@ public class ClassificationsEdit extends Composite {
 				}
 				iRearLabel.setVisible(true);
 				break;
+			case REQ: // Course Requests
+				if (iClasf.getRequested() == null || iClasf.getRequested() == 0) {
+					iRearLabel.setHTML("");
+				} else {
+					iRearLabel.setHTML(iClasf.getRequested().toString());
+				}
+				iRearLabel.setVisible(true);
+				break;
 			}
 		}
 		
@@ -696,6 +710,14 @@ public class ClassificationsEdit extends Composite {
 					ret += c.getClassification().getProjection();
 			return ret;
 		}
+		
+		public int sumRequested() {
+			int ret = 0;
+			for (MyCell c: iCells)
+				if (c.getClassification().getRequested() != null)
+					ret += c.getClassification().getRequested();
+			return ret;
+		}
 
 		public void update() {
 			iTextBox.setHTML(sumExpected() == 0 ? "" : String.valueOf(sumExpected()));
@@ -714,6 +736,10 @@ public class ClassificationsEdit extends Composite {
 				break;
 			case PROJ: // Projection
 				iRearLabel.setHTML(sumProjection() == 0 ? "" : String.valueOf(sumProjection()));
+				iRearLabel.setVisible(true);
+				break;
+			case REQ: // Course Requests
+				iRearLabel.setHTML(sumRequested() == 0 ? "" : String.valueOf(sumRequested()));
 				iRearLabel.setVisible(true);
 				break;
 			}

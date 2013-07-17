@@ -121,9 +121,9 @@ public class MakeCurriculaFromLastlikeDemands {
     public Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> loadRealCurricula(org.hibernate.Session hibSession) {
         Hashtable<AcademicArea, Hashtable<PosMajor, Hashtable<AcademicClassification, Hashtable<CourseOffering, Set<Long>>>>> curricula = new Hashtable();
         List demands = (List)hibSession.createQuery(
-                "select distinct a, m, c, e.student.uniqueId from StudentClassEnrollment e inner join e.student.academicAreaClassifications a " +
-                "inner join e.student.posMajors m inner join e.courseOffering c where "+
-                "e.student.session.uniqueId=:sessionId")
+        		"select distinct a, m, c, s.uniqueId from CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a " +
+                "inner join s.posMajors m inner join r.courseOffering c where "+
+                "s.session.uniqueId=:sessionId")
                 .setLong("sessionId", iSessionId)
                 .setFetchSize(1000)
                 .list();
