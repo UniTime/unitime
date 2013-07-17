@@ -640,7 +640,7 @@ public class TimetableDatabaseSaver extends TimetableSaver {
     			JenrlInfo jInfo = new JenrlInfo(jc);
     			ConstraintInfo constraintInfo = new ConstraintInfo();
     			constraintInfo.setDefinition(defJenrlInfo);
-    			constraintInfo.setOpt((jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":"")+(jInfo.isImportant()?"I":""));
+    			constraintInfo.setOpt((jInfo.isSatisfied()?"S":"")+(jInfo.isHard()?"H":"")+(jInfo.isDistance()?"D":"")+(jInfo.isFixed()?"F":"")+(jInfo.isImportant()?"I":"")+(jInfo.isInstructor()?"X":""));
     			Assignment firstAssignment = (Assignment)iAssignments.get(((Lecture)jc.first()).getClassId());
     			Assignment secondAssignment = (Assignment)iAssignments.get(((Lecture)jc.second()).getClassId());
     			if (firstAssignment==null || secondAssignment==null) continue;

@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentConflict;
+import net.sf.cpsolver.coursett.criteria.additional.InstructorStudentHardConflict;
 import net.sf.cpsolver.ifs.extension.ConflictStatistics;
 import net.sf.cpsolver.ifs.extension.SearchIntensification;
 import net.sf.cpsolver.ifs.extension.ViolatedInitials;
@@ -229,6 +231,9 @@ public class CourseTimetablingSolverService implements SolverService<SolverProxy
         if (properties.getProperty("Distances.Ellipsoid") == null || properties.getProperty("Distances.Ellipsoid").equals("DEFAULT"))
             properties.setProperty("Distances.Ellipsoid", ApplicationProperties.getProperty(ApplicationProperty.DistanceEllipsoid));
         
+        if (properties.getPropertyBoolean("Global.LoadStudentInstructorConflicts", false))
+        	properties.setProperty("General.AdditionalCriteria", properties.getProperty("General.AdditionalCriteria") + ";" + InstructorStudentConflict.class.getName() + ";" + InstructorStudentHardConflict.class.getName());
+
         properties.expand();
         
         return properties;

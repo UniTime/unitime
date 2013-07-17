@@ -40,12 +40,14 @@ import net.sf.cpsolver.coursett.constraint.DepartmentSpreadConstraint;
 import net.sf.cpsolver.coursett.constraint.DiscouragedRoomConstraint;
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.InstructorConstraint;
+import net.sf.cpsolver.coursett.constraint.JenrlConstraint;
 import net.sf.cpsolver.coursett.constraint.RoomConstraint;
 import net.sf.cpsolver.coursett.criteria.TooBigRooms;
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
 import net.sf.cpsolver.coursett.model.RoomSharingModel;
 import net.sf.cpsolver.coursett.model.Student;
+import net.sf.cpsolver.coursett.model.TimetableModel;
 import net.sf.cpsolver.ifs.model.Constraint;
 import net.sf.cpsolver.ifs.solver.Solver;
 
@@ -131,6 +133,19 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 		if (instructor.getUnavailabilities()!=null) {
 			for (Placement p: instructor.getUnavailabilities()) {
 				init(solver, p, sBgModeNotAvailable, firstDay);
+			}
+		}
+		for (Student student: ((TimetableModel)solver.currentSolution().getModel()).getAllStudents()) {
+			if (instructor.equals(student.getInstructor())) {
+				for (Lecture lecture: student.getLectures())
+					if (lecture.getAssignment() != null && !instructor.variables().contains(lecture)) {
+						TimetableGridCell cell = init(solver, lecture.getAssignment(), bgMode, firstDay);
+						while (cell != null) {
+							cell.setName("<i>" + cell.getName() + "</i>");
+							cell.setRoomName("<i>" + cell.getRoomName() + "</i>");
+							cell = cell.getParent();
+						}
+					}
 			}
 		}
 	}
@@ -376,6 +391,16 @@ public class SolverGridModel extends TimetableGridModel implements Serializable 
 			background = TimetableGridCell.pref2color(pref);
 		} else if (bgMode==sBgModeStudentConf) {
 			background = TimetableGridCell.conflicts2color(studConf);
+			if (getResourceType() == sResourceTypeInstructor)
+				jenrl: for (JenrlConstraint jenrl: lecture.jenrlConstraints())
+					if (jenrl.getNrInstructors() > 0 && jenrl.isInConflict()) { 
+						for (Student student: jenrl.getInstructors()) {
+							if (getResourceId() == student.getInstructor().getResourceId() && !student.getInstructor().variables().contains(lecture)) {
+								background = TimetableGridCell.sBgColorRequired;
+								break jenrl;
+							}
+						}
+					}
 		} else if (bgMode==sBgModeInstructorBtbPref) {
 			int pref = 0;
 	       	for (InstructorConstraint ic: lecture.getInstructorConstraints()) {
