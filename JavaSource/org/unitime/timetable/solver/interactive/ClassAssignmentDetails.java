@@ -669,6 +669,7 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 		        if (iInfo.isCommited())
 		        	iOther.getClazz().setPref(PreferenceLevel.sRequired);
 		        if (iInfo.isImportant()) props.add("important");
+		        if (iInfo.isInstructor()) props.add("instructor");
 		        StringBuffer sb = new StringBuffer();
 		        sb.append(sJenrDF.format(iInfo.getJenrl()));
 		        sb.append("&times; ");

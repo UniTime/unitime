@@ -180,6 +180,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     private boolean iFixMinPerWeek = false;
     private boolean iAssignSingleton = true;
     private boolean iIgnoreRoomSharing = false;
+    private boolean iLoadStudentInstructorConflicts = false;
     
     private String iAutoSameStudentsConstraint = "SAME_STUDENTS";
     private String iInstructorFormat = null;
@@ -228,6 +229,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         iNormalizedPrefDecreaseFactor = getModel().getProperties().getPropertyDouble("General.NormalizedPrefDecreaseFactor", iNormalizedPrefDecreaseFactor);
         
         iLoadStudentEnrlsFromSolution = getModel().getProperties().getPropertyBoolean("Global.LoadStudentEnrlsFromSolution", iLoadStudentEnrlsFromSolution);
+        iLoadStudentInstructorConflicts = getModel().getProperties().getPropertyBoolean("Global.LoadStudentInstructorConflicts", iLoadStudentInstructorConflicts);
         
         iFixMinPerWeek = getModel().getProperties().getPropertyBoolean("Global.FixMinPerWeek", iFixMinPerWeek);
         
@@ -263,6 +265,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         if (iLoadStudentEnrlsFromSolution && iStudentCourseDemands.isMakingUpStudents()) {
         	iLoadStudentEnrlsFromSolution = false;
         	getModel().getProperties().setProperty("Global.LoadStudentEnrlsFromSolution", "false");
+        }
+        if (iLoadStudentInstructorConflicts && iStudentCourseDemands.isMakingUpStudents()) {
+        	iLoadStudentInstructorConflicts = false;
+        	getModel().getProperties().setProperty("Global.LoadStudentInstructorConflicts", "false");
         }
     }
     
@@ -1375,6 +1381,43 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		}
     	}
     	if (puids.length()>0) loadInstructorAvailabilities(hibSession, puids.toString());
+    	iProgress.incProgress();
+    }
+    
+    private void loadInstructorStudentConflicts(org.hibernate.Session hibSession, String puids) {
+    	for (Object[] x: (List<Object[]>)hibSession.createQuery("select s.uniqueId, s.externalUniqueId from Student s " +
+    			"where s.session.uniqueId = :sessionId and s.externalUniqueId in (" + puids + ")")
+    			.setLong("sessionId",iSessionId.longValue()).list()) {
+    		Long studentId = (Long)x[0];
+    		String puid = (String)x[1];
+			InstructorConstraint ic = iInstructors.get(puid);
+			Student s = iStudents.get(studentId);
+			if (s != null && ic != null) {
+				iProgress.debug("Instructor " + puid + " mapped with student " + s.getId());
+				s.setInstructor(ic);
+				for (Lecture lecture: ic.variables()) {
+					s.addLecture(lecture);
+					lecture.addStudent(s);
+				}
+			}
+		}
+    }
+    
+    private void loadInstructorStudentConflicts(org.hibernate.Session hibSession) {
+    	iProgress.setPhase("Loading instructor student conflicts ...", 1);
+    	StringBuffer puids = new StringBuffer();
+    	int idx = 0;
+    	for (InstructorConstraint ic: iInstructors.values()) {
+    		if (ic.getPuid() == null) continue;
+    		if (puids.length() > 0) puids.append(",");
+    		puids.append("'"+ic.getPuid()+"'"); idx++;
+    		if (idx==100) {
+    			loadInstructorStudentConflicts(hibSession, puids.toString());
+    			puids = new StringBuffer();
+				idx = 0;
+    		}
+    	}
+    	if (puids.length()>0) loadInstructorStudentConflicts(hibSession, puids.toString());
     	iProgress.incProgress();
     }
     
@@ -3024,7 +3067,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     		
     		iProgress.incProgress();
     	}
-
+        
     	for (Enumeration e=iStudents.elements();e.hasMoreElements();) {
     		((Student)e.nextElement()).clearDistanceCache();
     	}
@@ -3060,7 +3103,10 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hibSession.isOpen())
     		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
 
-    	iProgress.setPhase("Computing jenrl ...",iStudents.size());
+        if (iLoadStudentInstructorConflicts)
+        	loadInstructorStudentConflicts(hibSession);
+
+        iProgress.setPhase("Computing jenrl ...",iStudents.size());
         Hashtable jenrls = new Hashtable();
         for (Iterator i1=iStudents.values().iterator();i1.hasNext();) {
             Student st = (Student)i1.next();

@@ -53,6 +53,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public boolean iIsFixed = false;
 	public boolean iIsCommited = false;
 	public boolean iIsImportant = false;
+	public boolean iIsInstructor = false;
 	public double iDistance = 0.0;
 	public ClassAssignmentDetails iFirst = null, iSecond = null;
 	private TreeSet<CurriculumInfo> iCurriculum2nrStudents = null;
@@ -89,6 +90,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 				setDistance(Placement.getDistanceInMeters(((TimetableModel)jc.getModel()).getDistanceMetric(),firstPl,secondPl));
 			StudentConflict imp = (StudentConflict)jc.getModel().getCriterion(ImportantStudentConflict.class);
 			setIsImportant(imp != null && imp.inConflict(jc.first().getAssignment(), jc.second().getAssignment()));
+			setIsInstructor(jc.getNrInstructors() > 0);
 		}
 		Hashtable<String, Double> curriculum2nrStudents = new Hashtable<String, Double>();
 		for (Student student: jc.first().sameStudents(jc.second())) {
@@ -176,6 +178,8 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 	public void setIsCommited(boolean isCommited) { iIsCommited = isCommited; }
 	public boolean isImportant() { return iIsImportant; }
 	public void setIsImportant(boolean isImportant) { iIsImportant = isImportant; }
+	public boolean isInstructor() { return iIsInstructor; }
+	public void setIsInstructor(boolean isInstructor) { iIsInstructor = isInstructor; }
 	public double getDistance() { return iDistance; }
 	public void setDistance(double distance) { iDistance = distance; }
 	
@@ -223,6 +227,11 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 			} else {
 				iIsImportant = Boolean.valueOf(root.elementText("important")).booleanValue();
 			}
+			if (root.elementText("instructor")==null) {
+				iIsInstructor = false;
+			} else {
+				iIsInstructor = Boolean.valueOf(root.elementText("instructor")).booleanValue();
+			}
 		}
 	}
 	
@@ -236,6 +245,7 @@ public class JenrlInfo implements TimetableInfo, Serializable {
 		root.addElement("commited").setText(String.valueOf(iIsCommited));
 		root.addElement("distance").setText(String.valueOf(iDistance));
 		root.addElement("important").setText(String.valueOf(iIsImportant));
+		root.addElement("instructor").setText(String.valueOf(iIsInstructor));
 	}
 
 	public boolean saveToFile() {

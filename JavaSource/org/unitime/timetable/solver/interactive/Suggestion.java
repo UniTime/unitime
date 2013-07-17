@@ -548,6 +548,7 @@ public class Suggestion implements Serializable, Comparable {
 		        else if (iInfo.isHard()) props.add("hard");
 		        if (iInfo.isDistance()) props.add("distance");
 		        if (iInfo.isImportant()) props.add("important");
+		        if (iInfo.isInstructor()) props.add("instructor");
 		        StringBuffer sb = new StringBuffer("<table border='0'>");
 		        sb.append("<tr>");
 		        sb.append("<td "+(iSecondInfo==null?"":"rowspan='2'")+" nowrap>");
