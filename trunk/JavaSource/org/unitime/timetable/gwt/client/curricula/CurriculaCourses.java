@@ -84,6 +84,7 @@ public class CurriculaCourses extends Composite {
 		LAST (MESSAGES.abbvLastLikeEnrollment(), MESSAGES.fieldLastLikeEnrollment()),
 		PROJ (MESSAGES.abbvProjectedByRule(), MESSAGES.fieldProjectedByRule()),
 		ENRL (MESSAGES.abbvCurrentEnrollment(), MESSAGES.fieldCurrentEnrollment()),
+		REQ (MESSAGES.abbvCourseRequests(), MESSAGES.fieldCourseRequests()),
 		NONE ("&nbsp;", "NONE");
 
 		private String iAbbv, iName;
@@ -124,7 +125,8 @@ public class CurriculaCourses extends Composite {
 					setEnrollmentAndLastLike(evt.getCourse(), col,
 							c == null || c[col] == null ? null : c[col].getEnrollment(), 
 							c == null || c[col] == null ? null : c[col].getLastLike(),
-							c == null || c[col] == null ? null : c[col].getProjection());
+							c == null || c[col] == null ? null : c[col].getProjection(),
+							c == null || c[col] == null ? null : c[col].getRequested());
 				}
 				Element td = evt.getSource().getElement();
 				while (td != null && !DOM.getElementProperty(td, "tagName").equalsIgnoreCase("td")) {
@@ -339,15 +341,17 @@ public class CurriculaCourses extends Composite {
 				return (CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages());
 			}
 		});
+		List<Operation> modeOps = new ArrayList<Operation>();
 		for (final Mode m: Mode.values()) {
-			hCourse.addOperation(new Operation() {
+			if (m == Mode.NONE) continue;
+			modeOps.add(new Operation() {
 				@Override
 				public void execute() {
-					setMode(m);
+					setMode(m == CurriculumCookie.getInstance().getCurriculaCoursesMode() ? Mode.NONE : m);
 				}
 				@Override
 				public boolean isApplicable() {
-					return CurriculumCookie.getInstance().getCurriculaCoursesMode() != m;
+					return true;
 				}
 				@Override
 				public boolean hasSeparator() {
@@ -355,10 +359,12 @@ public class CurriculaCourses extends Composite {
 				}
 				@Override
 				public String getName() {
-					return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
+					return (m == CurriculumCookie.getInstance().getCurriculaCoursesMode() ? MESSAGES.opHide(m.getName()) : MESSAGES.opShow(m.getName()));
 				}
 			});
 		}
+		for (Operation op: modeOps)
+			hCourse.addOperation(op);
 		hCourse.addOperation(new Operation() {
 			@Override
 			public void execute() {
@@ -508,6 +514,36 @@ public class CurriculaCourses extends Composite {
 						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
 						EnrollmentLabel label = (EnrollmentLabel)iTable.getWidget(row, x + 1);
 						if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
+							text.setShare(label.getRequestedPercent());
+						else
+							text.setExpected(label.getRequested());
+					}
+				}
+			}
+			@Override
+			public boolean isApplicable() {
+				return iVisibleCourses == null && iEditable && CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ;
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public String getName() {
+				return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyCourseRequestsToRequestedAllClassificationsSelectedCoursesOnly() : MESSAGES.opCopyCourseRequestsToRequestedAllClassifications();
+			}
+		});
+		hCourse.addOperation(new Operation() {
+			@Override
+			public void execute() {
+				boolean selectedOnly = (iTable.getSelectedCount() > 0);
+				for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
+					int x = 2 + 2 * c;
+					for (int row = 1; row < iTable.getRowCount(); row ++) {
+						if (selectedOnly && !iTable.isSelected(row)) continue;
+						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, x);
+						EnrollmentLabel label = (EnrollmentLabel)iTable.getWidget(row, x + 1);
+						if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
 							text.setShare(label.getProjectionPercent());
 						else
 							text.setExpected(label.getProjection());
@@ -618,26 +654,8 @@ public class CurriculaCourses extends Composite {
 					return CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages();
 				}
 			});
-			for (final Mode m: Mode.values()) {
-				hExp.addOperation(new Operation() {
-					@Override
-					public void execute() {
-						setMode(m);
-					}
-					@Override
-					public boolean isApplicable() {
-						return CurriculumCookie.getInstance().getCurriculaCoursesMode() != m;
-					}
-					@Override
-					public boolean hasSeparator() {
-						return false;
-					}
-					@Override
-					public String getName() {
-						return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
-					}
-				});
-			}
+			for (Operation op: modeOps)
+				hExp.addOperation(op);
 			hExp.addOperation(new Operation() {
 				@Override
 				public void execute() {
@@ -713,6 +731,33 @@ public class CurriculaCourses extends Composite {
 				@Override
 				public String getName() {
 					return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyCurrentToRequestedSelectedCoursesOnly() : MESSAGES.opCopyCurrentToRequested();
+				}
+			});
+			hExp.addOperation(new Operation() {
+				@Override
+				public void execute() {
+					boolean selectedOnly = (iTable.getSelectedCount() > 0);
+					for (int row = 1; row < iTable.getRowCount(); row ++) {
+						if (selectedOnly && !iTable.isSelected(row)) continue;
+						ShareTextBox text = (ShareTextBox)iTable.getWidget(row, expCol);
+						EnrollmentLabel label = (EnrollmentLabel)iTable.getWidget(row, expCol + 1);
+						if (CurriculumCookie.getInstance().getCurriculaCoursesPercent())
+							text.setShare(label.getRequestedPercent());
+						else
+							text.setExpected(label.getRequested());
+					}
+				}
+				@Override
+				public boolean isApplicable() {
+					return iVisibleCourses == null && iEditable && CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ;
+				}
+				@Override
+				public boolean hasSeparator() {
+					return false;
+				}
+				@Override
+				public String getName() {
+					return iTable.getSelectedCount() > 0 ? MESSAGES.opCopyCourseRequestsToRequestedSelectedCoursesOnly() : MESSAGES.opCopyCourseRequestsToRequested();
 				}
 			});
 			hExp.addOperation(new Operation() {
@@ -824,26 +869,8 @@ public class CurriculaCourses extends Composite {
 					return CurriculumCookie.getInstance().getCurriculaCoursesPercent() ? MESSAGES.opShowNumbers() : MESSAGES.opShowPercentages();
 				}
 			});
-			for (final Mode m: Mode.values()) {
-				hCmp.addOperation(new Operation() {
-					@Override
-					public void execute() {
-						setMode(m);
-					}
-					@Override
-					public boolean isApplicable() {
-						return CurriculumCookie.getInstance().getCurriculaCoursesMode() != m;
-					}
-					@Override
-					public boolean hasSeparator() {
-						return false;
-					}
-					@Override
-					public String getName() {
-						return (m == Mode.NONE ? MESSAGES.opHideItem(CurriculumCookie.getInstance().getCurriculaCoursesMode().getName()) : MESSAGES.opShowItem(m.getName()));
-					}
-				});
-			}
+			for (Operation op: modeOps)
+				hCmp.addOperation(op);
 			hCmp.addOperation(new Operation() {
 				@Override
 				public String getName() {
@@ -915,7 +942,7 @@ public class CurriculaCourses extends Composite {
 					ShareTextBox ex = new ShareTextBox(col, cci == null ? null : cci.getShare());
 					if (!iEditable) ex.setReadOnly(true);
 					line.add(ex);
-					EnrollmentLabel note = new EnrollmentLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike(), cci == null ? null : cci.getProjection());
+					EnrollmentLabel note = new EnrollmentLabel(col, cci == null ? null : cci.getEnrollment(), cci == null ? null : cci.getLastLike(), cci == null ? null : cci.getProjection(), cci == null ? null : cci.getRequested());
 					line.add(note);
 				}
 				iTable.addRow(course.getCourseName(), line);
@@ -990,7 +1017,7 @@ public class CurriculaCourses extends Composite {
 			ShareTextBox ex = new ShareTextBox(col, null);
 			if (!iEditable) ex.setReadOnly(true);
 			line.add(ex);
-			EnrollmentLabel note = new EnrollmentLabel(col, null, null, null);
+			EnrollmentLabel note = new EnrollmentLabel(col, null, null, null, null);
 			line.add(note);
 		}
 		
@@ -1034,8 +1061,8 @@ public class CurriculaCourses extends Composite {
 			EnrollmentLabel l0 = ((EnrollmentLabel)iTable.getWidget(r0, column));
 			EnrollmentLabel l1 = ((EnrollmentLabel)iTable.getWidget(r1, column));
 			Mode mode = CurriculumCookie.getInstance().getCurriculaCoursesMode();
-			Integer i0 = (mode == Mode.ENRL ? l0.iEnrollment : mode == Mode.LAST ? l0.iLastLike : l0.iProjection);
-			Integer i1 = (mode == Mode.ENRL ? l1.iEnrollment : mode == Mode.LAST ? l1.iLastLike : l1.iProjection);
+			Integer i0 = (mode == Mode.ENRL ? l0.iEnrollment : mode == Mode.LAST ? l0.iLastLike : mode == Mode.REQ ? l0.iRequested : l0.iProjection);
+			Integer i1 = (mode == Mode.ENRL ? l1.iEnrollment : mode == Mode.LAST ? l1.iLastLike : mode == Mode.REQ ? l0.iRequested : l1.iProjection);
 			return - (i0 == null ? new Integer(0) : i0).compareTo(i1 == null ? new Integer(0) : i1);
 		}
 	}
@@ -1048,7 +1075,7 @@ public class CurriculaCourses extends Composite {
 		return -1;
 	}
 	
-	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection) {
+	public boolean setEnrollmentAndLastLike(String course, int clasf, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
 		boolean changed = false;
 		for (int row = 1; row < iTable.getRowCount(); row++) {
 			String c = ((CurriculaCourseSelectionBox)iTable.getWidget(row, 1)).getCourse();
@@ -1057,6 +1084,7 @@ public class CurriculaCourses extends Composite {
 			note.iEnrollment = enrollment;
 			note.iLastLike = lastLike;
 			note.iProjection = projection;
+			note.iRequested = requested;
 			note.update();
 			changed = true;
 		}
@@ -1086,15 +1114,17 @@ public class CurriculaCourses extends Composite {
 				note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col].getEnrollment());
 				note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
 				note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
+				note.iRequested = (cc == null || cc[col] == null ? null : cc[col].getRequested());
 				note.update();
 			}
 		}
 		CurriculumStudentsInterface[] total = courses.get("");
 		if (total == null) return;
-		int totalEnrollment = 0, totalLastLike = 0;
+		int totalEnrollment = 0, totalLastLike = 0, totalRequested = 0;
 		for (int i = 0; i < total.length; i++) {
 			if (total[i] != null) totalEnrollment += total[i].getEnrollment();
 			if (total[i] != null) totalLastLike += total[i].getLastLike();
+			if (total[i] != null) totalRequested += total[i].getRequested();
 		}
 		TreeSet<Map.Entry<String, CurriculumStudentsInterface[]>> include = new TreeSet<Map.Entry<String,CurriculumStudentsInterface[]>>(new Comparator<Map.Entry<String,CurriculumStudentsInterface[]>>() {
 			/*
@@ -1119,6 +1149,7 @@ public class CurriculaCourses extends Composite {
 					if (a[i].getEnrollment() > 0) return i;
 					if (a[i].getLastLike() > 0) return i;
 					if (a[i].getProjection() > 0) return i;
+					if (a[i].getRequested() > 0) return i;
 				}
 				return a.length;
 			}
@@ -1146,8 +1177,10 @@ public class CurriculaCourses extends Composite {
 					int v1 = (c1.getValue()[b0] == null ? 0 : c1.getValue()[b0].getEnrollment());
 					int w0 = (c0.getValue()[b0] == null ? 0 : c0.getValue()[b0].getLastLike());
 					int w1 = (c1.getValue()[b0] == null ? 0 : c1.getValue()[b0].getLastLike());
-					if (v0 > v1 || w0 > w1) return -1;
-					if (v0 < v1 || w0 < w1) return 1;
+					int x0 = (c0.getValue()[b0] == null ? 0 : c0.getValue()[b0].getRequested());
+					int x1 = (c1.getValue()[b0] == null ? 0 : c1.getValue()[b0].getRequested());
+					if (v0 > v1 || w0 > w1 || x0 > x1) return -1;
+					if (v0 < v1 || w0 < w1 || x0 < x1) return 1;
 					b0++;
 				}
 				return c0.getKey().compareTo(c1.getKey());
@@ -1156,13 +1189,15 @@ public class CurriculaCourses extends Composite {
 		for (Map.Entry<String, CurriculumStudentsInterface[]> course: courses.entrySet()) {
 			if (updated.contains(course.getKey()) || course.getKey().isEmpty()) continue;
 			CurriculumStudentsInterface[] cc = course.getValue();
-			int enrollment = 0, lastLike = 0;
+			int enrollment = 0, lastLike = 0, requested = 0;
 			for (int i = 0; i < cc.length; i++) {
 				if (cc[i] != null) enrollment += cc[i].getEnrollment();
 				if (cc[i] != null) lastLike += cc[i].getLastLike();
+				if (cc[i] != null) requested += cc[i].getRequested();
 			}
 			if ((totalEnrollment > 0 && 100.0f * enrollment / totalEnrollment > 3.0f) ||
-				(totalLastLike > 0 && 100.0f * lastLike / totalLastLike > 3.0f)) {
+				(totalLastLike > 0 && 100.0f * lastLike / totalLastLike > 3.0f) ||
+				(totalRequested > 0 && 100.0f * requested / totalRequested > 3.0f)) {
 				include.add(course);
 			}
 		}
@@ -1180,6 +1215,7 @@ public class CurriculaCourses extends Composite {
 					note.iEnrollment = (cc == null || cc[col] == null ? null : cc[col].getEnrollment());
 					note.iLastLike = (cc == null || cc[col] == null ? null : cc[col].getLastLike());
 					note.iProjection = (cc == null || cc[col] == null ? null : cc[col].getProjection());
+					note.iRequested = (cc == null || cc[col] == null ? null : cc[col].getRequested());
 					note.update();
 				}
 				if (iVisibleCourses!=null) {
@@ -1233,15 +1269,16 @@ public class CurriculaCourses extends Composite {
 	
 	public class EnrollmentLabel extends Label implements HasCellAlignment {
 		private int iColumn;
-		private Integer iEnrollment, iLastLike, iProjection;
+		private Integer iEnrollment, iLastLike, iProjection, iRequested;
 		
-		public EnrollmentLabel(int column, Integer enrollment, Integer lastLike, Integer projection) {
+		public EnrollmentLabel(int column, Integer enrollment, Integer lastLike, Integer projection, Integer requested) {
 			super();
 			setStyleName("unitime-Label");
 			iColumn = column;
 			iEnrollment = enrollment;
 			iLastLike = lastLike;
 			iProjection = projection;
+			iRequested = requested;
 			update();
 		}
 		
@@ -1280,6 +1317,16 @@ public class CurriculaCourses extends Composite {
 					setText(iProjection.toString());
 				}
 				break;
+			case REQ: // Course Requests
+				if (iRequested == null || iRequested == 0) {
+					setText("");
+				} else if (CurriculumCookie.getInstance().getCurriculaCoursesPercent()) {
+					Integer total = iClassifications.getRequested(iColumn);
+					setText(total == null ? MESSAGES.notApplicable() : NF.format(100.0 * iRequested / total) + "%");
+				} else {
+					setText(iRequested.toString());
+				}
+				break;
 			}
 		}
 		
@@ -1288,6 +1335,8 @@ public class CurriculaCourses extends Composite {
 		public Integer getEnrollment() { return (iEnrollment == null || iEnrollment == 0 ? null : iEnrollment); }
 
 		public Integer getProjection() { return (iProjection == null || iProjection == 0 ? null : iProjection); }
+		
+		public Integer getRequested() { return (iRequested == null || iRequested == 0 ? null : iRequested); }
 
 		public Float getLastLikePercent() { 
 			if (iLastLike == null || iLastLike == 0) return null;
@@ -1308,6 +1357,13 @@ public class CurriculaCourses extends Composite {
 			Integer total = iClassifications.getProjection(iColumn);
 			if (total == null) return null;
 			return ((float)iProjection) / total;
+		}
+		
+		public Float getRequestedPercent() { 
+			if (iRequested == null || iRequested == 0) return null;
+			Integer total = iClassifications.getRequested(iColumn);
+			if (total == null) return null;
+			return ((float)iRequested) / total;
 		}
 
 		@Override
@@ -1653,7 +1709,8 @@ public class CurriculaCourses extends Composite {
 			for (int c = 0; c < iClassifications.getClassifications().size(); c++) {
 				CurriculumStudentsInterface tc = totals[c];
 				if (iClassifications.getExpected(c) == null) continue;
-				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() : thisCourse[c].getLastLikeStudents()));
+				Set<Long> thisEnrollment = (thisCourse[c] == null ? null : (CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? thisCourse[c].getEnrolledStudents() :
+					CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ ? thisCourse[c].getRequestedStudents() : thisCourse[c].getLastLikeStudents()));
 				if (thisEnrollment != null && count(tc,thisEnrollment) != 0) {
 					Set<Long> sharedWithOneOther = new HashSet<Long>();
 					Set<Long> sharedWithTwoOther = new HashSet<Long>();
@@ -1662,7 +1719,8 @@ public class CurriculaCourses extends Composite {
 					Set<Long> notShared = new HashSet<Long>(thisEnrollment);
 					row = 0;
 					for (CurriculumStudentsInterface[] o: other) {
-						Set<Long> enrl = (o == null || o[c] == null ? null : CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL  ? o[c].getEnrolledStudents() : o[c].getLastLikeStudents());
+						Set<Long> enrl = (o == null || o[c] == null ? null : CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.ENRL ? o[c].getEnrolledStudents() :
+								CurriculumCookie.getInstance().getCurriculaCoursesMode() == Mode.REQ ? o[c].getRequestedStudents() : o[c].getLastLikeStudents());
 						if (enrl == null) {
 							sharedWithAll.clear();
 							row++;

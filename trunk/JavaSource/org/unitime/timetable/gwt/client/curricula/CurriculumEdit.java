@@ -644,12 +644,14 @@ public class CurriculumEdit extends Composite {
 						iCurriculumClasfTable.getWidget().setEnrollment(col, x == null || x[col] == null ? null : x[col].getEnrollment());
 						iCurriculumClasfTable.getWidget().setLastLike(col, x == null || x[col] == null ? null : x[col].getLastLike());
 						iCurriculumClasfTable.getWidget().setProjection(col, x == null || x[col] == null ? null : x[col].getProjection());
+						iCurriculumClasfTable.getWidget().setRequested(col, x == null || x[col] == null ? null : x[col].getRequested());
 					}
 					iCurriculumCourses.updateEnrollmentsAndLastLike(result, showEmptyCourses);
 					if (iCurriculumClasfTable.isShowingAllColumns())
 						iCurriculumClasfTable.getWidget().showAllColumns();
 					else
 						iCurriculumClasfTable.getWidget().hideEmptyColumns();
+					iCurriculumClasfTable.getWidget().hideEmptyRows();
 					hideLoading();
 				}
 			});
@@ -769,6 +771,7 @@ public class CurriculumEdit extends Composite {
 				getWidget().showAllColumns();
 			else
 				getWidget().hideEmptyColumns();
+			getWidget().hideEmptyRows();
 		}
 		
 		public void setReadOnly(boolean readOnly) {

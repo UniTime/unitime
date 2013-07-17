@@ -266,6 +266,18 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Copy Projection &rarr; Requested (All Classifications, Selected Courses Only)")
 	String opCopyProjectionToRequestedAllClassificationsSelectedCoursesOnly();
 	
+	@DefaultMessage("Copy Registered &rarr; Requested")
+	String opCopyCourseRequestsToRequested();
+	
+	@DefaultMessage("Copy Registered &rarr; Requested (Selected Courses Only)")
+	String opCopyCourseRequestsToRequestedSelectedCoursesOnly();
+	
+	@DefaultMessage("Copy Registered &rarr; Requested (All Classifications)")
+	String opCopyCourseRequestsToRequestedAllClassifications();
+	
+	@DefaultMessage("Copy Registered &rarr; Requested (All Classifications, Selected Courses Only)")
+	String opCopyCourseRequestsToRequestedAllClassificationsSelectedCoursesOnly();
+	
 	@DefaultMessage("Assign")
 	String opGroupAssign();
 	
@@ -322,6 +334,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Re-Create Curricula from Last-Like Enrollments &amp; Projections")
 	String opRecreateCurriculaFromLastLike();
+	
+	@DefaultMessage("Create Curricula from Course Registrations")
+	String opCreateCurriculaFromCourseRequests();
+	
+	@DefaultMessage("Re-Create Curricula from Course Registrations")
+	String opRecreateCurriculaFromCourseRequests();
 	
 	@DefaultMessage("Show Names")
 	String opShowNames();
@@ -529,6 +547,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Current<br>Enrollment")
 	String colCurrentEnrollment();
+	
+	@DefaultMessage("Course<br>Registrations")
+	String colCourseRequests();
 	
 	@DefaultMessage("Instructional<br>Offering")
 	String colInstructionalOffering();
@@ -787,6 +808,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Current Enrollment:")
 	String propCurrentEnrollment();
+	
+	@DefaultMessage("Course Registrations:")
+	String propCourseRequests();
 	
 	@DefaultMessage("Filter:")
 	String propFilter();
@@ -2515,6 +2539,15 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Current Enrollment")
 	String fieldCurrentEnrollment();
+	
+	@DefaultMessage("Reg")
+	String abbvCourseRequests();
+	
+	@DefaultMessage("Registration")
+	String shortCourseRequests();
+
+	@DefaultMessage("Course Registrations")
+	String fieldCourseRequests();
 	
 	@DefaultMessage("Req")
 	String abbvRequestedEnrollment();

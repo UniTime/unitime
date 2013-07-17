@@ -148,6 +148,14 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		return ret;
 	}
 	
+	public Integer getRequested() {
+		if (!hasClassifications()) return null;
+		int ret = 0;
+		for (CurriculumClassificationInterface c: getClassifications())
+			ret += (c.getRequested() == null ? 0 : c.getRequested());
+		return ret;
+	}
+	
 	public String getExpectedString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getExpected();
@@ -169,6 +177,12 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public String getEnrollmentString() {
 		if (!hasClassifications()) return "?";
 		Integer count = getEnrollment();
+		return (count == null ? "N/A" : count.toString());
+	}
+	
+	public String getRequestedString() {
+		if (!hasClassifications()) return "?";
+		Integer count = getRequested();
 		return (count == null ? "N/A" : count.toString());
 	}
 	
@@ -326,7 +340,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	public static class CurriculumClassificationInterface implements IsSerializable, Comparable<CurriculumClassificationInterface> {
 		private Long iCurriculumId, iClasfId;
 		private String iName;
-		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null;
+		private Integer iNrStudents = null, iEnrollment = null, iLastLike = null, iProjection = null, iRequested = null;
 		private AcademicClassificationInterface iClasf;
 		private TreeSet<CurriculumCourseInterface> iCourses = null;
 		
@@ -346,6 +360,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public Integer getEnrollment() { return iEnrollment; }
 		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+		
+		public Integer getRequested() { return iRequested; }
+		public void setRequested(Integer requested) { iRequested = requested; }
 
 		public Integer getLastLike() { return iLastLike; }
 		public void setLastLike(Integer lastLike) { iLastLike = lastLike; }
@@ -488,7 +505,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		private Long iId, iCourseId, iClasfId;
 		private String iCourseName;
 		private float iShare = 0.0f;
-		private Integer iLastLike = null, iEnrollment = null, iProjection = null;
+		private Integer iLastLike = null, iEnrollment = null, iProjection = null, iRequested = null;
 		
 		public CurriculumCourseInterface() {}
 		
@@ -512,6 +529,9 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public Integer getEnrollment() { return iEnrollment; }
 		public void setEnrollment(Integer enrollment) { iEnrollment = enrollment; }
+		
+		public Integer getRequested() { return iRequested; }
+		public void setRequested(Integer requested) { iRequested = requested; }
 		
 		public Integer getProjection() { return iProjection; }
 		public void setProjection(Integer projection) { iProjection = projection; }
@@ -561,6 +581,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 	
 	public static class CurriculumStudentsInterface implements IsSerializable {
 		private Set<Long> iEnrollment = null;
+		private Set<Long> iRequested = null;
 		private HashMap<String, Set<Long>> iLastLike = null;
 		private HashMap<String, Float> iProjection = null;
 		
@@ -568,8 +589,7 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 		
 		public int getEnrollment() {
 			return (iEnrollment == null || iEnrollment.isEmpty() ? 0 : iEnrollment.size());
-		}
-		
+		}		
 		public int getLastLike() {
 			if (iLastLike == null || iLastLike.isEmpty()) return 0;
 			int lastLike = 0;
@@ -587,6 +607,10 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 				proj += (f == null ? 1.0f : f) * entry.getValue().size();
 			}
 			return Math.round(proj);
+		}
+		
+		public int getRequested() {
+			return (iRequested == null || iRequested.isEmpty() ? 0 : iRequested.size());
 		}
 		
 		public Set<Long> getEnrolledStudents() {
@@ -622,11 +646,17 @@ public class CurriculumInterface implements IsSerializable, Comparable<Curriculu
 			return Math.round(proj);
 		}
 		
+		public Set<Long> getRequestedStudents() {
+			return iRequested;
+		}
+		
 		public void setEnrolledStudents(Set<Long> students) { iEnrollment = students; }
 		
 		public void setLastLikeStudents(HashMap<String, Set<Long>> students) { iLastLike = students; }
 		
 		public void setProjection(HashMap<String, Float> projection) { iProjection = projection; }
+		
+		public void setRequestedStudents(Set<Long> students) { iRequested = students; }
 	}
 	
 	public static class CurriculumFilterRpcRequest extends FilterRpcRequest {
