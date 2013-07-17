@@ -136,10 +136,7 @@ public class SubjectAreaEditForm extends ActionForm {
 	}
 
 	public void setAbbv(String abbv) {
-		if (abbv!=null)
-			this.abbv = abbv.toUpperCase();
-		else
-			this.abbv = abbv;
+		this.abbv = abbv;
 	}
 
 	public Long getDepartment() {
