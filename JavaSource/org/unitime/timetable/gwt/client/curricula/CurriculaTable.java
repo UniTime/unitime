@@ -94,6 +94,7 @@ public class CurriculaTable extends Composite {
 	
 	private Comparator<CurriculumInterface> iLastSort = null;
 	private UniTimeTableHeader iLastSortHeader = null;
+	private Boolean iLastSortOrder = true;
 	
 	private Long iLastCurriculumId = null;
 	
@@ -500,6 +501,179 @@ public class CurriculaTable extends Composite {
 				}
 			}
 		});
+		hSelect.addOperation(new Operation() {
+			@Override
+			public String getName() {
+				return (iTable.getRowCount() > 1 ? MESSAGES.opRecreateCurriculaFromCourseRequests() : MESSAGES.opCreateCurriculaFromCourseRequests());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public boolean isApplicable() {
+				return iIsAdmin;
+			}
+			@Override
+			public void execute() {
+				markAll();
+				if (Window.confirm(MESSAGES.confirmDeleteAllCurricula())) {
+					if (Window.confirm(MESSAGES.confirmDeleteAllCurriculaSecondWarning())) {
+						LoadingWidget.getInstance().show(MESSAGES.waitCreatingAllCurricula(), 300000);
+						iService.makeupCurriculaFromLastLikeDemands(false, new AsyncCallback<Boolean>(){
+
+							@Override
+							public void onFailure(Throwable caught) {
+								setError(MESSAGES.failedToCreateCurricula(caught.getMessage()));
+								UniTimeNotifications.error(MESSAGES.failedToCreateCurricula(caught.getMessage()), caught);
+								unmarkAll();
+								LoadingWidget.getInstance().hide();
+							}
+
+							@Override
+							public void onSuccess(Boolean result) {
+								LoadingWidget.getInstance().hide();
+								iSelectedCurricula.clear();
+								query(iLastQuery, null);
+							}
+							
+						});
+					} else {
+						unmarkAll();
+					}
+				} else {
+					unmarkAll();
+				}
+			}
+		});
+		List<Operation> hideOps = new ArrayList<Operation>();
+		hideOps.add(new Operation() {
+			@Override
+			public String getName() {
+				return CurriculumCookie.getInstance().isShowLast() ? MESSAGES.opHide(MESSAGES.fieldLastLikeEnrollment()) : MESSAGES.opShow(MESSAGES.fieldLastLikeEnrollment());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				boolean show = !CurriculumCookie.getInstance().isShowLast();
+				int col = iTable.getCellCount(0) - 5;
+				CurriculumCookie.getInstance().setShowLast(show);
+				iTable.setColumnVisible(col, show);
+				if (CurriculumCookie.getInstance().isAllHidden()) {
+					CurriculumCookie.getInstance().setShowExpected(true);
+					iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+				}
+			}
+		});
+		hideOps.add(new Operation() {
+			@Override
+			public String getName() {
+				return CurriculumCookie.getInstance().isShowProjected() ? MESSAGES.opHide(MESSAGES.fieldProjectedByRule()) : MESSAGES.opShow(MESSAGES.fieldProjectedByRule());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				boolean show = !CurriculumCookie.getInstance().isShowProjected();
+				int col = iTable.getCellCount(0) - 4;
+				CurriculumCookie.getInstance().setShowProjected(show);
+				iTable.setColumnVisible(col, show);
+				if (CurriculumCookie.getInstance().isAllHidden()) {
+					CurriculumCookie.getInstance().setShowExpected(true);
+					iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+				}
+			}
+		});
+		hideOps.add(new Operation() {
+			@Override
+			public String getName() {
+				return CurriculumCookie.getInstance().isShowExpected() ? MESSAGES.opHide(MESSAGES.fieldRequestedEnrollment()) : MESSAGES.opShow(MESSAGES.fieldRequestedEnrollment());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				boolean show = !CurriculumCookie.getInstance().isShowExpected();
+				int col = iTable.getCellCount(0) - 3;
+				CurriculumCookie.getInstance().setShowExpected(show);
+				iTable.setColumnVisible(col, show);
+				if (CurriculumCookie.getInstance().isAllHidden()) {
+					CurriculumCookie.getInstance().setShowLast(true);
+					iTable.setColumnVisible(iTable.getCellCount(0) - 5, true);
+				}
+			}
+		});
+		hideOps.add(new Operation() {
+			@Override
+			public String getName() {
+				return CurriculumCookie.getInstance().isShowEnrolled() ? MESSAGES.opHide(MESSAGES.fieldCurrentEnrollment()) : MESSAGES.opShow(MESSAGES.fieldCurrentEnrollment());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				boolean show = !CurriculumCookie.getInstance().isShowEnrolled();
+				int col = iTable.getCellCount(0) - 2;
+				CurriculumCookie.getInstance().setShowEnrolled(show);
+				iTable.setColumnVisible(col, show);
+				if (CurriculumCookie.getInstance().isAllHidden()) {
+					CurriculumCookie.getInstance().setShowExpected(true);
+					iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+				}
+			}
+		});
+		hideOps.add(new Operation() {
+			@Override
+			public String getName() {
+				return CurriculumCookie.getInstance().isShowRequested() ? MESSAGES.opHide(MESSAGES.fieldCourseRequests()) : MESSAGES.opShow(MESSAGES.fieldCourseRequests());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return false;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				boolean show = !CurriculumCookie.getInstance().isShowRequested();
+				int col = iTable.getCellCount(0) - 1;
+				CurriculumCookie.getInstance().setShowRequested(show);
+				iTable.setColumnVisible(col, show);
+				if (CurriculumCookie.getInstance().isAllHidden()) {
+					CurriculumCookie.getInstance().setShowExpected(true);
+					iTable.setColumnVisible(iTable.getCellCount(0) - 3, true);
+				}
+			}
+		});
+		for (Operation op: hideOps)
+			hSelect.addOperation(op);
 		
 		final UniTimeTableHeader hCurriculum = new UniTimeTableHeader("Curriculum");
 		header.add(hCurriculum);
@@ -553,6 +727,7 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hCurriculum;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 
@@ -610,6 +785,7 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hArea;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 		
@@ -668,6 +844,7 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hMajor;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 		
@@ -725,12 +902,15 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hDept;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 		
 		final UniTimeTableHeader hLastLike = new UniTimeTableHeader(MESSAGES.colLastLikeEnrollment());
 		header.add(hLastLike);
 		hLastLike.setWidth("90px");
+		for (Operation op: hideOps)
+			hLastLike.addOperation(op);
 		hLastLike.addOperation(new Operation() {
 			@Override
 			public String getName() {
@@ -738,7 +918,7 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public boolean hasSeparator() {
-				return false;
+				return true;
 			}
 			@Override
 			public boolean isApplicable() {
@@ -757,12 +937,15 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hLastLike;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 		
 		final UniTimeTableHeader hProjected = new UniTimeTableHeader(MESSAGES.colProjectedByRule());
 		header.add(hProjected);
 		hProjected.setWidth("90px");
+		for (Operation op: hideOps)
+			hProjected.addOperation(op);
 		hProjected.addOperation(new Operation() {
 			@Override
 			public String getName() {
@@ -807,6 +990,7 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hProjected;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 
@@ -814,6 +998,8 @@ public class CurriculaTable extends Composite {
 		final UniTimeTableHeader hExpected = new UniTimeTableHeader(MESSAGES.colRequestedEnrollment());
 		header.add(hExpected);
 		hExpected.setWidth("90px");
+		for (Operation op: hideOps)
+			hExpected.addOperation(op);
 		hExpected.addOperation(new Operation() {
 			@Override
 			public String getName() {
@@ -821,7 +1007,7 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public boolean hasSeparator() {
-				return false;
+				return true;
 			}
 			@Override
 			public boolean isApplicable() {
@@ -840,12 +1026,15 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hExpected;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 		
 		final UniTimeTableHeader hEnrolled = new UniTimeTableHeader(MESSAGES.colCurrentEnrollment());
 		header.add(hEnrolled);
 		hEnrolled.setWidth("90px");
+		for (Operation op: hideOps)
+			hEnrolled.addOperation(op);
 		hEnrolled.addOperation(new Operation() {
 			@Override
 			public String getName() {
@@ -853,7 +1042,7 @@ public class CurriculaTable extends Composite {
 			}
 			@Override
 			public boolean hasSeparator() {
-				return false;
+				return true;
 			}
 			@Override
 			public boolean isApplicable() {
@@ -872,6 +1061,42 @@ public class CurriculaTable extends Composite {
 				};
 				iLastSortHeader = hEnrolled;
 				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
+			}
+		});
+		
+		final UniTimeTableHeader hRequested = new UniTimeTableHeader(MESSAGES.colCourseRequests());
+		header.add(hRequested);
+		hRequested.setWidth("90px");
+		for (Operation op: hideOps)
+			hRequested.addOperation(op);
+		hRequested.addOperation(new Operation() {
+			@Override
+			public String getName() {
+				return MESSAGES.opSortBy(MESSAGES.fieldCourseRequests());
+			}
+			@Override
+			public boolean hasSeparator() {
+				return true;
+			}
+			@Override
+			public boolean isApplicable() {
+				return true;
+			}
+			@Override
+			public void execute() {
+				iLastSort = new Comparator<CurriculumInterface>() {
+					public int compare(CurriculumInterface a, CurriculumInterface b) {
+						Integer e = (a.getRequested() == null ? -1 : a.getRequested());
+						Integer f = (b.getRequested() == null ? -1 : b.getRequested());
+						int cmp = f.compareTo(e);
+						if (cmp != 0) return cmp;
+						return a.compareTo(b);
+					}
+				};
+				iLastSortHeader = hRequested;
+				iTable.sort(iLastSortHeader, iLastSort);
+				iLastSortOrder = iLastSortHeader.getOrder();
 			}
 		});
 
@@ -942,6 +1167,7 @@ public class CurriculaTable extends Composite {
 						((Label)iTable.getWidget(row, 7)).setText(c.getExpectedString());
 					}
 					((Label)iTable.getWidget(row, 8)).setText(c.getEnrollmentString());
+					((Label)iTable.getWidget(row, 9)).setText(c.getRequestedString());
 				}
 				List<Long> noEnrl = new ArrayList<Long>();
 				for (int row = 0; row < iTable.getRowCount(); row++) {
@@ -958,7 +1184,7 @@ public class CurriculaTable extends Composite {
 				if (!noEnrl.isEmpty())
 					iService.loadClassifications(noEnrl, iLoadClassifications);
 				else if (iLastSort != null)
-					iTable.sort(iLastSortHeader, iLastSort);
+					iTable.sort(iLastSortHeader, iLastSort, iLastSortOrder == null ? true : iLastSortOrder);
 			}
 		};
 		
@@ -983,6 +1209,7 @@ public class CurriculaTable extends Composite {
 				if (event.getData() == null || !event.getData().hasClassifications()) return null;
 				iClassifications.populate(event.getData().getClassifications());
 				iClassifications.setEnabled(false);
+				iClassifications.hideEmptyRows();
 				return iClassifications;
 			}
 		});
@@ -1119,12 +1346,14 @@ public class CurriculaTable extends Composite {
 		line.add(new Label(c.getProjection() == null ? "" : c.getProjectionString(), false));
 		line.add(new Label(c.getExpected() == null ? "" : c.getExpectedString(), false));
 		line.add(new Label(c.getEnrollment() == null ? "" : c.getEnrollmentString(), false));
+		line.add(new Label(c.getRequested() == null ? "" : c.getRequestedString(), false));
 		iTable.setRow(row, c, line);
 		iTable.getCellFormatter().addStyleName(row, 0, "unitime-NoPrint");
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 5, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 6, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 7, HasHorizontalAlignment.ALIGN_RIGHT);
 		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 8, HasHorizontalAlignment.ALIGN_RIGHT);
+		iTable.getFlexCellFormatter().setHorizontalAlignment(row, 9, HasHorizontalAlignment.ALIGN_RIGHT);
 	}
 	
 	public void populate(TreeSet<CurriculumInterface> result, boolean editable) {
@@ -1177,6 +1406,12 @@ public class CurriculaTable extends Composite {
 		
 		if (!ids.isEmpty())
 			iService.loadClassifications(ids, iLoadClassifications);
+		
+		iTable.setColumnVisible(iTable.getCellCount(0) - 5, CurriculumCookie.getInstance().isShowLast());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 4, CurriculumCookie.getInstance().isShowProjected());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 3, CurriculumCookie.getInstance().isShowExpected());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 2, CurriculumCookie.getInstance().isShowEnrolled());
+		iTable.setColumnVisible(iTable.getCellCount(0) - 1, CurriculumCookie.getInstance().isShowRequested());
 	}
 
 	public void query(CurriculumFilterRpcRequest filter, final Command next) {

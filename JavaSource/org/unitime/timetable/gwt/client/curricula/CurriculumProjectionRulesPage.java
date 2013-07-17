@@ -480,7 +480,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 						}
 					}));
 				if (CurriculumCookie.getInstance().getCurriculumProjectionRulesShowLastLike())
-					menu.addItem(new MenuItem(MESSAGES.opHideItem(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opHide(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();
@@ -489,7 +489,7 @@ public class CurriculumProjectionRulesPage extends Composite {
 						}
 					}));
 				else
-					menu.addItem(new MenuItem(MESSAGES.opShowItem(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
+					menu.addItem(new MenuItem(MESSAGES.opShow(MESSAGES.fieldLastLikeEnrollment()), true, new Command() {
 						@Override
 						public void execute() {
 							popup.hide();

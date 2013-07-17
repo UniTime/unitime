@@ -31,6 +31,7 @@ public class CurriculumCookie {
 	private boolean iRulesPercent = true;
 	private boolean iRulesShowLastLike = false;
 	private boolean iCourseDetails = false;
+	private boolean iShowLast = true, iShowProjected = true, iShowExpected = true, iShowEnrolled = true, iShowRequested = false;
 	private CurriculaTable.DisplayMode iCurMode = new CurriculaTable.DisplayMode() {
 		@Override
 		public void changed() {
@@ -52,6 +53,11 @@ public class CurriculumCookie {
 				iRulesShowLastLike = "T".equals(values[4]);
 				iCourseDetails = "T".equals(values[5]);
 				iCurMode.fromString(values[6]);
+				iShowLast = !"F".equals(values[7]);
+				iShowProjected = !"F".equals(values[8]);
+				iShowExpected = !"F".equals(values[9]);
+				iShowEnrolled = !"F".equals(values[10]);
+				iShowRequested = "T".equals(values[11]);
 			}
 		} catch (Exception e) {
 		}
@@ -65,7 +71,12 @@ public class CurriculumCookie {
 			(iRulesPercent ? "T" : "F") + ":" +
 			(iRulesShowLastLike ? "T" : "F") + ":" +
 			(iCourseDetails ? "T": "F") + ":" +
-			iCurMode.toString()
+			iCurMode.toString() + ":" +
+			(iShowLast ? "T" : "F") + ":" +
+			(iShowProjected ? "T" : "F") + ":" +
+			(iShowExpected ? "T" : "F") + ":" +
+			(iShowEnrolled ? "T" : "F") + ":" +
+			(iShowRequested ? "T" : "F")
 			;
 		Cookies.setCookie("UniTime:Curriculum", cookie);
 	}
@@ -133,5 +144,23 @@ public class CurriculumCookie {
 	public CurriculaTable.DisplayMode getCurriculaDisplayMode() {
 		return iCurMode;
 	}
+	
+	public boolean isShowLast() { return iShowLast; }
+	public void setShowLast(boolean show) { iShowLast = show; save(); }
 
+	public boolean isShowProjected() { return iShowProjected; }
+	public void setShowProjected(boolean show) { iShowProjected = show; save(); }
+
+	public boolean isShowEnrolled() { return iShowEnrolled; }
+	public void setShowEnrolled(boolean show) { iShowEnrolled = show; save(); }
+
+	public boolean isShowExpected() { return iShowExpected; }
+	public void setShowExpected(boolean show) { iShowExpected = show; save(); }
+
+	public boolean isShowRequested() { return iShowRequested; }
+	public void setShowRequested(boolean show) { iShowRequested = show; save(); }
+	
+	public boolean isAllHidden() {
+		return !iShowLast && !iShowProjected && !iShowExpected && !iShowEnrolled && !iShowRequested;
+	}
 }

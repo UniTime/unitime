@@ -75,6 +75,8 @@ public class CurriculaClassifications extends Composite {
 		iTable.getCellFormatter().setWordWrap(4, 0, false);
 		iTable.setText(5, 0, MESSAGES.propCurrentEnrollment());
 		iTable.getCellFormatter().setWordWrap(5, 0, false);
+		iTable.setText(6, 0, MESSAGES.propCourseRequests());
+		iTable.getCellFormatter().setWordWrap(6, 0, false);
 		int col = 0;
 		for (final AcademicClassificationInterface clasf: iClassifications) {
 			col ++;
@@ -132,6 +134,10 @@ public class CurriculaClassifications extends Composite {
 			UniTimeTextBox enrl = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
 			iTable.setWidget(5, col, enrl);
 			iTable.getCellFormatter().setHorizontalAlignment(5, col, HasHorizontalAlignment.ALIGN_CENTER);
+
+			UniTimeTextBox req = new UniTimeTextBox(6, ValueBoxBase.TextAlignment.RIGHT, false);
+			iTable.setWidget(6, col, req);
+			iTable.getCellFormatter().setHorizontalAlignment(6, col, HasHorizontalAlignment.ALIGN_CENTER);
 		}
 	}
 	
@@ -149,12 +155,14 @@ public class CurriculaClassifications extends Composite {
 				setEnrollment(col, null);
 				setLastLike(col, null);
 				setProjection(col, null);
+				setRequested(col, null);
 			} else {
 				setName(col, ci.getName());
 				setExpected(col, ci.getExpected());
 				setEnrollment(col, ci.getEnrollment());
 				setLastLike(col, ci.getLastLike());
 				setProjection(col, ci.getProjection());
+				setRequested(col, ci.getRequested());
 			}
 			col++;
 		}
@@ -184,7 +192,7 @@ public class CurriculaClassifications extends Composite {
 		for (int i = 0; i < iClassifications.size(); i++) {
 			((UniTimeTextBox)iTable.getWidget(0, 1 + i)).setReadOnly(!enabled);
 			((UniTimeTextBox)iTable.getWidget(4, 1 + i)).setReadOnly(!enabled);
-			boolean visible = enabled || getExpected(i) != null || getEnrollment(i) != null || getLastLike(i) != null || getProjection(i) != null;
+			boolean visible = enabled || getExpected(i) != null || getEnrollment(i) != null || getLastLike(i) != null || getProjection(i) != null || getRequested(i) != null;
 			for (int j = 0; j < 6; j++)
 				iTable.getWidget(j, 1 + i).setVisible(visible);
 		}
@@ -262,6 +270,19 @@ public class CurriculaClassifications extends Composite {
 		((TextBox)iTable.getWidget(3, 1 + column)).setText(projection == null || projection == 0 ? "" : projection.toString());
 	}
 	
+	public Integer getRequested(int column) {
+		String text = ((TextBox)iTable.getWidget(6, 1 + column)).getText();
+		if (text.isEmpty()) return null;
+		try {
+			return Integer.parseInt(text);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public void setRequested(int column, Integer requested) {
+		((TextBox)iTable.getWidget(6, 1 + column)).setText(requested == null || requested == 0 ? "" : requested.toString());
+	}
 
 	public static class ExpectedChangedEvent {
 		private AcademicClassificationInterface iClassification;
@@ -318,8 +339,22 @@ public class CurriculaClassifications extends Composite {
 	
 	public void hideEmptyColumns() {
 		for (int i = 0; i < iClassifications.size(); i++) {
-			setVisible(i, getExpected(i) != null || getLastLike(i) != null || getEnrollment(i) != null || getProjection(i) != null);
+			setVisible(i, getExpected(i) != null || getLastLike(i) != null || getEnrollment(i) != null || getProjection(i) != null || getRequested(i) != null);
 		}
+	}
+	
+	public void hideEmptyRows() {
+		boolean last = false, proj = false, enrl = false, req = false;
+		for (int i = 0; i < iClassifications.size(); i++) {
+			if (getLastLike(i) != null) last = true;
+			if (getProjection(i) != null) proj = true;
+			if (getEnrollment(i) != null) enrl = true;
+			if (getRequested(i) != null) req = true;
+		}
+		iTable.getRowFormatter().setVisible(2, last);
+		iTable.getRowFormatter().setVisible(3, proj);
+		iTable.getRowFormatter().setVisible(5, enrl);
+		iTable.getRowFormatter().setVisible(6, req);
 	}
 	
 	public void showAllColumns() {
