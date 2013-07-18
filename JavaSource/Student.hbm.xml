@@ -89,7 +89,7 @@
 
         <set
             name="academicAreaClassifications"
-            inverse="false"
+            inverse="true"
             cascade="all"
             table="student_acad_area"
             lazy="true">
