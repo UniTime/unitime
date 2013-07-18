@@ -522,12 +522,12 @@ public class MenuServlet implements MenuService {
 				
 				if (includeSolutionInfo) {
 					Map<String,String> info = null;
-					if (solver != null) {
-						info = solver.statusSolutionInfo();
+					if (studentSolver != null) {
+						info = studentSolver.statusSolutionInfo();
 					} else if (examSolver != null) {
 						info = examSolver.statusSolutionInfo();
-					} else if (studentSolver != null) {
-						info = studentSolver.statusSolutionInfo();
+					} else if (solver != null) {
+						info = solver.statusSolutionInfo();
 					}
 					
 					if (info != null) {
