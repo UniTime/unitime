@@ -100,7 +100,9 @@ public class CurriculaImport extends BaseImport {
         	for (PosMajor major: (List<PosMajor>)getHibSession().createQuery(
         			"select a from PosMajor a where a.session.uniqueId = :sessionId")
         			.setLong("sessionId", session.getUniqueId()).list()) {
-        		majorsByCode.put(major.getCode(), major);
+        		for (AcademicArea area: major.getAcademicAreas()) {
+            		majorsByCode.put(area.getAcademicAreaAbbreviation() + ":" + major.getCode(), major);
+        		}
         		if (major.getExternalUniqueId() != null)
         			majorsByExtId.put(major.getExternalUniqueId(), major);
         	}
@@ -169,7 +171,7 @@ public class CurriculaImport extends BaseImport {
                 	Element majorElement = (Element)j.next();
                 	String externalId = majorElement.attributeValue("externalId");
                 	String code = majorElement.attributeValue("code");
-                	PosMajor major = (externalId != null ? majorsByExtId.get(externalId) : majorsByCode.get(code));
+                	PosMajor major = (externalId != null ? majorsByExtId.get(externalId) : majorsByCode.get(area.getAcademicAreaAbbreviation() + ":" + code));
                 	if (major == null) {
                 		error("Major " + majorElement.asXML() + " does not exist.");
                 	} else {
