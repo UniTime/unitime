@@ -1549,6 +1549,8 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
             boolean displayHeader, boolean allCoursesAreGiven,
             Comparator classComparator) throws Exception {
     	
+    	if (insructionalOfferings == null) return;
+    	
     	SubjectArea subjectArea = SubjectAreaDAO.getInstance().get(subjectAreaId);
     	
     	if (classComparator!=null)
