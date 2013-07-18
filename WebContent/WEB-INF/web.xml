@@ -317,6 +317,11 @@
 	</filter-mapping>
 
 	<filter-mapping>
+		<filter-name>Locale Filter</filter-name>
+		<url-pattern>/export</url-pattern>
+	</filter-mapping>
+	
+	<filter-mapping>
 		<filter-name>Cache Disabling Filter</filter-name>
 		<url-pattern>/unitime/unitime.nocache.js</url-pattern>
 	</filter-mapping>
