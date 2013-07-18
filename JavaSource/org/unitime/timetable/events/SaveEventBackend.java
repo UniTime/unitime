@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,7 +34,6 @@ import org.apache.commons.fileupload.FileItem;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
 import org.unitime.timetable.gwt.command.server.GwtRpcImplements;
@@ -73,6 +70,7 @@ import org.unitime.timetable.model.dao.SponsoringOrganizationDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.CalendarUtils;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(SaveEventRpcRequest.class)
 public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApproveEventRpcResponse> {
@@ -351,8 +349,8 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			}
 			
 			EventInterface.DateFormatter df = new EventInterface.DateFormatter() {
-				DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
-				DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+				Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+				Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
 				@Override
 				public String formatFirstDate(Date date) {
 					return dfShort.format(date);

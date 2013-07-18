@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -490,7 +489,6 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			
 				List<Meeting> conf = (conflicts == null ? null : conflicts.get(enrollment.getStudent().getUniqueId()));
 				if (conf != null) {
-					DateFormat df = getDateFormat();
 					Map<Event, TreeSet<Meeting>> events = new HashMap<Event, TreeSet<Meeting>>();
 					for (Meeting m: conf) {
 						TreeSet<Meeting> ms = events.get(m.getEvent());
@@ -503,8 +501,8 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 						conflict.setType(confEvent.getEventTypeAbbv());
 						String lastDate = null, lastTime = null, lastRoom = null;
 						for (MultiMeeting mm: Event.getMultiMeetings(events.get(confEvent))) {
-							String date = df.format(mm.getMeetings().first().getMeetingDate()) +
-								(mm.getMeetings().size() == 1 ? "" : " - " + df.format(mm.getMeetings().last().getMeetingDate()));
+							String date = getDateFormat().format(mm.getMeetings().first().getMeetingDate()) +
+								(mm.getMeetings().size() == 1 ? "" : " - " + getDateFormat().format(mm.getMeetings().last().getMeetingDate()));
 							if (lastDate == null) {
 								conflict.setDate(date);
 							} else if (lastDate.equals(date)) {
@@ -514,7 +512,7 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
 							}
 							lastDate = date;
 							
-							String time = mm.getDays() + " " + (mm.getMeetings().first().isAllDay() ? "All Day" : mm.getMeetings().first().startTime() + " - " + mm.getMeetings().first().stopTime());
+							String time = mm.getDays(CONSTANTS.days(), CONSTANTS.shortDays()) + " " + (mm.getMeetings().first().isAllDay() ? "All Day" : mm.getMeetings().first().startTime() + " - " + mm.getMeetings().first().stopTime());
 							if (lastTime == null) {
 								conflict.setTime(time);
 							} else if (lastTime.equals(time)) {

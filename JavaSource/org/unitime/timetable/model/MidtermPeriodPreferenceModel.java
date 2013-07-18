@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
@@ -35,6 +34,7 @@ import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 public class MidtermPeriodPreferenceModel {
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
@@ -352,7 +352,7 @@ public class MidtermPeriodPreferenceModel {
 	}
 	
     private String getLabel(int fDate, int lDate, Hashtable<Integer,String> prefs, boolean html, boolean color) {
-        SimpleDateFormat df = new SimpleDateFormat(CONSTANTS.examPeriodDateFormat(), Localization.getJavaLocale());
+    	Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
         String dates = df.format(getDate(fDate))+(fDate==lDate?"":" - "+df.format(getDate(lDate)));
         String lastPref = null; int fStart = -1, lStart = -1;
         String ret = "";

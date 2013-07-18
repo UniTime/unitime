@@ -20,7 +20,6 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,13 +56,14 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
  * @author Tomas Muller
  */
 public class TimetableGridTable {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
+	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	public static int sNrSlotsPerPeriod = 6; // Group slots into 30 minute periods.
 	public static final int sDaysAll = 0;
 	public static final int sDaysAllExceptSat = 1;

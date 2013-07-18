@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
@@ -64,6 +63,8 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
@@ -87,8 +88,8 @@ public class StudentEmail implements OnlineSectioningAction<Boolean> {
 	private List<Request> iOldRequests = null, iNewRequests = null;
 	private Enrollment iOldEnrollment = null;
 	private Date iTimeStamp = null;
-	private static DateFormat sTimeStampFormat = Localization.getDateFormat(CONST.timeStampFormat());
-	private static DateFormat sConsentApprovalDateFormat = Localization.getDateFormat(CONST.requestDateFormat());
+	private static Format<Date> sTimeStampFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
+	private static Format<Date> sConsentApprovalDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 	private String iSubject = MSG.emailDeafultSubject(), iSubjectExt = null, iMessage = null, iCC = null;
 	private static Hashtable<Long, String> sLastMessage = new Hashtable<Long, String>();
 	private byte[] iTimetableImage = null;

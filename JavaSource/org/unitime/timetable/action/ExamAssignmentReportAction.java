@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -81,6 +80,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.Parameters;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -845,7 +845,7 @@ public class ExamAssignmentReportAction extends Action {
 	}
 	
 	private PdfWebTable generateNrExamsADayReport(boolean html, ExamAssignmentReportForm form, Collection<ExamAssignmentInfo> exams) {
-        SimpleDateFormat df = new SimpleDateFormat("EEE, MM/dd");
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
         String nl = (html?"<br>":"\n");
         PdfWebTable table = new PdfWebTable( 8,
                 form.getReport(), "examAssignmentReport.do?ord=%%",

@@ -20,10 +20,8 @@
 package org.unitime.timetable.solver.exam.ui;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Set;
@@ -41,6 +39,8 @@ import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
+import org.unitime.timetable.util.Formats.Format;
 
 import net.sf.cpsolver.coursett.preference.MinMaxPreferenceCombination;
 import net.sf.cpsolver.exam.criteria.ExamRotationPenalty;
@@ -68,7 +68,8 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 public class ExamAssignment extends ExamInfo implements Serializable {
 	private static final long serialVersionUID = -5726339642542287195L;
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
-    private static DecimalFormat s2Z = new DecimalFormat("00");
+    private Format<Number> s2Z = Formats.getNumberFormat("00");
+    private Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
     protected Long iPeriodId = null;
     protected TreeSet<ExamRoomInfo> iRooms = null;
     protected String iPeriodPref = null;
@@ -220,15 +221,11 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         else return iPeriod;
     }
     
-    protected DateFormat getDateFormat() {
-    	return new SimpleDateFormat(CONSTANTS.examPeriodDateFormat(), Localization.getJavaLocale());
-    }
-
     public String getPeriodName() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
         int end = start + getLength();
-        return getDateFormat().format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
+        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start)+" - "+Constants.toTime(end);
     }
     
     public String getPeriodNameFixedLength() {
@@ -239,7 +236,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
         min += getLength();
         int endHour = min / 60;
         int endMin = min % 60;
-        return getDateFormat().format(getPeriod().getStartDate())+" "+
+        return sDateFormat.format(getPeriod().getStartDate())+" "+
             s2Z.format(startHour==0?12:startHour>12?startHour-12:startHour)+":"+s2Z.format(startMin)+(startHour<24 && startHour>=12?"p":"a")+" - "+
             s2Z.format(endHour==0?12:endHour>12?endHour-12:endHour)+":"+s2Z.format(endMin)+(endHour<24 && endHour>=12?"p":"a");
     }
@@ -247,7 +244,7 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     public String getPeriodAbbreviation() {
         if (getPeriod()==null) return "";
         int start = getPeriod().getStartSlot()*Constants.SLOT_LENGTH_MIN + Constants.FIRST_SLOT_TIME_MIN + getPrintOffset();
-        return getDateFormat().format(getPeriod().getStartDate())+" "+Constants.toTime(start);
+        return sDateFormat.format(getPeriod().getStartDate())+" "+Constants.toTime(start);
     }
     
     public String getPeriodNameWithPref() {
@@ -268,10 +265,10 @@ public class ExamAssignment extends ExamInfo implements Serializable {
     
     public String getDate(boolean pref) {
         if (getPeriod()==null) return "";
-        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return getDateFormat().format(getPeriod().getStartDate());
+        if (!pref || iPeriodPref==null || PreferenceLevel.sNeutral.equals(iPeriodPref)) return sDateFormat.format(getPeriod().getStartDate());
         return
         "<span title='"+PreferenceLevel.prolog2string(iPeriodPref)+" "+getPeriodName()+"' style='color:"+PreferenceLevel.prolog2color(iPeriodPref)+";'>"+
-        getDateFormat().format(getPeriod().getStartDate())+
+        sDateFormat.format(getPeriod().getStartDate())+
         "</span>";
     }
 

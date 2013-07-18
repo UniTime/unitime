@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.basic;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -41,7 +39,6 @@ import net.sf.cpsolver.studentsct.model.Student;
 import net.sf.cpsolver.studentsct.model.Subpart;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
@@ -51,12 +48,12 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServerImpl.EnrollmentSectionComparator;
+import org.unitime.timetable.util.Formats;
 
 public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInterface>{
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
-    
+	
 	private Long iStudentId;
 	
 	public GetAssignment(Long studentId) {
@@ -67,7 +64,7 @@ public class GetAssignment implements OnlineSectioningAction<ClassAssignmentInte
 	public ClassAssignmentInterface execute(OnlineSectioningServer server, OnlineSectioningHelper helper) {
 		Lock lock = server.readLock();
 		try {
-			DateFormat df = new SimpleDateFormat(CFG.requestDateFormat());
+			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_REQUEST);
 			Student student = server.getStudent(iStudentId);
 			if (student == null) return null;
 	        ClassAssignmentInterface ret = new ClassAssignmentInterface();

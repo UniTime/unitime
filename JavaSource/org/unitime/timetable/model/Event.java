@@ -19,7 +19,6 @@
  
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -36,6 +35,7 @@ import net.sf.cpsolver.ifs.util.ToolBox;
 import org.unitime.timetable.model.base.BaseEvent;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 public abstract class Event extends BaseEvent implements Comparable<Event> {
@@ -245,20 +245,20 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	    
 	    public String toString() {
 	        return getDays()+" "+
-	            new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
-	            (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
+	        	Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(getMeetings().first().getMeetingDate())+
+	            (getMeetings().size()>1?" - "+Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(getMeetings().last().getMeetingDate()):"")+" "+
 	            (getMeetings().first().isAllDay()?"All Day":getMeetings().first().startTime()+" - "+getMeetings().first().stopTime())+
 	            (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
 	    }
-
-	       public String toShortString() {
-	            return getDays(Constants.DAY_NAMES_SHORT, Constants.DAY_NAMES_SHORT)+" "+
-	                new SimpleDateFormat("MM/dd").format(getMeetings().first().getMeetingDate())+
-	                (getMeetings().size()>1?" - "+new SimpleDateFormat("MM/dd").format(getMeetings().last().getMeetingDate()):"")+" "+
+	    
+	    public String toShortString() {
+	    	return getDays(Constants.DAY_NAMES_SHORT, Constants.DAY_NAMES_SHORT)+" "+
+	            	Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(getMeetings().first().getMeetingDate())+
+	                (getMeetings().size()>1?" - "+Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT).format(getMeetings().last().getMeetingDate()):"")+" "+
 	                (getMeetings().first().isAllDay()?"All Day":getMeetings().first().startTime())+
 	                (getMeetings().first().getLocation()==null?"":" "+getMeetings().first().getLocation().getLabel());
-	        }
-}
+	    }
+	}
 	
 	public Session getSession() { return null; }
 	

@@ -20,10 +20,10 @@
 package org.unitime.timetable.form;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -44,13 +44,14 @@ import org.unitime.timetable.solver.SolverProxy;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.ui.LogInfo;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
+import org.unitime.timetable.util.Formats;
 
 /** 
  * @author Tomas Muller
  */
 public class ListSolutionsForm extends ActionForm {
 	private static final long serialVersionUID = 632293328433911455L;
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	private Vector iMessages = new Vector();
 	private String iOp = null;
 	private Long iEmptySetting = null;

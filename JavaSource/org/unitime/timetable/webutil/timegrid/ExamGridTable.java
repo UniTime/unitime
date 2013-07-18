@@ -20,7 +20,6 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +52,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo;
 import org.unitime.timetable.solver.exam.ui.ExamRoomInfo;
 import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamInstructorInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGridCell;
 
@@ -60,8 +60,8 @@ import org.unitime.timetable.webutil.timegrid.ExamGridTable.ExamGridModel.ExamGr
  * @author Tomas Muller
  */
 public class ExamGridTable {
-    public static SimpleDateFormat sDF = new SimpleDateFormat("EEE MM/dd");
-
+	public static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
+	
     public static final int sResourceRoom = 0;
     public static final int sResourceInstructor = 1;
     public static final int sResourceSubject = 2;
@@ -277,7 +277,7 @@ public class ExamGridTable {
     public String getDayOfWeekName(int dayOfWeek) {
         Calendar c = Calendar.getInstance(Locale.US);
         c.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-        return new SimpleDateFormat("EEE").format(c.getTime());
+        return Formats.getDateFormat(Formats.Pattern.DATE_DAY_OF_WEEK).format(c.getTime());
     }
     
     public String getWeekName(int week) {
@@ -285,7 +285,7 @@ public class ExamGridTable {
         c.setTime(iForm.getSessionBeginDate());
         c.setLenient(true);
         c.add(Calendar.WEEK_OF_YEAR, week-1);
-        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
         while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.MONDAY) c.add(Calendar.DAY_OF_YEAR, -1);
         String first = df.format(c.getTime());
         while (c.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) c.add(Calendar.DAY_OF_YEAR, 1);

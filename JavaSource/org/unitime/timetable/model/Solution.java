@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +58,7 @@ import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.solver.ui.TimetableInfo;
 import org.unitime.timetable.solver.ui.TimetableInfoFileProxy;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 public class Solution extends BaseSolution implements ClassAssignmentProxy {
@@ -419,7 +419,7 @@ public class Solution extends BaseSolution implements ClassAssignmentProxy {
 			if (!"true".equals(ApplicationProperties.getProperty("unitime.email.notif.commit", ApplicationProperties.getProperty("tmtbl.notif.commit.enabled", "true"))))
 				return; //email notification disabled
 
-			SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+			Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 			SolverGroup owner = (uncommittedSolution==null?committedSolution:uncommittedSolution).getOwner();
 			
 			String subject = "Solution "+(committedSolution!=null?uncommittedSolution!=null?"recommitted":"committed":"uncommitted")+" for "+owner.getName();

@@ -21,14 +21,13 @@ package org.unitime.timetable.webutil;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
@@ -86,6 +85,7 @@ import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -93,7 +93,7 @@ import org.unitime.timetable.util.Constants;
  */
 public class WebInstructionalOfferingTableBuilder {
 	protected static CourseMessages MSG = Localization.create(CourseMessages.class);
-	protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("MM/dd", Locale.US);
+	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	protected static DecimalFormat sRoomRatioFormat = new DecimalFormat("0.00");
 
     protected static String indent = "&nbsp;&nbsp;&nbsp;&nbsp;";

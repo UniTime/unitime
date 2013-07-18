@@ -19,9 +19,8 @@
 */
 package org.unitime.timetable.server.exams;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +54,7 @@ import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.BackToBackConflic
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.DirectConflict;
 import org.unitime.timetable.solver.exam.ui.ExamAssignmentInfo.MoreThanTwoADayConflict;
 import org.unitime.timetable.solver.service.SolverService;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(ExaminationEnrollmentsRpcRequest.class)
 public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<ExaminationEnrollmentsRpcRequest, GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
@@ -83,7 +83,7 @@ public class ExaminationEnrollmentsBackend implements GwtRpcImplementation<Exami
 		GwtRpcResponseList<ClassAssignmentInterface.Enrollment> ret = EventEnrollmentsBackend.convert(exam.getStudentClassEnrollments(), null);
 		
 		
-		DateFormat df = new SimpleDateFormat(CONSTANTS.examPeriodDateFormat(), Localization.getJavaLocale());
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
 
 		Map<Long, List<Meeting>> conflicts = computeConflicts(exam.getUniqueId(), period);
 		if (conflicts != null) {

@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.dataexchange;
 
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Hashtable;
@@ -64,11 +62,12 @@ import org.unitime.timetable.model.VariableRangeCreditUnitConfig;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 public class CourseOfferingExport extends BaseExport {
-    protected static DecimalFormat sTwoNumbersDF = new DecimalFormat("00");
-    protected static SimpleDateFormat sDateFormat = new SimpleDateFormat("yyyy/M/d");
-    protected static SimpleDateFormat sTimeFormat = new SimpleDateFormat("HHmm");
+    protected static Formats.Format<Number> sTwoNumbersDF = Formats.getNumberFormat("00");
+    protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat("yyyy/M/d");
+    protected static Formats.Format<Date> sTimeFormat = Formats.getDateFormat("HHmm");
     protected Hashtable<Long, TreeSet<Exam>> iExams = null;
     protected boolean iExportAssignments = true;
     

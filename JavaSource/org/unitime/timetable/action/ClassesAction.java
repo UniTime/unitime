@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -65,6 +64,7 @@ import org.unitime.timetable.security.UserAuthority;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LoginManager;
 import org.unitime.timetable.webutil.PdfWebTable;
 
@@ -205,7 +205,7 @@ public class ClassesAction extends Action {
     
     protected String getMeetingTime(Class_ clazz) {
         String meetingTime = "";
-        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
         Assignment assignment = clazz.getCommittedAssignment();
         TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
         DatePattern dp = (assignment==null?null:assignment.getDatePattern());

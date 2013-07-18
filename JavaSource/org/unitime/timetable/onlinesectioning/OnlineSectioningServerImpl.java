@@ -78,6 +78,7 @@ import org.unitime.timetable.onlinesectioning.solver.StudentSchedulingAssistantW
 import org.unitime.timetable.onlinesectioning.updates.CheckAllOfferingsAction;
 import org.unitime.timetable.onlinesectioning.updates.ReloadAllData;
 import org.unitime.timetable.onlinesectioning.updates.StudentEmail;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -958,6 +959,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 			} finally {
 				ApplicationProperties.setSessionId(null);
 				Localization.removeLocale();
+				Formats.removeFormats();
 			}
 		}
 		

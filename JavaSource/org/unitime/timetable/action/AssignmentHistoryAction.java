@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -46,6 +46,7 @@ import org.unitime.timetable.solver.interactive.Suggestion;
 import org.unitime.timetable.solver.interactive.SuggestionsModel;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -54,7 +55,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/assignmentHistory")
 public class AssignmentHistoryAction extends Action {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd hh:mma");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP_SHORT);
 	
 	@Autowired SessionContext sessionContext;
 	

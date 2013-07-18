@@ -92,6 +92,7 @@ import org.unitime.timetable.solver.exam.ui.ExamInfo.ExamSectionInfo;
 import org.unitime.timetable.util.AccessDeniedException;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 @Service("/personalSchedule")
@@ -536,7 +537,7 @@ public class PersonalizedExamReportAction extends Action {
     protected String getMeetingTime(ExamSectionInfo section) {
         String meetingTime = "";
         if (section.getOwner().getOwnerObject() instanceof Class_) {
-            SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+            Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
             Class_ clazz = (Class_)section.getOwner().getOwnerObject();
             Assignment assignment = clazz.getCommittedAssignment();
             TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
@@ -1322,7 +1323,7 @@ public class PersonalizedExamReportAction extends Action {
     
     protected String getMeetingTime(Class_ clazz) {
         String meetingTime = "";
-        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
         Assignment assignment = clazz.getCommittedAssignment();
         TreeSet meetings = (clazz.getEvent()==null?null:new TreeSet(clazz.getEvent().getMeetings()));
         DatePattern dp = (assignment==null?null:assignment.getDatePattern());

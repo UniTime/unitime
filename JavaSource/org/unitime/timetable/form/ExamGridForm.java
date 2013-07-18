@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.form;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -42,6 +41,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.solver.WebSolver;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.util.ComboBoxLookup;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.timegrid.ExamGridTable;
 
 public class ExamGridForm extends ActionForm {
@@ -156,7 +156,7 @@ public class ExamGridForm extends ActionForm {
         Vector<ComboBoxLookup> ret = new Vector<ComboBoxLookup>();
         ret.addElement(new ComboBoxLookup("All Dates", String.valueOf(Integer.MIN_VALUE)));
         HashSet added = new HashSet();
-        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
         for (Iterator i=iPeriods.get(examType).iterator();i.hasNext();) {
             ExamPeriod period = (ExamPeriod)i.next();
             Calendar cal = Calendar.getInstance(Locale.US);

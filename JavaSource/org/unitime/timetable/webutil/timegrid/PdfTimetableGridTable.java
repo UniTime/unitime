@@ -21,14 +21,15 @@ package org.unitime.timetable.webutil.timegrid;
 
 import java.awt.Color;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.StringTokenizer;
 
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.PdfEventHandler;
 import org.unitime.timetable.util.PdfFont;
 
@@ -50,7 +51,7 @@ import com.lowagie.text.pdf.PdfWriter;
  * @author Tomas Muller
  */
 public class PdfTimetableGridTable {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd");
+	protected static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	private TimetableGridTable iTable = null;
 	private PdfWriter iWriter = null;
 	private Document iDocument = null;

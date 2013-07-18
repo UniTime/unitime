@@ -20,7 +20,6 @@
 package org.unitime.timetable.action;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -63,6 +62,7 @@ import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 
 
@@ -71,7 +71,7 @@ import org.unitime.timetable.util.LookupTables;
  */
 @Service("/manageSolvers")
 public class ManageSolversAction extends Action {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SessionContext sessionContext;
 	

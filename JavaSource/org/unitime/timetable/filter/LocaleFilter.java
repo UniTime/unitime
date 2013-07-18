@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.util.Formats;
 
 public class LocaleFilter implements Filter {
 	private boolean iUseBrowserSettings;
@@ -68,6 +69,7 @@ public class LocaleFilter implements Filter {
 			chain.doFilter(req, resp);
 		} finally {
 			Localization.removeLocale();
+			Formats.removeFormats();
 		}
 	}
 

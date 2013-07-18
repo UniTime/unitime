@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,6 +51,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.SessionRollForward;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
@@ -137,7 +137,8 @@ public class RollForwardSessionAction extends Action {
 	private WebTable getQueueTable(HttpServletRequest request, RollForwardSessionForm form) {
         WebTable.setOrder(sessionContext,"rollForwardSession.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
-		DateFormat df = new SimpleDateFormat("h:mma");
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
+		
 		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Roll Forward");
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, null, "rollForwardSession.do?ord=%%",

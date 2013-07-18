@@ -26,7 +26,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +37,7 @@ import org.unitime.timetable.model.ApplicationConfig;
 import org.unitime.timetable.model.SessionConfig;
 import org.unitime.timetable.model.dao._RootDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -46,7 +46,7 @@ import org.unitime.timetable.util.Constants;
  * @author Heston Fernandes
  */
 public class ApplicationProperties {
-	public static SimpleDateFormat sDF_file = new SimpleDateFormat("dd-MMM-yy_HHmmssSSS");
+	private static Formats.Format<Date> sDF_file = Formats.getDateFormat("dd-MMM-yy_HHmmssSSS");
 	
 	private static Properties props = new Properties();
     private static long appPropertiesLastModified = -1, custPropertiesLastModified = -1;  

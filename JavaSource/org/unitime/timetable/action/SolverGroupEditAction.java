@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
@@ -51,6 +50,7 @@ import org.unitime.timetable.model.dao.SolverGroupDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.webutil.PdfWebTable;
 
 
@@ -59,7 +59,7 @@ import org.unitime.timetable.webutil.PdfWebTable;
  */
 @Service("/solverGroupEdit")
 public class SolverGroupEditAction extends Action {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SessionContext sessionContext;
 	
