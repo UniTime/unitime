@@ -22,9 +22,9 @@ package org.unitime.timetable.action;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +65,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 
@@ -450,7 +451,7 @@ public class DatePatternEditAction extends Action {
                             } else {
                                 out.println("      -- like "+likeDp.getName()+", diff="+likeDiff);
                                 out.println("      -- "+likeDp.getUsage(allClasses));
-                                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
+                                Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
                                 dp.setName("generated "+sdf.format(dp.getStartDate())+" - "+sdf.format(dp.getEndDate()));
                                 hibSession.saveOrUpdate(dp);
                             }
@@ -715,7 +716,7 @@ public class DatePatternEditAction extends Action {
 	            					new CSVFile.CSVField("Classes")
 	            			});
 	            	
-	            	SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
+	            	Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 	            	TreeSet allDatePatterns = new TreeSet(DatePattern.findAll(sessionContext.getUser().getCurrentAcademicSessionId(), true, null, null));
 	            	for (Iterator i=allDatePatterns.iterator();i.hasNext();) {
 	            		DatePattern dp = (DatePattern)i.next();
@@ -818,7 +819,7 @@ public class DatePatternEditAction extends Action {
     private void getDatePatterns(HttpServletRequest request) throws Exception {
 		Set used = DatePattern.findAllUsed(sessionContext.getUser().getCurrentAcademicSessionId());
 		boolean hasSet = !DatePattern.findAllParents(sessionContext.getUser().getCurrentAcademicSessionId()).isEmpty(); 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd");
+        Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
 
 		WebTable.setOrder(sessionContext,"datePatterns.ord",request.getParameter("ord"),1);
 		// Create web table instance 

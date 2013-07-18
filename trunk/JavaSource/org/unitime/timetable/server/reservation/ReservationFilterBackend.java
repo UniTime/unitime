@@ -19,9 +19,7 @@
 */
 package org.unitime.timetable.server.reservation;
 
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -65,6 +63,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.server.FilterBoxBackend;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(ReservationFilterRpcRequest.class)
 public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilterRpcRequest> {
@@ -346,7 +345,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("before"));
+						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("before"));
 					} catch (ParseException p) {}
 				}
 			}
@@ -365,7 +364,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("after"));
+						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("after"));
 					} catch (ParseException p) {}
 				}
 			}
@@ -572,7 +571,7 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 	private static class ReservationMatcher implements Query.TermMatcher {
 		private Reservation iReservation;
 		private Date iExpDate;
-		private DateFormat iDateFormat = null;
+		private Formats.Format<Date> iDateFormat = null;
 		
 		private ReservationMatcher(Reservation r) {
 			iReservation = r;
@@ -586,13 +585,13 @@ public class ReservationFilterBackend extends FilterBoxBackend<ReservationFilter
 		
 		private String format(Date date) {
 			if (iDateFormat == null)
-				iDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat());
+				iDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 			return iDateFormat.format(date);
 		}
 		
 		private Date parse(String date) throws ParseException {
 			if (iDateFormat == null)
-				iDateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat());
+				iDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 			return iDateFormat.parse(date);
 		}
 		

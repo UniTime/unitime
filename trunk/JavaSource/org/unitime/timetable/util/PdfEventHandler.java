@@ -21,11 +21,9 @@ package org.unitime.timetable.util;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.unitime.localization.impl.Localization;
-import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 
 import com.lowagie.text.Document;
@@ -38,13 +36,12 @@ import com.lowagie.text.pdf.PdfWriter;
 
 public class PdfEventHandler extends PdfPageEventHelper {
 	private static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
-	private static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 
 	private BaseFont baseFont;
 	private float fontSize;
 	
 	private Date dateTime = null;
-	private SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.timeStampFormat(), Localization.getJavaLocale());
+	private Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
     /**
      * Constructor for PdfEventHandler
@@ -124,7 +121,7 @@ public class PdfEventHandler extends PdfPageEventHelper {
 		this.dateTime = dateTime;
 	}
 
-	private SimpleDateFormat getDateFormat() {
+	private Formats.Format<Date> getDateFormat() {
 		return dateFormat;
 	}
 

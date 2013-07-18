@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TreeSet;
@@ -43,6 +41,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.UniTimeUserContext;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(AcademicSessionSelectionBox.ListAcademicSessions.class)
 public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessionSelectionBox.ListAcademicSessions, GwtRpcResponseList<AcademicSession>>{
@@ -51,7 +50,7 @@ public class ListAcademicSessions implements GwtRpcImplementation<AcademicSessio
 
 	@Override
 	public GwtRpcResponseList<AcademicSession> execute(AcademicSessionSelectionBox.ListAcademicSessions command, SessionContext context) {
-		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		
 		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		

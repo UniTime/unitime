@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import org.unitime.timetable.model.base.BaseExamPeriod;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.ExamPeriodDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 
 public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod> {
@@ -108,7 +108,7 @@ public class ExamPeriod extends BaseExamPeriod implements Comparable<ExamPeriod>
     }
     
     public String getStartDateLabel() {
-        return new SimpleDateFormat("EEE MM/dd").format(getStartDate());
+        return Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD).format(getStartDate());
     }
     
     public String getStartTimeLabel() {

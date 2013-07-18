@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,6 +68,7 @@ import org.unitime.timetable.solver.remote.SolverRegisterService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 
 import net.sf.cpsolver.ifs.util.CSVFile;
 import net.sf.cpsolver.ifs.util.DataProperties;
@@ -78,7 +78,7 @@ import net.sf.cpsolver.ifs.util.DataProperties;
  */
 @Service("/listSolutions")
 public class ListSolutionsAction extends Action {
-	private static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 	
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	

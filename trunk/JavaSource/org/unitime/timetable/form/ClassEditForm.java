@@ -63,7 +63,7 @@ public class ClassEditForm extends PreferencesForm {
 	protected final static CourseMessages MSG = Localization.create(CourseMessages.class);
 	
 	/** Class Start/End Date Format **/
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");    
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");    
     
     // --------------------------------------------------------- Instance Variables
     

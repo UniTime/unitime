@@ -20,8 +20,6 @@
 package org.unitime.timetable.events;
 
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -45,10 +43,12 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.evaluation.UniTimePermissionCheck;
 import org.unitime.timetable.security.qualifiers.SimpleQualifier;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpcResponse> implements GwtRpcImplementation<T, R> {
 	protected static GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	protected static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
+	protected static Formats.Format<Date> sDateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 
 	@Override
 	public R execute(T request, SessionContext context) {
@@ -61,8 +61,8 @@ public abstract class EventAction<T extends EventRpcRequest<R>, R extends GwtRpc
 
 	public abstract R execute(T request, EventContext context);
 	
-	protected static DateFormat getDateFormat() {
-		return new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+	protected static Formats.Format<Date> getDateFormat() {
+		return sDateFormat;
 	}
 	
 	protected static String toString(MeetingInterface meeting) {

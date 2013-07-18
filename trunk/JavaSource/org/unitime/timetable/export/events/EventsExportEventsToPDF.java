@@ -20,12 +20,10 @@
 package org.unitime.timetable.export.events;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.export.PDFPrinter;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
@@ -35,6 +33,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.MultiMeetingInterface;
+import org.unitime.timetable.util.Formats;
 
 @Service("org.unitime.timetable.export.Exporter:events.pdf")
 public class EventsExportEventsToPDF extends EventsExporter {
@@ -92,9 +91,9 @@ public class EventsExportEventsToPDF extends EventsExporter {
 				/* 15 */ MESSAGES.colMainContact(),
 				/* 16 */ MESSAGES.colApproval());
 		
-		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
-		DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
-		DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
+		Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
+		Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 		
 		for (EventInterface event: events) {
 			for (MultiMeetingInterface multi: EventInterface.getMultiMeetings(event.getMeetings(), false)) {

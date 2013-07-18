@@ -19,9 +19,8 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 import org.unitime.localization.impl.Localization;
@@ -35,6 +34,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(WeekSelectorRequest.class)
 public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorRequest, GwtRpcResponseList<WeekInterface>> {
@@ -50,7 +50,7 @@ public class WeekSelectorBackend implements GwtRpcImplementation<WeekSelectorReq
 			c.add(Calendar.DAY_OF_YEAR, -1);
 		}
 		int sessionYear = session.getSessionStartYear();
-		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 		while (!c.getTime().after(session.getEventEndDate())) {
 			int dayOfYear = c.get(Calendar.DAY_OF_YEAR);
 			if (c.get(Calendar.YEAR) < sessionYear) {

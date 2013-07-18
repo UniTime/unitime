@@ -20,7 +20,6 @@
 package org.unitime.timetable.model;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -32,6 +31,7 @@ import org.unitime.timetable.model.dao.LocationDAO;
 import org.unitime.timetable.model.dao.MeetingDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	private static final long serialVersionUID = 1L;
@@ -236,7 +236,7 @@ public class Meeting extends BaseMeeting implements Comparable<Meeting> {
 	}
 	
 	public String dateStr() {
-	    return new SimpleDateFormat("EEE MM/dd").format(getMeetingDate());
+	    return Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD).format(getMeetingDate());
 	}
 	
 	public Date getStartTime() {

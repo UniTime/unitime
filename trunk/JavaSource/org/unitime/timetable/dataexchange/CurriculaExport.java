@@ -41,7 +41,7 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.Session;
 
 public class CurriculaExport extends BaseExport{
-    protected static DecimalFormat sShareDF = new DecimalFormat("0.0000");
+    protected DecimalFormat iShareDF = new DecimalFormat("0.0000");
 
 
     public void saveXml(Document document, Session session, Properties parameters) throws Exception {
@@ -125,7 +125,7 @@ public class CurriculaExport extends BaseExport{
     					courseElement.addAttribute("subject", course.getCourse().getSubjectArea().getSubjectAreaAbbreviation());
     					courseElement.addAttribute("courseNbr", course.getCourse().getCourseNbr());
     					if (!minimalistic || course.getPercShare() != 1.0f)
-        					courseElement.addAttribute("share", sShareDF.format(course.getPercShare()));
+        					courseElement.addAttribute("share", iShareDF.format(course.getPercShare()));
     					
     					for (CurriculumCourseGroup group: (Collection<CurriculumCourseGroup>)course.getGroups()) {
     						Integer gid = groupId.get(group.getUniqueId());

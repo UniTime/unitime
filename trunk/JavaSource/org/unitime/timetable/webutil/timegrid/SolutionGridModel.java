@@ -20,10 +20,10 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,6 +54,7 @@ import org.unitime.timetable.solver.ui.AssignmentPreferenceInfo;
 import org.unitime.timetable.solver.ui.GroupConstraintInfo;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
 
 
@@ -145,7 +146,7 @@ public class SolutionGridModel extends TimetableGridModel {
 		        int firstDOY = room.getSession().getDayOfYear(1, room.getSession().getPatternStartMonth());
 		        int lastDOY = room.getSession().getDayOfYear(0, room.getSession().getPatternEndMonth()+1);
 		        Calendar c = Calendar.getInstance(Locale.US);
-		        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+		        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
 				for (TimeBlock time: times) {
 					if (time.getEndTime().before(startDateCal.getTime()) || time.getStartTime().after(endDateCal.getTime())) continue;
 	                int dayCode = 0;

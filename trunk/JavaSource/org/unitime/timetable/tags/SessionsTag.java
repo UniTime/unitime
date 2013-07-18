@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.tags;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +37,7 @@ import org.unitime.timetable.gwt.shared.PageAccessException;
 import org.unitime.timetable.listeners.SessionListener;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -71,7 +71,7 @@ public class SessionsTag extends TagSupport {
         	throw new PageAccessException("Access Denied.");
         
 		StringBuffer html = new StringBuffer("");
-		SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
+		Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
 		
 		try {
 			

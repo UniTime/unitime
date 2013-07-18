@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -46,6 +44,7 @@ import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.queue.PdfExamReportQueueItem;
 import org.unitime.timetable.util.queue.QueueItem;
@@ -114,7 +113,7 @@ public class ExamPdfReportAction extends Action {
 	private WebTable getQueueTable(HttpServletRequest request) {
         WebTable.setOrder(sessionContext,"examPdfReport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
-		DateFormat df = new SimpleDateFormat("h:mma");
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
 		String ownerId = null;
 		if (!sessionContext.getUser().getCurrentAuthority().hasRight(Right.DepartmentIndependent))
 			ownerId = sessionContext.getUser().getExternalUserId();

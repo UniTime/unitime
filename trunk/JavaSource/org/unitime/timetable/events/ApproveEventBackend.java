@@ -19,8 +19,6 @@
 */
 package org.unitime.timetable.events;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,6 +47,7 @@ import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.EventDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(ApproveEventRpcRequest.class)
 public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, SaveOrApproveEventRpcResponse>{
@@ -161,8 +160,8 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 					CONSTANTS,
 					"\n",
 					new EventInterface.DateFormatter() {
-						DateFormat dfShort = new SimpleDateFormat(CONSTANTS.eventDateFormatShort(), Localization.getJavaLocale());
-						DateFormat dfLong = new SimpleDateFormat(CONSTANTS.eventDateFormatLong(), Localization.getJavaLocale());
+						Formats.Format<Date> dfShort = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
+						Formats.Format<Date> dfLong = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_LONG);
 						@Override
 						public String formatFirstDate(Date date) {
 							return dfShort.format(date);

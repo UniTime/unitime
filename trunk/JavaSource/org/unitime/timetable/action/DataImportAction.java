@@ -20,9 +20,7 @@
 package org.unitime.timetable.action;
 
 import java.io.FileOutputStream;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -62,6 +60,7 @@ import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.queue.QueueItem;
 import org.unitime.timetable.util.queue.QueueProcessor;
 
@@ -137,7 +136,7 @@ public class DataImportAction extends Action {
 	private WebTable getQueueTable(HttpServletRequest request) {
         WebTable.setOrder(sessionContext,"dataImport.ord",request.getParameter("ord"),1);
 		String log = request.getParameter("log");
-		DateFormat df = new SimpleDateFormat("h:mma");
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
 		List<QueueItem> queue = QueueProcessor.getInstance().getItems(null, null, "Data Exchange");
 		if (queue.isEmpty()) return null;
 		WebTable table = new WebTable(9, "Data exchange in progress", "dataImport.do?ord=%%",

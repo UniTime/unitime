@@ -45,6 +45,7 @@ import org.unitime.timetable.model.QueryLog;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.context.HttpSessionContext;
 import org.unitime.timetable.security.evaluation.PermissionCheck;
+import org.unitime.timetable.util.Formats;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -318,6 +319,7 @@ public class GwtRpcServlet extends RemoteServiceServlet implements GwtRpcService
 				}
 			} finally {
 				Localization.removeLocale();
+				Formats.removeFormats();
 				ApplicationProperties.setSessionId(null);
 			}
 			synchronized (this) {
