@@ -67,8 +67,8 @@ public class Majors implements AdminTable {
 		}
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
-				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.UNIQUE),
-				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.UNIQUE),
+				new Field(MESSAGES.fieldCode(), FieldType.text, 80, 10, Flag.NOT_EMPTY),
+				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.NOT_EMPTY),
 				new Field(MESSAGES.fieldAcademicArea(), FieldType.list, 300, areas));
 		data.setSortBy(3,1,2);
 		for (PosMajor major: PosMajorDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
