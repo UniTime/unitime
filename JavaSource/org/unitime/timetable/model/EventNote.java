@@ -19,11 +19,11 @@
  
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 import org.unitime.timetable.model.Event.MultiMeeting;
 import org.unitime.timetable.model.base.BaseEventNote;
+import org.unitime.timetable.util.Formats;
 
 
 
@@ -85,7 +85,7 @@ public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	    return "<tr style=\"background-color:"+sEventNoteTypeBgColor[getNoteType()]+";\" valign='top' " +
 	            "onMouseOver=\"this.style.backgroundColor='rgb(223,231,242)';\" " +
 	            "onMouseOut=\"this.style.backgroundColor='"+sEventNoteTypeBgColor[getNoteType()]+"';\">" +
-	    		"<td>"+new SimpleDateFormat("MM/dd hh:mmaa").format(getTimeStamp())+"</td>" +
+	    		"<td>"+Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP).format(getTimeStamp())+"</td>" +
                 (includeUser?"<td>"+(getUser()==null || getUser().length()==0?"<i>N/A</i>":getUser())+"</td>":"") +
 	    		"<td>"+sEventNoteTypeName[getNoteType()]+"</td>" +
 	    		"<td>"+getMeetingsHtml()+"</td>"+

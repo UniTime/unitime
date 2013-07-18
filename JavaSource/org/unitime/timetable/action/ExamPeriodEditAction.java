@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeSet;
 
@@ -47,6 +47,7 @@ import org.unitime.timetable.model.dao.ExamTypeDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 /** 
  * @author Tomas Muller
@@ -246,8 +247,8 @@ public class ExamPeriodEditAction extends Action {
 		    webTable.addLine(null, new String[] {"No examination periods defined for this session."}, null, null );			    
 		}
 		
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE MM/dd/yyyy");
-        SimpleDateFormat stf = new SimpleDateFormat("hh:mm aa");
+        Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
+        Formats.Format<Date> stf = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
 
         for (Iterator i=periods.iterator();i.hasNext();) {
         	ExamPeriod ep = (ExamPeriod)i.next();

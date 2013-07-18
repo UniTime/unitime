@@ -20,7 +20,6 @@
 package org.unitime.timetable.solver.studentsct;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -86,6 +85,7 @@ import org.unitime.timetable.solver.curricula.ProjectedStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 import net.sf.cpsolver.coursett.constraint.GroupConstraint;
 import net.sf.cpsolver.coursett.constraint.IgnoreStudentConflictsConstraint;
@@ -1168,7 +1168,7 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
     		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
     	}
     	if (last == null) return time.getDatePatternName();
-        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
     	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
     }
 

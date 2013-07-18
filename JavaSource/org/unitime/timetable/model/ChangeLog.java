@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -32,6 +31,7 @@ import org.unitime.timetable.model.dao.ChangeLogDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.UserContext;
+import org.unitime.timetable.util.Formats;
 
 
 
@@ -130,8 +130,8 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         public String getTitle() { return iTitle; }
     }
     
-    public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
-    public static SimpleDateFormat sDFdate = new SimpleDateFormat("MM/dd/yy");
+    public static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
+    public static Formats.Format<Date> sDFdate = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
     
     public Operation getOperation() {
         return Operation.valueOf(getOperationString());

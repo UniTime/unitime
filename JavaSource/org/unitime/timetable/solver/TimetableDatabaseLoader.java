@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.solver;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -126,6 +125,7 @@ import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStude
 import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.RoomAvailability;
 
 /**
@@ -3400,7 +3400,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
         int size = lastDOY - firstDOY;
         Calendar c = Calendar.getInstance(Locale.US);
-        SimpleDateFormat df = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
         long id = 0;
         int sessionYear = iSession.getSessionStartYear();
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {

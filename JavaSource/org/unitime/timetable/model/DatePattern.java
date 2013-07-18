@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.model;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -43,6 +42,7 @@ import org.unitime.timetable.security.UserContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 
 public class DatePattern extends BaseDatePattern implements Comparable {
@@ -173,7 +173,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
 		for(Iterator it = ts.iterator(); it.hasNext();){
 			Date startDate = (Date) it.next();
 			Date endDate = (Date) dates.get(startDate);
-			SimpleDateFormat df = new SimpleDateFormat("M/d");
+			Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_SHORT);
 			String startDateStr = df.format(startDate);
 			String endDateStr = df.format(endDate);
 			if (first){

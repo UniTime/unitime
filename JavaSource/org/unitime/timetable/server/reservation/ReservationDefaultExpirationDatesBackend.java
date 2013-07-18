@@ -20,7 +20,6 @@
 package org.unitime.timetable.server.reservation;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -33,11 +32,12 @@ import org.unitime.timetable.gwt.shared.ReservationInterface.ReservationDefaultE
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(ReservationDefaultExpirationDatesRpcRequest.class)
 public class ReservationDefaultExpirationDatesBackend implements GwtRpcImplementation<ReservationDefaultExpirationDatesRpcRequest, DefaultExpirationDates> {
 	private static String[] sTypes = new String[] { "individual", "group", "curriculum", "course" };
-	private static SimpleDateFormat sDF = new SimpleDateFormat("yyyy-MM-dd");
+	private static Formats.Format<Date> sDF = Formats.getDateFormat("yyyy-MM-dd");
 
 	@Override
 	public DefaultExpirationDates execute(ReservationDefaultExpirationDatesRpcRequest request, SessionContext context) {

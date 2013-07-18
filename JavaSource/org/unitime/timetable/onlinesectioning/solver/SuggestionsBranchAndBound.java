@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.solver;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -39,6 +38,7 @@ import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.server.Query;
+import org.unitime.timetable.util.Formats;
 
 import net.sf.cpsolver.coursett.model.RoomLocation;
 import net.sf.cpsolver.coursett.model.TimeLocation;
@@ -344,7 +344,7 @@ public class SuggestionsBranchAndBound {
 			if (attr == null || attr.equals("date")) {
 				if (iSection.getTime() == null && term.equalsIgnoreCase("none")) return true;
 				if (iSection.getTime() != null && !iSection.getTime().getWeekCode().isEmpty()) {
-					SimpleDateFormat df = new SimpleDateFormat(CONSTANTS.patternDateFormat());
+					Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
 			    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
 			    	cal.setTime(iFirstDate);
 			    	for (int i = 0; i < iSection.getTime().getWeekCode().size(); i++) {

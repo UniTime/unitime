@@ -20,7 +20,6 @@
 package org.unitime.timetable.events;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -55,6 +54,7 @@ import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 @GwtRpcImplements(EventFilterRpcRequest.class)
 public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> {
@@ -270,7 +270,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 			} catch (NumberFormatException f) {
 				try {
-					date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("from"));
+					date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("from"));
 				} catch (ParseException p) {}
 			}
 			if (date != null) {
@@ -285,7 +285,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 				last = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 			} catch (NumberFormatException f) {
 				try {
-					last = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(request.getOption("to"));
+					last = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(request.getOption("to"));
 				} catch (ParseException p) {}
 				
 			}
@@ -304,7 +304,7 @@ public class EventFilterBackend extends FilterBoxBackend<EventFilterRpcRequest> 
 					date = DateUtils.getDate(SessionDAO.getInstance().get(request.getSessionId()).getSessionStartYear(), dayOfYear);
 				} catch (NumberFormatException f) {
 					try {
-						date = new SimpleDateFormat(CONSTANTS.eventDateFormat()).parse(d);
+						date = Formats.getDateFormat(Formats.Pattern.DATE_EVENT).parse(d);
 					} catch (ParseException p) {}
 				}
 				if (date != null) {

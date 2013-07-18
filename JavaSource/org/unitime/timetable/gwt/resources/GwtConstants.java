@@ -183,4 +183,10 @@ public interface GwtConstants extends Constants {
 	
 	@DefaultStringValue("EEEE MMMM d yyyy")
 	String singleDateSelectionFormat();
+	
+	@DefaultStringValue("M/d")
+	String dateFormatShort();
+	
+	@DefaultStringValue("h:mma")
+	String timeFormatShort();
 }

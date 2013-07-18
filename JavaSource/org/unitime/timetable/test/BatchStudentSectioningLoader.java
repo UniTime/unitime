@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.test;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -57,6 +57,7 @@ import org.unitime.timetable.model.TimePatternModel;
 import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.SchedulingSubpartComparator;
 import org.unitime.timetable.model.dao.SessionDAO;
+import org.unitime.timetable.util.Formats;
 
 import net.sf.cpsolver.coursett.model.Lecture;
 import net.sf.cpsolver.coursett.model.Placement;
@@ -234,7 +235,7 @@ public class BatchStudentSectioningLoader extends StudentSectioningLoader {
         if (section.getTime()!=null && section.getTime().getDatePatternId().equals(c.getSession().getDefaultDatePattern().getUniqueId()))
             section.getTime().setDatePattern(section.getTime().getDatePatternId(),"",section.getTime().getWeekCode());
         if (section.getTime()!=null && section.getTime().getDatePatternName().startsWith("generated")) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MM/dd");
+        	Formats.Format<Date> sdf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
             section.getTime().setDatePattern(
                     section.getTime().getDatePatternId(), 
                     sdf.format(c.effectiveDatePattern().getStartDate())+" - "+sdf.format(c.effectiveDatePattern().getEndDate()), 

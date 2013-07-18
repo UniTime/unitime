@@ -20,13 +20,11 @@
 package org.unitime.timetable.export.events;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
-import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.export.CSVPrinter;
 import org.unitime.timetable.export.ExportHelper;
 import org.unitime.timetable.gwt.client.events.EventComparator.EventMeetingSortBy;
@@ -35,6 +33,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.ApprovalStatus;
 import org.unitime.timetable.gwt.shared.EventInterface.EventFlag;
 import org.unitime.timetable.gwt.shared.EventInterface.EventType;
 import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
+import org.unitime.timetable.util.Formats;
 
 @Service("org.unitime.timetable.export.Exporter:meetings.csv")
 public class EventsExportMeetingsToCSV extends EventsExporter {
@@ -96,7 +95,7 @@ public class EventsExportMeetingsToCSV extends EventsExporter {
 				/* 19 */ MESSAGES.colEmail(),
 				/* 20 */ MESSAGES.colApproval());
 		
-		DateFormat df = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+		Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		EventInterface last = null;
 		
 		for (EventMeeting em: meetings) {

@@ -20,7 +20,7 @@
 package org.unitime.timetable.server.admin;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import net.sf.cpsolver.ifs.util.ToolBox;
 
@@ -29,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.gwt.command.client.GwtRpcException;
-import org.unitime.timetable.gwt.resources.GwtConstants;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface;
 import org.unitime.timetable.gwt.shared.SimpleEditInterface.Field;
@@ -45,10 +44,10 @@ import org.unitime.timetable.model.dao.EventDateMappingDAO;
 import org.unitime.timetable.model.dao.SessionDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
+import org.unitime.timetable.util.Formats;
 
 @Service("gwtAdminTable[type=dateMapping]")
 public class EventDateMappings implements AdminTable {
-	private static GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
@@ -67,7 +66,7 @@ public class EventDateMappings implements AdminTable {
 		data.setSortBy(0, 1);
 		data.setSessionId(context.getUser().getCurrentAcademicSessionId());
 		data.setSessionName(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()).getLabel());
-		SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale()); 
+		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		for (EventDateMapping mapping: EventDateMapping.findAll(context.getUser().getCurrentAcademicSessionId())) {
 			Record r = data.addRecord(mapping.getUniqueId());
 			r.setField(0, dateFormat.format(mapping.getClassDate()));
@@ -96,7 +95,7 @@ public class EventDateMappings implements AdminTable {
 	@PreAuthorize("checkPermission('EventDateMappingEdit')")
 	public void save(Record record, SessionContext context, Session hibSession) {
 		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+			Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 			EventDateMapping mapping = new EventDateMapping();
 			mapping.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId()));
 			mapping.setClassDate(dateFormat.parse(record.getField(0)));
@@ -119,7 +118,7 @@ public class EventDateMappings implements AdminTable {
 	protected void update(EventDateMapping mapping, Record record, SessionContext context, Session hibSession) {
 		try {
 			if (mapping == null) return;
-			SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+			Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 			if (ToolBox.equals(dateFormat.format(mapping.getClassDate()), record.getField(0)) &&
 					ToolBox.equals(dateFormat.format(mapping.getEventDate()), record.getField(1)) &&
 					ToolBox.equals(mapping.getNote(), record.getField(2))) return;
@@ -148,7 +147,7 @@ public class EventDateMappings implements AdminTable {
 
 	protected void delete(EventDateMapping mapping, SessionContext context, Session hibSession) {
 		if (mapping == null) return;
-		SimpleDateFormat dateFormat = new SimpleDateFormat(CONSTANTS.eventDateFormat(), Localization.getJavaLocale());
+		Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EVENT);
 		ChangeLog.addChange(hibSession,
 				context,
 				mapping,

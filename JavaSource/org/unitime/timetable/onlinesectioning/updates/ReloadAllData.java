@@ -20,7 +20,6 @@
 package org.unitime.timetable.onlinesectioning.updates;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -61,7 +60,6 @@ import net.sf.cpsolver.studentsct.reservation.Reservation;
 
 import org.unitime.localization.impl.Localization;
 import org.unitime.timetable.ApplicationProperties;
-import org.unitime.timetable.gwt.resources.StudentSectioningConstants;
 import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.gwt.shared.SectioningException;
@@ -94,6 +92,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningHelper;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer.Lock;
 import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
@@ -101,7 +100,6 @@ import org.unitime.timetable.solver.studentsct.StudentSectioningDatabaseLoader;
 public class ReloadAllData implements OnlineSectioningAction<Boolean> {
 	private static final long serialVersionUID = 1L;
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
-	private static StudentSectioningConstants CFG = Localization.create(StudentSectioningConstants.class);
 
 	@Override
 	public Boolean execute(final OnlineSectioningServer server, OnlineSectioningHelper helper) {
@@ -714,7 +712,7 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
     		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
     	}
     	if (last == null) return time.getDatePatternName();
-        SimpleDateFormat dpf = new SimpleDateFormat(CFG.patternDateFormat());
+        Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
     	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
     }
     

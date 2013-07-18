@@ -19,7 +19,7 @@
 */
 package org.unitime.timetable.solver;
 
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.http.HttpSession;
 
@@ -29,13 +29,14 @@ import org.unitime.timetable.solver.exam.ExamSolverProxy;
 import org.unitime.timetable.solver.service.AssignmentService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
+import org.unitime.timetable.util.Formats;
 
 /**
  * @author Tomas Muller
  */
 public class WebSolver {
-	public static SimpleDateFormat sDF = new SimpleDateFormat("MM/dd/yy hh:mmaa");
-
+	public static Formats.Format<Date> sDF = Formats.getDateFormat(Formats.Pattern.DATE_TIME_STAMP);
+	
     private static SolverService<SolverProxy> getCourseTimetablingSolverService(HttpSession session) {
 		WebApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(session.getServletContext());
 		return (SolverService<SolverProxy>)applicationContext.getBean("courseTimetablingSolverService");

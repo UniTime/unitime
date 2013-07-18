@@ -20,7 +20,6 @@
 package org.unitime.timetable.webutil.timegrid;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,6 +30,7 @@ import org.unitime.timetable.gwt.server.DayCode;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.util.DateUtils;
+import org.unitime.timetable.util.Formats;
 
 
 /**
@@ -257,7 +257,7 @@ public class TimetableGridCell implements Serializable, Comparable {
     		cal.add(Calendar.DAY_OF_YEAR, -1); idx--;
     	}
     	if (last == null) return dp.getName();
-        SimpleDateFormat dpf = new SimpleDateFormat("MM/dd");
+        Formats.Format<Date> dpf = Formats.getDateFormat(Formats.Pattern.DATE_EVENT_SHORT);
     	return dpf.format(first) + (first.equals(last) ? "" : " - " + dpf.format(last));
     }
     

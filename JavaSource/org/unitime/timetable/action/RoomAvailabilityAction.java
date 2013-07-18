@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.action;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -61,6 +60,7 @@ import org.unitime.timetable.solver.exam.ExamAssignmentProxy;
 import org.unitime.timetable.solver.exam.ui.ExamAssignment;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.ExportUtils;
+import org.unitime.timetable.util.Formats;
 import org.unitime.timetable.util.LookupTables;
 import org.unitime.timetable.util.RoomAvailability;
 import org.unitime.timetable.webutil.PdfWebTable;
@@ -169,8 +169,8 @@ public class RoomAvailabilityAction extends Action {
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MM/dd/yyyy");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
+        Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_MEETING);
+        Formats.Format<Date> timeFormat = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
         String ts = null;
         try {
             for (Iterator i=Location.findAllExamLocations(sessionId, form.getExamType()).iterator();i.hasNext();) {
@@ -244,8 +244,8 @@ public class RoomAvailabilityAction extends Action {
             return table;
         }
         Date[] bounds = ExamPeriod.getBounds(new SessionDAO().get(sessionId), form.getExamType());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, MM/dd");
-        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mmaa");
+        Formats.Format<Date> dateFormat = Formats.getDateFormat(Formats.Pattern.DATE_EXAM_PERIOD);
+        Formats.Format<Date> timeFormat = Formats.getDateFormat(Formats.Pattern.TIME_SHORT);
         String ts = null;
         String eventType = (ExamTypeDAO.getInstance().get(form.getExamType()).getType()==ExamType.sExamTypeFinal?RoomAvailabilityInterface.sFinalExamType:RoomAvailabilityInterface.sMidtermExamType);
         ExamAssignmentProxy examAssignment = WebSolver.getExamSolver(request.getSession());

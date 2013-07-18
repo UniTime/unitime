@@ -19,7 +19,6 @@
 */
 package org.unitime.timetable.onlinesectioning.status;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -70,6 +69,7 @@ import org.unitime.timetable.onlinesectioning.OnlineSectioningLog;
 import org.unitime.timetable.onlinesectioning.OnlineSectioningServer;
 import org.unitime.timetable.server.lookup.PeopleLookupBackend;
 import org.unitime.timetable.util.Constants;
+import org.unitime.timetable.util.Formats;
 
 public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<String[]>> {
 	private static final long serialVersionUID = 1L;
@@ -706,7 +706,7 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (attr == null || attr.equals("date")) {
 						if (section.getTime() == null && term.equalsIgnoreCase("none")) return true;
 						if (section.getTime() != null && !section.getTime().getWeekCode().isEmpty()) {
-							SimpleDateFormat df = new SimpleDateFormat(CONSTANTS.patternDateFormat());
+							Formats.Format<Date> df = Formats.getDateFormat(Formats.Pattern.DATE_PATTERN);
 					    	Calendar cal = Calendar.getInstance(Locale.US); cal.setLenient(true);
 					    	cal.setTime(iFirstDate);
 					    	for (int i = 0; i < section.getTime().getWeekCode().size(); i++) {
