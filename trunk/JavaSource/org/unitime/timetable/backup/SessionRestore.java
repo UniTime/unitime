@@ -172,7 +172,7 @@ public class SessionRestore {
 		if (entity.getObject() instanceof SolverInfoDef && lookup(entity, "name", ((SolverInfoDef)entity.getObject()).getName())) save = false;
 		if (entity.getObject() instanceof SolverParameterGroup && lookup(entity, "name", ((SolverParameterGroup)entity.getObject()).getName())) save = false;
 		if (entity.getObject() instanceof SolverPredefinedSetting && lookup(entity, "name", ((SolverPredefinedSetting)entity.getObject()).getName())) save = false;
-		if (entity.getObject() instanceof Roles && lookup(entity, "abbv", ((Roles)entity.getObject()).getAbbv())) save = false;
+		if (entity.getObject() instanceof Roles && lookup(entity, "reference", ((Roles)entity.getObject()).getReference())) save = false;
 		if (entity.getObject() instanceof OfferingConsentType && lookup(entity, "label", ((OfferingConsentType)entity.getObject()).getLabel())) save = false;
 		if (entity.getObject() instanceof ChangeLog) { save = false; lookup = false; }
 		if (entity.getObject() instanceof OnlineSectioningLog) { save = false; lookup = false; }
