@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,6 @@ import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
-import org.hibernate.Session;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Curriculum;
 import org.unitime.timetable.model.CurriculumClassification;
@@ -47,6 +46,7 @@ import org.unitime.timetable.model.CurriculumCourse;
 import org.unitime.timetable.model.CurriculumCourseGroup;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.Session;
 import org.unitime.timetable.solver.curricula.students.CurCourse;
 import org.unitime.timetable.solver.curricula.students.CurModel;
 import org.unitime.timetable.solver.curricula.students.CurStudent;
@@ -54,12 +54,14 @@ import org.unitime.timetable.solver.curricula.students.CurValue;
 import org.unitime.timetable.solver.curricula.students.CurVariable;
 
 /**
+ * Combining curricula with course requests. 
  * @author Tomas Muller
  */
-public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
-	private static Log sLog = LogFactory.getLog(CurriculaLastLikeCourseDemands.class);
+public class CurriculaRequestsCourseDemands implements StudentCourseDemands {
+	private static Log sLog = LogFactory.getLog(CurriculaRequestsCourseDemands.class);
 
-	private ProjectedStudentCourseDemands iProjectedDemands;
+	private StudentCourseRequests iStudentCourseRequests;
+	
 	private IdGenerator iLastStudentId = new IdGenerator();
 	private Hashtable<Long, Set<WeightedStudentId>> iDemands = new Hashtable<Long, Set<WeightedStudentId>>();
 	private Hashtable<Long, Set<WeightedCourseOffering>> iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
@@ -69,9 +71,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	private boolean iIncludeOtherStudents = true;
 	private boolean iSetStudentCourseLimits = false;
 	private CurriculumEnrollmentPriorityProvider iEnrollmentPriorityProvider = null;
-
-	public CurriculaLastLikeCourseDemands(DataProperties config) {
-		iProjectedDemands = new ProjectedStudentCourseDemands(config);
+	
+	public CurriculaRequestsCourseDemands(DataProperties config) {
+		iStudentCourseRequests = new StudentCourseRequests(config);
 		iIncludeOtherStudents = config.getPropertyBoolean("CurriculaCourseDemands.IncludeOtherStudents", iIncludeOtherStudents);
 		iSetStudentCourseLimits = config.getPropertyBoolean("CurriculaCourseDemands.SetStudentCourseLimits", iSetStudentCourseLimits);
 		iEnrollmentPriorityProvider = new DefaultCurriculumEnrollmentPriorityProvider(config);
@@ -87,11 +89,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	}
 
 	@Override
-	public void init(Session hibSession, Progress progress,
-			org.unitime.timetable.model.Session session,
-			Collection<InstructionalOffering> offerings) {
+	public void init(org.hibernate.Session hibSession, Progress progress, Session session, Collection<InstructionalOffering> offerings) {
 
-		iProjectedDemands.init(hibSession, progress, session, offerings);
+		iStudentCourseRequests.init(hibSession, progress, session, offerings);
 		
 		List<Curriculum> curricula = null;
 		if (offerings != null && offerings.size() <= 1000) {
@@ -118,32 +118,30 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 
 		progress.setPhase("Loading curricula", curricula.size());
 		for (Curriculum curriculum: curricula) {
-			Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> lastLike = loadClasfCourseMajor2ll(hibSession, curriculum);
+			Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> requests = loadClasfCourseMajor2req(hibSession, curriculum);
 			for (CurriculumClassification clasf: curriculum.getClassifications()) {
-				init(hibSession, clasf, lastLike.get(clasf.getAcademicClassification().getCode()));
+				if (clasf.getNrStudents() > 0)
+					init(hibSession, clasf, requests.get(clasf.getAcademicClassification().getCode()));
 			}
 			progress.incProgress();
 		}		
 	}
 	
-	private Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> loadClasfCourseMajor2ll(org.hibernate.Session hibSession, Curriculum curriculum) {
+	private Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> loadClasfCourseMajor2req(org.hibernate.Session hibSession, Curriculum curriculum) {
 		String majorCodes = "";
 		for (PosMajor major: curriculum.getMajors()) {
 			if (!majorCodes.isEmpty()) majorCodes += ",";
 			majorCodes += "'" + major.getCode() + "'";
 		}
 		
-		Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> clasf2courseLl = new Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>>();
-		
+		Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>> clasf2courseReq = new Hashtable<String, Hashtable<CourseOffering, Set<WeightedStudentId>>>();
+				
 		for (Object[] o : (List<Object[]>)hibSession.createQuery(
 				"select f.code, co, m.code, s.uniqueId " +
-				"from LastLikeCourseDemand x inner join x.student s inner join s.academicAreaClassifications a inner join a.academicClassification f " + 
-				"inner join s.posMajors m, CourseOffering co where " +
-				"x.subjectArea.session.uniqueId = :sessionId and "+
-				"a.academicArea.academicAreaAbbreviation = :acadAbbv " + 
-				(majorCodes.isEmpty() ? "" : "and m.code in (" + majorCodes + ") ") +
-				"and co.subjectArea.uniqueId = x.subjectArea.uniqueId and " +
-				"((x.coursePermId is not null and co.permId=x.coursePermId) or (x.coursePermId is null and co.courseNbr=x.courseNbr))")
+				"from CourseRequest r inner join r.courseDemand.student s inner join s.academicAreaClassifications a inner join a.academicClassification f " + 
+				"inner join s.posMajors m inner join r.courseOffering co where " +
+				"s.session.uniqueId = :sessionId and a.academicArea.academicAreaAbbreviation = :acadAbbv " + 
+				(majorCodes.isEmpty() ? "" : "and m.code in (" + majorCodes + ") "))
 				.setLong("sessionId", curriculum.getDepartment().getSession().getUniqueId())
 				.setString("acadAbbv", curriculum.getAcademicArea().getAcademicAreaAbbreviation())
 				.setCacheable(true).list()) {
@@ -152,32 +150,32 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 			String majorCode = (String)o[2];
 			Long studentId = (Long)o[3];
 			
-			WeightedStudentId student = new WeightedStudentId(studentId, iProjectedDemands.getProjection(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), clasfCode, majorCode));
+			WeightedStudentId student = new WeightedStudentId(studentId);
 			student.setStats(curriculum.getAcademicArea().getAcademicAreaAbbreviation(), clasfCode, majorCode);
 			student.setCurriculum(curriculum.getAbbv());
 			
-			Hashtable<CourseOffering, Set<WeightedStudentId>> course2ll = clasf2courseLl.get(clasfCode);
-			if (course2ll == null) {
-				course2ll = new Hashtable<CourseOffering, Set<WeightedStudentId>>();
-				clasf2courseLl.put(clasfCode, course2ll);
+			Hashtable<CourseOffering, Set<WeightedStudentId>> course2req = clasf2courseReq.get(clasfCode);
+			if (course2req == null) {
+				course2req = new Hashtable<CourseOffering, Set<WeightedStudentId>>();
+				clasf2courseReq.put(clasfCode, course2req);
 			}
-			Set<WeightedStudentId> students = course2ll.get(course);
+			Set<WeightedStudentId> students = course2req.get(course);
 			if (students == null) {
 				students = new HashSet<WeightedStudentId>();
-				course2ll.put(course, students);
+				course2req.put(course, students);
 			}
 			students.add(student);
 		}
 		
-		return clasf2courseLl;
+		return clasf2courseReq;
 	}
 	
-	protected void init(org.hibernate.Session hibSession, CurriculumClassification clasf, Hashtable<CourseOffering, Set<WeightedStudentId>> lastLikeStudents) {
+	protected void init(org.hibernate.Session hibSession, CurriculumClassification clasf, Hashtable<CourseOffering, Set<WeightedStudentId>> courseRequests) {
 		sLog.debug("Processing " + clasf.getCurriculum().getAbbv() + " " + clasf.getName() + " ... (" + clasf.getNrStudents() + " students, " + clasf.getCourses().size() + " courses)");
 		
 		Hashtable<WeightedStudentId, Set<CourseOffering>> students = new Hashtable<WeightedStudentId, Set<CourseOffering>>();
-		if (lastLikeStudents != null) {
-			for (Map.Entry<CourseOffering, Set<WeightedStudentId>> entry: lastLikeStudents.entrySet()) {
+		if (courseRequests != null) {
+			for (Map.Entry<CourseOffering, Set<WeightedStudentId>> entry: courseRequests.entrySet()) {
 				for (WeightedStudentId student: entry.getValue()) {
 					Set<CourseOffering> courses = students.get(student);
 					if (courses == null) {
@@ -193,8 +191,11 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		for (WeightedStudentId student: students.keySet())
 			totalWeight += student.getWeight();
 		
-		sLog.debug("  last-like students: " + totalWeight + ", target: " + clasf.getNrStudents());
+		sLog.debug("  registered students: " + totalWeight + ", target: " + clasf.getNrStudents());
+		int nrStudents = clasf.getNrStudents();
 		List<WeightedStudentId> madeUpStudents = new ArrayList<StudentCourseDemands.WeightedStudentId>();
+		double w = Math.min(totalWeight / clasf.getNrStudents(), 1.0);
+		float factor = 1.0f;
 		if (2 * totalWeight < clasf.getNrStudents()) { // students are less than 1/2 of the requested size -> make up some students
 			int studentsToMakeUp = Math.round(clasf.getNrStudents() - totalWeight);
 			sLog.debug("    making up " + studentsToMakeUp + " students");
@@ -209,11 +210,15 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 				students.put(student, new HashSet<CourseOffering>());
 				madeUpStudents.add(student);
 			}
-		} else { // change weights to fit the requested size
-			float factor = clasf.getNrStudents() / totalWeight;
+		} else if (totalWeight < clasf.getNrStudents()) { // change weights to fit the requested size
+			factor = clasf.getNrStudents() / totalWeight;
+			w = 1.0;
 			sLog.debug("    changing student weight " + factor + " times");
 			for (WeightedStudentId student: students.keySet())
 				student.setWeight(student.getWeight() * factor);
+		} else if (totalWeight > clasf.getNrStudents()) {
+			sLog.debug("    more registered students than needed, keeping all");
+			nrStudents = Math.round(totalWeight);
 		}
 		
 		// Setup model
@@ -227,17 +232,25 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		CurModel m = new CurModel(curStudents);
 		Hashtable<Long, CourseOffering> courses = new Hashtable<Long, CourseOffering>();
 		for (CurriculumCourse course: clasf.getCourses()) {
-			m.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), clasf.getNrStudents() * course.getPercShare(), iEnrollmentPriorityProvider.getEnrollmentPriority(course));
+			Set<WeightedStudentId> requests = (courseRequests == null ? null : courseRequests.get(course.getCourse()));
+			double size =
+					w * factor * (requests == null ? 0 : requests.size()) +
+					(1 - w) * nrStudents * course.getPercShare();
+			/*
+			if (factor > 1.0f)
+				size = Math.max(nrStudents * course.getPercShare(), factor * (requests == null ? 0 : requests.size()));
+			*/
+			m.addCourse(course.getCourse().getUniqueId(), course.getCourse().getCourseName(), size, iEnrollmentPriorityProvider.getEnrollmentPriority(course));
 			courses.put(course.getCourse().getUniqueId(), course.getCourse());
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getCourse().getUniqueId());
 			if (curricula == null) {
 				curricula = new Hashtable<String, Set<String>>();
 				iLoadedCurricula.put(course.getCourse().getUniqueId(), curricula);
 			}
-			Set<String> majors = curricula.get(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation());
+			Set<String> majors = curricula.get(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + clasf.getAcademicClassification().getCode());
 			if (majors == null) {
 				majors = new HashSet<String>();
-				curricula.put(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation(), majors);
+				curricula.put(clasf.getCurriculum().getAcademicArea().getAcademicAreaAbbreviation() + ":" + clasf.getAcademicClassification().getCode(), majors);
 			}
 			if (clasf.getCurriculum().getMajors().isEmpty()) {
 				majors.add("");
@@ -246,7 +259,7 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 					majors.add(mj.getCode());
 			}
 		}
-		computeTargetShare(clasf, m);
+		computeTargetShare(clasf, nrStudents, factor, w, m);
 		if (iSetStudentCourseLimits)
 			m.setStudentLimits();
 		
@@ -333,9 +346,9 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		return "curriculum-lastlike-demands";
 	}
 
-	protected void computeTargetShare(CurriculumClassification clasf, CurModel model) {
+	protected void computeTargetShare(CurriculumClassification clasf, int nrStudents, double factor, double w, CurModel model) {
 		for (CurriculumCourse c1: clasf.getCourses()) {
-			double x1 = clasf.getNrStudents() * c1.getPercShare();
+			double x1 = model.getCourse(c1.getCourse().getUniqueId()).getOriginalMaxSize();
 			Set<CurriculumCourse>[] group = new HashSet[] { new HashSet<CurriculumCourse>(), new HashSet<CurriculumCourse>()};
 			Queue<CurriculumCourse> queue = new LinkedList<CurriculumCourse>();
 			queue.add(c1);
@@ -349,27 +362,29 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 								queue.add(x);
 			}
 			for (CurriculumCourse c2: clasf.getCourses()) {
-				double x2 = clasf.getNrStudents() * c2.getPercShare();
-				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
-				double share = 0;
-				Set<WeightedStudentId> s1 = iProjectedDemands.getDemands(c1.getCourse());
-				Set<WeightedStudentId> s2 = iProjectedDemands.getDemands(c2.getCourse());
-				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
-					double sharedStudents = 0, lastLike = 0;
-					for (WeightedStudentId s: s1) {
-						if (s.match(clasf)) {
-							lastLike += s.getWeight();
-							if (s2.contains(s)) sharedStudents += s.getWeight();
-						}
-					}
-					double requested = c1.getPercShare() * clasf.getNrStudents();
-					share = (requested / lastLike) * sharedStudents; 
-				} else {
-					share = c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents();
-				}
+				double x2 = model.getCourse(c2.getCourse().getUniqueId()).getOriginalMaxSize();
 				boolean opt = group[0].contains(c2);
 				boolean req = !opt && group[1].contains(c2);
-				model.setTargetShare(c1.getCourse().getUniqueId(), c2.getCourse().getUniqueId(), opt ? 0.0 : req ? Math.min(x1, x2) : share, false);
+				double defaultShare = (opt ? 0.0 : req ? Math.min(x1, x2) : c1.getPercShare() * c2.getPercShare() * nrStudents);
+				if (c1.getUniqueId() >= c2.getUniqueId()) continue;
+				double share = defaultShare;
+				Set<WeightedStudentId> s1 = iStudentCourseRequests.getDemands(c1.getCourse());
+				Set<WeightedStudentId> s2 = iStudentCourseRequests.getDemands(c2.getCourse());
+				int sharedStudents = 0, registered = 0;
+				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
+					for (WeightedStudentId s: s1) {
+						if (s.match(clasf)) {
+							registered ++;
+							if (s2.contains(s)) sharedStudents ++;
+						}
+					}
+				}
+				if (registered == 0) {
+					share = (1.0 - w) * defaultShare;
+				} else {
+					share = w * (x1 / registered) * sharedStudents + (1.0 - w) * defaultShare;
+				}
+				model.setTargetShare(c1.getCourse().getUniqueId(), c2.getCourse().getUniqueId(), share, false);
 			}
 		}
 	}
@@ -378,14 +393,14 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 	public Set<WeightedCourseOffering> getCourses(Long studentId) {
 		Set<WeightedCourseOffering> courses = iStudentRequests.get(studentId);
 		if (iIncludeOtherStudents && studentId >= 0 && courses == null)
-			return iProjectedDemands.getCourses(studentId);
+			return iStudentCourseRequests.getCourses(studentId);
 		return iStudentRequests.get(studentId);
 	}
 	
 
 	@Override
 	public Set<WeightedStudentId> getDemands(CourseOffering course) {
-		if (iDemands.isEmpty()) return iProjectedDemands.getDemands(course);
+		if (iDemands.isEmpty()) return iStudentCourseRequests.getDemands(course);
 		Set<WeightedStudentId> demands = iDemands.get(course.getUniqueId());
 		if (!iIncludeOtherStudents) return demands;
 		if (demands == null) {
@@ -395,16 +410,16 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 		if (iCheckedCourses.add(course.getUniqueId())) {
 			int was = demands.size();
 			Hashtable<String,Set<String>> curricula = iLoadedCurricula.get(course.getUniqueId());
-			Set<WeightedStudentId> other = iProjectedDemands.getDemands(course);
+			Set<WeightedStudentId> other = iStudentCourseRequests.getDemands(course);
 			if (other == null) {
-				sLog.debug(course.getCourseName() + " has no students.");	
+				sLog.debug(course.getCourseName() + " has no students.");
 			} else {
 				if (curricula == null || curricula.isEmpty()) {
 					demands.addAll(other);
 				} else {
 					for (WeightedStudentId student: other) {
 						if (student.getArea() == null) continue; // ignore students w/o academic area
-						Set<String> majors = curricula.get(student.getArea());
+						Set<String> majors = curricula.get(student.getArea() + ":" + student.getClasf());
 						if (majors != null && majors.contains("")) continue; // all majors
 						if (majors == null || (student.getMajor() != null && !majors.contains(student.getMajor())))
 							demands.add(student);
@@ -434,6 +449,8 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 
 	@Override
 	public Double getEnrollmentPriority(Long studentId, Long courseId) {
+		if (studentId >= 0)
+			return iStudentCourseRequests.getEnrollmentPriority(studentId, courseId);
 		Hashtable<Long, Double> priorities = iEnrollmentPriorities.get(studentId);
 		return (priorities == null ? null : priorities.get(courseId));
 	}
