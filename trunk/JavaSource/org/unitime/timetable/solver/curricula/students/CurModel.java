@@ -85,16 +85,16 @@ public class CurModel extends Model<CurVariable, CurValue> {
 		iMaxAssignedWeight += course.getOriginalMaxSize();
 	}
 	
-	public void setTargetShare(Long c1, Long c2, double share) {
+	public void setTargetShare(Long c1, Long c2, double share, boolean round) {
 		CurCourse course1 = iCourses.get(c1);
 		CurCourse course2 = iCourses.get(c2);
 		double ub = Math.min(course1.getOriginalMaxSize(), course2.getOriginalMaxSize());
 		double lb = Math.max(0, course1.getOriginalMaxSize() + course2.getOriginalMaxSize() - iTotalStudentWeight);
-		double ts = Math.round(Math.max(lb, Math.min(ub, share)));
+		double ts = Math.max(lb, Math.min(ub, share));
 		if (ts != share)
 			sLog.debug("Target share between " + course1.getCourseName() + " and " + course2.getCourseName() + " changed to " + ts + " (was: " + share + ", lb:" + lb + ", ub:" + ub + ")");
-		course1.setTargetShare(c2, ts);
-		course2.setTargetShare(c1, ts);
+		course1.setTargetShare(c2, round ? Math.round(ts) : ts);
+		course2.setTargetShare(c1, round ? Math.round(ts) : ts);
 	}
 	
 	public void setStudentLimits() {
@@ -339,7 +339,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     		if (!courses.isEmpty()) {
     			String share[] = courseElement.attributeValue("share").split(",");
     			for (int j = 0; j < courses.size(); j++)
-    				m.setTargetShare(courseId, courses.get(j), Float.parseFloat(share[j]));
+    				m.setTargetShare(courseId, courses.get(j), Float.parseFloat(share[j]), false);
     		}
     		courses.add(courseId);
 		}
@@ -560,7 +560,7 @@ public class CurModel extends Model<CurVariable, CurValue> {
     			m.addCourse((long)i, "C" + i,  2 * i, null);
     		for (int i = 1; i < 10; i++)
     			for (int j = i + 1; j <= 10; j++)
-    				m.setTargetShare((long)i, (long)j, i);
+    				m.setTargetShare((long)i, (long)j, i, false);
     		m.setStudentLimits();
     		
 			Document d0 = DocumentHelper.createDocument();

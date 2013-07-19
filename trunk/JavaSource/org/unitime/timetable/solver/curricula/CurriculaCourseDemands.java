@@ -247,7 +247,7 @@ public class CurriculaCourseDemands implements StudentCourseDemands {
 				float share = c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents();
 				boolean opt = group[0].contains(c2);
 				boolean req = !opt && group[1].contains(c2);
-				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), opt ? 0.0 : req ? Math.min(x1, x2) : share);
+				model.setTargetShare(c1.getUniqueId(), c2.getUniqueId(), opt ? 0.0 : req ? Math.min(x1, x2) : share, true);
 			}
 		}
 	}
