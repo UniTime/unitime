@@ -354,16 +354,18 @@ public class CurriculaLastLikeCourseDemands implements StudentCourseDemands {
 				double share = 0;
 				Set<WeightedStudentId> s1 = iProjectedDemands.getDemands(c1.getCourse());
 				Set<WeightedStudentId> s2 = iProjectedDemands.getDemands(c2.getCourse());
+				double sharedStudents = 0, lastLike = 0;
 				if (s1 != null && !s1.isEmpty() && s2 != null && !s2.isEmpty()) {
-					double sharedStudents = 0, lastLike = 0;
 					for (WeightedStudentId s: s1) {
 						if (s.match(clasf)) {
 							lastLike += s.getWeight();
 							if (s2.contains(s)) sharedStudents += s.getWeight();
 						}
 					}
+				}
+				if (lastLike > 0) {
 					double requested = c1.getPercShare() * clasf.getNrStudents();
-					share = (requested / lastLike) * sharedStudents; 
+					share = (requested / lastLike) * sharedStudents;
 				} else {
 					share = c1.getPercShare() * c2.getPercShare() * clasf.getNrStudents();
 				}
