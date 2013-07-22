@@ -134,6 +134,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		
     		Class_ clazz = ce.getClazz();
     		event.setEnrollment(clazz.getEnrollment());
+    		Set<Long> addedInstructorIds = new HashSet<Long>();
     		if (clazz.getDisplayInstructor()) {
     			for (ClassInstructor i: clazz.getClassInstructors()) {
 					ContactInterface instructor = new ContactInterface();
@@ -142,6 +143,17 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					instructor.setLastName(i.getInstructor().getLastName());
 					instructor.setEmail(i.getInstructor().getEmail());
 					event.addInstructor(instructor);
+					addedInstructorIds.add(i.getInstructor().getUniqueId());
+    			}
+    		}
+    		for (DepartmentalInstructor c: clazz.getSchedulingSubpart().getInstrOfferingConfig().getInstructionalOffering().getCoordinators()) {
+    			if (addedInstructorIds.add(c.getUniqueId())) {
+        			ContactInterface coordinator = new ContactInterface();
+    				coordinator.setFirstName(c.getFirstName());
+    				coordinator.setMiddleName(c.getMiddleName());
+    				coordinator.setLastName(c.getLastName());
+    				coordinator.setEmail(c.getEmail());
+    				event.addCoordinator(coordinator);
     			}
     		}
     		
@@ -227,6 +239,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
     		ExamEvent xe = (e instanceof ExamEvent ? (ExamEvent)e : ExamEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		event.setEnrollment(xe.getExam().countStudents());
+    		Set<Long> addedInstructorIds = new HashSet<Long>();
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 				ContactInterface instructor = new ContactInterface();
 				instructor.setFirstName(i.getFirstName());
@@ -234,6 +247,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				instructor.setLastName(i.getLastName());
 				instructor.setEmail(i.getEmail());
 				event.addInstructor(instructor);
+				addedInstructorIds.add(i.getUniqueId());
 			}
     		
     		RelatedObjectInterface related = new RelatedObjectInterface();
@@ -336,12 +350,23 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 					related.setInstruction(MESSAGES.colCourse());
 				}
 				event.addRelatedObject(related);
+	    		for (DepartmentalInstructor c: owner.getCourse().getInstructionalOffering().getCoordinators()) {
+	    			if (addedInstructorIds.add(c.getUniqueId())) {
+		    			ContactInterface coordinator = new ContactInterface();
+						coordinator.setFirstName(c.getFirstName());
+						coordinator.setMiddleName(c.getMiddleName());
+						coordinator.setLastName(c.getLastName());
+						coordinator.setEmail(c.getEmail());
+						event.addCoordinator(coordinator);
+		    		}
+				}
 			}
     	} else if (Event.sEventTypeCourse == e.getEventType()) {
     		CourseEvent ce = (e instanceof CourseEvent ? (CourseEvent)e : CourseEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		
     		event.setRequiredAttendance(ce.isReqAttendance());
     		int enrl = 0;
+    		Set<Long> addedInstructorIds = new HashSet<Long>();
 			for (RelatedCourseInfo owner: new TreeSet<RelatedCourseInfo>(ce.getRelatedCourses())) {
 				RelatedObjectInterface related = new RelatedObjectInterface();
 				related.setType(RelatedObjectInterface.RelatedObjectType.values()[owner.getOwnerType()]);
@@ -407,6 +432,16 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 				event.addRelatedObject(related);
 				enrl += owner.countStudents();
+	    		for (DepartmentalInstructor c: owner.getCourse().getInstructionalOffering().getCoordinators()) {
+	    			if (addedInstructorIds.add(c.getUniqueId())) {
+		    			ContactInterface coordinator = new ContactInterface();
+						coordinator.setFirstName(c.getFirstName());
+						coordinator.setMiddleName(c.getMiddleName());
+						coordinator.setLastName(c.getLastName());
+						coordinator.setEmail(c.getEmail());
+						event.addCoordinator(coordinator);
+		    		}
+				}
 			}
 			event.setEnrollment(enrl);
     		

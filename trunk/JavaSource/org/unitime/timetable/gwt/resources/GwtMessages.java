@@ -2838,5 +2838,11 @@ public interface GwtMessages extends Messages {
 	String repeatingSymbol();
 	
 	@DefaultMessage("Bad additional email address {0}: {1}.")
-	String badEmailAddress(String address, String reason); 
+	String badEmailAddress(String address, String reason);
+	
+	@DefaultMessage("Instructor")
+	String eventContactInstructorPhone();
+	
+	@DefaultMessage("Coordinator")
+	String eventContactCoordinatorPhone();
 }
