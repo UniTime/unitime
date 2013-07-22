@@ -49,6 +49,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	private ContactInterface iContact;
 	private SponsoringOrganizationInterface iSponsor;
 	private Set<ContactInterface> iInstructors;
+	private Set<ContactInterface> iCoordinators;
 	private List<ContactInterface> iAdditionalContacts;
 	private String iLastChange = null;
 	private TreeSet<NoteInterface> iNotes;
@@ -208,6 +209,29 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	public boolean hasInstructors() { return iInstructors != null && !iInstructors.isEmpty(); }
 	
+	public Set<ContactInterface> getCoordinators() { return iCoordinators; }
+	public void addCoordinator(ContactInterface coordinator) {
+		if (iCoordinators == null) iCoordinators = new TreeSet<ContactInterface>();
+		iCoordinators.add(coordinator);
+	}
+	public String getCoordinatorNames(String separator, GwtMessages messages) { 
+		if (!hasCoordinators()) return "";
+		String ret = "";
+		for (ContactInterface coordinator: getCoordinators()) {
+			ret += (ret.isEmpty() ? "" : separator) + coordinator.getName(messages);
+		}
+		return ret;
+	}
+	public String getCoordinatorEmails(String separator) { 
+		if (!hasCoordinators()) return "";
+		String ret = "";
+		for (ContactInterface coordinator: getCoordinators()) {
+			ret += (ret.isEmpty() ? "" : separator) + (coordinator.getEmail() == null ? "" : coordinator.getEmail());
+		}
+		return ret;
+	}
+	public boolean hasCoordinators() { return iCoordinators != null && !iCoordinators.isEmpty(); }
+	
 	public ContactInterface getContact() { return iContact; }
 	public void setContact(ContactInterface contact) { iContact = contact; }
 	public boolean hasContact() { return iContact != null; }
@@ -355,6 +379,9 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		if (event.hasInstructors())
 			for (ContactInterface instructor: event.getInstructors())
 				conflict.addInstructor(instructor);
+		if (event.hasCoordinators())
+			for (ContactInterface coordinator: event.getCoordinators())
+				conflict.addCoordinator(coordinator);
 		if (event.hasMeetings())
 			for (MeetingInterface m: event.getMeetings())
 				if (inConflict(m)) conflict.addMeeting(m);
