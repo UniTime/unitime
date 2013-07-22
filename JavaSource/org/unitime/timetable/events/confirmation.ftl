@@ -63,7 +63,16 @@
 						<tr>
 						<td style='font-style: italic;'>${contact.getName(msg)}</td>
 						<td style='font-style: italic;'><#if contact.hasEmail()>${contact.getEmail()}</#if></td>
-						<td style='font-style: italic;'><#if contact.hasPhone()>${contact.getPhone()}</#if></td>
+						<td style='font-style: italic;'><#if contact.hasPhone()>${contact.getPhone()}</#if><#if !contact.hasPhone()>${msg.eventContactInstructorPhone()}</#if></td>
+						</tr>
+					</#list>
+				</#if>
+				<#if event.hasCoordinators()>
+					<#list event.getCoordinators() as contact>
+						<tr>
+						<td style='font-style: italic;'>${contact.getName(msg)}</td>
+						<td style='font-style: italic;'><#if contact.hasEmail()>${contact.getEmail()}</#if></td>
+						<td style='font-style: italic;'><#if contact.hasPhone()>${contact.getPhone()}</#if><#if !contact.hasPhone()>${msg.eventContactCoordinatorPhone()}</#if></td>
 						</tr>
 					</#list>
 				</#if>
