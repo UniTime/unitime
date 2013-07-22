@@ -127,6 +127,12 @@ public class EventEmail {
 						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
 				}
 			}
+			if (event().hasCoordinators() && "true".equals(ApplicationProperties.getProperty("unitime.email.event.coordinator", "false"))) {
+				for (ContactInterface contact: event().getCoordinators()) {
+					if (contact.getEmail() != null && !contact.getEmail().isEmpty())
+						email.addRecipientCC(contact.getEmail(), contact.getName(MESSAGES));
+				}
+			}
 			
 			if (replyTo() != null) {
 				email.setReplyTo(replyTo().getAddress(), replyTo().getPersonal());
