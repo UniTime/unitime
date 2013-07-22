@@ -2289,6 +2289,10 @@ div.gwt-MenuBarPopup {
 	font-style: italic;
 }
 
+.unitime-EventContacts .coordinator-contact {
+	font-style: italic;
+}
+
 .unitime-EventMeetings {
 	width: 100%;
 }
