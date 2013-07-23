@@ -45,7 +45,9 @@ import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -276,7 +278,13 @@ public class InstructorPrefEditAction extends PreferencesAction {
     		processPrefAction(request, frm, errors);
     		
     		// Generate Time Pattern Grids
-    		super.generateTimePatternGrids(request, frm, inst, timePatterns, op, timeVertical, true, null);
+    		// super.generateTimePatternGrids(request, frm, inst, timePatterns, op, timeVertical, true, null);
+    		for (Preference pref: inst.getPreferences()) {
+				if (pref instanceof TimePref) {
+					frm.setAvailability(((TimePref)pref).getPreference());
+					break;
+				}
+			}
 
             LookupTables.setupRooms(request, inst);		 // Room Prefs
             LookupTables.setupBldgs(request, inst);		 // Building Prefs
