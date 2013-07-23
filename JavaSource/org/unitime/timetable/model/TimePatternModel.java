@@ -21,6 +21,7 @@ package org.unitime.timetable.model;
 
 import java.awt.Color;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -31,6 +32,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.unitime.localization.impl.Localization;
+import org.unitime.timetable.ApplicationProperties;
+import org.unitime.timetable.gwt.resources.GwtConstants;
+import org.unitime.timetable.gwt.shared.RoomInterface;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.webutil.RequiredTimeTableModel;
 
@@ -40,6 +45,7 @@ import net.sf.cpsolver.coursett.preference.PreferenceCombination;
 
 
 public class TimePatternModel implements RequiredTimeTableModel {
+	protected static final GwtConstants CONSTANTS = Localization.create(GwtConstants.class);
 	private TimePattern iTimePattern = null;
 	private int iDefaultSelection = 0;
 	
@@ -52,6 +58,8 @@ public class TimePatternModel implements RequiredTimeTableModel {
     protected int iBreakTime = 0;
     
     protected TimeLocation iAssignment = null;
+    
+    private List<RoomInterface.RoomSharingDisplayMode> iModes = new ArrayList<RoomInterface.RoomSharingDisplayMode>();
     
     protected TimePatternModel(TimePattern pattern, TimeLocation assignment, boolean allowHard) {
 		iTimePattern = pattern;
@@ -67,11 +75,11 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	    		iDayCodes[i]=Constants.DAY_CODES[i];
 	    		iDays[i]=Constants.DAY_NAME[i];
 	    	}
-	    	iMinutes = new int[Constants.SLOTS_PER_DAY/6];
-	    	for (int i=0;i<Constants.SLOTS_PER_DAY/6;i++) {
-	    		iMinutes[i] = Constants.FIRST_SLOT_TIME_MIN + (Constants.SLOT_LENGTH_MIN*6*i);
+	    	iMinutes = new int[Constants.SLOTS_PER_DAY];
+	    	for (int i=0;i<Constants.SLOTS_PER_DAY;i++) {
+	    		iMinutes[i] = Constants.FIRST_SLOT_TIME_MIN + (Constants.SLOT_LENGTH_MIN*i);
 	    	}
-	        iPreferences = new String[Constants.NR_DAYS][Constants.SLOTS_PER_DAY/6];
+	        iPreferences = new String[Constants.NR_DAYS][Constants.SLOTS_PER_DAY];
 	        for (int i=0;i<iPreferences.length;i++)
 	        	for (int j=0;j<iPreferences[i].length;j++)
 	        		iPreferences[i][j]=PreferenceLevel.sNeutral;
@@ -108,6 +116,14 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	        	for (int j=0;j<iPreferences[i].length;j++)
 	        		iPreferences[i][j]=PreferenceLevel.sNeutral;
 		}
+		
+		if (iTimePattern == null) {
+			for (int i = 0; true; i++) {
+				String mode = ApplicationProperties.getProperty("unitime.room.sharingMode" + (1 + i), i < CONSTANTS.roomSharingModes().length ? CONSTANTS.roomSharingModes()[i] : null);
+				if (mode == null || mode.isEmpty()) break;
+				iModes.add(new RoomInterface.RoomSharingDisplayMode(mode));
+			}
+		}
 	}
 	
 	/** 1x30 time pattern */
@@ -122,11 +138,11 @@ public class TimePatternModel implements RequiredTimeTableModel {
 	}
 	
 	public int getSlotsPerMtg() {
-		return (iTimePattern==null?6:iTimePattern.getSlotsPerMtg().intValue());
+		return (iTimePattern==null?1:iTimePattern.getSlotsPerMtg().intValue());
 	}
 	
 	public int getMinPerMtg() {
-		return (iTimePattern==null?6*Constants.SLOT_LENGTH_MIN:iTimePattern.getMinPerMtg().intValue());
+		return (iTimePattern==null?Constants.SLOT_LENGTH_MIN:iTimePattern.getMinPerMtg().intValue());
 	}
 	
 	public int getType() {
@@ -315,6 +331,13 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	try {
     		if (isExactTime()) {
     			iPref = pref;
+    		} if (pref != null && pref.length() == 336 && iDays.length * iMinutes.length == 2016) {
+    			boolean req = pref.indexOf('R') >= 0;
+    			for (int i=0; i<iDays.length; i++)
+    				for (int j=0; j<iMinutes.length; j++) {
+    					char ch = pref.charAt(48 * i + j / 6);
+    					iPreferences[i][j] = PreferenceLevel.char2prolog(req ? ch == 'R' ? '2' : 'P' : ch);
+    				}
     		} else {
     			int idx = 0;
     			for (int i=0; i<iDays.length; i++)
@@ -872,28 +895,17 @@ public class TimePatternModel implements RequiredTimeTableModel {
 		return PreferenceLevel.prolog2string(pref);
 	}
 	
-	public int getNrSelections() { 
-		return (iTimePattern==null?5:0);
+	public int getNrSelections() {
+		return (iTimePattern == null ? iModes.size() : 0);
 	}
 	public String getSelectionName(int idx) {
-		switch (idx) {
-			case 0: return "Workdays &times; Daytime";
-			case 1: return "All Week &times; Daytime";
-			case 2: return "Workdays &times; Evening";
-			case 3: return "All Week &times; Evening";
-			case 4: return "All Week &times; All Times";
-		}
-		return null;
+		return iModes.get(idx).getName();
 	}
 	public int[] getSelectionLimits(int idx) {
-		switch (idx) {
-			case 0: return new int[] {15,36,0,4};
-			case 1: return new int[] {15,36,0,6};
-			case 2: return new int[] {37,47,0,4};
-			case 3: return new int[] {37,47,0,6};
-			case 4: return new int[] {0,47,0,6};
-		}
-		return new int[] {0,getNrTimes()-1,0,getNrDays()-1};
+		if (iTimePattern != null)
+			return new int[] {0, getNrTimes() - 1, 0, getNrDays() - 1};
+		RoomInterface.RoomSharingDisplayMode mode = iModes.get(idx);
+		return new int[] {mode.getFirstSlot(), mode.getLastSlot() - 1, mode.getFirstDay(), mode.getLastDay(), mode.getStep()};
 	}
 	public void setDefaultSelection(int selection) {
 		iDefaultSelection = selection;
@@ -902,7 +914,7 @@ public class TimePatternModel implements RequiredTimeTableModel {
 		iDefaultSelection = 0;
 		if (selection==null) return;
 		for (int i=0;i<getNrSelections();i++) {
-			if (selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x"))) {
+			if (selection.equalsIgnoreCase(getSelectionName(i).replaceAll("&times;","x").replaceAll("×", "x"))) {
 				iDefaultSelection = i;
 				break;
 			}

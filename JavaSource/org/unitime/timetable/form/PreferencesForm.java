@@ -74,6 +74,7 @@ public class PreferencesForm extends ActionForm {
     protected List distPrefLevels;
     protected List datePatternPrefs;
     protected List datePatternPrefLevels;
+    protected String availability;
     
     private String nextId;
     private String previousId;
@@ -267,6 +268,7 @@ public class PreferencesForm extends ActionForm {
         allowHardPrefs = true;
         hasNotAvailable = false;
         addBlankPrefRows();
+        availability = null;
     }
 
     /**
@@ -775,5 +777,7 @@ public class PreferencesForm extends ActionForm {
     
     public boolean getHasNotAvailable() { return hasNotAvailable; }
     public void setHasNotAvailable(boolean hasNotAvailable) { this.hasNotAvailable = hasNotAvailable; }
-    
+
+    public String getAvailability() { return availability; }
+    public void setAvailability(String availability) { this.availability = availability; }
 }

@@ -49,6 +49,7 @@ import com.google.gwt.event.logical.shared.CloseEvent;
 import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Cookies;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AbsolutePanel;
@@ -56,6 +57,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasValue;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Image;
@@ -66,7 +68,7 @@ import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-public class RoomSharingWidget extends Composite {
+public class RoomSharingWidget extends Composite implements HasValue<RoomSharingModel> {
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	private static final GwtConstants CONSTANTS = GWT.create(GwtConstants.class);
 	private static final GwtMessages MESSAGES = GWT.create(GwtMessages.class);
@@ -78,7 +80,7 @@ public class RoomSharingWidget extends Composite {
 	private RoomSharingOption iOption = null;
 	private P iSelectedIcon = null, iSelectedTitle = null;
 	private RoomSharingModel iModel;
-	private boolean iEditable = true;
+	protected boolean iEditable = true;
 	private TextArea iNote = null;
 	
 	public RoomSharingWidget(boolean editable) {
@@ -248,6 +250,7 @@ public class RoomSharingWidget extends Composite {
 				setHTML(option.getCode() == null ? "" : option.getCode());
 				setTitle(CONSTANTS.longDays()[iDay] + " " + slot2short(iSlot) + " - " + slot2short(iSlot + iMode.getStep()) + ": " + option.getName());
 			}
+			ValueChangeEvent.fire(RoomSharingWidget.this, getValue());
 		}
 	}
 	
@@ -614,5 +617,27 @@ public class RoomSharingWidget extends Composite {
 				box.add(line);
 			}
 		}
+	}
+
+	@Override
+	public HandlerRegistration addValueChangeHandler(ValueChangeHandler<RoomSharingModel> handler) {
+		return addHandler(handler, ValueChangeEvent.getType());
+	}
+
+	@Override
+	public RoomSharingModel getValue() {
+		return getModel();
+	}
+
+	@Override
+	public void setValue(RoomSharingModel value) {
+		setValue(value, false);
+	}
+
+	@Override
+	public void setValue(RoomSharingModel value, boolean fireEvents) {
+		setModel(value);
+		if (fireEvents)
+			ValueChangeEvent.fire(this, getValue());
 	}
 }

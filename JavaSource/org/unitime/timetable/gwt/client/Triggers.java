@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.admin.ClearHibernateCache;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityHint;
 import org.unitime.timetable.gwt.client.page.Refresh;
 import org.unitime.timetable.gwt.client.page.UniTimeNotifications;
 import org.unitime.timetable.gwt.client.rooms.RoomHint;
@@ -81,9 +82,14 @@ public enum Triggers {
 		public void execute() {
 			ClearHibernateCache.createTriggers();
 		}
-	})
+	}),
+	instructorAvailabilityHint(new Command() {
+		public void execute() {
+			InstructorAvailabilityHint.createTriggers();
+		}
+	}),
 	;
-	
+
 	private Command iCommand;
 	
 	Triggers(Command registerCommand) { iCommand = registerCommand; }

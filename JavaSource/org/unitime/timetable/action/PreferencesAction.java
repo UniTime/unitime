@@ -50,6 +50,7 @@ import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.DatePattern;
 import org.unitime.timetable.model.DatePatternPref;
+import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.DistributionType;
 import org.unitime.timetable.model.ExamType;
@@ -490,23 +491,34 @@ public class PreferencesAction extends Action {
     	pg.setPreferences(s);
     	
         // Time Prefs
-    	Set parentTimePrefs = pg.effectivePreferences(TimePref.class);
-        List lst = frm.getTimePatterns();
-        for(int i=0; i<lst.size(); i++) {
-        	String id = (String)lst.get(i);
-        	addToTimePref(request, pg, id, s, i, timeVertical, parentTimePrefs);
-        }
-        if (parentTimePrefs!=null && !parentTimePrefs.isEmpty()) {
-        	for (Iterator i=parentTimePrefs.iterator();i.hasNext();) {
-        		TimePref tp = (TimePref)((TimePref)i.next()).clone();
+        if (pg instanceof DepartmentalInstructor) {
+        	if (frm.getAvailability() != null && frm.getAvailability().length() == 2016) {
+        		TimePref tp = new TimePref();
         		tp.setOwner(pg);
-        		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+        		tp.setPreference(frm.getAvailability());
+        		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sRequired));
+        		tp.setTimePattern(null);
         		s.add(tp);
         	}
+        } else {
+        	Set parentTimePrefs = pg.effectivePreferences(TimePref.class);
+            List lst = frm.getTimePatterns();
+            for(int i=0; i<lst.size(); i++) {
+            	String id = (String)lst.get(i);
+            	addToTimePref(request, pg, id, s, i, timeVertical, parentTimePrefs);
+            }
+            if (parentTimePrefs!=null && !parentTimePrefs.isEmpty()) {
+            	for (Iterator i=parentTimePrefs.iterator();i.hasNext();) {
+            		TimePref tp = (TimePref)((TimePref)i.next()).clone();
+            		tp.setOwner(pg);
+            		tp.setPrefLevel(PreferenceLevel.getPreferenceLevel(PreferenceLevel.sNeutral));
+            		s.add(tp);
+            	}
+            }
         }
             
         // Room Prefs
-        lst = frm.getRoomPrefs();
+        List lst = frm.getRoomPrefs();
         List lstL = frm.getRoomPrefLevels();
         Set parentRoomPrefs = pg.effectivePreferences(RoomPref.class);
         

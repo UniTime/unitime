@@ -181,10 +181,12 @@ public class InstructorListBuilder {
 						TimePref tp = (TimePref) i.next();
 						RequiredTimeTable rtt = tp.getRequiredTimeTable();
 						if (gridAsText) {
-							timePref.append(rtt.getModel().toString().replaceAll(", ","<br>"));
+							timePref.append("<span onmouseover=\"showGwtInstructorAvailabilityHint(this, '" + di.getUniqueId() + "');\" onmouseout=\"hideGwtInstructorAvailabilityHint();\">" + 
+										rtt.getModel().toString().replaceAll(", ","<br>") + "</span>");
 						} else {
 							rtt.getModel().setDefaultSelection(timeGridSize);
-							timePref.append("<img border='0' src='pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;");
+							timePref.append("<img border='0' onmouseover=\"showGwtInstructorAvailabilityHint(this, '" + di.getUniqueId() + "');\" onmouseout=\"hideGwtInstructorAvailabilityHint();\" " +
+									"src='pattern?v=" + (timeVertical ? 1 : 0) + "&s=" + rtt.getModel().getDefaultSelection() + "&p=" + rtt.getModel().getPreferences() + "' title='"+rtt.getModel().toString()+"' >&nbsp;");
 						}
 					}
 					} catch (Exception e) {
