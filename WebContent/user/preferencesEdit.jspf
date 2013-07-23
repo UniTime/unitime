@@ -90,7 +90,22 @@
 			<% idx++; %>
 		</logic:iterate>
 	</logic:notEqual>
-		
+	
+	<logic:equal value="true" parameter="timeAvail">
+		<tr><td colspan='2'>&nbsp;</td></tr>
+		<tr>
+			<td valign="middle" colspan='2'>
+				<a name="TimePref" />
+				<tt:section-header title="<%=MSG.sectionTitleTimePreferences() %>"></tt:section-header>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='2'>
+				<div id='UniTimeGWT:InstructorAvailability'><html:hidden name="<%=frmName%>" property="availability"/></div>
+			</td>
+		</tr>
+	</logic:equal>
+	
 <!-- Date Pattern Preference  -->
    
     <%

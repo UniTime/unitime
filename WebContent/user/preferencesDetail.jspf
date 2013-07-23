@@ -59,6 +59,14 @@
 		</TD>
 		</TR>
 	</logic:notEmpty>
+	<logic:notEmpty name="<%=frmName%>" property="availability">
+		<tr>
+			<td valign="top"><loc:message name="propertyTime"/></td>
+			<td>
+				<div id='UniTimeGWT:InstructorAvailability' style="display: none;"><bean:write name="<%=frmName%>" property="availability"/></div>
+			</td>
+		</tr>
+	</logic:notEmpty>
 	
 <!--  Period Preferences -->
 	<logic:notEmpty scope="request" name="ExamPeriodGrid">

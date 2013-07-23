@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client;
 
 import org.unitime.timetable.gwt.client.curricula.CourseCurriculaTable;
+import org.unitime.timetable.gwt.client.instructor.InstructorAvailabilityWidget;
 import org.unitime.timetable.gwt.client.page.UniTimePageLabel;
 import org.unitime.timetable.gwt.client.page.UniTimeBack;
 import org.unitime.timetable.gwt.client.page.UniTimePageHeader;
@@ -58,6 +59,7 @@ public enum Components {
 	roomSharing("UniTimeGWT:RoomSharingWidget", new ComponentFactory() { public void insert(RootPanel panel) { new RoomSharingWidget(false).insert(panel, false); } }),
 	roomEventAvailability("UniTimeGWT:RoomEventAvailabilityWidget", new ComponentFactory() { public void insert(RootPanel panel) { new RoomSharingWidget(false).insert(panel, true); } }),
 	roomNoteChanges("UniTimeGWT:RoomNoteChanges", new ComponentFactory() { public void insert(RootPanel panel) { new RoomNoteChanges().insert(panel); } }),
+	instructorAvailability("UniTimeGWT:InstructorAvailability", new ComponentFactory() { public void insert(RootPanel panel) { new InstructorAvailabilityWidget().insert(panel); } }),
 	;
 	
 	private String iId;

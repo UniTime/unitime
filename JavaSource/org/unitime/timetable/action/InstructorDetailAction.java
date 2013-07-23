@@ -46,7 +46,9 @@ import org.unitime.timetable.model.ClassInstructor;
 import org.unitime.timetable.model.Class_;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.DepartmentalInstructor;
+import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.TimePattern;
+import org.unitime.timetable.model.TimePref;
 import org.unitime.timetable.model.comparators.ClassComparator;
 import org.unitime.timetable.model.comparators.ClassInstructorComparator;
 import org.unitime.timetable.model.dao.DepartmentalInstructorDAO;
@@ -115,7 +117,7 @@ public class InstructorDetailAction extends PreferencesAction {
 		    sessionContext.checkPermission(instructorId, "DepartmentalInstructor", Right.InstructorDetail);
 	        
 		    String op = frm.getOp();
-	        boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
+	        // boolean timeVertical = CommonValues.VerticalGrid.eq(sessionContext.getUser().getProperty(UserProperty.GridOrientation));
 	        
 	        if (request.getParameter("op2")!=null && request.getParameter("op2").length()>0)
 	        	op = request.getParameter("op2");
@@ -350,7 +352,13 @@ public class InstructorDetailAction extends PreferencesAction {
 				processPrefAction(request, frm, errors);
 				
 				// Generate Time Pattern Grids
-				super.generateTimePatternGrids(request, frm, inst, timePatterns, "init", timeVertical, false, null);
+				//super.generateTimePatternGrids(request, frm, inst, timePatterns, "init", timeVertical, false, null);
+				for (Preference pref: inst.getPreferences()) {
+					if (pref instanceof TimePref) {
+						frm.setAvailability(((TimePref)pref).getPreference());
+						break;
+					}
+				}
 	
 		        LookupTables.setupRooms(request, inst);		 // Room Prefs
 		        LookupTables.setupBldgs(request, inst);		 // Building Prefs
