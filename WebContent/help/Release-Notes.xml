@@ -254,6 +254,16 @@
 			</description>
 		</item>
 		<item>
+			<name>Accessibility</name>
+			<description>
+				<line>All event pages are made accessible (and screen reader friendly) using WAI-ARIA standard.
+					<line>See http://www.w3.org/TR/wai-aria and https://developers.google.com/web-toolkit/doc/latest/DevGuideA11y for more details.</line>
+				</line>
+				<line>All event pages are made accessible using the WAI ARIA standard.</line>
+				<line>FireFox with NVDA provides the best user experience.</line>
+			</description>
+		</item>
+		<item>
 			<name>Deprecated Pages</name>
 			<description>
 				<line>Meetings and Room Availability pages are no longer needed -- all the functionality is available on the new Events page.</line>
@@ -277,7 +287,9 @@
 					<line>Very much like the System Administrator, but academic session dependent.</line>
 					<line>Only system administrator is able to create and / or delete an academic session.</line>
 					<line>Session independent entities (like room types) are only editable by system administrator.</line>
-					<line>Chameleon is only available to a system administrator.</line>
+					<line>Chameleon is only available to a system administrator by default.
+						<line>If chameleon permission is given to (session) administrator, he/she cannot chameleon into a system administrator role (or any other role that is session independent).</line>
+					</line>
 				</line>
 			</description>
 		</item>
@@ -404,6 +416,77 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Added flexible group constraints</name>
+			<description>
+				<line>Flexible constraint expresses relations between several classes.
+					<line>It provides similar functions as group constraint, but it is able to take additional parameters from its reference field.</line>
+				</line>
+				<line>Added two new flexible group constraints:
+					<line>Break constraint checks for instructor lunch break or a break in general in between the given classes.
+						<line>It has three parameters: a start and an end time of a window in which the break is required / preferred, and a minimal length of a break that is needed.</line>
+						<line>Reference _Break:132:162:30_ translates to a break of at least 30 minutes between 11 am (slot 132) and 1:30 pm (slot 162).</line>
+					</line>
+					<line>MaxBlock constraint checks for too big blocks of back-to-back classes of an instructor.
+						<line>It has two parameters: a maximal length of a back-to-back block that is allowed and a minimal length of a break between two classes not to be considered in the same block.</line>
+						<line>Reference _MaxBlock:120:30_ translates to a maximal block of at most 2 hours (120 minutes) with classes not more than 30 minutes a part.</line>
+					</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructional Offering Detail: Make Not Offered</name>
+			<description>
+				<line>Added ability to stay on the detail page when the offering is made not offered.
+					<line>Controlled by the application property unitime.offering.makeNotOfferedStaysOnDetail (defaults to false -- current behavior).</line>
+					<line>When going back to the Instructional Offerings page, scroll down to the offering that has been made not offered.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Add Course Offering</name>
+			<description>
+				<line>On the Instructional Offerings page, Add New button does not create the course offering right away but it leads to a new page Add Course Offering.</line>
+				<line>A new offering is only created when the page is saved (there is no database change when Back button is clicked).</line>
+				<line>Subject area and course number can be entered on the Instructional Offerings page or on the Add Course Offering page.</line>
+				<line>Same items as on the Edit Course Offering page (for a controlling course offering) can be entered.</line>
+			</description>
+		</item>
+		<item>
+			<name>Curriculum Timetabling</name>
+			<description>
+				<line>Added ability to display course registrations (student course requests) together with last-like and enrollment data.</line>
+				<line>Curriculum table: selected counter columns can be hidden (selection is memorized in the cookie).</line>
+				<line>Classifications: lines with no counts are automatically hidden (e.g., if there are no last-like course demands, last-like and projected counts will not be displayed).</line>
+				<line>Curricula section (of an offering detail): modes that have no data are not available (e.g., if there are no last-like course demands, last-like numbers cannot be displayed).</line>
+			</description>
+		</item>
+		<item>
+			<name>Student Course Demands: Curriculum Course Requests</name>
+			<description>
+				<line>It is now possible to combine curricula with pre-registration data (student course requests).</line>
+				<line>To enable, set Student Course Demands solver parameter to Curricula Requests Course Demands (this option may need to be added in the parameter).
+					<line>When there are 50% or more students in a curriculum already registered, the curriculum model pretty much copies the pre-registration data.</line>
+					<line>When there are less students pre-registered: the pre-registrations are completed with made-up students (following the curriculum).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Instructor Student Conflicts</name>
+			<description>
+				<line>Added ability to link students with instructors (e.g., based on their external unique id).</line>
+				<line>There is an instructor student conflict if an instructor (of a class) is also enrolled as a student into some other class and the two classes are overlapping in time or are back-to-back in rooms that are too far apart.</line>
+				<line>The instructor student conflicts can be enabled by setting the solver configuration property Global.LoadStudentInstructorConflicts to true.
+					<line>These should be only enabled when student course requests or the actual student class enrollments are used as student course demands.</line>
+				</line>
+				<line>Instructor student conflicts can be weighted more than plain student conflicts using the weight Comparator.InstructorStudentConflictWeight.</line>
+				<line>Instructor student conflicts are marked by word "instructor" in the listing and on the Solver Reports page.</line>
+				<line>When showing instructor schedules on Timetable page and the solution is loaded in memory:
+					<line>Student class enrollment are included in the instructor's schedule (class name in italics).</line>
+					<line>When background is set to student conflicts: conflicting classes (for the instructor) have blue background</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Examination Timetabling</title>
@@ -480,6 +563,23 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Examination Detail</name>
+			<description>
+				<line>Examination detail page now contains an Enrollment table. This table lists all students enrolled in the exam, including their conflicts.</line>
+			</description>
+		</item>
+		<item>
+			<name>Solution XML Export</name>
+			<description>
+				<line>Added ability to export solution XML (by default available only to administrators, permissions Examination Solution Export Xml and Student Sectioning Solution Export Xml).</line>
+				<line>This is the format that is used directly by the solver, see http://www.unitime.org/exam_datasets.php</line>
+				<line>By default, exported XMLs do not have any names or external IDs, only UniTime unique IDs; this can be changed by the following two application properties:
+					<line>unitime.solution.export.names (if true names are included, defaults to false)</line>
+					<line>unitime.solution.export.id-conv (if true UniTime unique IDs are serialized, defaults to false)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Batch Student Scheduling</title>
@@ -511,6 +611,17 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Solution XML Export</name>
+			<description>
+				<line>Added ability to export solution XML (by default available only to administrators, permissions Examination Solution Export Xml and Student Sectioning Solution Export Xml).</line>
+				<line>This is the format that is used directly by the solver, see http://www.unitime.org/sct_datasets.php</line>
+				<line>By default, exported XMLs do not have any names or external IDs, only UniTime unique IDs; this can be changed by the following two application properties:
+					<line>unitime.solution.export.names (if true names are included, defaults to false)</line>
+					<line>unitime.solution.export.id-conv (if true UniTime unique IDs are serialized, defaults to false)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Online Student Scheduling</title>
@@ -538,14 +649,6 @@
 			</description>
 		</item>
 		<item>
-			<name>Student Scheduling Assistant</name>
-			<description>
-				<line>First serious attempt to make the page accessible (and screen reader friendly).
-					<line>Using WAI-ARIA standard, see http://www.w3.org/TR/wai-aria and https://developers.google.com/web-toolkit/doc/latest/DevGuideA11y</line>
-				</line>
-			</description>
-		</item>
-		<item>
 			<name>Wait-listing</name>
 			<description>
 				<line>Introduced ability to enable/disable wait-listing for a course request.
@@ -557,6 +660,15 @@
 					<line>Before this change, computation of a student schedule behaved as with no wait-listing enabled (any unassigned request could get an alternative request assigned instead); but every unassigned request was automatically wait-listed.</line>
 					<line>Now, if a course request is wait-listed, a student cannot get an alternative course.</line>
 				</line>
+			</description>
+		</item>
+		<item>
+			<name>Accessibility</name>
+			<description>
+				<line>The Student Scheduling Assistant page is made accessible (and screen reader friendly) using WAI-ARIA standard.
+					<line>See http://www.w3.org/TR/wai-aria and https://developers.google.com/web-toolkit/doc/latest/DevGuideA11y for more details.</line>
+				</line>
+				<line>FireFox with NVDA provides the best user experience.</line>
 			</description>
 		</item>
 	</category>
@@ -639,6 +751,18 @@
 			</description>
 		</item>		
 		<item>
+			<name>Instructor Preferences</name>
+			<description>
+				<line>Instructor Availability (Time Preferences)
+					<line>Time preferences grid no longer needs to be defined in half-hour increments starting on every hour or half-hour.</line>
+					<line>Default settings can be changed using unitime.room.sharingMode.X application properties (where X is a number starting from 1), or by overriding GWTConstant called roomSharingModes.
+						<line>See the Room Sharing Grid above for the format and the defaults of these properties.</line>
+					</line>
+					<line>To avoid time preference combinations issues, it is no longer possible to require a particular time on an instructor (all other times must be prohibited instead).</line>
+				</line>
+			</description>
+		</item>
+		<item>
 			<name>Export to PDF/CSV/XML</name>
 			<description>
 				<line>Instead of generating a temporary file, the PDF/CSV/XML content is exported within the HTTP servlet response.</line>
@@ -683,6 +807,28 @@
 				<line>Added ability to run small programs through the interface (page Administration > Utilities > Scripts).
 					<line>E.g., to reset all examination preferences for a particular examination problem.</line>
 					<line>It is possible to plug-in additional scripting engines (e.g., python).</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Date Formatting</name>
+			<description>
+				<line>To prevent concurrency issues (see bug JDK-6609686, http://bugs.sun.com/view_bug.do?bug_id=4264153) and to ease localization of date formats, most of the date formating is now done through the new Formats class.
+					<line>Instead of new DateFormat(pattern), the new Formats.getDateFormat(pattern) is used.</line>
+				</line>
+			</description>
+		</item>
+		<item>
+			<name>Database Authentication: Password Change</name>
+			<description>
+				<line>When a user is authenticated through UniTime's users table (which is the default), allow an authenticated user to change his/her password.
+					<line>Menu: Preferences > Change Password</line>
+				</line>
+				<line>It is also possible to request a password change for a user (identified by his/her email).
+					<line>Page ...UniTime/gwt.jsp?page=password&amp;reset=1</line>
+					<line>The entered email must match with a timetabling manager, a staff, an instructor, or a student and there has to be an appropriate record in the users table (with a matching external unique id).</line>
+					<line>If there is a match, an email is sent to the user with a generated link through which the user can change his/her password.</line>
+					<line>There is a temporary key generated that can be used instead of the old email, it is valid for 48 hours.</line>
 				</line>
 			</description>
 		</item>
