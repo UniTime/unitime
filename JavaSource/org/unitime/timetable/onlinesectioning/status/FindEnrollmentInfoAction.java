@@ -131,7 +131,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 							enrl ++;
 							if (m.enrollment().getReservation() != null) res ++;
 							if (info.getConsent() != null && m.enrollment().getApproval() == null) conNeed ++;
-						} else if (m.student().canAssign(m.request()) && m.request().isWaitlist()) {
+						} else if (m.student().canAssign(m.request())) { // && m.request().isWaitlist()) {
 							wait ++;
 						}
 					}
@@ -140,7 +140,7 @@ public class FindEnrollmentInfoAction implements OnlineSectioningAction<List<Enr
 						tEnrl ++;
 						if (m.enrollment().getReservation() != null) tRes ++;
 						if (info.getConsent() != null && m.enrollment().getApproval() == null) tConNeed ++;
-					} else if (m.student().canAssign(m.request()) && m.request().isWaitlist()) {
+					} else if (m.student().canAssign(m.request())) {// && m.request().isWaitlist()) {
 						tWait ++;
 					}
 				}
