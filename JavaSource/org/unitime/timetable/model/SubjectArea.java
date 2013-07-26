@@ -217,6 +217,12 @@ public class SubjectArea extends BaseSubjectArea implements Comparable<SubjectAr
 		return false;
 	}
 	
+	public static TreeSet<SubjectArea> getAllSubjectAreas(Long sessionId) {
+		return new TreeSet<SubjectArea>(
+				SubjectAreaDAO.getInstance().getQuery("from SubjectArea where session.uniqueId = :sessionId")
+				.setLong("sessionId", sessionId).setCacheable(true).list());
+	}
+	
 	public static TreeSet<SubjectArea> getUserSubjectAreas(UserContext user) {
 		return getUserSubjectAreas(user, true);
 	}
