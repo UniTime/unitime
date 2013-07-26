@@ -76,7 +76,7 @@ public class ExaminationTimetablingPermissions {
 
 		@Override
 		public boolean check(UserContext user, Session source) {
-			return permissionSession.check(user, source) && Exam.hasTimetable(source.getUniqueId());
+			return permissionSession.check(user, source);// && Exam.hasTimetable(source.getUniqueId());
 		}
 
 		@Override
