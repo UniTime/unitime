@@ -2636,7 +2636,7 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Are you REALLY sure you want to recreate all curricula?")
 	String confirmDeleteAllCurriculaSecondWarning();
 	
-	@DefaultMessage("This event including ALL its meetings will be deleted. Are you sure you want to do this?\n\nTo delete just a particular meeting, select the meeting and click on the Delete option under the More button. Do not forget to click the Update Event afterwards.")
+	@DefaultMessage("This event including ALL its meetings will be deleted. Are you sure you want to do this?\n\nTo delete just a particular meeting, select the meeting and click on the Remove option under the More button. Do not forget to click the Update Event afterwards.")
 	String confirmDeleteEvent();
 	
 	@DefaultMessage("ALL pending or approved meetings of this event will be cancelled. Are you sure you want to do this?\n\nTo cancel just a particular meeting, select the meeting and click on the Cancel option under the More button. Do not forget to click the Update Event afterwards.")
