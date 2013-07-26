@@ -167,7 +167,7 @@ public class ClassAssignmentsReportSearchAction extends SpringAwareLookupDispatc
         
 	    this.initializeFilters(request, classListForm);
 	    
-	    classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+	    classListForm.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
 	    classListForm.setClasses(ClassSearchAction.getClasses(classListForm, classAssignmentService.getAssignment()));
 	    
 		Collection classes = classListForm.getClasses();
