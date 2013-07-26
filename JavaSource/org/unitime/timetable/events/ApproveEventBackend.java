@@ -56,7 +56,7 @@ public class ApproveEventBackend extends EventAction<ApproveEventRpcRequest, Sav
 	
 	@Override
 	public SaveOrApproveEventRpcResponse execute(ApproveEventRpcRequest request, EventContext context) {
-		org.hibernate.Session hibSession = SessionDAO.getInstance().createNewSession();
+		org.hibernate.Session hibSession = SessionDAO.getInstance().getSession();
 		Transaction tx = hibSession.beginTransaction();
 		try {
 			Session session = SessionDAO.getInstance().get(request.getSessionId(), hibSession);
