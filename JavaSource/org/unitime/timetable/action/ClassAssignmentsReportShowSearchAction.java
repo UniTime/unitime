@@ -106,7 +106,7 @@ public class ClassAssignmentsReportShowSearchAction extends Action {
 			classListForm.setSortByKeepSubparts(Boolean.getBoolean((String)request.getParameter("sortByKeepSubparts")));
 		}
 		
-		classListForm.setSubjectAreas(SubjectArea.getUserSubjectAreas(sessionContext.getUser()));
+		classListForm.setSubjectAreas(SubjectArea.getAllSubjectAreas(sessionContext.getUser().getCurrentAcademicSessionId()));
 
 		Object sas = sessionContext.getAttribute(SessionAttribute.ClassAssignmentsSubjectAreas);
 	    if(sas!=null && sas.toString().trim().length() > 0) {
