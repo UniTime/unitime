@@ -531,7 +531,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			public void onClick(ClickEvent clickEvent) {
 				final EventMeetingTable table = new EventMeetingTable(getSelectedTab() <= 1 ? EventMeetingTable.Mode.ListOfEvents : EventMeetingTable.Mode.ListOfMeetings, false, EventResourceTimetable.this);
 				table.setMeetingFilter(EventResourceTimetable.this);
-				table.setShowMainContact(iProperties != null && iProperties.isCanLookupContacts());
+				table.setShowMainContact(iProperties != null && iProperties.isCanLookupMainContact());
 				table.setEvents(iData);
 				table.setSortBy(iTable.getSortBy());
 				table.getElement().getStyle().setWidth(1040, Unit.PX);
@@ -1726,12 +1726,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 						public void onSuccess(GwtRpcResponseList<SessionMonth> months) {
 							iProperties = result;
 							iSessionMonths = months;
-							iEvents.setOtherVisible(result.isCanLookupContacts() || result.isCanLookupPeople());
+							iEvents.setOtherVisible(result.isCanLookupMainContact() || result.isCanLookupPeople());
 							iFilterHeader.setEnabled("lookup", result.isCanLookupPeople() && getResourceType() == ResourceType.PERSON);
 							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iEventAdd.setup(result);
-							iTable.setShowMainContact(result.isCanLookupContacts());
+							iTable.setShowMainContact(result.isCanLookupMainContact());
 							iApproveDialog.reset(result);
 							if (callback != null)
 								callback.onSuccess(result);

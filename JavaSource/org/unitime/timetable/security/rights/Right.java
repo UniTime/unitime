@@ -323,6 +323,7 @@ public enum Right {
     EventAddCourseRelated(Session.class),
     EventAddUnavailable(Session.class),
     EventLookupContact,
+    EventLookupContactAdditional,
     EventLookupSchedule,
     EventDetail(Event.class),
     EventEdit(Event.class),

@@ -65,7 +65,8 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		Session session = SessionDAO.getInstance().get(request.getSessionId());
 		
 		response.setCanLookupPeople(context.hasPermission(Right.EventLookupSchedule));
-		response.setCanLookupContacts(context.hasPermission(Right.EventLookupContact));
+		response.setCanLookupMainContact(context.hasPermission(Right.EventLookupContact));
+		response.setCanLookupAdditionalContacts(response.isCanLookupMainContact() || context.hasPermission(Right.EventLookupContactAdditional));
 		
 		response.setCanAddEvent(context.hasPermission(Right.EventAddSpecial));
 		response.setCanAddCourseEvent(context.hasPermission(Right.EventAddCourseRelated));
@@ -74,7 +75,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		
 		response.setCanExportCSV(true);// rights.canSeeSchedule(null) || rights.canLookupContacts());
 		
-		if (response.isCanLookupContacts() && "true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail", "true")))) {
+		if (response.isCanLookupMainContact() && "true".equals(ApplicationProperties.getProperty("unitime.email.confirm.event", ApplicationProperties.getProperty("tmtbl.event.confirmationEmail", "true")))) {
 			// email confirmations are enabled and user has enough permissions
 			// use unitime.email.confirm.default to determine the default value of the "Send email confirmation" toggle
 			response.setEmailConfirmation("true".equalsIgnoreCase(context.getUser().getProperty("unitime.email.confirm.default", "true")));

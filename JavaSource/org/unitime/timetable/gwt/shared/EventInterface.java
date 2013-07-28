@@ -1661,7 +1661,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcResponse implements GwtRpcResponse {
-		private boolean iCanLookupPeople = false, iCanLookupContacts = false, iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV = false, iCanSetExpirationDate = false;
+		private boolean iCanLookupPeople = false, iCanLookupMainContact = false, iCanLookupAdditionalContacts = false,
+				iCanAddEvent = false, iCanAddCourseEvent = false, iCanAddUnavailableEvent = false, iCanExportCSV = false, iCanSetExpirationDate = false;
 		private List<SponsoringOrganizationInterface> iSponsoringOrganizations = null;
 		private ContactInterface iMainContact = null;
 		private Set<StandardEventNoteInterface> iStandardNotes = null;
@@ -1675,8 +1676,11 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean isCanExportCSV() { return iCanExportCSV; }
 		public void setCanExportCSV(boolean canExportCSV) { iCanExportCSV = canExportCSV; }
 		
-		public boolean isCanLookupContacts() { return iCanLookupContacts; }
-		public void setCanLookupContacts(boolean canLookupContacts) { iCanLookupContacts = canLookupContacts; }
+		public boolean isCanLookupMainContact() { return iCanLookupMainContact; }
+		public void setCanLookupMainContact(boolean canLookupContact) { iCanLookupMainContact = canLookupContact; }
+
+		public boolean isCanLookupAdditionalContacts() { return iCanLookupAdditionalContacts; }
+		public void setCanLookupAdditionalContacts(boolean canLookupContacts) { iCanLookupAdditionalContacts = canLookupContacts; }
 
 		public boolean isCanAddEvent() { return iCanAddEvent; }
 		public void setCanAddEvent(boolean canAddEvent) { iCanAddEvent = canAddEvent; }
