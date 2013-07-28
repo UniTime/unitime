@@ -1015,9 +1015,11 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			// Remove all meetings and related objects
 			if (event.hasMeetings()) event.getMeetings().clear();
 			if (event.hasRelatedObjects()) event.getRelatedObjects().clear();
-			if (!properties.isCanLookupContacts()) { // Can not lookup
+			if (!properties.isCanLookupAdditionalContacts()) { // Can not lookup additional contacts
 				// Clear additional contacts
 				if (event.hasAdditionalContacts()) event.getAdditionalContacts().clear();
+			}
+			if (!properties.isCanLookupMainContact()) { // Can not lookup main contact
 				// Clear main contact if different from the user
 				if (event.hasContact() && event.getContact().hasExternalId()) {
 					if (!event.getContact().getExternalId().equals(properties.hasMainContact() ? properties.getMainContact().getExternalId() : null))
@@ -1159,7 +1161,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			iMainPhone.setText(iEvent.getContact().hasPhone() ? iEvent.getContact().getPhone() : "");
 			iMainEmail.getWidget().setText(iEvent.getContact().hasEmail() ? iEvent.getContact().getEmail() : "");
 		} else {
-			ContactInterface mainContact = (getProperties() == null || getProperties().isCanLookupContacts() ? null : getProperties().getMainContact());
+			ContactInterface mainContact = (getProperties() == null || getProperties().isCanLookupMainContact() ? null : getProperties().getMainContact());
 			if (mainContact != null) {
 				iMainExternalId = mainContact.getExternalId();
 				iMainFName.setText(mainContact.getFirstName() == null ? "" : mainContact.getFirstName());
@@ -1216,11 +1218,10 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		}
 		iForm.getRowFormatter().setVisible(iContactRow, iContacts.getRowCount() > 1);
 		
-		boolean canLookup = (getProperties() == null ? false : getProperties().isCanLookupContacts());
-		iLookupButton.setVisible(canLookup);
-		iAdditionalLookupButton.setVisible(canLookup);
+		iLookupButton.setVisible(getProperties() == null ? false : getProperties().isCanLookupMainContact());
+		iAdditionalLookupButton.setVisible(getProperties() == null ? false : getProperties().isCanLookupAdditionalContacts());
 		
-		boolean canSeeStandardNotes = (getProperties() == null ? false : getProperties().isCanLookupContacts() && getProperties().hasStandardNotes()); 
+		boolean canSeeStandardNotes = (getProperties() == null ? false : getProperties().isCanLookupMainContact() && getProperties().hasStandardNotes()); 
 		iStandardNotesButton.setVisible(canSeeStandardNotes);
 		iStandardNotes.clear();
 		if (canSeeStandardNotes)
