@@ -858,6 +858,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 							iSessionMonths = months;
 							iFilterHeader.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
 							iFooter.setEnabled("add", result.isCanAddEvent() && "true".equals(iHistoryToken.getParameter("addEvent", "true")));
+							iEventAdd.setup(result);
 							if (callback != null)
 								callback.onSuccess(result);
 						}
