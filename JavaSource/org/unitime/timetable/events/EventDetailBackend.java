@@ -334,6 +334,17 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+					if (clazz.getDisplayInstructor()) {
+		    			for (ClassInstructor i: clazz.getClassInstructors()) {
+							ContactInterface instructor = new ContactInterface();
+							instructor.setFirstName(i.getInstructor().getFirstName());
+							instructor.setMiddleName(i.getInstructor().getMiddleName());
+							instructor.setLastName(i.getInstructor().getLastName());
+							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
+							instructor.setEmail(i.getInstructor().getEmail());
+							related.addInstructor(instructor);
+		    			}
+		    		}
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
@@ -414,6 +425,17 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 		    		}
 					if (context != null && context.hasPermission(clazz, Right.ClassDetail))
 						related.setDetailPage("classDetail.do?cid=" + clazz.getUniqueId());
+					if (clazz.getDisplayInstructor()) {
+		    			for (ClassInstructor i: clazz.getClassInstructors()) {
+							ContactInterface instructor = new ContactInterface();
+							instructor.setFirstName(i.getInstructor().getFirstName());
+							instructor.setMiddleName(i.getInstructor().getMiddleName());
+							instructor.setLastName(i.getInstructor().getLastName());
+							instructor.setExternalId(i.getInstructor().getExternalUniqueId());
+							instructor.setEmail(i.getInstructor().getEmail());
+							related.addInstructor(instructor);
+		    			}
+		    		}
 				} else if (owner.getOwnerType() == ExamOwner.sOwnerTypeOffering) {
 		    		for (CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 		    			if (!course.isIsControl()) {
