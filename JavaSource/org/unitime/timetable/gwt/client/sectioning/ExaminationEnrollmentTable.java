@@ -20,6 +20,7 @@
 package org.unitime.timetable.gwt.client.sectioning;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -93,23 +94,28 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 			@Override
 			public void onSuccess(ExaminationScheduleRpcResponse result) {
 				callback.onSuccess(true);
-				UniTimeTable<RelatedObjectInterface> table = new UniTimeTable<RelatedObjectInterface>();
+				final UniTimeTable<RelatedObjectInterface> table = new UniTimeTable<RelatedObjectInterface>();
 				table.setStyleName("unitime-EventOwners");
 				List<Widget> ownersHeader = new ArrayList<Widget>();
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colType()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTitle()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colLocation()));
-				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colCourse()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colSection()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colType()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colTitle()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colDate()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colTime()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colLocation()));
+				ownersHeader.add(new ClickableUniTimeTableHeader(MESSAGES.colInstructor()));
 				table.addRow(null, ownersHeader);
 				table.addMouseClickListener(new UniTimeTable.MouseClickListener<EventInterface.RelatedObjectInterface>() {
 					@Override
 					public void onMouseClick(TableEvent<RelatedObjectInterface> event) {
 						if (event.getData() != null && event.getData().hasDetailPage())
 							ToolBox.open(event.getData().getDetailPage());
+						if (event.getData() == null && event.getCol() >= 0) {
+							table.sort(event.getCol(), new RelatedObjectComparator(event.getCol()));
+							boolean asc = table.getHeader(event.getCol()).getOrder();
+							SectioningCookie.getInstance().setRelatedSortBy(asc ? 1 + event.getCol() : -1 - event.getCol());
+						}
 					}
 				});
 				for (RelatedObjectInterface obj: result.getExams()) {
@@ -195,6 +201,13 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 					for (int i = 0; i < table.getCellCount(rowNumber); i++)
 						table.getCellFormatter().addStyleName(rowNumber, i, "owner-cell");
 				}
+				
+				int sort = SectioningCookie.getInstance().getRelatedSortBy();
+				if (sort > 0)
+					table.sort(table.getHeader(sort - 1), new RelatedObjectComparator(sort - 1), true);
+				else if (sort < 0)
+					table.sort(table.getHeader(-1 - sort), new RelatedObjectComparator(-1 - sort), false);
+				
 				SimpleForm form = new SimpleForm();
 				form.addRow(table);
 				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
@@ -218,6 +231,17 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 				dialog.center();
 			}
 		});		
+	}
+	
+	private static class ClickableUniTimeTableHeader extends UniTimeTableHeader {
+		private ClickableUniTimeTableHeader(String title) {
+			super(title);
+		}
+		
+		@Override
+		public String getStyleName() {
+			return "unitime-ClickableTableHeader";
+		}
 	}
 	
 	public static class ExaminationEnrollmentsRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
@@ -283,6 +307,118 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 		}
 		public TreeSet<EventInterface.RelatedObjectInterface> getExams() { return iExams; }
 		
+	}
+	
+	public static class RelatedObjectComparator implements Comparator<EventInterface.RelatedObjectInterface> {
+		private int iColumn;
+		
+		public RelatedObjectComparator(int column) {
+			iColumn = column;
+		}
+		
+		private String course(RelatedObjectInterface obj) {
+			String course = "";
+			if (obj.hasCourseNames()) {
+				for (String cn: obj.getCourseNames()) {
+					if (course.isEmpty()) {
+						course += cn;
+					} else {
+						course += "," + cn;
+					}
+				}
+			} else {
+				course = obj.getName();
+			}
+			return course;
+		}
+		
+		private String section(RelatedObjectInterface obj) {
+			String section = "";
+			if (obj.hasExternalIds()) {
+				for (String ex: obj.getExternalIds()) {
+					if (section.isEmpty()) {
+						section += ex;
+					} else {
+						section += "," + ex;
+					}
+				}
+			} else if (obj.hasSectionNumber()) {
+				section = obj.getSectionNumber();
+			}
+			return section;
+		}
+		
+		private String type(RelatedObjectInterface obj) {
+			return (obj.hasInstruction() ? obj.getInstruction() : obj.getType().name());
+		}
+		
+		private String title(RelatedObjectInterface obj) {
+			String title = "";
+			if (obj.hasCourseTitles()) {
+				String last = null;
+				for (String ct: obj.getCourseTitles()) {
+					if (last != null && !last.isEmpty() && last.equals(ct))
+						ct = "";
+					else
+						last = ct;
+					if (title.isEmpty()) {
+						title += ct;
+					} else {
+						title += "," + ct;
+					}
+				}
+			} else {
+				title = "";
+			}
+			return title;
+		}
+		
+		private String location(RelatedObjectInterface obj) {
+			String location = "";
+			if (obj.hasLocations()) {
+				for (ResourceInterface loc: obj.getLocations()) {
+					location += (location.isEmpty() ? "" : "<br>") + loc.getName();
+				}
+			}
+			return location;
+		}
+		
+		private int compare(int column, RelatedObjectInterface o1, RelatedObjectInterface o2) {
+			switch (column) {
+			case 0:
+				return course(o1).compareTo(course(o2));
+			case 1:
+				return section(o1).compareTo(section(o2));
+			case 2:
+				return type(o1).compareTo(type(o2));
+			case 3:
+				return title(o1).compareTo(title(o2));
+			case 4:
+				int cmp = (o1.hasDayOfYear() ? o1.getDayOfYear() : new Integer(-1)).compareTo(o2.hasDayOfYear() ? o2.getDayOfYear() : new Integer(-1));
+				if (cmp != 0) return cmp;
+			case 5:
+				cmp = (o1.hasStartSlot() ? o1.getStartSlot() : new Integer(-1)).compareTo(o2.hasStartSlot() ? o2.getStartSlot() : new Integer(-1));
+				if (cmp != 0) return cmp;
+				return (o1.hasEndSlot() ? o1.getEndSlot() : new Integer(-1)).compareTo(o2.hasEndSlot() ? o2.getEndSlot() : new Integer(-1));
+			case 6:
+				return location(o1).compareTo(location(o2));
+			case 7:
+				return (o1.hasInstructors() ? o1.getInstructorNames(",", MESSAGES) : "").compareToIgnoreCase(o2.hasInstructors() ? o2.getInstructorNames(",", MESSAGES) : "");
+			case 8:
+				return (o1.hasNote() ? o1.getNote() : "").compareToIgnoreCase(o2.hasNote() ? o2.getNote() : "");
+			default:
+				return 0;
+			}
+		}
+		
+		@Override
+		public int compare(RelatedObjectInterface o1, RelatedObjectInterface o2) {
+			int cmp = compare(iColumn, o1, o2);
+			if (cmp != 0) return cmp;
+			cmp = course(o1).compareTo(course(o2));
+			if (cmp != 0) return cmp;
+			return o1.compareTo(o2);
+		}
 	}
 	
 }
