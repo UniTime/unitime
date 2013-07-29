@@ -2845,4 +2845,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Coordinator")
 	String eventContactCoordinatorPhone();
+	
+	@DefaultMessage("{0} Examinations for {1}")
+	String dialogExaminations(String type, String student);
 }
