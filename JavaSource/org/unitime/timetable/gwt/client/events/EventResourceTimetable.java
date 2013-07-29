@@ -966,7 +966,10 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				if (iInitialized) {
-					iHistoryToken.reset(event.getValue());
+					if ("event=add".equals(event.getValue()))
+						iHistoryToken.parse(event.getValue());
+					else
+						iHistoryToken.reset(event.getValue());
 					setup(false);
 					if (LoadingWidget.getInstance().isShowing())
 						LoadingWidget.getInstance().hide();
