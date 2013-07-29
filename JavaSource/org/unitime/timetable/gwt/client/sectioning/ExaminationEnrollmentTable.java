@@ -19,16 +19,39 @@
 */
 package org.unitime.timetable.gwt.client.sectioning;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
+
+import org.unitime.timetable.gwt.client.ToolBox;
+import org.unitime.timetable.gwt.client.widgets.SimpleForm;
+import org.unitime.timetable.gwt.client.widgets.UniTimeDialogBox;
+import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTableHeader;
+import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
+import org.unitime.timetable.gwt.command.client.GwtRpcRequest;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
 import org.unitime.timetable.gwt.resources.GwtMessages;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface;
 import org.unitime.timetable.gwt.shared.ClassAssignmentInterface.Enrollment;
-import org.unitime.timetable.gwt.shared.EventInterface.EventRpcRequest;
+import org.unitime.timetable.gwt.shared.EventInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.RelatedObjectInterface;
+import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.PopupPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class ExaminationEnrollmentTable extends EnrollmentTable {
 	private static final GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
@@ -59,7 +82,145 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 		}
 	}
 	
-	public static class ExaminationEnrollmentsRpcRequest extends EventRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
+	@Override
+	public void showStudentSchedule(final ClassAssignmentInterface.Student student, final AsyncCallback<Boolean> callback) {
+		RPC.execute(ExaminationScheduleRpcRequest.getScheduleForStudent(getId(), student.getId()), new AsyncCallback<ExaminationScheduleRpcResponse>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				callback.onFailure(caught);
+			}
+
+			@Override
+			public void onSuccess(ExaminationScheduleRpcResponse result) {
+				callback.onSuccess(true);
+				UniTimeTable<RelatedObjectInterface> table = new UniTimeTable<RelatedObjectInterface>();
+				table.setStyleName("unitime-EventOwners");
+				List<Widget> ownersHeader = new ArrayList<Widget>();
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colCourse()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colSection()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colType()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTitle()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colDate()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colTime()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colLocation()));
+				ownersHeader.add(new UniTimeTableHeader(MESSAGES.colInstructor()));
+				table.addRow(null, ownersHeader);
+				table.addMouseClickListener(new UniTimeTable.MouseClickListener<EventInterface.RelatedObjectInterface>() {
+					@Override
+					public void onMouseClick(TableEvent<RelatedObjectInterface> event) {
+						if (event.getData() != null && event.getData().hasDetailPage())
+							ToolBox.open(event.getData().getDetailPage());
+					}
+				});
+				for (RelatedObjectInterface obj: result.getExams()) {
+					List<Widget> row = new ArrayList<Widget>();
+					String course = "";
+					if (obj.hasCourseNames()) {
+						for (String cn: obj.getCourseNames()) {
+							if (course.isEmpty()) {
+								course += cn;
+							} else {
+								course += "<span class='cross-list'>" + cn + "</span>";
+							}
+						}
+					} else {
+						course = obj.getName();
+					}
+					row.add(new HTML(course, false));
+					
+					String section = "";
+					if (obj.hasExternalIds()) {
+						for (String ex: obj.getExternalIds()) {
+							if (section.isEmpty()) {
+								section += ex;
+							} else {
+								section += "<span class='cross-list'>" + ex + "</span>";
+							}
+						}
+					} else if (obj.hasSectionNumber()) {
+						section = obj.getSectionNumber();
+					}
+					row.add(new HTML(section, false));
+					
+					String type = (obj.hasInstruction() ? obj.getInstruction() : obj.getType().name());
+					row.add(new Label(type, false));
+					
+					String title = "";
+					if (obj.hasCourseTitles()) {
+						String last = null;
+						for (String ct: obj.getCourseTitles()) {
+							if (last != null && !last.isEmpty() && last.equals(ct))
+								ct = "";
+							else
+								last = ct;
+							if (title.isEmpty()) {
+								title += ct;
+							} else {
+								title += "<span class='cross-list'>" + ct + "</span>";
+							}
+						}
+					} else {
+						title = "";
+					}
+					row.add(new HTML(title, false));
+					
+					if (obj.hasDate()) {
+						row.add(new Label(obj.getDate(), false));
+					} else {
+						row.add(new Label());
+					}
+					
+					if (obj.hasTime()) {
+						row.add(new Label(obj.getTime(), false));
+					} else {
+						row.add(new Label());
+					}
+					
+					String location = "";
+					if (obj.hasLocations()) {
+						for (ResourceInterface loc: obj.getLocations()) {
+							location += (location.isEmpty() ? "" : "<br>") + loc.getName();
+						}
+					}
+					row.add(new HTML(location, false));
+
+					if (obj.hasInstructors()) {
+						row.add(new HTML(obj.getInstructorNames("<br>", MESSAGES), false));
+					} else {
+						row.add(new HTML());
+					}
+					
+					int rowNumber = table.addRow(obj, row);
+					table.getRowFormatter().addStyleName(rowNumber, "owner-row");
+					for (int i = 0; i < table.getCellCount(rowNumber); i++)
+						table.getCellFormatter().addStyleName(rowNumber, i, "owner-cell");
+				}
+				SimpleForm form = new SimpleForm();
+				form.addRow(table);
+				final UniTimeHeaderPanel buttons = new UniTimeHeaderPanel();
+				form.addBottomRow(buttons);
+				final UniTimeDialogBox dialog = new UniTimeDialogBox(true, false);
+				dialog.setWidget(form);
+				dialog.setText(MESSAGES.dialogExaminations(result.getExamType(), student.getName()));
+				dialog.setEscapeToHide(true);
+				buttons.addButton("close", MESSAGES.buttonClose(), new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						dialog.hide();
+					}
+				});
+				dialog.addCloseHandler(new CloseHandler<PopupPanel>() {
+					@Override
+					public void onClose(CloseEvent<PopupPanel> event) {
+						getTable().clearHover();
+					}
+				});
+				dialog.center();
+			}
+		});		
+	}
+	
+	public static class ExaminationEnrollmentsRpcRequest implements GwtRpcRequest<GwtRpcResponseList<ClassAssignmentInterface.Enrollment>> {
 		private Long iExamId;
 		
 		public ExaminationEnrollmentsRpcRequest() {}
@@ -79,5 +240,49 @@ public class ExaminationEnrollmentTable extends EnrollmentTable {
 			return request;
 		}
 	}
+	
+	public static class ExaminationScheduleRpcRequest implements GwtRpcRequest<ExaminationScheduleRpcResponse> {
+		private Long iExamId, iStudentId;
+		
+		public ExaminationScheduleRpcRequest() {}
+		
+		public boolean hasExamId() { return iExamId != null; }
+		public Long getExamId() { return iExamId; }
+		public void setExamId(Long examId) { iExamId = examId; }
 
+		public boolean hasStudentId() { return iStudentId != null; }
+		public Long getStudentId() { return iStudentId; }
+		public void setStudentId(Long studentId) { iStudentId = studentId; }
+		
+		@Override
+		public String toString() {
+			return (hasExamId() ? getExamId().toString() : "NULL") + "," + (hasStudentId() ? getStudentId().toString() : "NULL");
+		}
+		
+		public static ExaminationScheduleRpcRequest getScheduleForStudent(Long examId, Long studentId) {
+			ExaminationScheduleRpcRequest request = new ExaminationScheduleRpcRequest();
+			request.setExamId(examId);
+			request.setStudentId(studentId);
+			return request;
+		}
+	}
+	
+	public static class ExaminationScheduleRpcResponse implements GwtRpcResponse {
+		private String iExamType;
+		private TreeSet<EventInterface.RelatedObjectInterface> iExams;
+		
+		public ExaminationScheduleRpcResponse() {}
+		
+		public String getExamType() { return iExamType; }
+		public void setExamType(String examType) { iExamType = examType; }
+		
+		public boolean hasExams() { return iExams != null && !iExams.isEmpty(); }
+		public void addExam(EventInterface.RelatedObjectInterface exam) {
+			if (iExams == null) iExams = new TreeSet<EventInterface.RelatedObjectInterface>();
+			iExams.add(exam);
+		}
+		public TreeSet<EventInterface.RelatedObjectInterface> getExams() { return iExams; }
+		
+	}
+	
 }

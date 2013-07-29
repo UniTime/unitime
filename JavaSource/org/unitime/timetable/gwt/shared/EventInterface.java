@@ -1114,7 +1114,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		}
     }
     
-    public static class RelatedObjectInterface implements IsSerializable {
+    public static class RelatedObjectInterface implements IsSerializable, Comparable<RelatedObjectInterface> {
     	private Long iUniqueId;
     	private RelatedObjectType iType;
     	private List<String> iCourseNames = null;
@@ -1240,6 +1240,13 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		
 		public String toString() {
 			return getName() + " (" + getType() + ")";
+		}
+
+		@Override
+		public int compareTo(RelatedObjectInterface o) {
+			int cmp = toString().compareTo(o.toString());
+			if (cmp != 0) return cmp;
+			return getUniqueId().compareTo(o.getUniqueId());
 		}
     }
     
