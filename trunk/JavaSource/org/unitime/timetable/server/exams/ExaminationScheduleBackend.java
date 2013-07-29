@@ -140,6 +140,9 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 	    		if (x.getAssignedPeriod() != null) {
 	    			ExamPeriod period = x.getAssignedPeriod();
 	    			related.setDate(period.getStartDateLabel());
+	    			related.setDayOfYear(period.getDateOffset());
+	    			related.setStartSlot(period.getStartSlot());
+	    			related.setEndSlot(period.getEndSlot());
 	    			int printOffset = (x.getPrintOffset() == null ? 0 : x.getPrintOffset());
 	    			related.setTime(period.getStartTimeLabel(printOffset) + " - " + period.getEndTimeLabel(x.getLength(), printOffset));
 	    		}
@@ -159,6 +162,9 @@ public class ExaminationScheduleBackend implements GwtRpcImplementation<Examinat
 				if (assignment != null && assignment.getPeriod() != null) {
 	    			ExamPeriod period = assignment.getPeriod();
 	    			related.setDate(period.getStartDateLabel());
+	    			related.setDayOfYear(period.getDateOffset());
+	    			related.setStartSlot(period.getStartSlot());
+	    			related.setEndSlot(period.getEndSlot());
 	    			int printOffset = (x.getPrintOffset() == null ? 0 : x.getPrintOffset());
 	    			related.setTime(period.getStartTimeLabel(printOffset) + " - " + period.getEndTimeLabel(x.getLength(), printOffset));
 	    		}

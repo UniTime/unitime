@@ -26,6 +26,7 @@ import com.google.gwt.user.client.Cookies;
  */
 public class SectioningCookie {
 	private boolean iCourseDetails = false, iShowClassNumbers = false;
+	private int iRelatedSortBy = 0;
 	
 	private static SectioningCookie sInstance = null;
 	
@@ -36,6 +37,7 @@ public class SectioningCookie {
 				String[] values = cookie.split(":");
 				iCourseDetails = "T".equals(values[0]);
 				iShowClassNumbers = "T".equals(values.length >= 2 ? values[1] : "F");
+				iRelatedSortBy = Integer.parseInt(values[2]);
 			}
 		} catch (Exception e) {
 		}
@@ -44,7 +46,7 @@ public class SectioningCookie {
 	private void save() {
 		String cookie = 
 			(iCourseDetails ? "T": "F") + ":" +
-			(iShowClassNumbers ? "T": "F");
+			(iShowClassNumbers ? "T": "F") + ":" + iRelatedSortBy;
 		Cookies.setCookie("UniTime:Sectioning", cookie);
 	}
 	
@@ -69,6 +71,15 @@ public class SectioningCookie {
 	
 	public void setShowClassNumbers(boolean showClassNumbers) {
 		iShowClassNumbers = showClassNumbers;
+		save();
+	}
+	
+	public int getRelatedSortBy() {
+		return iRelatedSortBy;
+	}
+	
+	public void setRelatedSortBy(int sort) {
+		iRelatedSortBy = sort;
 		save();
 	}
 }
