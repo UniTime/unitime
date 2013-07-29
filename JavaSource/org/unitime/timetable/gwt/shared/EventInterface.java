@@ -1126,6 +1126,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
     	private List<ContactInterface> iInstructors;
 		private Set<ResourceInterface> iLocations = new TreeSet<ResourceInterface>();
 		private String iDate, iTime, iConflicts;
+		private Integer iDayOfYear, iStartSlot, iEndSlot;
     	private List<String> iExternalIds;
     	private String iSectionNumber = null;
     	private long[] iSelection = null;
@@ -1218,9 +1219,21 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasTime() { return iTime != null && !iTime.isEmpty(); }
 		public void setTime(String time) { iTime = time; }
 		
+		public Integer getStartSlot() { return iStartSlot; }
+		public boolean hasStartSlot() { return iStartSlot != null; }
+		public void setStartSlot(Integer startSlot) { iStartSlot = startSlot; }
+
+		public Integer getEndSlot() { return iEndSlot; }
+		public boolean hasEndSlot() { return iEndSlot != null; }
+		public void setEndSlot(Integer endSlot) { iEndSlot = endSlot; }
+
 		public String getDate() { return iDate; }
 		public boolean hasDate() { return iDate != null && !iDate.isEmpty(); }
 		public void setDate(String date) { iDate = date; }
+		
+		public Integer getDayOfYear() { return iDayOfYear; }
+		public boolean hasDayOfYear() { return iDayOfYear != null; }
+		public void setDayOfYear(Integer dayOfYear) { iDayOfYear = dayOfYear; }
 		
 		public String getConflicts() { return iConflicts; }
 		public boolean hasConflicts() { return iConflicts != null && !iConflicts.isEmpty(); }
