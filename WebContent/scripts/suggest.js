@@ -357,7 +357,7 @@ function updateSuggestionList(textFieldId, actionURL, selectFirstWord, maxSugges
 		var vars = 'word=' + escape(document.getElementById(textFieldId).value) + '&enc=' + escape(suggestionsEncoding);
 	req.open( "POST", actionURL, true );
 	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-	req.setRequestHeader("Content-Length", vars.length);
+	// req.setRequestHeader("Content-Length", vars.length);
 	
 	
 	// Request send
