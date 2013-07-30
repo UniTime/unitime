@@ -78,7 +78,10 @@
 							><bean:write name="<%=frmName%>" property="instrOfferingName" /></A>
 							<html:hidden property="instrOfferingId"/>
 							<html:hidden property="instrOfferingName"/>
-					</tt:section-title>						
+					</tt:section-title>
+				
+				<!-- dummy submit button to make sure Update button is the first (a.k.a. default) submit button -->
+				<html:submit property="op" style="position: absolute; left: -100%;"><loc:message name="actionUpdateClassInstructorsAssignment" /></html:submit>						
 
 				<html:submit property="op"
 					onclick="return confirmUnassignAll();"
