@@ -19,7 +19,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-logging-1.0.4.jar" sourcepath="3rd_party/sources/commons-logging-1.0.4-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-pool-1.5.4.jar" sourcepath="3rd_party/sources/commons-pool-1.5.4-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-validator-1.3.1.jar" sourcepath="3rd_party/sources/commons-validator-1.3.1-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-1.2.125.jar" sourcepath="3rd_party/sources/cpsolver-1.2.125-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cpsolver-1.2.127.jar" sourcepath="3rd_party/sources/cpsolver-1.2.127-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/dom4j-1.6.1.jar" sourcepath="3rd_party/sources/dom4j-1.6.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-1.5.0.jar" sourcepath="3rd_party/sources/ehcache-1.5.0-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet-2.5.0.jar" sourcepath="3rd_party/sources/gwt-servlet-2.5.0-sources.jar"/>
