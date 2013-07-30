@@ -39,6 +39,7 @@
 	<bean:define id="model" name="examInfoForm" property="model"/>
 	<bean:define id="exam" name="model" property="exam"/>
 	<bean:define id="examId" name="exam" property="examId"/>
+	<bean:define id="examName" name="exam" property="examName"/>
 	<logic:notEmpty name="examInfoForm" property="message">
 		<bean:define id="message" name="examInfoForm" property="message"/>
 		<script language="JavaScript" type="text/javascript">
@@ -58,7 +59,7 @@
 	<table border='0' width='100%'>
 		<tr><td colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Examination <bean:write name="exam" property="examName"/></tt:section-title>
+				<tt:section-title>Examination <a href='examDetail.do?examId=<%=examId%>' target='_blank' class='l8' title='Open Examination Detail for <%=examName%> in a new window.'><bean:write name="exam" property="examName"/></a></tt:section-title>
 			</tt:section-header>
 		</td></tr>
 		<tr><td>Courses / Classes:</td><td><bean:write name="exam" property="sectionName(<br>)" filter="false"/></td></tr>
