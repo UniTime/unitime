@@ -369,7 +369,7 @@
 		var vars = "basic="+basic;
 		req.open( "POST", "itypesAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		req.setRequestHeader("Content-Length", vars.length);
+		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}
