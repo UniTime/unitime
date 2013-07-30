@@ -227,4 +227,9 @@ public class StudentSchedulingAssistantWeights implements StudentWeights {
 	public double getTimeOverlapConflictWeight(Enrollment enrollment, TimeOverlapsCounter.Conflict timeOverlap) {
 		return iParent.getTimeOverlapConflictWeight(enrollment, timeOverlap);
 	}
+
+	@Override
+	public boolean isFreeTimeAllowOverlaps() {
+		return iParent.isFreeTimeAllowOverlaps();
+	}
 }
