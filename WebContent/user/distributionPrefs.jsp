@@ -447,7 +447,7 @@
 				}
 			}
 			if (options.length==2 || type=='itype') {
-				options[1].selected=true;
+				options.selectedIndex = 1;
 				if (next!=null) doReload(next,idx);
 			}
 		};
@@ -456,7 +456,7 @@
 		var vars = "id="+id+"&type="+type;
 		req.open( "POST", "distributionPrefsAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		req.setRequestHeader("Content-Length", vars.length);
+		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}
@@ -510,7 +510,7 @@
 		var vars = "id="+id+"&type=distType";
 		req.open( "POST", "distributionPrefsAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		req.setRequestHeader("Content-Length", vars.length);
+		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}	
@@ -556,7 +556,7 @@
 		var vars = "id="+id+"&type=grouping";
 		req.open( "POST", "distributionPrefsAjax.do", true );
 		req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		req.setRequestHeader("Content-Length", vars.length);
+		// req.setRequestHeader("Content-Length", vars.length);
 		//setTimeout("try { req.send('" + vars + "') } catch(e) {}", 1000);
 		req.send(vars);
 	}	
