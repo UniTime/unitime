@@ -37,6 +37,7 @@
 	<bean:define id="model" name="classInfoForm" property="model"/>
 	<bean:define id="clazz" name="model" property="clazz"/>
 	<bean:define id="classId" name="clazz" property="classId"/>
+	<bean:define id="className" name="clazz" property="className"/>
 	<logic:equal name="classInfoForm" property="op" value="Close">
 		<script language="JavaScript" type="text/javascript">
 			parent.hideGwtDialog();
@@ -50,7 +51,7 @@
 	<table border='0' width='100%'>
 		<tr><td colspan='2'>
 			<tt:section-header>
-				<tt:section-title>Class <bean:write name="clazz" property="className"/></tt:section-title>
+				<tt:section-title>Class <a href='classDetail.do?cid=<%=classId%>' target='_blank' class='l8' title='Open Class Detail for <%=className%> in a new window.'><bean:write name="clazz" property="className"/></a></tt:section-title>
 			</tt:section-header>
 		</td></tr>
 		<tr><td>Manager:</td><td><bean:write name="clazz" property="manager"/></td></tr>
