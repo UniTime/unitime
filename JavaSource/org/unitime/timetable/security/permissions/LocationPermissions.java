@@ -386,7 +386,7 @@ public class LocationPermissions {
 
 		@Override
 		public boolean check(UserContext user, Department source) {
-			return permissionDepartment.check(user, source);
+			return permissionDepartment.check(user, source) && !Building.findAll(source.getSessionId()).isEmpty();
 		}
 
 		@Override
