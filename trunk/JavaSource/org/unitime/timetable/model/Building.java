@@ -85,7 +85,7 @@ public class Building extends BaseBuilding implements Comparable {
     	Building b = (Building)o;
     	int cmp = getAbbreviation().compareTo(b.getAbbreviation());
     	if (cmp!=0) return cmp;
-    	return getUniqueId().compareTo(b.getUniqueId());
+    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(b.getUniqueId() == null ? -1 : b.getUniqueId());
     }
     
     /**

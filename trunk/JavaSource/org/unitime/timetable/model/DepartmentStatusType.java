@@ -129,7 +129,7 @@ public class DepartmentStatusType extends BaseDepartmentStatusType implements Co
         DepartmentStatusType t = (DepartmentStatusType) o;
         int cmp = getOrd().compareTo(t.getOrd());
         if (cmp != 0) return cmp;
-        return getUniqueId().compareTo(t.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(t.getUniqueId() == null ? -1 : t.getUniqueId());
 	}
 	
 	public boolean can(int operation) {

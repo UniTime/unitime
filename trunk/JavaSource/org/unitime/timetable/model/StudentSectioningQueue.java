@@ -85,7 +85,7 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 	public int compareTo(StudentSectioningQueue q) {
 		int cmp = getTimeStamp().compareTo(q.getTimeStamp());
 		if (cmp != 0) return cmp;
-		return getUniqueId().compareTo(q.getUniqueId());
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(q.getUniqueId() == null ? -1 : q.getUniqueId());
 	}
 	
 	protected static void addItem(org.hibernate.Session hibSession, UserContext user, Long sessionId, Type type, Collection<Long> ids) {

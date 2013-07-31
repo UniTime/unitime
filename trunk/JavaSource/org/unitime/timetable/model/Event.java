@@ -137,7 +137,7 @@ public abstract class Event extends BaseEvent implements Comparable<Event> {
 	public int compareTo (Event e) {
 		if (getEventName()!=e.getEventName()) {
 			return getEventName().compareTo(e.getEventName());
-		} else return getUniqueId().compareTo(e.getUniqueId());
+		} else return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(e.getUniqueId() == null ? -1 : e.getUniqueId());
 	}
 
 	public static List findAll() {
