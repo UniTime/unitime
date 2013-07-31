@@ -131,7 +131,7 @@ public class Department extends BaseDepartment implements Comparable<Department>
         		getAbbreviation() == null ? "" : getAbbreviation(),
         		d.getAbbreviation() == null ? "" : d.getAbbreviation());
         if (cmp!=0) return cmp;
-		return getUniqueId().compareTo(d.getUniqueId()); 
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(d.getUniqueId() == null ? -1 : d.getUniqueId()); 
 	}
 
 	public String htmlLabel(){

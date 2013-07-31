@@ -64,7 +64,7 @@ public class EventNote extends BaseEventNote implements Comparable<EventNote> {
 	public int compareTo(EventNote n) {
 	    int cmp = getTimeStamp().compareTo(n.getTimeStamp());
 	    if (cmp!=0) return cmp;
-	    return getUniqueId().compareTo(n.getUniqueId());
+	    return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(n.getUniqueId() == null ? -1 : n.getUniqueId());
 	}
 	
 	public void setMeetingCollection(Collection meetings) {

@@ -45,7 +45,7 @@ public class SolverParameter extends BaseSolverParameter implements Comparable {
         SolverParameter p = (SolverParameter)o;
         int cmp = getDefinition().compareTo(p.getDefinition());
         if (cmp!=0) return cmp;
-        return getUniqueId().compareTo(p.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
     }
 
 }

@@ -58,6 +58,6 @@ public class Curriculum extends BaseCurriculum implements Comparable<Curriculum>
     public int compareTo(Curriculum c) {
     	int cmp = getAbbv().compareToIgnoreCase(c.getAbbv());
     	if (cmp != 0) return cmp;
-    	return getUniqueId().compareTo(c.getUniqueId());
+    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(c.getUniqueId() == null ? -1 : c.getUniqueId());
     }
 }

@@ -37,7 +37,7 @@ public class RoomFeatureType extends BaseRoomFeatureType implements Comparable<R
 		int cmp = getLabel().compareTo(t.getLabel());
 		if (cmp != 0)
 			return cmp;
-		return getUniqueId().compareTo(t.getUniqueId());
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(t.getUniqueId() == null ? -1 : t.getUniqueId());
 	}
 	
 	public static boolean hasFeatureTypes(Long sessionId) {

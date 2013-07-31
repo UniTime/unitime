@@ -107,7 +107,7 @@ public class AcademicSessionInfo implements Comparable<AcademicSessionInfo>, Ser
 		if (cmp != 0) return cmp;
 		cmp = getCampus().compareToIgnoreCase(a.getCampus());
 		if (cmp != 0) return cmp;
-		return getUniqueId().compareTo(a.getUniqueId());
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(a.getUniqueId() == null ? -1 : a.getUniqueId());
 	}
 	
 	public String toString() {

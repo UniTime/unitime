@@ -125,7 +125,7 @@ public class SolverGroup extends BaseSolverGroup implements Comparable, Qualifia
     	SolverGroup sg = (SolverGroup)o;
     	int cmp = getName().compareTo(sg.getName());
     	if (cmp!=0) return cmp;
-    	return getUniqueId().compareTo(sg.getUniqueId());
+    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(sg.getUniqueId() == null ? -1 : sg.getUniqueId());
     }
     
     public Solution getCommittedSolution() {

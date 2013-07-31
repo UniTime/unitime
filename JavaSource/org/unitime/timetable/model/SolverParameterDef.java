@@ -133,6 +133,6 @@ public class SolverParameterDef extends BaseSolverParameterDef implements Compar
         SolverParameterDef p = (SolverParameterDef)o;
         int cmp = getOrder().compareTo(p.getOrder());
         if (cmp!=0) return cmp;
-        return getUniqueId().compareTo(p.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
     }
 }

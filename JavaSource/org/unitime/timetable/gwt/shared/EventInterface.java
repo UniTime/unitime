@@ -1259,7 +1259,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public int compareTo(RelatedObjectInterface o) {
 			int cmp = toString().compareTo(o.toString());
 			if (cmp != 0) return cmp;
-			return getUniqueId().compareTo(o.getUniqueId());
+			return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(o.getUniqueId() == null ? -1 : o.getUniqueId());
 		}
     }
     

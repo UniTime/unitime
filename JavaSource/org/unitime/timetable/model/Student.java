@@ -190,7 +190,7 @@ public class Student extends BaseStudent implements Comparable<Student> {
     public int compareTo(Student student) {
         int cmp = getName(DepartmentalInstructor.sNameFormatLastFist).compareTo(student.getName(DepartmentalInstructor.sNameFormatLastFist));
         if (cmp!=0) return cmp;
-        return getUniqueId().compareTo(student.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(student.getUniqueId() == null ? -1 : student.getUniqueId());
     }
     
     public static Hashtable<Long,Set<Long>> findConflictingStudents(Long classId, int startSlot, int length, Vector<Date> dates) {
