@@ -89,7 +89,7 @@ public class CourseInfo implements Comparable<CourseInfo> {
 		if (cmp!=0) return cmp;
 		cmp = (getTitle() == null ? "" : getTitle()).compareToIgnoreCase(c.getTitle() == null ? "" : c.getTitle());
 		if (cmp!=0) return cmp;
-		return getUniqueId().compareTo(c.getUniqueId());
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(c.getUniqueId() == null ? -1 : c.getUniqueId());
 	}
 	
 	public boolean matchCourseName(String queryInLowerCase) {

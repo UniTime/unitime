@@ -496,7 +496,7 @@ public class Session extends BaseSession implements Comparable, Qualifiable {
 		cmp = getSessionBeginDateTime().compareTo(s.getSessionBeginDateTime());
 		if (cmp!=0) return cmp;
 		
-		return getUniqueId().compareTo(s.getUniqueId());
+		return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(s.getUniqueId() == null ? -1 : s.getUniqueId());
 	}
 
 	public DatePattern getDefaultDatePatternNotNull() {

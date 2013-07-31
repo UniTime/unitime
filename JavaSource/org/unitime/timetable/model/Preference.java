@@ -79,7 +79,7 @@ public abstract class Preference extends BasePreference implements Comparable {
         if (this.getUniqueId()==null || p.getUniqueId()==null)
         	return -1;
 
-        return getUniqueId().compareTo(p.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(p.getUniqueId() == null ? -1 : p.getUniqueId());
 	}
 	
 	public boolean appliesTo(PreferenceGroup group) {

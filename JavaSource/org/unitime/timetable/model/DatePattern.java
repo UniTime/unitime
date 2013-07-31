@@ -546,7 +546,7 @@ public class DatePattern extends BaseDatePattern implements Comparable {
     	}
     	cmp = getName().compareTo(dp.getName());
     	if (cmp!=0) return cmp;
-    	return getUniqueId().compareTo(dp.getUniqueId());
+    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(dp.getUniqueId() == null ? -1 : dp.getUniqueId());
     }
 	
 	public Object clone() {

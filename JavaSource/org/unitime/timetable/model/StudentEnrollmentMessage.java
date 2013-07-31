@@ -47,6 +47,6 @@ public class StudentEnrollmentMessage extends BaseStudentEnrollmentMessage imple
         if (cmp!=0) return cmp;
         cmp = getOrder().compareTo(m.getOrder());
         if (cmp!=0) return cmp;
-        return getUniqueId().compareTo(m.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(m.getUniqueId() == null ? -1 : m.getUniqueId());
     }
 }

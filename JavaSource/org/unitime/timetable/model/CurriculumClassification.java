@@ -45,6 +45,6 @@ public class CurriculumClassification extends BaseCurriculumClassification imple
 	        return getOrd().compareTo(cc.getOrd());
 	    int cmp = getName().compareToIgnoreCase(cc.getName());
 	    if (cmp!=0) return cmp;
-	    return getUniqueId().compareTo(cc.getUniqueId());
+	    return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(cc.getUniqueId() == null ? -1 : cc.getUniqueId());
 	}
 }

@@ -372,6 +372,6 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
     	if (cmp!=0) return cmp;
     	cmp = getCourseNbr().compareTo(co.getCourseNbr());
     	if (cmp!=0) return cmp;
-    	return getUniqueId().compareTo(co.getUniqueId());
+    	return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(co.getUniqueId() == null ? -1 : co.getUniqueId());
     }
 }

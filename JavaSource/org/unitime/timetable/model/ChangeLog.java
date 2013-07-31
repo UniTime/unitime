@@ -306,7 +306,7 @@ public class ChangeLog extends BaseChangeLog implements Comparable {
         ChangeLog chl = (ChangeLog)obj;
         int cmp = getTimeStamp().compareTo(chl.getTimeStamp());
         if (cmp!=0) return cmp;
-        return getUniqueId().compareTo(chl.getUniqueId());
+        return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(chl.getUniqueId() == null ? -1 : chl.getUniqueId());
     }
     
     public static ChangeLog findLastChange(Object object) {

@@ -43,7 +43,7 @@ public class CurriculumCourseGroup extends BaseCurriculumCourseGroup implements 
 	public int compareTo(CurriculumCourseGroup c) {
 	    //if (getOrd()!=null && c.getOrd()!=null && !getOrd().equals(c.getOrd())) return getOrd().compareTo(c.getOrd());
 	    if (getName().equals(c.getName())) return getName().compareTo(c.getName());
-	    return getUniqueId().compareTo(c.getUniqueId());
+	    return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(c.getUniqueId() == null ? -1 : c.getUniqueId());
 	}
 	
 }

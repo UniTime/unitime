@@ -94,7 +94,7 @@ public abstract class Location extends BaseLocation implements Comparable {
 				
 			} else return -1; //all the rest after
 		} else {
-			return getUniqueId().compareTo(((Location)o).getUniqueId());
+			return (getUniqueId() == null ? new Long(-1) : getUniqueId()).compareTo(((Location)o).getUniqueId() == null ? -1 : ((Location)o).getUniqueId());
 		}
 	}
 	
