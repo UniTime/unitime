@@ -124,12 +124,51 @@
 	<script language="JavaScript">blEnd('dispRoomFilter');blStartCollapsed('dispRoomFilter');</script>
 		<br/>
 	<script language="JavaScript">blEndCollapsed('dispRoomFilter');</script>
+</html:form>
+<logic:messagesPresent>
 	<table border='0' cellspacing="0" cellpadding="3" width="100%">
 		<tr><td valign="top" align="center">
-			<html:errors />			
+			<html:errors />
+		</td></tr>
+		<tr><td>
+			<tt:section-title/>
+		</td></tr>
+		<tr><td valign="middle" align="right">
+			<TABLE align="right" cellspacing="0" cellpadding="2" class="FormWithNoPadding">
+				<TR>
+					<sec:authorize access="((#roomListForm.deptCodeX == 'All' or #roomListForm.deptCodeX matches 'Exam[0-9]*') and hasPermission(null, 'Department', 'AddRoom')) or hasPermission(#roomListForm.deptCodeX, 'Department', 'AddRoom')">
+						<TD nowrap>
+							<html:form action="editRoom" styleClass="FormWithNoPadding">
+								<html:hidden property="op" value="Add"/>
+								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="R" titleKey="title.addRoom">
+									<bean:message key="button.addRoom" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</sec:authorize>
+					<sec:authorize access="((#roomListForm.deptCodeX == 'All' or #roomListForm.deptCodeX matches 'Exam[0-9]*') and hasPermission(null, 'Department', 'AddNonUnivLocation')) or hasPermission(#roomListForm.deptCodeX, 'Department', 'AddNonUnivLocation')">
+						<TD nowrap>
+							<html:form action="addNonUnivLocation" styleClass="FormWithNoPadding">
+								<html:submit onclick="displayLoading();" styleClass="btn" accesskey="N" titleKey="title.addNonUnivLocation">
+									<bean:message key="button.addNonUnivLocation" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</sec:authorize>
+					<sec:authorize access="((#roomListForm.deptCodeX == 'All' or #roomListForm.deptCodeX matches 'Exam[0-9]*') and hasPermission(null, 'Department', 'AddSpecialUseRoom')) or hasPermission(#roomListForm.deptCodeX, 'Department', 'AddSpecialUseRoom')">
+						<TD nowrap>
+							<html:form action="addSpecialUseRoom" styleClass="FormWithNoPadding">
+								<html:submit property="op" onclick="displayLoading();" styleClass="btn" accesskey="S" titleKey="title.addSpecialUseRoom">
+									<bean:message key="button.addSpecialUseRoom" />
+								</html:submit>
+							</html:form>
+						</TD>
+					</sec:authorize>
+				</TR>
+			</TABLE>
 		</td></tr>
 	</table>
-</html:form>
+</logic:messagesPresent>
 
 <logic:notEmpty name="body2">
 	<script language="javascript">displayLoading();</script>
