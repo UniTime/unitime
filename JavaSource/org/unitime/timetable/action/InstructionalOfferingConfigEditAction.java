@@ -854,11 +854,6 @@ public class InstructionalOfferingConfigEditAction extends Action {
             return;
 
 		RoomGroup rg = RoomGroup.getGlobalDefaultRoomGroup(sessionContext.getUser().getCurrentAcademicSessionId());
-		if (rg!=null)
-		    Debug.debug("Loaded default global room group: " + rg.getName());
-		else
-		    Debug.error("Default Global room group not found ");
-
 
 		InstrOfferingConfig ioc = null;
 		InstructionalOffering io = null;
