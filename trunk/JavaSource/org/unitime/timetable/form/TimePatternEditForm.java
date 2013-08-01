@@ -106,6 +106,15 @@ public class TimePatternEditForm extends ActionForm {
 		}
 		if (getTypeInt()<0)
 			errors.add("type", new ActionMessage("errors.required", ""));
+		if (getBreakTime() == null || getBreakTime().isEmpty()) {
+			setBreakTime("0");
+		} else {
+			try {
+				Integer.parseInt(getBreakTime());
+			} catch (NumberFormatException e) {
+				errors.add("breakTime", new ActionMessage("errors.numeric", ""));
+			}
+		}
 
 		try {
 			str2dayCodes(iDayCodes,"\n, ");
