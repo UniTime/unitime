@@ -16,6 +16,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
  --%>
+<%@page import="org.unitime.timetable.defaults.UserProperty"%>
 <%@ page language="java" autoFlush="true"%>
 <%@ page import="org.unitime.timetable.model.dao.SolverParameterGroupDAO" %>
 <%@ page import="org.hibernate.criterion.Order" %>
@@ -38,6 +39,7 @@
 <tiles:importAttribute />
 
 <tt:confirm name="confirmDelete">The solver configuration will be deleted. Continue?</tt:confirm>
+<tt:session-context/>
 
 	<html:form action="/solverSettings">
 <%  try {
@@ -238,22 +240,16 @@
 <%
  				} else if ("timepref".equals(def.getType())) { 
 %>
+					<div id='tp_disable_<%=def.getUniqueId()%>' style='display:<%=frm.getUseDefault(def.getUniqueId()).booleanValue()?"block":"none"%>'>
+						<img border="0"
+							onmouseover="showGwtInstructorAvailabilityHint(this, '<%=def.getDefault()%>');"
+							onmouseout="hideGwtInstructorAvailabilityHint();"
+							src="<%="pattern?v=" + RequiredTimeTable.getTimeGridVertical(sessionContext.getUser()) + "&amp;s=" + UserProperty.GridSize.get(sessionContext.getUser()) + "&amp;p=" + def.getDefault()%>">
+					</div>
+
 					</TD></TR><TR><TD colspan='2'>
-<%
-					RequiredTimeTable rtt = TimePattern.getDefaultRequiredTimeTable();
-					rtt.getModel().setPreferences(frm.getParameter(def.getUniqueId()));
-					((TimePatternModel)rtt.getModel()).setAllowHard(false);
-%>
 						<div id='tp_enable_<%=def.getUniqueId()%>' style='display:<%=frm.getUseDefault(def.getUniqueId()).booleanValue()?"none":"block"%>'>
-<%
-					rtt.setName("tp_"+def.getUniqueId());
-					out.print(rtt.print(true,false));
-%>
-						</div><div id='tp_disable_<%=def.getUniqueId()%>' style='display:<%=frm.getUseDefault(def.getUniqueId()).booleanValue()?"block":"none"%>'>
-<%					
-					rtt.setName("tp_def_"+def.getUniqueId());
-					out.print(rtt.print(false,false,false,false));
-%>
+							<div id='UniTimeGWT:InstructorAvailability'><html:hidden property='<%="parameter["+def.getUniqueId()+"]"%>'/></div>
 						</div>
   				&nbsp;<html:errors property='<%="parameter["+def.getUniqueId()+"]"%>'/>
 <%
