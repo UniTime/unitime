@@ -28,6 +28,20 @@
 	<version>3.4.${build.number}</version>
 	<release-date>${build.date}</release-date>
 	<category>
+		<title>Bug Fixes</title>
+		<item>
+			<name>Add / Edit Time Pattern</name>
+			<description>
+				<line>Added validation for break time. Empty break time is taken as zero number of minutes. Fixes issue 10.</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.4.269</version>
+	<release-date>Thu, 1 Aug 2013</release-date>
+	<category>
 		<title>Technology Update</title>
 		<item>
 			<name>Event Management</name>
