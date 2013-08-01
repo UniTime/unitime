@@ -35,6 +35,16 @@
 				<line>Fixed NullPointerException when a distribution preference is removed from the model (during the purge of invalid values).</line>
 			</description>
 		</item>
+		<title>Data Exchange</title>
+		<item>
+			<name>Student XML import, Student Course Requests XML import</name>
+			<description>
+				<line>Changed inverse for the Student.academicAreaClassifications relation to true.
+					<line>This fixes the "ORA-02290: check constraint (TIMETABLE.NN_ACAD_AREA_STUDENT) violated" error thrown on an update of a student's &lt;academic area, classification&gt; pair.</line>
+					<line>The inverse=false generates an update query setting student id to null which Oracle does not take as a hint to delete the row (see OneToManyPersister.generateDeleteRowString for more details)</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
