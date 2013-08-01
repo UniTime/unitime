@@ -41,6 +41,13 @@
 				<line>Fixed ORA-00904 when Student Course Requests are being loaded as student course demands with Committed student conflicts set to Compute.</line>
 			</description>
 		</item>
+		<item>
+			<name>Edit Solver Configuration</name>
+			<description>
+				<line>Use the new GWT-based time preference grid for Time Preferences parameter.</line>
+				<line>This fixes the issue introduced in revision 3863 (the old grid was displayed with 5 minute long increments).</line>
+			</description>
+		</item>
 	</category>
 </release>
 

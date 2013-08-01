@@ -71,11 +71,15 @@ public class InstructorAvailabilityBackend implements GwtRpcImplementation<Instr
 		model.setNoteEditable(false);
 		
 		if (request.getInstructorId() != null) {
-			DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(request.getInstructorId());
-			for (Preference pref: instructor.getPreferences()) {
-				if (pref instanceof TimePref) {
-					model.setPattern(((TimePref) pref).getPreference());
-					break;
+			if (request.getInstructorId().length() > 200) {
+				model.setPattern(request.getInstructorId());
+			} else {
+				DepartmentalInstructor instructor = DepartmentalInstructorDAO.getInstance().get(Long.valueOf(request.getInstructorId()));
+				for (Preference pref: instructor.getPreferences()) {
+					if (pref instanceof TimePref) {
+						model.setPattern(((TimePref) pref).getPreference());
+						break;
+					}
 				}
 			}
 		}

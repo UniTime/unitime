@@ -331,11 +331,14 @@ public class TimePatternModel implements RequiredTimeTableModel {
     	try {
     		if (isExactTime()) {
     			iPref = pref;
-    		} if (pref != null && pref.length() == 336 && iDays.length * iMinutes.length == 2016) {
+    		} if (pref != null && pref.length() <= 336 && iDays.length * iMinutes.length == 2016) {
     			boolean req = pref.indexOf('R') >= 0;
     			for (int i=0; i<iDays.length; i++)
     				for (int j=0; j<iMinutes.length; j++) {
-    					char ch = pref.charAt(48 * i + j / 6);
+    					char ch = '2';
+    					try {
+    						ch = pref.charAt(48 * i + j / 6);
+    					} catch (ArrayIndexOutOfBoundsException e) {}
     					iPreferences[i][j] = PreferenceLevel.char2prolog(req ? ch == 'R' ? '2' : 'P' : ch);
     				}
     		} else {
