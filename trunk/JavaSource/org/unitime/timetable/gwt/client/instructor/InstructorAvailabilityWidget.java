@@ -60,14 +60,14 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 	}
 	
 	public static class InstructorAvailabilityRequest implements GwtRpcRequest<InstructorAvailabilityModel> {
-		private Long iInstructorId;
+		private String iInstructorId;
 		
 		public InstructorAvailabilityRequest() {}
 		
-		public Long getInstructorId() { return iInstructorId; }
-		public void setInstructorId(Long instructorId) { iInstructorId = instructorId; }
+		public String getInstructorId() { return iInstructorId; }
+		public void setInstructorId(String instructorId) { iInstructorId = instructorId; }
 
-		public static InstructorAvailabilityRequest load(Long instructorId) {
+		public static InstructorAvailabilityRequest load(String instructorId) {
 			InstructorAvailabilityRequest request = new InstructorAvailabilityRequest();
 			request.setInstructorId(instructorId);
 			return request;
@@ -75,7 +75,7 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 		
 		@Override
 		public String toString() {
-			return iInstructorId == null ? "NULL" : String.valueOf(iInstructorId);
+			return iInstructorId == null ? "NULL" : iInstructorId;
 		}
 	};
 	
@@ -116,21 +116,26 @@ public class InstructorAvailabilityWidget extends RoomSharingWidget {
 				}
 			return pattern;
 		}
-		
 		public void setPattern(String pattern) {
-			if (pattern.length() == 336) {
+			if (pattern.length() <= 336) {
 				boolean req = pattern.indexOf('R') >= 0;
 				for (int d = 0; d < 7; d++)
 					for (int s = 0; s < 288; s++) {
-						char ch = pattern.charAt(48 * d + s / 6);
+						char ch = '2';
+						try {
+							ch = pattern.charAt(48 * d + s / 6);
+						} catch (IndexOutOfBoundsException e) {}
 						setOption(d, s, char2id(req ? ch == 'R' ? '2' : 'P' : ch));
 					}
 			} else {
 				for (int d = 0; d < 7; d++)
 					for (int s = 0; s < 288; s++) {
-						char ch = pattern.charAt(288 * d + s);
+						char ch = '2';
+						try {
+							ch = pattern.charAt(288 * d + s);
+						} catch (IndexOutOfBoundsException e) {}
 						setOption(d, s, char2id(ch));
-					}						
+					}
 			}
 		}
 		

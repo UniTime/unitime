@@ -34,7 +34,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class InstructorAvailabilityHint {
 	private static RoomSharingWidget sSharing;
-	private static long sLastInstructorId = -1;
+	private static String sLastInstructorId = null;
 	private static GwtRpcServiceAsync RPC = GWT.create(GwtRpcService.class);
 	
 	public static RoomSharingWidget content(RoomInterface.RoomSharingModel model) {
@@ -46,10 +46,10 @@ public class InstructorAvailabilityHint {
 	
 	/** Never use from GWT code */
 	public static void _showInstructorSharingHint(JavaScriptObject source, String instructorId) {
-		showHint((Element) source.cast(), Long.valueOf(instructorId));
+		showHint((Element) source.cast(), instructorId);
 	}
 	
-	public static void showHint(final Element relativeObject, final long instructorId) {
+	public static void showHint(final Element relativeObject, final String instructorId) {
 		sLastInstructorId = instructorId;
 		RPC.execute(InstructorAvailabilityRequest.load(instructorId), new AsyncCallback<InstructorAvailabilityModel>() {
 			@Override
@@ -58,7 +58,7 @@ public class InstructorAvailabilityHint {
 			
 			@Override
 			public void onSuccess(InstructorAvailabilityModel result) {
-				if (instructorId == sLastInstructorId && result != null)
+				if (instructorId.equals(sLastInstructorId) && result != null)
 					GwtHint.showHint(relativeObject, content(result));
 			}
 		});

@@ -20,7 +20,6 @@
 package org.unitime.timetable.form;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,9 +34,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.unitime.timetable.model.SolverParameterDef;
 import org.unitime.timetable.model.SolverPredefinedSetting;
-import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.dao.SolverParameterDefDAO;
-import org.unitime.timetable.webutil.RequiredTimeTable;
 
 
 /** 
@@ -52,7 +49,6 @@ public class SolverSettingsForm extends ActionForm {
 	private String appearance;
 	private Map params;
 	private Map useDefaults;
-	private HashSet timePrefs;
 
 	public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
 		ActionErrors errors = new ActionErrors();
@@ -72,18 +68,6 @@ public class SolverSettingsForm extends ActionForm {
         
         if(appearance==null || appearance.trim().length()==0)
             errors.add("appearance", new ActionMessage("errors.required", ""));
-        
-        for (Iterator i=timePrefs.iterator();i.hasNext();) {
-        	Long id = (Long)i.next();
-        	RequiredTimeTable rtt = TimePattern.getDefaultRequiredTimeTable();
-        	if (getUseDefault(id).booleanValue()) {
-            	rtt.setName("tp_def_"+id);
-        	} else {
-        		rtt.setName("tp_"+id);
-        	}
-        	rtt.update(request);
-        	setParameter(id, rtt.getModel().getPreferences());
-        }
 
         for (Iterator i=params.entrySet().iterator();i.hasNext();) {
         	Map.Entry entry = (Map.Entry)i.next();
@@ -107,7 +91,6 @@ public class SolverSettingsForm extends ActionForm {
 		op=null; uniqueId=null;
 		params = new Hashtable();
 		useDefaults = new Hashtable();
-		timePrefs = new HashSet();
 		for (Iterator i=(new SolverParameterDefDAO()).findAll().iterator();i.hasNext();) {
 			SolverParameterDef def = (SolverParameterDef)i.next();
 			if (!def.isVisible().booleanValue()) continue;
@@ -115,8 +98,6 @@ public class SolverSettingsForm extends ActionForm {
 				params.put(def.getUniqueId(),"false");
 			else
 				params.put(def.getUniqueId(),"");
-			if ("timepref".equals(def.getType()))
-				timePrefs.add(def.getUniqueId());
 			useDefaults.put(def.getUniqueId(),Boolean.FALSE);
 		}
 	}

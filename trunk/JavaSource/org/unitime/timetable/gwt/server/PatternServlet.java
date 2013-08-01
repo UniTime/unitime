@@ -85,9 +85,13 @@ public class PatternServlet extends HttpServlet {
 			rtt = new RequiredTimeTable(new TimePattern().getTimePatternModel());
 		}
 		if (rtt != null) {
-			if (request.getParameter("s") != null)
-				rtt.getModel().setDefaultSelection(Integer.parseInt(request.getParameter("s")));
-			if (request.getParameter("p") != null)
+			if (request.getParameter("s") != null) {
+				try {
+					rtt.getModel().setDefaultSelection(Integer.parseInt(request.getParameter("s")));
+				} catch (NumberFormatException e) {
+					rtt.getModel().setDefaultSelection(request.getParameter("s"));
+				}
+			} if (request.getParameter("p") != null)
 				rtt.getModel().setPreferences(request.getParameter("p"));
 			
 			response.setContentType("image/png");
