@@ -97,8 +97,8 @@ public class StudentCourseRequests implements StudentCourseDemands {
 		if (iStudentRequests == null) {
 			iStudentRequests = new Hashtable<Long, Set<WeightedCourseOffering>>();
 			for (Object[] o : (List<Object[]>)iHibSession.createQuery(
-					"select distinct r.courseDemand.student.uniqueId, r.courseOffering, r.courseDemand.priority, r.courseDemand.alternative, r.order " +
-					"from CourseRequest r where r.courseDemand.student.session.uniqueId = :sessionId")
+					"select distinct d.student.uniqueId, c, d.priority, d.alternative, r.order " +
+					"from CourseRequest r inner join r.courseOffering c inner join r.courseDemand d where d.student.session.uniqueId = :sessionId")
 					.setLong("sessionId", iSessionId).setCacheable(true).list()) {
 				Long sid = (Long)o[0];
 				CourseOffering co = (CourseOffering)o[1];

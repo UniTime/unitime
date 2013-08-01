@@ -35,6 +35,12 @@
 				<line>Added validation for break time. Empty break time is taken as zero number of minutes. Fixes issue 10.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Student Course Demands</name>
+			<description>
+				<line>Fixed ORA-00904 when Student Course Requests are being loaded as student course demands with Committed student conflicts set to Compute.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
