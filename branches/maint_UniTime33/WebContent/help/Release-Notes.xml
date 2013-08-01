@@ -28,6 +28,20 @@
 	<version>3.3.@build.number@</version>
 	<release-date>@release.date@</release-date>
 	<category>
+		<title>Course Timetabling</title>
+		<item>
+			<name>Database Loader</name>
+			<description>
+				<line>Fixed NullPointerException when a distribution preference is removed from the model (during the purge of invalid values).</line>
+			</description>
+		</item>
+	</category>
+</release>
+
+<release>
+	<version>3.3.215</version>
+	<release-date>Wed, 22 May 2013</release-date>
+	<category>
 		<title>Data Exchange</title>
 		<item>
 			<name>Student Course Request XML Import</name>
