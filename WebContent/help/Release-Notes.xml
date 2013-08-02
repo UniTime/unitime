@@ -30,6 +30,23 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Academic Session Roll Forward</name>
+			<description>
+				<line>Rooms roll forward: set event status of the newly copied rooms to blank.
+					<line>This means that the event status of all the rooms in the new academic session will default to what is set on the departments for each room type (which is already reset to No Event Management).</line>
+					<line>This is to prevent the rooms from being immediately available to event management.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+</release>	
+
+<release>
+	<version>3.4.270</version>
+	<release-date>Fri, 2 Aug 2013</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Add / Edit Time Pattern</name>
 			<description>
 				<line>Added validation for break time. Empty break time is taken as zero number of minutes. Fixes issue 10.</line>

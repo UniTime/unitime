@@ -68,7 +68,7 @@ public class NonUniversityLocation extends BaseNonUniversityLocation {
 		l.setExamCapacity(getExamCapacity());
 		l.setExamTypes(new HashSet<ExamType>(getExamTypes()));
 		l.setRoomType(getRoomType());
-		l.setEventStatus(getEventStatus());
+		l.setEventStatus(null);
 		l.setBreakTime(getBreakTime());
 		l.setNote(getNote());
 		l.setEventAvailability(getEventAvailability());
