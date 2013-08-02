@@ -364,7 +364,7 @@ public class SessionRollForward {
 					toRoom.setRoomNumber(toExternalRoom.getRoomNumber());
 					toRoom.setRoomType(toExternalRoom.getRoomType());
 					toRoom.setExamTypes(new HashSet<ExamType>(fromRoom.getExamTypes()));
-					toRoom.setEventStatus(fromRoom.getEventStatus());
+					toRoom.setEventStatus(null);
 					toRoom.setBreakTime(fromRoom.getBreakTime());
 					toRoom.setNote(fromRoom.getNote());
 					toRoom.setEventAvailability(fromRoom.getEventAvailability());
