@@ -38,6 +38,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>User Context: Current Academic Session</name>
+			<description>
+				<line>On the first date of an academic session, a wrong default academic session may be selected for a user. This has been fixed.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
