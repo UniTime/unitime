@@ -22,8 +22,10 @@ package org.unitime.timetable.onlinesectioning.custom.purdue;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,11 +35,12 @@ import org.unitime.timetable.gwt.resources.StudentSectioningMessages;
 import org.unitime.timetable.gwt.shared.SectioningException;
 import org.unitime.timetable.onlinesectioning.AcademicSessionInfo;
 import org.unitime.timetable.onlinesectioning.custom.CourseDetailsProvider;
+import org.unitime.timetable.onlinesectioning.custom.CourseUrlProvider;
 
 /**
  * @author Tomas Muller
  */
-public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
+public class PurdueCourseDetailsProvider implements CourseDetailsProvider, CourseUrlProvider {
 	private static StudentSectioningMessages MSG = Localization.create(StudentSectioningMessages.class);
 	private static Logger sLog = Logger.getLogger(PurdueCourseDetailsProvider.class);
 
@@ -65,27 +68,33 @@ public class PurdueCourseDetailsProvider implements CourseDetailsProvider {
 			return String.valueOf(Integer.parseInt(session.getYear()) + 1);
 		return session.getYear();
 	}
-
+	
 	@Override
-	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
+	public URL getCourseUrl(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
 		try {
 			if (courseNbr.length() > 5) courseNbr = courseNbr.substring(0, 5);
-			URL url = new URL(sUrl
+			return new URL(sUrl
 				.replace(":year", getYear(session))
 				.replace(":term", getTerm(session))
 				.replace(":initiative", session.getCampus())
-				.replace(":subject", subject)
+				.replace(":subject", URLEncoder.encode(subject, "utf-8"))
 				.replace(":courseNbr", courseNbr));
-			return getDetails(url);
 		} catch (MalformedURLException e) {
+			sLog.error(e.getMessage(), e);
+			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("course detail url is wrong"), e);
+		} catch (UnsupportedEncodingException e) {
 			sLog.error(e.getMessage(), e);
 			throw new SectioningException(MSG.exceptionCustomCourseDetailsFailed("course detail url is wrong"), e);
 		}
 	}
+	@Override
+	public String getDetails(AcademicSessionInfo session, String subject, String courseNbr) throws SectioningException {
+		return getDetails(getCourseUrl(session, subject, courseNbr));
+	}
 	
 	protected String getDetails(URL courseUrl) throws SectioningException {
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(courseUrl.openStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(courseUrl.openStream(), "utf-8"));
 			StringBuffer content = new StringBuffer();
 			String line;
 			while ((line = in.readLine()) != null)

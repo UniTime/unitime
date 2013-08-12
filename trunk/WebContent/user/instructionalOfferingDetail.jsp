@@ -237,6 +237,9 @@
 							<TD align="left" class="WebTableHeader"><loc:message name="columnDemandsFrom"/></TD>
 						</logic:equal>
 						<TD align="left" class="WebTableHeader"><loc:message name="columnConsent"/></TD>
+						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
+						<TD align="left" class="WebTableHeader"><loc:message name="columnCourseCatalog"/></TD>
+						</tt:hasProperty>
 						<TD align="center" class="WebTableHeader">&nbsp;</TD>
 					</TR>
 				<logic:iterate id="co" name="instructionalOfferingDetailForm" property="courseOfferings" type="org.unitime.timetable.model.CourseOffering">
@@ -279,6 +282,11 @@
 								<bean:write name="consentType" property="abbv"/>
 							</logic:notEmpty>
 						</TD>
+						<tt:hasProperty name="unitime.custom.CourseUrlProvider">
+							<TD class="BottomBorderGray">
+								<span name='UniTimeGWT:CourseLink' style="display: none;"><bean:write name="co" property="uniqueId"/></span>
+							</TD>
+						</tt:hasProperty>
 						<TD align="right" class="BottomBorderGray">
 							<sec:authorize access="hasPermission(#co, 'EditCourseOffering') or hasPermission(#co, 'EditCourseOfferingNote') or hasPermission(#co, 'EditCourseOfferingCoordinators')">
 								<html:form action="/courseOfferingEdit" styleClass="FormWithNoPadding">

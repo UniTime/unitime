@@ -35,6 +35,9 @@ import com.google.gwt.core.client.GWT.UncaughtExceptionHandler;
 import com.google.gwt.core.client.RunAsyncCallback;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.NodeList;
+import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -98,6 +101,21 @@ public class Client implements EntryPoint {
 						initComponentAsync(p, c);
 					}
 				});
+			}
+			if (p == null && c.isMultiple()) {
+				NodeList<Element> x = getElementsByName(c.id());
+				if (x != null && x.getLength() > 0)
+					for (int i = 0; i < x.getLength(); i++) {
+						Element e = x.getItem(i);
+						e.setId(DOM.createUniqueId());
+						final RootPanel q = RootPanel.get(e.getId());
+						Scheduler.get().scheduleDeferred(new ScheduledCommand() {
+							@Override
+							public void execute() {
+								initComponentAsync(q, c);
+							}
+						});
+					}
 			}
 		}
 	}
@@ -184,4 +202,8 @@ public class Client implements EntryPoint {
 			}
 		}
 	}
+	
+	public final native static NodeList<Element> getElementsByName(String name) /*-{
+    	return $doc.getElementsByName(name);
+  	}-*/;
 }

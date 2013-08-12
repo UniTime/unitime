@@ -50,7 +50,7 @@
 	<html:hidden property="courseOfferingId"/>
 	<html:hidden property="add"/>
 	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
-		<html:hidden property="subjectAreaId"/>
+		<html:hidden property="subjectAreaId" styleId="subjectId"/>
 	</logic:notEqual>
 	<html:hidden property="isControl"/>
 	<html:hidden property="courseName"/>
@@ -143,19 +143,25 @@
 					onfocus="setUp();"
 					onkeypress="return selectSearch(event, this);"
 					onkeydown="return checkKey(event, this);"
-					onchange="submit();" >
+					onchange="submit();"
+					styleId="subjectId"
+					>
 					<html:options collection="subjects" property="uniqueId" labelProperty="subjectAreaAbbreviation" />
 				</html:select>
 			</TD>
 		</TR>
 	</logic:equal>
+	<logic:notEqual name="courseOfferingEditForm" property="add" value="true">
+		<html:hidden property="subjectAreaId"/>
+	</logic:notEqual>
+	
 		
 	<sec:authorize access="(not #courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')) or 
 						(#courseOfferingEditForm.add and hasPermission(#courseOfferingEditForm.subjectAreaId, 'SubjectArea', 'AddCourseOffering'))">
 		<TR>
 			<TD><loc:message name="filterCourseNumber"/> </TD>
 			<TD>
-				<html:text property="courseNbr" size="10" maxlength="10" />
+				<html:text property="courseNbr" size="10" maxlength="10" styleId="course" />
 			</TD>
 		</TR>
 		<TR>
@@ -386,6 +392,14 @@
 			</TD>
 		</TR>
 	</logic:notEmpty>
+	<tt:hasProperty name="unitime.custom.CourseUrlProvider">
+		<TR>
+			<TD><loc:message name="propertyCourseCatalog"/> </TD>
+			<TD>
+				<span id='UniTimeGWT:CourseLink' style="display: none;">subjectId,course</span>
+			</TD>
+		</TR>
+	</tt:hasProperty>
 
 	<logic:equal name="courseOfferingEditForm" property="isControl" value="true">
 		<sec:authorize access="(not #courseOfferingEditForm.add and (hasPermission(#courseOfferingEditForm.courseOfferingId, 'CourseOffering', 'EditCourseOffering')
