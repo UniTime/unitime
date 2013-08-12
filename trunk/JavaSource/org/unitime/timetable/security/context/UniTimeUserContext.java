@@ -253,7 +253,7 @@ public class UniTimeUserContext extends AbstractUserContext {
 			Date end = cal.getTime();
 
             
-            if (currentActive == null && begin.before(today) && today.before(end))
+            if (currentActive == null && !begin.after(today) && today.before(end))
             	currentActive = session;
             
             if (currentActive != null && firstFutureSession == null && !currentActive.equals(session))
@@ -285,7 +285,7 @@ public class UniTimeUserContext extends AbstractUserContext {
         	if (session.getStatusType() == null || session.getStatusType().isTestSession()) continue;
         	
         	Date begin = session.getEventBeginDate();
-        	if (today.after(begin)) return session;
+        	if (!begin.after(today)) return session;
         	
         	lastNoTest = session;
         }
