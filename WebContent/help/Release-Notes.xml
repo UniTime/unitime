@@ -39,6 +39,27 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Course Catalog Links</name>
+			<description>
+				<line>Affected pages: Add/Edit Course Offering, Instructional Offering Detail, Instructional Offering Configuration</line>
+				<line>Added a course URL provider interface (similar to the course details provider that is already used in student scheduling).
+					<line>To be configured by unitime.custom.CourseUrlProvider (contains name of the class that implements the new CourseUrlProvider interface).</line>
+					<line>Unlike the old interface (given by tmtbl.catalogLink.lookup.class property), a course offering does not need to exist in UniTime and it can be used for all the courses of a cross-list (not just the controlling one).</line>
+					<line>PurdueCourseDetailsProvider extended to provide course URLs as well.</line>
+				</line>
+				<line>Add/Edit Course Offering: course catalog link changes based on the current selection of subject area and course number.</line>
+				<line>Instructional Offering Detail: each course (of a cross-list) can have a course catalog link (there is a new Catalog column added in the table of courses).</line>
+				<line>If the course details provider is configured as well (given by unitime.custom.CourseDetailsProvider property), course details are shown as a mouse over tooltip of a course catalog link.</line>
+				<line>Clicking on the course catalog link automatically opens the course catalog in a new tab / window.</line>
+				<line>Backwards compatibility: the old lookup (given by tmtbl.catalogLink.lookup.class property) can still be used.
+					<line>To display catalog links, either the old tmtbl.catalogLink.lookup.class property or the new unitime.custom.CourseUrlProvider property should be configured (but not both).</line>
+				</line>
+			</description>
+		</item>
+	</category>
 </release>	
 
 <release>
