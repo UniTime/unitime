@@ -96,8 +96,8 @@
 <html:form action="/instructionalOfferingConfigEdit">
 	<html:hidden property="configId" />
 	<html:hidden property="instrOfferingId" />
-	<html:hidden property="subjectArea" />
-	<html:hidden property="courseNumber" />
+	<html:hidden property="subjectArea" styleId="subjectId"/>
+	<html:hidden property="courseNumber" styleId="course"/>
 	<html:hidden property="notOffered" />
 	<html:hidden property="configCount" />
 	<INPUT type="hidden" name="id" value = "">
@@ -235,6 +235,14 @@
 			</TD>
 		</TR>
 		</logic:notEmpty>
+		<tt:hasProperty name="unitime.custom.CourseUrlProvider">
+			<TR>
+				<TD><loc:message name="propertyCourseCatalog"/> </TD>
+				<TD>
+					<span id='UniTimeGWT:CourseLink' style="display: none;">-<bean:write name="instructionalOfferingConfigEditForm" property="instrOfferingId"/></span>
+				</TD>
+			</TR>
+		</tt:hasProperty>
 
 		<TR>
 			<TD colspan="2">

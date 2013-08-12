@@ -2848,4 +2848,7 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("{0} Examinations for {1}")
 	String dialogExaminations(String type, String student);
+	
+	@DefaultMessage("View")
+	String courseCatalogLink();
 }

@@ -365,6 +365,9 @@ public interface CourseMessages extends Messages {
 
 	@DefaultMessage("Consent")
 	String columnConsent();
+	
+	@DefaultMessage("Catalog")
+	String columnCourseCatalog();
 
 	@DefaultMessage("Schedule Print Note")
 	String columnSchedulePrintNote();
