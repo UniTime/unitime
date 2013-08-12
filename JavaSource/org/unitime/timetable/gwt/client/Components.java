@@ -30,6 +30,7 @@ import org.unitime.timetable.gwt.client.page.UniTimeVersion;
 import org.unitime.timetable.gwt.client.reservations.ReservationTable;
 import org.unitime.timetable.gwt.client.rooms.RoomNoteChanges;
 import org.unitime.timetable.gwt.client.rooms.RoomSharingWidget;
+import org.unitime.timetable.gwt.client.sectioning.CourseDetailsWidget;
 import org.unitime.timetable.gwt.client.sectioning.EnrollmentTable;
 import org.unitime.timetable.gwt.client.sectioning.ExaminationEnrollmentTable;
 
@@ -60,14 +61,20 @@ public enum Components {
 	roomEventAvailability("UniTimeGWT:RoomEventAvailabilityWidget", new ComponentFactory() { public void insert(RootPanel panel) { new RoomSharingWidget(false).insert(panel, true); } }),
 	roomNoteChanges("UniTimeGWT:RoomNoteChanges", new ComponentFactory() { public void insert(RootPanel panel) { new RoomNoteChanges().insert(panel); } }),
 	instructorAvailability("UniTimeGWT:InstructorAvailability", new ComponentFactory() { public void insert(RootPanel panel) { new InstructorAvailabilityWidget().insert(panel); } }),
+	courseLink("UniTimeGWT:CourseLink", true, new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(true).insert(panel); } }),
+	courseDetails("UniTimeGWT:CourseDetails", new ComponentFactory() { public void insert(RootPanel panel) { new CourseDetailsWidget(false).insert(panel); } }),
 	;
+	
 	
 	private String iId;
 	private ComponentFactory iFactory;
+	private boolean iMultiple = false;
 	
 	Components(String id, ComponentFactory factory) { iId = id; iFactory = factory; }
+	Components(String id, boolean multiple, ComponentFactory factory) { iId = id; iFactory = factory; iMultiple = multiple; }
 	public String id() { return iId; }
 	public void insert(RootPanel panel) { iFactory.insert(panel); }
+	public boolean isMultiple() { return iMultiple; }
 	
 	public interface ComponentFactory {
 		void insert(RootPanel panel);

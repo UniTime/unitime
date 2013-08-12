@@ -3136,3 +3136,9 @@ unitime-RoomSharingWidget .legend .blank {
 	margin-left: 5px;
 	top: -0.1em;
 }
+
+.unitime-CourseDetailsPopup {
+	width: 400px;
+	max-height: 400px;
+	overflow: hidden;
+}
