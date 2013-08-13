@@ -161,7 +161,7 @@ public class InstructionalOfferingShowSearchAction extends Action {
 		        if(doSearch(request, frm)) {
 					BackTracker.markForBack(
 							request, 
-							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaId="+frm.getSubjectAreaIds()[0]+"&courseNbr="+frm.getCourseNbr(), 
+							"instructionalOfferingSearch.do?doit=Search&loadInstrFilter=1&subjectAreaIds="+frm.getSubjectAreaIds()[0]+"&courseNbr="+frm.getCourseNbr(), 
 							"Instructional Offerings ("+
 								(frm.getSubjectAreaAbbv()==null?((new SubjectAreaDAO()).get(new Long(frm.getSubjectAreaIds()[0]))).getSubjectAreaAbbreviation():frm.getSubjectAreaAbbv())+
 								(frm.getCourseNbr()==null || frm.getCourseNbr().length()==0?"":" "+frm.getCourseNbr())+
