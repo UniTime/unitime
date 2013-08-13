@@ -716,6 +716,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		if (r != null && hide(r, clazz)) continue;
 				    		
 							event.setEnrollment(clazz.getEnrollment());
+							event.setMaxCapacity(clazz.getClassLimit());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
 									ContactInterface instructor = new ContactInterface();
@@ -811,6 +812,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setEnrollment(xe.getExam().countStudents());
+				    		event.setMaxCapacity(xe.getExam().getSize());
 			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 								ContactInterface instructor = new ContactInterface();
 								instructor.setFirstName(i.getFirstName());
@@ -879,8 +881,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 				    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 				    		event.setRequiredAttendance(ce.isReqAttendance());
 							int enrl = 0;
+							int cap = 0;
 							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 								enrl += owner.countStudents();
+								cap += owner.getLimit();
 			    				TreeSet<CourseOffering> courses = new TreeSet<CourseOffering>();
 			    				if (owner.getOwnerType() == ExamOwner.sOwnerTypeCourse || request.getResourceType() == ResourceType.ROOM) {
 			    					courses.add(owner.getCourse());
@@ -931,6 +935,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 			    				}
 			    			}
 							event.setEnrollment(enrl);
+							event.setMaxCapacity(cap);
 				    	}
 				    	
 				    	if (event.isCanView()) {
@@ -1296,6 +1301,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    		ClassEvent ce = ClassEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		Class_ clazz = ce.getClazz();
 									event.setEnrollment(clazz.getEnrollment());
+									event.setMaxCapacity(clazz.getClassLimit());
 						    		if (clazz.getDisplayInstructor()) {
 						    			for (ClassInstructor i: clazz.getClassInstructors()) {
 											ContactInterface instructor = new ContactInterface();
@@ -1381,6 +1387,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    	} else if (Event.sEventTypeFinalExam == m.getEvent().getEventType() || Event.sEventTypeMidtermExam == m.getEvent().getEventType()) {
 						    		ExamEvent xe = ExamEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setEnrollment(xe.getExam().countStudents());
+						    		event.setMaxCapacity(xe.getExam().getSize());
 					    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 										ContactInterface instructor = new ContactInterface();
 										instructor.setFirstName(i.getFirstName());
@@ -1424,9 +1431,10 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 						    	} else if (Event.sEventTypeCourse == m.getEvent().getEventType()) {
 						    		CourseEvent ce = CourseEventDAO.getInstance().get(m.getEvent().getUniqueId(), hibSession);
 						    		event.setRequiredAttendance(ce.isReqAttendance());
-									int enrl = 0;
+									int enrl = 0, cap = 0;
 									for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 										enrl += owner.countStudents();
+										cap += owner.getLimit();
 										/* courses: */
 										for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 											/*
@@ -1457,6 +1465,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 					    				}
 									}
 									event.setEnrollment(enrl);
+									event.setMaxCapacity(cap);
 						    	}
 					    		if (note != null && !note.isEmpty()) {
 					    			NoteInterface n = new NoteInterface();
@@ -1552,7 +1561,7 @@ public class EventLookupBackend extends EventAction<EventLookupRpcRequest, GwtRp
 								event.setName(clazz.getClassLabel(hibSession));
 								event.setType(EventInterface.EventType.Class);
 								event.setCanView(false);
-								event.setMaxCapacity(clazz.getExpectedCapacity());
+								event.setMaxCapacity(clazz.getClassLimit());
 								event.setEnrollment(clazz.getEnrollment());
 								if (clazz.getDisplayInstructor()) {
 									for (ClassInstructor i: clazz.getClassInstructors()) {
