@@ -95,9 +95,6 @@ public class ClassShowSearchAction extends Action {
 		ClassSearchAction.setupGeneralFormFilters(sessionContext, classListForm);
 		ClassSearchAction.setupClassListSpecificFormFilters(sessionContext, classListForm);
 
-    	if (!sessionContext.hasPermission(Right.CourseTimetabling))
-    		classListForm.setTimetable(null);
-    	
     	if (!sessionContext.hasPermission(Right.Examinations))
     		classListForm.setExams(null);
 

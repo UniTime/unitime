@@ -154,10 +154,7 @@ public class ClassSearchAction extends LocalizedLookupDispatchAction {
 	    	sessionContext.getUser().setProperty("ClassList.sortByKeepSubparts", String.valueOf(classListForm.getSortByKeepSubparts()));
 	    	sessionContext.getUser().setProperty("ClassList.showCrossListedClasses", String.valueOf(classListForm.getShowCrossListedClasses()));
 	    }
-    	
-    	if (!sessionContext.hasPermission(Right.CourseTimetabling))
-    		classListForm.setTimetable(null);
-    	
+    	    	
     	if (!sessionContext.hasPermission(Right.Examinations))
     		classListForm.setExams(null);
     	

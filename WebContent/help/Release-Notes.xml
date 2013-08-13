@@ -44,6 +44,12 @@
 				<line>On the first date of an academic session, a wrong default academic session may be selected for a user. This has been fixed.</line>
 			</description>
 		</item>
+		<item>
+			<name>Classes</name>
+			<description>
+				<line>Fixed a permission glitch which prevented schedule deputies to see a committed timetable when the course timetabling is finished (academic session does not allow for course timetabling).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
