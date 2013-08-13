@@ -50,6 +50,14 @@
 				<line>Fixed a permission glitch which prevented schedule deputies to see a committed timetable when the course timetabling is finished (academic session does not allow for course timetabling).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offerings</name>
+			<description>
+				<line>Fixed return URL when only one subject area is available and none is selected.
+					<line>The issue was causing the Subject Area is required error message (when going back from an Instructional Offering Detail page) and clearing all toggles of the Filter section.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
