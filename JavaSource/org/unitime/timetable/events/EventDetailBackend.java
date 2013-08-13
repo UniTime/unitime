@@ -134,6 +134,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		
     		Class_ clazz = ce.getClazz();
     		event.setEnrollment(clazz.getEnrollment());
+    		event.setMaxCapacity(clazz.getClassLimit());
     		Set<Long> addedInstructorIds = new HashSet<Long>();
     		if (clazz.getDisplayInstructor()) {
     			for (ClassInstructor i: clazz.getClassInstructors()) {
@@ -239,6 +240,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     	} else if (Event.sEventTypeFinalExam == e.getEventType() || Event.sEventTypeMidtermExam == e.getEventType()) {
     		ExamEvent xe = (e instanceof ExamEvent ? (ExamEvent)e : ExamEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		event.setEnrollment(xe.getExam().countStudents());
+    		event.setMaxCapacity(xe.getExam().getSize());
     		Set<Long> addedInstructorIds = new HashSet<Long>();
     		for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 				ContactInterface instructor = new ContactInterface();
@@ -376,7 +378,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
     		CourseEvent ce = (e instanceof CourseEvent ? (CourseEvent)e : CourseEventDAO.getInstance().get(e.getUniqueId(), hibSession));
     		
     		event.setRequiredAttendance(ce.isReqAttendance());
-    		int enrl = 0;
+    		int enrl = 0, limit = 0;
     		Set<Long> addedInstructorIds = new HashSet<Long>();
 			for (RelatedCourseInfo owner: new TreeSet<RelatedCourseInfo>(ce.getRelatedCourses())) {
 				RelatedObjectInterface related = new RelatedObjectInterface();
@@ -454,6 +456,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 				event.addRelatedObject(related);
 				enrl += owner.countStudents();
+				limit += owner.getLimit();
 	    		for (DepartmentalInstructor c: owner.getCourse().getInstructionalOffering().getCoordinators()) {
 	    			if (addedInstructorIds.add(c.getUniqueId())) {
 		    			ContactInterface coordinator = new ContactInterface();
@@ -466,7 +469,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				}
 			}
 			event.setEnrollment(enrl);
-    		
+			event.setMaxCapacity(limit);
     	}
     	
     	// overlaps
@@ -605,6 +608,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    		ClassEvent ce = ClassEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
 				    		Class_ clazz = ce.getClazz();
 							confEvent.setEnrollment(clazz.getEnrollment());
+							confEvent.setMaxCapacity(clazz.getClassLimit());
 				    		if (clazz.getDisplayInstructor()) {
 				    			for (ClassInstructor i: clazz.getClassInstructors()) {
 									ContactInterface instructor = new ContactInterface();
@@ -637,6 +641,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    	} else if (Event.sEventTypeFinalExam == overlap.getEvent().getEventType() || Event.sEventTypeMidtermExam == overlap.getEvent().getEventType()) {
 				    		ExamEvent xe = ExamEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
 				    		confEvent.setEnrollment(xe.getExam().countStudents());
+				    		confEvent.setMaxCapacity(xe.getExam().getSize());
 			    			for (DepartmentalInstructor i: xe.getExam().getInstructors()) {
 								ContactInterface instructor = new ContactInterface();
 								instructor.setFirstName(i.getFirstName());
@@ -660,9 +665,10 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 				    	} else if (Event.sEventTypeCourse == overlap.getEvent().getEventType()) {
 				    		CourseEvent ce = CourseEventDAO.getInstance().get(overlap.getEvent().getUniqueId(), hibSession);
 				    		confEvent.setRequiredAttendance(ce.isReqAttendance());
-							int enrl = 0;
+							int enrl = 0, limit = 0;
 							for (RelatedCourseInfo owner: ce.getRelatedCourses()) {
 								enrl += owner.countStudents();
+								limit += owner.getLimit();
 								for(CourseOffering course: owner.getCourse().getInstructionalOffering().getCourseOfferings()) {
 				    				String courseName = owner.getCourse().getCourseName();
 				    				String label = owner.getLabel();
@@ -675,6 +681,7 @@ public class EventDetailBackend extends EventAction<EventDetailRpcRequest, Event
 			    				}
 							}
 							confEvent.setEnrollment(enrl);
+							confEvent.setMaxCapacity(limit);
 				    	}
 					}
 					confEvent.addMeeting(conflict);

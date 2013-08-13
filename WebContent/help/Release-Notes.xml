@@ -65,6 +65,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Management: Event Limit</name>
+			<description>
+				<line>Class events: show the appropriate class limit (instead of what is set on the event itself).</line>
+				<line>Examination events: show the appropriate examination size (instead of what is set on the event itself).</line>
+				<line>Course-related events: show the sum of the limits of the related objects (instead of what is set on the event itself).</line>
+			</description>
+		</item>
 	</category>
 </release>	
 
