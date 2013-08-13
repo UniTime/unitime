@@ -269,7 +269,7 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
 			} catch (BeansException e) {}
 			String url = ApplicationProperties.getProperty("tmtbl.lookup.ldap");
 			if (url == null) return null;
-			sLog.warn("Failed to located bean ldapPeopleLookupTemplate, creating the template manually.");
+			sLog.warn("Failed to locate bean ldapPeopleLookupTemplate, creating the template manually.");
 			LdapContextSource source = new LdapContextSource();
 			source.setUrl(url);
 			source.setBase(ApplicationProperties.getProperty("tmtbl.lookup.ldap.name", ""));
@@ -306,9 +306,9 @@ public class PeopleLookupBackend implements GwtRpcImplementation<PersonInterface
             for (StringTokenizer stk = new StringTokenizer(query," ,"); stk.hasMoreTokens();) {
                 String t = stk.nextToken().replace('_', '*').replace('%', '*');
                 if (filter.length()==0)
-                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t);
+                    filter = ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t);
                 else
-                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t)+")";
+                    filter = "(&"+filter+ApplicationProperties.getProperty("tmtbl.lookup.ldap.query", "(|(|(sn=%*)(uid=%))(givenName=%*)(cn=* %* *)("+ApplicationProperties.getProperty("tmtbl.lookup.ldap.email","mail")+"=%*))").replaceAll("%", t)+")";
             }
             getLdapTemplate().search("", filter, getSearchControls(), new AttributesMapper() {
         		protected String getAttribute(Attributes attrs, String name) {
