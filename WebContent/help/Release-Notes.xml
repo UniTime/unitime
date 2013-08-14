@@ -64,6 +64,12 @@
 				<line>Main contact email address verification has been added.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Event Filter</name>
+			<description>
+				<line>Added ability to lookup events by the requestor's email address (for users with Event Lookup Contact or Event Lookup Schedule permission). Just enter the email address in the Requested By field or start typing the email address in to get suggestions.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
