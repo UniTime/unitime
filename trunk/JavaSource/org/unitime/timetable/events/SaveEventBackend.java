@@ -104,6 +104,14 @@ public class SaveEventBackend extends EventAction<SaveEventRpcRequest, SaveOrApp
 			context.checkPermission(request.getEvent().getId(), "Event", Right.EventEdit);
 		}
 		
+		// Check main contact email
+		if (request.getEvent().hasContact() && request.getEvent().getContact().hasEmail()) {
+			try {
+				new InternetAddress(request.getEvent().getContact().getEmail(), true);
+			} catch (AddressException e) {
+				throw new GwtRpcException(MESSAGES.badEmailAddress(request.getEvent().getContact().getEmail(), e.getMessage()));
+			}
+		}
 		// Check additional emails
 		if (request.getEvent().hasEmail()) {
 			String suffix = ApplicationProperties.getProperty("unitime.email.event.suffix", null);
