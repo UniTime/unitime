@@ -58,6 +58,12 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Add / Edit Event</name>
+			<description>
+				<line>Main contact email address verification has been added.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
