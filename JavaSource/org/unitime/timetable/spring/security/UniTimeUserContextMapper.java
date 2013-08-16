@@ -38,7 +38,6 @@ public class UniTimeUserContextMapper implements UserDetailsContextMapper {
 			return new UniTimeUserContext(username, username, ctx.getStringAttribute("cn"), null);
 		} else {
 			String id = authorities.iterator().next().getAuthority();
-			if (id.startsWith("ROLE_")) id = id.substring("ROLE_".length());
 			return new UniTimeUserContext(id, username, ctx.getStringAttribute("cn"), null);
 		}
     }

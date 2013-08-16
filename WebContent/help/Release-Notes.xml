@@ -70,6 +70,14 @@
 				<line>Added ability to lookup events by the requestor's email address (for users with Event Lookup Contact or Event Lookup Schedule permission). Just enter the email address in the Requested By field or start typing the email address in to get suggestions.</line>
 			</description>
 		</item>
+		<item>
+			<name>LDAP Authentication</name>
+			<description>
+				<line>Added ability to control whether the role (used as the user's external unique id in UniTime) will be converted to upper case.
+					<line>There is a new application property unitime.authentication.ldap.group-convert-to-uppercase (defaults to false, no conversion).</line>
+				</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
