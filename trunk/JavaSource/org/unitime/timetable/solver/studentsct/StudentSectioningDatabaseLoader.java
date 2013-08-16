@@ -67,6 +67,7 @@ import org.unitime.timetable.model.RoomPref;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
@@ -1085,6 +1086,8 @@ public class StudentSectioningDatabaseLoader extends StudentSectioningLoader {
         }
         for (StudentGroup g: s.getGroups())
         	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
+        for (StudentAccomodation a: s.getAccomodations())
+        	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation()));
     }
     
 	public static BitSet getFreeTimeBitSet(Session session) {

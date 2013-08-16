@@ -283,7 +283,7 @@
 				<TD valign="top"><loc:message name="propertyInstructors"/></TD>
 				<TD>
 					<table cellspacing="0" cellpadding="3">
-						<tr><td width='250'><i>Name</i></td><td width='80'><i>Share</i></td><td width='80'><i>Check Conflicts</i></td></tr>
+						<tr><td width='250'><i>Name</i></td><td width='80'><i>Share</i></td><td width='100'><i>Check Conflicts</i></td></tr>
 						<logic:iterate name="<%=frmName%>" property="instructors" id="instructor" indexId="ctr">
 							<tr onmouseover="this.style.backgroundColor='rgb(223,231,242)';this.style.cursor='hand';this.style.cursor='pointer';" 
 								onmouseout="this.style.backgroundColor='transparent';"
@@ -314,6 +314,15 @@
 							</tr>
 						</logic:iterate>
 					</table>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
+		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+			<TR>
+				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
 				</TD>
 			</TR>
 		</logic:notEmpty>

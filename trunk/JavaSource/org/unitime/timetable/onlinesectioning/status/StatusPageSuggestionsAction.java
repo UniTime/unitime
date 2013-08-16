@@ -48,6 +48,7 @@ import org.unitime.timetable.model.CourseOffering;
 import org.unitime.timetable.model.Department;
 import org.unitime.timetable.model.OfferingConsentType;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningStatus;
 import org.unitime.timetable.model.SubjectArea;
@@ -58,6 +59,7 @@ import org.unitime.timetable.model.dao.CourseOfferingDAO;
 import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.OfferingConsentTypeDAO;
 import org.unitime.timetable.model.dao.OnlineSectioningLogDAO;
+import org.unitime.timetable.model.dao.StudentAccomodationDAO;
 import org.unitime.timetable.model.dao.StudentGroupDAO;
 import org.unitime.timetable.model.dao.StudentSectioningStatusDAO;
 import org.unitime.timetable.model.dao.SubjectAreaDAO;
@@ -220,6 +222,19 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					ret.add(new String[] {
 							m.group(1) + (group.getGroupAbbreviation().indexOf(' ') >= 0 ? "\"" + group.getGroupAbbreviation() + "\"" : group.getGroupAbbreviation()),
 							group.getGroupAbbreviation() + " - " + group.getGroupName()
+					});
+				}
+			}
+			m = Pattern.compile("^(.*\\W?accommodation:[ ]?)(\\w*)$", Pattern.CASE_INSENSITIVE).matcher(iQuery);
+			if (m.matches()) {
+				for (StudentAccomodation accommodation: (List<StudentAccomodation>)StudentAccomodationDAO.getInstance().getSession().createQuery(
+						"select a from StudentAccomodation a where " +
+						" (lower(a.abbreviation) like :q || '%'" + (m.group(2).length() <= 2 ? "" : " or lower(a.name) like '%' || :q || '%'") + ")" +
+						" and a.session.uniqueId = :sessionId order by a.abbreviation"
+						).setString("q", m.group(2).toLowerCase()).setLong("sessionId", sessionId).setMaxResults(iLimit).list()) {
+					ret.add(new String[] {
+							m.group(1) + (accommodation.getAbbreviation().indexOf(' ') >= 0 ? "\"" + accommodation.getAbbreviation() + "\"" : accommodation.getAbbreviation()),
+							accommodation.getAbbreviation() + " - " + accommodation.getName()
 					});
 				}
 			}
@@ -475,6 +490,11 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 							(m.group(1) == null ? "" : m.group(1)) + "group:",
 							"group: Student Group"
 					});
+				if ("accommodation".startsWith(m.group(2).toLowerCase()))
+					ret.add(new String[] {
+							(m.group(1) == null ? "" : m.group(1)) + "accommodation:",
+							"accommodation: Student Accommodation"
+					});
 				if ("major".startsWith(m.group(2).toLowerCase()))
 					ret.add(new String[] {
 							(m.group(1) == null ? "" : m.group(1)) + "major:",
@@ -619,9 +639,13 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 			
 			if ("group".equals(attr)) {
 				for (AcademicAreaCode ac: student().getMinors())
-					if (eq(ac.getCode(), term)) return true;
+					if (!"A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
 			}
-
+			
+			if ("accommodation".equals(attr)) {
+				for (AcademicAreaCode ac: student().getMinors())
+					if ("A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+			}
 			
 			if ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
@@ -890,7 +914,10 @@ public class StatusPageSuggestionsAction implements OnlineSectioningAction<List<
 					if (eq(ac.getCode(), term)) return true;
 			} else if ("group".equals(attr)) {
 				for (AcademicAreaCode ac: student().getMinors())
-					if (eq(ac.getCode(), term)) return true;
+					if (!"A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
+			} else if ("accommodation".equals(attr)) {
+				for (AcademicAreaCode ac: student().getMinors())
+					if ("A".equals(ac.getArea()) && eq(ac.getCode(), term)) return true;
 			} else if  ("student".equals(attr)) {
 				return has(student().getName(), term) || eq(student().getExternalId(), term) || eq(student().getName(), term);
 			} else if ("registered".equals(attr)) {

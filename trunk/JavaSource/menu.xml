@@ -607,6 +607,12 @@
 					<hasPermission name="StudentGroups"/>
 				</condition>
 			</item>
+			<item name="Student Accommodations" page="admin" type="gwt">
+				<parameter name="type">accommodations</parameter>
+				<condition>
+					<hasPermission name="StudentAccommodations"/>
+				</condition>
+			</item>
 			<separator/>
 			<item name="Examination Periods" page="examPeriodEdit.do">
 				<condition>

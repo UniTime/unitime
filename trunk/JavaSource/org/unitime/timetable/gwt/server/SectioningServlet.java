@@ -78,6 +78,7 @@ import org.unitime.timetable.model.Roles;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.Session;
 import org.unitime.timetable.model.Student;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentSectioningStatus;
@@ -1159,6 +1160,9 @@ public class SectioningServlet implements SectioningService {
 							for (StudentGroup g: enrollment.getStudent().getGroups()) {
 								st.addGroup(g.getGroupAbbreviation());
 							}
+			    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
+			    				st.addAccommodation(a.getAbbreviation());
+			    			}
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
 							e.setEnrolledDate(enrollment.getTimestamp());
@@ -1250,6 +1254,9 @@ public class SectioningServlet implements SectioningService {
 							for (StudentGroup g: request.getCourseDemand().getStudent().getGroups()) {
 								st.addGroup(g.getGroupAbbreviation());
 							}
+			    			for (StudentAccomodation a: request.getCourseDemand().getStudent().getAccomodations()) {
+			    				st.addAccommodation(a.getAbbreviation());
+			    			}
 							e = new ClassAssignmentInterface.Enrollment();
 							e.setStudent(st);
 							CourseAssignment c = new CourseAssignment();

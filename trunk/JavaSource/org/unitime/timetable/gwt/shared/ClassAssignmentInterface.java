@@ -467,7 +467,7 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 		private static final long serialVersionUID = 1L;
 		private long iId;
 		private String iExternalId, iName;
-		private List<String> iArea, iClassification, iMajor, iGroup;
+		private List<String> iArea, iClassification, iMajor, iGroup, iAccommodation;
 		
 		public Student() {}
 
@@ -543,6 +543,22 @@ public class ClassAssignmentInterface implements IsSerializable, Serializable {
 			iGroup.add(group);
 		}
 		public List<String> getGroups() { return iGroup; }
+		
+		public boolean hasAccommodation() { return iAccommodation != null && !iAccommodation.isEmpty(); }
+		public String getAccommodation(String delim) { 
+			if (iAccommodation == null) return "";
+			String ret = "";
+			for (String accommodation: iAccommodation) {
+				if (!ret.isEmpty()) ret += delim;
+				ret += accommodation;
+			}
+			return ret;
+		}
+		public void addAccommodation(String accommodation) {
+			if (iAccommodation == null) iAccommodation = new ArrayList<String>();
+			iAccommodation.add(accommodation);
+		}
+		public List<String> getAccommodations() { return iAccommodation; }
 		
 		public String getCurriculum(String delim) {
 			if (!hasArea()) return "";

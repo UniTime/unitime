@@ -114,7 +114,10 @@ public class FindStudentInfoAction implements OnlineSectioningAction<List<Studen
 							st.addMajor(ac.getCode());
 						}
 						for (AcademicAreaCode ac: request.getStudent().getMinors()) {
-							st.addGroup(ac.getCode());
+							if ("A".equals(ac.getArea()))
+								st.addAccommodation(ac.getCode());
+							else
+								st.addGroup(ac.getCode());
 						}
 						int tEnrl = 0, tWait = 0, tRes = 0, tConNeed = 0, tReq = 0;
 						for (Request r: request.getStudent().getRequests()) {

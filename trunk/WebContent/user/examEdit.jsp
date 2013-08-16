@@ -182,7 +182,16 @@
 				</table> 			
 		   	</TD>
 	   	</TR>
-
+		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+			<TR>
+				<TD valign="top">Student Accommodations:</TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+					<html:hidden property="accommodation"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+		
 		<TR>
 			<TD colspan="2" valign="middle">
 				<br>

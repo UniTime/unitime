@@ -128,7 +128,8 @@
         <set
             name="accomodations"
             table="student_to_acomodation"
-            inverse="false">
+            inverse="true"
+            lazy="true">
             <cache include="non-lazy" usage="read-write"/>
             <key column="student_id" foreign-key="fk_student_acomodation_accom"/>
             <many-to-many

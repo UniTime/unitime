@@ -402,6 +402,9 @@ public enum Right {
     StudentGroups(Session.class),
     StudentGroupEdit(Session.class),
     
+    StudentAccommodations(Session.class),
+    StudentAccommodationEdit(Session.class),
+    
     ExaminationPeriods(Session.class),
 
     DataExchange(Session.class),

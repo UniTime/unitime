@@ -59,6 +59,7 @@ import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SolverParameterDef;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.SubjectArea;
 import org.unitime.timetable.model.dao.Class_DAO;
 import org.unitime.timetable.model.dao.CourseOfferingDAO;
@@ -324,6 +325,7 @@ public class ExamEditAction extends PreferencesAction {
             frm.setPrintOffset(exam.getPrintOffset()==null || exam.getPrintOffset()==0?null:exam.getPrintOffset().toString());
             frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
             frm.setMaxNbrRooms(exam.getMaxNbrRooms());
+            frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));
             
             TreeSet instructors = new TreeSet(exam.getInstructors());
 

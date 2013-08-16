@@ -207,6 +207,14 @@
 			<TD colspan='2'> <bean:write name="<%=frmName%>" property="note" filter="false"/></TD>
 		</TR>
 		</logic:notEmpty>
+		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+			<TR>
+				<TD valign="top">Student Accommodations:</TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 
 		<TR>
 			<TD colspan="2" valign="middle">

@@ -52,6 +52,7 @@ import org.unitime.timetable.model.DistributionPref;
 import org.unitime.timetable.model.Location;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -267,6 +268,7 @@ public class ClassDetailAction extends PreferencesAction {
 	        frm.setCourseName(cco.getInstructionalOffering().getCourseName());
 	        frm.setCourseTitle(cco.getTitle());
 	        frm.setIsCrosslisted(new Boolean(cco.getInstructionalOffering().getCourseOfferings().size()>1));
+	        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 
 	        // Load from class
 		    frm.setExpectedCapacity(c.getExpectedCapacity());

@@ -58,6 +58,7 @@ import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Preference;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.TimePattern;
 import org.unitime.timetable.model.comparators.InstructorComparator;
 import org.unitime.timetable.model.dao.Class_DAO;
@@ -449,6 +450,7 @@ public class ClassEditAction extends PreferencesAction {
         frm.setManagingDept(managingDept.getUniqueId());
         frm.setManagingDeptLabel(managingDept.getManagingDeptLabel());
         frm.setUnlimitedEnroll(c.getSchedulingSubpart().getInstrOfferingConfig().isUnlimitedEnrollment());
+        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(c)));
 
         Class_ next = c.getNextClass(sessionContext, Right.ClassEdit);
         frm.setNextId(next==null?null:next.getUniqueId().toString());

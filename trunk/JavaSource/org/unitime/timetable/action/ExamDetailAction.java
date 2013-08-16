@@ -51,6 +51,7 @@ import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.ExamPeriod;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.dao.ExamDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
@@ -320,6 +321,7 @@ public class ExamDetailAction extends PreferencesAction {
         frm.setSeatingType(Exam.sSeatingTypes[exam.getSeatingType()]);
         frm.setMaxNbrRooms(exam.getMaxNbrRooms());
         frm.setExamType(exam.getExamType().getUniqueId());
+        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(exam)));
         
         TreeSet instructors = new TreeSet(exam.getInstructors());
 

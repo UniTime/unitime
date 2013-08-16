@@ -8959,4 +8959,16 @@
 			create index %SCHEMA%.idx_meeting_overlap on %SCHEMA%.meeting(meeting_date, start_period, stop_period, location_perm_id, approval_status)
 		</plsql>
 	</update>
+	<update version="127" date="16-Aug-2013" comment="Student Accommodations">
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentAccommodations'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentGroups'
+		</sql>
+		<sql>
+			insert into %SCHEMA%.rights (role_id, value)
+			select distinct r.role_id, 'StudentAccommodationEdit'
+			from %SCHEMA%.roles r, %SCHEMA%.rights g where g.role_id = r.role_id and g.value like 'StudentGroupEdit'
+		</sql>
+	</update>
 </dbupdate>
