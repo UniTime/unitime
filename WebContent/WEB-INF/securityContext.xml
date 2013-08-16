@@ -69,6 +69,30 @@
 			<beans:bean class="org.unitime.timetable.authenticate.jaas.LoginConfiguration"/>
 		</beans:property>
 	</beans:bean>
+		
+	<beans:bean id="ldapAuthProvider" class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
+				<beans:constructor-arg ref="unitimeLdapContextSource"/>
+				<beans:property name="userDnPatterns">
+					<beans:list>
+						<beans:value>${unitime.authentication.ldap.user-dn-pattern}</beans:value>
+					</beans:list>
+				</beans:property>
+			</beans:bean>
+		</beans:constructor-arg>
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
+				<beans:constructor-arg ref="unitimeLdapContextSource"/>
+				<beans:constructor-arg value="${unitime.authentication.ldap.group-search-base}"/>
+				<beans:property name="groupRoleAttribute" value="${unitime.authentication.ldap.group-role-attribute}"/>
+				<beans:property name="groupSearchFilter" value="${unitime.authentication.ldap.group-search-filter}"/>
+				<beans:property name="rolePrefix" value=""/>
+				<beans:property name="convertToUpperCase" value="${unitime.authentication.ldap.group-convert-to-uppercase}"/>
+			</beans:bean>
+		</beans:constructor-arg>
+		<beans:property name="userDetailsContextMapper" ref="unitimeUserContextMapper"/>
+	</beans:bean>
  	
 	<authentication-manager alias="authenticationManager">
 		<!-- Database Authentication -->
@@ -76,14 +100,7 @@
 			<password-encoder hash="md5" base64="true"/>
 		</authentication-provider>
 		<!-- LDAP Authentication -->
-		<ldap-authentication-provider
-			server-ref="unitimeLdapContextSource"
-			user-dn-pattern="${unitime.authentication.ldap.user-dn-pattern}"
-			group-search-base="${unitime.authentication.ldap.group-search-base}"
-			group-role-attribute="${unitime.authentication.ldap.group-role-attribute}"
-			group-search-filter="${unitime.authentication.ldap.group-search-filter}"
-			user-context-mapper-ref="unitimeUserContextMapper"
-		/>
+		<authentication-provider ref="ldapAuthProvider"/>
 		<!-- JAAS (Legacy) Authentication -->
 		<authentication-provider ref="jaasAuthProvider"/>
 	</authentication-manager>
