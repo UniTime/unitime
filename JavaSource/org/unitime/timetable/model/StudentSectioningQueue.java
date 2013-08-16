@@ -103,7 +103,6 @@ public class StudentSectioningQueue extends BaseStudentSectioningQueue implement
 			for (Long id: ids)
 				root.addElement("id").setText(id.toString());
 		}
-		System.out.println("CHANGE:" + root.asXML());
 		q.setMessage(d);
 		hibSession.save(q);
 	}
