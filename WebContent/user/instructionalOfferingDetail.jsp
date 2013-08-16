@@ -430,6 +430,14 @@
 			</TD>
 		</TR>
 		</logic:notEmpty>
+		<logic:notEmpty name="instructionalOfferingDetailForm" property="accommodation">
+			<TR>
+				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
+				<TD>
+					<bean:write name="instructionalOfferingDetailForm" property="accommodation" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
 		
 		<sec:authorize access="hasPermission(null, 'Session', 'CurriculumView')">
 		<TR>

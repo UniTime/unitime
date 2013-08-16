@@ -900,6 +900,9 @@ public interface StudentSectioningMessages extends Messages {
 	@DefaultMessage("Group")
 	String colGroup();
 	
+	@DefaultMessage("Accommodation")
+	String colAccommodation();
+	
 	@DefaultMessage("Send email...")
 	String sendStudentEmail();
 	

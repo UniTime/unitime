@@ -77,6 +77,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     private String coordinators;
     private String wkEnroll, wkChange, wkDrop;
     private String weekStartDayOfWeek;
+    private String accommodation;
 
 
     // --------------------------------------------------------- Classes
@@ -134,6 +135,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
         byReservationOnly = false; coordinators = null;
         wkEnroll = null; wkChange = null; wkDrop = null;
         weekStartDayOfWeek = null;
+        accommodation = null;
     }
     
     public List getCourseOfferings() {
@@ -339,4 +341,7 @@ public class InstructionalOfferingDetailForm extends ActionForm {
     		if (((CourseOffering)i.next()).getConsentType()!=null) return true;
     	return false;
     }
+    
+    public String getAccommodation() { return accommodation; }
+    public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
 }

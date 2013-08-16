@@ -59,5 +59,17 @@
             not-null="true"
             foreign-key="fk_student_accom_session"/>
 
+        <set
+            name="students"
+            table="student_to_acomodation"
+            lazy="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="accomodation_id" foreign-key="fk_student_acomodation_accom"/>
+            <many-to-many
+                class="Student"
+                column="student_id"
+                foreign-key="fk_student_acomodation_student"/>
+        </set>
+
     </class>
 </hibernate-mapping>

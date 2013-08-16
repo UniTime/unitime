@@ -1886,6 +1886,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event Room Availability")
 	String pageEventRoomAvailability();
 	
+	@DefaultMessage("Student Accommodation")
+	String pageStudentAccommodation();
+	
+	@DefaultMessage("Student Accommodations")
+	String pageStudentAccommodations();
+	
 	@DefaultMessage("N/A")
 	String itemNotApplicable();
 	
