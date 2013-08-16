@@ -79,6 +79,7 @@ import org.unitime.timetable.model.PosMajor;
 import org.unitime.timetable.model.PreferenceLevel;
 import org.unitime.timetable.model.SchedulingSubpart;
 import org.unitime.timetable.model.SectioningInfo;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.StudentGroupReservation;
@@ -395,6 +396,8 @@ public class ReloadAllData implements OnlineSectioningAction<Boolean> {
         }
         for (StudentGroup g: s.getGroups())
         	student.getMinors().add(new AcademicAreaCode("", g.getGroupAbbreviation()));
+        for (StudentAccomodation a: s.getAccomodations())
+        	student.getMinors().add(new AcademicAreaCode("A", a.getAbbreviation()));
         
         if (!"true".equals(ApplicationProperties.getProperty("unitime.enrollment.requests.save", "false"))) {
         	Date ts = new Date();

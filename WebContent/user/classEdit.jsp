@@ -359,6 +359,15 @@
 			</TD>
 		</TR>
 
+		<logic:notEmpty name="<%=frmName%>" property="accommodation">
+			<TR>
+				<TD valign="top"><loc:message name="propertyAccommodations"/></TD>
+				<TD>
+					<bean:write name="<%=frmName%>" property="accommodation" filter="false"/>
+				</TD>
+			</TR>
+		</logic:notEmpty>
+
 <%
 	if (request.getAttribute("Suggestions.assignmentInfo")!=null) {
 %>

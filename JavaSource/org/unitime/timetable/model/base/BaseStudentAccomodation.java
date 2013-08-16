@@ -20,8 +20,11 @@
 package org.unitime.timetable.model.base;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.unitime.timetable.model.Session;
+import org.unitime.timetable.model.Student;
 import org.unitime.timetable.model.StudentAccomodation;
 
 public abstract class BaseStudentAccomodation implements Serializable {
@@ -33,6 +36,7 @@ public abstract class BaseStudentAccomodation implements Serializable {
 	private String iExternalUniqueId;
 
 	private Session iSession;
+	private Set<Student> iStudents;
 
 	public static String PROP_UNIQUEID = "uniqueId";
 	public static String PROP_NAME = "name";
@@ -64,6 +68,13 @@ public abstract class BaseStudentAccomodation implements Serializable {
 
 	public Session getSession() { return iSession; }
 	public void setSession(Session session) { iSession = session; }
+
+	public Set<Student> getStudents() { return iStudents; }
+	public void setStudents(Set<Student> students) { iStudents = students; }
+	public void addTostudents(Student student) {
+		if (iStudents == null) iStudents = new HashSet<Student>();
+		iStudents.add(student);
+	}
 
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof StudentAccomodation)) return false;

@@ -78,6 +78,14 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Student Accommodations</name>
+			<description>
+				<line>Student Accommodations (Administration): Added page Student Accommodations where student accommodations / special needs can be managed (very much like with the Student Groups).</line>
+				<line>Instructional Offering Detail, Class Detail, Examination Detail, Event Detail: Enrollments table shows student accommodations, if there are any (column Accommodation is only visible if there is at least one student with an accommodation).</line>
+				<line>Instructional Offering Detail, Class Detail, Examination Detail: If there are any student accommodations, short overview table (accommodation name plus the number of students in the offering / class / exam) is also present at the bottom of the top most section.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>

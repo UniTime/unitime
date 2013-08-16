@@ -270,6 +270,9 @@ public interface CourseMessages extends Messages {
 	@DefaultMessage("Ignore Too Far:")
 	String propertyIgnoreTooFar();
 	
+	@DefaultMessage("Student Accommodations:")
+	String propertyAccommodations();
+	
 	@DefaultMessage("this one")
 	String messageThisOne(); //used in getAssignmentTable - if the initial assignment is "this one"
 	

@@ -99,6 +99,7 @@ public class ClassEditForm extends PreferencesForm {
     private Integer enrollment;
     //TODO Reservations Bypass - to be removed later
     private Boolean isCrosslisted;
+    private String accommodation;
     //End Bypass
     
     // --------------------------------------------------------- Classes
@@ -272,6 +273,7 @@ public class ClassEditForm extends PreferencesForm {
         instrPctShare= DynamicList.getInstance(new ArrayList(), factoryInstructors);
         assignments = null;
         enrollment = null;
+        accommodation = null;
         
         super.reset(mapping, request);
     }
@@ -710,4 +712,6 @@ public class ClassEditForm extends PreferencesForm {
 		this.enrollment = enrollment;
 	}
 	
+    public String getAccommodation() { return accommodation; }
+    public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
 }

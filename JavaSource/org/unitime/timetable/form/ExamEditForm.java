@@ -82,6 +82,7 @@ public class ExamEditForm extends PreferencesForm {
     private String avgPeriod;
     
     private boolean clone;
+    private String accommodation;
     
     public String getExamId() { return examId; }
     public void setExamId(String examId) { this.examId = examId; }
@@ -147,6 +148,7 @@ public class ExamEditForm extends PreferencesForm {
         	if (!types.isEmpty()) examType = types.first().getUniqueId();
         }
         clone = false;
+        accommodation = null;
         super.reset(mapping, request);
     }
 
@@ -449,4 +451,7 @@ public class ExamEditForm extends PreferencesForm {
     
     public boolean getClone() { return clone; }
     public void setClone(boolean clone) { this.clone = clone; }
+    
+    public String getAccommodation() { return accommodation; }
+    public void setAccommodation(String accommodation) { this.accommodation = accommodation; }
 }

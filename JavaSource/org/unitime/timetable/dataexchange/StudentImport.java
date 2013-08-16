@@ -290,12 +290,14 @@ public class StudentImport extends BaseImport {
     	    					continue;
     	    				}
     	    				student.getAccomodations().add(accomodation);
+    	    				accomodation.getStudents().add(student);
                     		if (student.getUniqueId() != null)
                     			updatedStudents.add(student.getUniqueId());
     	    			}
             		}
                 	for (StudentAccomodation accomodation: sAccomodations.values()) {
                 		student.getAccomodations().remove(accomodation);
+                		accomodation.getStudents().remove(student);
                 		if (student.getUniqueId() != null)
                 			updatedStudents.add(student.getUniqueId());
                 	}

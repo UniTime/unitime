@@ -51,6 +51,7 @@ import org.unitime.timetable.model.ExamEvent;
 import org.unitime.timetable.model.ExamOwner;
 import org.unitime.timetable.model.Meeting;
 import org.unitime.timetable.model.PosMajor;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.StudentClassEnrollment;
 import org.unitime.timetable.model.StudentGroup;
 import org.unitime.timetable.model.TimetableManager;
@@ -423,6 +424,9 @@ public class EventEnrollmentsBackend extends EventAction<EventEnrollmentsRpcRequ
     			}
     			for (StudentGroup g: enrollment.getStudent().getGroups()) {
     				st.addGroup(g.getGroupAbbreviation());
+    			}
+    			for (StudentAccomodation a: enrollment.getStudent().getAccomodations()) {
+    				st.addAccommodation(a.getAbbreviation());
     			}
     			enrl = new ClassAssignmentInterface.Enrollment();
     			enrl.setStudent(st);

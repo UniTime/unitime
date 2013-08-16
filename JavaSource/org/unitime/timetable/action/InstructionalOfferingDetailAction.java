@@ -58,6 +58,7 @@ import org.unitime.timetable.model.Exam;
 import org.unitime.timetable.model.InstrOfferingConfig;
 import org.unitime.timetable.model.InstructionalOffering;
 import org.unitime.timetable.model.SchedulingSubpart;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.comparators.CourseOfferingComparator;
 import org.unitime.timetable.model.comparators.InstrOfferingConfigComparator;
 import org.unitime.timetable.model.dao.InstructionalOfferingDAO;
@@ -357,6 +358,7 @@ public class InstructionalOfferingDetailAction extends Action {
         frm.setLimit(io.getLimit());
         frm.setUnlimited(Boolean.FALSE);
         frm.setCreditText((io.getCredit() != null)?io.getCredit().creditText():"");
+        frm.setAccommodation(StudentAccomodation.toHtml(StudentAccomodation.getAccommodations(io)));
         frm.setByReservationOnly(io.isByReservationOnly());
         frm.setWkEnroll(io.getLastWeekToEnroll() == null ? "" : io.getLastWeekToEnroll().toString());
         frm.setWkChange(io.getLastWeekToChange() == null ? "" : io.getLastWeekToChange().toString());

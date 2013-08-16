@@ -109,7 +109,10 @@ public class FindOnlineSectioningLogAction implements OnlineSectioningAction<Lis
 						st.addMajor(ac.getCode());
 					}
 					for (AcademicAreaCode ac: student.getMinors()) {
-						st.addGroup(ac.getCode());
+						if ("A".equals(ac.getArea()))
+							st.addAccommodation(ac.getCode());
+						else
+							st.addGroup(ac.getCode());
 					}
 
 					SectioningAction a = new SectioningAction();

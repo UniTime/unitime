@@ -40,26 +40,26 @@ import org.unitime.timetable.gwt.shared.SimpleEditInterface.Record;
 import org.unitime.timetable.model.ChangeLog;
 import org.unitime.timetable.model.DepartmentalInstructor;
 import org.unitime.timetable.model.Student;
-import org.unitime.timetable.model.StudentGroup;
+import org.unitime.timetable.model.StudentAccomodation;
 import org.unitime.timetable.model.ChangeLog.Operation;
 import org.unitime.timetable.model.ChangeLog.Source;
 import org.unitime.timetable.model.StudentSectioningQueue;
 import org.unitime.timetable.model.dao.SessionDAO;
-import org.unitime.timetable.model.dao.StudentGroupDAO;
+import org.unitime.timetable.model.dao.StudentAccomodationDAO;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 
-@Service("gwtAdminTable[type=group]")
-public class StudentGroups implements AdminTable {
+@Service("gwtAdminTable[type=accommodations]")
+public class StudentAccommodations implements AdminTable {
 	protected static final GwtMessages MESSAGES = Localization.create(GwtMessages.class);
 	
 	@Override
 	public PageName name() {
-		return new PageName(MESSAGES.pageStudentGroup(), MESSAGES.pageStudentGroups());
+		return new PageName(MESSAGES.pageStudentAccommodation(), MESSAGES.pageStudentAccommodations());
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('StudentGroups')")
+	@PreAuthorize("checkPermission('StudentAccommodations')")
 	public SimpleEditInterface load(SessionContext context, Session hibSession) {
 		SimpleEditInterface data = new SimpleEditInterface(
 				new Field(MESSAGES.fieldExternalId(), FieldType.text, 120, 40, Flag.READ_ONLY),
@@ -67,47 +67,47 @@ public class StudentGroups implements AdminTable {
 				new Field(MESSAGES.fieldName(), FieldType.text, 300, 50, Flag.UNIQUE),
 				new Field(MESSAGES.fieldStudents(), FieldType.students, 200));
 		data.setSortBy(1,2);
-		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
-			Record r = data.addRecord(group.getUniqueId());
-			r.setField(0, group.getExternalUniqueId());
-			r.setField(1, group.getGroupAbbreviation());
-			r.setField(2, group.getGroupName());
+		for (StudentAccomodation accomodation: StudentAccomodationDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
+			Record r = data.addRecord(accomodation.getUniqueId());
+			r.setField(0, accomodation.getExternalUniqueId());
+			r.setField(1, accomodation.getAbbreviation());
+			r.setField(2, accomodation.getName());
 			String students = "";
-			for (Student student: new TreeSet<Student>(group.getStudents())) {
+			for (Student student: new TreeSet<Student>(accomodation.getStudents())) {
 				if (!students.isEmpty()) students += "\n";
 				students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 			}
-			r.setField(3, students, group.getExternalUniqueId() == null);
-			r.setDeletable(group.getExternalUniqueId() == null);
+			r.setField(3, students, accomodation.getExternalUniqueId() == null);
+			r.setDeletable(accomodation.getExternalUniqueId() == null);
 		}
-		data.setEditable(context.hasPermission(Right.StudentGroupEdit));
+		data.setEditable(context.hasPermission(Right.StudentAccommodationEdit));
 		return data;
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	@PreAuthorize("checkPermission('StudentAccommodationEdit')")
 	public void save(SimpleEditInterface data, SessionContext context, Session hibSession) {
 		Set<Long> studentIds = new HashSet<Long>();
-		for (StudentGroup group: StudentGroupDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
-			Record r = data.getRecord(group.getUniqueId());
+		for (StudentAccomodation accomodation: StudentAccomodationDAO.getInstance().findBySession(hibSession, context.getUser().getCurrentAcademicSessionId())) {
+			Record r = data.getRecord(accomodation.getUniqueId());
 			if (r == null)
-				delete(group, context, hibSession, studentIds);
+				delete(accomodation, context, hibSession, studentIds);
 			else 
-				update(group, r, context, hibSession, studentIds);
+				update(accomodation, r, context, hibSession, studentIds);
 		}
 		for (Record r: data.getNewRecords())
 			save(r, context, hibSession, studentIds);
 		if (!studentIds.isEmpty())
 			StudentSectioningQueue.studentChanged(hibSession, context.getUser(), context.getUser().getCurrentAcademicSessionId(), studentIds);
 	}
-
+	
 	protected void save(Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
-		StudentGroup group = new StudentGroup();
-		group.setExternalUniqueId(record.getField(0));
-		group.setGroupAbbreviation(record.getField(1));
-		group.setGroupName(record.getField(2));
-		group.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
-		group.setStudents(new HashSet<Student>());
+		StudentAccomodation accomodation = new StudentAccomodation();
+		accomodation.setExternalUniqueId(record.getField(0));
+		accomodation.setAbbreviation(record.getField(1));
+		accomodation.setName(record.getField(2));
+		accomodation.setSession(SessionDAO.getInstance().get(context.getUser().getCurrentAcademicSessionId(), hibSession));
+		accomodation.setStudents(new HashSet<Student>());
 		if (record.getField(3) != null) {
 			String students = "";
 			for (String s: record.getField(3).split("\\n")) {
@@ -115,8 +115,8 @@ public class StudentGroups implements AdminTable {
 				if (s.trim().isEmpty()) continue;
 				Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), s.trim());
 				if (student != null) {
-					group.getStudents().add(student);
-					student.getGroups().add(group);
+					accomodation.getStudents().add(student);
+					student.getAccomodations().add(accomodation);
 					if (!students.isEmpty()) students += "\n";
 					students += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 					studentIds.add(student.getUniqueId());
@@ -124,47 +124,46 @@ public class StudentGroups implements AdminTable {
 			}
 			record.setField(3, students, true);
 		}
-		record.setUniqueId((Long)hibSession.save(group));
+		record.setUniqueId((Long)hibSession.save(accomodation));
 		ChangeLog.addChange(hibSession,
 				context,
-				group,
-				group.getGroupAbbreviation() + " " + group.getGroupName(),
+				accomodation,
+				accomodation.getAbbreviation() + " " + accomodation.getName(),
 				Source.SIMPLE_EDIT, 
 				Operation.CREATE,
 				null,
 				null);
 	}
-	
+
 	@Override
-	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	@PreAuthorize("checkPermission('StudentAccommodationEdit')")
 	public void save(Record record, SessionContext context, Session hibSession) {
 		Set<Long> studentIds = new HashSet<Long>();
 		save(record, context, hibSession, studentIds);
 		if (!studentIds.isEmpty())
 			StudentSectioningQueue.studentChanged(hibSession, context.getUser(), context.getUser().getCurrentAcademicSessionId(), studentIds);
 	}
-
 	
-	protected void update(StudentGroup group, Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
-		if (group == null) return;
+	protected void update(StudentAccomodation accomodation, Record record, SessionContext context, Session hibSession, Set<Long> studentIds) {
+		if (accomodation == null) return;
 		boolean changed = 
-				!ToolBox.equals(group.getExternalUniqueId(), record.getField(0)) ||
-				!ToolBox.equals(group.getGroupAbbreviation(), record.getField(1)) ||
-				!ToolBox.equals(group.getGroupName(), record.getField(2));
-			group.setExternalUniqueId(record.getField(0));
-			group.setGroupAbbreviation(record.getField(1));
-			group.setGroupName(record.getField(2));
-			if (group.getExternalUniqueId() == null && record.getField(3) != null) {
+				!ToolBox.equals(accomodation.getExternalUniqueId(), record.getField(0)) ||
+				!ToolBox.equals(accomodation.getAbbreviation(), record.getField(1)) ||
+				!ToolBox.equals(accomodation.getName(), record.getField(2));
+			accomodation.setExternalUniqueId(record.getField(0));
+			accomodation.setAbbreviation(record.getField(1));
+			accomodation.setName(record.getField(2));
+			if (accomodation.getExternalUniqueId() == null && record.getField(3) != null) {
 				Hashtable<String, Student> students = new Hashtable<String, Student>();
-				for (Student s: group.getStudents())
+				for (Student s: accomodation.getStudents())
 					students.put(s.getExternalUniqueId(), s);
 				for (String line: record.getField(3).split("\\n")) {
 					String extId = (line.indexOf(' ') >= 0 ? line.substring(0, line.indexOf(' ')) : line).trim();
 					if (extId.isEmpty() || students.remove(extId) != null) continue;
 					Student student = Student.findByExternalId(context.getUser().getCurrentAcademicSessionId(), extId);
 					if (student != null) {
-						group.getStudents().add(student);
-						student.getGroups().add(group);
+						accomodation.getStudents().add(student);
+						student.getAccomodations().add(accomodation);
 						changed = true;
 						studentIds.add(student.getUniqueId());
 					}
@@ -172,24 +171,24 @@ public class StudentGroups implements AdminTable {
 				if (!students.isEmpty()) {
 					for (Student student: students.values()) {
 						studentIds.add(student.getUniqueId());
-						student.getGroups().remove(group);
+						student.getAccomodations().remove(accomodation);
 					}
-					group.getStudents().removeAll(students.values());
+					accomodation.getStudents().removeAll(students.values());
 					changed = true;
 				}
 				String newStudents = "";
-				for (Student student: new TreeSet<Student>(group.getStudents())) {
+				for (Student student: new TreeSet<Student>(accomodation.getStudents())) {
 					if (!newStudents.isEmpty()) newStudents += "\n";
 					newStudents += student.getExternalUniqueId() + " " + student.getName(DepartmentalInstructor.sNameFormatLastFirstMiddle);
 				}
-				record.setField(3, newStudents, group.getExternalUniqueId() == null);
+				record.setField(3, newStudents, accomodation.getExternalUniqueId() == null);
 			}
-			hibSession.saveOrUpdate(group);
+			hibSession.saveOrUpdate(accomodation);
 			if (changed)
 				ChangeLog.addChange(hibSession,
 						context,
-						group,
-						group.getGroupAbbreviation() + " " + group.getGroupName(),
+						accomodation,
+						accomodation.getAbbreviation() + " " + accomodation.getName(),
 						Source.SIMPLE_EDIT, 
 						Operation.UPDATE,
 						null,
@@ -197,39 +196,38 @@ public class StudentGroups implements AdminTable {
 	}
 
 	@Override
-	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	@PreAuthorize("checkPermission('StudentAccommodationEdit')")
 	public void update(Record record, SessionContext context, Session hibSession) {
 		Set<Long> studentIds = new HashSet<Long>();
-		update(StudentGroupDAO.getInstance().get(record.getUniqueId()), record, context, hibSession, studentIds);
+		update(StudentAccomodationDAO.getInstance().get(record.getUniqueId()), record, context, hibSession, studentIds);
 		if (!studentIds.isEmpty())
 			StudentSectioningQueue.studentChanged(hibSession, context.getUser(), context.getUser().getCurrentAcademicSessionId(), studentIds);
 	}
 
-	protected void delete(StudentGroup group, SessionContext context, Session hibSession, Set<Long> studentIds) {
-		if (group == null) return;
-		if (group.getStudents() != null)
-			for (Student student: group.getStudents()) {
+	protected void delete(StudentAccomodation accomodation, SessionContext context, Session hibSession, Set<Long> studentIds) {
+		if (accomodation == null) return;
+		if (accomodation.getStudents() != null)
+			for (Student student: accomodation.getStudents()) {
 				studentIds.add(student.getUniqueId());
-				student.getGroups().remove(group);
+				student.getAccomodations().remove(accomodation);
 			}
 		ChangeLog.addChange(hibSession,
 				context,
-				group,
-				group.getGroupAbbreviation() + " " + group.getGroupName(),
+				accomodation,
+				accomodation.getAbbreviation() + " " + accomodation.getName(),
 				Source.SIMPLE_EDIT, 
 				Operation.DELETE,
 				null,
 				null);
-		hibSession.delete(group);
+		hibSession.delete(accomodation);
 	}
 	
 	@Override
-	@PreAuthorize("checkPermission('StudentGroupEdit')")
+	@PreAuthorize("checkPermission('StudentAccommodationEdit')")
 	public void delete(Record record, SessionContext context, Session hibSession) {
 		Set<Long> studentIds = new HashSet<Long>();
-		delete(StudentGroupDAO.getInstance().get(record.getUniqueId()), context, hibSession, studentIds);		
+		delete(StudentAccomodationDAO.getInstance().get(record.getUniqueId()), context, hibSession, studentIds);		
 		if (!studentIds.isEmpty())
 			StudentSectioningQueue.studentChanged(hibSession, context.getUser(), context.getUser().getCurrentAcademicSessionId(), studentIds);
 	}
-
 }
