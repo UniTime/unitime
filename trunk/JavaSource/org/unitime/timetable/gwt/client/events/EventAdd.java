@@ -1685,6 +1685,12 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				}
 			}
 		}
+		if (getEventType() == EventType.Course && iCourses.getValue().isEmpty()) {
+			UniTimeNotifications.error(MESSAGES.reqCoursesOrClasses());
+			if (valid)
+				iHeader.setErrorMessage(MESSAGES.reqCoursesOrClasses());
+			valid = false;
+		}
 		callback.onSuccess(valid);
 	}
 	
