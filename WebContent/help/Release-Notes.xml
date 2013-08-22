@@ -34,7 +34,14 @@
 			<description>
 				<line>Course Related Event: at least one related object (a class, a configuration, a course offering, or an instructional offering) is required.</line>
 			</description>
-		</item>	</category>
+		</item>
+		<item>
+			<name>Course Timetabling: Distribution Preferences</name>
+			<description>
+				<line>Fixed NullPointerException when removing an existing constraints from the model during the data load (e.g., because it is posted between committed variables).</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>
