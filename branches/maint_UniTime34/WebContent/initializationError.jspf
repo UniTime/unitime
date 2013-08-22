@@ -1,0 +1,39 @@
+<%--
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC, and individual contributors
+ * as indicated by the @authors tag.
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+--%>
+<%@page import="org.unitime.timetable.InitServlet"%>
+<%@page import="org.unitime.timetable.util.Constants"%>
+<% if (InitServlet.getInitializationException() != null) { %>
+	<table align="center" class="unitime-Footer" style="margin-top: 50px; padding-left: 100px;">
+		<tr>
+			<td align="center" style="color:red;">
+				UniTime <%=Constants.getVersion()%> failed to start up properly, please check the application log for more details.<br/>
+				<%
+				Throwable t = InitServlet.getInitializationException();
+				while (t != null) {
+					String clazz = t.getClass().getName();
+					if (clazz.indexOf('.') >= 0) clazz = clazz.substring(1 + clazz.lastIndexOf('.'));
+					out.println("<br>" + clazz + ": " + t.getMessage() + (t.getStackTrace() != null && t.getStackTrace().length > 0 ? " (at " + t.getStackTrace()[0].getFileName() + ":" + t.getStackTrace()[0].getLineNumber() + ")": ""));
+					t = t.getCause();
+				}
+				 %>
+			</td>
+		</tr>
+	</table>
+<% } %>

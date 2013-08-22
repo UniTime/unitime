@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="InstructionalOffering" table="instructional_offering">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long"
+            length="20">
+
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">instr_offr_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="instrOfferingPermId"
+            column="instr_offering_perm_id"
+            type="java.lang.Integer"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="notOffered"
+            column="not_offered"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <property
+            name="demand"
+            type="java.lang.Integer"
+            formula="(      select /*+ RULE */ sum( co.lastlike_demand +       (case when cox.lastlike_demand is null then 0 else cox.lastlike_demand end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
+
+		<!-- 
+        <property
+            name="enrollment"
+            type="java.lang.Integer"
+            formula="(      select /*+ RULE */ sum( co.enrollment +       (case when cox.enrollment is null then 0 else cox.enrollment end))      from %SCHEMA%.course_offering co left outer join %SCHEMA%.course_offering cox on co.demand_offering_id=cox.uniqueid       where co.instr_offr_id = uniqueid)"/>
+        -->
+
+         <property
+            name="enrollment"
+            type="java.lang.Integer"
+            lazy="true"
+            formula="(select /*+ RULE */ count(distinct e.student_id) from %SCHEMA%.student_class_enrl e inner join %SCHEMA%.course_offering co on co.uniqueid = e.course_offering_id where co.instr_offr_id = uniqueid)"/>
+
+        <property
+            name="ctrlCourseId"
+            type="java.lang.Integer"
+            formula=" (select /*+ RULE */ co.uniqueid from %SCHEMA%.course_offering co where co.instr_offr_id = uniqueid and co.is_control = 1) "/>
+
+        <property
+            name="limit"
+            type="java.lang.Integer"
+            formula=" ( select /*+ RULE */ sum(ioc.config_limit) from %SCHEMA%.instr_offering_config ioc where ioc.instr_offr_id = uniqueid ) "/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_instr_offr_session"/>
+
+        <set
+            name="courseOfferings"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="course_offering"
+            order-by="subject_area_id,course_nbr">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="instr_offr_id"/>
+            <one-to-many class="CourseOffering"/>
+        </set>
+
+        <set
+            name="instrOfferingConfigs"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="instr_offering_config">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="instr_offr_id"/>
+            <one-to-many class="InstrOfferingConfig"/>
+        </set>
+
+        <set
+            name="reservations"
+            table="reservation"
+            inverse="true"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="offering_id"/>
+            <one-to-many class="Reservation"/>
+        </set>
+
+        <set
+            name="creditConfigs"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan"
+            table="course_credit_unit_config">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="instr_offr_id"/>
+            <one-to-many class="CourseCreditUnitConfig"/>
+        </set>
+
+        <property
+            name="uniqueIdRolledForwardFrom"
+            column="uid_rolled_fwd_from"
+            type="java.lang.Long"
+            not-null="false"
+            length="20"/>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+            
+        <property
+            name="byReservationOnly"
+            column="req_reservation"
+            type="java.lang.Boolean"
+            not-null="true"/>
+
+        <set
+            name="coordinators"
+            lazy="true"
+            table="offering_coordinator">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="offering_id" foreign-key="fk_offering_coord_offering"/>
+            <many-to-many
+                class="DepartmentalInstructor"
+                column="instructor_id"
+                foreign-key="fk_offering_coord_instructor"/>
+        </set>
+
+		<property
+			name="lastWeekToEnroll"
+			column="wk_enroll"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+
+		<property
+			name="lastWeekToChange"
+			column="wk_change"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+
+		<property
+			name="lastWeekToDrop"
+			column="wk_drop"
+			type="java.lang.Integer"
+			not-null="false"
+		/>
+	</class>
+</hibernate-mapping>

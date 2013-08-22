@@ -1,0 +1,62 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT assigned EMPTY >
+<!ATTLIST assigned departmentNumber CDATA #REQUIRED >
+<!ATTLIST assigned percent CDATA #REQUIRED >
+
+<!ELEMENT building ( room* ) >
+<!ATTLIST building abbreviation CDATA #REQUIRED >
+<!ATTLIST building externalId CDATA #REQUIRED >
+<!ATTLIST building locationX CDATA #REQUIRED >
+<!ATTLIST building locationY CDATA #REQUIRED >
+<!ATTLIST building name CDATA #REQUIRED >
+
+<!ELEMENT buildingsRooms ( building+ ) >
+<!ATTLIST buildingsRooms campus CDATA #REQUIRED >
+<!ATTLIST buildingsRooms term CDATA #REQUIRED >
+<!ATTLIST buildingsRooms year CDATA #REQUIRED >
+<!ATTLIST buildingsRooms created CDATA #IMPLIED >
+
+<!ELEMENT room ( roomDepartments+, roomFeatures* ) >
+<!ATTLIST room capacity CDATA #REQUIRED >
+<!ATTLIST room examCapacity CDATA #IMPLIED >
+<!ATTLIST room displayName CDATA #IMPLIED >
+<!ATTLIST room externalId CDATA #REQUIRED >
+<!ATTLIST room instructional ( false | False | true | True ) #REQUIRED >
+<!ATTLIST room locationX CDATA #IMPLIED >
+<!ATTLIST room locationY CDATA #IMPLIED >
+<!ATTLIST room area CDATA #IMPLIED >
+<!ATTLIST room roomClassification CDATA #REQUIRED >
+<!ATTLIST room roomNumber CDATA #REQUIRED >
+<!ATTLIST room scheduledRoomType ( computingLab | departmental | genClassroom ) #IMPLIED >
+
+<!ELEMENT roomDepartments ( assigned+, scheduling* ) >
+
+<!ELEMENT roomFeature EMPTY >
+<!ATTLIST roomFeature feature CDATA #REQUIRED >
+<!ATTLIST roomFeature value CDATA #REQUIRED >
+
+<!ELEMENT roomFeatures ( roomFeature+ ) >
+
+<!ELEMENT scheduling EMPTY >
+<!ATTLIST scheduling departmentNumber CDATA #REQUIRED >
+<!ATTLIST scheduling percent CDATA #REQUIRED >
+
+

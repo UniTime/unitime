@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE timetable PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/CourseTimetable.dtd">
+
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2013, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+ <timetable campus="woebegon" year="2012" term="Fal" action="update" instructors="false" notes="false" prefer="id" timeFormat="HHmm" dateFormat="yyyy/M/d">
+ 	<!-- academic session is identified by term, year, and campus (academic initiative) -->
+ 	<!-- action: update ... updates existing (committed) timetable (optional parameter, defaults to update)-->
+ 	<!--         insert ... creates new timetable and commits it -->
+ 	<!--                    in both cases, an action is taken only for classes that are present in the file -->
+ 	<!-- prefer: id ..... when a class / room is identified by both id and name (subject, courseNbr, etc.) but the matched classes do not match, prefer match on the external id  (optional parameter, defults to id) -->
+ 	<!--         name ... when a class / room is identified by both id and name (subject, courseNbr, etc.) but the matched classes do not match, prefer match on the name -->
+ 	<!-- instructors: boolean, if true instructors assignments are updated by the XML (optional parameter, defaults to false) -->
+ 	<!-- notes: boolean, if true schedule note, display in schedule book, and student scheduling are updated by the XML (optional parameter, defaults to false) -->
+ 	<!-- timeFormat: time element start and end time format (defaults to HHmm) -->
+ 	<!-- dateFormat: date element start and end date format (defaults to yyyy/M/d) -->
+ 	<!--             see http://docs.oracle.com/javase/7/docs/api/java/text/SimpleDateFormat.html for the date/time formating options -->
+
+	<!-- a class can be identified by an external id (id attribute), by a name (name attribute), or by subject, course number, instructional type and suffix (attributes subject, courseNbr, type, and suffix) -->
+	<!-- if there is no external id on the class, class name can be used instead -->
+	<class id="ALG 101 Lec 1">
+		<!-- attributed days and startTime are required, other attributes are optional -->
+		<!-- days: M .. Monday, T .. Tuesday, W .. Wednesday, Th or R .. Thursday, F .. Friday, S .. Saturday, Su or U .. Sunday -->
+		<!-- a matching time pattern (or exact time) is automatically assigned to the class -->
+		<!-- if there is no date pattern specified, the default date pattern (e.g., Full Term) is used -->
+		<time days="MWF" startTime="0930" endTime="1020"/>
+		<!-- a room is identified by external id (id attribute), by a name (name attribute), or by building abbreviation and room number (attributes building and roomNbr) -->
+		<!-- if there is no external id on the room, room name can be used instead --> 
+		<room id="EDUC 101"/>
+	</class>
+	<class name="BAND 101 Lec 1">
+		<!-- arrange hour classes have no time elements, arrangeTime element is optional -->
+		<arrangeTime/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Lec" suffix="1">
+		<time days="MF" startTime="1430"/>
+		<room building="EDUC" roomNbr="101"/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Lec" suffix="2">
+		<time days="TTh" startTime="0730"/>
+		<room name="EDUC 101"/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Lec" suffix="3">
+		<!-- date pattern can be specified on the time element -->
+		<time days="TTh" startTime="0730" datePattern="Even Wks"/>
+		<!-- room attribute must be a room; location attribute can be a room or a non-university location  -->
+		<!-- location is identified either by an external id (id attribute) or by a name (name attribute) -->
+		<!-- if there is no external id on the location, location name can be used instead -->
+		<location name="MALL"/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Rec" suffix="1">
+		<!-- time pattern attribute is optional, if present the days and start time must be of the given time pattern -->
+		<!-- if time pattern is not specified, first time pattern with matching days and start time is selected (if there is a time pattern already assigned to the class, it is preferred) -->
+		<time days="M" startTime="1130" timePattern="1x50"/>
+		<location id="EDUC 104"/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Rec" suffix="2">
+		<time days="F" startTime="0730" timePattern="1x50" datePattern="Full Term"/>
+		<location name="EDUC 104"/>
+	</class>
+	<class subject="BIOL" courseNbr="101" type="Rec" suffix="3">
+		<!-- date pattern can be specified by a list of dates -->
+		<!-- if so, a first matching date pattern is selected for the class (if there is a date pattern already assigned to the class, it is preferred) -->
+		<!-- if there is no match, a new date pattern is created (it is called import - class name) -->
+		<date startDate="2012/8/27" endDate="2012/9/1"/>
+		<date startDate="2012/9/10" endDate="2012/9/15"/>
+		<date startDate="2012/9/24" endDate="2012/9/29"/>
+		<date startDate="2012/10/10" endDate="2012/10/13"/>
+		<date startDate="2012/10/15" endDate="2012/10/16"/>
+		<date startDate="2012/10/24" endDate="2012/10/27"/>
+		<date startDate="2012/10/29" endDate="2012/10/30"/>
+		<date startDate="2012/11/7" endDate="2012/11/10"/>
+		<date startDate="2012/11/12" endDate="2012/11/13"/>
+		<date startDate="2012/11/26" endDate="2012/12/1"/>
+		<time days="Th" startTime="1330"/>
+		<room building="EDUC" roomNbr="104"/>
+	</class>
+	<!-- other aspects -->
+	<!-- if timetable.notes is set to true, schedule notes on the classes are updated by the import (scheduleNote attribute) -->
+	<!-- if attribute displayInScheduleBook is present (and timetable.notes is set to true), the display in schedule book toggle on the class is updated -->
+	<!-- if attribute studentScheduling is present (and timetable.notes is set to true), the student scheduling toggle on the class is updated -->
+	<class subject="C S" courseNbr="101" type="Lec" suffix="1" scheduleNote="Bring your own laptop." displayInScheduleBook="true" studentScheduling="true">
+		<time days="MF" startTime="1330"/>
+		<room building="EDUC" roomNbr="102"/>
+	</class>
+	<!-- if timetabel.instructors is set to true, instructor assignments are updated as well-->
+	<class subject="C S" courseNbr="101" type="Lec" suffix="2">
+		<time days="MW" startTime="1230"/>
+		<!-- two rooms -->
+		<room building="EDUC" roomNbr="103"/>
+		<room building="EDUC" roomNbr="104"/>
+		<!-- instructor assignments -->
+		<!-- an instructor is identified by external id (attribute id) or by name (attributes fname for first name, mname for middle name, and lname for last name) -->
+		<!-- target share (attribute share), is optional (integer number between 0 and 100) and the default is 100 (100%) -->
+		<!-- check conflicts (attribute lead), is optional (boolean) and the default is true (conflicts are to be checked) -->
+		<!-- if matching instructor is not found, a new instructor is created -->
+		<instructor id="100" fname="Joe" lname="Doe" lead="true" share="100"/>
+		<!-- instructors that are currently assigned to the class and that are not present in the XML will get unassigned  -->
+	</class>
+	<!-- ... -->
+</timetable>
+ 

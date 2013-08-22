@@ -1,0 +1,171 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="1.7">
+
+    <xs:element name="ehcache" >
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="1" ref="diskStore"/>
+                <xs:element minOccurs="0" maxOccurs="1"
+                            ref="cacheManagerEventListenerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded"
+                            ref="cacheManagerPeerProviderFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded"
+                            ref="cacheManagerPeerListenerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1"
+                            ref="terracottaConfig"/>
+                <xs:element ref="defaultCache"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cache"/>
+            </xs:sequence>
+            <xs:attribute name="name" use="optional"/>
+            <xs:attribute name="updateCheck" use="optional" type="xs:boolean" default="true"/>
+            <xs:attribute name="monitoring" use="optional" type="monitoringType" default="autodetect"/>
+        </xs:complexType>
+    </xs:element>     
+    <xs:element name="diskStore">
+        <xs:complexType>
+            <xs:attribute name="path" use="optional" />
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheManagerEventListenerFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheManagerPeerProviderFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheManagerPeerListenerFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="terracottaConfig">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="tc-config" minOccurs="0" maxOccurs="1">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip" />
+                        </xs:sequence>
+                    </xs:complexType>        
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="url" use="optional" default="localhost:9510"/>
+            <xs:attribute name="registerStatsMBean" type="xs:boolean" use="optional"/>
+        </xs:complexType>
+    </xs:element>    
+    <!-- add clone support for addition of cacheExceptionHandler. Important! -->
+    <xs:element name="defaultCache">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheEventListenerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheExtensionFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheLoaderFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="bootstrapCacheLoaderFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="cacheExceptionHandlerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="terracotta"/>
+            </xs:sequence>
+            <xs:attribute name="diskExpiryThreadIntervalSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="diskSpoolBufferSizeMB" use="optional" type="xs:integer"/>
+            <xs:attribute name="diskPersistent" use="optional" type="xs:boolean"/>
+            <xs:attribute name="eternal" use="required" type="xs:boolean"/>
+            <xs:attribute name="maxElementsInMemory" use="required" type="xs:integer"/>
+            <xs:attribute name="clearOnFlush" use="optional" type="xs:boolean"/>
+            <xs:attribute name="memoryStoreEvictionPolicy" use="optional" type="xs:string"/>
+            <xs:attribute name="overflowToDisk" use="required" type="xs:boolean"/>
+            <xs:attribute name="timeToIdleSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="timeToLiveSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="maxElementsOnDisk" use="optional" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cache">
+        <xs:complexType>
+            <xs:sequence >
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheEventListenerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheExtensionFactory"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="cacheLoaderFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="bootstrapCacheLoaderFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="cacheExceptionHandlerFactory"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="terracotta"/>
+            </xs:sequence>
+            <xs:attribute name="diskExpiryThreadIntervalSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="diskSpoolBufferSizeMB" use="optional" type="xs:integer"/>
+            <xs:attribute name="diskPersistent" use="optional" type="xs:boolean"/>
+            <xs:attribute name="eternal" use="required" type="xs:boolean"/>
+            <xs:attribute name="maxElementsInMemory" use="required" type="xs:integer"/>
+            <xs:attribute name="memoryStoreEvictionPolicy" use="optional" type="xs:string"/>
+            <xs:attribute name="clearOnFlush" use="optional" type="xs:boolean"/>
+            <xs:attribute name="name" use="required" type="xs:string"/>
+            <xs:attribute name="overflowToDisk" use="required" type="xs:boolean"/>
+            <xs:attribute name="timeToIdleSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="timeToLiveSeconds" use="optional" type="xs:integer"/>
+            <xs:attribute name="maxElementsOnDisk" use="optional" type="xs:integer"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheEventListenerFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="bootstrapCacheLoaderFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheExtensionFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheExceptionHandlerFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cacheLoaderFactory">
+        <xs:complexType>
+            <xs:attribute name="class" use="required"/>
+            <xs:attribute name="properties" use="optional"/>
+            <xs:attribute name="propertySeparator" use="optional"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="terracotta">
+        <xs:complexType>
+            <xs:attribute name="clustered" use="optional" type="xs:boolean" default="true"/>
+            <xs:attribute name="valueMode" use="optional" type="terracottaCacheValueType" default="serialization"/>
+            <xs:attribute name="coherentReads" use="optional" type="xs:boolean" default="true"/>
+            <xs:attribute name="localKeyCache" use="optional" type="xs:boolean" default="false"/>
+            <xs:attribute name="localKeyCacheSize" use="optional" type="xs:positiveInteger" default="10000"/>
+            <xs:attribute name="orphanEviction" use="optional" type="xs:boolean" default="true"/>
+            <xs:attribute name="orphanEvictionPeriod" use="optional" type="xs:positiveInteger" default="4"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:simpleType name="monitoringType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="autodetect" />
+            <xs:enumeration value="on" />
+            <xs:enumeration value="off" />
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="terracottaCacheValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="serialization" />
+            <xs:enumeration value="identity" />
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

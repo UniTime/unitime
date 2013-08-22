@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE events PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/EventLoad.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2009 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<events academicInitiative="PWL" created="01/05/2009 15:40:49" dateFormat="MM/dd/yyyy" timeFormat="H:mm">
+  	<specialEvent eventName="Special Event 1" minCapacity="10" maxCapacity="15" email="main@contact.email.edu" >
+		<sponsoringOrganization name="Sponsoring Org"/>
+		<eventContact externalId="1234567890" email="contact@email.edu" phone="555-4444" firstName="FirstName" middleName="MiddleName" lastName="LastName" />
+		<meetings>
+ 			<meeting meetingDate="01/15/2009" startTime="8:00" startOffset="10" endTime="9:00" stopOffset="10" buildingAbbv="WTHR" roomNumber="160" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+  			<meeting meetingDate="01/16/2009" startTime="8:00" endTime="9:00" buildingAbbv="WTHR" roomNumber="160" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+			<meeting meetingDate="01/21/2009" startTime="8:00" endTime="9:00" buildingAbbv="WTHR" roomNumber="360" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+			<meeting meetingDate="01/22/2009" startTime="8:00" endTime="9:00" location="CL50 East" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+		</meetings>
+	<notes>
+	 	<note noteText="This is a note." noteType="create" timestamp="01/04/2009 10:00" userName="Name Of User Who Left Note" />
+		<note noteText="This is another note." noteType="create" timestamp="01/04/2009 10:00" userName="Name Of User Who Left Note" />
+	</notes>
+	</specialEvent>
+ 	<courseRelatedEvent eventName="Course Related Event 1" minCapacity="10" maxCapacity="15" attendanceRequired="true" email="main@contact.email.edu" >
+	  <relatedCourses>
+	    <course year="2009" term="Spring" relationshipType="class" relatedExternalId="12345" courseExternalId="CHM11100"/>
+	    <course year="2009" term="Spring" relationshipType="instructionalOffering" relatedExternalId="CHM11200" courseExternalId="CHM11200"/>
+	    <course year="2009" term="Spring" relationshipType="courseOffering" relatedExternalId="CHM11500" courseExternalId="CHM11500"/>
+	  </relatedCourses>
+		<sponsoringOrganization name="Sponsoring Org"/>
+		<eventContact externalId="1234567890" email="contact@email.edu" phone="555-4444" firstName="FirstName" middleName="MiddleName" lastName="LastName" />
+ 		<meetings>
+	 		<meeting meetingDate="01/17/2009" startTime="20:00" endTime="21:00" buildingAbbv="WTHR" roomNumber="160" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+			<meeting meetingDate="01/19/2009" startTime="8:30" endTime="9:30" buildingAbbv="WTHR" roomNumber="160" classCanOverride="false" approvedDateTime="01/04/2009 18:00"/>
+			<meeting meetingDate="01/26/2009" startTime="20:30" endTime="21:30" buildingAbbv="WTHR" roomNumber="360" classCanOverride="false" approvedDateTime="01/04/2009 18:00"/>
+			<meeting meetingDate="01/27/2009" startTime="8:00" endTime="9:00" location="CL50 East" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+		</meetings>
+	</courseRelatedEvent>
+  	<specialEvent eventName="Special Event 2" >
+		<meetings>
+			<meeting meetingDate="02/15/2009" startTime="8:00" endTime="9:00" buildingAbbv="WTHR" roomNumber="160" classCanOverride="true" approvedDateTime="01/04/2009 10:00"/>
+		</meetings>
+		<eventContact externalId="1234567890" email="contact@email.edu" phone="555-4444" firstName="FirstName" middleName="MiddleName" lastName="LastName" />
+	</specialEvent>
+ 	<courseRelatedEvent eventName="Course Related Event 2" attendanceRequired="true" email="main@contact.email.edu" >
+	  <relatedCourses>
+	    <course year="2009" term="Spring" relationshipType="class" relatedExternalId="12345" courseExternalId="CHM11100"/>
+	  </relatedCourses>
+		<meetings>
+			<meeting meetingDate="02/17/2009" startTime="9:00"  endTime="10:00" buildingAbbv="WTHR" roomNumber="160" classCanOverride="false"/>
+		</meetings>
+	</courseRelatedEvent>
+</events>

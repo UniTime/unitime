@@ -1,0 +1,39 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT studentEnrollments ( student+ ) >
+<!ATTLIST studentEnrollments campus CDATA #REQUIRED >
+<!ATTLIST studentEnrollments term CDATA #REQUIRED >
+<!ATTLIST studentEnrollments year CDATA #REQUIRED >
+<!ATTLIST studentEnrollments created CDATA #IMPLIED >
+
+<!ELEMENT student ( class+ ) >
+<!ATTLIST student externalId CDATA #REQUIRED >
+<!ATTLIST student firstName CDATA #IMPLIED >
+<!ATTLIST student middleName CDATA #IMPLIED >
+<!ATTLIST student lastName CDATA #IMPLIED >
+<!ATTLIST student email CDATA #IMPLIED >
+
+<!ELEMENT class EMPTY >
+<!ATTLIST class externalId CDATA #IMPLIED >
+<!ATTLIST class courseId CDATA #IMPLIED >
+<!ATTLIST class subject CDATA #IMPLIED >
+<!ATTLIST class courseNbr CDATA #IMPLIED >
+<!ATTLIST class type CDATA #IMPLIED >
+<!ATTLIST class suffix CDATA #IMPLIED >

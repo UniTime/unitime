@@ -1,0 +1,146 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT class ( class*, date*, time?, (room|location|instructor|meeting|meetsWith)* ) >
+<!-- displayInScheduleBook has been deprecated in UniTime 3.4, use studentScheduling instead -->
+<!ATTLIST class displayInScheduleBook ( false | true ) #IMPLIED >
+<!-- studentScheduling was introduced in UniTime 3.4, if false class appears like it has zero limit in (both batch and online) student scheduling -->
+<!ATTLIST class studentScheduling ( false | true ) #IMPLIED >
+<!ATTLIST class id CDATA #IMPLIED >
+<!ATTLIST class limit NMTOKEN #IMPLIED >
+<!ATTLIST class scheduleNote CDATA #IMPLIED >
+<!ATTLIST class suffix CDATA #REQUIRED >
+<!ATTLIST class type CDATA #REQUIRED >
+
+<!ELEMENT config ( (subpart|class)* ) >
+<!ATTLIST config limit NMTOKEN #REQUIRED >
+<!ATTLIST config name CDATA #REQUIRED >
+
+<!ELEMENT consent EMPTY >
+<!ATTLIST consent type CDATA #REQUIRED >
+
+<!ELEMENT course ( class* ) >
+<!ATTLIST course id CDATA #IMPLIED >
+<!ATTLIST course controlling ( false | true ) #IMPLIED >
+<!ATTLIST course courseNbr NMTOKEN #REQUIRED >
+<!ATTLIST course scheduleBookNote CDATA #IMPLIED >
+<!ATTLIST course subject CDATA #REQUIRED >
+<!ATTLIST course title CDATA #IMPLIED >
+
+<!ELEMENT courseCredit EMPTY >
+<!ATTLIST courseCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
+<!ATTLIST courseCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit | continuingEdUnits ) #REQUIRED >
+<!ATTLIST courseCredit creditUnitType CDATA #REQUIRED >
+<!ATTLIST courseCredit fixedCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
+<!ATTLIST courseCredit maximumCredit CDATA #IMPLIED >
+<!ATTLIST courseCredit minimumCredit CDATA #IMPLIED >
+
+<!-- designatorRequired toggle is deprecated since UniTime 3.4 -->
+<!ELEMENT designatorRequired EMPTY >
+
+<!ELEMENT instructor EMPTY >
+<!ATTLIST instructor fname CDATA #IMPLIED >
+<!ATTLIST instructor id NMTOKEN #REQUIRED >
+<!ATTLIST instructor lead ( false | true ) #IMPLIED >
+<!ATTLIST instructor lname CDATA #IMPLIED >
+<!ATTLIST instructor mname CDATA #IMPLIED >
+<!ATTLIST instructor share NMTOKEN #IMPLIED >
+
+<!ELEMENT offering ( designatorRequired?, consent?, courseCredit*, course+, config*, exam* ) >
+<!ATTLIST offering action CDATA #IMPLIED >
+<!ATTLIST offering id NMTOKEN #REQUIRED >
+<!ATTLIST offering offered  ( false | true ) #REQUIRED >
+
+<!ELEMENT offerings ( offering* ) >
+<!ATTLIST offerings campus NMTOKEN #REQUIRED >
+<!ATTLIST offerings term NMTOKEN #REQUIRED >
+<!ATTLIST offerings year NMTOKEN #REQUIRED >
+<!ATTLIST offerings dateFormat CDATA #IMPLIED >
+<!ATTLIST offerings timeFormat CDATA #IMPLIED >
+<!ATTLIST offerings useMeetsWith ( false | true ) #IMPLIED >
+<!ATTLIST offerings created CDATA #IMPLIED >
+<!ATTLIST offerings incremental ( false | true ) "false" > 
+
+<!ELEMENT room EMPTY >
+<!ATTLIST room building CDATA #REQUIRED >
+<!ATTLIST room id CDATA #IMPLIED >
+<!ATTLIST room roomNbr CDATA #REQUIRED >
+
+<!ELEMENT location EMPTY >
+<!ATTLIST location name CDATA #REQUIRED >
+
+<!ELEMENT subpart ( subpartCredit*, subpart* ) >
+<!ATTLIST subpart minPerWeek NMTOKEN #REQUIRED >
+<!ATTLIST subpart suffix CDATA #IMPLIED >
+<!ATTLIST subpart type CDATA #REQUIRED >
+
+<!ELEMENT subpartCredit EMPTY >
+<!ATTLIST subpartCredit creditFormat ( arrangeHours | fixedUnit | variableMinMax | variableRange ) #REQUIRED >
+<!ATTLIST subpartCredit creditType ( collegiate | equivalent | mastersCredit | phdThesisCredit ) #REQUIRED >
+<!ATTLIST subpartCredit creditUnitType CDATA #REQUIRED >
+<!ATTLIST subpartCredit fixedCredit CDATA #IMPLIED >
+<!ATTLIST subpartCredit fractionalCreditAllowed ( false | true ) #IMPLIED >
+<!ATTLIST subpartCredit maximumCredit CDATA #IMPLIED >
+<!ATTLIST subpartCredit minimumCredit CDATA #IMPLIED >
+
+<!ELEMENT time EMPTY >
+<!ATTLIST time days NMTOKEN #REQUIRED >
+<!ATTLIST time endTime NMTOKEN #REQUIRED >
+<!ATTLIST time startTime NMTOKEN #REQUIRED >
+
+<!ELEMENT date EMPTY >
+<!ATTLIST date endDate CDATA #REQUIRED >
+<!ATTLIST date startDate CDATA #REQUIRED >
+
+<!ELEMENT exam ( (class|course)*, instructor*, (period, (room|location)*)?) >
+<!ATTLIST exam id CDATA #REQUIRED >
+<!ATTLIST exam name CDATA #REQUIRED >
+<!ATTLIST exam size NMTOKEN #REQUIRED >
+<!ATTLIST exam note CDATA #IMPLIED >
+<!ATTLIST exam length NMTOKEN #IMPLIED >
+<!ATTLIST exam seatingType ( normal | exam) #IMPLIED >
+<!ATTLIST exam type ( final | midterm) #REQUIRED >
+
+<!ELEMENT period EMPTY >
+<!ATTLIST period date CDATA #REQUIRED >
+<!ATTLIST period startTime NMTOKEN #REQUIRED >
+<!ATTLIST period endTime NMTOKEN #REQUIRED >
+
+<!ELEMENT meeting EMPTY >
+<!ATTLIST meeting endDate CDATA #IMPLIED >
+<!ATTLIST meeting startDate CDATA #IMPLIED >
+<!ATTLIST meeting startTime NMTOKEN #REQUIRED >
+<!ATTLIST meeting endTime NMTOKEN #REQUIRED >
+<!ATTLIST meeting days CDATA #REQUIRED >
+<!ATTLIST meeting building CDATA #IMPLIED >
+<!ATTLIST meeting room CDATA #IMPLIED >
+<!ATTLIST meeting location CDATA #IMPLIED >
+
+<!ELEMENT meetsWith EMPTY >
+<!ATTLIST meetsWith id CDATA #REQUIRED >
+
+<!ELEMENT exams ( exam* ) >
+<!ATTLIST exams campus NMTOKEN #REQUIRED >
+<!ATTLIST exams term NMTOKEN #REQUIRED >
+<!ATTLIST exams year NMTOKEN #REQUIRED >
+<!ATTLIST exams dateFormat CDATA #IMPLIED >
+<!ATTLIST exams timeFormat CDATA #IMPLIED >
+<!ATTLIST exams created CDATA #IMPLIED >
+<!ATTLIST exams type ( all | final | midterm) #REQUIRED >

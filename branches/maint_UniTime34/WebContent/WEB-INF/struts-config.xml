@@ -1,0 +1,2099 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts-config PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 1.3//EN" "http://struts.apache.org/dtds/struts-config_1_3.dtd">
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<struts-config>
+
+   <display-name>UniTime</display-name>
+   <description>University Timetabling Application</description>
+   
+   <form-beans >
+	  <form-bean name="distributionTypeListForm" type="org.unitime.timetable.form.DistributionTypeListForm" />
+	  <form-bean name="distributionTypeEditForm" type="org.unitime.timetable.form.DistributionTypeEditForm" />
+	  <form-bean name="sessionListForm" type="org.unitime.timetable.form.SessionListForm" />
+	  <form-bean name="sessionEditForm" type="org.unitime.timetable.form.SessionEditForm" />
+	  <form-bean name="subjectListForm" type="org.unitime.timetable.form.SubjectListForm" />
+	  <form-bean name="buildingListForm" type="org.unitime.timetable.form.BuildingListForm" />
+	  <form-bean name="roomListForm" type="org.unitime.timetable.form.RoomListForm" />
+	  <form-bean name="departmentListForm" type="org.unitime.timetable.form.DepartmentListForm" />
+	  <form-bean name="roleListForm" type="org.unitime.timetable.form.RoleListForm" />
+	  <form-bean name="mgrForm" type="org.unitime.timetable.form.TimetableManagerForm" />
+	  <form-bean name="roomFeatureListForm" type="org.unitime.timetable.form.RoomFeatureListForm" />
+	  <form-bean name="roomFeatureEditForm" type="org.unitime.timetable.form.RoomFeatureEditForm" />
+	  <form-bean name="instructionalOfferingListForm" type="org.unitime.timetable.form.InstructionalOfferingListForm" />
+	  <form-bean name="instructionalOfferingConfigEditForm" type="org.unitime.timetable.form.InstructionalOfferingConfigEditForm" />
+	  <form-bean name="schedulingSubpartEditForm" type="org.unitime.timetable.form.SchedulingSubpartEditForm" />
+	  <form-bean name="instructorSearchForm" type="org.unitime.timetable.form.InstructorSearchForm" />
+	  <form-bean name="instructorEditForm" type="org.unitime.timetable.form.InstructorEditForm" />
+	  <form-bean name="mgrSettingsForm" type="org.unitime.timetable.form.ManagerSettingsForm" />
+	  <form-bean name="settingsForm" type="org.unitime.timetable.form.SettingsForm" />
+	  <form-bean name="solverParamGroupsForm" type="org.unitime.timetable.form.SolverParamGroupsForm" />
+	  <form-bean name="solverParamDefForm" type="org.unitime.timetable.form.SolverParamDefForm" />
+	  <form-bean name="solverSettingsForm" type="org.unitime.timetable.form.SolverSettingsForm" />
+	  <form-bean name="solverInfoDefForm" type="org.unitime.timetable.form.SolverInfoDefForm" />
+	  <form-bean name="listSolutionsForm" type="org.unitime.timetable.form.ListSolutionsForm" />
+	  <form-bean name="solverLogForm" type="org.unitime.timetable.form.SolverLogForm" />
+	  <form-bean name="solverForm" type="org.unitime.timetable.form.SolverForm" />
+	  <form-bean name="manageSolversForm" type="org.unitime.timetable.form.ManageSolversForm" />
+	  <form-bean name="cbsForm" type="org.unitime.timetable.form.CbsForm" />
+	  <form-bean name="timetableForm" type="org.unitime.timetable.form.TimetableForm" />
+	  <form-bean name="unassignedForm" type="org.unitime.timetable.form.UnassignedForm" />
+	  <form-bean name="suggestionsForm" type="org.unitime.timetable.form.SuggestionsForm" />
+	  <form-bean name="classListForm" type="org.unitime.timetable.form.ClassListForm" />
+	  <form-bean name="classEditForm" type="org.unitime.timetable.form.ClassEditForm" />
+      <form-bean name="distributionPrefsForm" type="org.unitime.timetable.form.DistributionPrefsForm" />
+      <form-bean name="hibernateQueryTestForm" type="org.unitime.timetable.form.HibernateQueryTestForm" />
+      <form-bean name="classOwnerChangeForm" type="org.unitime.timetable.form.ClassOwnerChangeForm" />
+	  <form-bean name="classAssignmentsReportForm" type="org.unitime.timetable.form.ClassAssignmentsReportForm" />
+	  <form-bean name="assignmentHistoryForm" type="org.unitime.timetable.form.AssignmentHistoryForm" />
+   	  <form-bean name="solutionChangesForm" type="org.unitime.timetable.form.SolutionChangesForm" />
+	  <form-bean name="assignedClassesForm" type="org.unitime.timetable.form.AssignedClassesForm" />
+	  <form-bean name="solutionReportForm" type="org.unitime.timetable.form.SolutionReportForm" />
+	  <form-bean name="timePatternEditForm" type="org.unitime.timetable.form.TimePatternEditForm" />
+      <form-bean name="instructionalOfferingDetailForm" type="org.unitime.timetable.form.InstructionalOfferingDetailForm" />
+      <form-bean name="crossListsModifyForm" type="org.unitime.timetable.form.CrossListsModifyForm" />
+      <form-bean name="instructionalOfferingModifyForm" type="org.unitime.timetable.form.InstructionalOfferingModifyForm" />
+      <form-bean name="datePatternEditForm" type="org.unitime.timetable.form.DatePatternEditForm" />
+	  <form-bean name="roomGroupListForm" type="org.unitime.timetable.form.RoomGroupListForm" />
+      <form-bean name="roomGroupEditForm" type="org.unitime.timetable.form.RoomGroupEditForm" />
+      <form-bean name="roomDeptListForm" type="org.unitime.timetable.form.RoomDeptListForm" />
+      <form-bean name="roomDeptEditForm" type="org.unitime.timetable.form.RoomDeptEditForm" />
+      <form-bean name="addNonUnivLocationForm" type="org.unitime.timetable.form.AddNonUnivLocationForm" />
+      <form-bean name="nonUnivLocationForm" type="org.unitime.timetable.form.NonUnivLocationForm" />
+      <form-bean name="specialUseRoomForm" type="org.unitime.timetable.form.SpecialUseRoomForm" />
+      <form-bean name="roomDetailForm" type="org.unitime.timetable.form.RoomDetailForm" />
+      <form-bean name="editRoomPrefForm" type="org.unitime.timetable.form.EditRoomPrefForm" />
+      <form-bean name="editRoomFeatureForm" type="org.unitime.timetable.form.EditRoomFeatureForm" />
+      <form-bean name="editRoomGroupForm" type="org.unitime.timetable.form.EditRoomGroupForm" />
+      <form-bean name="editRoomDeptForm" type="org.unitime.timetable.form.EditRoomDeptForm" />
+      <form-bean name="solverGroupEditForm" type="org.unitime.timetable.form.SolverGroupEditForm" />
+      <form-bean name="editRoomForm" type="org.unitime.timetable.form.EditRoomForm" />
+      <form-bean name="instructorListUpdateForm" type="org.unitime.timetable.form.InstructorListUpdateForm" />
+      <form-bean name="courseOfferingEditForm" type="org.unitime.timetable.form.CourseOfferingEditForm" />
+      <form-bean name="applicationConfigForm" type="org.unitime.timetable.form.ApplicationConfigForm" />
+      <form-bean name="departmentEditForm" type="org.unitime.timetable.form.DepartmentEditForm" />
+      <form-bean name="classInstructorAssignmentForm" type="org.unitime.timetable.form.ClassInstructorAssignmentForm" />
+      <form-bean name="chameleonForm" type="org.unitime.timetable.form.ChameleonForm" />
+      <form-bean name="inquiryForm" type="org.unitime.timetable.form.InquiryForm" />
+      <form-bean name="dataImportForm" type="org.unitime.timetable.form.DataImportForm" />
+      <form-bean name="exactTimeEditForm" type="org.unitime.timetable.form.ExactTimeEditForm" />
+      <form-bean name="lastChangesForm" type="org.unitime.timetable.form.LastChangesForm" />
+      <form-bean name="rollForwardSessionForm" type="org.unitime.timetable.form.RollForwardSessionForm" />
+      <form-bean name="deptStatusTypeEditForm" type="org.unitime.timetable.form.DeptStatusTypeEditForm" />
+      <form-bean name="userEditForm" type="org.unitime.timetable.form.UserEditForm" />
+      <form-bean name="subjectAreaEditForm" type="org.unitime.timetable.form.SubjectAreaEditForm" />
+      <form-bean name="buildingEditForm" type="org.unitime.timetable.form.BuildingEditForm" />
+      <form-bean name="itypeDescEditForm" type="org.unitime.timetable.form.ItypeDescEditForm" />
+      <form-bean name="examPeriodEditForm" type="org.unitime.timetable.form.ExamPeriodEditForm" />
+      <form-bean name="examListForm" type="org.unitime.timetable.form.ExamListForm" />
+      <form-bean name="examEditForm" type="org.unitime.timetable.form.ExamEditForm" />
+      <form-bean name="examDistributionPrefsForm" type="org.unitime.timetable.form.ExamDistributionPrefsForm" />
+      <form-bean name="examSolverForm" type="org.unitime.timetable.form.ExamSolverForm" />
+	  <form-bean name="examSolverLogForm" type="org.unitime.timetable.form.ExamSolverLogForm" />
+	  <form-bean name="examReportForm" type="org.unitime.timetable.form.ExamReportForm" />
+	  <form-bean name="examPdfReportForm" type="org.unitime.timetable.form.ExamPdfReportForm" />
+	  <form-bean name="examGridForm" type="org.unitime.timetable.form.ExamGridForm" />
+	  <form-bean name="examChangesForm" type="org.unitime.timetable.form.ExamChangesForm" />
+	  <form-bean name="examInfoForm" type="org.unitime.timetable.form.ExamInfoForm" />
+	  <form-bean name="examAssignmentReportForm" type="org.unitime.timetable.form.ExamAssignmentReportForm" />
+	  <form-bean name="ecbsForm" type="org.unitime.timetable.form.ExamCbsForm" />
+	  <form-bean name="examsForm" type="org.unitime.timetable.form.ExamsForm" />
+	  <form-bean name="classesForm" type="org.unitime.timetable.form.ClassesForm" />
+	  <form-bean name="personalizedExamReportForm" type="org.unitime.timetable.form.PersonalizedExamReportForm" />
+	  <form-bean name="roomAvailabilityForm" type="org.unitime.timetable.form.RoomAvailabilityForm" />
+      <form-bean name="studentSolverForm" type="org.unitime.timetable.form.StudentSolverForm" />
+	  <form-bean name="studentSolverLogForm" type="org.unitime.timetable.form.StudentSolverLogForm" />
+  	  <form-bean name="sponsoringOrgListForm" type="org.unitime.timetable.form.SponsoringOrgListForm" />
+  	  <form-bean name="sponsoringOrgEditForm" type="org.unitime.timetable.form.SponsoringOrgEditForm" />
+      <form-bean name="roomTypeEditForm" type="org.unitime.timetable.form.RoomTypeEditForm" />
+	  <form-bean name="classInfoForm" type="org.unitime.timetable.form.ClassInfoForm" />
+	  <form-bean name="enrollmentAuditPdfReportForm" type="org.unitime.timetable.form.EnrollmentAuditPdfReportForm" />
+   </form-beans>
+
+   <global-exceptions>
+   		<exception key="errors.exception" type="Exception" path="/error.jsp" />
+   </global-exceptions>
+
+   <action-mappings >
+
+	  <action 
+	     path="/sort"
+		 type="fr.improve.struts.taglib.layout.sort.SortAction"
+		 scope="request"
+		 validate="false" />
+		    
+	  <action 
+	     path="/treeview"
+		 type="fr.improve.struts.taglib.layout.treeview.TreeviewAction"
+		 scope="request"
+		 validate="false" />
+
+	  <action
+         path="/getCourseNumbers"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false" />
+         
+      <action
+         path="/sessionEdit"
+         attribute="sessionEditForm"
+         name="sessionEditForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward name="showEdit" path="sessionEditTile" />
+         <forward name="showAdd" path="sessionAddTile" />
+         <forward
+            name="showSessionList"
+            path="/sessionList.do"
+            redirect="true" />
+      </action>
+
+      <action
+         path="/sessionList"
+         attribute="sessionListForm"
+         input="sessionListTile"
+         name="sessionListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward name="showSessionList" path="sessionListTile" />
+      </action>
+
+      <action
+         path="/distributionTypeEdit"
+         attribute="distributionTypeEditForm"
+         name="distributionTypeEditForm"
+         parameter="do"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showEdit" path="distributionTypeEditTile" />
+         <forward
+            name="showDistributionTypeList"
+            path="/distributionTypeList.do"
+            redirect="true" />
+      </action>
+      <action
+         path="/distributionTypeList"
+         attribute="distributionTypeListForm"
+         input="distributionTypeListTile"
+         name="distributionTypeListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward name="showDistributionTypeList" path="distributionTypeListTile" />
+      </action> 
+     
+      <action
+         path="/subjectList"
+         attribute="subjectListForm"
+         input="subjectListTile"
+         name="subjectListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showSubjectList" path="subjectListTile" />
+      </action>
+
+      <action
+      	path="/subjectAreaEdit"
+	    type="org.springframework.web.struts.DelegatingActionProxy"
+	    attribute="subjectAreaEditForm"
+	    input="subjectAreaEditTile"
+	    name="subjectAreaEditForm"
+	    scope="request"
+	    validate="false">
+	    <forward 
+	      	name="editSubjectArea" 
+	      	path="subjectAreaEditTile" />
+	    <forward 
+	      	name="addSubjectArea" 
+	      	path="subjectAreaAddTile" />
+	    <forward 
+	      	name="back" 
+	      	path="/subjectList.do" />
+      </action>
+      
+      <action
+         path="/buildingList"
+         attribute="buildingListForm"
+         input="buildingListTile"
+         name="buildingListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showBuildingList" path="buildingListTile" />
+      </action>
+
+     <action
+         path="/roomList"
+         attribute="roomListForm"
+         input="roomListTile"
+         name="roomListForm"
+         scope="request"
+         validate="false"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showRoomList" path="roomListTile" />         
+         <forward name="showRoomSearch" path="roomSearchTile" />
+      </action>
+
+	 <action
+         path="/departmentList"
+         attribute="departmentListForm"
+         input="departmentListTile"
+         name="departmentListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showDepartmentList" path="departmentListTile" />
+      </action>
+
+      <action
+         path="/selectPrimaryRole"
+         attribute="roleListForm"
+         input="selectPrimaryRoleTile"
+         name="roleListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward
+            name="getUserSelectedRole"
+            path="selectPrimaryRoleTile" />
+         <forward
+            name="getDefaultAcadSession"
+            path="selectAcadSessionTile" />
+         <forward
+            name="success"
+            path="/main.jsp" />
+         <forward
+            name="fail"
+            path="selectPrimaryRoleTile" />
+         <forward
+            name="loginRequired"
+            path="loginRequiredTile" />
+         <forward
+         	name="norole"
+            path="/main.jsp"
+            redirect="true" />
+      </action>
+
+      <action
+         path="/loginRequired"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false">
+         <forward
+            name="success"
+            path="loginRequiredTile" />
+      </action>
+      
+      <action
+         path="/roomFeatureList"
+         attribute="roomFeatureListForm"
+         input="roomFeatureListTile"
+         name="roomFeatureListForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward name="showRoomFeatureList" path="roomFeatureListTile" />         
+         <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />  
+         <forward name="showAdd" path="/roomFeatureEdit.do" />
+      </action>  
+
+	  <action
+         path="/roomFeatureEdit"
+         name="roomFeatureEditForm"
+         attribute="roomFeatureEditForm"
+         parameter="doit"
+         scope="request"
+         validate="false"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showEdit" path="roomFeatureEditTile" />
+         <forward name="showAdd" path="roomFeatureEditTile" />
+         <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
+      </action>
+
+      <action
+         path="/timetableManagerEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="mgrForm"
+         input="mgrAddTile"
+         name="mgrForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="success"
+            path="/timetableManagerList.do" />
+         <forward
+            name="fail"
+            path="timetableManagerEditTile" />
+         <forward
+            name="editManagerInfo"
+            path="timetableManagerEditTile" />
+         <forward
+            name="addManagerInfo"
+            path="timetableManagerAddTile" />
+         <forward
+            name="displayManagerList"
+            path="/timetableManagerList.do" />
+      </action>
+
+      <action
+         path="/timetableManagerList"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward
+            name="success"
+            path="timetableManagerListTile"
+            redirect="true" />
+         <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+      </action>
+ 
+      <action
+         path="/instructionalOfferingSearch"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingSearchTile"
+         name="instructionalOfferingListForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+        <forward 
+        	name="showInstructionalOfferingList" 
+        	path="instructionalOfferingListTile" />
+        <forward 
+        	name="showInstructionalOfferingSearch" 
+        	path="instructionalOfferingSearchTile" />
+        <forward 
+        	name="showInstructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+        <forward 
+        	name="showCourseOfferingEdit" 
+        	path="/courseOfferingEdit.do" />
+        <forward 
+        	name="editInstructionalOffering" 
+        	path="instructionalOfferingEditTile" />
+      </action>
+      
+      <action
+         path="/instructionalOfferingShowSearch"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingSearchTile"
+         name="instructionalOfferingListForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="showInstructionalOfferingList" 
+        	path="instructionalOfferingListTile" />
+        <forward 
+        	name="showInstructionalOfferingSearch" 
+        	path="instructionalOfferingSearchTile" />
+      </action>
+
+     <action
+         path="/instructionalOfferingList"
+         attribute="instructionalOfferingListForm"
+         input="instructionalOfferingListTile"
+         name="instructionalOfferingListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward 
+         	name="showInstructionalOfferingList" 
+         	path="instructionalOfferingListTile" />
+      </action>
+
+      <action
+         path="/instructionalOfferingConfigEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="instructionalOfferingConfigEditForm"
+         input="instructionalOfferingConfigEditTile"
+         name="instructionalOfferingConfigEditForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="displayForm"
+            path="instructionalOfferingConfigEditTile"
+            redirect="true" />
+         <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+      
+      <action
+         path="/crossListsModify"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="crossListsModifyForm"
+         input="crossListsModifyTile"
+         name="crossListsModifyForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="crossListsModify" 
+        	path="crossListsModifyTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+ 
+      <action
+         path="/instructionalOfferingModify"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="instructionalOfferingModifyForm"
+         input="instructionalOfferingModifyTile"
+         name="instructionalOfferingModifyForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="instructionalOfferingModify" 
+        	path="instructionalOfferingModifyTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+      
+      <action
+         path="/schedulingSubpartEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="SchedulingSubpartEditForm"
+         input="schedulingSubpartEditTile"
+         name="schedulingSubpartEditForm"
+         scope="request"
+         validate="false"> 
+        <forward 
+        	name="editSchedulingSubpart" 
+        	path="schedulingSubpartEditTile" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="addDistributionPrefs" 
+        	path="/distributionPrefs.do" />
+        <forward 
+        	name="displaySubpartDetail" 
+        	path="/schedulingSubpartDetail.do" 
+        	/>
+      </action>
+  
+      <action 
+      	path="/itypeDescList" 
+      	type="org.springframework.web.struts.DelegatingActionProxy" 
+      	validate="false">
+        <forward
+            name="success"
+            path="itypeDescListTile"
+            redirect="true" />
+        <forward
+            name="fail"
+            path="/error.jsp"
+            redirect="true" />
+      </action>
+      <action
+         attribute="instructorSearchForm"
+         input="/user/instructorSearch.jsp"
+         name="instructorSearchForm"
+         path="/instructorSearch"
+         scope="request"
+         validate="false"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showInstructorSearch" path="instructorSearchTile" />
+         <forward name="showInstructorList" path="instructorListTile" />
+         <forward name="instructorList" path="/instructorList.do" />
+      </action>
+      <action
+         attribute="instructorSearchForm"
+         input="instructorListTile"
+         name="instructorSearchForm"
+         parameter="op"
+         path="/instructorList"
+         scope="request"
+         validate="false"
+         type="org.springframework.web.struts.DelegatingActionProxy">
+         <forward name="showInstructorList" path="instructorListTile" />
+         <forward name="showInstructorSearch" path="/instructorSearch.do" />
+      </action>
+      
+      <action
+         path="/managerSettings"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="mgrSettingsForm"
+         input="managerSettingsTile"
+         name="mgrSettingsForm"
+         scope="request"
+         validate="false">
+         <forward
+            name="showManagerSettings"
+            path="managerSettingsTile"
+            redirect="true" />      
+         <forward
+            name="editManagerSettings"
+            path="managerSettingsEditTile"
+            redirect="true" />      
+      </action>
+      
+      <action
+         path="/settings"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="settingsForm"
+         input="settingsTile"
+         name="settingsForm"
+         scope="request"
+         validate="false">
+         <forward name="list" path="settingsTile"/>      
+         <forward name="add" path="settingsAddTile"/>
+         <forward name="edit" path="settingsEditTile"/>
+      </action>
+      
+      <action
+      	path="/solverParamGroups"
+      	type="org.springframework.web.struts.DelegatingActionProxy"
+      	attribute="solverParamGroupsForm"
+		input="solverParamGroupsTile"
+		name="solverParamGroupsForm"
+		scope="request"
+		validate="false">
+		<forward name="list" path="solverParamGroupsTile" />
+		<forward name="edit" path="solverParamGroupsEditTile" />
+		<forward name="add" path="solverParamGroupsAddTile" />
+	  </action>
+	  
+	  <action
+	  	path="/solverParamDef"
+	  	type="org.springframework.web.struts.DelegatingActionProxy"
+	  	attribute="solverParamDefForm"
+	  	input="solverParamDefTile"
+	  	name="solverParamDefForm"
+	  	scope="request"
+	  	validate="false">
+		<forward name="list" path="solverParamDefTile" />
+		<forward name="edit" path="solverParamDefEditTile" />
+		<forward name="add" path="solverParamDefAddTile" />
+      </action>
+      
+      <action
+      	path="/solverSettings"
+      	type="org.springframework.web.struts.DelegatingActionProxy"
+      	attribute="solverSettingsForm"
+      	input="solverSettingsTile"
+      	name="solverSettingsForm"
+      	scope="request"
+      	validate="false">
+      	<forward name="list" path="solverSettingsTile"/>
+      	<forward name="add" path="solverSettingsAddTile"/>
+      	<forward name="edit" path="solverSettingsEditTile"/>
+        </action>
+        
+        <action
+			path="/solverInfoDef"
+			type="org.springframework.web.struts.DelegatingActionProxy"
+			attribute="solverInfoDefForm"
+			input="solverInfoDefTile"
+			name="solverInfoDefForm"
+			scope="request"
+			validate="false">
+   		  <forward
+	        name="showSolverInfoDef"
+    	    path="solverInfoDefTile"
+	        redirect="true" />
+	    </action>
+	    
+	<action
+		path="/listSolutions"
+		type="org.springframework.web.struts.DelegatingActionProxy"
+		attribute="listSolutionsForm"
+		input="listSolutionsTile"
+		name="listSolutionsForm"
+		scope="request"
+		validate="false">
+      <forward
+        name="showSolutions"
+        path="listSolutionsTile"
+        redirect="true" />
+      
+    </action>
+    
+    <action
+    	path="/solverLog"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="solverLogForm"
+    	input="solverLogTile"
+    	name="solverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="solverLogTile"
+    		redirect="true" />
+    </action>
+    <action
+    	path="/solver"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="solverForm"
+    	input="solverTile"
+    	name="solverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="solverTile"
+	        redirect="true" />
+    </action>
+    <action
+		path="/manageSolvers"
+		type="org.springframework.web.struts.DelegatingActionProxy"
+		attribute="manageSolversForm"
+		input="manageSolversTile"
+		name="manageSolversForm"
+		scope="request"
+		validate="false">
+      <forward
+        name="showSolvers"
+        path="manageSolversTile"
+        redirect="true" />
+      <forward
+        name="showSolver"
+        path="solverTile"
+        redirect="true" />
+      <forward
+        name="showExamSolver"
+        path="examSolverTile"
+        redirect="true" />
+      <forward
+        name="showStudentSolver"
+        path="studentSolverTile"
+        redirect="true" />
+    </action>
+    <action
+    	path="/cbs"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="cbsForm"
+    	input="cbsTile"
+    	name="cbsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="showCbs"
+	    	path="cbsTile"
+	    	redirect="true" />
+    </action>
+    <action
+    	path="/timetable"
+		type="org.springframework.web.struts.DelegatingActionProxy"
+		attribute="timetableForm"
+		input="timetableTile"
+		name="timetableForm"
+		scope="request"
+		validate="false">
+		<forward
+			name="showTimetable"
+	        path="timetableTile"
+    	    redirect="true" />
+    </action>
+    <action
+    	path="/unassigned"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="unassignedForm"
+    	input="unassignedTile"
+    	name="unassignedForm"
+    	scope="request"
+    	validate="false">
+		<forward
+			name="showUnassigned"
+			path="unassignedTile"
+			redirect="true" />
+    </action>
+    <action
+    	path="/suggestions"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="suggestionsForm"
+    	input="suggestionsTile"
+    	name="suggestionsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSuggestions"
+    		path="suggestionsTile"
+    		redirect="true" />
+    </action>
+    
+    <action 
+    	path="/hibernateStats" 
+    	forward="hibrenateStatsTile" />
+  
+    <action
+         path="/classEdit"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="ClassEditForm"
+         input="classEditTile"
+         name="classEditForm"
+         scope="request"
+         validate="false"> 
+        
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+        <forward 
+        	name="instructionalOfferingSearch" 
+        	path="/instructionalOfferingSearch.do" />
+        <forward 
+        	name="addDistributionPrefs" 
+        	path="/distributionPrefs.do" />
+        <forward 
+        	name="changeClassOwner" 
+        	path="/classOwnerChange.do" />
+        <forward 
+        	name="displayClassDetail" 
+        	path="/classDetail.do" />
+     </action>
+     
+     <action
+         path="/classSearch"
+         attribute="classListForm"
+         input="classSearchTile"
+         name="classListForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+        <forward 
+        	name="showClassList" 
+        	path="classListTile" />
+        <forward 
+        	name="showClassSearch" 
+        	path="classSearchTile" />
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+      </action>
+      
+      <action
+         path="/classShowSearch"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="classListForm"
+         input="classSearchTile"
+         name="classListForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="showClassSearch" 
+        	path="classSearchTile" />
+        <forward 
+        	name="showClassList" 
+        	path="classListTile" />
+      </action>
+
+      <action
+         path="/classChange"
+         attribute="classListForm"
+         input="classListTile"
+         name="classListForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+        <forward name="showClassList" path="classListTile" />
+        <forward name="showClassSearch" path="classSearchTile" />
+      </action>
+
+     <action
+         path="/classList"
+         attribute="classListForm"
+         input="classListTile"
+         name="classListForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward 
+         	name="showClassList" 
+         	path="classListTile" />
+      </action>
+     
+      <action
+         path="/distributionPrefs"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="distributionPrefsForm"
+         input="distributionPrefsTile"
+         name="distributionPrefsForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="list" 
+        	path="distributionPrefsTile" />
+        <forward 
+        	name="add" 
+        	path="adddistributionPrefTile" />
+        <forward 
+        	name="edit" 
+        	path="editDistributionPrefTile" />
+      </action>
+      
+      <action
+         path="/hibernateQueryTest"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="hibernateQueryTestForm"
+         input="hibernateQueryTestTile"
+         name="hibernateQueryTestForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="displayQueryForm" 
+        	path="hibernateQueryTestTile" />
+      </action>
+      
+        <action
+         path="/classAssignmentsReportSearch"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportSearchTile"
+         name="classAssignmentsReportForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+        <forward 
+        	name="showClassAssignmentsReportList" 
+        	path="classAssignmentsReportListTile" />
+        <forward 
+        	name="showClassAssignmentsReportSearch" 
+        	path="classAssignmentsReportSearchTile" />
+        <forward 
+        	name="editClass" 
+        	path="classEditTile" />
+      </action>
+      
+      <action
+         path="/classAssignmentsReportShowSearch"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportSearchTile"
+         name="classAssignmentsReportForm"
+         scope="request"
+         parameter="doit"
+         validate="false">
+        <forward 
+        	name="showClassAssignmentsReportSearch" 
+        	path="classAssignmentsReportSearchTile" />
+        <forward 
+        	name="showClassAssignmentsReportList" 
+        	path="classAssignmentsReportListTile" />
+      </action>
+
+	  <action
+         path="/classAssignmentsReportChange"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportListTile"
+         name="classAssignmentsReportForm"
+         parameter="doit"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+        <forward name="showClassAssignmentsReportList" path="classAssignmentsReportListTile" />
+        <forward name="showClassAssignmentsReportSearch" path="classAssignmentsReportSearchTile" />
+      </action>
+	
+     <action
+         path="/classAssignmentsReportList"
+         attribute="classAssignmentsReportForm"
+         input="classAssignmentsReportListTile"
+         name="classAssignmentsReportForm"
+         scope="request"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         validate="false">
+         <forward 
+         	name="showClassAssignmentsReportList" 
+         	path="classAssignmentsReportListTile" />
+      </action>
+      
+      <action 
+	    path="/logOut"
+      	forward="/logout.jsp" />
+      	
+      <action
+      	path="/assignmentHistory"
+      	attribute="assignmentHistoryForm"
+      	input="assignmentHistoryTile"
+      	name="assignmentHistoryForm"
+      	scope="request"
+      	type="org.springframework.web.struts.DelegatingActionProxy"
+      	validate="false">
+      	<forward
+      		name="showAssignmentHistory"
+      		path="assignmentHistoryTile" />
+      </action>
+      
+      <action
+      	path="/solutionChanges"
+      	attribute="solutionChangesForm"
+      	input="solutionChangesTile"
+      	name="solutionChangesForm"
+      	scope="request"
+      	type="org.springframework.web.struts.DelegatingActionProxy"
+      	validate="false">
+      	<forward 
+      		name="showSolutionChanges"
+      		path="solutionChangesTile" />
+       </action>
+    
+    	<action
+    	  path="/assignedClasses"
+    	  attribute="assignedClassesForm"
+    	  input="assignedClassesTile"
+    	  name="assignedClassesForm"
+    	  scope="request"
+    	  type="org.springframework.web.struts.DelegatingActionProxy"
+    	  validate="false">
+    	  <forward 
+    	  	name="showAssignedClasses" path="assignedClassesTile" />
+	    </action>
+	    
+	    <action
+	      path="/solutionReport"  
+	      attribute="solutionReportForm"
+	      input="solutionReportTile"
+	      name="solutionReportForm"
+	      scope="request"
+	      type="org.springframework.web.struts.DelegatingActionProxy" 
+	      validate="false">
+    	  <forward 
+    	  	name="showSolutionReport" path="solutionReportTile" />
+	    </action>
+	    
+	    <action
+	      path="/timePatternEdit"
+	      attribute="timePatternEditForm"
+	      input="timePatternsTile"
+	      name="timePatternEditForm"
+	      scope="request"
+	      type="org.springframework.web.struts.DelegatingActionProxy" 
+	      validate="false">
+	      <forward name="list" path="timePatternsTile" />
+	      <forward name="add" path="addTimePatternTile" />
+	      <forward name="edit" path="editTimePatternTile" />
+	    </action>
+	     
+	    <action
+	      path="/solverGroupEdit"
+	      attribute="solverGroupEditForm"
+	      input="solverGroupTile"
+	      name="solverGroupEditForm"
+	      scope="request"
+	      type="org.springframework.web.struts.DelegatingActionProxy" 
+	      validate="false">
+	      <forward name="list" path="solverGroupTile" />
+	      <forward name="add" path="solverGroupAddTile" />
+	      <forward name="edit" path="solverGroupEditTile" />
+	    </action>
+
+      	<action
+          path="/instructionalOfferingDetail"
+          type="org.springframework.web.struts.DelegatingActionProxy"
+          attribute="instructionalOfferingDetailForm"
+          input="instructionalOfferingDetailTile"
+          name="instructionalOfferingDetailForm"
+          scope="request"
+          validate="false">
+	      <forward
+	        name="modifyConfig" 
+	        path="/instructionalOfferingConfigEdit.do" />
+	      <forward
+	        name="showInstructionalOfferings" 
+	        path="/instructionalOfferingShowSearch.do" />
+	      <forward
+	        name="modifyCrossLists" 
+	        path="/crossListsModify.do" />
+	      <forward
+	        name="showConfigDetail" 
+	        path="instructionalOfferingDetailTile" />
+	    </action>
+	    
+    <action
+      attribute="SchedulingSubpartEditForm"
+      input="schedulingSubpartDetailTile"
+      name="schedulingSubpartEditForm"
+      path="/schedulingSubpartDetail"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="instructionalOfferingSearch" path="/instructionalOfferingSearch.do" />
+      <forward name="displaySchedulingSubpart" path="schedulingSubpartDetailTile" />
+      <forward name="addDistributionPrefs" path="/distributionPrefs.do" />
+    </action>
+
+    <action
+      attribute="ClassEditForm"
+      input="classDetailTile"
+      name="classEditForm"
+      path="/classDetail"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward 
+       	name="displayClass" 
+       	path="classDetailTile" />
+       <forward 
+       	name="instructionalOfferingSearch" 
+       	path="/instructionalOfferingSearch.do" />
+       <forward 
+       	name="addDistributionPrefs" 
+       	path="/distributionPrefs.do" />
+       <forward 
+       	name="changeClassOwner" 
+       	path="/classOwnerChange.do" />
+    </action>
+
+    <action
+      attribute="instructorSearchForm"
+      input="instructorListTile"
+      name="instructorSearchForm"
+      parameter="doit"
+      path="/instructorChange"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showInstructorList" path="instructorListTile" />
+      <forward name="showInstructorSearch" path="instructorSearchTile" />
+    </action>
+
+    <action
+      attribute="datePatternEditForm"
+      input="datePatternsTile"
+      name="datePatternEditForm"
+      path="/datePatternEdit"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy" 
+      validate="false">
+      <forward name="list" path="datePatternsTile" />
+      <forward name="add" path="addDatePatternTile" />
+      <forward name="edit" path="editDatePatternTile" />
+    </action>
+
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupList.jsp"
+      name="roomGroupListForm"
+      parameter="doit"
+      path="/roomGroupList"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
+      <forward name="showAdd" path="/roomGroupEdit.do" />
+    </action>
+
+    <action
+      attribute="roomGroupEditForm"
+      input="/admin/roomGroupEdit.jsp"
+      name="roomGroupEditForm"
+      parameter="doit"
+      path="/roomGroupEdit"
+      scope="request"
+      validate="false"
+      type="org.springframework.web.struts.DelegatingActionProxy">
+      <forward name="showRoomGroupList" path="/roomGroupList.do" />
+      <forward name="showEdit" path="roomGroupEditTile" />
+      <forward name="showAdd" path="roomGroupEditTile" />
+    </action>
+
+    <action
+      attribute="roomDeptListForm"
+      input="/admin/roomDeptList.jsp"
+      name="roomDeptListForm"
+      parameter="doit"
+      path="/roomDeptList"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy">
+      <forward name="showRoomDeptList" path="roomDeptListTile" />
+    </action>
+
+    <action
+      attribute="roomDeptEditForm"
+      input="/admin/roomDeptEdit.jsp"
+      name="roomDeptEditForm"
+      parameter="doit"
+      path="/roomDeptEdit"
+      scope="request"
+      validate="false"
+      type="org.springframework.web.struts.DelegatingActionProxy">
+      <forward name="show" path="roomDeptEditTile" />
+      <forward name="back" path="/roomList.do" />
+    </action>
+
+    <action
+      attribute="nonUnivLocationForm"
+      input="/admin/addNonUnivLocation.jsp"
+      name="nonUnivLocationForm"
+      path="/addNonUnivLocation"
+      scope="request"
+      validate="false"
+      type="org.springframework.web.struts.DelegatingActionProxy" >
+      <forward name="showAdd" path="nonUnivLocationAddTile" />
+      <forward name="showRoomList" path="/roomList.do" />
+     </action>
+
+    <action
+      attribute="specialUseRoomForm"
+      input="/admin/addSpecialUseRoom.jsp"
+      name="specialUseRoomForm"
+      path="/addSpecialUseRoom"
+      scope="request"
+      validate="false"
+      type="org.springframework.web.struts.DelegatingActionProxy" >
+      <forward name="showAdd" path="specialUseRoomAddTile" />      
+      <forward name="showRoomList" path="/roomList.do" />
+	</action>
+
+    <action
+      attribute="roomDetailForm"
+      input="/admin/roomDetail.jsp"
+      name="roomDetailForm"
+      path="/roomDetail"
+      scope="request"
+      parameter="doit"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showEditRoomFeature" path="/editRoomFeature.do" />
+      <forward name="showRoomList" path="/roomList.do" />
+      <forward name="showEditRoomGroup" path="/editRoomGroup.do" />
+      <forward name="showEditRoomPref" path="/editRoomPref.do" />
+      <forward name="showEditRoomDept" path="/editRoomDept.do" />
+      <forward name="showEditRoom" path="/editRoom.do" />
+      <forward name="showRoomDetail" path="roomDetailTile" />
+    </action>
+
+    <action
+      attribute="editRoomPrefForm"
+      input="/admin/setUpRoomPref.jsp"
+      name="editRoomPrefForm"
+      path="/editRoomPref"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomPref" path="editRoomPrefTile" />
+    </action>
+
+    <action
+      attribute="editRoomFeatureForm"
+      input="/admin/editRoomFeature.jsp"
+      name="editRoomFeatureForm"
+      path="/editRoomFeature"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomFeature" path="editRoomFeatureTile" />
+    </action>
+
+    <action
+      attribute="editRoomGroupForm"
+      input="/admin/editRoomGroup.jsp"
+      name="editRoomGroupForm"
+      path="/editRoomGroup"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomGroup" path="editRoomGroupTile" />
+    </action>
+
+    <action
+      attribute="editRoomDeptForm"
+      input="/admin/editRoomDept.jsp"
+      name="editRoomDeptForm"
+      path="/editRoomDept"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomDetail" path="/roomDetail.do" />
+      <forward name="showEditRoomDept" path="editRoomDeptTile" />
+    </action>
+    
+    <action 
+    	path="/back"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+		scope="request"
+		validate="false" />
+
+    <action
+      attribute="roomListForm"
+      input="/admin/roomSearch.jsp"
+      name="roomListForm"
+      path="/roomSearch"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomList" path="roomListTile" />
+      <forward name="roomList" path="/roomList.do" />
+      <forward name="showRoomSearch" path="roomSearchTile" />
+    </action>
+
+    <action
+      attribute="roomListForm"
+      input="/admin/roomList.jsp"
+      name="roomListForm"
+      path="/roomChange"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomList" path="roomListTile" />
+      <forward name="showRoomSearch" path="roomSearchTile" />
+    </action>
+    <action
+      attribute="roomFeatureListForm"
+      input="/admin/roomFeatureList.jsp"
+      name="roomFeatureListForm"
+      path="/roomFeatureChange"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
+      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
+    </action>
+		
+	<action 
+		path="/activeSessions"
+		forward="activeSessionsTile"
+		scope="request" />
+    <action
+      attribute="roomFeatureListForm"
+      input="/admin/roomFeatureSearch.jsp"
+      name="roomFeatureListForm"
+      path="/roomFeatureSearch"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="roomFeatureList" path="/roomFeatureList.do" />
+      <forward name="showRoomFeatureSearch" path="roomFeatureSearchTile" />
+      <forward name="showRoomFeatureList" path="roomFeatureListTile" />
+    </action>
+    <action
+      attribute="roomFeatureEditForm"
+      input="/admin/roomFeatureAdd.jsp"
+      name="roomFeatureEditForm"
+      path="/roomFeatureAdd"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showAdd" path="roomFeatureAddTile" />
+      <forward name="showRoomFeatureList" path="/roomFeatureList.do" />
+    </action>
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupSearch.jsp"
+      name="roomGroupListForm"
+      path="/roomGroupSearch"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="roomGroupList" path="/roomGroupList.do" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
+    </action>
+    <action
+      attribute="roomGroupListForm"
+      input="/admin/roomGroupList.jsp"
+      name="roomGroupListForm"
+      path="/roomGroupChange"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomGroupList" path="roomGroupListTile" />
+      <forward name="showRoomGroupSearch" path="roomGroupSearchTile" />
+    </action>
+    <action
+      attribute="roomGroupEditForm"
+      input="/admin/roomGroupAdd.jsp"
+      name="roomGroupEditForm"
+      path="/roomGroupAdd"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showRoomGroupList" path="/roomGroupList.do" />
+      <forward name="showAdd" path="roomGroupAddTile" />
+    </action>
+    <action
+      attribute="editRoomForm"
+      input="/admin/editRoom.jsp"
+      name="editRoomForm"
+      path="/editRoom"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showEditRoom" path="editRoomTile" />
+      <forward name="showAddRoom" path="addRoomTile" />
+      <forward name="showRoomDetail" path="roomDetailTile" />
+    </action>
+    <action
+      attribute="instructorListUpdateForm"
+      input="/user/instructorListUpdate.jsp"
+      name="instructorListUpdateForm"
+      path="/instructorListUpdate"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false" >
+      <forward name="showUpdateInstructorList" path="instructorListUpdateTile" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorDetail.jsp"
+      name="instructorEditForm"
+      path="/instructorDetail"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false" >
+      <forward name="showInstructorDetail" path="instructorDetailTile" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorAdd.jsp"
+      name="instructorEditForm"
+      path="/instructorAdd"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false" >
+      <forward name="showAdd" path="instructorAddTile" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorInfoEdit.jsp"
+      name="instructorEditForm"
+      path="/instructorInfoEdit"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false" >
+      <forward name="showEdit" path="instructorInfoEditTile" />
+      <forward name="showDetail" path="/instructorDetail.do" />
+      <forward name="showList" path="/instructorSearch.do" />
+    </action>
+    <action
+      attribute="instructorEditForm"
+      input="/user/instructorPrefsEdit.jsp"
+      name="instructorEditForm"
+      path="/instructorPrefEdit"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showEdit" path="instructorPrefsEditTile" />
+      <forward name="showDetail" path="/instructorDetail.do" />
+    </action>
+    
+    <action
+       path="/courseOfferingEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="courseOfferingEditForm"
+       input="courseOfferingEditTile"
+       name="courseOfferingEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="edit" 
+       		path="courseOfferingEditTile" />
+		<forward 
+       		name="add" 
+       		path="courseOfferingAddTile" />       		
+       <forward 
+       		name="instructionalOfferingDetail" 
+       		path="/instructionalOfferingDetail.do" />
+    </action>
+    
+    <action
+       path="/applicationConfig"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="applicationConfigForm"
+       input="applicationConfigTile"
+       name="applicationConfigForm"
+       scope="request"
+       validate="false">
+       <forward name="list" path="applicationConfigTile" />
+       <forward name="add" path="applicationConfigAddTile" />
+       <forward name="edit" path="applicationConfigEditTile" />
+    </action>
+    
+    <action
+       path="/departmentEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="departmentEditForm"
+       input="departmentEditTile"
+       name="departmentEditForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="back" 
+       		path="/departmentList.do" />
+       <forward 
+       		name="add" 
+       		path="departmentAddTile" />
+       <forward 
+       		name="edit" 
+       		path="departmentEditTile" />
+    </action>
+
+      <action
+         path="/classInstructorAssignment"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="classInstructorAssignmentForm"
+         input="classInstructorAssignmentTile"
+         name="classInstructorAssignmentForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="classInstructorAssignment" 
+        	path="classInstructorAssignmentTile" />
+        <forward 
+        	name="instructionalOfferingDetail" 
+        	path="/instructionalOfferingDetail.do" />
+      </action>
+    
+    <action
+       path="/chameleon"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="chameleonForm"
+       input="chameleonTile"
+       name="chameleonForm"
+       scope="request"
+       validate="false">
+       <forward 
+       		name="displayForm" 
+       		path="chameleonTile" />
+       <forward
+	        name="reload"
+            path="/selectPrimaryRole.do" />
+    </action>
+    
+    <action
+       path="/inquiry"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="inquiryForm"
+       input="inquiryTile"
+       name="inquiryForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="inquiryTile" />
+       <forward 
+       		name="submit" 
+       		path="/selectPrimaryRole.do" />
+    </action>
+    
+    <action
+      path="/login"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false"/> 
+
+    <action
+      attribute="dataImportForm"
+      input="dataImportTile"
+      name="dataImportForm"
+      path="/dataImport"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false" >
+       <forward 
+       		name="display" 
+       		path="dataImportTile" />
+   </action>
+
+    <action
+       path="/exactTimeEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="exactTimeEditForm"
+       input="exactTimeEditTile"
+       name="exactTimeEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="exactTimeEditTile" />
+    </action>
+
+    <action
+       path="/lastChanges"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="lastChangesForm"
+       input="lastChangesTile"
+       name="lastChangesForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="display" 
+       		path="lastChangesTile" />
+    </action>
+
+    <action
+       path="/deptStatusTypeEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="deptStatusTypeEditForm"
+       input="deptStatusTypeEditTile"
+       name="deptStatusTypeEditForm"
+       scope="request"
+       validate="false" >
+       <forward name="list" path="deptStatusTypeListTile" />
+       <forward name="add" path="deptStatusTypeAddTile" />
+       <forward name="edit" path="deptStatusTypeEditTile" />
+    </action>
+
+    <action
+       path="/userEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="userEditForm"
+       input="userEditTile"
+       name="userEditForm"
+       scope="request"
+       validate="false" >
+       <forward name="list" path="userListTile" />
+       <forward name="add" path="userAddTile" />
+       <forward name="edit" path="userEditTile" />
+    </action>
+
+    <action
+       path="/buildingEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="buildingEditForm"
+       input="buildingEditTile"
+       name="buildingEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="edit" 
+       		path="buildingEditTile" />
+       <forward 
+       		name="add" 
+       		path="buildingAddTile" />
+       <forward 
+       		name="back" 
+       		path="/buildingList.do" />
+    </action>
+
+    <action
+       path="/itypeDescEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="itypeDescEditForm"
+       input="itypeDescEditTile"
+       name="itypeDescEditForm"
+       scope="request"
+       validate="false" >
+       <forward 
+       		name="edit" 
+       		path="itypeDescEditTile" />
+       <forward 
+       		name="add" 
+       		path="itypeDescAddTile" />
+       <forward 
+       		name="back" 
+       		path="/itypeDescList.do" />
+    </action>
+
+	  <action
+         path="/distributionPrefsAjax"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false" />
+         
+      <action
+      	 path="/buildingCoordsAjax"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false" 
+      />
+		
+      <action
+      	 path="/itypesAjax"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false" 
+      />
+
+    <action
+      attribute="rollForwardSessionForm"
+      input="rollForwardSessionTile"
+      name="rollForwardSessionForm"
+      path="/rollForwardSession"
+      scope="request"
+      validate="false"
+      type="org.springframework.web.struts.DelegatingActionProxy" >
+       <forward 
+       		name="displayRollForwardSessionForm" 
+       		path="rollForwardSessionTile" />
+       <forward 
+       		name="submit" 
+       		path="/rollForwardSession.do" />
+      </action>
+
+    <action
+      attribute="examPeriodEditForm"
+      input="examPeriodsTile"
+      name="examPeriodEditForm"
+      path="/examPeriodEdit"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy" 
+      validate="false">
+      <forward name="list" path="examPeriodsTile" />
+      <forward name="add" path="addExamPeriodTile" />
+      <forward name="edit" path="editExamPeriodTile" />
+      <forward name="midterm" path="midtermExamPeriodTile" />
+    </action>
+
+    <action
+      attribute="examListForm"
+      input="/user/examList.jsp"
+      name="examListForm"
+      path="/examList"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="list" path="examListTile" />
+      <forward name="addExam" path="/examEdit.do" redirect="true"/>
+    </action>
+
+    <action
+      attribute="examEditForm"
+      input="/user/examDetail.jsp"
+      name="examEditForm"
+      path="/examDetail"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showExamDetail" path="examDetailTile" />
+      <forward name="addDistributionPrefs" path="/examDistributionPrefs.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
+    </action>
+
+    <action
+      attribute="examEditForm"
+      input="/user/examEdit.jsp"
+      name="examEditForm"
+      path="/examEdit"
+      scope="request"
+      type="org.springframework.web.struts.DelegatingActionProxy"
+      validate="false">
+      <forward name="showAdd" path="examAddTile" />
+      <forward name="showEdit" path="examEditTile" />
+      <forward name="showDetail" path="/examDetail.do" />
+      <forward name="showList" path="/examList.do" redirect="true" />
+    </action>
+
+	  <action
+         path="/examEditAjax"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         scope="request"
+         validate="false" />
+
+
+         <action
+         path="/examDistributionPrefs"
+         type="org.springframework.web.struts.DelegatingActionProxy"
+         attribute="examDistributionPrefsForm"
+         input="examDistributionPrefsTile"
+         name="examDistributionPrefsForm"
+         scope="request"
+         validate="false">
+        <forward 
+        	name="list" 
+        	path="examDistributionPrefsTile" />
+        <forward 
+        	name="add" 
+        	path="examAdddistributionPrefTile" />
+        <forward 
+        	name="edit" 
+        	path="examEditDistributionPrefTile" />
+      </action>
+
+    <action
+    	path="/examSolver"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examSolverForm"
+    	input="examSolverTile"
+    	name="examSolverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="examSolverTile"
+	        redirect="true" />
+    </action>
+    
+    <action
+    	path="/examSolverLog"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examSolverLogForm"
+    	input="examSolverLogTile"
+    	name="examSolverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="examSolverLogTile"
+    		redirect="true" />
+    </action>
+   
+    <action
+    	path="/assignedExams"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examReportForm"
+    	input="assignedExamsTile"
+    	name="examReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="assignedExamsTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/unassignedExams"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examReportForm"
+    	input="unassignedExamsTile"
+    	name="examReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="unassignedExamsTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/examGrid"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examGridForm"
+    	input="examGridTile"
+    	name="examGridForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showGrid"
+    		path="examGridTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/examChanges"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examChangesForm"
+    	input="examChangesTile"
+    	name="examChangesForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showReport"
+    		path="examChangesTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/examInfo"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examInfoForm"
+    	input="examInfoTile"
+    	name="examInfoForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="examInfoTile"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/examAssignmentReport"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examAssignmentReportForm"
+    	input="examAssignmentReportTile"
+    	name="examAssignmentReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="examAssignmentReportTile"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/examPdfReport"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examPdfReportForm"
+    	input="examPdfReportTile"
+    	name="examPdfReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="examPdfReportTile"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/ecbs"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="ecbsForm"
+    	input="ecbsTile"
+    	name="ecbsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="show"
+	    	path="ecbsTile"
+	    	redirect="true" />
+    </action>
+    
+    <action
+    	path="/exams"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="examsForm"
+    	input="examsTile"
+    	name="examsForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="show"
+	    	path="examsTile"
+	    	redirect="true" />
+         <forward
+         	name="personal"
+            path="/personalSchedule.do"
+            redirect="true"/>
+    </action>
+
+    <action
+    	path="/classes"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="classesForm"
+    	input="classesTile"
+    	name="classesForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="show"
+	    	path="classesTile"
+	    	redirect="true" />
+         <forward
+         	name="personal"
+            path="/personalSchedule.do"
+            redirect="true"/>
+    </action>
+
+    <action
+    	path="/roomAvailability"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="roomAvailabilityForm"
+    	input="roomAvailabilityTile"
+    	name="roomAvailabilityForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+	    	name="showReport"
+	    	path="roomAvailabilityTile"
+	    	redirect="true" />
+    </action>
+
+    <action
+    	path="/personalSchedule"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="personalizedExamReportForm"
+    	input="personalizedExamReportTile"
+    	name="personalizedExamReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="personalizedExamReportTile" />
+    	<forward
+    		name="main"
+    		path="/main.jsp" />
+    	<forward
+    		name="back"
+    		path="/login.do"/>
+    	<forward
+    		name="exams"
+    		path="/exams.do"/>
+    	<forward
+    		name="classes"
+    		path="/classes.do"/>
+    </action>    
+
+    <action
+    	path="/studentSolver"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="studentSolverForm"
+    	input="studentSolverTile"
+    	name="studentSolverForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showSolver"
+    		path="studentSolverTile"
+	        redirect="true" />
+    </action>
+    
+    <action
+    	path="/studentSolverLog"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="studentSolverLogForm"
+    	input="studentSolverLogTile"
+    	name="studentSolverLogForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="showLog"
+    		path="studentSolverLogTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/sponsoringOrgList"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="sponsoringOrgListForm"
+    	input="sponsoringOrgListTile"
+    	name="sponsoringOrgListForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="sponsoringOrgListTile"
+    		redirect="true" />
+    	<forward 
+    		name="edit"
+    		path="/sponsoringOrgEdit.do"
+    		redirect="true" />
+    	<forward 
+    		name="add"
+    		path="sponsoringOrgAddTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/sponsoringOrgEdit"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="sponsoringOrgEditForm"
+    	input="sponsoringOrgEditTile"
+    	name="sponsoringOrgEditForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="sponsoringOrgEditTile"
+    		redirect="true" />
+    	<forward
+    		name="add"
+    		path="sponsoringOrgAddTile"
+    		redirect="true" />
+    	<forward 
+    		name="list"
+    		path="/sponsoringOrgList.do"
+    		redirect="true" />
+    </action>
+    
+    <action
+       path="/roomTypeEdit"
+       type="org.springframework.web.struts.DelegatingActionProxy"
+       attribute="roomTypeEditForm"
+       input="roomTypeEditTile"
+       name="roomTypeEditForm"
+       scope="request"
+       validate="false" >
+       <forward name="list" path="roomTypeListTile" />
+       <forward name="add" path="roomTypeAddTile" />
+       <forward name="edit" path="roomTypeEditTile" />
+    </action>
+    
+    <action
+    	path="/classInfo"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="classInfoForm"
+    	input="classInfoTile"
+    	name="classInfoForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="classInfoTile"
+    		redirect="true" />
+    </action>
+
+    <action
+    	path="/enrollmentAuditPdfReport"
+    	type="org.springframework.web.struts.DelegatingActionProxy"
+    	attribute="enrollmentAuditPdfReportForm"
+    	input="enrollmentAuditPdfReportTile"
+    	name="enrollmentAuditPdfReportForm"
+    	scope="request"
+    	validate="false">
+    	<forward
+    		name="show"
+    		path="enrollmentAuditPdfReportTile"
+    		redirect="true" />
+    </action>
+    
+    <action
+    	path="/stats"
+    	forward="statsTile" />
+
+    </action-mappings>
+
+	<!-- Struts Layout Controller -->
+	<controller 
+		processorClass = "fr.improve.struts.taglib.layout.workflow.LayoutRequestProcessor" />
+
+	<!-- Message Resource Keys -->
+    <message-resources 
+   		parameter="messages" 
+   	/>
+   		
+	<!-- Add the following line to tag above in development to avoid reloading of application. -->
+	<!-- 
+   		factory="org.unitime.timetable.util.MessageResourcesFactory" 
+	-->
+	
+	<!-- Struts Layout Skin Plugin -->
+	<plug-in className="fr.improve.struts.taglib.layout.workflow.LayoutPlugin">
+	 	<set-property property="skinResources" value="struts-layout"/>
+ 	</plug-in>
+ 
+	<!-- Tiles Plugin -->
+	<plug-in className="org.apache.struts.tiles.TilesPlugin" >
+	  	<set-property
+	  		property="definitions-config"
+	  		value="/WEB-INF/tiles-defs.xml" />
+	  	<set-property
+	  		property="definitions-debug"
+	  		value="3" />
+		<set-property
+	  		property="definitions-parser-details"
+	  		value="3" />
+	  	<set-property
+	  		property="definitions-parser-validate"
+	  		value="true" />
+	</plug-in>
+	
+	<plug-in className="org.springframework.web.struts.ContextLoaderPlugIn"/>
+
+</struts-config>

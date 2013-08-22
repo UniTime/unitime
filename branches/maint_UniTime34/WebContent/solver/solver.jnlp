@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<jnlp spec="1.0+" codebase="https://@host@:18443/UniTime/solver">
+    <information>
+        <title>Purdue Timetabling Solver</title>
+        <vendor>SMAS, Purdue University</vendor>
+        <homepage href="http://www.smas.purdue.edu/" />
+        <description>Purdue Timetabling Remote Solver</description>
+    </information>
+    <security>
+      <all-permissions/>
+    </security>
+    <resources>
+        <j2se version="1.5+" max-heap-size="512m"/>
+        <jar href="solver.jar" main="true"/>
+    </resources>
+    <resources os="Windows">
+    		<jar href="tray-win32.jar"/>
+        <nativelib href="tray-native-win32.jar"/>
+    </resources>
+    <resources os="SunOS" arch="sparc">
+    		<jar href="tray-sparc.jar"/>
+        <nativelib href="tray-native-sparc.jar"/>
+    </resources>
+    <resources os="Linux">
+    		<jar href="tray-linux.jar"/>
+        <nativelib href="tray-native-linux.jar"/>
+    </resources>
+    <application-desc/>
+</jnlp>

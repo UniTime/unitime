@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<beans:beans xmlns="http://www.springframework.org/schema/integration"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:file="http://www.springframework.org/schema/integration/file"
+	xmlns:mail="http://www.springframework.org/schema/integration/mail"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/integration
+		http://www.springframework.org/schema/integration/spring-integration-2.2.xsd
+		http://www.springframework.org/schema/integration/file
+		http://www.springframework.org/schema/integration/file/spring-integration-file-2.2.xsd
+		http://www.springframework.org/schema/integration/mail
+        http://www.springframework.org/schema/integration/mail/spring-integration-mail-2.2.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.1.xsd">
+		
+		<beans:bean id="delayedTrigger" class="org.springframework.scheduling.support.PeriodicTrigger">
+			<beans:constructor-arg value="60"/>
+			<beans:constructor-arg value="SECONDS"/>
+			<beans:property name="initialDelay" value="300"/>
+		</beans:bean>
+		
+        <file:inbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	filename-pattern="*.xml"
+        	auto-create-directory="true"
+        	channel="data-import-file"
+        	>
+        	<poller trigger="delayedTrigger"/>
+        </file:inbound-channel-adapter>
+        
+        <channel id="data-import-file" datatype="java.io.File"/>
+        
+        <header-enricher input-channel="data-import-file" output-channel="data-import-file-enriched">
+        	<header name="file_originalFile" expression="payload"/>
+        	<error-channel ref="data-import-failure"/>
+        </header-enricher>
+        
+        <channel id="data-import-file-enriched" datatype="java.io.File"/>
+        
+        <channel id="data-import-failure" datatype="org.springframework.integration.MessagingException"/>
+        
+        <transformer ref="dataExchangeHelper" method="file2document" input-channel="data-import-file-enriched" output-channel="data-import-xml"/>
+        
+        <channel id="data-import-xml" datatype="org.dom4j.Document"/>
+        
+        <service-activator ref="dataExchangeHelper" method="importDocument" input-channel="data-import-xml" output-channel="data-import-log"/>
+        
+        <channel id="data-import-log" datatype="java.lang.String"/>
+
+        <file:outbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	delete-source-files="true"
+        	charset="UTF-8"
+        	channel="data-import-log"
+        	filename-generator-expression="headers.file_originalFile.name + '.html'"
+        	>
+        </file:outbound-channel-adapter>
+        
+        <header-enricher input-channel="data-import-failure" output-channel="data-import-failure-enriched">
+        	<header name="file_originalFile" expression="payload.failedMessage.headers.file_originalFile"/>
+        </header-enricher>
+        
+        <channel id="data-import-failure-enriched" datatype="org.springframework.integration.MessagingException"/>
+        
+        <transformer ref="dataExchangeHelper" method="exception2message" input-channel="data-import-failure-enriched" output-channel="data-import-failure-log"/>
+        
+        <channel id="data-import-failure-log" datatype="java.lang.String"/>
+        
+        <file:outbound-channel-adapter
+        	directory="file:${unitime.data.dir}/import"
+        	charset="UTF-8"
+        	channel="data-import-failure-log"
+        	delete-source-files="true"
+        	filename-generator-expression="headers.file_originalFile.name + '.error'"
+        	>
+        </file:outbound-channel-adapter>
+        
+        <util:properties id="javaMailProperties">
+        	<beans:prop key="mail.imap.socketFactory.class">javax.net.ssl.SSLSocketFactory</beans:prop>
+        	<beans:prop key="mail.imap.socketFactory.fallback">false</beans:prop>
+        	<beans:prop key="mail.store.protocol">imaps</beans:prop>
+        	<beans:prop key="mail.debug">false</beans:prop>
+        </util:properties>
+        
+        <mail:imap-idle-channel-adapter
+        	store-uri="${unitime.email.inbound.uri}"
+        	java-mail-properties="javaMailProperties"
+      		channel="event-inbound-emails"
+      		should-delete-messages="false"
+      		should-mark-messages-as-read="true"
+      		auto-startup="${unitime.email.inbound.enabled}"
+      		/>
+      		<!-- FIXME: add the following mail-filter-selector above once spring-integration-mail-2.2.4 or later is used -->
+      		<!--        as it does not work in 2.2.3, see https://jira.springsource.org/browse/INT-2991 -->
+      		<!-- mail-filter-expression="subject matches '(?i).*\[EVENT-[0-9a-f]+\].*'" -->
+      		
+      	<channel id="event-inbound-emails" datatype="javax.mail.internet.MimeMessage"/>
+      	
+      	<service-activator ref="eventInboundEmailService" method="process" input-channel="event-inbound-emails"/>
+</beans:beans>

@@ -1,0 +1,1067 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008-2009, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="PreferenceGroup" abstract="true">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">pref_group_seq</param>
+            </generator>
+        </id>
+
+        <set
+            name="preferences"
+            lazy="true"
+            cascade="all-delete-orphan"
+            inverse="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="owner_id" not-null="true"/>
+            <one-to-many class="Preference"/>
+        </set>
+
+        <set
+            name="distributionObjects"
+            inverse="true"
+            lazy="true"
+            cascade="all-delete-orphan">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="pref_group_id"/>
+            <one-to-many class="DistributionObject"/>
+        </set>
+
+        <union-subclass
+            name="SchedulingSubpart"
+            table="scheduling_subpart"
+            abstract="false">
+            <property
+                name="minutesPerWk"
+                column="min_per_wk"
+                type="java.lang.Integer"
+                not-null="true"
+                length="4"/>
+
+            <property
+                name="autoSpreadInTime"
+                column="auto_time_spread"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="studentAllowOverlap"
+                column="student_allow_overlap"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="schedulingSubpartSuffixCache"
+                column="subpart_suffix"
+                type="java.lang.String"
+                not-null="false"
+                length="5"/>
+
+            <property
+                name="courseName"
+                type="java.lang.String"
+                formula="(select concat( concat( sa.subject_area_abbreviation , ' ') , co.course_nbr) from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid and co.is_control=1 and co.instr_offr_id=io.uniqueid and co.subject_area_id=sa.uniqueid)"
+                update="false"
+                insert="false"/>
+
+            <many-to-one
+                name="session"
+                class="Session"
+                lazy="proxy"
+                formula="(select io.session_id from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io where s.uniqueid=uniqueid and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid)"/>
+
+            <!-- 
+			<many-to-one 
+				name="controllingCourseOffering" 
+				class="CourseOffering"
+				lazy="proxy" 
+				formula="(select co.uniqueid from %SCHEMA%.scheduling_subpart s, %SCHEMA%.instr_offering_config c, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co where s.uniqueid=UNIQUEID and s.config_id=c.uniqueid and c.instr_offr_id=io.uniqueid and co.is_control=1 and co.instr_offr_id=io.uniqueid)"
+			/>	
+      		-->
+            <many-to-one
+                name="itype"
+                class="ItypeDesc"
+                column="itype"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_sched_subpart_itype"/>
+
+            <property
+                name="limit"
+                type="java.lang.Integer"
+                formula=" ( select sum(crs.expected_capacity) from %SCHEMA%.class_ crs where crs.subpart_id = uniqueid ) "/>
+
+            <set
+                name="childSubparts"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="scheduling_subpart"
+                order-by="uniqueid">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="parent"/>
+                <one-to-many class="SchedulingSubpart"/>
+            </set>
+
+            <many-to-one
+                name="parentSubpart"
+                class="SchedulingSubpart"
+                column="parent"
+                not-null="false"
+                insert="true"
+                update="true"
+                foreign-key="fk_sched_subpart_parent"/>
+
+            <many-to-one
+                name="instrOfferingConfig"
+                class="InstrOfferingConfig"
+                column="config_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                lazy="proxy"
+                foreign-key="fk_sched_subpart_config"/>
+
+            <set
+                name="classes"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="class_"
+                order-by="uniqueid">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="subpart_id"/>
+                <one-to-many class="Class_"/>
+            </set>
+
+            <many-to-one
+                name="datePattern"
+                class="DatePattern"
+                column="date_pattern_id"
+                not-null="false"
+                foreign-key="fk_schedsubpart_datepatt"/>
+
+            <set
+                name="creditConfigs"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="course_credit_unit_config">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="owner_id"/>
+                <one-to-many class="CourseCreditUnitConfig"/>
+            </set>
+
+            <property
+                name="uniqueIdRolledForwardFrom"
+                column="uid_rolled_fwd_from"
+                type="java.lang.Long"
+                not-null="false"
+                length="20"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="Class_"
+            table="class_"
+            abstract="false">
+            <property
+                name="expectedCapacity"
+                column="expected_capacity"
+                type="java.lang.Integer"
+                not-null="true"
+                length="4"/>
+
+            <property
+                name="notes"
+                column="notes"
+                type="java.lang.String"
+                not-null="false"
+                length="1000"/>
+
+            <property
+                name="nbrRooms"
+                type="java.lang.Integer"
+                column="nbr_rooms"
+                not-null="false"
+                length="4"/>
+
+            <property
+                name="sectionNumberCache"
+                column="section_number"
+                type="java.lang.Integer"
+                not-null="false"
+                length="5"/>
+
+            <many-to-one
+                name="controllingDept"
+                class="Department"
+                lazy="false"
+                formula=" ( select sa.department_uniqueid from %SCHEMA%.scheduling_subpart ss, %SCHEMA%.instr_offering_config ioc, %SCHEMA%.instructional_offering io, %SCHEMA%.course_offering co, %SCHEMA%.subject_area sa where ss.uniqueid = subpart_id and ioc.uniqueid = ss.config_id and io.uniqueid = ioc.instr_offr_id and co.instr_offr_id = io.uniqueid and co.is_control = 1 and sa.uniqueid = co.subject_area_id ) "/>
+
+            <many-to-one
+                name="managingDept"
+                class="Department"
+                column="managing_dept"
+                not-null="false"
+                insert="true"
+                update="true"
+                lazy="false"/>
+
+            <many-to-one
+                name="schedulingSubpart"
+                class="SchedulingSubpart"
+                column="subpart_id"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_class_scheduling_subpart"/>
+
+            <many-to-one
+                name="parentClass"
+                class="Class_"
+                column="parent_class_id"
+                not-null="false"
+                insert="true"
+                update="true"
+                foreign-key="fk_class_parent"/>
+
+            <set
+                name="childClasses"
+                inverse="true"
+                cascade="save-update"
+                lazy="true"
+                table="class_"
+                order-by="uniqueid">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="parent_class_id"/>
+                <one-to-many class="Class_"/>
+            </set>
+
+            <set
+                name="classInstructors"
+                cascade="all"
+                lazy="true"
+                inverse="true"
+                table="class_instructor">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="class_id"/>
+                <one-to-many class="ClassInstructor"/>
+            </set>
+
+            <set
+                name="assignments"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="assignment">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="class_id"/>
+                <one-to-many class="Assignment"/>
+            </set>
+
+            <set
+                name="studentEnrollments"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="student_class_enrl">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="class_id"/>
+                <one-to-many class="StudentClassEnrollment"/>
+            </set>
+
+            <many-to-one
+                name="datePattern"
+                class="DatePattern"
+                column="date_pattern_id"
+                not-null="false"
+                foreign-key="fk_class_datepatt"/>
+
+            <property
+                name="displayInstructor"
+                type="java.lang.Boolean"
+                column="display_instructor"
+                not-null="true"/>
+
+            <property
+                name="schedulePrintNote"
+                column="sched_print_note"
+                type="java.lang.String"
+                not-null="false"
+                length="2000"/>
+
+            <property
+                name="classSuffix"
+                column="class_suffix"
+                type="java.lang.String"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="enabledForStudentScheduling"
+                type="java.lang.Boolean"
+                column="display_in_sched_book"
+                not-null="true"/>
+
+            <property
+                name="maxExpectedCapacity"
+                column="max_expected_capacity"
+                type="java.lang.Integer"
+                not-null="true"
+                length="4"/>
+
+            <property
+                name="roomRatio"
+                column="room_ratio"
+                type="java.lang.Float"
+                not-null="true"/>
+
+            <many-to-one
+                name="committedAssignment"
+                class="org.unitime.timetable.model.Assignment"
+                not-null="false"
+                lazy="proxy"
+                formula=" (       select a.uniqueid from        %SCHEMA%.assignment a,        %SCHEMA%.solution s,        %SCHEMA%.department d,       %SCHEMA%.solver_group g      where a.class_id=uniqueid and        a.solution_id=s.uniqueid and        s.commited=1 and        d.uniqueid=managing_dept and        s.owner_id=g.uniqueid and       d.solver_group_id=g.uniqueid ) "/>
+
+            <!--
+			<one-to-one name="sectioningInfo" class="SectioningInfo" property-ref="clazz" cascade="all"/>
+			-->
+            <property
+                name="uniqueIdRolledForwardFrom"
+                column="uid_rolled_fwd_from"
+                type="java.lang.Long"
+                not-null="false"
+                length="20"/>
+
+            <property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                not-null="false"
+                length="40"/>
+
+			<!-- 
+            <property
+                name="enrollment"
+                column="enrollment"
+                type="java.lang.Integer"
+                not-null="false"
+                length="4"/>
+			-->
+			
+			<property
+            	name="enrollment"
+            	type="java.lang.Integer"
+            	lazy="true"
+            	formula="(select /*+ RULE */ count(e.student_id) from %SCHEMA%.student_class_enrl e where e.class_id = uniqueid)"/>
+
+        </union-subclass>
+
+        <union-subclass
+            name="Department"
+            table="department"
+            abstract="false">
+            <many-to-one
+                name="session"
+                class="Session"
+                column="session_id"
+                not-null="true"/>
+
+            <property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                not-null="false"
+                length="40"/>
+
+            <property
+                name="deptCode"
+                column="dept_code"
+                type="java.lang.String"
+                not-null="true"
+                length="50"/>
+
+            <property
+                name="abbreviation"
+                column="abbreviation"
+                type="java.lang.String"
+                not-null="false"
+                length="20"/>
+
+            <property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                not-null="true"
+                length="100"/>
+
+            <set
+                name="subjectAreas"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="subject_area"
+                order-by="subject_area_abbreviation">
+
+                <cache include="non-lazy" usage="nonstrict-read-write"/>
+                <key column="department_uniqueid"/>
+                <one-to-many class="org.unitime.timetable.model.SubjectArea"/>
+            </set>
+
+            <set
+                name="roomDepts"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="room_dept">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="department_id"/>
+                <one-to-many class="org.unitime.timetable.model.RoomDept"/>
+            </set>
+
+            <property
+                name="allowReqTime"
+                column="allow_req_time"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="allowReqRoom"
+                column="allow_req_room"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="allowReqDistribution"
+                column="allow_req_dist"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="allowEvents"
+                column="allow_events"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="roomSharingColor"
+                column="rs_color"
+                type="java.lang.String"
+                not-null="false"
+                length="6"/>
+
+            <set name="datePatterns" table="date_pattern_dept">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="dept_id"/>
+                <many-to-many
+                    class="DatePattern"
+                    column="pattern_id"
+                    foreign-key="fk_date_pattern_dept_date"/>
+
+            </set>
+            <set name="timePatterns" table="time_pattern_dept">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="dept_id"/>
+                <many-to-many
+                    class="TimePattern"
+                    column="pattern_id"
+                    foreign-key="fk_time_pattern_dept_time"/>
+
+            </set>
+            <property
+                name="externalManager"
+                column="external_manager"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <property
+                name="externalMgrLabel"
+                column="external_mgr_label"
+                type="java.lang.String"
+                not-null="false"
+                length="30"/>
+
+            <property
+                name="externalMgrAbbv"
+                column="external_mgr_abbv"
+                type="java.lang.String"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="distributionPrefPriority"
+                column="dist_priority"
+                type="java.lang.Integer"
+                not-null="true"/>
+
+            <many-to-one
+                name="statusType"
+                class="DepartmentStatusType"
+                column="status_type"
+                not-null="false"
+                foreign-key="fk_department_status_type"/>
+
+            <set name="timetableManagers" table="dept_to_tt_mgr">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="department_id"/>
+                <many-to-many
+                    class="TimetableManager"
+                    column="timetable_mgr_id"
+                    foreign-key="fk_dept_mgr_to_mgr"/>
+
+            </set>
+            <many-to-one
+                name="solverGroup"
+                class="SolverGroup"
+                column="solver_group_id"
+                not-null="false"
+                lazy="false"
+                foreign-key="fk_dept_solver_gr"/>
+
+            <set
+                name="instructors"
+                table="departmental_instructor"
+                cascade="all-delete-orphan"
+                inverse="true">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="department_uniqueid"/>
+                <one-to-many class="DepartmentalInstructor"/>
+            </set>
+
+        </union-subclass>
+
+        <union-subclass
+            name="Session"
+            table="sessions"
+            abstract="false">
+            <property
+                name="academicInitiative"
+                type="java.lang.String"
+                length="20"
+                not-null="true"
+                update="true"
+                insert="true"
+                access="property"
+                column="academic_initiative"/>
+
+            <property
+                name="academicYear"
+                type="java.lang.String"
+                length="4"
+                not-null="true"
+                update="true"
+                insert="true"
+                access="property"
+                column="academic_year"/>
+
+            <property
+                name="academicTerm"
+                type="java.lang.String"
+                length="20"
+                not-null="true"
+                update="true"
+                insert="true"
+                access="property"
+                column="academic_term"/>
+
+            <property
+                name="sessionBeginDateTime"
+                type="java.sql.Timestamp"
+                update="true"
+                insert="true"
+                access="property"
+                column="session_begin_date_time"
+                not-null="true"/>
+
+            <property
+                name="classesEndDateTime"
+                type="java.sql.Timestamp"
+                update="true"
+                insert="true"
+                access="property"
+                column="classes_end_date_time"
+                not-null="true"/>
+
+            <property
+                name="sessionEndDateTime"
+                type="java.sql.Timestamp"
+                update="true"
+                insert="true"
+                access="property"
+                column="session_end_date_time"
+                not-null="true"/>
+
+            <property
+                name="examBeginDate"
+                type="java.sql.Timestamp"
+                update="true"
+                insert="true"
+                access="property"
+                column="exam_begin_date"
+                not-null="true"/>
+
+            <property
+                name="eventBeginDate"
+                type="java.sql.Date"
+                update="true"
+                insert="true"
+                access="property"
+                column="event_begin_date"
+                not-null="true"/>
+
+            <property
+                name="eventEndDate"
+                type="java.sql.Date"
+                update="true"
+                insert="true"
+                access="property"
+                column="event_end_date"
+                not-null="true"/>
+
+            <many-to-one
+                name="statusType"
+                class="DepartmentStatusType"
+                column="status_type"
+                not-null="true"
+                foreign-key="fk_sessions_status_type"/>
+
+            <property
+                name="holidays"
+                column="holidays"
+                type="java.lang.String"
+                length="366"
+                not-null="false"/>
+
+            <many-to-one
+                name="defaultDatePattern"
+                class="DatePattern"
+                column="def_datepatt_id"
+                not-null="false"
+                foreign-key="fk_session_datepatt"/>
+
+            <!--
+	            To add non XDoclet property mappings, create a file named
+	                hibernate-properties-Session.xml
+	            containing the additional properties and place it in your merge dir.
+	        -->
+            <set
+                name="subjectAreas"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="subject_area"
+                order-by="subject_area_abbreviation">
+
+                <cache include="non-lazy" usage="nonstrict-read-write"/>
+                <key column="session_id"/>
+                <one-to-many class="org.unitime.timetable.model.SubjectArea"/>
+            </set>
+
+            <set
+                name="buildings"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="buildings"
+                order-by="abbreviation">
+
+                <cache include="non-lazy" usage="nonstrict-read-write"/>
+                <key column="session_id"/>
+                <one-to-many class="org.unitime.timetable.model.Building"/>
+            </set>
+
+            <set
+                name="departments"
+                inverse="true"
+                lazy="true"
+                cascade="all"
+                table="department"
+                order-by="dept_code">
+
+                <cache include="non-lazy" usage="nonstrict-read-write"/>
+                <key column="session_id"/>
+                <one-to-many class="org.unitime.timetable.model.Department"/>
+            </set>
+
+            <set
+                name="rooms"
+                inverse="true"
+                lazy="true"
+                cascade="all">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="session_id"/>
+                <one-to-many class="org.unitime.timetable.model.Location"/>
+            </set>
+
+            <set
+                name="instructionalOfferings"
+                inverse="true"
+                lazy="true"
+                cascade="all-delete-orphan"
+                table="instructional_offering">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="session_id"/>
+                <one-to-many class="org.unitime.timetable.model.InstructionalOffering"/>
+            </set>
+
+            <!-- 
+			<set
+				name="instructors"
+				inverse="true"
+				lazy="true"
+				cascade="all"
+				table="DEPARTMENTAL_INSTRUCTOR"
+				order-by="LAST_NAME"
+				>
+		 		<cache include="non-lazy" usage="nonstrict-read-write"/>
+				<key column="SESSION_ID"/>
+				<one-to-many class="org.unitime.timetable.model.DepartmentalInstructor"/>
+			</set>
+			-->
+			
+			<property
+				name="lastWeekToEnroll"
+				column="wk_enroll"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+			<property
+				name="lastWeekToChange"
+				column="wk_change"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+			<property
+				name="lastWeekToDrop"
+				column="wk_drop"
+				type="java.lang.Integer"
+				not-null="true"
+			/>
+
+	        <many-to-one
+    	        name="defaultSectioningStatus"
+	            class="StudentSectioningStatus"
+        	    column="sect_status"
+    	        foreign-key="fk_session_sect_status"
+	            not-null="false"/>
+
+        </union-subclass>
+
+        <union-subclass name="DepartmentalInstructor" table="departmental_instructor">
+            <property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                not-null="false"
+                length="40"/>
+
+            <property
+                name="careerAcct"
+                column="career_acct"
+                type="java.lang.String"
+                not-null="false"
+                length="20"/>
+
+            <property
+                name="firstName"
+                column="fname"
+                type="java.lang.String"
+                not-null="false"
+                length="100"/>
+
+            <property
+                name="middleName"
+                column="mname"
+                type="java.lang.String"
+                not-null="false"
+                length="100"/>
+
+            <property
+                name="lastName"
+                column="lname"
+                type="java.lang.String"
+                not-null="true"
+                length="100"/>
+
+            <property
+                name="note"
+                column="note"
+                type="java.lang.String"
+                not-null="false"
+                length="2048"/>
+
+            <property
+                name="email"
+                column="email"
+                type="java.lang.String"
+                not-null="false"
+                length="200"/>
+
+            <set
+                name="classes"
+                cascade="all"
+                lazy="true"
+                inverse="true"
+                table="class_instructor">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="instructor_id"/>
+                <one-to-many class="ClassInstructor"/>
+            </set>
+
+            <set
+                name="exams"
+                lazy="true"
+                table="exam_instructor">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="instructor_id" foreign-key="fk_exam_instructor_instructor"/>
+                <many-to-many
+                    class="Exam"
+                    column="exam_id"
+                    foreign-key="fk_exam_instructor_exam"/>
+
+            </set>
+
+            <many-to-one
+                name="positionType"
+                class="PositionType"
+                column="pos_code_type"
+                not-null="false"
+                insert="true"
+                update="true"
+                foreign-key="fk_instr_position_type"/>
+
+            <many-to-one
+                name="department"
+                class="Department"
+                column="department_uniqueid"
+                not-null="true"
+                insert="true"
+                update="true"
+                foreign-key="fk_instructor_dept"/>
+
+            <set
+                name="assignments"
+                inverse="true"
+                table="assigned_instructors">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="instructor_id"/>
+                <many-to-many
+                    class="Assignment"
+                    column="assignment_id"
+                    foreign-key="fk_instructor_assignment"/>
+
+            </set>
+
+            <property
+                name="ignoreToFar"
+                column="ignore_too_far"
+                type="java.lang.Boolean"
+                not-null="true"/>
+
+            <set
+                name="offerings"
+                lazy="true"
+                table="offering_coordinator"
+                inverse="true">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="instructor_id" foreign-key="fk_offering_coord_instructor"/>
+                <many-to-many
+                    class="InstructionalOffering"
+                    column="offering_id"
+                    foreign-key="fk_offering_coord_offering"/>
+            </set>
+
+            <many-to-one
+                name="role"
+                class="Roles"
+                column="role_id"
+                not-null="false"
+                foreign-key="fk_instructor_role"/>
+        </union-subclass>
+        <union-subclass name="Exam" table="exam">
+            <many-to-one
+                name="session"
+                class="Session"
+                column="session_id"
+                not-null="true"
+                foreign-key="fk_exam_session"/>
+
+            <property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                not-null="false"
+                length="100"/>
+
+            <property
+                name="note"
+                column="note"
+                type="java.lang.String"
+                not-null="false"
+                length="1000"/>
+
+            <property
+                name="length"
+                column="length"
+                type="java.lang.Integer"
+                not-null="true"
+                length="10"/>
+
+            <property
+                name="examSize"
+                column="exam_size"
+                type="java.lang.Integer"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="printOffset"
+                column="print_offset"
+                type="java.lang.Integer"
+                not-null="false"
+                length="10"/>
+
+            <property
+                name="maxNbrRooms"
+                column="max_nbr_rooms"
+                type="java.lang.Integer"
+                not-null="true"
+                length="10"/>
+
+            <property
+                name="seatingType"
+                column="seating_type"
+                type="java.lang.Integer"
+                not-null="true"
+                length="10"/>
+
+            <many-to-one
+                name="assignedPeriod"
+                class="ExamPeriod"
+                column="assigned_period"
+                foreign-key="fk_exam_period"
+                not-null="false"/>
+
+            <property
+                name="assignedPreference"
+                column="assigned_pref"
+                type="java.lang.String"
+                not-null="false"
+                length="100"/>
+
+			<many-to-one
+                name="examType"
+                class="ExamType"
+                column="exam_type_id"
+                not-null="true"
+                foreign-key="fk_exam_type"/>
+                
+            <property
+                name="avgPeriod"
+                column="avg_period"
+                type="java.lang.Integer"
+                length="10"
+                not-null="false"/>
+
+            <set
+                name="owners"
+                lazy="true"
+                cascade="all-delete-orphan"
+                inverse="true">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="exam_id" foreign-key="fk_exam_owner_exam"/>
+                <one-to-many class="ExamOwner"/>
+            </set>
+
+            <set
+                name="assignedRooms"
+                lazy="true"
+                table="exam_room_assignment">
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="exam_id" foreign-key="fk_exam_room_exam"/>
+                <many-to-many class="Location" column="location_id"/>
+            </set>
+
+            <set
+                name="instructors"
+                lazy="true"
+                table="exam_instructor"
+                inverse="true">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="exam_id" foreign-key="fk_exam_instructor_exam"/>
+                <many-to-many
+                    class="DepartmentalInstructor"
+                    column="instructor_id"
+                    foreign-key="fk_exam_instructor_instructor"/>
+
+            </set>
+
+            <set
+                name="conflicts"
+                lazy="true"
+                table="xconflict_exam"
+                cascade="all-delete-orphan">
+
+                <cache include="non-lazy" usage="read-write"/>
+                <key column="exam_id" foreign-key="fk_xconflict_ex_conf_exam"/>
+                <many-to-many
+                    class="ExamConflict"
+                    column="conflict_id"
+                    foreign-key="fk_xconflict_ex_conf"/>
+
+            </set>
+
+            <property
+                name="uniqueIdRolledForwardFrom"
+                column="uid_rolled_fwd_from"
+                type="java.lang.Long"
+                not-null="false"
+                length="20"/>
+
+        </union-subclass>
+    </class>
+</hibernate-mapping>

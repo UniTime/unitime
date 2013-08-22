@@ -1,0 +1,55 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+
+.unitime-TextBoxHint {
+	margin-top: -1px;
+}
+
+.gwt-SuggestBox {
+	margin-top: -1px;
+}
+
+.unitime-TimeGrid .meeting .footer {
+	font-size: 9pt;
+	line-height: 12px;
+}
+
+.unitime-DateSelector .box {
+	border-spacing: 0px;
+}
+
+.gwt-SuggestBox {
+	height: 20px;
+}
+
+.unitime-FilterBoxPopup .other {
+	padding: 1px;
+}
+
+.unitime-FilterBox {
+	border-radius: 0px;
+}
+
+.unitime-RoomSharingWidget .box {
+	border-spacing: 0px;
+}
+
+.unitime-AriaHiddenLabel {
+	display: none;
+}

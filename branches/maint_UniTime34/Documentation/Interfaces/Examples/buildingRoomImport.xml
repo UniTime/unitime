@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE buildingsRooms PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/BuildingRoom.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- building            ==> Required:  external Id, abbreviation, locationX, locationY, name
+	       room              ==> [0 ==> N entries] 
+	                             Required:  externalId, roomNumber, locationX, locationY, instructional, roomClassification, capacity
+                                 Optional:  scheduledRoomType, displayName
+             roomDepartments ==> [1 ==> N entries]
+               assigned      ==> [1 ==> N entries]
+                                 Required:  departmentNumber, percent
+               scheduling    ==> [0 ==> N entries]
+                                 Required:  departmentNumber, percent
+             roomFeatures    ==> [0 ==> N entries]
+                                 Required:  feature, value                              
+	     
+	     scheduledRoomType = genClassroom, computingLab or departmental
+	     instructional = T or F  {T ==> typically used for instruction}.
+	-->
+<buildingsRooms campus="woebegon" term="Fal" year="2007">
+	<building externalId="14Q07A1C11FQD1GNDC1U" abbreviation="113" locationX="339" locationY="404" name="Purdue Village Apts #113"/>
+	<building externalId="14Q07S1C11GP31GNDC1W" abbreviation="114" locationX="344" locationY="404" name="Purdue Village Apts #114"/>
+	<building externalId="14Q0BS1C12Q3I1GNDC5A" abbreviation="ABE" locationX="449" locationY="392" name="Agricultural and Biological Engineering">
+  		<room externalId="14P0I32VHG3I71IISIKV" locationX="447" locationY="392" roomNumber="301A" roomClassification="conference" capacity="15" instructional="False" scheduledRoomType="departmental">
+   			<roomDepartments>
+      			<assigned departmentNumber="1146" percent="100"/>
+   			</roomDepartments>
+  		</room>
+  		<!-- area (square footage) since UniTime 3.4.128 -->
+  		<room externalId="14P3G41C10IRK1GNDDEB" locationX="447" locationY="392" area="1265.3" roomNumber="204" roomClassification="classroom" capacity="58" instructional="True" scheduledRoomType="genClassroom">
+   			<roomDepartments>
+      			<assigned departmentNumber="1979" percent="100"/>
+      			<scheduling departmentNumber="1128" percent="50"/>
+      			<scheduling departmentNumber="1146" percent="50"/>
+   			</roomDepartments>
+   			<roomFeatures>
+      			<roomFeature feature="seatingType" value="Tablet Arm Chairs"/>
+      			<roomFeature feature="dvd" value="DVD"/>
+      			<roomFeature feature="computerProjection" value="Computer Projection"/>
+      			<roomFeature feature="puccComputer" value="Computer"/>
+      			<roomFeature feature="feetOfChalkboard" value="20"/>
+   			</roomFeatures>
+  		</room>
+  	</building>
+</buildingsRooms>

@@ -1,0 +1,78 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT arrangeTime EMPTY >
+<!ATTLIST arrangeTime minPerWeek NMTOKEN #IMPLIED >
+
+<!ELEMENT class ( class*, date*, (time|arrangeTime)?, (room|location)*, instructor* ) >
+<!ATTLIST class id CDATA #IMPLIED >
+<!ATTLIST class name CDATA #IMPLIED >
+<!ATTLIST class subject CDATA #IMPLIED >
+<!ATTLIST class courseNbr NMTOKEN #IMPLIED >
+<!ATTLIST class type NMTOKEN #IMPLIED >
+<!ATTLIST class suffix NMTOKEN #IMPLIED >
+<!ATTLIST class scheduleNote CDATA #IMPLIED >
+<!ATTLIST class studentScheduling (true|false) #IMPLIED >
+<!ATTLIST class displayInScheduleBook (true|false) #IMPLIED >
+<!ATTLIST class controlling (true|false) #IMPLIED >
+<!ATTLIST class solver CDATA #IMPLIED >
+<!ATTLIST class limit NMTOKEN #IMPLIED >
+
+<!ELEMENT date EMPTY >
+<!ATTLIST date endDate CDATA #REQUIRED >
+<!ATTLIST date startDate CDATA #REQUIRED >
+
+<!ELEMENT instructor EMPTY >
+<!ATTLIST instructor id NMTOKEN #IMPLIED >
+<!ATTLIST instructor fname CDATA #IMPLIED >
+<!ATTLIST instructor mname CDATA #IMPLIED >
+<!ATTLIST instructor lname CDATA #IMPLIED >
+<!ATTLIST instructor share NMTOKEN #IMPLIED >
+<!ATTLIST instructor lead ( false | true ) #IMPLIED >
+
+<!ELEMENT room EMPTY >
+<!ATTLIST room id CDATA #IMPLIED >
+<!ATTLIST room building NMTOKEN #IMPLIED >
+<!ATTLIST room roomNbr NMTOKEN #IMPLIED >
+<!ATTLIST room name CDATA #IMPLIED >
+
+<!ELEMENT location EMPTY >
+<!ATTLIST location id CDATA #IMPLIED >
+<!ATTLIST location name CDATA #IMPLIED >
+
+<!ELEMENT time EMPTY >
+<!ATTLIST time days NMTOKEN #REQUIRED >
+<!ATTLIST time endTime NMTOKEN #IMPLIED >
+<!ATTLIST time startTime NMTOKEN #REQUIRED >
+<!ATTLIST time timePattern CDATA #IMPLIED >
+<!ATTLIST time datePattern CDATA #IMPLIED >
+
+<!ELEMENT timetable ( class+ ) >
+<!ATTLIST timetable action CDATA #IMPLIED >
+<!ATTLIST timetable campus NMTOKEN #REQUIRED >
+<!ATTLIST timetable year NMTOKEN #REQUIRED >
+<!ATTLIST timetable term NMTOKEN #REQUIRED >
+<!ATTLIST timetable created CDATA #IMPLIED >
+<!ATTLIST timetable timeFormat CDATA #IMPLIED >
+<!ATTLIST timetable dateFormat CDATA #IMPLIED >
+<!ATTLIST timetable prefer (id|name) #IMPLIED >
+<!ATTLIST timetable instructors (true|false) #IMPLIED >
+<!ATTLIST timetable notes (true|false) #IMPLIED >
+
+
