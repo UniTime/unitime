@@ -30,6 +30,19 @@
 	<category>
 		<title>Bug Fixes</title>
 		<item>
+			<name>Add / Edit Event</name>
+			<description>
+				<line>Course Related Event: at least one related object (a class, a configuration, a course offering, or an instructional offering) is required.</line>
+			</description>
+		</item>	</category>
+</release>
+
+<release>
+	<version>3.4.275</version>
+	<release-date>Sat, 17 Aug 2013</release-date>
+	<category>
+		<title>Bug Fixes</title>
+		<item>
 			<name>Academic Session Roll Forward</name>
 			<description>
 				<line>Rooms roll forward: set event status of the newly copied rooms to blank.

@@ -2032,6 +2032,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("One or more meetings is overlapping with an existing event.")
 	String reqNoOverlaps();
+	
+	@DefaultMessage("No courses / clases were defined.")
+	String reqCoursesOrClasses();
 		
 	@DefaultMessage("an event")
 	String anEvent();
