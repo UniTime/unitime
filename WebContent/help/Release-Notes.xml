@@ -41,6 +41,12 @@
 				<line>Fixed NullPointerException when removing an existing constraints from the model during the data load (e.g., because it is posted between committed variables).</line>
 			</description>
 		</item>
+		<item>
+			<name>Instructional Offerings, Classes: PDF Export</name>
+			<description>
+				<line>Fixed condition for printing class schedule print note and class note to schedule manager in full length.</line>
+			</description>
+		</item>
 	</category>
 </release>
 
