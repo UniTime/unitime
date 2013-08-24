@@ -779,7 +779,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getSchedulePrintNote()!=null) {
-    			if (c.getSchedulePrintNote().length() <= 20 || user == null || !CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))){
+    			if (c.getSchedulePrintNote().length() <= 20 || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.SchedulePrintNoteDisplay))){
     				addText(cell, c.getSchedulePrintNote(), false, false, Element.ALIGN_LEFT, color, true);
     			} else {
     				addText(cell, c.getSchedulePrintNote().substring(0,20) + "...", false, false, Element.ALIGN_LEFT, color, true);   				
@@ -820,7 +820,7 @@ public class PdfInstructionalOfferingTableBuilder extends WebInstructionalOfferi
     	if (prefGroup instanceof Class_) {
     		Class_ c = (Class_) prefGroup;
     		if (c.getNotes()!=null) {
-    			if (c.getNotes().length() <= 30  || user == null || !CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
+    			if (c.getNotes().length() <= 30  || user == null || CommonValues.NoteAsFullText.eq(user.getProperty(UserProperty.ManagerNoteDisplay))){
     				addText(cell, c.getNotes(), false, false, Element.ALIGN_LEFT, color, true);
     			} else {
     				addText(cell, c.getNotes().substring(0, 30) + "...", false, false, Element.ALIGN_LEFT, color, true);
