@@ -1059,6 +1059,8 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		iShowDeleted.setValue(EventCookie.getInstance().isShowDeletedMeetings(), true);
 		iForm.getRowFormatter().setVisible(iSessionRow, event == null || event.getId() == null);
 		iEvent = (event == null ? new EventInterface() : event);
+		if (event == null && getProperties() != null && getProperties().hasFilterDefault("emails"))
+			iEvent.setEmail(getProperties().getFilterDefault("emails"));
 		iSavedEvent = null;
 		iHeader.clearMessage();
 		iName.getWidget().setText(iEvent.getName() == null ? "" : iEvent.getName());
