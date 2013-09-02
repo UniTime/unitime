@@ -1637,17 +1637,24 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	}
 	
 	public static class EventPropertiesRpcRequest extends EventRpcRequest<EventPropertiesRpcResponse> {
+		private String iPageName;
+		
 		public EventPropertiesRpcRequest() {}
 		public EventPropertiesRpcRequest(Long sessionId) { 
 			setSessionId(sessionId);
 		}
 		
-		public static EventPropertiesRpcRequest requestEventProperties(Long sessionId) {
-			return new EventPropertiesRpcRequest(sessionId);
+		public String getPageName() { return iPageName; }
+		public void setPageName(String pageName) { iPageName = pageName; }
+		
+		public static EventPropertiesRpcRequest requestEventProperties(Long sessionId, String pageName) {
+			EventPropertiesRpcRequest request = new EventPropertiesRpcRequest(sessionId);
+			request.setPageName(pageName);
+			return request;
 		}
 		
 		@Override
-		public String toString() { return hasSessionId() ? getSessionId().toString() : "NULL"; }
+		public String toString() { return getPageName() + "@" + (hasSessionId() ? getSessionId().toString() : "NULL"); }
 	}
 	
 	public static class StandardEventNoteInterface implements IsSerializable, Comparable<StandardEventNoteInterface> {
@@ -1687,6 +1694,8 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		private ContactInterface iMainContact = null;
 		private Set<StandardEventNoteInterface> iStandardNotes = null;
 		private Boolean iEmailConfirmation = null;
+		private boolean iCanSaveFilterDefaults = false;
+		private Map<String, String> iFilterDefaults = null;
 	
 		public EventPropertiesRpcResponse() {}
 		
@@ -1735,6 +1744,21 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 		public boolean hasEmailConfirmation() { return iEmailConfirmation != null; }
 		public boolean isEmailConfirmation() { return iEmailConfirmation != null && iEmailConfirmation.booleanValue(); }
 		public void setEmailConfirmation(Boolean emailConfirmation) { iEmailConfirmation = emailConfirmation ;}
+		
+		public void setCanSaveFilterDefaults(boolean canSaveFilterDefaults) { iCanSaveFilterDefaults = canSaveFilterDefaults; }
+		public boolean isCanSaveFilterDefaults() { return iCanSaveFilterDefaults; }
+		
+		public void setFilterDefault(String name, String value) {
+			if (value == null) return;
+			if (iFilterDefaults == null) iFilterDefaults = new HashMap<String, String>();
+			iFilterDefaults.put(name, value);
+		}
+		public boolean hasEventFilterDefault(String name) {
+			return iFilterDefaults != null && iFilterDefaults.get(name) != null;
+		}
+		public String getFilterDefault(String name) {
+			return (iFilterDefaults == null ? null : iFilterDefaults.get(name));
+		}
 	}
 	
 	public static class EventDetailRpcRequest extends EventRpcRequest<EventInterface> {
@@ -2289,5 +2313,26 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 	
 	public static interface DateFlagsProvider {
 		public SessionMonth.Flag getDateFlag(EventType type, Date date);
+	}
+	
+	public static class SaveFilterDefaultRpcRequest implements GwtRpcRequest<GwtRpcResponse> {
+		private String iName, iValue;
+		
+		public SaveFilterDefaultRpcRequest() {}
+		public SaveFilterDefaultRpcRequest(String name, String value) {
+			iName = name;
+			iValue = value;
+		}
+		
+		public String getName() { return iName; }
+		public void setName(String name) { iName = name; }
+
+		public String getValue() { return iValue; }
+		public void setValue(String value) { iValue = value; }
+		
+		@Override
+		public String toString() {
+			return getName() + " = " + getValue();
+		}
 	}
 }
