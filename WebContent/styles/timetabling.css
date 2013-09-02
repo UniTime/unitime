@@ -1126,6 +1126,8 @@ A.submenuLink {
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
 	height: 35px;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellVertical {
@@ -1135,6 +1137,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellIn {
@@ -1142,6 +1146,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellFirst {
@@ -1150,6 +1156,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellLast {
@@ -1158,6 +1166,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellInVertical {
@@ -1166,6 +1176,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellInVerticalEOL {
@@ -1175,6 +1187,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellEOD {
@@ -1184,6 +1198,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellEOL {
@@ -1193,6 +1209,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellInEOD {
@@ -1201,6 +1219,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellInEOL {
@@ -1209,6 +1229,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableCellVerticalEOL {
@@ -1219,6 +1241,8 @@ A.submenuLink {
 	background-color: #FFFFFF;
 	font-size: small;
 	font-family: sans-serif, verdana, arial;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .TimetableHeadCellEOL {
