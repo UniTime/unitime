@@ -59,6 +59,7 @@ import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.MouseClickListener;
 import org.unitime.timetable.gwt.client.widgets.UniTimeTable.TableEvent;
 import org.unitime.timetable.gwt.client.widgets.WeekSelector;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -69,6 +70,7 @@ import org.unitime.timetable.gwt.shared.EventInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ContactInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.FilterRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveFilterDefaultRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SaveOrApproveEventRpcResponse;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.PersonInterface;
@@ -116,6 +118,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
@@ -186,7 +189,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 	public static enum PageType {
 		Timetable("tab", "0", "title", MESSAGES.pageEventTimetable(), "rooms", "", "showClear", "true"),
 		Events("filter", "events", "rooms", "flag:Event", "events", "mode:\"My Events\"", "type", "room", "title", MESSAGES.pageEvents(),
-				"fixedTitle", "true", "fixedType", "true", "tab", "1", "showClear", "true"),
+				"fixedTitle", "true", "fixedType", "true", "tab", "1", "showClear", "true", "saveAsDefault", "events,rooms"),
 		RoomTimetable("type", "room", "fixedType", "true", "title", MESSAGES.pageRoomTimetable(), "showClear", "true"),
 		Classes(
 				"type", "subject", "fixedType", "true", "events", "type:Class", "tab", "1", "filter", "classes",
@@ -1708,7 +1711,7 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		iFilterHeader.setEnabled("add", false);
 		iFooter.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
-			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
+			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId(), iType.name()), new AsyncCallback<EventPropertiesRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()), caught);
@@ -1717,6 +1720,52 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 				}
 				@Override
 				public void onSuccess(final EventPropertiesRpcResponse result) {
+					if (result.isCanSaveFilterDefaults() && "true".equals(iHistoryToken.getParameter("showFilter", "true"))) {
+						iHistoryToken.setDefaultParameter("events", result.getFilterDefault("events"));
+						iEvents.setDefaultValueProvider(new TakesValue<String>() {
+							@Override
+							public void setValue(final String value) {
+								RPC.execute(new SaveFilterDefaultRpcRequest(iType.name() + ".events", iEvents.getValue()),
+										new AsyncCallback<GwtRpcResponse>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												UniTimeNotifications.error(MESSAGES.failedSaveAsDefault(caught.getMessage()), caught);
+											}
+											@Override
+											public void onSuccess(GwtRpcResponse result) {
+												iHistoryToken.setDefaultParameter("events", value);
+											}
+										});					
+							}
+
+							@Override
+							public String getValue() {
+								return iHistoryToken.getDefaultParameter("events", "");
+							}
+						});
+						iHistoryToken.setDefaultParameter("rooms", result.getFilterDefault("rooms"));
+						iRooms.setDefaultValueProvider(new TakesValue<String>() {
+							@Override
+							public void setValue(final String value) {
+								RPC.execute(new SaveFilterDefaultRpcRequest(iType.name() + ".rooms", iRooms.getValue()),
+										new AsyncCallback<GwtRpcResponse>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												UniTimeNotifications.error(MESSAGES.failedSaveAsDefault(caught.getMessage()), caught);
+											}
+											@Override
+											public void onSuccess(GwtRpcResponse result) {
+												iHistoryToken.setDefaultParameter("rooms", value);
+											}
+										});					
+							}
+
+							@Override
+							public String getValue() {
+								return iHistoryToken.getDefaultParameter("rooms", "");
+							}
+						});
+					}
 					RPC.execute(new RequestSessionDetails(iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 						@Override
 						public void onFailure(Throwable caught) {
@@ -1876,6 +1925,11 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		public String getDefaultParameter(String key, String defaultValue) {
 			String value = iDefaults.get(key);
 			return (value == null ? defaultValue : value);
+		}
+		
+		public void setDefaultParameter(String key, String value) {
+			if (value != null)
+				iDefaults.put(key, value);
 		}
 		
 		public boolean hasParameter(String key) {

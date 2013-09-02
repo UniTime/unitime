@@ -48,6 +48,18 @@
 			</description>
 		</item>
 	</category>
+	<category>
+		<title>Other Improvements</title>
+		<item>
+			<name>Events, Event Room Availability, Event Timetable</name>
+			<description>
+				<line>Room / Event Filter: Added ability to store current room / event filter settings as default (for the user and page).
+					<line>This can be done by clicking on a little star icon (usually denoting favorites) in the bottom right corner of the filter pop up.</line>
+					<line>Clear button resets the filter settings to the (previously saved) default value.</line> 
+				</line>
+			</description>
+		</item>
+	</category>
 </release>
 
 <release>

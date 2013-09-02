@@ -50,6 +50,7 @@ import org.unitime.timetable.gwt.client.widgets.SimpleForm;
 import org.unitime.timetable.gwt.client.widgets.FilterBox.Chip;
 import org.unitime.timetable.gwt.client.widgets.TimeSelector.TimeUtils;
 import org.unitime.timetable.gwt.client.widgets.UniTimeHeaderPanel;
+import org.unitime.timetable.gwt.command.client.GwtRpcResponse;
 import org.unitime.timetable.gwt.command.client.GwtRpcResponseList;
 import org.unitime.timetable.gwt.command.client.GwtRpcService;
 import org.unitime.timetable.gwt.command.client.GwtRpcServiceAsync;
@@ -73,6 +74,7 @@ import org.unitime.timetable.gwt.shared.EventInterface.MeetingInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.RequestSessionDetails;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.ResourceType;
+import org.unitime.timetable.gwt.shared.EventInterface.SaveFilterDefaultRpcRequest;
 import org.unitime.timetable.gwt.shared.EventInterface.SelectionInterface;
 import org.unitime.timetable.gwt.shared.EventInterface.SessionMonth;
 import org.unitime.timetable.gwt.shared.EventInterface.WeekInterface;
@@ -90,6 +92,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
@@ -161,7 +164,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 			public void onClick(ClickEvent event) {
 				iDates.setValue(null);
 				iTimes.setValue(null);
-				iRooms.setValue("flag:Event");
+				iRooms.setValue(iHistoryToken.getDefaultParameter("rooms", ""));
 				hideResults();
 				changeUrl();
 			}
@@ -835,7 +838,7 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 		iFilterHeader.setEnabled("add", false);
 		iFooter.setEnabled("add", false);
 		if (iSession.getAcademicSessionId() != null) {
-			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId()), new AsyncCallback<EventPropertiesRpcResponse>() {
+			RPC.execute(EventPropertiesRpcRequest.requestEventProperties(iSession.getAcademicSessionId(), PageType.Availability.name()), new AsyncCallback<EventPropertiesRpcResponse>() {
 				@Override
 				public void onFailure(Throwable caught) {
 					UniTimeNotifications.error(MESSAGES.failedLoad(iSession.getAcademicSessionName(), caught.getMessage()), caught);
@@ -844,6 +847,30 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 				}
 				@Override
 				public void onSuccess(final EventPropertiesRpcResponse result) {
+					if (result.isCanSaveFilterDefaults()) {
+						iHistoryToken.setDefaultParameter("rooms", result.getFilterDefault("rooms"));
+						iRooms.setDefaultValueProvider(new TakesValue<String>() {
+							@Override
+							public void setValue(final String value) {
+								RPC.execute(new SaveFilterDefaultRpcRequest(PageType.Availability.name() + ".rooms", iRooms.getValue()),
+										new AsyncCallback<GwtRpcResponse>() {
+											@Override
+											public void onFailure(Throwable caught) {
+												UniTimeNotifications.error(MESSAGES.failedSaveAsDefault(caught.getMessage()), caught);
+											}
+											@Override
+											public void onSuccess(GwtRpcResponse result) {
+												iHistoryToken.setDefaultParameter("rooms", value);
+											}
+										});					
+							}
+
+							@Override
+							public String getValue() {
+								return iHistoryToken.getDefaultParameter("rooms", "");
+							}
+						});
+					}
 					RPC.execute(new RequestSessionDetails(iSession.getAcademicSessionId()), new AsyncCallback<GwtRpcResponseList<SessionMonth>>() {
 						@Override
 						public void onFailure(Throwable caught) {
