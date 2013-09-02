@@ -47,6 +47,12 @@
 				<line>Fixed condition for printing class schedule print note and class note to schedule manager in full length.</line>
 			</description>
 		</item>
+		<item>
+			<name>Course Timetabling: Timetable Grid</name>
+			<description>
+				<line>Fixed formatting issues when there are too many instructors assigned to a class by imposing maximal cell widths.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>

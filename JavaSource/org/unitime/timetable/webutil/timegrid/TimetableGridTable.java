@@ -384,6 +384,8 @@ public class TimetableGridTable {
 	
 	
 	public void printToHtml(PrintWriter out, TimetableGridModel model, int rowNumber) {
+		int maxCellWidth = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.maxCellWidth", "10"));
+		int maxCellWidthVertical = Integer.parseInt(ApplicationProperties.getProperty("tmtbl.timeGrid.maxCellWidthVertical", String.valueOf(maxCellWidth * 20)));
 		model.clearRendered();
 		if (isDispModePerWeek() || rowNumber%10==0)
 			printHeader(out, model, rowNumber);
@@ -431,7 +433,7 @@ public class TimetableGridTable {
 							StringBuffer onMouseOut = new StringBuffer();
 							StringBuffer onClick = new StringBuffer();
 							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
-							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+							out.println("<td nowrap style='"+(bgColor==null?"":"background-color:"+bgColor)+";max-width:"+(maxCellWidth*colSpan)+"px;' "+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
@@ -500,7 +502,7 @@ public class TimetableGridTable {
 							StringBuffer onMouseOut = new StringBuffer();
 							StringBuffer onClick = new StringBuffer();
 							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
-							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+							out.println("<td nowrap style='"+(bgColor==null?"":"background-color:"+bgColor)+";max-width:"+(maxCellWidth*colSpan)+"px;' "+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
@@ -588,7 +590,7 @@ public class TimetableGridTable {
 							StringBuffer onMouseOut = new StringBuffer();
 							StringBuffer onClick = new StringBuffer();
 							getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
-							out.println("<td nowrap "+(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+							out.println("<td nowrap style='"+(bgColor==null?"":"background-color:"+bgColor)+";max-width:"+(maxCellWidth*colSpan)+"px;' "+
 									" class='TimetableCell"+(eol?"EOL":eod?"EOD":"")+"' "+
 									"align='center' "+
 									"colspan='"+colSpan+"' rowSpan='"+rowSpan+"' "+
@@ -654,8 +656,7 @@ public class TimetableGridTable {
 							StringBuffer onClick = new StringBuffer();
                     		getMouseOverAndMouseOut(onMouseOver, onMouseOut, onClick, cell, bgColor);
                     		boolean eol = (day==endDay());
-                    		out.println("<td nowrap "+
-                    				(bgColor==null?"":"style='background-color:"+bgColor+"' ")+
+                    		out.println("<td nowrap style='"+(bgColor==null?"":"background-color:"+bgColor)+";max-width:"+(maxCellWidthVertical*colSpan)+"px;' "+
                     				"class='TimetableCell"+(slot==firstSlot()?"":"In")+"Vertical" + (eol?"EOL":"")+ "' align='center' "+
                     				"colspan='"+colSpan+"' rowSpan='"+rowSpanDivStep+"' "+
                     				(cell.getAssignmentId()>=0?"name='c"+cell.getAssignmentId()+"' ":"")+
