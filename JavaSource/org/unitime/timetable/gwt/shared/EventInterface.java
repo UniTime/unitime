@@ -1753,7 +1753,7 @@ public class EventInterface implements Comparable<EventInterface>, IsSerializabl
 			if (iFilterDefaults == null) iFilterDefaults = new HashMap<String, String>();
 			iFilterDefaults.put(name, value);
 		}
-		public boolean hasEventFilterDefault(String name) {
+		public boolean hasFilterDefault(String name) {
 			return iFilterDefaults != null && iFilterDefaults.get(name) != null;
 		}
 		public String getFilterDefault(String name) {

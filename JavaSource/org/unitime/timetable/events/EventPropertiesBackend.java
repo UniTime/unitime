@@ -92,6 +92,7 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		if (context.isAuthenticated() && response.isCanSaveFilterDefaults() && request.getPageName() != null) {
 			response.setFilterDefault("rooms", context.getUser().getProperty("Default[" + request.getPageName() + ".rooms]"));
 			response.setFilterDefault("events", context.getUser().getProperty("Default[" + request.getPageName() + ".events]"));
+			response.setFilterDefault("emails", context.getUser().getProperty("Defaults[AddEvent.emails]"));
 		}
 		
 		return response;

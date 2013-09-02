@@ -895,6 +895,12 @@
 				<hasPermission name="ClearHibernateCache"/>
 			</condition>
 		</item>
+		<item name="Event Defaults" page="admin" type="gwt">
+			<parameter name="type">eventDefault</parameter>
+			<condition>
+				<hasPermission name="EventDefaults"/>
+			</condition>
+		</item>
 	</menu>
 	<menu name="Help">
 		<condition>

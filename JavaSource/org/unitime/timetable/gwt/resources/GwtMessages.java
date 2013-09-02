@@ -1721,6 +1721,12 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Event Statuses")
 	String pageEventStatuses();
 	
+	@DefaultMessage("Event Default")
+	String pageEventDefault();
+
+	@DefaultMessage("Event Defaults")
+	String pageEventDefaults();
+	
 	@DefaultMessage("Examination Type")
 	String pageExaminationType();
 
@@ -2467,6 +2473,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Expiration Date")
 	String fieldExpirationDate();
+	
+	@DefaultMessage("Additional Emails")
+	String fieldAdditionalEmails();
+	
+	@DefaultMessage("Manager")
+	String fieldManager();
 	
 	@DefaultMessage("Access")
 	String toggleAccess();

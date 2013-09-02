@@ -59,6 +59,15 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Add Event</name>
+			<description>
+				<line>Added ability to define default value for Additional Emails field.
+					<line>In menu, Preferences &gt; Event Defaults (needs permission EventDefaults).</line>
+					<line>Users with EventDefaultsEditOther permission can see / modify defaults for other users.</line>
+				</line>
+			</description>
+		</item>
 	</category>
 </release>
 
