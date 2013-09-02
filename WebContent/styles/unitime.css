@@ -1816,6 +1816,22 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	display: block;
 }
 
+.unitime-FilterBoxPopup .button-star {
+	cursor: pointer;
+	position: absolute;
+	bottom: 2px;
+	right: 2px;
+	filter: alpha(opacity = 40);
+	opacity: .40;
+    -moz-opacity: .40;
+}
+
+.unitime-FilterBoxPopup .button-star:hover {
+	filter: alpha(opacity = 80);
+	opacity: .80;
+    -moz-opacity: .80;
+}
+
 .unitime-DateSelector {
 	font-family: Verdana, sans-serif;
 	font-size: 8pt;

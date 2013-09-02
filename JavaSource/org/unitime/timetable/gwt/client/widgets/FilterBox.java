@@ -71,6 +71,7 @@ import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -112,6 +113,8 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	private List<Filter> iFilters = new ArrayList<Filter>();
 	private Focusable iLastFocusedWidget = null;
 	private Image iFilterOpen, iFilterClose, iFilterClear;
+	
+	private TakesValue<String> iDefaultValueProvider = null;
 	
 	private boolean iShowSuggestionsOnFocus = false;
 	
@@ -360,6 +363,27 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 				}
 			});
 		}
+		
+		if (iDefaultValueProvider != null) {
+			boolean selected = iDefaultValueProvider.getValue().equals(getValue().trim());
+			final Image star = new Image(selected ? RESOURCES.starSelected() : RESOURCES.star());
+			star.setAltText(selected ? MESSAGES.altStarFilterSelected() : MESSAGES.altStarFilter());
+			star.setTitle(selected ? MESSAGES.altStarFilterSelected() : MESSAGES.altStarFilter());
+			star.addStyleName("button-star");
+	        star.addMouseDownHandler(new MouseDownHandler() {
+				@Override
+				public void onMouseDown(MouseDownEvent event) {
+					iDefaultValueProvider.setValue(getValue().trim());
+					star.setResource(RESOURCES.starSelected());
+					star.setAltText(MESSAGES.altStarFilterSelected());
+					star.setTitle(MESSAGES.altStarFilterSelected());
+					event.getNativeEvent().stopPropagation();
+					event.getNativeEvent().preventDefault();
+				}
+			});
+	        popupPanel.add(star);
+		}
+		
 		return popupPanel;
 	}
 	
@@ -1328,5 +1352,13 @@ public class FilterBox extends AbsolutePanel implements HasValue<String>, HasVal
 	
 	public void setStatus(String text) {
 		AriaStatus.getInstance().setHTML(text);
+	}
+	
+	public void setDefaultValueProvider(TakesValue<String> defaultValue) {
+		iDefaultValueProvider = defaultValue;
+	}
+	
+	public TakesValue<String> getDefaultValueProvider() {
+		return iDefaultValueProvider;
 	}
 }
