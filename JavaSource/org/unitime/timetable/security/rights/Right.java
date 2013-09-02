@@ -489,6 +489,9 @@ public enum Right {
 	CourseTypes,
 	CourseTypeEdit,
 	
+	EventDefaults,
+	EventDefaultsEditOther,
+	
 	/** Administration: Defaults */
 	
 	ApplicationConfig,
