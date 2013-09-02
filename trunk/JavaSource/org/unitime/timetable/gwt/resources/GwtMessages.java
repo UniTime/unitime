@@ -1325,6 +1325,9 @@ public interface GwtMessages extends Messages {
 	@DefaultMessage("Failed to lookup a person: {0}")
 	String failedLookup(String reason);
 	
+	@DefaultMessage("Failed to save as default: {0}")
+	String failedSaveAsDefault(String reason);
+	
 	@DefaultMessage("There are more than {0} meetings matching the filter. Only {0} meetings are loaded.")
 	String warnTooManyMeetings(int maximum);
 	
@@ -2764,6 +2767,12 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Close filter")
 	String altCloseFilter();
+	
+	@DefaultMessage("Click here to save the current filter value as default for this page.")
+	String altStarFilter();
+	
+	@DefaultMessage("The current filter value is the default.")
+	String altStarFilterSelected();
 	
 	@DefaultMessage("Password")
 	String pageChangePassword();

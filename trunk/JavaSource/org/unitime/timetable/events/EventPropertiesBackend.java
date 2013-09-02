@@ -88,6 +88,12 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 		
 		setupStandardNotes(request.getSessionId(), context.getUser(), response);
 		
+		response.setCanSaveFilterDefaults(context.hasPermission(Right.HasRole));
+		if (context.isAuthenticated() && response.isCanSaveFilterDefaults() && request.getPageName() != null) {
+			response.setFilterDefault("rooms", context.getUser().getProperty("Default[" + request.getPageName() + ".rooms]"));
+			response.setFilterDefault("events", context.getUser().getProperty("Default[" + request.getPageName() + ".events]"));
+		}
+		
 		return response;
 	}
 	

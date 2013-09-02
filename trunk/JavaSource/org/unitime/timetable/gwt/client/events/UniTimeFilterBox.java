@@ -53,6 +53,7 @@ import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.user.client.Command;
+import com.google.gwt.user.client.TakesValue;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Focusable;
@@ -357,5 +358,13 @@ public abstract class UniTimeFilterBox<T extends FilterRpcRequest> extends Compo
 	@Override
 	public void setAriaLabel(String text) {
 		iFilter.getWidget().setAriaLabel(text);
+	}
+	
+	public void setDefaultValueProvider(TakesValue<String> defaultValue) {
+		iFilter.getWidget().setDefaultValueProvider(defaultValue);
+	}
+	
+	public TakesValue<String> getDefaultValueProvider() {
+		return iFilter.getWidget().getDefaultValueProvider();
 	}
 }
