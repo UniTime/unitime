@@ -53,7 +53,6 @@ import org.unitime.timetable.model.RoomFeatureType;
 import org.unitime.timetable.model.RoomGroup;
 import org.unitime.timetable.model.RoomTypeOption;
 import org.unitime.timetable.model.TravelTime;
-import org.unitime.timetable.model.dao.DepartmentDAO;
 import org.unitime.timetable.model.dao.RoomDAO;
 import org.unitime.timetable.model.dao.RoomFeatureTypeDAO;
 import org.unitime.timetable.security.rights.Right;
@@ -71,22 +70,6 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 
 	@Override
 	public void load(RoomFilterRpcRequest request, FilterRpcResponse response, EventContext context) {
-		Map<Long, Set<String>> eventRoomTypes = new HashMap<Long, Set<String>>();
-		for (Object[] o: (List<Object[]>)DepartmentDAO.getInstance().getSession().createQuery(
-				"select o.department.uniqueId, o.roomType.label from RoomTypeOption o where o.status != 0 and o.department.session.uniqueId = :sessionId")
-				.setLong("sessionId", request.getSessionId())
-				.setCacheable(true)
-				.list()) {
-			Long deptId = (Long)o[0];
-			String type = (String)o[1];
-			Set<String> types = eventRoomTypes.get(deptId);
-			if (types == null) {
-				types = new HashSet<String>();
-				eventRoomTypes.put(deptId, types);
-			}
-			types.add(type);
-		}
-
 		Set<String> departments = request.getOptions("department");
 		
 		Set<String> userDepts = null;
@@ -283,7 +266,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				" ,RoomTypeOption o" +
 				" where" +
 				" l.session.uniqueId = :sessionId and" +
-				" l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment")
+				" l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)")
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list() : department != null && department.contains("Managed") && user != null && !user.isEmpty() ?
@@ -298,7 +281,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				(eventRooms ? " ,RoomTypeOption o" : "") +
 				" where" +
 				" l.session.uniqueId = :sessionId and m.externalUniqueId = :user" +
-				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment" : ""))
+				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
 				.setLong("sessionId", sessionId)
 				.setString("user", user.iterator().next())
 				.setCacheable(true)
@@ -314,7 +297,7 @@ public class RoomFilterBackend extends FilterBoxBackend<RoomFilterRpcRequest> {
 				(eventRooms ? " ,RoomTypeOption o" : "") +
 				" where" +
 				" l.session.uniqueId = :sessionId" +
-				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0) or l.eventStatus != 0) and o.roomType = l.roomType and o.department = l.eventDepartment" : ""))
+				(eventRooms ? " and l.eventDepartment.allowEvents = true and ((l.eventStatus is null and o.status != 0 and o.roomType = l.roomType and o.department = l.eventDepartment) or l.eventStatus != 0)" : ""))
 				.setLong("sessionId", sessionId)
 				.setCacheable(true)
 				.list());
