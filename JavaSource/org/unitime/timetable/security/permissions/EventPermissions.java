@@ -144,19 +144,19 @@ public class EventPermissions {
 			if (sessionId == null) return new ArrayList<Long>();
 			
 			return (List<Long>) SessionDAO.getInstance().getSession().createQuery(
-					"select l.uniqueId " +
+					"select distinct l.uniqueId " +
 					"from Location l, RoomTypeOption o " +
-					"where l.eventDepartment.allowEvents = true and o.roomType = l.roomType and o.department = l.eventDepartment and l.session.uniqueId = :sessionId and (" +
-					"(l.eventStatus in (" + anyRequest + ") or (l.eventStatus is null and o.status in (" + anyRequest + ")))" +
+					"where l.eventDepartment.allowEvents = true and l.session.uniqueId = :sessionId and (" +
+					"(l.eventStatus in (" + anyRequest + ") or (l.eventStatus is null and o.status in (" + anyRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment))" +
 					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent)
-							? " or (l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + ")))"
+							? " or (l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment))"
 							: roleDept == null ? ""
-							: " or ((l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + "))) and o.department.uniqueId in (" + roleDept + "))"
+							: " or ((l.eventStatus in (" + deptRequest + ") or (l.eventStatus is null and o.status in (" + deptRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment)) and l.eventDepartment.uniqueId in (" + roleDept + "))"
 					) +
 					(user.getCurrentAuthority().hasRight(Right.DepartmentIndependent) && user.getCurrentAuthority().hasRight(Right.EventMeetingApprove)
-							? " or (l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ")))"
+							? " or (l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment))"
 							: mgrDept == null ? ""
-							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + "))) and o.department.uniqueId in (" + mgrDept + "))"
+							: " or ((l.eventStatus in (" + mgrRequest + ") or (l.eventStatus is null and o.status in (" + mgrRequest + ") and o.roomType = l.roomType and o.department = l.eventDepartment)) and l.eventDepartment.uniqueId in (" + mgrDept + "))"
 					) +
 					")")
 					.setLong("sessionId", sessionId).setCacheable(true).list();

@@ -53,6 +53,12 @@
 				<line>Fixed formatting issues when there are too many instructors assigned to a class by imposing maximal cell widths.</line>
 			</description>
 		</item>
+		<item>
+			<name>Events: Event Rooms</name>
+			<description>
+				<line>Fixed the case when there is no status set on the department + room type level (the RoomTypeOption entity does not exist).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Other Improvements</title>
