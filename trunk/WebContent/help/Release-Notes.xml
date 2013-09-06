@@ -61,6 +61,17 @@
 		</item>
 	</category>
 	<category>
+		<title>Solver Changes</title>
+		<item>
+			<name>Course Timetabling: Room Ratio</name>
+			<description>
+				<line>Store room ratio in float precision (as it is done in UniTime) to avoid different number precision issues.
+					<line>This fixes the issue with meet together constraint failing to assign two classes of 20 (with room ration 0.8) into a room of 32 due to the increased precision in the room ratio.</line>
+				</line>
+			</description>
+		</item>
+	</category>
+	<category>
 		<title>Other Improvements</title>
 		<item>
 			<name>Events, Event Room Availability, Event Timetable</name>
