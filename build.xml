@@ -127,7 +127,7 @@
 			</fileset>
 			<manifest>
 				<attribute name="Main-Class" value="org.unitime.timetable.solver.remote.core.Startup" />
-				<attribute name="Class-Path" value="activation-1.1.jar antlr-2.7.6.jar backport-util-concurrent-3.1.jar commons-collections-3.1.jar commons-configuration-1.8.jar commons-dbcp-1.4.jar commons-lang-2.6.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-1.2.128.jar dom4j-1.6.1.jar ehcache-1.5.0.jar gwt-servlet-2.5.0.jar hibernate-core-3.5.6-Final.jar hibernate-ehcache-3.5.6-Final.jar javassist-3.15.0-GA.jar jsp-api-2.1.jar jsr107cache-1.0.jar jta-1.1.jar log4j-1.2.16.jar mail-1.4.5.jar mysql-connector-java-5.1.20.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.4.1.jar servlet-api-2.5.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar xml-apis-1.0.b2.jar commons-logging-1.0.4.jar spring-security-core-3.1.0.RELEASE.jar" />
+				<attribute name="Class-Path" value="activation-1.1.jar antlr-2.7.6.jar backport-util-concurrent-3.1.jar commons-collections-3.1.jar commons-configuration-1.8.jar commons-dbcp-1.4.jar commons-lang-2.6.jar commons-logging-1.1.1.jar commons-pool-1.5.4.jar cpsolver-1.2.129.jar dom4j-1.6.1.jar ehcache-1.5.0.jar gwt-servlet-2.5.0.jar hibernate-core-3.5.6-Final.jar hibernate-ehcache-3.5.6-Final.jar javassist-3.15.0-GA.jar jsp-api-2.1.jar jsr107cache-1.0.jar jta-1.1.jar log4j-1.2.16.jar mail-1.4.5.jar mysql-connector-java-5.1.20.jar ojdbc14-10.2.0.4.0.jar protobuf-java-2.4.1.jar servlet-api-2.5.jar slf4j-api-1.5.8.jar slf4j-log4j12-1.5.8.jar xml-apis-1.0.b2.jar commons-logging-1.0.4.jar spring-security-core-3.1.0.RELEASE.jar" />
 				<attribute name="Timetabling-Version" value="3.4_bld${build.number}"/>
 			</manifest>
 		</jar>
@@ -330,7 +330,7 @@
 				<include name="commons-lang-2.6.jar"/>
 				<include name="commons-logging-1.1.1.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.2.128.jar"/>
+				<include name="cpsolver-1.2.129.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-1.5.0.jar"/>
 				<include name="gwt-servlet-2.5.0.jar"/>
@@ -381,7 +381,7 @@
 				<include name="commons-lang-2.6.jar"/>
 				<include name="commons-logging-1.1.1.jar"/>
 				<include name="commons-pool-1.5.4.jar"/>
-				<include name="cpsolver-1.2.128.jar"/>
+				<include name="cpsolver-1.2.129.jar"/>
 				<include name="dom4j-1.6.1.jar"/>
 				<include name="ehcache-1.5.0.jar"/>
 				<include name="gwt-servlet-2.5.0.jar"/>
