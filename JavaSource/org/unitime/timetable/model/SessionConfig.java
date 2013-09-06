@@ -49,7 +49,7 @@ public class SessionConfig extends BaseSessionConfig {
 
 	public static String getConfigValue(String key, Long sessionId, String defaultValue) {
 	    //return defaultValue if hibernate is not yet initialized or no session is given
-        if (_RootDAO.getConfiguration() == null || sessionId == null) return defaultValue;
+        if (!_RootDAO.isConfigured() || sessionId == null) return defaultValue;
         
         String value = (String)SessionConfigDAO.getInstance().getSession().createQuery(
         		"select value from SessionConfig where key = :key and session.uniqueId = :sessionId"
@@ -60,7 +60,7 @@ public class SessionConfig extends BaseSessionConfig {
     
     public static Properties toProperties(Long sessionId) {
         Properties properties = new Properties();
-        if (_RootDAO.getConfiguration() == null || sessionId == null) return properties;
+        if (!_RootDAO.isConfigured() || sessionId == null) return properties;
         
         for (SessionConfig config: (List<SessionConfig>)SessionConfigDAO.getInstance().getSession().createQuery(
         		"from SessionConfig where session.uniqueId = :sessionId").setLong("sessionId", sessionId).setCacheable(true).list()) {

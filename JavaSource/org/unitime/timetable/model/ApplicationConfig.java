@@ -75,7 +75,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
 	 */
 	public static String getConfigValue(String key, String defaultValue) {
 	    //return defaultValue if hibernate is not yet initialized
-        if (_RootDAO.getConfiguration()==null) return defaultValue;
+        if (!_RootDAO.isConfigured()) return defaultValue;
         
         String value = (String)new ApplicationConfigDAO().
             getSession().
@@ -87,7 +87,7 @@ public class ApplicationConfig extends BaseApplicationConfig {
     
     public static Properties toProperties() {
         Properties properties = new Properties();
-        if (_RootDAO.getConfiguration()==null) return properties;
+        if (!_RootDAO.isConfigured()) return properties;
         for (Iterator i=new ApplicationConfigDAO().findAll().iterator();i.hasNext();) {
             ApplicationConfig appcfg = (ApplicationConfig)i.next();
              properties.setProperty(appcfg.getKey(), appcfg.getValue()==null?"":appcfg.getValue());

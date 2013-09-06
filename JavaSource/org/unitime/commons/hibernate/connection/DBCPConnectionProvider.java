@@ -17,8 +17,10 @@ package org.unitime.commons.hibernate.connection;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
@@ -26,8 +28,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.cfg.Environment;
-import org.hibernate.connection.ConnectionProvider;
-import org.hibernate.connection.ConnectionProviderFactory;
+import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
+import org.unitime.timetable.model.base._BaseRootDAO;
 
 /**
  * <p>A connection provider that uses an Apache commons DBCP connection pool.</p>
@@ -69,8 +71,9 @@ import org.hibernate.connection.ConnectionProviderFactory;
  * @author Dirk Verbeeck
  */
 public class DBCPConnectionProvider implements ConnectionProvider {
-
-    private static final Log log = LogFactory.getLog(DBCPConnectionProvider.class);
+	private static final long serialVersionUID = 1L;
+	
+	private static final Log log = LogFactory.getLog(DBCPConnectionProvider.class);
     private static final String PREFIX = "hibernate.dbcp.";
     private BasicDataSource ds;
 
@@ -79,7 +82,7 @@ public class DBCPConnectionProvider implements ConnectionProvider {
 
     // Property doesn't exists in Hibernate2
     private static final String AUTOCOMMIT = "hibernate.connection.autocommit";
-
+    
     public void configure(Properties props) throws HibernateException {
         try {
             log.debug("Configure DBCPConnectionProvider");
@@ -121,7 +124,7 @@ public class DBCPConnectionProvider implements ConnectionProvider {
             }
 
             // Copy all "driver" properties into "connectionProperties"
-            Properties driverProps = ConnectionProviderFactory.getConnectionProperties(props);
+            Properties driverProps = getConnectionProperties(props);
             if (driverProps.size() > 0) {
                 StringBuffer connectionProperties = new StringBuffer();
                 for (Iterator iter = driverProps.keySet().iterator(); iter.hasNext();) {
@@ -179,8 +182,36 @@ public class DBCPConnectionProvider implements ConnectionProvider {
         }
         log.debug("Configure DBCPConnectionProvider complete");
     }
+    
+    public static Properties getConnectionProperties(Properties properties) {
+    	Iterator iter = properties.keySet().iterator();
+    	Properties result = new Properties();
+    	while ( iter.hasNext() ) {
+    		String prop = (String) iter.next();
+    		if ( prop.indexOf(Environment.CONNECTION_PREFIX) > -1 && !SPECIAL_PROPERTIES.contains(prop) ) {
+    			result.setProperty( prop.substring( Environment.CONNECTION_PREFIX.length()+1 ), properties.getProperty(prop));
+    		}
+    	}
+    	String userName = properties.getProperty(Environment.USER);
+    	if (userName!=null) result.setProperty( "user", userName );
+    	return result;
+    }
+    
+    private static final Set SPECIAL_PROPERTIES;
+    static {
+    	SPECIAL_PROPERTIES = new HashSet();
+    	SPECIAL_PROPERTIES.add(Environment.DATASOURCE);
+    	SPECIAL_PROPERTIES.add(Environment.URL);
+    	SPECIAL_PROPERTIES.add(Environment.CONNECTION_PROVIDER);
+    	SPECIAL_PROPERTIES.add(Environment.POOL_SIZE);
+    	SPECIAL_PROPERTIES.add(Environment.ISOLATION);
+    	SPECIAL_PROPERTIES.add(Environment.DRIVER);
+    	SPECIAL_PROPERTIES.add(Environment.USER);
+    }
 
     public Connection getConnection() throws SQLException {
+    	if (ds == null)
+    		configure(_BaseRootDAO.getConfiguration().getProperties());
         Connection conn = null;
         try {
                 conn = ds.getConnection();
@@ -219,7 +250,7 @@ public class DBCPConnectionProvider implements ConnectionProvider {
     }
     
     protected void logStatistics() {
-        if (log.isDebugEnabled()) {
+    	if (log.isDebugEnabled()) {
             log.debug("active: " + ds.getNumActive() + " (max: " + ds.getMaxActive() + ")   "
                     + "idle: " + ds.getNumIdle() + "(max: " + ds.getMaxIdle() + ")");
         }
@@ -228,4 +259,12 @@ public class DBCPConnectionProvider implements ConnectionProvider {
     public boolean supportsAggressiveRelease() {
     	return false;
     }
+
+	public boolean isUnwrappableAs(Class arg0) {
+		return false;
+	}
+
+	public <T> T unwrap(Class<T> arg0) {
+		return null;
+	}
 }

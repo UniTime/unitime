@@ -27,7 +27,7 @@ import java.util.Vector;
 import org.hibernate.LazyInitializationException;
 import org.hibernate.Query;
 import org.hibernate.Session;
-import org.hibernate.impl.SessionImpl;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.ExternalInstructionalOfferingAddAction;
@@ -184,7 +184,7 @@ public class CourseOffering extends BaseCourseOffering implements Comparable {
             co.setDemand(new Integer(0));
 		    co.setNbrExpectedStudents(new Integer(0));
 		    co.setIsControl(new Boolean(true));
-		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString());
+		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
 		    
 		    HashSet s = new HashSet();
 		    s.add(co);

@@ -33,7 +33,7 @@ import java.util.Vector;
 
 import org.dom4j.Element;
 import org.hibernate.FlushMode;
-import org.hibernate.impl.SessionImpl;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.model.ChangeLog;
@@ -1298,7 +1298,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 					co.setDemand(new Integer(0));
 				}
 				io.addTocourseOfferings(co);
-				co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), this).toString());
+				co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), this).toString());
 				co.setSubjectAreaAbbv(co.getSubjectArea().getSubjectAreaAbbreviation());
 				addNote("\tadded course: " + co.getSubjectArea().getSubjectAreaAbbreviation() + " " + co.getCourseNbr());
 				getHibSession().saveOrUpdate(io);
@@ -1375,7 +1375,7 @@ public abstract class BaseCourseOfferingImport extends EventRelatedImports {
 							changed = true;
 						}
 						if (oco.getPermId() == null){
-							oco.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), this).toString());
+							oco.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), this).toString());
 							addNote("\tadded missing permId: " + nco.getSubjectArea().getSubjectAreaAbbreviation() + " " + nco.getCourseNbr());
 							changed = true;
 						}
