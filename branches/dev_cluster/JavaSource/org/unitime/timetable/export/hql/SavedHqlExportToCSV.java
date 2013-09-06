@@ -26,11 +26,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.dom4j.Document;
-import org.hibernate.EntityMode;
 import org.hibernate.MappingException;
 import org.hibernate.SessionFactory;
-import org.hibernate.engine.SessionFactoryImplementor;
-import org.hibernate.engine.SessionImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.type.CollectionType;
 import org.hibernate.type.Type;
@@ -285,7 +284,7 @@ public class SavedHqlExportToCSV implements Exporter {
 							ret[idx++] = toString(meta.getIdentifier(x, session));
 		                for (int i = 0; i < meta.getPropertyNames().length; i ++) {
 		                    if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-		                    	ret[idx++] = toString(meta.getPropertyValue(x, meta.getPropertyNames()[i], EntityMode.POJO));
+		                    	ret[idx++] = toString(meta.getPropertyValue(x, meta.getPropertyNames()[i]));
 		                }
 					}
 				}
@@ -300,7 +299,7 @@ public class SavedHqlExportToCSV implements Exporter {
 					ret[idx++] = toString(meta.getIdentifier(o, session));
                 for (int i = 0; i < meta.getPropertyNames().length; i ++) {
                     if (!skip(meta.getPropertyTypes()[i], meta.getPropertyLaziness()[i]))
-                    	ret[idx++] = toString(meta.getPropertyValue(o, meta.getPropertyNames()[i], EntityMode.POJO));
+                    	ret[idx++] = toString(meta.getPropertyValue(o, meta.getPropertyNames()[i]));
                 }
 			}
 		}

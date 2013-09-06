@@ -566,7 +566,7 @@ public class OnlineSectioningServerImpl implements OnlineSectioningServer {
 	public <E> E execute(OnlineSectioningAction<E> action, OnlineSectioningLog.Entity user) throws SectioningException {
 		long c0 = OnlineSectioningHelper.getCpuTime();
 		String cacheMode = getConfig().getProperty(action.name() + ".CacheMode", getConfig().getProperty("CacheMode"));
-		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode == null ? null : CacheMode.parse(cacheMode));
+		OnlineSectioningHelper h = new OnlineSectioningHelper(user, cacheMode == null ? null : CacheMode.valueOf(cacheMode));
 		try {
 			h.addMessageHandler(new OnlineSectioningHelper.DefaultMessageLogger(LogFactory.getLog(OnlineSectioningServer.class.getName() + "." + action.name() + "[" + getAcademicSession().toCompactString() + "]")));
 			h.addAction(action, getAcademicSession());

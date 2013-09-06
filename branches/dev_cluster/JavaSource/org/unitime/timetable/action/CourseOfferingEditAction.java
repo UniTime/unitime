@@ -37,7 +37,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessages;
 import org.apache.struts.action.ActionRedirect;
 import org.hibernate.Transaction;
-import org.hibernate.impl.SessionImpl;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.unitime.commons.Debug;
@@ -283,7 +283,7 @@ public class CourseOfferingEditAction extends Action {
 	        if (!limitedEdit) {
 		        if (co.getCourseNbr() != null && !co.getCourseNbr().equals(crsNbr) && co.getPermId() == null){
 		        	LastLikeCourseDemand llcd = null;
-		        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString();
+		        	String permId = InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString();
 		        	for(Iterator it = co.getCourseOfferingDemands().iterator(); it.hasNext();){
 		        		llcd = (LastLikeCourseDemand)it.next();
 		        		if (llcd.getCoursePermId() == null){
@@ -463,7 +463,7 @@ public class CourseOfferingEditAction extends Action {
             co.setDemand(new Integer(0));
 		    co.setNbrExpectedStudents(new Integer(0));
 		    co.setIsControl(new Boolean(true));
-		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImpl)new CourseOfferingDAO().getSession(), co).toString());
+		    co.setPermId(InstrOfferingPermIdGenerator.getGenerator().generate((SessionImplementor)new CourseOfferingDAO().getSession(), co).toString());
 		    subjArea.getCourseOfferings().add(co);
 
 	        // Add new Instructional Offering

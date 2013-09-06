@@ -32,7 +32,7 @@ import org.dom4j.DocumentException;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.unitime.timetable.ApplicationProperties;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -49,15 +49,15 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
             StringWriter writer = new StringWriter();
             (new XMLWriter(writer,OutputFormat.createPrettyPrint())).write(request);
             writer.flush(); writer.close();
-            SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-            Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+            SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+            Connection connection = session.getJdbcConnectionAccess().obtainConnection();
             try {
                 CallableStatement call = connection.prepareCall(iRequestSql);
                 call.setString(1, writer.getBuffer().toString());
                 call.execute();
                 call.close();
             } finally {
-                hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            	session.getJdbcConnectionAccess().releaseConnection(connection);
             }
         } catch (Exception e) {
             sLog.error("Unable to send request: "+e.getMessage(),e);
@@ -68,8 +68,8 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
     
     protected Document receiveResponse() throws IOException, DocumentException {
         try {
-            SessionFactoryImplementor hibSessionFactory = (SessionFactoryImplementor)new _RootDAO().getSession().getSessionFactory();
-            Connection connection = hibSessionFactory.getConnectionProvider().getConnection();
+            SessionImplementor session = (SessionImplementor)new _RootDAO().getSession();
+            Connection connection = session.getJdbcConnectionAccess().obtainConnection();
             String response = null;
             try {
                 CallableStatement call = connection.prepareCall(iResponseSql);
@@ -78,7 +78,7 @@ public class BlobRoomAvailabilityService extends RoomAvailabilityService {
                 response = call.getString(1);
                 call.close();
             } finally {
-                hibSessionFactory.getConnectionProvider().closeConnection(connection);
+            	session.getJdbcConnectionAccess().releaseConnection(connection);
             }
             if (response==null || response.length()==0) return null;
             StringReader reader = new StringReader(response);

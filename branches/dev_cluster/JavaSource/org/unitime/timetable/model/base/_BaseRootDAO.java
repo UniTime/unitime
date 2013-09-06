@@ -65,8 +65,8 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 		if (configFileName == null && sSessionFactory != null) return;
         if (sSessionFactoryMap != null && sSessionFactoryMap.get(configFileName) != null) return;
         HibernateUtil.configureHibernateFromRootDAO(configFileName, configuration);
-        setSessionFactory(configuration.buildSessionFactory());
         sConfiguration = configuration;
+        setSessionFactory(configuration.buildSessionFactory());
         HibernateUtil.addBitwiseOperationsToDialect();
         DatabaseUpdate.update();
 	}
@@ -258,12 +258,18 @@ public abstract class _BaseRootDAO<T, K extends Serializable> {
 	 }
 	
 	/**
+	 * @return Returns true if configured
+	 */
+	public static boolean isConfigured() {
+		return sConfiguration != null && sSessionFactory != null;
+	}	 	 
+	 
+	/**
 	 * @return Returns the configuration.
 	 */
 	public static Configuration getConfiguration() {
 		return sConfiguration;
-	}	 	 
-	 
+	}	 
 	
 	/**
 	 * Return the name of the configuration file to be used with this DAO or null if default
