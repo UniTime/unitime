@@ -1,0 +1,41 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT academicAreaReservations ( subjectCourse+ ) >
+<!ATTLIST academicAreaReservations campus CDATA #REQUIRED >
+<!ATTLIST academicAreaReservations term CDATA #REQUIRED >
+<!ATTLIST academicAreaReservations year CDATA #REQUIRED >
+
+<!ELEMENT reservation EMPTY >
+<!ATTLIST reservation academicArea CDATA #REQUIRED >
+<!ATTLIST reservation academicClass CDATA #REQUIRED >
+<!ATTLIST reservation level ( configuration | courseOffering | instrOffering ) #REQUIRED >
+<!ATTLIST reservation priorEnrollment CDATA #IMPLIED >
+<!ATTLIST reservation priority CDATA #REQUIRED >
+<!ATTLIST reservation projectedEnrollment CDATA #IMPLIED >
+<!ATTLIST reservation request CDATA #REQUIRED >
+<!ATTLIST reservation reserved CDATA #REQUIRED >
+<!ATTLIST reservation configuration CDATA #REQUIRED >
+<!ATTLIST reservation reservationType ( info | perm | temp ) #REQUIRED >
+
+<!ELEMENT subjectCourse ( reservation+ ) >
+<!ATTLIST subjectCourse courseNumber CDATA #REQUIRED >
+<!ATTLIST subjectCourse subject CDATA #REQUIRED >
+
+

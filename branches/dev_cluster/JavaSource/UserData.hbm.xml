@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="UserData" table="user_data">
+        <cache include="non-lazy" usage="read-write"/>
+        <composite-id>
+            <key-property
+                name="externalUniqueId"
+                column="external_uid"
+                type="java.lang.String"
+                length="12"/>
+
+            <key-property
+                name="name"
+                column="name"
+                type="java.lang.String"
+                length="100"/>
+
+        </composite-id>
+        <property
+            name="value"
+            column="value"
+            type="java.lang.String"
+            length="4000"
+            not-null="true"/>
+
+    </class>
+</hibernate-mapping>

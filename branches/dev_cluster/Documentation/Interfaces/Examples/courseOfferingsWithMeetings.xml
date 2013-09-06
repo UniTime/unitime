@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE offerings PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/CourseOfferingExport.dtd">
+
+<offerings campus="woebegon" year="2010" term="Fal" dateFormat="yyyy/MM/dd" timeFormat="HHmm" incremental="true">
+	<offering id="ALG201" offered="true">
+		<course subject="ALG" courseNbr="201" controlling="true"/>
+		<config name="1" limit="20">
+			<subpart type="Lec" minPerWeek="150">
+				<subpart type="Rec" minPerWeek="100"/>
+			</subpart>
+			<class type="Lec" suffix="1" limit="20">
+				<class type="Rec" suffix="1" limit="10">
+					<!-- every Thursday through the semester -->
+					<meeting startTime="1530" endTime="1730" days="R" location="MALL"/>
+				</class>
+				<class type="Rec" suffix="2" limit="10">
+					<!-- meet just once on the given date -->
+					<meeting startDate="2010/10/12" endDate="2010/10/12" startTime="1330" endTime="1530" days="MTWRFSU" building="EDUC" room="107"/>
+				</class>
+				<!-- meet every Monday, Wednesday, and Friday between 9:30 am and 10:20 am during the given dates -->
+				<meeting startDate="2010/08/23" endDate="2010/09/03" startTime="0930" endTime="1030" days="MWF" building="EDUC" room="103"/>
+				<meeting startDate="2010/09/08" endDate="2010/10/08" startTime="0930" endTime="1030" days="MWF" building="EDUC" room="103"/>
+				<meeting startDate="2010/10/13" endDate="2010/11/22" startTime="0930" endTime="1030" days="MWF" building="EDUC" room="103"/>
+				<meeting startDate="2010/11/29" endDate="2010/12/10" startTime="0930" endTime="1030" days="MWF" building="EDUC" room="103"/>
+			</class>
+		</config>
+	</offering>
+</offerings>

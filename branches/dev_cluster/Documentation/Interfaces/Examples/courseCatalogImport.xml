@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE courseCatalog PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/CourseCatalog.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- course          ==> Required:  subject, courseNumber, title
+	                         Optional:  externalId, approvalType, permanentId, previousSubject, previousCourseNumber
+	                         Deprecated: designatorRequired (since UniTime 3.4)
+	       courseCredit  ==> Required:  creditType, creditUnitType, creditFormat
+                                        fixedCredit or (minimumCredit and maximumCredit and fractionalCreditAllowed)
+           subpartCredit ==> [0 ==> N entries]
+	                         Required:  subpartId, creditType, creditUnitType, creditFormat
+                                        fixedCredit or (minimumCredit and maximumCredit and fractionalCreditAllowed)
+	     
+	     approvalType = instructor, department or timeblock
+	     creditFormat = arrangeHours, fixedUnit, variableMinMax, variableRange
+	     creditType = collegiate, equivalent, mastersCredit, phdThesisCredit
+	     designatorRequired = T or F (deprecated in UniTime 3.4, required in UniTime 3.3 or earlier)
+	     fractionalCreditAllowed = T or F
+	-->
+<courseCatalog campus="puWestLafayetteTrdtn" term="Fal" year="2007">
+	<course externalId="19RIWK1BZ6LAJ1GXBP2M" subject="A&amp;AE" courseNumber="190" title="Introduction To Aerospace Engineering" permanentId="98" previousSubject="A&amp;AE" previousCourseNumber="190" designatorRequired="False">
+  		<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="2"/>
+  		<subpartCredit subpartId="10" creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+  		<subpartCredit subpartId="30" creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="1"/>
+	</course>
+  	<course externalId="19RIWX1BZ64JI1GXBP2N" subject="A&amp;AE" courseNumber="203" title="Aeromechanics I" permanentId="100" previousSubject="A&amp;AE" previousCourseNumber="203" designatorRequired="False">
+    	<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
+    	<subpartCredit subpartId="10" creditType="collegiate" creditUnitType="semesterHours" creditFormat="fixedUnit" fixedCredit="3"/>
+	</course>
+  	<course externalId="19RRWF1CO09LX1HLE8KV" subject="A&amp;AE" courseNumber="590" title="Projects In Aeronautical Engineering" permanentId="158" approvalType="instructor" previousSubject="A&amp;AE" previousCourseNumber="590" designatorRequired="True">
+    	<courseCredit creditType="collegiate" creditUnitType="semesterHours" creditFormat="variableRange" minimumCredit="1" maximumCredit="6" fractionalCreditAllowed="True"/>
+    	<subpartCredit subpartId="80" creditType="collegiate" creditUnitType="semesterHours" creditFormat="variableRange" minimumCredit="1" maximumCredit="6" fractionalCreditAllowed="True"/>
+  	</course>
+</courseCatalog>

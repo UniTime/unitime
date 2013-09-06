@@ -1,0 +1,37 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+<!ELEMENT courseOfferingReservations ( offeringReservation+ ) >
+<!ATTLIST courseOfferingReservations campus CDATA #REQUIRED >
+<!ATTLIST courseOfferingReservations term CDATA #REQUIRED >
+<!ATTLIST courseOfferingReservations year CDATA #REQUIRED >
+
+<!ELEMENT offeringReservation EMPTY >
+<!ATTLIST offeringReservation configuration CDATA #REQUIRED >
+<!ATTLIST offeringReservation courseNumber CDATA #REQUIRED >
+<!ATTLIST offeringReservation subject CDATA #REQUIRED >
+<!ATTLIST offeringReservation level ( configuration |  instrOffering ) #REQUIRED >
+<!ATTLIST offeringReservation priorEnrollment CDATA #IMPLIED >
+<!ATTLIST offeringReservation priority CDATA #REQUIRED >
+<!ATTLIST offeringReservation projectedEnrollment CDATA #IMPLIED >
+<!ATTLIST offeringReservation request CDATA #REQUIRED >
+<!ATTLIST offeringReservation reservationType ( info | perm | temp ) #REQUIRED >
+<!ATTLIST offeringReservation reserved CDATA #REQUIRED >
+
+

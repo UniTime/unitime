@@ -1,0 +1,3160 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+
+.unitime-Body {
+	font-family: sans-serif, verdana, arial;
+}
+
+.unitime-Page {
+	border: 1px solid #9CB0CE;
+	padding: 5px;
+	margin-top: 10px;
+	background-color: #FFFFFF;
+	vertical-align: center;
+}
+
+.unitime-Title {
+	font-size: x-large;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+	margin-left: 10px;
+}
+
+.unitime-SubTitle {
+	font-size: medium;
+	font-weight: bold;
+	color: #333333;
+	margin-bottom: 10px;
+}
+
+@media print {
+	.unitime-Body {
+		width: 100% !important;
+	}
+	.unitime-Page {
+		margin-top: 0px;
+	}
+	.unitime-Title {
+		margin-bottom: 0px;
+	}
+	.unitime-SubTitle {
+		margin-bottom: 0px;
+	}
+	thead {
+		display: table-header-group;
+	}
+	body, table td, select {
+		font-family: sans-serif, verdana, arial;		
+	}
+}
+
+.unitime-Footer {
+	width: 100%;
+	margin-top: -3px;
+}
+
+.unitime-FooterText {
+	font-size: 9pt;
+	vertical-align: top;
+	font-style: italic;
+	color: #9CB0CE;
+	white-space: nowrap;
+}
+
+.unitime-Disclaimer {
+	color: #777777;
+	text-align: center;
+	max-width: 800px;
+}
+
+.unitime-PrintIcon {
+	cursor: pointer;	
+}
+
+.unitime-FocusPanel {
+}
+
+.unitime-FocusPanel:focus {
+	outline: none;
+}
+
+A.unitime-FooterLink:link,A.unitime-FooterLink:visited,A.unitime-FooterLink:active,A.unitime-FooterLink:hover {
+	color: #9CB0CE;
+    text-decoration: none;
+    background-color : transparent;
+}
+
+A.unitime-SimpleLink:link,A.unitime-SimpleLink:visited,A.unitime-SimpleLink:active,A.unitime-SimpleLink:hover {
+	color: inherit;
+    text-decoration: none;
+    background-color : transparent;
+    vertical-align: middle;
+}
+
+A.unitime-NoFancyLink:link,A.unitime-NoFancyLink:visited,A.unitime-NoFancyLink:active,A.unitime-NoFancyLink:hover {
+	color: black;
+    text-decoration: none;
+    background-color : transparent;
+}
+
+
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #777777;
+  margin: 15px 0px 5px;
+  text-align: left;
+  
+}
+
+.unitime-Label {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #777777;
+	line-height: 15px;
+	vertical-align: baseline;
+	height: 20px;
+	margin-top: 4px;
+}
+
+.unitime-LabelInsteadEdit {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	line-height: 15px;
+	vertical-align: baseline;
+	margin-top: 4px;
+}
+
+.gwt-SuggestBoxCanvas {
+	width: 200px;
+	height: 20px;
+	background: #ffffff;
+	border: none;
+}
+
+.gwt-SuggestBox {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 20px;
+	border: 1px solid #9CB0CE;
+	padding: 0px 2px 0px 2px;
+}
+
+.gwt-SuggestBoxPopup {
+	margin-left: 3px;
+	z-index: 1000000;
+}
+
+.unitime-MainTableHeaderRow {
+}
+
+.unitime-MainTableHeader {
+	border-bottom: 1px solid #9CB0CE;
+	padding-top: 5px;
+	font-size: large;
+	font-weight: bold;
+	color: black;
+	text-align: left;
+}
+
+.unitime-MainTableHeader .toggle {
+	font-style: italic;
+	font-size: small;
+	font-weight: normal;
+	white-space: nowrap;
+	padding-right: 10px;
+}
+
+.unitime-MainTableHeaderNote {
+	border-bottom: 1px solid #9CB0CE;
+	font-size: small;
+	font-weight: normal;
+	font-style: italic;
+	color: black;
+	text-align: left;
+	padding-left: 7px;
+}
+
+.unitime-MainHeader {
+	font-size: large;
+	font-weight: bold;
+	color: black;
+	text-align: left;
+}
+
+.unitime-MainTableBottomHeader {
+	font-size: 1em;
+	font-weight: bold;
+	color: black;
+	padding-top: 5px;
+	text-align: right;
+}
+
+.unitime-MainTableBottomHeader .toggle {
+	font-style: italic;
+	font-size: small;
+	font-weight: normal;
+	white-space: nowrap;
+	padding-right: 10px;
+}
+
+.unitime-MainTable {
+}
+
+.unitime-MainTable td {
+	vertical-align: top;
+}
+
+.unitime-MainTable .scroll {
+	max-height: 200px;
+}
+
+.unitime-MainTable .hover {
+	background-color: #d0e4f6;
+}
+
+.unitime-LoadingPanel {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	filter: alpha(opacity = 25);
+	opacity: .25;
+    -moz-opacity: .25;
+	background: #000000;
+	z-index: 2000000;
+}
+
+.unitime-LoadingIcon {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 3000000;
+}
+
+.unitime-TableHeader {
+	font-family: sans-serif, verdana, arial;
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+  	background-color: #e3e8f3;
+  	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-TableEmpty {
+	font-style: italic;
+	text-align: center;
+}
+
+.unitime-TableRowSelected {
+	background-color: #92c1f0;
+}
+
+.unitime-TableRowProblem {
+	background-color: #f09292;
+}
+
+.unitime-TableRowSelectedHover {
+	background-color: #92c1f0;
+}
+
+.unitime-TableRowHover {
+	background-color: #d0e4f6;
+}
+
+.unitime-ScrollPanel {
+	padding: 2px;
+	border: 1px solid #9CB0CE;
+	overflow: auto;
+	overflow-x: hidden;	
+	overflow-y: scroll;	
+}
+
+.unitime-ScrollPanel-inner {
+	padding: 2px;
+	overflow: scroll;
+	overflow-x: hidden;	
+}
+
+.unitime-TabPanel {
+	border: 1px solid #9CB0CE;
+	padding-bottom: 4px;
+	padding-right: 4px;
+}
+
+.unitime-SessionSelector{
+	cursor: pointer;
+	text-align: center;
+}
+
+.unitime-Hint{
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:hover {
+	display: block;
+	color: #9CB0CE;
+    text-decoration: none;
+}
+
+.unitime-NotClickableHint{
+	font-size: xx-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	white-space: nowrap;
+}
+
+.unitime-ErrorHint{
+	font-size: xx-small;
+	font-style: italic;
+	color: red;
+	text-align: right;
+	vertical-align: top;
+	margin-top: -2px;
+}
+
+.unitime-FreeTimePicker-TopLeftCorner {
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+}
+
+.unitime-FreeTimePicker-HorizontalHeader {
+	font-size: xx-small;
+	text-align: center;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-top: 1px solid #9CB0CE;
+	width: 26px;
+}
+
+.unitime-FreeTimePicker-VerticalHeader {
+	font-size: x-small;
+	text-align: center;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-left: 1px solid #9CB0CE;
+	width: 25px;
+}
+
+.unitime-FreeTimePicker-Slot {
+	font-size: x-small;
+	text-align: center;
+	color: #AAAAAA;
+	border-bottom: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	cursor: pointer;
+}
+
+.unitime-Message {
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+}
+
+.unitime-ErrorMessage {
+	color: red;
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+}
+
+.unitime-Disabled {
+	color: gray;
+	font-style: italic;
+}
+
+.unitime-ProgressMessage {
+	text-align: center;
+	font-style: italic;
+}
+
+.unitime-ValidationErrors {
+	width: 100%;
+}
+
+.unitime-TextBoxHint {
+	font-family: Verdana, sans-serif;
+	font-size: xx-small;
+	font-weight: 400;
+	font-style: normal;
+	color: #AAAAAA;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 20px;
+	border: 1px solid #9CB0CE;
+	padding: 0px 2px 0px 2px;
+}
+
+.unitime-WebTable {
+}
+
+.unitime-WebTable td {
+	padding-left: 10px;
+}
+
+.unitime-WebTable .rowheader {
+	padding-left: 0px;
+	width: 1px;
+}
+
+.unitime-WebTable .top-border-dashed {
+	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-WebTable .top-border-solid {
+	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-WebTable .text-red {
+	color: red;
+}
+
+.unitime-WebTable .text-blue {
+	color: blue;
+}
+
+.unitime-WebTable .text-gray {
+	color: gray;
+	font-style: italic;
+}
+
+.unitime-WebTable .text-red-centered {
+	color: red;
+	text-align: center;
+}
+
+.unitime-WebTable .icon td {
+	padding-left: 0px;
+}
+
+.unitime-WebTable .icons td {
+	padding-left: 0px;
+}
+
+.unitime-WebTable .instructor td {
+	padding-left: 0px;
+}
+
+.gwt-TabPanelBottom {
+	border: 2px solid #9CB0CE;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.gwt-TabBar .gwt-TabBarItem {
+	border-top: 1px solid #9CB0CE;
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	color: #9CB0CE;
+	font-size: 1em;
+	font-weight: bold;
+	background-color: #FFFFFF;	
+	margin-left: 6px;
+	padding: 3px 6px 3px 6px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;
+}
+.gwt-TabBarItem:focus {
+	outline: none;
+}
+.gwt-TabBar .gwt-TabBarItem-selected {
+	border-top: 3px solid #9CB0CE;
+	border-left: 3px solid #9CB0CE;
+	border-right: 3px solid #9CB0CE;
+	cursor: default;
+	background-color: #9CB0CE;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+.unitime-BottomLine {
+	border-bottom: 1px solid #9CB0CE;
+}
+
+.unitime-TopLine {
+	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-TopLineDash {
+	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-TimeGridHorizontalHeaderFirst {
+	border: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridHorizontalHeader {
+	border-top: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	color: #92c1f0;
+	font-weight: bold;
+	width: 100px;
+}
+
+.unitime-TimeGridHorizontalSeparator {
+	border-top: 1px solid red;
+	border-right: 1px solid red;
+	border-left: 1px solid red;
+	width: 2px;
+}
+
+.unitime-TimeGridHorizontalHeaderLast {
+	border-top: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeaderFirst {
+	border: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeader {
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGridVerticalHeaderLast {
+	border-left: 1px solid #9CB0CE;
+	border-right: 1px solid #9CB0CE;
+	border-bottom: 1px solid #9CB0CE;
+	background-color: #92c1f0;
+}
+
+.unitime-TimeGrid {
+}
+
+.unitime-TimeGrid .calendar {
+	position: absolute;
+	left: 10px;
+	top: 2px;
+	border: none;
+}
+
+.unitime-TimeGrid .calendar-header {
+	height: 20px;
+	width: 100%;
+	text-align: center;
+	font-size: x-small;
+	color: #6991CE;
+}
+
+.unitime-TimeGrid .calendar-dock {
+	width: 100%;
+}
+
+.unitime-TimeGrid .calendar-times {
+	position: absolute;
+	width: 30px;
+}
+
+.unitime-TimeGrid .calendar-panel {
+	position: absolute;
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.unitime-TimeGrid .calendar-grid {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+.unitime-TimeGrid .header-time-interval {
+	padding-top: 2px;
+}
+
+.unitime-TimeGrid .major-time-interval {
+	display: block;
+	border-top: 1px solid #DDDDDD;
+	width: 100%;
+}
+
+.unitime-TimeGrid .minor-time-interval {
+	display: block;
+	border-top: 1px dotted #DDDDDD;
+	width: 100%;
+}
+
+.unitime-TimeGrid .dummy-time-interval {
+	font-size: x-small;
+	text-align: center;
+	padding-right: 2px;
+	color: #6991CE;
+	display: block;
+	border-top: 1px solid transparent;
+	height: 100%;
+	width: 28px;
+}
+
+.unitime-TimeGrid .working-hours {
+	background: #FFFCCC;
+	width: 100%;
+	height: 500px;
+}
+
+.unitime-TimeGrid .busy {
+	background: #FFE1DD;
+	width: 100%;
+	color: #BA5353;
+	font-size: x-small;
+	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.unitime-TimeGrid .busy .text {
+	padding-left: 5px;
+}
+
+.unitime-TimeGrid .day-separator {
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	border-left: 1px solid #DDDDDD;
+	border-right: 1px solid #DDDDDD;
+	width: 2px;
+}
+
+.unitime-TimeGrid .week-separator {
+	height: 100%;
+	position: absolute;
+	top: 0px;
+	border-left: 1px dashed #DDDDDD;
+	width: 1px;
+}
+
+.unitime-TimeGrid .week-title {
+	height: 30px;
+	vertical-align: top;
+	text-align: center;
+	font-size: xx-small;
+	color: #6991CE;
+}
+
+.unitime-TimeGrid .selection-layer {
+	position: absolute;
+	display: block;
+	width: 100%;
+	height: 100%;
+	cursor: crosshair;
+	z-index: 100;
+}
+
+.unitime-TimeGrid .selection-disabled {
+	position: absolute;
+	display: block;
+	background: #ddd;
+	filter: alpha(opacity = 25);
+	height: 100%;
+	width: 100%;
+	opacity: .25;
+    -moz-opacity: .25;
+	z-index: 101;
+}
+
+.unitime-TimeGrid .active-selection {
+	position: absolute;
+	background-color: #6991CE;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    cursor: crosshair;
+    z-index: 50;
+}
+
+.unitime-TimeGrid .selection {
+	position: absolute;
+	background-color: #92c1f0;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    z-index: 200;
+}
+
+.unitime-TimeGrid .selection .text {
+    font-size: x-small;
+    color: black;
+    padding: 0px 3px 1px 3px;
+    width: 100%;
+    height: 100%;
+}
+
+.unitime-TimeGrid .selection .x {
+	color: #4e6a94;
+	font-size: x-small;
+	cursor: pointer;
+	z-index: 200;
+	padding-left: 2px;
+	margin-top: -2px;
+}
+
+.unitime-TimeGrid .selection .x:hover {
+	color: black;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+}
+
+.unitime-TimeGridSelectionPopup {
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+    background-color: white;
+	margin: 5px 0px 0px 5px;
+	position: absolute;
+	overflow: hidden;
+	font-size: xx-small;
+	color: #6991CE;
+	border: 1px solid #6991CE;
+	overflow: hidden;
+	white-space: nowrap;
+	z-index: 1000;
+}
+
+.unitime-TimeGridSelectionPopup .content {
+	padding: 2px;
+	
+}
+
+.unitime-TinyLabel {
+	font-size: x-small;
+	font-family: arial;
+	padding-left: 2px;
+	padding-right: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+
+.unitime-TinyLabelWhite {
+	font-size: x-small;
+	font-family: arial;
+	padding-left: 2px;
+	padding-right: 2px;
+	margin-left: 2px;
+	margin-right: 2px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	color: #FFFFFF;
+}
+
+.unitime-TimeGrid .meeting-shadow {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	filter: alpha(opacity = 25);
+	opacity: .25;
+    -moz-opacity: .25;
+	-webkit-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	-moz-border-radius: 5px;
+	z-index: 499;
+}
+
+.unitime-TimeGrid .meeting {
+	position: absolute;
+	font-size: x-small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	color: #FFFFFF;
+	z-index: 500;
+}
+
+.unitime-TimeGrid .meeting .header {
+	padding: 2px 2px 0px 2px;
+	font-size: x-small;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #FFFFFF;
+	width: 100%;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-top-right-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-topright: 5px;	
+}
+
+@media print {
+	.unitime-TimeGrid .meeting {
+		color: #000000;
+		background-color: #FFFFFF;
+		filter: alpha(opacity = 100);
+		opacity: 1.00;
+		-moz-opacity: 1.00;
+	}
+	.unitime-TimeGrid .meeting .header {
+		padding-bottom: 0px;
+		color: #000000;
+		background-color: #FFFFFF;
+	}
+}
+
+.unitime-TimeGrid .meeting .footer {
+	font-size: x-small;
+	padding-left: 2px;
+	white-space: wrap;
+	-webkit-border-bottom-left-radius: 5px;
+	-webkit-border-bottom-right-radius: 5px;
+	-moz-border-radius-bottomleft: 5px;
+	-moz-border-radius-bottomright: 5px;	
+}
+
+.unitime-TimeGrid .meeting-selected {
+	-webkit-box-shadow: 3px 3px 5px #B7B7B7;
+	-moz-box-shadow: 3px 3px 5px #B7B7B7;
+	filter: alpha(opacity=100)  
+		progid:DXImageTransform.Microsoft.dropshadow(OffX=3, OffY=3,Color='#C7C7C7', Positive='true');
+	opacity: 1;
+    -moz-opacity:1;
+	cursor: pointer;
+}
+
+.unitime-TimeGrid .meeting-selected-noshadow {
+	filter: alpha(opacity=100);
+	opacity: 1;
+    -moz-opacity:1;
+}
+
+.unitime-TimeGrid .meeting-right {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	background: #FFF;
+	border-right: 1px solid #000;
+	width: 5px;
+	display:none;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-bottomleft: 5px;}
+
+.unitime-TimeGrid .meeting-fill {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	-webkit-border-top-left-radius: 5px;
+	-webkit-border-bottom-left-radius: 5px;
+	-moz-border-radius-topleft: 5px;
+	-moz-border-radius-bottomleft: 5px;
+}
+
+.unitime-TimeGrid .bottom-line {
+	border-bottom: 1px solid #DDDDDD;
+}
+
+.unitime-TimeGrid .calendar-scroll {
+	height: 550px;
+	width: 100%;
+	overflow: scroll;
+	overflow-x: hidden;
+}
+
+.blue {
+	border: 1px solid #2952A3;
+	background: #668CD9;
+}
+.blue .header {
+	background: #2952A3;
+}
+@media print {
+	.blue .header {
+		border-bottom: 1px solid #2952A3;
+	}
+}
+
+.red {
+	border: 1px solid #A32929;
+	background: #D96666;
+}
+.red .header {
+	background: #A32929;
+}
+@media print {
+	.red .header {
+		border-bottom: 1px solid #A32929;
+	}
+}
+
+.pink {
+	border: 1px solid #B1365F;
+	background: #E67399;
+}
+.pink .header {
+	background: #B1365F;
+}
+@media print {
+	.pink .header {
+		border-bottom: 1px solid #B1365F;
+	}
+}
+
+
+.purple {
+	border: 1px solid #7A367A;
+	background: #B373B3;
+}
+.purple .header {
+	background: #7A367A;
+}
+@media print {
+	.purple .header {
+		border-bottom: 1px solid #7A367A;
+	}
+}
+
+
+.darkpurple {
+	border: 1px solid #5229A3;
+	background: #8C66D9;
+}
+.darkpurple .header {
+	background: #5229A3;
+}
+@media print {
+	.darkpurple .header {
+		border-bottom: 1px solid #5229A3;
+	}
+}
+
+.steelblue {
+	border: 1px solid #29527A;
+	background: #668CB3;
+}
+.steelblue .header {
+	background: #29527A;
+}
+@media print {
+	.steelblue .header {
+		border-bottom: 1px solid #29527A;
+	}
+}
+
+.lightblue {
+	border: 1px solid #1B887A;
+	background: #59BFB3;
+}
+.lightblue .header {
+	background: #1B887A;
+}
+@media print {
+	.lightblue .header {
+		border-bottom: 1px solid #1B887A;
+	}
+}
+
+.teal {
+	border: 1px solid #28754E;
+	background: #65AD89;
+}
+.teal .header {
+	background: #28754E;
+}
+@media print {
+	.teal .header {
+		border-bottom: 1px solid #28754E;
+	}
+}
+
+.green {
+	border: 1px solid #0D7813;
+	background: #4CB052;
+}
+.green .header {
+	background: #0D7813;
+}
+@media print {
+	.green .header {
+		border-bottom: 1px solid #0D7813;
+	}
+}
+
+.lightgreen {
+	border: 1px solid #528800;
+	background: #8CBF40;
+}
+.lightgreen .header {
+	background: #528800;
+}
+@media print {
+	.lightgreen .header {
+		border-bottom: 1px solid #528800;
+	}
+}
+
+.yellowgreen {
+	border: 1px solid #88880E;
+	background: #BFBF4D;
+}
+.yellowgreen .header {
+	background: #88880E;
+}
+@media print {
+	.yellowgreen .header {
+		border-bottom: 1px solid #88880E;
+	}
+}
+
+.yellow {
+	border: 1px solid #AB8B00;
+	background: #E0C240;
+}
+.yellow .header {
+	background: #AB8B00;
+}
+@media print {
+	.yellow .header {
+		border-bottom: 1px solid #AB8B00;
+	}
+}
+
+.orange {
+	border: 1px solid #BE6D00;
+	background: #F2A640;
+}
+.orange .header {
+	background: #BE6D00;
+}
+@media print {
+	.orange .header {
+		border-bottom: 1px solid #BE6D00;
+	}
+}
+
+.redorange {
+	border: 1px solid #B1440E;
+	background: #E6804D;
+}
+.redorange .header {
+	background: #B1440E;
+}
+@media print {
+	.redorange .header {
+		border-bottom: 1px solid #B1440E;
+	}
+}
+
+.lightbrown {
+	border: 1px solid #865A5A;
+	background: #BE9494;
+}
+.lightbrown .header {
+	background: #865A5A;
+}
+@media print {
+	.lightbrown .header {
+		border-bottom: 1px solid #865A5A;
+	}
+}
+
+.lightpurple {
+	border: 1px solid #705770;
+	background: #A992A9;
+}
+.lightpurple .header {
+	background: #705770;
+}
+@media print {
+	.lightpurple .header {
+		border-bottom: 1px solid #705770;
+	}
+}
+
+.grey {
+	border: 1px solid #4E5D6C;
+	background: #8997A5;
+}
+.grey .header {
+	background: #4E5D6C;
+}
+@media print {
+	.grey .header {
+		border-bottom: 1px solid #4E5D6C;
+	}
+}
+
+.bluegrey {
+	border: 1px solid #5A6986;
+	background: #94A2bE;
+}
+.bluegrey .header {
+	background: #5A6986;
+}
+@media print {
+	.bluegrey .header {
+		border-bottom: 1px solid #5A6986;
+	}
+}
+
+.lightteal {
+	border: 1px solid #4A716C;
+	background: #85AAA5;
+}
+.lightteal .header {
+	background: #4A716C;
+}
+@media print {
+	.lightteal .header {
+		border-bottom: 1px solid #4A716C;
+	}
+}
+
+.yellowgrey {
+	border: 1px solid #6E6E41;
+	background: #A7A77D;
+}
+.yellowgrey .header {
+	background: #6E6E41;
+}
+@media print {
+	.yellowgrey .header {
+		border-bottom: 1px solid #6E6E41;
+	}
+}
+
+.brown {
+	border: 1px solid #8D6F47;
+	background: #C4A883;
+}
+.brown .header {
+	background: #8D6F47;
+}
+@media print {
+	.brown .header {
+		border-bottom: 1px solid #8D6F47;
+	}
+}
+
+.unitime-PrintedComponent {
+	margin-top: 10px;
+	width: 100%;
+	page-break-inside: avoid;
+	page-break-before: auto;
+	page-break-after: auto; 
+}
+
+.unitime-PrintedPage {
+	page-break-inside: avoid;
+	page-break-after: auto;
+	page-break-before: auto;
+	margin-bottom: 20px;
+}
+
+.unitime-TotalRow {
+	border-top: 1px dashed #9CB0CE;
+	font-weight: bold;
+	white-space: nowrap;
+}
+
+.unitime-OtherRow {
+	color: #777777;
+}
+
+.unitime-ClickableTableHeader {
+	font-family: sans-serif, verdana, arial;
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+	background-color: #e3e8f3;
+  	cursor: pointer;
+  	border-bottom: 1px dashed #9CB0CE;
+}
+
+.unitime-ClickableTableHeaderNoBorderLine {
+	font-family: sans-serif, verdana, arial;
+	padding-top: 5px;
+	font-weight: bold;
+	color: #666666;
+	background-image: linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -o-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -moz-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -ms-linear-gradient(bottom, #e3e8f3 0%, #fbfcfd 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, #e3e8f3),
+		color-stop(1, #fbfcfd)
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#fbfcfd', EndColorStr='#e3e8f3')";
+	background-color: #e3e8f3;
+	cursor: pointer;
+}
+
+.unitime3-HeaderTitle {
+	color: #35526F;
+	font-weight: bold;
+	font-size: medium;
+	font-family: sans-serif, verdana, arial;
+}
+
+.unitime3-HeaderPanel {
+	margin-top: 25px;
+	width: 100%;
+	border-bottom: 1px solid #9CB0CE;
+}
+
+.unitime-PopupHint {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 4px;
+	color: #000000;
+	border: 1px solid #AB8B00;
+	background: #FFF0AB;
+	z-index: 1000000;
+}
+
+.unitime-PopupHint .table {
+	padding-left: 20px;
+}
+
+.unitime-PopupHint .table .row {
+	vertical-align: top;
+}
+
+.unitime-PopupHint .table .header {
+	font-style: italic;
+	border-bottom: 1px dashed #333333;
+}
+
+.unitime-PopupWarning {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 10px;
+	color: #000000;
+	border: 1px solid #A32929;
+	background: #D96666;
+	text-align: center;	
+	z-index: 3000000;
+}
+
+.unitime-PopupCancel {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 10px;
+	color: #000000;
+	border: 1px solid #A39329;
+	background: #D5B666;
+	text-align: center;	
+	z-index: 3000000;
+	cursor: pointer;
+}
+
+.unitime-PopupMessage {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 10px;
+	color: #000000;
+	border: 1px solid #2952A3;
+	background: #668CD9;
+	text-align: center;	
+	z-index: 3000000;
+}
+
+.unitime-DashedBottom {
+	border-bottom: 1px dashed #333333;
+}
+
+.unitime-DashedTop {
+	border-top: 1px dashed #333333;
+}
+
+.unitime-TextBox {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 20px;
+	border: 1px solid #9CB0CE;
+	padding: 0px 2px 0px 2px;
+}
+
+.unitime-TextArea {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	border: 1px solid #9CB0CE;
+	padding: 2px;
+}
+
+.unitime-MenuHeaderLabel {
+	color: #6991CE;
+	margin-left: 5px;
+}
+
+.unitime-MenuHeaderOpen {
+	border: 1px solid #9CB0CE;
+	margin-top: 10px;
+	width: 100%;
+	padding: 2px;
+}
+.unitime-MenuHeaderOpen:focus {
+	outline: none;
+}
+
+.unitime-MenuHeaderClose {
+	margin-top: 10px;
+	padding: 2px;
+	background: transparent;
+}
+.unitime-MenuHeaderClose:focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .header :focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .header:focus, .gwt-DisclosurePanel .header a:focus, .gwt-DisclosurePanel .header td:focus {
+	outline: none;
+}
+
+.gwt-DisclosurePanel .content {
+  border-left: 1px solid #9CB0CE;
+  border-bottom: 1px solid #9CB0CE;
+  padding: 6px 2px 6px 6px;
+  margin-left: 6px;
+  -webkit-border-bottom-left: 5px;
+  -moz-border-radius-bottomleft: 5px;	
+ 
+}
+
+.gwt-StackPanel {
+  border-bottom: 1px solid #9CB0CE;
+}
+.gwt-StackPanel .gwt-StackPanelItem {
+  cursor: pointer;
+  cursor: hand;
+  font-size: medium;
+  padding: 3px;
+  border: 1px solid #9CB0CE;
+  border-bottom: 0px;
+  background: #d3def6 url(../unitime/gwt/standard/images/hborder.png) repeat-x 0px -989px;
+}
+.gwt-StackPanel .gwt-StackPanelContent {
+  border: 1px solid #9CB0CE;
+  border-bottom: 0px;
+  background: white;
+  padding: 2px;
+}
+
+.unitime-Print {
+	visibility: hidden;
+	display: none;
+}
+
+.unitime-NotPrintableBottomLine {
+	border-bottom: 1px solid #9CB0CE;
+}
+
+.unitime-NotPrintableTopLine {
+	border-top: 1px solid #9CB0CE;
+}
+
+.unitime-GrayText {
+	color: #777777;
+}
+
+@media print {
+	.unitime-TextBox {
+		color: black;
+		background: transparent;
+		border: none;
+	}
+	.gwt-SuggestBox{
+		color: black;
+		background: transparent;
+		border: none;
+	}
+	.unitime-MainTable {
+		page-break-before: avoid;
+		page-break-after: avoid;
+		page-break-inside: auto;
+	}
+	.unitime-Footer {
+		page-break-before: avoid;
+	}
+	.unitime-NoPrint {
+		visibility: hidden;
+		display: none;
+	}
+	.unitime-Print {
+		visibility: visible;
+		display: inherit;
+	}
+	.unitime-ClickableTableHeader {
+		color: black;
+		font-weight: normall;
+		background: none;
+	  	border-bottom: 1px dashed black;
+	}
+	.unitime-NotPrintableBottomLine {
+		border: none;
+	}
+	.unitime-NotPrintableTopLine {
+		border: none;
+	}
+	.unitime-GrayText {
+		color: black;
+	}
+	.unitime-Label {
+		color: black;
+	}
+}
+
+.unitime-BlankSeparator {
+}
+
+.unitime-Menu {
+	z-index: 1500000;
+}
+
+.unitime-Wrap {
+	white-space: normal;
+}
+
+.gwt-DialogBox {
+	z-index: 490000;
+}
+
+.gwt-PopupPanel {
+	z-index: 495000;
+}
+
+.gwt-DialogBox .dialogContainer {
+  position: relative;  
+}
+.gwt-DialogBox .dialogControls { 
+  position: absolute;
+  top: -24px;
+  right: 4px;
+}
+.gwt-DialogBox .dialogControls a {
+  cursor: pointer;
+}
+.gwt-DialogBox .dialogControls .close {
+  display: block;
+  height: 13px;
+  width: 13px;  
+  background: transparent url(../images/dialog-close.png) center center no-repeat;
+  -background: transparent url(../images/dialog-close.gif) center center no-repeat;
+}
+
+.unitime-MessageBlue {
+	color: black;
+	background: #DFE7F2;
+	border-bottom: 1px black solid;	
+}
+
+.unitime-MessageYellow {
+	color: black;
+	background: #fcdd89;
+	border-bottom: 1px black solid;	
+}
+
+.unitime-FilterBox {
+	border-radius: 1px;
+	-webkit-border-radius: 1px;
+	-moz-border-radius: 1px;
+	border: 1px solid #9CB0CE;
+	padding: 1px;
+	width: 560px;
+	height: 100%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-FilterBoxFocus {
+	-moz-box-shadow: 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: 0 0 3px 2px #7ba7d4;
+	box-shadow: 0 0 3px 2px #7ba7d4;
+	border: 1px solid #9CB0CE;
+	/*
+	outline: 1px solid #DCE6F4;
+	*/
+}
+
+.unitime-FilterBox .filter {
+	border: none;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 1px;
+	padding: 0px;
+	min-width: 100px;
+	height: 20px;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-FilterBox .filter:focus {
+	outline: none;
+}
+
+.unitime-FilterBox .button {
+	color: #909090;
+	cursor: pointer;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	vertical-align: top;
+	padding-left: 1px;
+	float: right;
+	font-weight: bold;
+}
+
+.unitime-FilterBox .button:hover {
+	color: #505050;
+}
+
+.unitime-FilterBox .button-image {
+	cursor: pointer;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+	border-top: 3px solid transparent;
+	float: right;
+	filter: alpha(opacity = 40);
+	opacity: .40;
+    -moz-opacity: .40;
+}
+
+.unitime-FilterBox .button-image:hover {
+	filter: alpha(opacity = 80);
+	opacity: .80;
+    -moz-opacity: .80;
+}
+
+.unitime-FilterBox .chip {
+	margin: 1px;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	padding: 2px;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .text {
+	font-size: x-small;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .button {
+	font-size: x-small;
+	cursor: pointer;
+	padding-left: 2px;
+	color: black;
+	filter: alpha(opacity = 40);
+	opacity: .40;
+    -moz-opacity: .40;
+	position: relative;
+	display: -moz-inline-box;
+	display: inline-block;
+}
+
+.unitime-FilterBox .chip .button:hover {
+	cursor: pointer;
+	filter: alpha(opacity = 80);
+	opacity: .80;
+    -moz-opacity: .80;
+}
+
+@media print {
+	.unitime-FilterBox {
+		color: black;
+		background: transparent;
+		border: none;
+	}
+	.unitime-FilterBox .chip .button {
+		display: none;
+	}
+	.unitime-FilterBox .button {
+		display: none;
+	}
+}
+
+.unitime-FilterBoxPopup {
+	position: absolute;
+	font-size: small;
+	overflow: hidden;
+	/*
+	filter: alpha(opacity = 95);
+	opacity: .95;
+    -moz-opacity: .95;
+    */
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	width: 560px;
+	margin-top: -2px;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	z-index: 1000000;
+}
+
+.unitime-FilterBoxPopup .suggestPopupMiddleCenter {
+	width: 556px;
+}
+
+.unitime-FilterBoxPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 1%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-FilterBoxPopup .item-selected {
+	background-color: #92c1f0;
+}
+
+.unitime-FilterBoxPopup .panel {
+}
+
+.unitime-FilterBoxPopup .command {
+	padding-left: 5px;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	display: block;	
+}
+
+.unitime-FilterBoxPopup .item-command {
+	padding-left: 5px;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
+.unitime-FilterBoxPopup .item-hint {
+	padding-left: 5px;
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
+.unitime-FilterBoxPopup .value {
+	padding: 1px;
+	margin: 0px 3px 0px 10px;
+	cursor: pointer;
+	display: -moz-inline-box;
+	display: inline-block;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 30%;
+	overflow: hidden;
+}
+
+.unitime-FilterBoxPopup .value:hover {
+	background-color: #92c1f0;
+}
+
+.unitime-FilterBoxPopup .other {
+	margin: 1px 3px 1px 10px;
+	display: block;	
+}
+
+.unitime-FilterBoxPopup .inline {
+	display: inline;
+	padding: 1px 3px 1px 3px;
+}
+
+.unitime-FilterBoxPopup .inline:focus {
+	outline: none;
+}
+
+.unitime-FilterBoxPopup .error {
+	color: red;
+	font-style: italic;
+	padding: 1px 3px 1px 13px;
+	display: block;
+}
+
+.unitime-FilterBoxPopup .button-star {
+	cursor: pointer;
+	position: absolute;
+	bottom: 2px;
+	right: 2px;
+	filter: alpha(opacity = 40);
+	opacity: .40;
+    -moz-opacity: .40;
+}
+
+.unitime-FilterBoxPopup .button-star:hover {
+	filter: alpha(opacity = 80);
+	opacity: .80;
+    -moz-opacity: .80;
+}
+
+.unitime-DateSelector {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-DateSelectorFocus {
+	-moz-box-shadow: 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: 0 0 3px 2px #7ba7d4;
+	box-shadow: 0 0 3px 2px #7ba7d4;
+}
+
+.unitime-DateSelector .text {
+	opacity: 0;
+	height: 1px;
+	width: 1px;
+	z-index: -1;
+	overflow: hidden;
+	position: absolute;
+}
+
+.unitime-DateSelector .text:focus {
+	outline: none;
+}
+
+.unitime-DateSelector .box .command {
+	display: table-cell;
+	color: #909090;
+	text-transform: capitalize;
+	font-variant: small-caps;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	width: 200px;
+	margin-bottom: -2px;
+}
+
+.unitime-DateSelector .month {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: top;
+}
+
+.unitime-DateSelector .label {
+	text-align: center;
+	font-size: small;
+}
+
+.unitime-DateSelector .box {
+	display: table;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .box .row {
+	display: table-row;
+}
+
+.unitime-DateSelector .box .cell {
+	display: table-cell;
+	width: 25px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .corner {
+	border: 1px solid black;
+	background-color: #E0E0E0;
+}
+
+.unitime-DateSelector .box .middle {
+	text-align: center;
+	font-size: small;
+	width: 101px;
+	border-left: 2px solid transparent;
+	border-right: 2px solid transparent;
+}
+
+.unitime-DateSelector .box .left {
+	border-left: 1px solid transparent;
+	font-size: small;
+}
+
+.unitime-DateSelector .box .right {
+	border-right: 1px solid transparent;
+	font-size: small;
+}
+
+.unitime-DateSelector .clickable:hover {
+	cursor: pointer;
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-DateSelector .box .disabled {
+	background-color: #E0E0E0;
+	font-style: italic;
+	color: #202020;
+}
+
+.unitime-DateSelector .box .past {
+	font-style: normal;
+}
+
+.unitime-DateSelector .dow {
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	font-size: xx-small;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .week {
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .blank {
+	border-bottom: 1px solid black;
+}
+
+.unitime-DateSelector .last-blank {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+}
+
+.unitime-DateSelector .day {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #FAFAFA;
+}
+
+.unitime-DateSelector .weekend {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #EEEEEE;
+}
+
+.unitime-DateSelector .selected {
+	background-color: yellow;
+}
+
+.unitime-DateSelector .start {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	color: blue;
+}
+
+.unitime-DateSelector .holiday {
+	-moz-box-shadow: inset 0 0 6px red;
+	-webkit-box-shadow: inset 0 0 6px red;
+	box-shadow: inset 0 0 6px red;
+	color: red;
+}
+
+.unitime-DateSelector .exam {
+	-moz-box-shadow: inset 0 0 6px green;
+	-webkit-box-shadow: inset 0 0 6px green;
+	box-shadow: inset 0 0 6px green;
+	color: green;
+}
+
+.unitime-DateSelector .break {
+	-moz-box-shadow: inset 0 0 6px purple;
+	-webkit-box-shadow: inset 0 0 6px purple;
+	box-shadow: inset 0 0 6px purple;
+	color: purple;
+}
+
+.unitime-DateSelector .today {
+	-moz-box-shadow: inset 0 0 6px black;
+	-webkit-box-shadow: inset 0 0 6px black;
+	box-shadow: inset 0 0 6px black;
+	font-weight: bold;
+}
+
+.unitime-DateSelector .classDate {
+	color: #c0c;
+}
+
+.unitime-DateSelector .eventDate {
+	color: #0cc;
+}
+
+.unitime-DateSelector .legend {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: middle;
+}
+
+.unitime-DateSelector .legend .box {
+	display: table;
+	overflow: hidden;
+		
+}
+
+.unitime-DateSelector .legend .cell {
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	display: table-cell;
+	width: 25px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+}
+
+.unitime-DateSelector .legend .first {
+	border-top: 1px solid black;
+}
+
+.unitime-DateSelector .legend .title {
+	display: table-cell;
+	font-weight: bold;
+	vertical-align: middle;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.unitime-DateSelector .legend .row {
+	display: table-row;
+}
+
+.unitime-DateSelector .cursor {
+	-moz-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 3px 2px #7ba7d4;
+	box-shadow: inset 0 0 3px 2px #7ba7d4;
+}
+
+@media print {
+	.unitime-DateSelector .selected {
+		text-decoration: underline;
+		font-weight: bold;
+		-moz-box-shadow: inset 0 0 50px yellow;
+		-webkit-box-shadow: inset 0 0 50px yellow;
+		box-shadow: inset 0 0 50px yellow;
+	}
+}
+
+.unitime-DateSelectionBox {
+	width: 100px;
+}
+
+.unitime-DateSelectionBoxPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+	z-index: 1000000;
+}
+
+.unitime-TimeSelector {
+	width: 80px;
+}
+
+.unitime-TimeSelectorPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+	z-index: 1000000;
+}
+
+.unitime-TimeSelectorPopup .scroll {
+	height: 200px;
+}
+
+.unitime-TimeSelectorPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	width: 1%;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-TimeSelectorPopup .item-selected {
+	background-color: #92c1f0;
+}
+
+.unitime-TravelTimes {
+}
+
+.unitime-TravelTimes .cell {
+	width: 30px;
+	height: 20px;
+	text-align: right;
+}
+
+.unitime-TravelTimes .mark {
+	background-color: #F3F3F3;
+}
+
+.unitime-TravelTimes .disabled {
+	background-color: #E0E0E0;
+	border: 1px solid #808080;
+}
+
+.unitime-TravelTimes .default {
+	color: gray;
+}
+
+.unitime-TravelTimes .horizontal-header {
+	width: 30px;
+	font-size: x-small;
+	vertical-align: bottom;
+}
+
+.unitime-TravelTimes .vertical-header {
+	max-width: 100px;
+	padding-right: 2px;
+	font-size: small;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.unitime-IntervalSelector {
+	display: table;
+}
+
+.unitime-IntervalSelector .row {
+	display: table-row;
+}
+
+.unitime-IntervalSelector .disabled {
+	color: #E0E0E0;
+	vertical-align: middle;
+	display: table-cell;
+}
+
+.unitime-IntervalSelector .enabled {
+	color: #9CB0CE;
+	cursor: pointer;
+	vertical-align: middle;
+	display: table-cell;
+}
+
+.unitime-IntervalSelector .enabled:hover {
+	color: #909090;
+}
+
+.unitime-IntervalSelector .selection {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+	line-height: 15px;
+	vertical-align: baseline;
+	background: #FFFFFF;
+	height: 20px;
+	border: 1px solid #9CB0CE;
+	padding: 0px 2px 0px 2px;
+	margin: 1px 2px 1px 2px;
+	display: table-cell;
+	width: 150px;
+}
+
+@media print {
+	.unitime-IntervalSelector .enabled {
+		display: none;
+	}
+	.unitime-IntervalSelector .disabled {
+		display: none;
+	}
+	.unitime-IntervalSelector .selection {
+		color: black;
+		background: transparent;
+		border: none;
+	}
+}
+
+.unitime-IntervalSelectorPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+	min-width: 150px;
+	z-index: 1000000;
+}
+
+
+.unitime-IntervalSelectorPopup .scroll {
+	max-height: 200px;
+}
+
+.unitime-IntervalSelectorPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-IntervalSelectorPopup .item-hint {
+	padding-left: 5px;
+	color: #909090;
+	vertical-align: top;
+	font-size: xx-small;
+}
+
+.unitime-IntervalSelectorPopup .item-selected {
+	background-color: #92c1f0;
+}
+
+div.gwt-MenuBarPopup {
+	z-index: 1000000;
+}
+
+.unitime-EventContacts {
+	width: 100%;
+}
+
+.unitime-EventContacts .remove {
+	cursor: pointer;
+}
+
+.unitime-EventContacts .instructor-contact {
+	font-style: italic;
+}
+
+.unitime-EventContacts .coordinator-contact {
+	font-style: italic;
+}
+
+.unitime-EventMeetings {
+	width: 100%;
+}
+
+.unitime-EventMeetings .meeting-row {
+	page-break-inside: avoid;
+}
+
+.unitime-EventMeetings .event-row {
+	page-break-inside: avoid;
+	vertical-align: top;
+}
+
+.unitime-EventMeetings .event-cell {
+	border-top: 1px dashed #9CB0CE;
+}
+
+.unitime-EventMeetings .past-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .not-approved {
+	font-style: italic;
+	color: red;
+}
+
+.unitime-EventMeetings .not-approved-past {
+	font-style: italic;
+	color: orange;
+}
+
+.unitime-EventMeetings .new-meeting {
+	font-style: italic;
+	color: blue;
+}
+
+.unitime-EventMeetings .new-approved-meeting {
+	font-style: italic;
+	color: green;
+}
+
+.unitime-EventMeetings .conflict-row {
+	font-style: italic;
+	background-color: #FFD7D7;
+	vertical-align: top;
+}
+
+.unitime-EventMeetings .message-row {
+	font-style: italic;
+	background-color: #FFF0AB;
+	vertical-align: top;
+}
+
+.unitime-EventMeetings .deleted-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .deleted-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .cancelled-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .cancelled-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .rejected-row {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .rejected-meeting {
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .event-cancelled-row {
+	page-break-inside: avoid;
+	vertical-align: top;
+	font-style: italic;
+	color: gray;
+}
+
+.unitime-EventMeetings .indent {
+	padding-left: 10px;
+}
+
+.unitime-EventMeetings .note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-EventMeetings .finals {
+	color: green;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .holiday {
+	color: red;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .break {
+	color: purple;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .weekend {
+	color: graytext;
+	font-weight: bold;
+}
+
+@media print {
+	.unitime-EventMeetings .conflict-row {
+		font-style: italic;
+		vertical-align: top;
+		color: gray;
+	}
+
+	.unitime-EventMeetings .message-row {
+		font-style: italic;
+		vertical-align: top;
+		color: gray;
+	}
+}
+
+.unitime-EventMeetings .no-control {
+	color: gray;
+	padding-left: 5px;
+}
+
+.unitime-EventNotes {
+	width: 100%;
+	vertical-align: top;
+}
+
+.unitime-EventNotes .approve {
+	background-color: #D7FFD7;
+}
+
+.unitime-EventNotes .reject {
+	background-color: #FFD7D7;
+}
+
+.unitime-EventNotes .cancel {
+	background-color: #FFF0AB;
+}
+
+.unitime-EventOwners {
+	width: 100%;
+}
+
+.unitime-EventOwners .owner-row {
+	vertical-align: top;
+}
+
+.unitime-EventOwners .subject {
+	width: 80px;
+}
+
+.unitime-EventOwners .course {
+	width: 240px;
+}
+
+.unitime-EventOwners .subpart {
+	width: 150px;
+}
+
+.unitime-EventOwners .class {
+	width: 140px;
+}
+
+.unitime-EventOwners .remove {
+	cursor: pointer;
+}
+
+.unitime-EventOwners .cross-list {
+	display: block;
+	color: gray;
+	padding-left: 10px;
+}
+
+.unitime-EventOwners .note {
+	max-width: 100px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-Enrollments {
+	width: 100%;
+}
+
+.unitime-Enrollments .conflict {
+	color: red;
+}
+
+.unitime-Enrollments .conflict .dc {
+	color: #c81e14;
+}
+
+.unitime-Enrollments .conflict .m2d {
+	color: #f06428;
+}
+
+.unitime-Enrollments .conflict .b2b {
+	color: #dcb414;
+}
+
+.unitime-MeetingSelection {
+	border-spacing: 0px;
+}
+
+.unitime-MeetingSelection .text {
+	opacity: 0;
+	height: 1px;
+	width: 1px;
+	z-index: -1;
+	overflow: hidden;
+	position: absolute;
+}
+
+.unitime-MeetingSelection .box {
+	display: table;
+}
+
+.unitime-MeetingSelection .row {
+	display: table-row;
+}
+
+.unitime-MeetingSelection .corner {
+	display: table-cell;
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
+}
+
+.unitime-MeetingSelection .cell {
+	display: table-cell;
+	white-space: nowrap;
+	overflow: hidden;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: center;
+	vertical-align: top;
+	font-size: small;	
+	text-overflow: ellipsis;
+	cursor: pointer;
+	padding: 2px;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
+}
+
+.unitime-MeetingSelection .hover {
+	-moz-box-shadow: inset 0 0 10px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 10px #7ba7d4;
+	box-shadow: inset 0 0 10px #7ba7d4;
+}
+
+.unitime-MeetingSelection .selected {
+	background-color: #92c1f0;
+}
+
+.unitime-MeetingSelection .conflict {
+	color: red;
+	text-align: left;
+}
+
+.unitime-MeetingSelection .conflict .type {
+	padding-left: 5px;
+	font-style: italic;
+	color: #F99;
+	text-overflow: none;
+}
+
+.unitime-MeetingSelection .conflict .time {
+	padding-left: 5px;
+	color: #F99;
+	text-overflow: none; 
+}
+
+.unitime-MeetingSelection .date {
+	display: table-cell;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	text-align: center;
+	padding: 2px;
+	white-space: nowrap;
+	cursor: pointer;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
+}
+
+.unitime-MeetingSelection .room {
+	display: table-cell;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	border-top: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	padding: 2px;
+	cursor: pointer;
+	text-overflow: ellipsis;
+	width: 100px;
+	max-width: 100px;
+	min-width: 100px;
+}
+
+.unitime-Notification {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 10px;
+	color: #000000;
+	z-index: 5000000;
+	width: 400px;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+
+.unitime-NotificationInfo {
+	background-image: linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
+	background-image: -o-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
+	background-image: -webkit-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
+	background-image: -ms-linear-gradient(bottom, rgb(138,169,230) 0%, rgb(232,240,255) 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, rgb(138,169,230)),
+		color-stop(1, rgb(232,240,255))
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8f0ff', EndColorStr='#8aa9e6');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#e8f0ff', EndColorStr='#8aa9e6')";
+	border: 1px solid #2952A3;
+	-moz-box-shadow:    2px 2px 3px rgb(164,193,245);
+  	-webkit-box-shadow: 2px 2px 3px rgb(164,193,245);
+  	box-shadow:         2px 2px 3px rgb(164,193,245);
+  	background-color: rgb(138,169,230);
+}
+
+.unitime-NotificationWarning {
+	background-image: linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
+	background-image: -o-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
+	background-image: -webkit-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
+	background-image: -ms-linear-gradient(bottom, rgb(209,179,111) 0%, rgb(250,242,208) 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, rgb(209,179,111)),
+		color-stop(1, rgb(250,242,208))
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#faf2d0', EndColorStr='#d1b36f');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#faf2d0', EndColorStr='#d1b36f')";
+	border: 1px solid #A39329;
+	-moz-box-shadow:    2px 2px 3px rgb(224,200,148);
+  	-webkit-box-shadow: 2px 2px 3px rgb(224,200,148);
+  	box-shadow:         2px 2px 3px rgb(224,200,148);
+  	background-color: rgb(209,179,111);
+}
+
+.unitime-NotificationError {
+	background-image: linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
+	background-image: -o-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
+	background-image: -moz-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
+	background-image: -webkit-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
+	background-image: -ms-linear-gradient(bottom, rgb(209,138,138) 0%, rgb(247,225,225) 100%);
+	background-image: -webkit-gradient(
+		linear,
+		left bottom,
+		left top,
+		color-stop(0, rgb(209,138,138)),
+		color-stop(1, rgb(247,225,225))
+	);
+	filter:  progid:DXImageTransform.Microsoft.gradient(startColorStr='#F7E1E1', EndColorStr='#D18A8A');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorStr='#F7E1E1', EndColorStr='#D18A8A')";
+	border: 1px solid #A32929;
+	-moz-box-shadow:    2px 2px 3px rgb(232,162,162);
+  	-webkit-box-shadow: 2px 2px 3px rgb(232,162,162);
+  	box-shadow:         2px 2px 3px rgb(232,162,162);
+  	background-color: rgb(209,138,138);
+}
+
+.unitime-EventResults{
+	width: 100%;
+}
+
+.unitime-Note {
+	max-width: 200px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.unitime-SuggestionsLegend {
+	width: 100%;
+	font-size: x-small;
+	font-style: italic;
+	color: #9CB0CE;
+	text-align: right;
+	margin-top: -2px;
+	margin-bottom: 5px;
+}
+
+.unitime-SuggestionsMessage {
+	color: red;
+}
+
+.unitime-SuggestionsHint {
+	position: absolute;
+	font-size: small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 90);
+	opacity: .90;
+    -moz-opacity: .90;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	padding: 4px;
+	color: #000000;
+	background: #FFFDDD;
+	border: 1px solid #AB8B00;
+	z-index: 1000000;
+	overflow: visible;
+}
+
+.unitime-SuggestionsHintWidget {
+	zoom:50%;
+	display: inline-block;
+	-moz-transform: scale(0.5);
+	-moz-transform-origin: top left;
+}
+
+.unitime-RoomSharingWidget {
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-RoomSharingWidget .table {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: top;
+}
+
+
+.unitime-RoomSharingWidget .box {
+	display: table;
+	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .box .row {
+	display: table-row;
+}
+
+.unitime-RoomSharingWidget .box .cell {
+	display: table-cell;
+	width: 38px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	overflow: hidden;
+}
+
+.unitime-RoomSharingWidget .corner {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: right;
+	font-size: xx-small;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .clickable:hover {
+	cursor: pointer;
+	-moz-box-shadow: inset 0 0 5px #7ba7d4;
+	-webkit-box-shadow: inset 0 0 5px #7ba7d4;
+	box-shadow: inset 0 0 5px #7ba7d4;
+}
+
+.unitime-RoomSharingWidget .time {
+	border-top: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	text-align: center;
+	font-size: xx-small;
+	font-weight: bold;
+	padding-left: 1px;
+	padding-right: 1px;
+}
+
+.unitime-RoomSharingWidget .day {
+	border-right: 1px solid black;
+	border-left: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #E0E0E0;
+	text-align: center;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .item {
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: center;
+	vertical-align: middle;
+	font-size: x-small;
+	overflow: hidden;
+	white-space: nowrap;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-RoomSharingWidget .legend {
+	display: -moz-inline-box;
+	display: inline-block;
+	padding: 3px 5px 3px 5px;
+	vertical-align: middle;
+}
+
+.unitime-RoomSharingWidget .legend .box {
+	display: table;
+	overflow: hidden;
+		
+}
+
+.unitime-RoomSharingWidget .legend .cell {
+	border-bottom: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	display: table-cell;
+	width: 38px;
+	height: 25px;
+	font-size: x-small;
+	vertical-align: middle;
+	text-align: center;
+	overflow: hidden;
+	max-width: 38px;
+	color: white;
+}
+
+.unitime-RoomSharingWidget .legend .first {
+	border-top: 1px solid black;
+}
+
+.unitime-RoomSharingWidget .legend .title {
+	display: table-cell;
+	font-weight: bold;
+	vertical-align: middle;
+	padding-bottom: 2px;
+	padding-left: 5px;
+}
+
+.unitime-RoomSharingWidget .legend .button {
+	display: table-cell;
+	height: 100%;
+	text-align: right;
+	padding-top: 10px;
+}
+
+.unitime-RoomSharingWidget .legend .note {
+	display: block;
+	padding-top: 5px;
+	vertical-align: middle;
+}
+
+.unitime-RoomSharingWidget .legend .note .label {
+	font-weight: bold;
+}
+
+
+.unitime-RoomSharingWidget .legend .note .value {
+	padding-left: 20px;
+}
+
+
+
+.unitime-RoomSharingWidget .legend .editable-title {
+	cursor: pointer;
+}
+
+.unitime-RoomSharingWidget .legend .selected-title {
+	text-decoration: underline;
+}
+
+.unitime-RoomSharingWidget .legend .row {
+	display: table-row;
+}
+
+.unitime-RoomSharingWidget .legend .selected {
+	-moz-box-shadow: inset 0 0 6px blue;
+	-webkit-box-shadow: inset 0 0 6px blue;
+	box-shadow: inset 0 0 6px blue;
+	font-weight: bold;
+}
+
+.unitime-RoomSharingWidget .legend .remove {
+	vertical-align: middle;
+	cursor: pointer;
+	margin-left: 5px;
+	margin-top: 2px;
+	
+}
+
+unitime-RoomSharingWidget .legend .blank {
+	display: table-cell;
+}
+
+.unitime-RoomSharingWidget .legend .other {
+	display: table-cell;
+	font-weight: bold;
+	font-style: italic;
+	vertical-align: middle;
+	padding-bottom: 2px;
+	padding-left: 5px;
+	padding-top: 5px;
+	text-align: center;
+	color: #9CB0CE; 
+}
+
+.gwt-Button {
+	white-space: nowrap;
+	height: 25px;
+}
+
+.unitime-TimeGrid .unavailability {
+	position: absolute;
+	font-size: x-small;
+	font-family: arial;
+	overflow: hidden;
+	filter: alpha(opacity = 75);
+	opacity: .75;
+    -moz-opacity: .75;
+	color: #222;
+	z-index: 499;
+	background: #ddd;
+	border: 1px solid #ccc;
+}
+
+.unitime-TimeGrid .unavailability .header {
+	padding: 0px 2px 0px 2px;
+	font-size: x-small;
+	white-space: nowrap;
+	overflow: hidden;
+	color: #222;
+	width: 100%;
+	background: #ccc;
+}
+
+.unitime-TimeGrid .unavailability .footer {
+	font-size: x-small;
+	padding-left: 2px;
+	white-space: wrap;
+}
+
+@media print {
+	.unitime-TimeGrid .unavailability {
+		color: #ddd;
+		background-color: #fff;
+		filter: alpha(opacity = 100);
+		opacity: 1.00;
+		-moz-opacity: 1.00;
+		border: 1px solid #eee;
+	}
+	.unitime-TimeGrid .unavailability .header {
+		padding-bottom: 0px;
+		color: #ddd;
+		background-color: #fff;
+	}
+}
+
+.unitime-TimeGrid .unavailability-selected {
+	filter: alpha(opacity=100);
+	opacity: 1;
+    -moz-opacity:1;
+	cursor: pointer;
+}
+
+.unitime-TimeGrid .unavailability-selected-noshadow {
+	filter: alpha(opacity=100);
+	opacity: 1;
+    -moz-opacity:1;
+}
+
+.unitime-EventMeetingsHideDeleted {
+}
+
+.unitime-EventMeetingsHideDeleted .cancelled-row {
+	display: none;
+}
+
+.unitime-EventMeetingsHideDeleted .deleted-row {
+	display: none;
+}
+
+.unitime-EventMeetingsHideDeleted .rejected-row {
+	display: none;
+}
+
+.unitime-RoomHint {
+	max-width: 450px;
+}
+
+.unitime-RoomHint .minimap {
+	border: 1px solid #9CB0CE;
+}
+
+.unitime-VerticalScrollPanel {
+	overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+.unitime-ImageButton {
+	cursor: pointer;
+  	cursor: hand;
+}
+
+.unitime-ImageButton-disabled {
+  cursor: default;
+}
+
+.unitime-AriaStatus {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+}
+
+.unitime-VisibleAriaStatus {
+	color: #777777;
+	text-align: center;
+	max-width: 800px;
+}
+
+.unitime-VisibleAriaStatus .message {
+	padding-right: 10px;
+}
+
+.unitime-AriaHiddenLabel {
+	position: absolute !important;
+	clip: rect(1px, 1px, 1px, 1px);
+}
+
+.unitime-AriaLabel {
+	display: none;
+}
+
+.unitime-SuggestBoxPopup {
+	position: absolute;
+	overflow: hidden;
+	-webkit-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	-moz-border-radius-bottomleft: 3px;
+	-moz-border-radius-bottomright: 3px;
+	padding: 1px;
+	color: #000000;
+	border: 1px solid #9CB0CE;
+	background: #FFFFFF;
+	-moz-box-shadow: 1px 2px 4px #9CB0CE;
+	-webkit-box-shadow: 1px 2px 4px #9CB0CE;
+	box-shadow: 1px 2px 4px #9CB0CE;
+	margin-top: -1px;
+	min-width: 150px;
+	z-index: 1000000;
+}
+
+
+.unitime-SuggestBoxPopup .scroll {
+	max-height: 200px;
+}
+
+.unitime-SuggestBoxPopup .item {
+	padding: 1px 3px 1px 3px;
+	cursor: pointer;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	font-family: Verdana, sans-serif;
+	font-size: 8pt;
+	font-weight: 400;
+	font-style: normal;
+	color: #333333;
+}
+
+.unitime-SuggestBoxPopup .item-selected {
+	background-color: #92c1f0;
+}
+
+.unitime-RoomAvailabilityHeader {
+	width: 100%;
+	padding-top: 10px;
+	color: black;
+}
+
+.unitime-RoomAvailabilityHeader .name {
+	text-align: left;
+	font-weight: bold;
+	font-size: medium;
+}
+
+.unitime-RoomAvailabilityHeader .type {
+	text-align: center;
+	color: #6991CE;
+}
+
+.unitime-RoomAvailabilityHeader .size {
+	text-align: right;
+	font-style: italic;
+	color: #6991CE;
+}
+
+.unitime-ButtonArrow {
+	position: relative;
+	font-size: 8px;
+	margin-left: 5px;
+	top: -0.1em;
+}
+
+.unitime-CourseDetailsPopup {
+	width: 400px;
+	max-height: 400px;
+	overflow: hidden;
+}

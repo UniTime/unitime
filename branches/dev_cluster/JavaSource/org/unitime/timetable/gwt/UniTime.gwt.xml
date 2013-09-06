@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module>
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+ <module rename-to='unitime'>
+	<!-- Inherit the core Web Toolkit stuff.                        -->
+	<inherits name='com.google.gwt.user.User' />
+	<inherits name='com.google.gwt.user.UserAgent' />
+	<inherits name="com.google.gwt.resources.Resources" />
+	<inherits name="com.google.gwt.i18n.I18N"/>
+	
+	<extend-property name="locale" values="en"/>
+	<extend-property name="locale" values="cs"/>
+	<set-property-fallback name="locale" value="en"/>
+
+	<!-- Logging -->
+	<inherits name="com.google.gwt.logging.Logging" />
+	<set-property name="gwt.logging.logLevel" value="INFO"/>
+	<set-property name="gwt.logging.enabled" value="TRUE"/>
+	<set-property name="gwt.logging.developmentModeHandler" value="ENABLED" />
+	<set-property name="gwt.logging.systemHandler" value="DISABLED" />
+	<set-property name="gwt.logging.popupHandler" value="DISABLED" />
+	<set-property name="gwt.logging.consoleHandler" value="ENABLED"/>
+	<set-property name="gwt.logging.firebugHandler" value="ENABLED" /> 
+	<set-property name="gwt.logging.simpleRemoteHandler" value="ENABLED" />
+
+	<!-- Inherit the default GWT style sheet.  You can change       -->
+	<!-- the theme of your GWT application by uncommenting          -->
+	<!-- any one of the following lines.                            -->
+	<inherits name='com.google.gwt.user.theme.standard.StandardResources' />
+	<!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
+	<!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
+
+	<!-- Other module inherits                                      -->
+	<inherits name='org.unitime.timetable.gwt.command.GwtRpcCommandPattern' />
+
+	<!-- Specify the app entry point class.                         -->
+	<entry-point class='org.unitime.timetable.gwt.client.Client' />
+
+	<!-- Specify the paths for translatable code                    -->
+	<source path='client' />
+	<source path='shared' />
+	<source path='resources' />
+	<source path='services' />
+</module>

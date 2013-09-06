@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ * UniTime 3.4 (University Timetabling Application)
+ * Copyright (C) 2012, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<beans:beans
+	xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+	
+	<http use-expressions="true">
+		<intercept-url pattern="/temp/*" access="isAuthenticated()"/>
+		<intercept-url pattern="/solver/solver.jnlp" access="isAuthenticated()"/>
+		<intercept-url pattern="/classes.do" access="permitAll" />
+		<intercept-url pattern="/exams.do" access="permitAll" />
+		<intercept-url pattern="/*.do" access="isAuthenticated()"/>
+		<intercept-url pattern="/**" access="permitAll" />
+		<form-login login-page="/login.jsp"
+			authentication-failure-handler-ref="unitimeAuthenticationFailureHandler"
+			authentication-success-handler-ref="unitimeAuthenticationSuccessHandler"/>
+		<logout logout-url="/logOut.do" delete-cookies="JSESSIONID" logout-success-url="/login.jsp"/>
+		<expression-handler ref="webExpressionHandler"/>
+		<access-denied-handler ref="unitimeAccessDeniedHandler"/>
+		<anonymous enabled="false"/>
+		<custom-filter ref="unitimeAnonymousFilter" position="ANONYMOUS_FILTER"/>
+	</http>
+	
+	<global-method-security pre-post-annotations="enabled">
+		<expression-handler ref="expressionHandler"/>
+	</global-method-security>
+	
+	<beans:bean id="expressionHandler" class="org.unitime.timetable.spring.security.UniTimeSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluator"/>
+	</beans:bean>
+	
+	<beans:bean id="webExpressionHandler" class="org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler">
+		<beans:property name="permissionEvaluator" ref="unitimePermissionEvaluatorNoException"/>
+	</beans:bean>
+	
+    <!-- LDAP Authentication -->
+    <ldap-server url="${unitime.authentication.ldap.url}" id="unitimeLdapContextSource"/>
+	
+	<!-- Database Authentication -->
+	<beans:bean id="databaseAuthenticationProvider" class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+		<beans:property name="userDetailsService" ref="unitimeUserDetailsService"/>
+	</beans:bean>
+
+	<!-- JAAS (Legacy) Authentication -->
+	<beans:bean id="jaasAuthProvider" class="org.unitime.timetable.authenticate.jaas.JaasAuthenticationProvider">
+		<beans:property name="configuration">
+			<beans:bean class="org.unitime.timetable.authenticate.jaas.LoginConfiguration"/>
+		</beans:property>
+	</beans:bean>
+		
+	<beans:bean id="ldapAuthProvider" class="org.springframework.security.ldap.authentication.LdapAuthenticationProvider">
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.ldap.authentication.BindAuthenticator">
+				<beans:constructor-arg ref="unitimeLdapContextSource"/>
+				<beans:property name="userDnPatterns">
+					<beans:list>
+						<beans:value>${unitime.authentication.ldap.user-dn-pattern}</beans:value>
+					</beans:list>
+				</beans:property>
+			</beans:bean>
+		</beans:constructor-arg>
+		<beans:constructor-arg>
+			<beans:bean class="org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator">
+				<beans:constructor-arg ref="unitimeLdapContextSource"/>
+				<beans:constructor-arg value="${unitime.authentication.ldap.group-search-base}"/>
+				<beans:property name="groupRoleAttribute" value="${unitime.authentication.ldap.group-role-attribute}"/>
+				<beans:property name="groupSearchFilter" value="${unitime.authentication.ldap.group-search-filter}"/>
+				<beans:property name="rolePrefix" value=""/>
+				<beans:property name="convertToUpperCase" value="${unitime.authentication.ldap.group-convert-to-uppercase}"/>
+			</beans:bean>
+		</beans:constructor-arg>
+		<beans:property name="userDetailsContextMapper" ref="unitimeUserContextMapper"/>
+	</beans:bean>
+ 	
+	<authentication-manager alias="authenticationManager">
+		<!-- Database Authentication -->
+		<authentication-provider user-service-ref="unitimeUserDetailsService">
+			<password-encoder hash="md5" base64="true"/>
+		</authentication-provider>
+		<!-- LDAP Authentication -->
+		<authentication-provider ref="ldapAuthProvider"/>
+		<!-- JAAS (Legacy) Authentication -->
+		<authentication-provider ref="jaasAuthProvider"/>
+	</authentication-manager>
+	
+	<!-- LDAP People Lookup
+	<beans:bean id="ldapPeopleLookupSource" class="org.springframework.ldap.core.support.LdapContextSource">
+		<beans:property name="url" value="${tmtbl.lookup.ldap}" />
+      	<beans:property name="base" value="${tmtbl.lookup.ldap.name}" />
+	</beans:bean>
+	
+	<beans:bean id="ldapPeopleLookupTemplate" class="org.springframework.ldap.core.LdapTemplate">
+		<beans:constructor-arg ref="ldapPeopleLookupSource"/>
+	</beans:bean>
+	 -->
+</beans:beans>

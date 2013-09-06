@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE departments PUBLIC "-//UniTime//DTD University Course Timetabling/EN" "http://www.unitime.org/interface/Department.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+
+	<!-- department ==> Required:  abbreviation, name, deptCode
+	                    Optional:  externalId
+	                    Optional:  allowEvents (since UniTime 3.4)
+	-->
+<departments campus="woebegon" term="Fal" year="2007">
+	<department externalId="0S40041C10XBB1GMZOQF" abbreviation="BSCmpt" name="Business Services Computing" deptCode="1068"/>
+	<department externalId="0S402A1C0XLC21GMZOPX" abbreviation="PFComp" name="Physical Facilities Computing" deptCode="1678"/>
+	<department externalId="0S402U1C0W5QX1GMZOOU" abbreviation="PRFSPS" name="Smas-Prf-Sponsored Program Svc (1P03)" deptCode="1554" allowEvents="true"/>
+</departments>

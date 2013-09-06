@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE reservations PUBLIC "-//UniTime//UniTime Reservations DTD/EN" "http://www.unitime.org/interface/Reservations.dtd">
+
+<!-- 
+ * UniTime 3.3 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<reservations campus="woebegon" year="2010" term="Fal" dateFormat="MM/dd/yyyy" created="Wed Dec 21 15:17:06 CET 2011">
+  <!-- each reservation is set on a course (offering) and must have a type -->
+  <!-- limit is optional (reservation is unlimited when there is no limit) -->
+  <!-- expiration date is optional (reservation does not expire when there is no expiration) -->
+  <!-- restrictions are set using configuration and/or class elements -->
+  
+  <!-- individual reservation does not have limit (it is the number of students in the reservation) -->
+  <reservation subject="ALG" courseNbr="101" expire="09/10/2010" type="individual">
+    <!-- a class can be identified either by externalId or by type and suffix, for instance:
+      <class externalId="ALG101-01">
+    -->  
+    <class type="Lec" suffix="1"/>
+    <student externalId="1001"/>
+    <student externalId="1002"/>
+  </reservation>
+  
+  <!-- curriculum reservation must have an academic area -->
+  <!--  academic classification(s) and major(s) are optional (all classification / majors if not present) -->
+  <reservation subject="ENGL" courseNbr="101" limit="7" type="curriculum">
+    <academicArea externalId="A" abbreviation="A"/>
+    <academicClassification externalId="02" code="02"/>
+    <academicClassification externalId="01" code="01"/>
+    <major externalId="M1" code="M1"/>
+  </reservation>
+  <reservation subject="ENGL" courseNbr="101" limit="3" type="curriculum">
+    <class type="Lec" suffix="4"/>
+    <class type="Lec" suffix="3"/>
+    <class type="Lec" suffix="1"/>
+    <academicArea externalId="A" abbreviation="A"/>
+    <major externalId="M2" code="M2"/>
+  </reservation>
+  
+  <!-- group reservation must have a student group -->
+  <reservation subject="C S" courseNbr="101" limit="2" expire="09/01/2010" type="group">
+    <class type="Lec" suffix="2"/>
+    <class type="Lab" suffix="4"/>
+    <class type="Lab" suffix="2"/>
+    <!-- student group is identified either by externalId (if present) or by group code -->
+    <studentGroup externalId="G1" code="YEx"/>
+  </reservation>
+  
+  <!-- course reservation refer to the course for which the reservation is set -->
+  <reservation subject="CHM" courseNbr="101" limit="12" type="course">
+    <configuration name="1"/>
+  </reservation>
+  <reservation subject="CHM" courseNbr="101H" limit="2" type="course" />
+</reservations>

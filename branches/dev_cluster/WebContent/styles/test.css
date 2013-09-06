@@ -1,0 +1,88 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+*/
+
+BODY {
+	background-color: #a37b2c;
+}
+
+.unitime-Page {
+	border: 1px solid #101010;
+}
+
+.unitime-Page {
+	border: 1px solid #101010;
+}
+
+.unitime-Footer {
+	border: 1px solid #101010;
+	background-color: white;
+}
+
+.unitime-Footer td {
+	padding-left: 3px;
+	padding-right: 3px;
+	padding-bottom: 2px;
+	padding-top: 2px;
+}
+
+.unitime-FooterText {
+	color: #101010;
+}
+
+a.unitime-FooterLink:link,a.unitime-FooterLink:visited,a.unitime-FooterLink:active,a.unitime-FooterLink:hover {
+	color: #a37b2c;
+}
+
+.unitime-Disclaimer {
+	color: #999;
+	background-color: black;
+	font-size: 9pt;
+	border-top: solid 5px #a37b2c;
+	margin: -1px;
+	white-space: nowrap;
+}
+
+.unitime-MenuHeaderLabel {
+	color: #101010;
+}
+
+.unitime-MenuHeaderOpen {
+	border: 1px solid #101010;
+	background-color: #FCDD89;
+}
+
+.gwt-DisclosurePanel .content {
+  border-left: 1px solid #101010;
+  border-bottom: 1px solid #101010;
+  border-right: 1px solid #101010;
+  padding-right: 5px;
+  background-color: white;
+}
+
+.gwt-StackPanel {
+  border-bottom: 1px solid #505050;
+}
+
+.gwt-StackPanel .gwt-StackPanelItem {
+  border: 1px solid #505050;
+}
+
+.gwt-StackPanel .gwt-StackPanelContent {
+  border: 1px solid #505050;
+}

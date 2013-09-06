@@ -1,0 +1,75 @@
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+ 
+<!ELEMENT unitime-menu (menu|item|separator|remove)* >
+ 
+<!ELEMENT menu ((parameter)*, (condition|new-condition)?,  (menu|item|separator|remove)*) >
+<!ATTLIST menu name CDATA #REQUIRED >
+<!ATTLIST menu title CDATA #IMPLIED >
+<!ATTLIST menu page CDATA #IMPLIED >
+<!ATTLIST menu type (gwt|property) #IMPLIED >
+<!ATTLIST menu target (download|dialog|eval) #IMPLIED >
+<!ATTLIST menu hash CDATA #IMPLIED >
+ 
+<!ELEMENT separator ((condition|new-condition)?) >
+
+<!ELEMENT item ((parameter)*, (condition|new-condition)?) > 
+<!ATTLIST item name CDATA #REQUIRED >
+<!ATTLIST item page CDATA #REQUIRED >
+<!ATTLIST item type (gwt|property|page) #IMPLIED >
+<!ATTLIST item target (download|dialog|eval) #IMPLIED >
+<!ATTLIST item hash CDATA #IMPLIED >
+
+<!ELEMENT condition (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >
+
+<!ELEMENT and (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >
+<!ELEMENT or (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >
+<!ELEMENT not (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >
+ 
+ <!ELEMENT isAuthenticated EMPTY >
+ 
+<!ELEMENT hasRole EMPTY >
+<!ATTLIST hasRole name CDATA #IMPLIED >
+
+<!ELEMENT hasProperty EMPTY >
+<!ATTLIST hasProperty name CDATA #REQUIRED >
+
+<!ELEMENT propertyEquals EMPTY >
+<!ATTLIST propertyEquals name CDATA #REQUIRED >
+<!ATTLIST propertyEquals value CDATA #REQUIRED >
+<!ATTLIST propertyEquals defaultValue CDATA #IMPLIED >
+
+<!ELEMENT hasRight EMPTY >
+<!ATTLIST hasRight name (canSeeCourses|canSeeTimetable|hasASolverGroup|canDoTimetable|canAudit|canSectionStudents|isSectioningEnabled|isRegistrationEnabled|canSeeEvents|isChameleon|hasPersonalReport|isStudent|hasRoomAvailability|canSeeExams|canTimetableExams|hasCourseReports|hasExamReports|hasStudentReports|hasEventReports|isInstructor) #REQUIRED >
+
+<!ELEMENT parameter (#PCDATA) >
+<!ATTLIST parameter name CDATA #REQUIRED >
+<!ATTLIST parameter value CDATA #IMPLIED >
+
+<!ELEMENT hasPermission EMPTY >
+<!ATTLIST hasPermission name CDATA #REQUIRED >
+<!ATTLIST hasPermission authority (current|session|any) #IMPLIED >
+
+<!-- custom menu -->
+<!ATTLIST item position CDATA #IMPLIED >
+
+<!ELEMENT remove EMPTY > 
+<!ATTLIST remove name CDATA #REQUIRED >
+
+<!ELEMENT new-condition (and|or|not|isAuthenticated|hasRole|hasProperty|propertyEquals|hasRight|hasPermission)* >

@@ -1,0 +1,156 @@
+/*
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2011, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * When changed, compile using protoc:
+ *    protoc JavaSource/OnlineSectioningLog.proto --java_out=JavaSource
+ */
+
+option java_package = "org.unitime.timetable.onlinesectioning";
+
+message Entity {
+	enum EntityType {
+		CLAZZ = 0;
+		COURSE = 1;
+		LOCATION = 2;
+		INSTRUCTOR = 3;
+		STUDENT = 4;
+		OFFERING = 5;
+		RESERVATION = 6;
+		INDIVIDUAL_RESERVATION = 7;
+		GROUP_RESERVATION = 8;
+		CURRICULUM_RESERVATION = 9;
+		COURSE_RESERVATION = 10;
+		MANAGER = 11;
+		OTHER = 12;
+	}
+	optional int64 unique_id = 1;
+	optional EntityType type = 2;
+	optional string external_id = 3;
+	optional string name = 4;
+}
+
+message Time {
+	required int32 days = 1;
+	required int32 start = 2;
+	required int32 length = 3;
+	optional string pattern = 4;
+	optional Section.Preference preference = 5;
+}
+
+message Section {
+	enum Preference {
+		REQUIRED = 0;
+		PREFERRED = 1;
+		SELECTED = 2;
+	}
+	optional Entity clazz = 1;
+	optional Time time = 2;
+	repeated Entity instructor = 3;
+	repeated Entity location = 4;
+	optional Preference preference = 5;
+	optional Entity course = 6;
+	optional Entity reservation = 7;
+	optional int64 time_stamp = 8;
+	optional Entity subpart = 9;
+}
+
+message Request {
+	optional int64 id = 1;
+	required int32 priority = 2;
+	optional bool alternative = 3 [default = false];
+	
+	repeated Time free_time = 4;
+	repeated Entity course = 5;
+	repeated Section section = 6;
+	
+	optional int64 time_stamp = 8;
+	
+	optional bool wait_list = 9 [default = false];
+}
+
+message Enrollment {
+	enum EnrollmentType {
+		REQUESTED = 0;
+		COMPUTED = 1;
+		PREVIOUS = 2;
+		STORED = 3;
+		APPROVED = 4;
+		REJECTED = 5;
+	}
+	required EnrollmentType type = 1;
+	repeated Section section = 2;
+	optional double value = 3; 
+}
+
+message Action {
+	enum ResultType {
+		SUCCESS = 0;
+		FAILURE = 1;
+		TRUE = 2;
+		FALSE = 3;
+		NULL = 4;
+	}
+	required string operation = 1;
+	required Entity session = 2;
+	optional Entity student = 3;
+	
+	optional int64 start_time = 4;
+	optional int64 end_time = 5;
+	optional int64 cpu_time = 6;
+	
+	repeated Request request = 7;
+	repeated Enrollment enrollment = 8;
+	repeated Entity other = 9;
+	
+	repeated Message message = 10;
+	optional ResultType result = 11;
+	
+	optional Entity user = 12;
+	repeated Property option = 13;
+}
+
+message Message {
+	enum Level {
+		DEBUG = 0;
+		INFO = 1;
+		WARN = 2;
+		ERROR = 3;
+		FATAL = 4;
+	}
+	required Level level = 1;
+	required string text = 2;
+	optional string exception = 3;
+	optional int64 time_stamp = 4;
+}
+
+message Property {
+	required string key = 1;
+	required string value = 2;
+}
+
+message Log {
+	repeated Action action = 1;
+	repeated Message message = 2;
+}
+
+message CourseRequestOption {
+	enum OptionType {
+		ORIGINAL_ENROLLMENT = 0;
+	}
+	required OptionType type = 1;
+	repeated Section section = 2;
+}

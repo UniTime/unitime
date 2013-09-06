@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="Reservation" table="reservation" abstract="true" discriminator-value="-1">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">reservation_seq</param>
+            </generator>
+        </id>
+
+        <discriminator column="reservation_type" type="java.lang.Integer"/>
+        
+        <property
+            name="expirationDate"
+            column="expiration_date"
+            type="java.sql.Timestamp"
+            not-null="false"/>
+       	
+       	<property
+       		name="limit"
+       		column="reservation_limit"
+       		type="java.lang.Integer"
+       		not-null="false"/>
+        
+        <many-to-one
+            name="instructionalOffering"
+            class="InstructionalOffering"
+            column="offering_id"
+            not-null="true"
+            foreign-key="fk_reservation_offering"/>
+        
+        <set
+            name="configurations"
+            table="reservation_config"
+            inverse="false"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="reservation_id" foreign-key="fk_res_config_reservation"/>
+            <many-to-many class="InstrOfferingConfig" column="config_id" foreign-key="fk_res_config_config"/>
+        </set>
+        
+        <set
+            name="classes"
+            table="reservation_class"
+            inverse="false"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="reservation_id" foreign-key="fk_res_class_reservation"/>
+            <many-to-many class="Class_" column="class_id" foreign-key="fk_res_class_class"/>
+        </set>
+        
+        <subclass
+            name="IndividualReservation"
+            abstract="false"
+            discriminator-value="0">
+        	<set
+            	name="students"
+            	table="reservation_student"
+            	inverse="false"
+            	lazy="true">
+
+            	<cache include="non-lazy" usage="read-write"/>
+        	    <key column="reservation_id" foreign-key="fk_res_student_reservation"/>
+    	        <many-to-many class="Student" column="student_id" foreign-key="fk_res_student_student"/>
+	        </set>
+        </subclass>
+
+        <subclass
+            name="StudentGroupReservation"
+            abstract="false"
+            discriminator-value="1">
+            
+        	<many-to-one
+            	name="group"
+            	class="StudentGroup"
+        	    column="group_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_student_group"/>
+        </subclass>
+
+        <subclass
+            name="CurriculumReservation"
+            abstract="false"
+            discriminator-value="2">
+            
+        	<many-to-one
+            	name="area"
+            	class="AcademicArea"
+        	    column="area_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_area"/>
+
+    	    <set
+        	    name="majors"
+            	table="reservation_major"
+        	    inverse="false"
+    	        lazy="true">
+
+	            <cache include="non-lazy" usage="read-write"/>
+            	<key column="reservation_id" foreign-key="fk_res_majors_reservation"/>
+        	    <many-to-many class="PosMajor" column="major_id" foreign-key="fk_res_majors_major"/>
+    	    </set>
+        
+	        <set
+            	name="classifications"
+        	    table="reservation_clasf"
+    	        inverse="false"
+	            lazy="true">
+
+            	<cache include="non-lazy" usage="read-write"/>
+        	    <key column="reservation_id" foreign-key="fk_res_clasf_reservation"/>
+    	        <many-to-many class="AcademicClassification" column="acad_clasf_id" foreign-key="fk_res_clasf_clasf"/>
+	        </set>
+        </subclass>
+        
+        <subclass
+        	name="CourseReservation"
+            abstract="false"
+            discriminator-value="3">
+
+        	<many-to-one
+            	name="course"
+            	class="CourseOffering"
+        	    column="course_id"
+    	        not-null="true"
+	            foreign-key="fk_reservation_course"/>
+		</subclass>        	
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,510 @@
+<%--
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+--%>
+<%@page import="org.unitime.timetable.form.PreferencesForm"%>
+<%@ page language="java" autoFlush="true"%>
+<%@ page import="org.unitime.timetable.action.PreferencesAction" %>
+<%@ page import="org.unitime.timetable.model.Building" %>
+<%@ page import="org.unitime.timetable.model.Room" %>
+<%@ page import="org.unitime.timetable.model.RoomFeature" %>
+<%@ page import="org.unitime.timetable.model.PreferenceLevel" %>
+<%@ page import="org.unitime.timetable.model.RoomGroup" %>
+<%@ page import="org.unitime.timetable.model.DatePattern" %>
+<%@ page import="org.unitime.timetable.model.ExamPeriod" %>
+<%@ page import="org.unitime.commons.Debug" %>
+<%@ page import="org.unitime.timetable.model.DistributionType" %>
+<%@ page import="org.unitime.timetable.model.Preference" %>
+<%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
+<%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
+<%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
+<%@ taglib uri="/WEB-INF/tld/timetable.tld" prefix="tt" %>
+<%@ taglib uri="/WEB-INF/tld/localization.tld" prefix="loc" %>
+<% try { %>
+	<html:hidden property="nextId"/>
+	<html:hidden property="previousId"/>
+	<bean:parameter id="frmName" name="frmName"/>
+	<loc:bundle name="CourseMessages">
+
+<!-- Time Preferences -->
+	<logic:notEqual value="false" parameter="timePref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name="TimePref" />
+				<tt:section-header title="<%=MSG.sectionTitleTimePreferences() %>">
+			 		<logic:equal name="<%=frmName%>" property="canChooseTimePattern" value="true">
+						<html:select property="timePattern" >
+							<html:option value="-">-</html:option>
+							<html:optionsCollection property="availableNotSelectedTimePatterns" value="uniqueId" label="name" />
+						</html:select>
+						<html:submit property="op" 
+							styleClass="btn" 
+							accesskey="<%=MSG.accessAddTimePreference() %>"
+							title="<%=MSG.titleAddTimePreference(MSG.accessAddTimePreference()) %>">
+							<loc:message name="actionAddTimePreference" />
+						</html:submit> 			
+				 	</logic:equal>
+				</tt:section-header>
+			</TD>
+		</TR>
+		
+		<% int idx = 0; %>
+		<logic:iterate name="<%=frmName%>" property="timePatterns" id="timePattern" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<INPUT type="hidden" name='<%= "timePatterns[" + ctr + "]" %>' value="<%=timePattern%>" />
+					<table border='0' width='100%'>
+						<tr>
+							<td align='left'>
+							<%=request.getAttribute(PreferencesAction.TIME_PATTERN_GRID_ATTR + "_" + idx)%>							
+							</td>
+							<td align='right' valign='bottom'>
+								<logic:equal name="<%=frmName%>" property="canChooseTimePattern" value="true">
+									<html:submit property="op" 
+										styleClass="btn" 
+										title="<%=MSG.titleRemoveTimePattern() %>"
+										onclick="<%= \"javascript: doDel('timePattern', '\" + idx + \"');\"%>">
+										<loc:message name="actionRemoveTimePattern" />
+									</html:submit> 			
+								</logic:equal>
+							</td>
+						</tr>
+					</table>
+				</TD>
+			</TR>
+			<% idx++; %>
+		</logic:iterate>
+	</logic:notEqual>
+	
+	<logic:equal value="true" parameter="timeAvail">
+		<tr><td colspan='2'>&nbsp;</td></tr>
+		<tr>
+			<td valign="middle" colspan='2'>
+				<a name="TimePref" />
+				<tt:section-header title="<%=MSG.sectionTitleTimePreferences() %>"></tt:section-header>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='2'>
+				<div id='UniTimeGWT:InstructorAvailability'><html:hidden name="<%=frmName%>" property="availability"/></div>
+			</td>
+		</tr>
+	</logic:equal>
+	
+<!-- Date Pattern Preference  -->
+   
+    <%
+		PreferenceLevel pr = null;
+		PreferencesForm frm = (PreferencesForm)request.getAttribute(frmName);
+	%>	
+	<logic:notEqual value="false" parameter="datePatternPref">
+	<logic:notEmpty scope="request" name="<%=DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR%>">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+	   	<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='DatePatternPref'/>
+				<tt:section-header title="<%=MSG.sectionTitleDatePatternPreferences() %>">												 			
+				</tt:section-header>
+			</TD>
+		</TR>
+	   	<logic:iterate name="<%=frmName%>" property="datePatternPrefs" id="datePatternPref" indexId="ctr">
+			<TR>
+				<TD>	
+					<%  String levelId = (String)frm.getDatePatternPrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "datePatternPrefs[" + ctr + "]" %>' value="<%=(String)frm.getDatePatternPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "datePatternPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getDatePatternPrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:hidden name="<%=frmName%>" property='<%= "datePatternPrefs[" + ctr + "]" %>' value="<%=(String)frm.getDatePatternPrefs().get(ctr.intValue())%>" />
+					<logic:iterate scope="request" name="<%=DatePattern.DATE_PATTERN_CHILDREN_LIST_ATTR%>" id="dp">
+						<logic:equal name="dp" property="uniqueId" value="<%=(String)datePatternPref%>">
+							<bean:write name="dp" property="name"/>
+						</logic:equal>
+					</logic:iterate>
+				</TD><TD>
+					<html:select property='<%= "datePatternPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">	
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()){%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;												
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEmpty>	
+	</logic:notEqual>		
+    
+		
+<!-- Period Preferences -->
+	<logic:notEmpty scope="request" name="ExamPeriodGrid">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='PeriodPref'/>
+				<tt:section-title> <loc:message name="sectionTitleExaminationPeriodPreferences"/> </tt:section-title>
+			</TD>
+		</TR>
+		<TR>
+			<TD colspan='2'>
+				<bean:write scope="request" name="ExamPeriodGrid" filter="false"/>
+			</TD>
+		</TR>
+	</logic:notEmpty>
+	
+<!-- Room Group -->
+	<logic:notEqual value="false" parameter="roomGroupPref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='RoomGroupPref'></A>
+				<tt:section-header title="<%=MSG.sectionTitleRoomGroupPreferences()%>">
+					<html:submit property="op"
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddRoomGroupPreference() %>" 
+						title="<%=MSG.titleAddRoomGroupPreference(MSG.accessAddRoomGroupPreference()) %>">
+						<loc:message name="actionAddRoomGroupPreference" />
+					</html:submit> 			
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="roomGroups" id="roomGroup" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getRoomGroupLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "roomGroups[" + ctr + "]" %>' value="<%=(String)frm.getRoomGroups().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomGroupLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomGroupLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "roomGroups[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" 
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=RoomGroup.GROUP_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="nameWithTitle" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "roomGroupLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveRoomGroupPreference()%>"
+						onclick="<%= \"javascript: doDel('rgPref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveRoomGroupPreference" />
+					</html:submit> 	
+		
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEqual>
+
+<!-- Room Preferences -->
+	<logic:notEqual value="false" parameter="roomPref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='RoomPref'/>
+				<tt:section-header title="<%=MSG.sectionTitleRoomPreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddRoomPreference() %>" 
+						title="<%=MSG.titleAddRoomPreference(MSG.accessAddRoomPreference()) %>">
+						<loc:message name="actionAddRoomPreference" />
+					</html:submit> 			
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="roomPrefs" id="roomPref" indexId="ctr">
+			<TR>
+				<TD colspan="2">	
+					<%  String levelId = (String)frm.getRoomPrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "roomPrefs[" + ctr + "]" %>' value="<%=(String)frm.getRoomPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomPrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "roomPrefs[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" 
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=Room.ROOM_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithCapacity" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "roomPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveRoomPreference() %>"
+						onclick="<%= \"javascript: doDel('roomPref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveRoomPreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEqual>
+
+<!-- Building Preferences -->
+	<logic:notEqual value="false" parameter="bldgPref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='BldgPref'/>
+				<tt:section-header title="<%=MSG.sectionTitleBuildingPreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddBuildingPreference() %>" 
+						title="<%=MSG.titleAddBuildingPreference(MSG.accessAddBuildingPreference()) %>">
+						<loc:message name="actionAddBuildingPreference" />
+					</html:submit> 			
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="bldgPrefs" id="bldgPref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getBldgPrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "bldgPrefs[" + ctr + "]" %>' value="<%=(String)frm.getBldgPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "bldgPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getBldgPrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "bldgPrefs[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" 
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=Building.BLDG_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="abbrName" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "bldgPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn"
+						title="<%=MSG.titleRemoveBuildingPreference() %>"
+						onclick="<%= \"javascript: doDel('bldgPref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveBuildingPreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEqual>
+
+<!-- Room Feature Preferences -->
+	<logic:notEqual value="false" parameter="roomFeaturePref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='RoomFeatPref'/>
+				<tt:section-header title="<%=MSG.sectionTitleRoomFeaturePreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddRoomFeaturePreference() %>" 
+						title="<%=MSG.titleAddRoomFeaturePreference(MSG.accessAddRoomFeaturePreference()) %>">
+						<loc:message name="actionAddRoomFeaturePreference" />
+					</html:submit> 			
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="roomFeaturePrefs" id="roomFeaturePref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getRoomFeaturePrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard();
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "roomFeaturePrefs[" + ctr + "]" %>' value="<%=(String)frm.getRoomFeaturePrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "roomFeaturePrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getRoomFeaturePrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "roomFeaturePrefs[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" 
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=RoomFeature.FEATURE_LIST_ATTR_NAME%>" property="uniqueId" labelProperty="labelWithType" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "roomFeaturePrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn"  
+						title="<%=MSG.titleRemoveRoomFeaturePreference() %>"
+						onclick="<%= \"javascript: doDel('roomFeaturePref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveRoomFeaturePreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEqual>
+
+<!-- Distribution Preferences -->
+	<logic:notEqual value="false" parameter="distPref">
+		<TR><TD colspan='2'>&nbsp;</TD></TR>
+		<TR>
+			<TD valign="middle" colspan='2'>
+				<A name='DistPref'/>
+				<tt:section-header title="<%=MSG.sectionTitleDistributionPreferences() %>">
+					<html:submit property="op" 
+						styleClass="btn" 
+						accesskey="<%=MSG.accessAddDistributionPreference() %>"
+						title="<%=MSG.titleAddDistributionPreference(MSG.accessAddDistributionPreference()) %>">
+						<loc:message name="actionAddDistributionPreference" />
+					</html:submit> 			
+				</tt:section-header>
+			</TD>
+		</TR>
+
+		<logic:iterate name="<%=frmName%>" property="distPrefs" id="distPref" indexId="ctr">
+			<TR>
+				<TD colspan="2">
+					<%  String levelId = (String)frm.getDistPrefLevels().get(ctr.intValue());
+						boolean disabled = !frm.getAllowHardPrefs() && !Preference.BLANK_PREF_VALUE.equals(levelId) && PreferenceLevel.getPreferenceLevel(Integer.parseInt(levelId)).isHard(); 
+						if (disabled) {
+					%>
+							<html:hidden name="<%=frmName%>" property='<%= "distPrefs[" + ctr + "]" %>' value="<%=(String)frm.getDistPrefs().get(ctr.intValue())%>" />
+							<html:hidden name="<%=frmName%>" property='<%= "distPrefLevels[" + ctr + "]" %>' value="<%=(String)frm.getDistPrefLevels().get(ctr.intValue())%>" />
+					<%
+						}
+					%>
+					<html:select style="width:350px;" property='<%= "distPrefs[" + ctr + "]" %>'
+						onfocus="setUp();" 
+						onkeypress="return selectSearch(event, this);" 
+						onkeydown="return checkKey(event, this);" 
+						disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<html:options collection="<%=DistributionType.DIST_TYPE_ATTR_NAME%>" property="uniqueId" labelProperty="label" />
+					</html:select>
+					&nbsp;&nbsp;
+					<html:select property='<%= "distPrefLevels[" + ctr + "]" %>' disabled="<%=disabled%>">					
+						<html:option value="-">-</html:option>
+						<logic:iterate scope="request" name="<%=PreferenceLevel.PREF_LEVEL_ATTR_NAME%>" id="prLevel">
+						<% pr = (PreferenceLevel)prLevel; 
+						   if (frm.getAllowHardPrefs() || disabled || !pr.isHard()) {%>
+							<html:option
+								style='<%="background-color:" + pr.prefcolor() + ";"%>'
+								value="<%=pr.getUniqueId().toString()%>" >
+								<%=pr.getPrefName()%>
+							</html:option>
+						<% } %>
+					   	</logic:iterate>
+					</html:select> &nbsp;
+					<html:submit property="op" 
+						styleClass="btn" 
+						title="<%=MSG.titleRemoveDistributionPreference() %>"
+						onclick="<%= \"javascript: doDel('distPref', '\" + ctr + \"');\"%>">
+						<loc:message name="actionRemoveDistributionPreference" />
+					</html:submit> 			
+				</TD>
+			</TR>
+	   	</logic:iterate>
+	</logic:notEqual>
+
+
+	<INPUT type="hidden" name="deleteType" id="deleteType" value="">
+	<INPUT type="hidden" name="deleteId" id="deleteId" value="">
+	<INPUT type="hidden" name="reloadCause" id="reloadCause" value="">
+	<INPUT type="hidden" name="doit" value="Cancel">
+	
+	<SCRIPT type="text/javascript" language="javascript">
+		function doDel(type, id) {
+			var delType = document.<%=frmName%>.deleteType;
+			delType.value = type;
+				
+			var delId = document.<%=frmName%>.deleteId;
+			delId.value = id;
+		}
+	</SCRIPT>				
+	
+	</loc:bundle>
+<% } catch (Exception e) { 
+	 Debug.error(e);
+	 throw e;
+   }%>	   	

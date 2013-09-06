@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="SubjectArea" table="subject_area">
+        <cache include="non-lazy" usage="read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">subject_area_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="externalUniqueId"
+            column="external_uid"
+            type="java.lang.String"
+            not-null="false"
+            length="40"/>
+
+        <property
+            name="subjectAreaAbbreviation"
+            column="subject_area_abbreviation"
+            type="java.lang.String"
+            not-null="true"
+            length="10"/>
+
+        <property
+            name="title"
+            column="long_title"
+            type="java.lang.String"
+            not-null="true"
+            length="100"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"/>
+
+        <many-to-one
+            name="department"
+            class="Department"
+            column="department_uniqueid"
+            not-null="true"
+            foreign-key="fk_subject_area_dept"/>
+
+        <set
+            name="courseOfferings"
+            inverse="true"
+            cascade="all-delete-orphan">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="subject_area_id"/>
+            <one-to-many class="CourseOffering"/>
+        </set>
+
+        <set
+            name="instructionalOfferings"
+            table="course_offering"
+            inverse="true"
+            cascade="all-delete-orphan">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="subject_area_id"/>
+            <many-to-many
+                column="instr_offr_id"
+                class="InstructionalOffering"
+                foreign-key="fk_crs_offr_instr_offr"
+                unique="true"/>
+
+        </set>
+
+    </class>
+</hibernate-mapping>

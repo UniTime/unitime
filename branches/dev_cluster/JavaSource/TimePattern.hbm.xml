@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<!-- 
+ * UniTime 3.2 (University Timetabling Application)
+ * Copyright (C) 2008 - 2010, UniTime LLC
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * 
+ -->
+<hibernate-mapping package="org.unitime.timetable.model">
+    <class name="TimePattern" table="time_pattern">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">time_pattern_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="name"
+            column="name"
+            type="java.lang.String"
+            length="50"
+            not-null="false"/>
+
+        <many-to-one
+            name="session"
+            class="Session"
+            column="session_id"
+            not-null="true"
+            foreign-key="fk_time_pattern_session"/>
+
+        <property
+            name="minPerMtg"
+            column="mins_pmt"
+            type="java.lang.Integer"
+            not-null="false"
+            length="3"/>
+
+        <property
+            name="slotsPerMtg"
+            column="slots_pmt"
+            type="java.lang.Integer"
+            not-null="false"
+            length="3"/>
+
+        <property
+            name="nrMeetings"
+            column="nr_mtgs"
+            type="java.lang.Integer"
+            not-null="false"
+            length="3"/>
+
+        <property
+            name="breakTime"
+            column="break_time"
+            type="java.lang.Integer"
+            not-null="false"
+            length="3"/>
+
+        <property
+            name="type"
+            column="type"
+            type="java.lang.Integer"
+            not-null="false"
+            length="2"/>
+
+        <property
+            name="visible"
+            column="visible"
+            type="java.lang.Boolean"
+            not-null="false"/>
+
+        <set
+            name="times"
+            inverse="false"
+            cascade="all"
+            table="time_pattern_time"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="time_pattern_id" foreign-key="fk_time_pattern_time"/>
+            <one-to-many class="TimePatternTime"/>
+        </set>
+
+        <set
+            name="days"
+            inverse="false"
+            cascade="all"
+            table="time_pattern_days"
+            lazy="true">
+
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="time_pattern_id" foreign-key="fk_time_pattern_days"/>
+            <one-to-many class="TimePatternDays"/>
+        </set>
+
+        <set
+            name="departments"
+            table="time_pattern_dept"
+            inverse="true">
+            <cache include="non-lazy" usage="read-write"/>
+            <key column="pattern_id"/>
+            <many-to-many
+                class="Department"
+                column="dept_id"
+                foreign-key="fk_time_pattern_dept_dept"/>
+
+        </set>
+
+    </class>
+    <class name="TimePatternTime" table="time_pattern_time">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">time_pattern_times_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="startSlot"
+            column="start_slot"
+            type="java.lang.Integer"
+            not-null="false"
+            length="3"/>
+
+    </class>
+    <class name="TimePatternDays" table="time_pattern_days">
+        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <id
+            name="uniqueId"
+            column="uniqueid"
+            type="java.lang.Long">
+            <generator class="org.unitime.commons.hibernate.id.UniqueIdGenerator">
+                <param name="sequence">time_pattern_days_seq</param>
+            </generator>
+        </id>
+
+        <property
+            name="dayCode"
+            column="day_code"
+            type="java.lang.Integer"
+            not-null="false"
+            length="7"/>
+
+    </class>
+</hibernate-mapping>
