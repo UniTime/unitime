@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Reservation" table="reservation" abstract="true" discriminator-value="-1">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -58,7 +58,7 @@
             inverse="false"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="reservation_id" foreign-key="fk_res_config_reservation"/>
             <many-to-many class="InstrOfferingConfig" column="config_id" foreign-key="fk_res_config_config"/>
         </set>
@@ -69,7 +69,7 @@
             inverse="false"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="reservation_id" foreign-key="fk_res_class_reservation"/>
             <many-to-many class="Class_" column="class_id" foreign-key="fk_res_class_class"/>
         </set>
@@ -84,7 +84,7 @@
             	inverse="false"
             	lazy="true">
 
-            	<cache include="non-lazy" usage="read-write"/>
+            	<cache include="non-lazy" usage="transactional"/>
         	    <key column="reservation_id" foreign-key="fk_res_student_reservation"/>
     	        <many-to-many class="Student" column="student_id" foreign-key="fk_res_student_student"/>
 	        </set>
@@ -121,7 +121,7 @@
         	    inverse="false"
     	        lazy="true">
 
-	            <cache include="non-lazy" usage="read-write"/>
+	            <cache include="non-lazy" usage="transactional"/>
             	<key column="reservation_id" foreign-key="fk_res_majors_reservation"/>
         	    <many-to-many class="PosMajor" column="major_id" foreign-key="fk_res_majors_major"/>
     	    </set>
@@ -132,7 +132,7 @@
     	        inverse="false"
 	            lazy="true">
 
-            	<cache include="non-lazy" usage="read-write"/>
+            	<cache include="non-lazy" usage="transactional"/>
         	    <key column="reservation_id" foreign-key="fk_res_clasf_reservation"/>
     	        <many-to-many class="AcademicClassification" column="acad_clasf_id" foreign-key="fk_res_clasf_clasf"/>
 	        </set>

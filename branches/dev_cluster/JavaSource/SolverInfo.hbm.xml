@@ -26,7 +26,7 @@
         discriminator-value="0"
         abstract="true">
 
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -83,7 +83,7 @@
         </subclass>
         <subclass name="ConstraintInfo" discriminator-value="3">
             <set name="assignments" table="constraint_info">
-                <cache include="non-lazy" usage="read-write"/>
+                <cache include="non-lazy" usage="transactional"/>
                 <key column="solver_info_id"/>
                 <many-to-many
                     class="Assignment"

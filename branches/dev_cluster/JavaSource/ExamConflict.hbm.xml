@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="ExamConflict" table="xconflict">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -60,7 +60,7 @@
             inverse="true"
             lazy="false">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="conflict_id" foreign-key="fk_xconflict_ex_conf"/>
             <many-to-many
                 class="Exam"
@@ -74,7 +74,7 @@
             name="students"
             table="xconflict_student"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="conflict_id" foreign-key="fk_xconflict_st_conf"/>
             <many-to-many
                 class="Student"
@@ -87,7 +87,7 @@
             name="instructors"
             table="xconflict_instructor"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="conflict_id" foreign-key="fk_xconflict_in_conf"/>
             <many-to-many
                 class="DepartmentalInstructor"

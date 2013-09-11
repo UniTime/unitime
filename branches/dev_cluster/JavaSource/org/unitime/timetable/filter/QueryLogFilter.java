@@ -47,6 +47,7 @@ import net.sf.cpsolver.ifs.util.JProf;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.unitime.timetable.ApplicationProperties;
@@ -242,11 +243,14 @@ public class QueryLogFilter implements Filter {
 						if (iLogLimit > 0 && queriesToSave.size() >= iLogLimit)
 							sLog.warn("The limit of " + iLogLimit + " unpersisted log messages was reached, some messages have been dropped.");
 						Session hibSession = QueryLogDAO.getInstance().createNewSession();
+						Transaction tx = hibSession.beginTransaction();
 						try {
 							for (QueryLog q: queriesToSave)
 								hibSession.save(q);
 							hibSession.flush();
+							tx.commit();
 						} catch (Exception e) {
+							tx.rollback();
 							sLog.error("Failed to persist " + queriesToSave.size() + " log entries:" + e.getMessage(), e);
 						} finally {
 							hibSession.close();

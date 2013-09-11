@@ -24,6 +24,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.unitime.commons.Debug;
+import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
 import org.unitime.timetable.model.SolverInfo;
 import org.unitime.timetable.model.dao._RootDAO;
@@ -95,6 +96,8 @@ public class InitServlet extends HttpServlet implements Servlet {
 		} catch (Exception e) {
 			Debug.error("UniTime Initialization Failed : " + e.getMessage(), e);
 			sInitializationException = e;
+		} finally {
+			_RootDAO.closeCurrentThreadSessions();
 		}
 	}
 
@@ -131,6 +134,9 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         }
 	         
 	         QueueProcessor.stopProcessor();
+	         
+	         Debug.info(" - Closing Hibernate ... ");
+	         HibernateUtil.closeHibernate();
 	         
 	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");

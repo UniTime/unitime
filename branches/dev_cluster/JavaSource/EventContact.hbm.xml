@@ -24,7 +24,7 @@
         name="EventContact"
         abstract="false"
         table="event_contact">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

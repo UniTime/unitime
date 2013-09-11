@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="StudentAccomodation" table="student_accomodation">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -63,7 +63,7 @@
             name="students"
             table="student_to_acomodation"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="accomodation_id" foreign-key="fk_student_acomodation_accom"/>
             <many-to-many
                 class="Student"

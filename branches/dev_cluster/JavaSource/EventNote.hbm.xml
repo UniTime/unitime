@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="EventNote" table="event_note">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -105,7 +105,7 @@
 			inverse="false"
 	        lazy="true">
 	        
-	        <cache include="non-lazy" usage="read-write"/>
+	        <cache include="non-lazy" usage="transactional"/>
 	        <key column="note_id" foreign-key="fk_event_note_note"/>
 	        <many-to-many class="Meeting" column="meeting_id" foreign-key="fk_event_note_mtg"/>
 	    </set>

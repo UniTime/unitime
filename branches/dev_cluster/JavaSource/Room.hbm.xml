@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Location" abstract="true">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -95,7 +95,7 @@
             not-null="false"/>
 
         <set name="features" table="room_join_room_feature">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="room_id"/>
             <many-to-many
                 class="RoomFeature"
@@ -132,7 +132,7 @@
             length="2016"/>
 
         <set name="examTypes" table="room_exam_type">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="location_id"/>
             <many-to-many
                 class="ExamType"
@@ -154,7 +154,7 @@
             cascade="all"
             table="exam_location_pref">
 
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="location_id"/>
             <one-to-many class="org.unitime.timetable.model.ExamLocationPref"/>
         </set>
@@ -177,7 +177,7 @@
             name="assignments"
             inverse="true"
             table="assigned_rooms">
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="room_id"/>
             <many-to-many
                 class="Assignment"
@@ -187,7 +187,7 @@
         </set>
 
         <set name="roomGroups" table="room_group_room">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="room_id"/>
             <many-to-many
                 class="RoomGroup"
@@ -202,7 +202,7 @@
             cascade="all"
             table="room_dept">
 
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="room_id"/>
             <one-to-many class="org.unitime.timetable.model.RoomDept"/>
         </set>
@@ -281,7 +281,7 @@
 
     </class>
     <class name="ExamLocationPref" table="exam_location_pref">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -314,7 +314,7 @@
     </class>
     
     <class name="TravelTime" table="travel_time">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

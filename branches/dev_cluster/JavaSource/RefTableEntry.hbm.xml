@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="RefTableEntry" abstract="true">
-        <cache usage="read-write"/>
+        <cache usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -95,7 +95,7 @@
                 name="departments"
                 table="dist_type_dept"
                 inverse="false">
-                <cache include="non-lazy" usage="read-write"/>
+                <cache include="non-lazy" usage="transactional"/>
                 <key column="dist_type_id"/>
                 <many-to-many
                     class="Department"
@@ -240,7 +240,7 @@
     	        name="types"
             	table="sectioning_course_types"
             	lazy="true">
-            	<cache include="non-lazy" usage="read-write"/>
+            	<cache include="non-lazy" usage="transactional"/>
             	<key column="sectioning_status_id" foreign-key="fk_sect_course_status"/>
             	<many-to-many
 	                class="CourseType"
