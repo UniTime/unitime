@@ -366,6 +366,8 @@ public class ClassAssignmentDetails implements Serializable, Comparable {
 					if (solution.equals(assignment.getSolution()))
 						return new ClassAssignmentDetails(assignment.getSolution(), assignment, includeConstraints, hibSession, instructorNameFormat);
 				}
+				
+				return null;
 			}
 		}
 		
