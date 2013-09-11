@@ -28,10 +28,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.hibernate.Session;
 import org.unitime.commons.Debug;
 import org.unitime.timetable.model.base._BaseRootDAO;
-import org.unitime.timetable.model.dao._RootDAO;
 
 import net.sf.cpsolver.ifs.util.JProf;
 
