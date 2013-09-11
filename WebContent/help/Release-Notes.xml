@@ -59,6 +59,12 @@
 				<line>Fixed the case when there is no status set on the department + room type level (the RoomTypeOption entity does not exist).</line>
 			</description>
 		</item>
+		<item>
+			<name>Classes, Class Assignments</name>
+			<description>
+				<line>Timetable (class time and room assignments) was not shown when the data were loaded into a solver that was running on a remote solver server.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>

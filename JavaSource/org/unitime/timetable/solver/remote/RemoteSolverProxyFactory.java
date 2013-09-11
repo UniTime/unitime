@@ -104,6 +104,7 @@ public class RemoteSolverProxyFactory implements InvocationHandler {
         Vector solverClassesOrClassIds = new Vector(classesOrClassIds.size());
         for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
             Object classOrClassId = i.next();
+            if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
             Class_ clazz = (classOrClassId instanceof Class_ ? (Class_)classOrClassId : (new Class_DAO()).get((Long)classOrClassId));
             if (clazz.getManagingDept()==null || !deptIds.contains(clazz.getManagingDept().getUniqueId())) {
                 Assignment assignment = iCommitedClassAssignmentProxy.getAssignment(clazz);
@@ -124,6 +125,7 @@ public class RemoteSolverProxyFactory implements InvocationHandler {
         Vector solverClassesOrClassIds = new Vector(classesOrClassIds.size());
         for (Iterator i=classesOrClassIds.iterator();i.hasNext();) {
             Object classOrClassId = i.next();
+            if (classOrClassId instanceof Object[]) classOrClassId = ((Object[])classOrClassId)[0];
             Class_ clazz = (classOrClassId instanceof Class_ ? (Class_)classOrClassId : (new Class_DAO()).get((Long)classOrClassId));
             if (clazz.getManagingDept()==null || !deptIds.contains(clazz.getManagingDept().getUniqueId())) {
                 AssignmentPreferenceInfo info = iCommitedClassAssignmentProxy.getAssignmentInfo(clazz);
