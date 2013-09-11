@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="PosMinor" table="pos_minor">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -65,7 +65,7 @@
             inverse="false"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="minor_id"/>
             <many-to-many
                 class="org.unitime.timetable.model.AcademicArea"

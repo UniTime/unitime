@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Script" table="script">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -71,14 +71,14 @@
             cascade="all"
             inverse="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="script_id"/>
             <one-to-many class="ScriptParameter"/>
         </set>
     </class>
     
     <class name="ScriptParameter" table="script_parameter">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         
         <composite-id>
         	<key-many-to-one

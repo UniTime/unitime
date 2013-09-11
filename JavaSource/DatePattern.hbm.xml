@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="DatePattern" table="date_pattern">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -75,7 +75,7 @@
         <set
             name="parents"
             table="date_pattern_parent">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="date_pattern_id"/>
             <many-to-many
                 class="DatePattern"
@@ -87,7 +87,7 @@
             name="departments"
             table="date_pattern_dept"
             inverse="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="pattern_id"/>
             <many-to-many
                 class="Department"

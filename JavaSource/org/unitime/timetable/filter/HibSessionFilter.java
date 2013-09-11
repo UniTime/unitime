@@ -70,34 +70,17 @@ public class HibSessionFilter implements Filter {
 		try {
 			// Process request
 			chain.doFilter(request,response);
-			
-			Session hibSession = new _RootDAO().getCurrentThreadSession();
-			if(hibSession != null && hibSession.isOpen()) {
-			    hibSession.close();
-			}
+
+        	_BaseRootDAO.closeCurrentThreadSessions();
 		} catch (Throwable ex) {
-            // Rollback only
-			Session hibSession = new _RootDAO().getCurrentThreadSession();
-            try {
-                if (hibSession != null && hibSession.isOpen() && hibSession.getTransaction().isActive()) {
-                    Debug.debug("Trying to rollback database transaction after exception");
-                    hibSession.getTransaction().rollback();
-                }
-            } catch (Throwable rbEx) {
-                Debug.error(rbEx);
-            } finally {
-    			if(hibSession != null && hibSession.isOpen())
-    				hibSession.close();
-            }
-            
+			_BaseRootDAO.rollbackCurrentThreadSessions();
+
             if (ex instanceof ServletException) throw (ServletException)ex;
             if (ex instanceof IOException) throw (IOException)ex;
 			if (ex instanceof RuntimeException) throw (RuntimeException)ex;
 
             // Let others handle it... maybe another interceptor for exceptions?
             throw new ServletException(ex);
-        } finally {
-        	_BaseRootDAO.closeCurrentThreadSessions();
         }
  		
 	}

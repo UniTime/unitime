@@ -24,7 +24,7 @@
         name="StudentEnrollment"
         table="student_enrl"
         mutable="false">
-        <cache include="non-lazy" usage="nonstrict-read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

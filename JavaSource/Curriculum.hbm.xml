@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Curriculum" table="curriculum">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -58,7 +58,7 @@
             inverse="false"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="curriculum_id"/>
             <many-to-many class="org.unitime.timetable.model.PosMajor" column="major_id"/>
         </set>
@@ -76,14 +76,14 @@
             cascade="all"
             inverse="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="curriculum_id" foreign-key="fk_curriculum_clasf_curriculum"/>
             <one-to-many class="CurriculumClassification"/>
         </set>
 
     </class>
     <class name="CurriculumClassification" table="curriculum_clasf">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -139,14 +139,14 @@
             cascade="all"
             inverse="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="cur_clasf_id" foreign-key="fk_curriculum_course_clasf"/>
             <one-to-many class="CurriculumCourse"/>
         </set>
 
     </class>
     <class name="CurriculumCourse" table="curriculum_course">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -186,7 +186,7 @@
             name="groups"
             table="curriculum_course_group"
             lazy="true">
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="cur_course_id"/>
             <many-to-many
                 class="org.unitime.timetable.model.CurriculumCourseGroup"
@@ -197,7 +197,7 @@
 
     </class>
     <class name="CurriculumCourseGroup" table="curriculum_group">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -236,7 +236,7 @@
 
     </class>
     <class name="CurriculumProjectionRule" table="curriculum_rule">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"

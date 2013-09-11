@@ -21,7 +21,7 @@
  -->
 <hibernate-mapping package="org.unitime.timetable.model">
     <class name="Solution" table="solution">
-        <cache include="non-lazy" usage="read-write"/>
+        <cache include="non-lazy" usage="transactional"/>
         <id
             name="uniqueId"
             column="uniqueid"
@@ -75,7 +75,7 @@
             cascade="all"
             table="solver_parameter">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solution_id" foreign-key="fk_solver_param_solution"/>
             <one-to-many class="SolverParameter"/>
         </set>
@@ -87,7 +87,7 @@
             table="solver_info"
             lazy="true">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solution_id"/>
             <one-to-many class="SolutionInfo"/>
         </set>
@@ -98,7 +98,7 @@
             cascade="all"
             table="student_enrl">
 
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solution_id"/>
             <one-to-many class="StudentEnrollment"/>
         </set>
@@ -109,7 +109,7 @@
             cascade="all"
             table="assignment">
 
-            <cache include="non-lazy" usage="read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solution_id"/>
             <one-to-many class="Assignment"/>
         </set>
@@ -128,7 +128,7 @@
             cascade="all"
             table="jenrl">
 
-            <cache include="non-lazy" usage="nonstrict-read-write"/>
+            <cache include="non-lazy" usage="transactional"/>
             <key column="solution_id"/>
             <one-to-many class="JointEnrollment"/>
         </set>
