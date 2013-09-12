@@ -122,7 +122,7 @@ import org.unitime.timetable.solver.curricula.LastLikeStudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedCourseOffering;
 import org.unitime.timetable.solver.curricula.StudentCourseDemands.WeightedStudentId;
-import org.unitime.timetable.solver.remote.core.RemoteSolverServer;
+import org.unitime.timetable.solver.jgroups.SolverServerImplementation;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.DateUtils;
 import org.unitime.timetable.util.Formats;
@@ -3048,7 +3048,12 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	if (!hibSession.isOpen())
     		iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
     	
-        if (hasRoomAvailability()) loadRoomAvailability(RoomAvailability.getInstance());
+    	RoomAvailabilityInterface availability = null;
+    	if (SolverServerImplementation.getInstance() != null)
+    		availability = SolverServerImplementation.getInstance().getRoomAvailability();
+    	else
+    		availability = RoomAvailability.getInstance();
+        if (availability != null) loadRoomAvailability(availability);
 
         if (!hibSession.isOpen())
             iProgress.message(msglevel("hibernateFailure", Progress.MSGLEVEL_FATAL), "Hibernate session not open.");
@@ -3343,35 +3348,17 @@ public class TimetableDatabaseLoader extends TimetableLoader {
     	}
     }
     
-    public boolean isRemote() { return RemoteSolverServer.getServerThread()!=null; }
-    
-    public boolean hasRoomAvailability() {
+    public void roomAvailabilityActivate(RoomAvailabilityInterface availability, Date startTime, Date endTime) {
         try {
-            if (isRemote()) {
-                return (Boolean)RemoteSolverServer.query(new Object[]{"hasRoomAvailability"});
-            } else return RoomAvailability.getInstance()!=null;
-        } catch (Exception e) {
-            sLog.error(e.getMessage(),e);
-            iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
-            return false;
-        }
-    }
-    
-    public void roomAvailabilityActivate(Date startTime, Date endTime) {
-        try {
-            if (isRemote()) {
-                RemoteSolverServer.query(new Object[]{"activateRoomAvailability",iSessionId,startTime,endTime,RoomAvailabilityInterface.sClassType});
-            } else {
-                RoomAvailability.getInstance().activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType,
+        	availability.activate(new SessionDAO().get(iSessionId), startTime, endTime, RoomAvailabilityInterface.sClassType,
                         "true".equals(ApplicationProperties.getProperty("tmtbl.room.availability.solver.waitForSync","true")));
-            }
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());
         } 
     }
     
-    public void loadRoomAvailability(RoomAvailabilityInterface ra) {
+    public void loadRoomAvailability(RoomAvailabilityInterface availability) {
         Date startDate = null, endDate = null;
         for (Iterator i=iAllUsedDatePatterns.iterator();i.hasNext();) {
             DatePattern dp = (DatePattern)i.next();
@@ -3394,7 +3381,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         endDateCal.set(Calendar.HOUR_OF_DAY, 23);
         endDateCal.set(Calendar.MINUTE, 59);
         endDateCal.set(Calendar.SECOND, 59);
-        roomAvailabilityActivate(startDateCal.getTime(),endDateCal.getTime());
+        roomAvailabilityActivate(availability, startDateCal.getTime(),endDateCal.getTime());
         iProgress.setPhase("Loading room availability...", iRooms.size());
         int firstDOY = iSession.getDayOfYear(1,iSession.getPatternStartMonth());
         int lastDOY = iSession.getDayOfYear(0,iSession.getPatternEndMonth()+1);
@@ -3406,7 +3393,7 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         for (Enumeration e=iRooms.elements();e.hasMoreElements();) {
             RoomConstraint room = (RoomConstraint)e.nextElement();
             iProgress.incProgress();
-            Collection<TimeBlock> times = getRoomAvailability(room, startDateCal.getTime(),endDateCal.getTime());
+            Collection<TimeBlock> times = getRoomAvailability(availability, room, startDateCal.getTime(),endDateCal.getTime());
             if (times==null) continue;
             for (TimeBlock time : times) {
                 iProgress.debug(room.getName()+" not available due to "+time);
@@ -3454,19 +3441,14 @@ public class TimetableDatabaseLoader extends TimetableLoader {
         }
     }
     
-    public Collection<TimeBlock> getRoomAvailability(RoomConstraint room, Date startTime, Date endTime) {
+    public Collection<TimeBlock> getRoomAvailability(RoomAvailabilityInterface availability, RoomConstraint room, Date startTime, Date endTime) {
         Collection<TimeBlock> ret = null;
         String ts = null;
         try {
-            if (isRemote()) {
-                ret = (Collection<TimeBlock>)RemoteSolverServer.query(new Object[]{"getRoomAvailability",room.getResourceId(),startTime,endTime, RoomAvailabilityInterface.sClassType});
-                if (!iRoomAvailabilityTimeStampIsSet) ts = (String)RemoteSolverServer.query(new Object[]{"getRoomAvailabilityTimeStamp",startTime, endTime, RoomAvailabilityInterface.sClassType});
-            } else {
-                ret = RoomAvailability.getInstance().getRoomAvailability(
-                        LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
-                        RoomAvailabilityInterface.sClassType);
-                if (!iRoomAvailabilityTimeStampIsSet) ts = RoomAvailability.getInstance().getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
-            }
+            ret = availability.getRoomAvailability(
+            		LocationDAO.getInstance().get(room.getResourceId()), startTime, endTime,
+                    RoomAvailabilityInterface.sClassType);
+            if (!iRoomAvailabilityTimeStampIsSet) ts = availability.getTimeStamp(startTime, endTime, RoomAvailabilityInterface.sClassType);
         } catch (Exception e) {
             sLog.error(e.getMessage(),e);
             iProgress.message(msglevel("roomAvailabilityFailure", Progress.MSGLEVEL_WARN), "Unable to access room availability service, reason:"+e.getMessage());

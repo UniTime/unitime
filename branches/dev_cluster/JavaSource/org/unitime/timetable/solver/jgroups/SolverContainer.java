@@ -1,6 +1,6 @@
 /*
- * UniTime 3.2 (University Timetabling Application)
- * Copyright (C) 2008 - 2010, UniTime LLC, and individual contributors
+ * UniTime 3.5 (University Timetabling Application)
+ * Copyright (C) 2013, UniTime LLC, and individual contributors
  * as indicated by the @authors tag.
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,24 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
 */
-package org.unitime.timetable.solver.remote.core;
+package org.unitime.timetable.solver.jgroups;
 
-/**
- * @author Tomas Muller
- */
-public class Startup {
-	public static void main(String[] args) {
-		RemoteSolverServer.main(args);
-	}
+import java.util.Set;
+
+import net.sf.cpsolver.ifs.util.DataProperties;
+
+public interface SolverContainer<T> {
+	public Set<String> getSolvers();
+	
+	public T getSolver(String user);
+	
+	public boolean hasSolver(String user);
+	
+	public T createSolver(String user, DataProperties config);
+	
+	public int getUsage();
+	
+	public void start();
+	
+	public void stop();
 }

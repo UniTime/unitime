@@ -17,7 +17,6 @@
  * 
 --%>
 <%@ page language="java" autoFlush="true"%>
-<%@ page import="org.unitime.timetable.solver.remote.SolverRegisterService" %>
 <%@ taglib uri="/WEB-INF/tld/struts-bean.tld" prefix="bean" %>
 <%@ taglib uri="/WEB-INF/tld/struts-html.tld" prefix="html" %>
 <%@ taglib uri="/WEB-INF/tld/struts-logic.tld" prefix="logic" %>
@@ -56,9 +55,6 @@
 		<TD colspan='2'><DIV class="WelcomeRowHeadBlank">&nbsp;</DIV></TD>
 	</TR>
 	<TR>
-		<TD align='left'>
-			<i>Solver register service is running at <%=request.getServerName()%>:<%=SolverRegisterService.getPort()%>.</i>
-		</TD>
 		<TD align='right'>
 			<% if (session.getAttribute("ManageSolver.puid")!=null || session.getAttribute("ManageSolver.examPuid")!=null || session.getAttribute("ManageSolver.sectionPuid")!=null) { %>
 				<html:submit onclick="displayLoading();" property="op" value="Deselect"/>
