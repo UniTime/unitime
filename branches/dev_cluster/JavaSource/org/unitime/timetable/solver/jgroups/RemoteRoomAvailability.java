@@ -25,9 +25,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.Message.Flag;
-import org.jgroups.blocks.RequestOptions;
-import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.interfaces.RoomAvailabilityInterface;
@@ -38,11 +35,9 @@ public class RemoteRoomAvailability {
 	private static Log sLog = LogFactory.getLog(RemoteRoomAvailability.class);
 	
 	private RpcDispatcher iDispatcher;
-	private RequestOptions iResponseOptions;
 		
 	public RemoteRoomAvailability(JChannel channel, short scope) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
-		iResponseOptions = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	}
 	
 	public RpcDispatcher getDispatcher() {
@@ -62,7 +57,7 @@ public class RemoteRoomAvailability {
 	
 	public Object dispatch(Address address, Method method, Object[] args) throws Exception {
 		try {
-			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), method.getParameterTypes(), args }, new Class[] { String.class, Class[].class, Object[].class }, iResponseOptions);
+			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), method.getParameterTypes(), args }, new Class[] { String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (Exception e) {
 			sLog.error("Excution of room availability method " + method + " failed: " + e.getMessage(), e);
 			return null;

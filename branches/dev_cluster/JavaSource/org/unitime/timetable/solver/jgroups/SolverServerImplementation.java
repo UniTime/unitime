@@ -66,11 +66,12 @@ import org.unitime.timetable.util.RoomAvailability;
 public class SolverServerImplementation implements MessageListener, MembershipListener, SolverServer {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
+	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
+	public static final RequestOptions sAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	
 	private static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4;
 	private JChannel iChannel;
 	private RpcDispatcher iDispatcher;
-	private RequestOptions iFirstResponse, iAllResponses;
 	
 	private CourseSolverContainerRemote iCourseSolverContainer;
 	private ExaminationSolverContainerRemote iExamSolverContainer;
@@ -87,8 +88,6 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iLocal = local;
 		iChannel = channel;
 		iDispatcher = new MuxRpcDispatcher(SCOPE_SERVER, channel, this, this, this);
-		iFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
-		iAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 		
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
@@ -139,7 +138,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	public Address getLocalAddress() {
 		if (isLocal()) return getAddress();
 		try {
-			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isLocal", new Object[] {}, new Class[] {}, iAllResponses);
+			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isLocal", new Object[] {}, new Class[] {}, sAllResponses);
 			for (Rsp<Boolean> local: ret) {
 				if (Boolean.TRUE.equals(local.getValue()))
 					return local.getSender();
@@ -300,7 +299,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			try {
 				Address local = getLocalAddress();
 				if (local != null)
-					iDispatcher.callRemoteMethod(local, "refreshCourseSolutionLocal", new Object[] { solutionIds }, new Class[] { Long[].class }, iFirstResponse);
+					iDispatcher.callRemoteMethod(local, "refreshCourseSolutionLocal", new Object[] { solutionIds }, new Class[] { Long[].class }, sFirstResponse);
 			} catch (Exception e) {
 				sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 			}
@@ -323,7 +322,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			try {
 				Address local = getLocalAddress();
 				if (local != null)
-					iDispatcher.callRemoteMethod(local, "refreshExamSolution", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, iFirstResponse);
+					iDispatcher.callRemoteMethod(local, "refreshExamSolution", new Object[] { sessionId, examTypeId }, new Class[] { Long.class, Long.class }, sFirstResponse);
 			} catch (Exception e) {
 				sLog.error("Failed to refresh solution: " + e.getMessage(), e);
 			}
@@ -449,7 +448,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		}
 		
 		public Object createSolver(String user, DataProperties config) throws Throwable {
-			iContainer.getDispatcher().callRemoteMethod(iAddress, "createRemoteSolver", new Object[] { user, config, iChannel.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class}, iFirstResponse);
+			iContainer.getDispatcher().callRemoteMethod(iAddress, "createRemoteSolver", new Object[] { user, config, iChannel.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class}, sFirstResponse);
 			return iContainer.createProxy(iAddress, (String)user);
 		}
 		
@@ -462,7 +461,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		}
 		
 		public Object getSolver(String user) throws Exception {
-			Boolean ret = iContainer.getDispatcher().callRemoteMethod(iAddress, "hasSolver", new Object[] { user }, new Class[] { String.class }, iFirstResponse);
+			Boolean ret = iContainer.getDispatcher().callRemoteMethod(iAddress, "hasSolver", new Object[] { user }, new Class[] { String.class }, sFirstResponse);
 			if (ret)
 				return iContainer.createProxy(iAddress, user);
 			return null;
@@ -473,7 +472,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		try {
     			return getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(this, args);
     		} catch (NoSuchMethodException e) {}
-    		return iContainer.getDispatcher().callRemoteMethod(iAddress, method.getName(), args, method.getParameterTypes(), iFirstResponse);
+    		return iContainer.getDispatcher().callRemoteMethod(iAddress, method.getName(), args, method.getParameterTypes(), sFirstResponse);
 		}
     }
 	
@@ -517,7 +516,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     		
 			ToolBox.configureLogging(System.getProperty("unitime.solver.log", ApplicationProperties.getDataFolder() + File.separator + "logs"), ApplicationProperties.getProperties());
     		
-			final JChannel channel = new JChannel("udp.xml");
+			final JChannel channel = new JChannel(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml"));
 			
 			channel.setUpHandler(new MuxUpHandler());
 			

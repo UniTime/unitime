@@ -407,7 +407,7 @@ public class ManageSolversAction extends Action {
                     }
                     String version = server.getVersion();
                     Date startTime = server.getStartTime();
-                    boolean local = solverServerService.getLocalServer().getAddress().equals(server.getAddress());
+                    boolean local = server.isLocal();
                     String op = "";
                     if (usage >= 1000) {
                         op+="<input type=\"button\" value=\"Enable\" onClick=\"if (confirm('Do you really want to enable server "+server.getHost()+" for the new solver instances?')) document.location='manageSolvers.do?op=Start%20Using&solver="+server.getHost()+"';\">&nbsp;&nbsp;";

@@ -34,9 +34,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.Message.Flag;
-import org.jgroups.blocks.RequestOptions;
-import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.model.Assignment;
@@ -55,11 +52,9 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	private static Log sLog = LogFactory.getLog(CourseSolverContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
-	private RequestOptions iResponseOptions;
 		
 	public CourseSolverContainerRemote(JChannel channel, short scope) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
-		iResponseOptions = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	}
 	
 	@Override
@@ -85,7 +80,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 	@Override
 	public Object dispatch(Address address, String user, Method method, Object[] args) throws Exception {
 		try {
-			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, iResponseOptions);
+			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (Exception e) {
 			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
 			return null;
@@ -113,16 +108,16 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
     	
     	@Override
     	public void saveToFile(String name, TimetableInfo info) throws Exception {
-    		iDispatcher.callRemoteMethod(iAddress, "saveToFile", new Object[] { name, info } , new Class[] { String.class, TimetableInfo.class }, iResponseOptions);
+    		iDispatcher.callRemoteMethod(iAddress, "saveToFile", new Object[] { name, info } , new Class[] { String.class, TimetableInfo.class }, SolverServerImplementation.sFirstResponse);
     	}
     	
     	@Override
     	public TimetableInfo loadFromFile(String name) throws Exception {
-    		return iDispatcher.callRemoteMethod(iAddress, "loadFromFile", new Object[] { name } , new Class[] { String.class }, iResponseOptions);
+    		return iDispatcher.callRemoteMethod(iAddress, "loadFromFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
     	}
     	@Override
         public void deleteFile(String name) throws Exception {
-    		iDispatcher.callRemoteMethod(iAddress, "deleteFile", new Object[] { name } , new Class[] { String.class }, iResponseOptions);
+    		iDispatcher.callRemoteMethod(iAddress, "deleteFile", new Object[] { name } , new Class[] { String.class }, SolverServerImplementation.sFirstResponse);
         }
     }
     
