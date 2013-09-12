@@ -29,9 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
-import org.jgroups.Message.Flag;
-import org.jgroups.blocks.RequestOptions;
-import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.solver.exam.ExamSolverProxy;
@@ -40,11 +37,9 @@ public class ExaminationSolverContainerRemote extends ExaminationSolverContainer
 	private static Log sLog = LogFactory.getLog(ExaminationSolverContainerRemote.class);
 	
 	private RpcDispatcher iDispatcher;
-	private RequestOptions iResponseOptions;
 		
 	public ExaminationSolverContainerRemote(JChannel channel, short scope) {
 		iDispatcher = new MuxRpcDispatcher(scope, channel, null, null, this);
-		iResponseOptions = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	}
 	
 	@Override
@@ -69,7 +64,7 @@ public class ExaminationSolverContainerRemote extends ExaminationSolverContainer
 	@Override
 	public Object dispatch(Address address, String user, Method method, Object[] args) throws Exception {
 		try {
-			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, iResponseOptions);
+			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (Exception e) {
 			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
 			return null;

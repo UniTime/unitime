@@ -11,7 +11,7 @@
          <!-- Note that the JGroups transport uses sensible defaults if no configuration property is defined. -->
          <properties>
             <!--<property name="configurationFile" value="jgroups-tcp.xml"/>-->
-            <property name="configurationFile" value="${hibernate.cache.infinispan.jgroups_cfg:tcp.xml}"/>
+            <property name="configurationFile" value="${unitime.hibernate.jgroups.config:hibernate-jgroups-tcp.xml}"/>
          </properties>
          <!-- See the JGroupsTransport javadocs for more flags -->
       </transport>

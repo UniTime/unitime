@@ -54,7 +54,7 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		try {
-			JChannel channel = new JChannel("udp.xml");
+			JChannel channel = new JChannel(ApplicationProperties.getProperty("unitime.solver.jgroups.config", "solver-jgroups-tcp.xml"));
 		
 			channel.setUpHandler(new MuxUpHandler());
 			

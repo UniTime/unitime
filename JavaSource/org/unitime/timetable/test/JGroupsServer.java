@@ -80,7 +80,7 @@ public class JGroupsServer {
 			ToolBox.configureLogging();
 						
 			GlobalConfiguration global = GlobalConfigurationBuilder.defaultClusteredBuilder()
-					.transport().addProperty("configurationFile", "jgroups-udp.xml")
+					.transport().addProperty("configurationFile", "jgroups-tcp.xml").clusterName("UniTime:inifispan-cluster")
 					.build();
 			Configuration config = new ConfigurationBuilder()
 					.clustering().cacheMode(CacheMode.DIST_SYNC)
@@ -98,7 +98,7 @@ public class JGroupsServer {
 			
 			DistributedExecutorService ex = new DefaultExecutorService(cache);
 			
-			JChannel channel = new JChannel();
+			JChannel channel = new JChannel("udp.xml");
 			final RpcDispatcher dispatcher = new RpcDispatcher(channel, new JGroupsServer());
 			final RequestOptions first = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 			final RequestOptions all = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);

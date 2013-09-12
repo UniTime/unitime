@@ -25,9 +25,6 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
-import org.jgroups.Message.Flag;
-import org.jgroups.blocks.RequestOptions;
-import org.jgroups.blocks.ResponseMode;
 import org.jgroups.util.Rsp;
 import org.jgroups.util.RspList;
 
@@ -37,20 +34,17 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	private static Log sLog = LogFactory.getLog(SolverContainerWrapper.class);
 	private SolverServerImplementation iServer;
 	private RemoteSolverContainer<T> iContainer;
-	private RequestOptions iFirstResponse, iAllResponses;
 
 	public SolverContainerWrapper(SolverServerImplementation server, RemoteSolverContainer<T> container) {
 		iServer = server;
 		iContainer = container;
-		iFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
-		iAllResponses = new RequestOptions(ResponseMode.GET_ALL, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
 	}
 
 	@Override
 	public Set<String> getSolvers() {
 		Set<String> solvers = new HashSet<String>();
 		try {
-			RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(null, "getSolvers", new Object[] {}, new Class[] {}, iAllResponses);
+			RspList<Set<String>> ret = iContainer.getDispatcher().callRemoteMethods(null, "getSolvers", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 			for (Rsp<Set<String>> rsp : ret) {
 				solvers.addAll(rsp.getValue());
 			}
@@ -63,7 +57,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public T getSolver(String user) {
 		try {
-			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, iAllResponses);
+			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			for (Rsp<Boolean> rsp : ret) {
 				if (rsp.getValue())
 					return iContainer.createProxy(rsp.getSender(), user);
@@ -78,7 +72,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	@Override
 	public boolean hasSolver(String user) {
 		try {
-			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, iAllResponses);
+			RspList<Boolean> ret = iContainer.getDispatcher().callRemoteMethods(null, "hasSolver", new Object[] { user }, new Class[] { String.class }, SolverServerImplementation.sAllResponses);
 			for (Rsp<Boolean> rsp : ret)
 				if (rsp.getValue()) return true;
 			return false;
@@ -95,7 +89,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 			int bestUsage = 0;
 			for (SolverServer server: iServer.getServers(true)) {
 				int usage = server.getUsage();
-				if (server.getAddress().equals(iServer.getAddress()))
+				if (server.isLocal())
 					usage += 500;
 				if (bestServer == null || bestUsage > usage) {
 	                bestServer = server;
@@ -104,7 +98,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	        }
 			if (bestServer == null)
 				throw new RuntimeException("Not enough resources to create a solver instance, please try again later.");
-			iContainer.getDispatcher().callRemoteMethod(bestServer.getAddress(), "createRemoteSolver", new Object[] { user, config, iServer.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class }, iFirstResponse);
+			iContainer.getDispatcher().callRemoteMethod(bestServer.getAddress(), "createRemoteSolver", new Object[] { user, config, iServer.getAddress() }, new Class[] { String.class, DataProperties.class, Address.class }, SolverServerImplementation.sFirstResponse);
 			return iContainer.createProxy(bestServer.getAddress(), user);
 		} catch (RuntimeException e) {
 			throw e;
@@ -117,7 +111,7 @@ public class SolverContainerWrapper<T> implements SolverContainer<T> {
 	public int getUsage() {
 		int usage = 0;
 		try {
-			RspList<Integer> ret = iContainer.getDispatcher().callRemoteMethods(null, "getUsage", new Object[] {}, new Class[] {}, iAllResponses);
+			RspList<Integer> ret = iContainer.getDispatcher().callRemoteMethods(null, "getUsage", new Object[] {}, new Class[] {}, SolverServerImplementation.sAllResponses);
 			for (Rsp<Integer> rsp : ret)
 				usage += rsp.getValue();
 		} catch (Exception e) {
