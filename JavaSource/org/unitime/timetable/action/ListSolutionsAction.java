@@ -27,7 +27,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -63,8 +62,8 @@ import org.unitime.timetable.security.Qualifiable;
 import org.unitime.timetable.security.SessionContext;
 import org.unitime.timetable.security.rights.Right;
 import org.unitime.timetable.solver.SolverProxy;
-import org.unitime.timetable.solver.remote.RemoteSolverServerProxy;
-import org.unitime.timetable.solver.remote.SolverRegisterService;
+import org.unitime.timetable.solver.jgroups.SolverServer;
+import org.unitime.timetable.solver.service.SolverServerService;
 import org.unitime.timetable.solver.service.SolverService;
 import org.unitime.timetable.solver.ui.PropertiesInfo;
 import org.unitime.timetable.util.ExportUtils;
@@ -83,6 +82,8 @@ public class ListSolutionsAction extends Action {
 	@Autowired SolverService<SolverProxy> courseTimetablingSolverService;
 	
 	@Autowired SessionContext sessionContext;
+	
+	@Autowired SolverServerService solverServerService;
 
 	public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		ListSolutionsForm myForm = (ListSolutionsForm) form;
@@ -111,14 +112,8 @@ public class ListSolutionsAction extends Action {
         
 		if (sessionContext.getUser().getCurrentAuthority().hasRight(Right.CanSelectSolverServer)) {
 			List<String> hosts = new ArrayList<String>();
-            Set servers = SolverRegisterService.getInstance().getServers();
-            synchronized (servers) {
-                for (Iterator i=servers.iterator();i.hasNext();) {
-                    RemoteSolverServerProxy server = (RemoteSolverServerProxy)i.next();
-                    if (server.isActive())
-                        hosts.add(server.getAddress().getHostName()+":"+server.getPort());
-                }
-			}
+            for (SolverServer server: solverServerService.getServers(true))
+				hosts.add(server.getHost());
 			Collections.sort(hosts);
 			if (ApplicationProperties.isLocalSolverEnabled())
 				hosts.add(0, "local");
