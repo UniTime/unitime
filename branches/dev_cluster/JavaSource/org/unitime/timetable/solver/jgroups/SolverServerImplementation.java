@@ -420,8 +420,9 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 
 		public boolean isActive() throws Exception {
 			try {
-				return iDispatcher.callRemoteMethod(iAddress, "isActive", new Object[] {}, new Class[] {},
+				Boolean active = iDispatcher.callRemoteMethod(iAddress, "isActive", new Object[] {}, new Class[] {},
 						new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB));
+				return active;
 			} catch (SuspectedException e) {
 				return false;
 			}
