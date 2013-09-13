@@ -71,4 +71,5 @@
     <RSVP resend_interval="2000" timeout="10000"/>
     <pbcast.STATE_TRANSFER />
     <!-- pbcast.FLUSH  /-->
+   <CENTRAL_LOCK/>
 </config>
