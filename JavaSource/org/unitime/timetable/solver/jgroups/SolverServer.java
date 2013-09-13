@@ -30,9 +30,13 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 public interface SolverServer {
 	public boolean isLocal();
 	
+	public boolean isMaster();
+	
 	public Address getAddress();
 	
 	public Address getLocalAddress();
+	
+	public Address getMasterAddress();
 	
 	public String getHost();
 	

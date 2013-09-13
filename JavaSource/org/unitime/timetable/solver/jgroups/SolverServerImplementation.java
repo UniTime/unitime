@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
 
 import net.sf.cpsolver.ifs.util.DataProperties;
 import net.sf.cpsolver.ifs.util.ToolBox;
@@ -40,12 +42,14 @@ import org.jgroups.JChannel;
 import org.jgroups.MembershipListener;
 import org.jgroups.Message;
 import org.jgroups.MessageListener;
+import org.jgroups.Receiver;
 import org.jgroups.SuspectedException;
 import org.jgroups.Message.Flag;
 import org.jgroups.View;
 import org.jgroups.blocks.RequestOptions;
 import org.jgroups.blocks.ResponseMode;
 import org.jgroups.blocks.RpcDispatcher;
+import org.jgroups.blocks.locking.LockService;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.jgroups.blocks.mux.MuxUpHandler;
 import org.jgroups.util.Rsp;
@@ -63,7 +67,7 @@ import org.unitime.timetable.solver.studentsct.StudentSolverProxy;
 import org.unitime.timetable.util.Constants;
 import org.unitime.timetable.util.RoomAvailability;
 
-public class SolverServerImplementation implements MessageListener, MembershipListener, SolverServer {
+public class SolverServerImplementation implements MessageListener, MembershipListener, SolverServer, Receiver {
 	private static Log sLog = LogFactory.getLog(SolverServerImplementation.class);
 	private static SolverServerImplementation sInstance = null;
 	public static final RequestOptions sFirstResponse = new RequestOptions(ResponseMode.GET_FIRST, 0).setFlags(Flag.DONT_BUNDLE, Flag.OOB);
@@ -72,6 +76,9 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	private static final short SCOPE_SERVER = 0, SCOPE_COURSE = 1, SCOPE_EXAM = 2, SCOPE_STUDENT = 3, SCOPE_AVAILABILITY = 4;
 	private JChannel iChannel;
 	private RpcDispatcher iDispatcher;
+	private LockService iLockService;
+	private AtomicBoolean iMaster = new AtomicBoolean(false);
+	private Lock iMasterLock;
 	
 	private CourseSolverContainerRemote iCourseSolverContainer;
 	private ExaminationSolverContainerRemote iExamSolverContainer;
@@ -83,16 +90,18 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	protected Properties iProperties = null;
 	protected boolean iActive = false;
 	protected boolean iLocal = false;
-		
+	
 	public SolverServerImplementation(boolean local, JChannel channel) {
 		iLocal = local;
 		iChannel = channel;
+		// iChannel.setReceiver(this);
 		iDispatcher = new MuxRpcDispatcher(SCOPE_SERVER, channel, this, this, this);
 		
 		iCourseSolverContainer = new CourseSolverContainerRemote(channel, SCOPE_COURSE);
 		iExamSolverContainer = new ExaminationSolverContainerRemote(channel, SCOPE_EXAM);
 		iStudentSolverContainer = new StudentSolverContainerRemote(channel, SCOPE_STUDENT);
 		iRemoteRoomAvailability = new RemoteRoomAvailability(channel, SCOPE_AVAILABILITY);
+		iLockService = new LockService(channel);
 	}
 	
 	public JChannel getChannel() { return iChannel; }
@@ -105,6 +114,8 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		iCourseSolverContainer.start();
 		iExamSolverContainer.start();
 		iStudentSolverContainer.start();
+		
+		new MasterAcquiringThread().start();
 		
 		iActive = true;
 		sLog.info("Solver server is up and running.");
@@ -146,6 +157,27 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 			return null;
 		} catch (Exception e) {
 			sLog.error("Failed to retrieve local address: " + e.getMessage(), e);
+			return null;
+		}
+	}
+	
+	@Override
+	public boolean isMaster() {
+		return iMaster.get();
+	}
+	
+	@Override
+	public Address getMasterAddress() {
+		if (isMaster()) return getAddress();
+		try {
+			RspList<Boolean> ret = iDispatcher.callRemoteMethods(null, "isMaster", new Object[] {}, new Class[] {}, sAllResponses);
+			for (Rsp<Boolean> master: ret) {
+				if (Boolean.TRUE.equals(master.getValue()))
+					return master.getSender();
+			}
+			return null;
+		} catch (Exception e) {
+			sLog.error("Failed to retrieve master address: " + e.getMessage(), e);
 			return null;
 		}
 	}
@@ -370,7 +402,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 
 	@Override
 	public void receive(Message msg) {
-		sLog.info("receive(" + msg + ")");
+		sLog.info("receive(" + msg + ", " + msg.getObject() + ")");
 	}
 
 
@@ -479,33 +511,55 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 	@Override
 	public void shutdown() {
 		iActive = false;
-		new Thread() {
-			public void run() {
-				try {
-					try {
-						sleep(500);
-					} catch (InterruptedException e) {}
-					
-					sLog.info("Server is going down...");
-					
-					SolverServerImplementation.this.stop();
-					
-					sLog.info("Disconnecting from the channel...");
-					getChannel().disconnect();
-					
-					sLog.info("This is the end.");
-					System.exit(0);
-				} catch (Exception e) {
-					sLog.error("Failed to stop the server: " + e.getMessage(), e);
-				}				
-			}
-		}.start();
+		new ShutdownThread().start();
 	}
 	
 	public static SolverServer getInstance() {
 		return sInstance;
 	}
+	
+	private class ShutdownThread extends Thread {
+		ShutdownThread() {
+			setName("SolverServer:Shutdown");
+		}
 		
+		@Override
+		public void run() {
+			try {
+				try {
+					sleep(500);
+				} catch (InterruptedException e) {}
+				
+				sLog.info("Server is going down...");
+				
+				SolverServerImplementation.this.stop();
+				
+				sLog.info("Disconnecting from the channel...");
+				getChannel().disconnect();
+				
+				sLog.info("This is the end.");
+				System.exit(0);
+			} catch (Exception e) {
+				sLog.error("Failed to stop the server: " + e.getMessage(), e);
+			}
+		}
+	}
+	
+	private class MasterAcquiringThread extends Thread {
+		MasterAcquiringThread() {
+			setName("SolverServer:AcquiringMasterLock");
+			setDaemon(true);
+		}
+		
+		@Override
+		public void run() {
+			iMasterLock = iLockService.getLock("master");
+			iMasterLock.lock();
+			iMaster.set(true);
+			sLog.info("I am the master!");
+		}
+	}
+	
     public static void main(String[] args) {
     	try {
     		if (ApplicationProperties.getProperty("unitime.data.dir") == null)
