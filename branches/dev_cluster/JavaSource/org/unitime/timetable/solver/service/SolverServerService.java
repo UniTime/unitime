@@ -82,6 +82,9 @@ public class SolverServerService implements InitializingBean, DisposableBean {
 			sLog.info("Disconnecting from the channel...");
 			iServer.getChannel().disconnect();
 			
+			sLog.info("Closing the channel...");
+			iServer.getChannel().close();
+			
 			iServer = null; 
 		} catch (Exception e) {
 			sLog.fatal("Failed to stop solver server: " + e.getMessage(), e);
