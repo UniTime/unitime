@@ -23,6 +23,8 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import net.sf.ehcache.CacheManager;
+
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
@@ -126,6 +128,7 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         
 	         Debug.info(" - Closing Hibernate ... ");
 	         HibernateUtil.closeHibernate();
+	         CacheManager.getInstance().shutdown();
 	         
 	         Debug.info("******* UniTime " + Constants.getVersion() +
 						" shut down successfully *******");

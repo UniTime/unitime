@@ -126,7 +126,7 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
 		
 		iCourseSolverContainer.stop();
 		iExamSolverContainer.stop();
-		iStudentSolverContainer.start();
+		iStudentSolverContainer.stop();
 	}
 	
 	public Properties getProperties() {
@@ -595,6 +595,9 @@ public class SolverServerImplementation implements MessageListener, MembershipLi
     					
     					sLog.info("Disconnecting from the channel...");
     					channel.disconnect();
+    					
+    					sLog.info("Closing the channel...");
+    					channel.close();
     					
     					sLog.info("Closing hibernate...");
     					HibernateUtil.closeHibernate();

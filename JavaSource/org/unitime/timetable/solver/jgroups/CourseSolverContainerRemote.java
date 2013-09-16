@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jgroups.Address;
 import org.jgroups.JChannel;
+import org.jgroups.SuspectedException;
 import org.jgroups.blocks.RpcDispatcher;
 import org.jgroups.blocks.mux.MuxRpcDispatcher;
 import org.unitime.timetable.model.Assignment;
@@ -82,6 +83,7 @@ public class CourseSolverContainerRemote extends CourseSolverContainer implement
 		try {
 			return iDispatcher.callRemoteMethod(address, "invoke",  new Object[] { method.getName(), user, method.getParameterTypes(), args }, new Class[] { String.class, String.class, Class[].class, Object[].class }, SolverServerImplementation.sFirstResponse);
 		} catch (Exception e) {
+			if ("exists".equals(method.getName()) && e instanceof SuspectedException) return false;
 			sLog.error("Excution of " + method + " on solver " + user + " failed: " + e.getMessage(), e);
 			return null;
 		}
