@@ -400,6 +400,16 @@
 			<version>${jython.version}</version>
 		</dependency>
 		 -->
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-core</artifactId>
+			<version>${ehcache.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache-jgroupsreplication</artifactId>
+			<version>${ehcache-jgroups.version}</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<sourceDirectory>${project.build.directory}/src</sourceDirectory>
@@ -618,6 +628,8 @@
 		<jgroups.version>3.3.5.Final</jgroups.version>
 		<infinispan.version>5.3.0.Final</infinispan.version>
 		<jbossjts.version>4.16.6.Final</jbossjts.version>
+		<ehcache.version>2.6.6</ehcache.version>
+		<ehcache-jgroups.version>1.7</ehcache-jgroups.version>
 	</properties>
 	
 	<distributionManagement>
