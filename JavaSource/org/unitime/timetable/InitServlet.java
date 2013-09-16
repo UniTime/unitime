@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServlet;
 
 import net.sf.ehcache.CacheManager;
 
+import org.apache.log4j.Appender;
+import org.apache.log4j.Logger;
 import org.unitime.commons.Debug;
 import org.unitime.commons.hibernate.util.HibernateUtil;
 import org.unitime.timetable.events.EventExpirationService;
@@ -125,6 +127,13 @@ public class InitServlet extends HttpServlet implements Servlet {
 	         }
 	         
 	         QueueProcessor.stopProcessor();
+	         
+	         Debug.info(" - Removing Message Log Appender ... ");
+	         Appender mlog = Logger.getRootLogger().getAppender("mlog");
+	         if (mlog != null) {
+	        	 Logger.getRootLogger().removeAppender("mlog");
+	        	 mlog.close();
+	         }
 	         
 	         Debug.info(" - Closing Hibernate ... ");
 	         HibernateUtil.closeHibernate();
