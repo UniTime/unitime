@@ -42,7 +42,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-collections-2.1.jar" sourcepath="3rd_party/sources/commons-collections-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-configuration-1.9.jar" sourcepath="3rd_party/sources/commons-configuration-1.9-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/commons-fileupload-1.3.jar" sourcepath="3rd_party/sources/commons-fileupload-1.3-sources.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-core-2.4.3.jar" sourcepath="3rd_party/sources/ehcache-core-2.4.3-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-core-2.6.6.jar" sourcepath="3rd_party/sources/ehcache-core-2.6.6-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/freemarker-2.3.20.jar" sourcepath="3rd_party/sources/freemarker-2.3.20-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/gwt-servlet-2.5.1.jar" sourcepath="3rd_party/sources/gwt-servlet-2.5.1-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/hibernate-commons-annotations-4.0.2.Final.jar" sourcepath="3rd_party/sources/hibernate-commons-annotations-4.0.2.Final-sources.jar"/>
@@ -85,6 +85,7 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/spring-webmvc-3.1.4.RELEASE.jar" sourcepath="spring-webmvc-3.1.4.RELEASE-sources.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/asm-3.3.1.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/cglib-2.2.2.jar" sourcepath="3rd_party/sources/cglib-2.2.2-sources.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/ehcache-jgroupsreplication-1.7.jar" sourcepath="3rd_party/sources/ehcache-jgroupsreplication-1.7-sources.jar"/>
 	
 	<classpathentry kind="lib" path="3rd_party/ant-1.8.4.jar" sourcepath="3rd_party/sources/ant-1.8.4-sources.jar"/>
 	<classpathentry kind="lib" path="3rd_party/ojdbc14-10.2.0.4.0.jar"/>
