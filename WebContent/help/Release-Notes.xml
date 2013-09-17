@@ -71,6 +71,12 @@
 				<line>Users with Status Independent permission can approve / reject / cancel meetings in a room that does not allow for approval (it is in one of the Events Managers No Approval states).</line>
 			</description>
 		</item>
+		<item>
+			<name>Class Detail</name>
+			<description>
+				<line>Committed assignment was wrongly displayed for a class when the selected solution did not contain an assignment for the class.</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>
