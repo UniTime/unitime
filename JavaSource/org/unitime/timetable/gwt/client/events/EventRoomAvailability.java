@@ -1113,6 +1113,12 @@ public class EventRoomAvailability extends Composite implements AcademicSessionF
 	}
 	
 	@Override
+	public boolean isTooEarly(int startSlot, int endSlot) {
+		if (iProperties == null || !iProperties.hasTooEarlySlot()) return false;
+		return (startSlot > 0 && startSlot <= iProperties.getTooEarlySlot()) || (startSlot == 0 && endSlot <= iProperties.getTooEarlySlot());
+	}
+	
+	@Override
 	public SessionMonth.Flag getDateFlag(EventType type, Date date) {
 		if (iSessionMonths == null || iSessionMonths.isEmpty()) return null;
 		if (date == null) return null;
