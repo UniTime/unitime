@@ -1833,6 +1833,12 @@ public class EventResourceTimetable extends Composite implements EventMeetingTab
 		return iLookup.getValue() != null ? new EventInterface.ContactInterface(iLookup.getValue()) : iProperties == null ? null : iProperties.getMainContact();
 	}
 	
+	@Override
+	public boolean isTooEarly(int startSlot, int endSlot) {
+		if (iProperties == null || !iProperties.hasTooEarlySlot()) return false;
+		return (startSlot > 0 && startSlot <= iProperties.getTooEarlySlot()) || (startSlot == 0 && endSlot <= iProperties.getTooEarlySlot());
+	}
+	
 	public static class HistoryToken {
 		private String iType = null;
 		private Map<String, String> iParams = new HashMap<String, String>();

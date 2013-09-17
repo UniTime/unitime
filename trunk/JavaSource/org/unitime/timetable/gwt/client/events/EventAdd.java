@@ -627,7 +627,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 			}
 		});
 		
-		iEventAddMeetings = new AddMeetingsDialog(session, new AsyncCallback<List<MeetingInterface>>() {
+		iEventAddMeetings = new AddMeetingsDialog(session, iProperties, new AsyncCallback<List<MeetingInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				UniTimeNotifications.error(MESSAGES.failedAddMeetings(caught.getMessage()), caught);
@@ -652,7 +652,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 				});
 			}
 		});
-		iEventModifyMeetings = new AddMeetingsDialog(session, new AsyncCallback<List<MeetingInterface>>() {
+		iEventModifyMeetings = new AddMeetingsDialog(session, iProperties, new AsyncCallback<List<MeetingInterface>>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				UniTimeNotifications.error(MESSAGES.failedChangeMeetings(caught.getMessage()), caught);
@@ -1708,6 +1708,7 @@ public class EventAdd extends Composite implements EventMeetingTable.Implementat
 		public ContactInterface getMainContact();
 		public List<Date> getSelectedDates();
 		public StartEndTime getSelectedTime();
+		public boolean isTooEarly(int startSlot, int endSlot);
 	}
 	
 	private void showCreateButtonIfApplicable() {
