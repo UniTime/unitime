@@ -65,6 +65,12 @@
 				<line>Timetable (class time and room assignments) was not shown when the data were loaded into a solver that was running on a remote solver server.</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Permission</name>
+			<description>
+				<line>Users with Status Independent permission can approve / reject / cancel meetings in a room that does not allow for approval (it is in one of the Events Managers No Approval states).</line>
+			</description>
+		</item>
 	</category>
 	<category>
 		<title>Solver Changes</title>
