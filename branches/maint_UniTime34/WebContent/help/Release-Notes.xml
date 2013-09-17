@@ -97,6 +97,19 @@
 				</line>
 			</description>
 		</item>
+		<item>
+			<name>Event Management: Unusual Times</name>
+			<description>
+				<line>Added ability to indicate that a meeting is on an unusual time (too early).</line>
+				<line>If the application property unitime.event.tooEarly is set (default is not set), it indicates the last time slot that is considered too early (e.g., 72 means 6 am).</line>
+				<line>A meeting is considered too early when:
+					<line>it starts after midnight, but before the given time (e.g., 6am), or</line>
+					<line>it starts at midnight and ends before or at the given time.</line>
+				</line>
+				<line>If a meeting is too early, it is marked bold orange in the List of Events and List of Meetings.</line>
+				<line>There is also a warning message "The requested time is unusual, please look at it closely." displayed on the second page of the Add Meetings dialog and below the meeting on the Add / Edit Event page.</line>
+			</description>
+		</item>
 	</category>
 </release>
 

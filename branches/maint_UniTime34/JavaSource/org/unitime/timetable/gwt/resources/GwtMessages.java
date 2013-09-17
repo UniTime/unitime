@@ -1354,6 +1354,9 @@ public interface GwtMessages extends Messages {
 	
 	@DefaultMessage("Meeting {0} overlaps with an existing meeting {1}.")
 	String warnNewMeetingOverlaps(String m1, String m2);
+	
+	@DefaultMessage("The requested time {0} is unusual, please look at it closely.")
+	String warnMeetingTooEarly(String time);
 
 	@DefaultMessage("No date is selected.")
 	String errorNoDateSelected();
@@ -2017,6 +2020,9 @@ public interface GwtMessages extends Messages {
 
 	@DefaultMessage("Weekend")
 	String hintWeekend();
+	
+	@DefaultMessage("Too Early?")
+	String hintTooEarly();
 	
 	@DefaultMessage("<span title='Conflicting event' style='font-style:normal;' aria-label='Conflicting event'>&#9785;</span>")
 	String signConflict();

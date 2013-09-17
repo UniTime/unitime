@@ -402,6 +402,13 @@ A.unitime-Hint:link,A.unitime-Hint:visited,A.unitime-Hint:active,A.unitime-Hint:
 	font-weight: normal;
 }
 
+.unitime-WarningMessage {
+	color: orange;
+	text-align: center;
+	font-style: italic;
+	font-weight: normal;
+}
+
 .unitime-ErrorMessage {
 	color: red;
 	text-align: center;
@@ -2428,6 +2435,11 @@ div.gwt-MenuBarPopup {
 
 .unitime-EventMeetings .weekend {
 	color: graytext;
+	font-weight: bold;
+}
+
+.unitime-EventMeetings .early {
+	color: orange;
 	font-weight: bold;
 }
 

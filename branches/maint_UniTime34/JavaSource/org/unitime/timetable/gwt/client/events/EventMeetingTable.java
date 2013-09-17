@@ -670,6 +670,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 								}
 							}
 						}
+						if (!m.isArrangeHours() && iPropertiesProvider != null && iPropertiesProvider.isTooEarly(m.getMeetings().first().getStartSlot(), m.getMeetings().first().getEndSlot())) {
+							for (int i = 1; i <= 2; i++)
+								mtg[i] = "<span class='early' title=\"" + MESSAGES.hintTooEarly() + "\">" + mtg[i] + "</span>";
+						}
 						String span = "";
 						if (m.getApprovalStatus() == ApprovalStatus.Cancelled)
 							span = "cancelled-meeting";
@@ -989,8 +993,16 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 						row.add(meetingDate);
 					}
 				}
-				row.add(new Label(meeting.getMeetingTime(CONSTANTS), false));
-				row.add(new Label(meeting.getAllocatedTime(CONSTANTS), false));
+				Label meetingTime = new Label(meeting.getMeetingTime(CONSTANTS), false);
+				Label allocatedTime = new Label(meeting.getAllocatedTime(CONSTANTS), false);
+				if (!meeting.isArrangeHours() && iPropertiesProvider != null && iPropertiesProvider.isTooEarly(meeting.getStartSlot(), meeting.getEndSlot())) {
+					meetingTime.setTitle(MESSAGES.hintTooEarly());
+					meetingTime.addStyleName("early");
+					allocatedTime.setTitle(MESSAGES.hintTooEarly());
+					allocatedTime.addStyleName("early");
+				}
+				row.add(meetingTime);
+				row.add(allocatedTime);
 				row.add(new NumberCell(meeting.getStartOffset()));
 				row.add(new NumberCell(- meeting.getEndOffset()));
 			}
@@ -1044,6 +1056,10 @@ public class EventMeetingTable extends UniTimeTable<EventMeetingTable.EventMeeti
 							break;
 						}
 					}
+				}
+				if (!m.isArrangeHours() && iPropertiesProvider != null && iPropertiesProvider.isTooEarly(m.getMeetings().first().getStartSlot(), m.getMeetings().first().getEndSlot())) {
+					for (int i = 1; i <= 2; i++)
+						mtg[i] = "<span class='early' title=\"" + MESSAGES.hintTooEarly() + "\">" + mtg[i] + "</span>";
 				}
 				String span = "";
 				if (m.getApprovalStatus() == ApprovalStatus.Cancelled)

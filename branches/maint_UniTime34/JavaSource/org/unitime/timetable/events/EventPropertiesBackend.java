@@ -95,6 +95,10 @@ public class EventPropertiesBackend extends EventAction<EventPropertiesRpcReques
 			response.setFilterDefault("emails", context.getUser().getProperty("Defaults[AddEvent.emails]"));
 		}
 		
+		int tooEarly = Integer.valueOf(ApplicationProperties.getProperty("unitime.event.tooEarly", "-1"));
+		if (tooEarly > 0)
+			response.setTooEarlySlot(tooEarly);
+		
 		return response;
 	}
 	
