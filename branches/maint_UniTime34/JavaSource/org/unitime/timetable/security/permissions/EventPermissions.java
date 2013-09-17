@@ -408,7 +408,7 @@ public class EventPermissions {
 			if (!locations(user.getCurrentAcademicSessionId(), user).contains(source.getUniqueId())) return false;
 			
 			// Can manager approve? 
-			if (!source.getEffectiveEventStatus().isEventManagersCanApprove()) return false;
+			if (!user.getCurrentAuthority().hasRight(Right.StatusIndependent) && !source.getEffectiveEventStatus().isEventManagersCanApprove()) return false;
 			
 			// Has event department?
 			return permissionDepartment.check(user, source.getEventDepartment());
